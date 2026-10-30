@@ -8,23 +8,36 @@
 //way to run a test again (runBare() and run() are final, runTest() is private). It reads the JUnit
 //log, which PHPUnit 9, 10 and 11 all write, so it works the same before and after the move to Cake 5.
 //Usage: php scripts/phpunit-retry.php [phpunit arguments...]
+//A --log-junit <file> gets the log of the first run, which CI keeps to measure the durations of the
+//tests (scripts/test-shard.php).
 
 const BROWSER_FAILURE = 'Facebook\WebDriver\Exception\WebDriverException';
 
-//The arguments of the rerun: the original ones without the coverage and log options, which
-//belong to the first run.
-function rerunArguments(array $arguments): array
+//The arguments without the options whose names start with one of $prefixes, and their values.
+function withoutOptions(array $arguments, array $prefixes): array
 {
 	$kept = [];
 	for ($i = 0; $i < count($arguments); $i++)
 	{
 		$name = explode('=', $arguments[$i], 2)[0];
-		if (!str_starts_with($name, '--coverage') && !str_starts_with($name, '--log-'))
+		$matches = array_filter($prefixes, fn($prefix) => str_starts_with($name, $prefix)) !== [];
+		if (!$matches)
 			$kept[] = $arguments[$i];
 		elseif (!str_contains($arguments[$i], '=') && isset($arguments[$i + 1]) && !str_starts_with($arguments[$i + 1], '-'))
 			$i++; // the value of the option
 	}
 	return $kept;
+}
+
+//The value of the --log-junit option among the arguments, if there is one.
+function junitArgument(array $arguments): ?string
+{
+	foreach ($arguments as $i => $argument)
+		if ($argument === '--log-junit')
+			return $arguments[$i + 1] ?? null;
+		elseif (str_starts_with($argument, '--log-junit='))
+			return substr($argument, strlen('--log-junit='));
+	return null;
 }
 
 function runPhpunit(array $arguments, string $junitFile): int
@@ -72,14 +85,17 @@ require __DIR__ . '/../vendor/autoload.php';
 
 $arguments = array_slice($argv, 1);
 $junitFile = sys_get_temp_dir() . '/phpunit-retry-' . getmypid() . '.xml';
-$exitCode = runPhpunit($arguments, $junitFile);
+$exitCode = runPhpunit(withoutOptions($arguments, ['--log-junit']), $junitFile);
+if (($keptJunitFile = junitArgument($arguments)) && is_file($junitFile))
+	copy($junitFile, $keptJunitFile);
 
 $failed = $exitCode !== 0 ? failedTests($junitFile) : [];
 if ($failed && !in_array(false, $failed, true))
 {
 	echo PHP_EOL . '[RETRY] The browser alone failed, running these again: ' . implode(', ', array_keys($failed)) . PHP_EOL . PHP_EOL;
 	$filter = '/^(' . implode('|', array_map(fn($test) => preg_quote($test, '/'), array_keys($failed))) . ')( with data set .*)?$/';
-	$exitCode = runPhpunit([...rerunArguments($arguments), '--filter', $filter], $junitFile);
+	//The rerun goes without the coverage and log options, which belong to the first run.
+	$exitCode = runPhpunit([...withoutOptions($arguments, ['--coverage', '--log-']), '--filter', $filter], $junitFile);
 }
 
 @unlink($junitFile);

@@ -17,49 +17,57 @@ concurrency:
   cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
 
 jobs:
-  tests:
+  # The test files are split into shards of about equal time (scripts/test-shard.php), each run by its own job.
+  # The number of shards is the length of the matrix.
+  test-shard:
+    name: tests (shard ${{ matrix.shard }}/${{ strategy.job-total }})
     runs-on: ubuntu-24.04
     timeout-minutes: 60
-    env:
-      # Master collects the PHP and JS coverage and publishes it to GitHub Pages.
-      COVERAGE: ${{ github.ref == 'refs/heads/master' }}
-
-    services:
-      mysql:
-        image: mariadb:10.11
-        env:
-          MARIADB_ROOT_PASSWORD: root
-          MARIADB_DATABASE: test
-        ports:
-          - 3306:3306
-        options: --health-cmd="mariadb-admin ping -h localhost -u root -proot" --health-interval=10s --health-timeout=5s --health-retries=3
-
-      selenium-firefox:
-        image: selenium/standalone-firefox:latest
-        env:
-          TZ: Europe/Prague
-        ports:
-          - 4444:4444
-        volumes:
-          - ".:/mnt/ddev_config"
-        options: >-
-          --add-host=host.docker.internal:host-gateway
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4]
 
     steps:
+      # The whole history, for the image times below, but no file contents beyond the checked out commit.
       - uses: actions/checkout@v7
         with:
-          fetch-depth: 0  # Required for git-restore-mtime to access full history
+          fetch-depth: 0
+          filter: blob:none
 
-      - name: Restore file modification times
-        uses: chetan/git-restore-mtime-action@v2
+      # The WebP step converts an image whose .webp is older, so each image gets the time of the last commit that changed it.
+      - name: Restore image modification times
+        run: |
+          git -c core.quotePath=false log --no-renames --format='@%ct' --name-only -- webroot/img \
+            | awk '/^@/ {time = substr($0, 2); next} NF && !seen[$0]++ {print time " " $0}' \
+            | while read -r time file; do
+                if [ -e "$file" ]; then touch -m -d "@$time" "$file"; fi
+              done
+
+      # MariaDB, Selenium and Caddy pull and start while the job installs PHP and the packages and builds;
+      # the steps that need them wait for them (as service containers they held up the job for 30 s).
+      - name: Start the containers in the background
+        run: |
+          nohup docker run --rm --name mysql \
+            -e MARIADB_ROOT_PASSWORD=root -e MARIADB_DATABASE=test \
+            -p 3306:3306 \
+            mariadb:10.11 > /tmp/mysql.log 2>&1 &
+          # Firefox 158.0, geckodriver 0.37.1. Pinned, so a new Firefox or Selenium arrives in its own pull request instead of in any run
+          nohup docker run --rm --name selenium-firefox \
+            -e TZ=Europe/Prague \
+            -p 4444:4444 \
+            -v "$PWD:/mnt/ddev_config" \
+            --add-host=host.docker.internal:host-gateway \
+            selenium/standalone-firefox:4.51.0-20261010@sha256:2bb7d9e63088ba6dc7f4d5acd807f27d8410221f881853a97ac3c95f50e8d951 > /tmp/selenium.log 2>&1 &
+          nohup docker pull -q caddy:2 > /dev/null 2>&1 &
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.4'
           extensions: mbstring, intl
-          # PCOV records only src/ and costs far less than Xdebug; without coverage no driver slows the requests down.
-          coverage: ${{ env.COVERAGE == 'true' && 'pcov' || 'none' }}
+          # Only master collects coverage, with PCOV: it records only src/ and costs far less than Xdebug.
+          coverage: ${{ github.ref == 'refs/heads/master' && 'pcov' || 'none' }}
           # Without opcache's optimizer, as under Xdebug: it merges and drops lines (a run of echos, a jump), and they would drop out of the coverage.
           ini-values: pcov.directory=${{ github.workspace }}/src, opcache.optimization_level=0
 
@@ -93,7 +101,7 @@ jobs:
         run: pnpm run test:scripts
 
       - name: Build React app
-        run: ${{ env.COVERAGE == 'true' && 'pnpm run build:coverage' || 'pnpm run build' }}
+        run: ${{ github.ref == 'refs/heads/master' && 'pnpm run build:coverage' || 'pnpm run build' }}
 
       - name: Generate WebP images
         timeout-minutes: 10
@@ -105,7 +113,7 @@ jobs:
 
       - name: Commit generated WebP files
         uses: stefanzweifel/git-auto-commit-action@v7
-        if: github.ref == 'refs/heads/master'
+        if: github.ref == 'refs/heads/master' && matrix.shard == 1
         with:
           commit_message: "chore: auto-generate WebP images"
           file_pattern: "webroot/img/*.webp webroot/img/**/*.webp"
@@ -154,7 +162,13 @@ jobs:
 
       - name: Import database schema
         run: |
+          # Over TCP, which the temporary server of MariaDB's first start doesn't listen on.
+          timeout 120 sh -c 'until docker exec mysql mariadb --protocol=tcp -h 127.0.0.1 -uroot -proot -e "SELECT 1" test > /dev/null 2>&1; do sleep 0.5; done' || (cat /tmp/mysql.log; exit 1)
           ./vendor/bin/phinx migrate -e test
+
+      # The database lives as long as the job, so a commit doesn't need to reach the disk; each test makes dozens
+      - name: Let the database skip flushing each commit
+        run: mysql -h 127.0.0.1 -uroot -proot -e "SET GLOBAL innodb_flush_log_at_trx_commit = 0; SELECT @@innodb_flush_log_at_trx_commit"
 
       - name: Start built-in PHP server
         env:
@@ -162,12 +176,13 @@ jobs:
         run: |
           mkdir -p /tmp/coverage
           # Use router script to handle CakePHP dispatcher filter routes
-          if [ "$COVERAGE" = "true" ]; then
+          if [ "${{ github.ref }}" = "refs/heads/master" ]; then
             nohup php -d auto_prepend_file="$PWD/.github/ci/coverage-prepend.php" -S 0.0.0.0:8080 -t webroot .github/ci/router.php > server.log 2>&1 &
           else
             nohup php -S 0.0.0.0:8080 -t webroot .github/ci/router.php > server.log 2>&1 &
           fi
-          sleep 3
+          # Ready once it serves a static file (no app request, so no coverage of its own); a server that never does fails the step with its log.
+          timeout 30 sh -c 'until curl -s -o /dev/null http://127.0.0.1:8080/robots.txt; do sleep 0.2; done' || (cat server.log; exit 1)
 
       - name: Start Caddy HTTPS reverse proxy
         run: |
@@ -177,10 +192,16 @@ jobs:
             --sysctl net.ipv6.conf.all.disable_ipv6=1 \
             --sysctl net.ipv6.conf.default.disable_ipv6=1 \
             -v "${{ github.workspace }}/Caddyfile:/etc/caddy/Caddyfile" \
+            -v "${{ github.workspace }}/webroot:/srv:ro" \
             caddy:2 > caddy.log 2>&1 &
-          sleep 6
+          # Ready once it answers through to the PHP server (the image pull is part of the wait).
+          timeout 60 sh -c 'until curl -sk -o /dev/null https://localhost:8443/robots.txt; do sleep 0.2; done' || (cat caddy.log; exit 1)
           echo "Caddy log:"
-          cat caddy.log || true
+          cat caddy.log
+
+      - name: Wait for Selenium
+        run: |
+          timeout 120 sh -c 'until curl -s http://localhost:4444/status | grep -q "\"ready\": *true"; do sleep 0.5; done' || (cat /tmp/selenium.log; exit 1)
 
       - name: Run tests
         env:
@@ -191,30 +212,120 @@ jobs:
           TEST_ENVIRONMENT: github-ci
         run: |
           mkdir -p /tmp/coverage
-          # phpunit, with the tests the browser alone failed run again (scripts/phpunit-retry.php)
-          php scripts/phpunit-retry.php --exclude-group apache-only --exclude-group disabled ${{ env.COVERAGE == 'true' && '--coverage-php /tmp/coverage/phpunit.cov' || '' }}
+          # phpunit on the files of this shard, with the tests the browser alone failed run again (scripts/phpunit-retry.php)
+          php scripts/phpunit-retry.php --exclude-group apache-only --exclude-group disabled --log-junit tmp/junit.xml ${{ github.ref == 'refs/heads/master' && '--coverage-php /tmp/coverage/phpunit.cov' || '' }} $(php scripts/test-shard.php ${{ matrix.shard }} ${{ strategy.job-total }})
+
+      # Put together, these logs are the new tests/durations.json: php scripts/test-shard.php durations junit-*.xml
+      - name: Print test durations
+        if: always()
+        run: test -f tmp/junit.xml && php scripts/test-shard.php durations tmp/junit.xml || true
+
+      - name: Upload JUnit log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: junit-${{ matrix.shard }}
+          path: tmp/junit.xml
+          if-no-files-found: ignore
 
       - name: Upload browser failure dumps
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: browser-failure-dumps
+          name: browser-failure-dumps-${{ matrix.shard }}
           path: |
             tmp/browser-timeout-*.html
             tmp/browser-failure-*
           if-no-files-found: ignore
 
       # PHPUnit's phpunit.cov and one webserver-*.cov per request of the Selenium tests (.github/ci/coverage-prepend.php)
+      # become one file per shard, and so do the JS snapshots of Browser::captureJsCoverage(); the coverage job merges the shards.
+      - name: Merge the coverage of the shard
+        if: github.ref == 'refs/heads/master'
+        run: |
+          mkdir -p /tmp/coverage-shard /tmp/coverage/js-raw
+          vendor/bin/phpcov merge --php /tmp/coverage-shard/php-${{ matrix.shard }}.cov /tmp/coverage
+          find /tmp/coverage -maxdepth 1 -name 'js-raw-*.json' -exec mv -t /tmp/coverage/js-raw {} +
+          if [ -n "$(ls -A /tmp/coverage/js-raw)" ]; then npx nyc merge /tmp/coverage/js-raw /tmp/coverage-shard/js-raw-${{ matrix.shard }}.json; fi
+
+      - name: Upload the coverage of the shard
+        if: github.ref == 'refs/heads/master'
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-${{ matrix.shard }}
+          path: /tmp/coverage-shard
+          retention-days: 1
+
+  # The check that pull requests wait for: it passes when every shard did.
+  tests:
+    if: always()
+    needs: test-shard
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Check the shards
+        run: test "${{ needs.test-shard.result }}" = success
+
+  coverage:
+    if: github.ref == 'refs/heads/master'
+    needs: test-shard
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, intl
+          # Merging the shards' coverage files needs no driver
+          coverage: none
+
+      - name: Get composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+
+      - name: Cache dependencies
+        uses: actions/cache@v6
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-
+
+      - name: Composer install
+        run: composer install --prefer-dist --optimize-autoloader --no-interaction
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install pnpm dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Download the coverage of the shards
+        uses: actions/download-artifact@v4
+        with:
+          pattern: coverage-*
+          path: /tmp/coverage
+          merge-multiple: true
+
+      # The coverage files name the static analysis cache of the shards, which this job has to create
       - name: Merge coverage files
-        if: env.COVERAGE == 'true'
-        run: vendor/bin/phpcov merge --html coverage/php --clover coverage/coverage.xml /tmp/coverage
+        run: |
+          mkdir -p tmp/phpunit-cache/code-coverage
+          vendor/bin/phpcov merge --html coverage/php --clover coverage/coverage.xml /tmp/coverage
 
       - name: Generate JS coverage report
-        if: env.COVERAGE == 'true'
         run: pnpm run coverage:js
 
       - name: Restore coverage history
-        if: github.ref == 'refs/heads/master'
         run: |
           git fetch --depth=1 origin gh-pages || true
           mkdir -p coverage
@@ -225,11 +336,9 @@ jobs:
           fi
 
       - name: Generate combined coverage index
-        if: github.ref == 'refs/heads/master'
         run: pnpm run coverage:index
 
       - name: Deploy coverage to GitHub Pages
-        if: github.ref == 'refs/heads/master'
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
