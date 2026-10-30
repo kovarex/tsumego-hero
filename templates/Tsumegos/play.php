@@ -65,6 +65,11 @@ use App\Utility\ViteManifest;
  * @var TsumegoXPAndRating $tsumegoXPAndRating
  * @var TsumegoVariant|null $tv
  * @var string $userSetsJson
+ * @var string $displayDescription The description in the colors the player sees
+ * @var array<string, ?string>|null $displayAnswers The answers of the question in the colors the player sees
+ * @var bool $solved Solved for the current mode
+ * @var bool $assignmentReplay A problem solved before, played again for a class assignment
+ * @var string $resetLink
  */
 
 
@@ -85,40 +90,6 @@ use App\Utility\ViteManifest;
 		$playGreenColor = 'green';
 	}
 
-	$swapColorWords = function (string $text): string
-	{
-		return preg_replace_callback(
-			'/\b(Black|black|White|white)\b/',
-			fn($match) => ['Black' => 'White', 'black' => 'white', 'White' => 'Black', 'white' => 'black'][$match[1]],
-			$text
-		);
-	};
-	$displayDescription = $tsumego->description;
-	// True-color convention: descriptions already match the actual board stones.
-	// When the board is inverted ($swapColors), swap Black<->White to match what the player sees.
-	if ($swapColors)
-		$displayDescription = $swapColorWords($displayDescription);
-
-	// Variant answers are stored in true colors (they describe the stones on the board as authored).
-	// When the board is inverted ($swapColors), swap Black<->White so the answers match what the player sees.
-	$displayAnswers = $tv?->extract(['answer1', 'answer2', 'answer3', 'answer4']);
-	if ($displayAnswers !== null && $swapColors)
-		foreach (['answer1', 'answer2', 'answer3', 'answer4'] as $answerKey)
-			if (isset($displayAnswers[$answerKey]))
-				$displayAnswers[$answerKey] = $swapColorWords($displayAnswers[$answerKey]);
-
-	// Whether the problem is solved for the current mode. In time mode every
-	// problem is presented fresh, so this stays false until it is solved.
-	$solved = TsumegoUtil::isSolvedForCurrentMode($tsumegoStatus);
-	// Reset opens the problem again on the route it is played from, so a retry in the
-	// training or in a class assignment stays there
-	$classroomAssignment ??= null;
-	// A problem solved before is played again for a class assignment, which counts the solve on its own
-	$assignmentReplay = $classroomAssignment !== null && $solved && empty($solvedForAssignment);
-	if ($classroomAssignment !== null)
-		$resetLink = ClassroomAssignmentTable::playLink((int) $classroomAssignment['id'], (int) $setConnection->id);
-	else
-		$resetLink = (Auth::isInMistakeTrainingMode() ? MistakeTraining::$PLAY_LINK_PREFIX : '/') . (int) $setConnection->id;
 	if ($tsumego->deleted !== null)
 		echo $this->element('trash_notice', [
 			'what' => 'problem',
@@ -151,9 +122,7 @@ use App\Utility\ViteManifest;
 	<tr>
 		<td align="center">
 			<div id="playTitle">
-				<?php echo $classroomAssignment !== null
-					? Play::renderAssignmentTitle($classroomAssignment, $tsumegoButtons, $setConnection, $set, $amountOfOtherCollection)
-					: Play::renderTitle($setConnection, $set, $tsumegoFilters, $tsumegoButtons, $amountOfOtherCollection, $difficulty, $timeMode, $queryTitle, $tsumego); ?>
+				<?php echo $this->element('Tsumegos/play_title'); ?>
 				<br>
 			</div>
 		</td>
@@ -176,7 +145,7 @@ use App\Utility\ViteManifest;
 			{
 				$capturesLabels = 'Black captures: '.$tv->answer2.' | White captures: '.$tv->answer3;
 				if ($swapColors)
-					$capturesLabels = $swapColorWords($capturesLabels);
+					$capturesLabels = Play::swapColorWords($capturesLabels);
 				echo '<br>';
 				echo '<span id="scoreEstimatingLabels">'.h($capturesLabels).' | Komi: '.h($tv->answer1).'</span>';
 			}

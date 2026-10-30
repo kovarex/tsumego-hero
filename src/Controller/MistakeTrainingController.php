@@ -8,7 +8,6 @@ use App\Utility\Auth;
 use App\Utility\Constants;
 use App\Utility\CookieFlash;
 use App\Utility\MistakeTraining;
-use App\Utility\Play;
 
 class MistakeTrainingController extends AppController
 {
@@ -115,15 +114,11 @@ class MistakeTrainingController extends AppController
 		if (!$set || !$this->Authorization->can($set, 'play'))
 			return $this->redirect(MistakeTraining::$QUEUE_LINK);
 
-		$play = new Play(function ($name, $value) {
-			$this->set($name, $value);
-		});
-		// Same problem, same address for search engines, whichever route got here.
-		$this->set('canonicalPath', '/' . $setConnectionID);
-		$this->set('_page', 'mistake-training');
-		$this->set('mistakeTrainingReplay', !MistakeTraining::isRowDue($pool));
-		$play->play($setConnectionID, $this->request);
-		$this->render('/Tsumegos/play');
+		$this->renderPlay($setConnectionID, [
+			// Same problem, same address for search engines, whichever route got here.
+			'canonicalPath' => '/' . $setConnectionID,
+			'_page' => 'mistake-training',
+			'mistakeTrainingReplay' => !MistakeTraining::isRowDue($pool)]);
 		return null;
 	}
 }
