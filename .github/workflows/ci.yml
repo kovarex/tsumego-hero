@@ -217,12 +217,14 @@ jobs:
           path: tmp/junit.xml
           if-no-files-found: ignore
 
-      - name: Upload browser timeout dumps
+      - name: Upload browser failure dumps
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: browser-timeout-dumps-${{ matrix.shard }}
-          path: tmp/browser-timeout-*.html
+          name: browser-failure-dumps-${{ matrix.shard }}
+          path: |
+            tmp/browser-timeout-*.html
+            tmp/browser-failure-*
           if-no-files-found: ignore
 
       # PHPUnit's phpunit.cov and one webserver-*.cov per request of the Selenium tests (.github/ci/xdebug-prepend.php)
