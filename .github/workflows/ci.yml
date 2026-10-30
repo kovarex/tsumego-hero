@@ -67,7 +67,7 @@ jobs:
           php-version: '8.4'
           extensions: mbstring, intl
           # Only master collects coverage, with PCOV: it records only src/ and costs far less than Xdebug.
-          coverage: ${{ (github.ref == 'refs/heads/master' || github.head_ref == 'ci-pcov-coverage') && 'pcov' || 'none' }}
+          coverage: ${{ github.ref == 'refs/heads/master' && 'pcov' || 'none' }}
           # Without opcache's optimizer, as under Xdebug: it merges and drops lines (a run of echos, a jump), and they would drop out of the coverage.
           ini-values: pcov.directory=${{ github.workspace }}/src, opcache.optimization_level=0
 
@@ -101,7 +101,7 @@ jobs:
         run: pnpm run test:scripts
 
       - name: Build React app
-        run: ${{ (github.ref == 'refs/heads/master' || github.head_ref == 'ci-pcov-coverage') && 'pnpm run build:coverage' || 'pnpm run build' }}
+        run: ${{ github.ref == 'refs/heads/master' && 'pnpm run build:coverage' || 'pnpm run build' }}
 
       - name: Generate WebP images
         timeout-minutes: 10
@@ -176,7 +176,7 @@ jobs:
         run: |
           mkdir -p /tmp/coverage
           # Use router script to handle CakePHP dispatcher filter routes
-          if [ "${{ (github.ref == 'refs/heads/master' || github.head_ref == 'ci-pcov-coverage') }}" = "true" ]; then
+          if [ "${{ github.ref }}" = "refs/heads/master" ]; then
             nohup php -d auto_prepend_file="$PWD/.github/ci/coverage-prepend.php" -S 0.0.0.0:8080 -t webroot .github/ci/router.php > server.log 2>&1 &
           else
             nohup php -S 0.0.0.0:8080 -t webroot .github/ci/router.php > server.log 2>&1 &
@@ -213,7 +213,7 @@ jobs:
         run: |
           mkdir -p /tmp/coverage
           # phpunit on the files of this shard, with the tests the browser alone failed run again (scripts/phpunit-retry.php)
-          php scripts/phpunit-retry.php --exclude-group apache-only --exclude-group disabled --log-junit tmp/junit.xml ${{ (github.ref == 'refs/heads/master' || github.head_ref == 'ci-pcov-coverage') && '--coverage-php /tmp/coverage/phpunit.cov' || '' }} $(php scripts/test-shard.php ${{ matrix.shard }} ${{ strategy.job-total }})
+          php scripts/phpunit-retry.php --exclude-group apache-only --exclude-group disabled --log-junit tmp/junit.xml ${{ github.ref == 'refs/heads/master' && '--coverage-php /tmp/coverage/phpunit.cov' || '' }} $(php scripts/test-shard.php ${{ matrix.shard }} ${{ strategy.job-total }})
 
       # Put together, these logs are the new tests/durations.json: php scripts/test-shard.php durations junit-*.xml
       - name: Print test durations
@@ -241,7 +241,7 @@ jobs:
       # PHPUnit's phpunit.cov and one webserver-*.cov per request of the Selenium tests (.github/ci/coverage-prepend.php)
       # become one file per shard, and so do the JS snapshots of Browser::captureJsCoverage(); the coverage job merges the shards.
       - name: Merge the coverage of the shard
-        if: (github.ref == 'refs/heads/master' || github.head_ref == 'ci-pcov-coverage')
+        if: github.ref == 'refs/heads/master'
         run: |
           mkdir -p /tmp/coverage-shard /tmp/coverage/js-raw
           vendor/bin/phpcov merge --php /tmp/coverage-shard/php-${{ matrix.shard }}.cov /tmp/coverage
@@ -249,7 +249,7 @@ jobs:
           if [ -n "$(ls -A /tmp/coverage/js-raw)" ]; then npx nyc merge /tmp/coverage/js-raw /tmp/coverage-shard/js-raw-${{ matrix.shard }}.json; fi
 
       - name: Upload the coverage of the shard
-        if: (github.ref == 'refs/heads/master' || github.head_ref == 'ci-pcov-coverage')
+        if: github.ref == 'refs/heads/master'
         uses: actions/upload-artifact@v4
         with:
           name: coverage-${{ matrix.shard }}
@@ -267,7 +267,7 @@ jobs:
         run: test "${{ needs.test-shard.result }}" = success
 
   coverage:
-    if: (github.ref == 'refs/heads/master' || github.head_ref == 'ci-pcov-coverage')
+    if: github.ref == 'refs/heads/master'
     needs: test-shard
     runs-on: ubuntu-24.04
     timeout-minutes: 30
@@ -337,14 +337,7 @@ jobs:
       - name: Generate combined coverage index
         run: pnpm run coverage:index
 
-      - name: Upload coverage report (measurement only)
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-report
-          path: coverage/coverage.xml
-
       - name: Deploy coverage to GitHub Pages
-        if: github.ref == 'refs/heads/master'
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
