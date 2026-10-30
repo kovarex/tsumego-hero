@@ -19,7 +19,6 @@ use App\Utility\Auth;
 use App\Utility\BoardTransformation;
 use App\Utility\Constants;
 use App\Utility\CookieFlash;
-use App\Utility\Play;
 use App\Utility\PlayOutcome;
 use App\Utility\Rating;
 use App\Utility\RatingParseException;
@@ -88,8 +87,7 @@ class TsumegosController extends AppController
 				if ($setConnection)
 					$this->PlayResultProcessor->markAsVisited($setConnection->tsumego_id);
 			}
-			$this->set('canonicalPath', '/' . (int) $setConnectionID);
-			new Play(function ($name, $value) { $this->set($name, $value); })->play((int) $setConnectionID, $this->request);
+			$this->renderPlay((int) $setConnectionID, ['canonicalPath' => '/' . (int) $setConnectionID]);
 			return null;
 		}
 
@@ -115,10 +113,7 @@ class TsumegosController extends AppController
 			throw new NotFoundException("Problem not found in any set");
 		$setConnection = $this->deduceRelevantSetConnection($setConnections);
 
-		$this->set('canonicalPath', '/' . $setConnections[0]['id']);
-		new Play(function ($name, $value) {
-			$this->set($name, $value);
-		})->play((int) $setConnection['id'], $this->request);
+		$this->renderPlay((int) $setConnection['id'], ['canonicalPath' => '/' . $setConnections[0]['id']]);
 		return null;
 	}
 
