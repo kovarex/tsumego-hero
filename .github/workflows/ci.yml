@@ -171,7 +171,8 @@ jobs:
           else
             nohup php -S 0.0.0.0:8080 -t webroot .github/ci/router.php > server.log 2>&1 &
           fi
-          sleep 3
+          # Ready once it serves a static file (no app request, so no coverage of its own); a server that never does fails the step with its log.
+          timeout 30 sh -c 'until curl -s -o /dev/null http://127.0.0.1:8080/robots.txt; do sleep 0.2; done' || (cat server.log; exit 1)
 
       - name: Start Caddy HTTPS reverse proxy
         run: |
@@ -182,9 +183,10 @@ jobs:
             --sysctl net.ipv6.conf.default.disable_ipv6=1 \
             -v "${{ github.workspace }}/Caddyfile:/etc/caddy/Caddyfile" \
             caddy:2 > caddy.log 2>&1 &
-          sleep 6
+          # Ready once it answers through to the PHP server (the image pull is part of the wait).
+          timeout 60 sh -c 'until curl -sk -o /dev/null https://localhost:8443/robots.txt; do sleep 0.2; done' || (cat caddy.log; exit 1)
           echo "Caddy log:"
-          cat caddy.log || true
+          cat caddy.log
 
       - name: Run tests
         env:
