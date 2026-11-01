@@ -1,0 +1,63 @@
+<?php
+
+declare(strict_types=1);
+
+use Phinx\Migration\AbstractMigration;
+
+//User 33 was "noUser", a fake account the automatic SGF versions were stored under, which the code
+//singled out by its id and its name. An automatic version has no user now (sgf.user_id NULL), so its
+//versions move to NULL and the account goes.
+//Anything else that still points at the account stops the migration, with each column and its count:
+//every column with a foreign key to user.id and every user_id / *_user_id column without one, read
+//from the schema. The forum tables (phpbb_*) have their own users and are left out.
+final class RemoveNoUser extends AbstractMigration
+{
+	private const USER_ID = 33;
+	private const NAME = 'noUser';
+
+	public function up(): void
+	{
+		$user = $this->fetchRow('SELECT id, name, display_name FROM user WHERE id = ' . self::USER_ID);
+		if (!$user)
+			return;
+		if ($user['name'] !== self::NAME && $user['display_name'] !== self::NAME)
+			throw new RuntimeException('User ' . self::USER_ID . ' is not ' . self::NAME . ' but ' . ($user['display_name'] ?? $user['name']) . ', nothing was changed');
+
+		$references = [];
+		foreach (self::userColumns($this) as $column)
+		{
+			if ($column['table_name'] === 'sgf' && $column['column_name'] === 'user_id')
+				continue;
+			$count = (int) $this->fetchRow('SELECT COUNT(*) AS n FROM `' . $column['table_name'] . '` WHERE `' . $column['column_name'] . '` = ' . self::USER_ID)['n'];
+			if ($count > 0)
+				$references[] = $column['table_name'] . '.' . $column['column_name'] . ': ' . $count;
+		}
+		if ($references)
+			throw new RuntimeException('User ' . self::USER_ID . ' (' . self::NAME . ') is still referenced, nothing was changed: ' . implode(', ', $references));
+
+		$this->execute('UPDATE sgf SET user_id = NULL WHERE user_id = ' . self::USER_ID);
+		$this->execute('DELETE FROM user WHERE id = ' . self::USER_ID);
+	}
+
+	public function down(): void
+	{
+		throw new Phinx\Migration\IrreversibleMigrationException('The noUser account is gone, its SGF versions are automatic ones');
+	}
+
+	//The columns that hold a user id: every foreign key to user.id, and every user_id / *_user_id
+	//column of a table of the site, with a foreign key or without
+	/** @return list<array{table_name: string, column_name: string}> */
+	private static function userColumns(AbstractMigration $migration): array
+	{
+		return $migration->fetchAll("SELECT k.TABLE_NAME AS table_name, k.COLUMN_NAME AS column_name
+			FROM information_schema.KEY_COLUMN_USAGE k
+			WHERE k.TABLE_SCHEMA = DATABASE() AND k.REFERENCED_TABLE_NAME = 'user' AND k.REFERENCED_COLUMN_NAME = 'id'
+			UNION
+			SELECT c.TABLE_NAME, c.COLUMN_NAME
+			FROM information_schema.COLUMNS c
+			JOIN information_schema.TABLES t ON t.TABLE_SCHEMA = c.TABLE_SCHEMA AND t.TABLE_NAME = c.TABLE_NAME AND t.TABLE_TYPE = 'BASE TABLE'
+			WHERE c.TABLE_SCHEMA = DATABASE() AND c.TABLE_NAME NOT LIKE 'phpbb\\_%'
+			AND (c.COLUMN_NAME = 'user_id' OR c.COLUMN_NAME LIKE '%\\_user\\_id')
+			ORDER BY 1, 2");
+	}
+}

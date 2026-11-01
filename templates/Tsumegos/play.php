@@ -336,10 +336,8 @@ use App\Utility\ViteManifest;
 	if (Auth::isLoggedIn())
 	{
 		{
-			if($sgf->user_id!=33)
-				$adHighlight = 'historyLink';
-			else
-				$adHighlight = '';
+			// the history is worth a look once a person changed the problem, not for an automatic version alone
+			$adHighlight = $sgf->user_id !== null ? 'historyLink' : '';
 
 			if(Auth::isAdmin())
 			{

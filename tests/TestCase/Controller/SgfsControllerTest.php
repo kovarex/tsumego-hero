@@ -29,6 +29,31 @@ class SgfsControllerTest extends IntegrationTestCase
 		$this->assertStringNotContainsString(md5('goner@example.com'), $html);
 	}
 
+	//An automatic version has no user: the history says it was generated, offers no link to a user's
+	//uploads and no delete, and a delete asked for anyway keeps it
+	public function testAnAutomaticVersionIsAutomaticallyGeneratedAndNobodysToDelete()
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'viewer', 'admin' => true],
+			'tsumego' => ['set_order' => 1, 'status' => 'S', 'sgf' => '(;GM[1]FF[4]SZ[19]C[automatic])']]);
+		$tsumegoID = (int) $context->tsumegos[0]['id'];
+		$automaticID = (int) $context->tsumegos[0]['sgfs'][0]['id'];
+		Util::execute('UPDATE sgf SET user_id = NULL WHERE id = ?', [$automaticID]);
+		$ownID = SgfTable::upload('(;GM[1]FF[4]SZ[19]C[own];B[aa])', $tsumegoID, Auth::getUserID(), true)->id;
+
+		$this->get('/sgfs/view/' . $tsumegoID);
+		preg_match('~<tr id="' . $automaticID . '">.*?</tr>~s', $this->view, $automaticRow);
+		preg_match('~<tr id="' . $ownID . '">.*?</tr>~s', $this->view, $ownRow);
+		$this->assertStringContainsString('automatically generated', $automaticRow[0]);
+		$this->assertStringNotContainsString('?user=', $automaticRow[0]);
+		$this->assertStringNotContainsString('delV(', $automaticRow[0]);
+		$this->assertStringContainsString('?user=' . Auth::getUserID(), $ownRow[0]);
+		$this->assertStringContainsString('delV(' . $ownID . ')', $ownRow[0]);
+
+		$this->get('/sgfs/view/' . $tsumegoID . '?delete=' . $automaticID);
+		$this->assertTrue($this->fetchTable('Sgf')->exists(['id' => $automaticID]));
+	}
+
 	//Uploads of different problems interleave in the lists, the diff has to compare
 	//with the previous version of the same problem, not with the row below.
 	public function testUploadListsDiffAgainstThePreviousVersionOfTheSameProblem()

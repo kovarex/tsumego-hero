@@ -31,6 +31,23 @@ class TsumegosControllerTest extends IntegrationTestCase
 	}
 
 	//The SGF download is named after the collection and the number of the problem in it.
+	//The admin's History link stands out once a person changed the problem, not while it has only an
+	//automatic version, which has no user
+	public function testTheHistoryLinkStandsOutOnlyForAVersionOfAPerson(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['admin' => true],
+			'tsumego' => ['set_order' => 1, 'sgf' => '(;GM[1]FF[4]SZ[19];B[aa])']]);
+		$setConnectionID = $context->tsumegos[0]['set-connections'][0]['id'];
+
+		$this->get('/' . $setConnectionID);
+		$this->assertResponseContains('<a id="showx6" class="selectable-text mr-5 historyLink">History</a>');
+
+		Util::execute('UPDATE sgf SET user_id = NULL WHERE tsumego_id = ?', [$context->tsumegos[0]['id']]);
+		$this->get('/' . $setConnectionID);
+		$this->assertResponseContains('<a id="showx6" class="selectable-text mr-5 ">History</a>');
+	}
+
 	public function testTheSgfDownloadIsNamedAfterTheCollectionAndTheProblemNumber(): void
 	{
 		$context = new ContextPreparator(['tsumego' => ['set_order' => 666]]);
