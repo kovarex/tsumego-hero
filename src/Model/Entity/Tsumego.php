@@ -14,14 +14,9 @@ use DateTimeImmutable;
  * @property float|null $minimum_rating
  * @property float|null $maximum_rating
  * @property DateTimeImmutable|null $created
- * @property int|null $minimum_liberties
- * @property int|null $maximum_liberties
- * @property int|null $variance
- * @property int|null $liberty_count
- * @property int|null $inside_liberties
- * @property int|null $semeai_type
  * @property bool $alternative_response
  * @property bool $pass
  * @property DateTimeImmutable|null $deleted
+ * @property TsumegoCapturingRace|null $tsumego_capturing_race Only when loaded with contain('TsumegoCapturingRace')
  */
 class Tsumego extends AppEntity {}

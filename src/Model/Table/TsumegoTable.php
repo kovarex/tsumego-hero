@@ -4,10 +4,16 @@ namespace App\Model\Table;
 
 use App\Utility\Util;
 
-//The problems: what the player sees, the rating of each one and the multiple choice values of the
-//capturing races. A problem in the trash has its deleted time set.
+//The problems: what the player sees and the rating of each one. A problem in the trash has its
+//deleted time set. A capturing race quiz has its values in tsumego_capturing_race.
 class TsumegoTable extends AppTable
 {
+	public function initialize(array $config): void
+	{
+		parent::initialize($config);
+		$this->hasOne('TsumegoCapturingRace', ['foreignKey' => 'tsumego_id']);
+	}
+
 	//Moves the rating of the problem by the change a result brought, within its minimum and maximum.
 	//Only the rating is written, and the change is added to the rating stored now: the row a request
 	//read at its start may be older than an admin's edit or another player's result on the problem.
