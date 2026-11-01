@@ -207,7 +207,6 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 			{
 				$tsumegoTable = $this->fetchTable('Tsumego');
 				$tsumego = $tsumegoTable->saveOrFail($tsumegoTable->newEntity([
-					'variance' => 100,
 					'description' => 'b to kill',
 					'author' => Auth::getUser()['display_name'],
 					'author_user_id' => Auth::getUserID()]));
