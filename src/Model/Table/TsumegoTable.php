@@ -5,13 +5,13 @@ namespace App\Model\Table;
 use App\Utility\Util;
 
 //The problems: what the player sees and the rating of each one. A problem in the trash has its
-//deleted time set. A capturing race quiz has its values in tsumego_capturing_race.
+//deleted time set. A semeai problem has its values in tsumego_semeai.
 class TsumegoTable extends AppTable
 {
 	public function initialize(array $config): void
 	{
 		parent::initialize($config);
-		$this->hasOne('TsumegoCapturingRace', ['foreignKey' => 'tsumego_id']);
+		$this->hasOne('TsumegoSemeai', ['foreignKey' => 'tsumego_id']);
 	}
 
 	//Moves the rating of the problem by the change a result brought, within its minimum and maximum.

@@ -2,8 +2,9 @@
 
 namespace App\Model\Table;
 
-//The types of capturing race the quiz explains, the rows of capturing_race_type
-class CapturingRaceTypeTable extends AppTable
+//The types of semeai, which the explanation of a semeai problem tells apart (webroot/js/multipleChoice.js),
+//the rows of semeai_type
+class SemeaiTypeTable extends AppTable
 {
 	public const TYPE_NO_EYES_FEW_INSIDE_LIBERTIES = 1;
 	public const TYPE_NO_EYES_INSIDE_LIBERTIES = 2;

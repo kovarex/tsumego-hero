@@ -9,7 +9,6 @@ namespace App\Utility;
  * @phpstan-type AdminActivityRow array{id?: int, user_id?: int, tsumego_id?: int|null, set_id?: int|null, type?: int, old_value?: string|null, new_value?: string|null, created?: string, ...}
  * @phpstan-type AdminOverviewSeenRow array{user_id?: int, admin_overview_type_id?: int, seen?: string, ...}
  * @phpstan-type AvatarSettingRow array{id?: int, name?: string, ...}
- * @phpstan-type CapturingRaceTypeRow array{id?: int, name?: string, ...}
  * @phpstan-type ChallengeParticipantRow array{id?: int, challenge_id?: int, user_id?: int, invited_by_user_id?: int|null, created?: string, declined?: string|null, ...}
  * @phpstan-type ChallengeProblemRow array{id?: int, challenge_id?: int, tsumego_id?: int, order?: int, ...}
  * @phpstan-type ClassroomAssignmentProblemRow array{id?: int, classroom_assignment_id?: int, set_connection_id?: int, position?: int, ...}
@@ -26,14 +25,15 @@ namespace App\Utility;
  * @phpstan-type PremiumRow array{id?: int, name?: string, ...}
  * @phpstan-type RejectRow array{id?: int, reject_type_id?: int, tsumego_id?: int|null, tag_id?: int|null, tag_name?: string|null, sgf_id?: int|null, user_id?: int, rejected_by_user_id?: int|null, comment?: string|null, created?: string, ...}
  * @phpstan-type RejectTypeRow array{id?: int, name?: string, ...}
+ * @phpstan-type SemeaiTypeRow array{id?: int, name?: string, ...}
  * @phpstan-type SetRow array{id?: int, user_id?: int|null, title?: string|null, title2?: string|null, description?: string|null, image?: string|null, order?: int|null, public?: int, color?: string|null, created?: string|null, included_in_time_mode?: int, board_theme_index?: int|null, deleted?: string|null, ...}
  * @phpstan-type SgfStatusRow array{id?: int, name?: string, ...}
  * @phpstan-type ThemeRow array{id?: int, name?: string, ...}
  * @phpstan-type TimeModeAttemptStatusRow array{id?: int, name?: string, ...}
- * @phpstan-type TsumegoCapturingRaceRow array{tsumego_id?: int, capturing_race_type_id?: int, liberty_count?: int, minimum_liberties?: int|null, maximum_liberties?: int|null, variance?: int, inside_liberties?: int|null, ...}
  * @phpstan-type TsumegoAttemptRow array{id?: int, user_id?: int, tsumego_id?: int, gain?: int, solved?: int, seconds?: int, misplays?: int, user_rating?: int|null, tsumego_rating?: int, created?: string, ...}
  * @phpstan-type TsumegoIssueStatusRow array{id?: int, name?: string, ...}
  * @phpstan-type TsumegoRow array{id?: int, description?: string|null, hint?: string|null, author?: string, author_user_id?: int|null, rating?: float, minimum_rating?: float|null, maximum_rating?: float|null, created?: string|null, alternative_response?: int, pass?: int, deleted?: string|null, ...}
+ * @phpstan-type TsumegoSemeaiRow array{tsumego_id?: int, semeai_type_id?: int, liberty_count?: int, minimum_liberties?: int|null, maximum_liberties?: int|null, variance?: int, inside_liberties?: int|null, ...}
  * @phpstan-type TsumegoVariantTypeRow array{id?: int, name?: string, ...}
  * @phpstan-type UserAvatarRow array{user_id?: int, picture?: string, ...}
  * @phpstan-type UserRoleRow array{id?: int, name?: string, ...}

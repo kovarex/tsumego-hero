@@ -1,6 +1,6 @@
 <?php
 
-use App\Model\Table\CapturingRaceTypeTable;
+use App\Model\Table\SemeaiTypeTable;
 use App\Model\Table\TimeModeCategoryTable;
 use App\Model\Table\TimeModeSessionStatusTable;
 use App\Model\Table\TsumegoVariantTable;
@@ -989,8 +989,8 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 			'user' => ['admin' => true, 'player_color_setting' => UserTable::PLAYER_COLOR_SETTING_ORIGINAL],
 			'tsumego' => [
 				'set_order' => 1,
-				'capturing_race' => [
-					'capturing_race_type_id' => CapturingRaceTypeTable::TYPE_NO_EYES_FEW_INSIDE_LIBERTIES,
+				'semeai' => [
+					'semeai_type_id' => SemeaiTypeTable::TYPE_NO_EYES_FEW_INSIDE_LIBERTIES,
 					'minimum_liberties' => 0,
 					'maximum_liberties' => 2,
 					'liberty_count' => 6,

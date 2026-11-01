@@ -39,7 +39,7 @@ class ContextPreparator
 			'tsumego_comment', 'tsumego_issue', 'admin_activity', 'admin_overview_seen', 'message',
 			'achievement_condition', 'achievement_status', 'set_connection',
 			'tsumego_attempt', 'tsumego_status', 'mistake_training_review', 'mistake_training_day', 'mistake_training_pool',
-			'tsumego_variant', 'tsumego_capturing_race', 'reject', 'user_avatar', 'user', 'time_mode_rank',
+			'tsumego_variant', 'tsumego_semeai', 'reject', 'user_avatar', 'user', 'time_mode_rank',
 			'tsumego', 'set', 'phpbb_users', 'phpbb_topics',
 		] as $table)
 			$pdo->exec("DELETE FROM `$table`");
@@ -252,16 +252,16 @@ class ContextPreparator
 		$tsumego['maximum_rating'] = Util::extract('maximum_rating', $tsumegoInput) ?: null;
 		$tsumego['alternative_response'] = Util::extract('alternative_response', $tsumegoInput) ?? 1;
 		$tsumego['pass'] = Util::extract('pass', $tsumegoInput) ?? 0;
-		$capturingRace = Util::extract('capturing_race', $tsumegoInput);
+		$semeai = Util::extract('semeai', $tsumegoInput);
 		$tsumego['deleted'] = Util::extract('deleted', $tsumegoInput);
 		$tsumego['author'] = Util::extract('author', $tsumegoInput) ?: '';
 		$tsumegoTable = TableRegistry::getTableLocator()->get('Tsumego');
 		$tsumegoID = $tsumegoTable->saveOrFail($tsumegoTable->newEntity($tsumego))->id;
-		// a capturing race quiz: capturing_race_type_id, liberty_count, variance and the optional values
-		if ($capturingRace !== null)
+		// a semeai problem: semeai_type_id, liberty_count, variance and the optional values
+		if ($semeai !== null)
 		{
-			$capturingRaceTable = TableRegistry::getTableLocator()->get('TsumegoCapturingRace');
-			$capturingRaceTable->saveOrFail($capturingRaceTable->newEntity(['tsumego_id' => $tsumegoID] + $capturingRace, ['accessibleFields' => ['tsumego_id' => true]]));
+			$semeaiTable = TableRegistry::getTableLocator()->get('TsumegoSemeai');
+			$semeaiTable->saveOrFail($semeaiTable->newEntity(['tsumego_id' => $tsumegoID] + $semeai, ['accessibleFields' => ['tsumego_id' => true]]));
 		}
 		// the row as the database has it, with the defaults and the time of creation
 		$tsumego = Util::query('SELECT * FROM tsumego WHERE id = ?', [$tsumegoID])[0];
