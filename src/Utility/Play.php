@@ -196,7 +196,8 @@ class Play
 			?? new Sgf(['id' => null, 'sgf' => Constants::$SGF_PLACEHOLDER, 'user_id' => null, 'created' => null]);
 	}
 
-	//The player's own sets for the heart dropdown, and which of them have the problem already
+	//The player's own sets for the heart dropdown, which of them have the problem already, and which
+	//is the default one the heart itself adds to
 	private static function playerSets(int $tsumegoID): array
 	{
 		if (!Auth::isLoggedIn())
@@ -207,7 +208,12 @@ FROM `set` s
 LEFT JOIN set_connection sc ON sc.set_id = s.id AND sc.tsumego_id = ?
 WHERE s.user_id = ?
 ORDER BY s.title", [$tsumegoID, Auth::getUserID()]);
-		return array_map(fn($set) => ['id' => $set['id'], 'title' => $set['title'], 'contains' => $set['tsumego_id'] != null], $sets);
+		$defaultSetID = (int) (Auth::getUser()['default_set_id'] ?? 0);
+		return array_map(fn($set) => [
+			'id' => $set['id'],
+			'title' => $set['title'],
+			'contains' => $set['tsumego_id'] != null,
+			'isDefault' => (int) $set['id'] === $defaultSetID], $sets);
 	}
 
 	/** @return array<string, mixed> */

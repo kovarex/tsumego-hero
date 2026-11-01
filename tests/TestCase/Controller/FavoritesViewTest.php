@@ -43,6 +43,30 @@ class FavoritesViewTest extends IntegrationTestCase
 		$this->assertTrue(in_array(true, array_column($sets, 'contains'), true));
 	}
 
+	//The heart adds to the player's default set whatever its title, so the play page marks that set
+	//by the player's default_set_id
+	public function testPlayPageMarksTheDefaultSetWhateverItsTitle(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'alice'],
+			'tsumego' => ['sgf' => '(;GM[1]FF[4]SZ[19])', 'sets' => [['name' => 'Playable Set', 'num' => 1]]],
+		]);
+		$setTable = $this->fetchTable('Set');
+		$setIDs = [];
+		foreach (['My Problems', 'Favorites'] as $title)
+			$setIDs[$title] = $setTable->saveOrFail($setTable->newEntity([
+				'user_id' => $context->user['id'],
+				'title' => $title,
+				'public' => 0,
+				'order' => Constants::$DEFAULT_SET_ORDER]))->id;
+		$this->fetchTable('User')->updateAll(['default_set_id' => $setIDs['My Problems']], ['id' => $context->user['id']]);
+
+		$this->get('/tsumegos/play/' . $context->tsumegos[0]['id']);
+
+		$sets = array_column(json_decode($this->viewVariable('userSetsJson'), true), 'isDefault', 'title');
+		$this->assertSame(['Favorites' => false, 'My Problems' => true], $sets);
+	}
+
 	public function testHeartFlagFalseWhenInNoSet(): void
 	{
 		$context = new ContextPreparator([
