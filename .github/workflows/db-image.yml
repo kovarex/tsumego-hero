@@ -1,0 +1,69 @@
+name: DB image
+
+# The development database is the MariaDB of production (11.7), which DDEV has no image for.
+# DDEV builds its own dbserver image from the official MariaDB image of the version, so this builds
+# that recipe with ours; its entrypoint and client config are what `ddev mysql`, `export-db`,
+# `import-db` and `snapshot` use. The package has to be public, or `ddev start` needs credentials.
+# Production on a version DDEV ships makes this workflow and dbimage redundant.
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - .github/workflows/db-image.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  # The DDEV release whose dbserver recipe is built, and the server version it runs here.
+  DDEV_VERSION: v1.25.5
+  DB_VERSION: "11.7.2"
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+
+    steps:
+      - name: Fetch DDEV's dbserver recipe
+        uses: actions/checkout@v7
+        with:
+          repository: ddev/ddev
+          ref: ${{ env.DDEV_VERSION }}
+          path: ddev
+          sparse-checkout: containers/ddev-dbserver
+
+      # The arm64 image is built on an amd64 runner, so the steps of the base image's
+      # Dockerfile have to run through emulation.
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v4
+
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Log in to the container registry
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v7
+        with:
+          context: ddev/containers/ddev-dbserver
+          platforms: linux/amd64,linux/arm64
+          push: true
+          # The server version, and the DDEV generation the image belongs to, which DDEV compares
+          # to warn that a pinned image went stale.
+          build-args: |
+            DB_TYPE=mariadb
+            DB_MAJOR_VERSION=11
+            BASE_IMAGE=mariadb
+            DB_PINNED_VERSION=${{ env.DB_VERSION }}
+            DDEV_IMAGE_TAG=${{ env.DDEV_VERSION }}
+          labels: org.opencontainers.image.source=https://github.com/kovarex/tsumego-hero
+          tags: ghcr.io/kovarex/tsumego-hero/mariadb:${{ env.DB_VERSION }}

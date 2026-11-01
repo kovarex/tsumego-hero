@@ -46,12 +46,14 @@ jobs:
 
       # MariaDB, Selenium and Caddy pull and start while the job installs PHP and the packages and builds;
       # the steps that need them wait for them (as service containers they held up the job for 30 s).
+      # The database is the version of production (11.7.2), pinned by digest, so a run meets its
+      # defaults, innodb_snapshot_isolation among them.
       - name: Start the containers in the background
         run: |
           nohup docker run --rm --name mysql \
             -e MARIADB_ROOT_PASSWORD=root -e MARIADB_DATABASE=test \
             -p 3306:3306 \
-            mariadb:10.11 > /tmp/mysql.log 2>&1 &
+            mariadb:11.7.2@sha256:fcc7fcd7114adb5d41f14d116b8aac45f94280d2babfbbb71b4782922ee6d8d4 > /tmp/mysql.log 2>&1 &
           # Firefox 158.0, geckodriver 0.37.1. Pinned, so a new Firefox or Selenium arrives in its own pull request instead of in any run
           nohup docker run --rm --name selenium-firefox \
             -e TZ=Europe/Prague \
@@ -65,11 +67,16 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.4'
-          extensions: mbstring, intl
+          # The extensions the app uses, which composer.json requires and setup-php has to provide:
+          # mbstring and intl for CakePHP, gd for the set images, the avatars and the tsumego images,
+          # exif for the orientation a camera writes into a photo.
+          extensions: mbstring, intl, gd, exif
           # Only master collects coverage, with PCOV: it records only src/ and costs far less than Xdebug.
           coverage: ${{ github.ref == 'refs/heads/master' && 'pcov' || 'none' }}
           # Without opcache's optimizer, as under Xdebug: it merges and drops lines (a run of echos, a jump), and they would drop out of the coverage.
-          ini-values: pcov.directory=${{ github.workspace }}/src, opcache.optimization_level=0
+          # The limits are the ones of the production php.ini, so a page too heavy for production fails here too.
+          # max_execution_time is not among them: phpunit and the built-in server run under the CLI, which forces it to 0.
+          ini-values: pcov.directory=${{ github.workspace }}/src, opcache.optimization_level=0, memory_limit=-1, post_max_size=10M, upload_max_filesize=10M, max_input_vars=1000
 
       # vendor/ itself, so composer install only checks it against the lock (an older one is brought up to date)
       - name: Cache dependencies
@@ -305,7 +312,8 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.4'
-          extensions: mbstring, intl
+          # The same list, as composer install checks composer.json in this job too.
+          extensions: mbstring, intl, gd, exif
           coverage: pcov
 
       # vendor/ itself, so composer install only checks it against the lock (an older one is brought up to date)
@@ -392,7 +400,8 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.4'
-          extensions: mbstring, intl
+          # The same list, as composer install checks composer.json in this job too.
+          extensions: mbstring, intl, gd, exif
 
       # vendor/ itself, so composer install only checks it against the lock (an older one is brought up to date)
       - name: Cache dependencies

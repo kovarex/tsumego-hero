@@ -1,0 +1,7 @@
+# DDEV's dbserver image runs values of its own; production runs the server's stock ones, and a test
+# that depends on them has to see the same here. DDEV's my.cnf includes this directory last.
+[mysqld]
+collation-server         = utf8mb4_uca1400_ai_ci
+character_set_collations = utf8mb4=utf8mb4_uca1400_ai_ci
+init_connect             = ''
+innodb_flush_log_at_trx_commit = 1
