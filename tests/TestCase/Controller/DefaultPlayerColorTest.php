@@ -71,8 +71,8 @@ class DefaultPlayerColorTest extends IntegrationTestCase
 		$this->assertTextContains('Black to play.', $this->view);
 	}
 
-	//A problem marked played_as_black puts the player on black whatever the setting, as its question
-	//names a color, whichever collection it is played from
+	//A problem marked played_as_black, a real game position or fuseki problem whose colors must not
+	//switch, puts the player on black whatever the setting and whichever collection it is played from
 	public function testOriginalForcesBlackInAProblemPlayedAsBlack(): void
 	{
 		Auth::logout();
