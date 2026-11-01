@@ -1,6 +1,5 @@
 <?php
 
-use App\Model\Entity\Set;
 use App\Model\Table\SetTable;
 use App\Model\Table\ChallengeTable;
 use App\Model\Table\ClassroomMemberTable;
@@ -241,7 +240,7 @@ $challengesBadge = $challengesWaiting > 0
 	</div>
 	<?php AccountWidget::render($timeMode, $unreadMessageCount); ?>
 	<div align="left" class="whitebox2">
-		<div id="content"<?php if (isset($set) && $set instanceof Set && $set->id == 60) echo ' style="height:1340px;"'; ?>>
+		<div id="content">
 			<?php
 			echo CookieFlash::render();
 			echo $this->fetch('content');
