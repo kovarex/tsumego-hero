@@ -774,8 +774,8 @@ besogo.makeToolPanel = function (container, editor) {
               updateFavButton(window.userSets.some(x => x.contains));
             });
         } else {
-          // Add to Favorites set
-          let fav = window.userSets && window.userSets.find(s => s.title === "Favorites");
+          // Add to the default set
+          let fav = window.userSets && window.userSets.find(s => s.isDefault);
           if (fav)
             fav.contains = true;
           updateFavButton(true);
@@ -793,10 +793,14 @@ besogo.makeToolPanel = function (container, editor) {
           .then(data => {
             if (!data)
               return;
-            if (fav)
-              fav.contains = true;
+            // The server names the set it added to, which it creates when the player has no default set
+            let added = Array.isArray(window.userSets) && window.userSets.find(s => s.id == data.set_id);
+            if (fav && fav !== added)
+              fav.contains = false;
+            if (added)
+              added.contains = true;
             else if (Array.isArray(window.userSets) && data.set_id)
-              window.userSets.push({ id: data.set_id, title: data.title || "Favorites", contains: true });
+              window.userSets.push({ id: data.set_id, title: data.title, contains: true, isDefault: true });
             updateFavButton(window.userSets.some(x => x.contains));
           })
           .catch(err => {

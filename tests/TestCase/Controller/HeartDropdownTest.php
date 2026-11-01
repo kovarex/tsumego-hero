@@ -110,4 +110,34 @@ class HeartDropdownTest extends IntegrationTestCase
 		$setConnection = $this->fetchTable('SetConnection')->find()->where(['set_id' => $setId, 'tsumego_id' => $tsumegoId])->first();
 		$this->assertNotEmpty($setConnection, 'Checking a set should add the tsumego to it');
 	}
+
+	//The heart adds the problem to the default set, which the player may have renamed, and lights up
+	//without counting another set called Favorites
+	public function testHeartAddsToARenamedDefaultSet(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'alice'],
+			'tsumego' => ['sgf' => '(;GM[1]FF[4]SZ[19])', 'set_order' => 1],
+		]);
+		$setTable = $this->fetchTable('Set');
+		$setIDs = [];
+		foreach (['My Problems', 'Favorites'] as $title)
+			$setIDs[$title] = $setTable->saveOrFail($setTable->newEntity([
+				'user_id' => $context->user['id'],
+				'title' => $title,
+				'public' => 0,
+				'order' => Constants::$DEFAULT_SET_ORDER]))->id;
+		$this->fetchTable('User')->updateAll(['default_set_id' => $setIDs['My Problems']], ['id' => $context->user['id']]);
+		$tsumegoId = $context->tsumegos[0]['id'];
+
+		$browser = Browser::instance();
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		$browser->findById('favButton')->click();
+		$browser->waitUntilCssSelectorExistsWithText('#favButton', '❤️');
+		$browser->waitUntilJs('window.userSets.find(s => s.id == ' . $setIDs['My Problems'] . ').contains === true');
+
+		$this->assertFalse($browser->driver->executeScript('return window.userSets.find(s => s.id == ' . $setIDs['Favorites'] . ').contains;'), 'The set called Favorites is not the default one');
+		$this->assertTrue($this->fetchTable('SetConnection')->exists(['set_id' => $setIDs['My Problems'], 'tsumego_id' => $tsumegoId]));
+		$this->assertFalse($this->fetchTable('SetConnection')->exists(['set_id' => $setIDs['Favorites'], 'tsumego_id' => $tsumegoId]));
+	}
 }
