@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">33% </span>
+                <span class="strong">32.81% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>234/709</span>
+                <span class='fraction'>234/713</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">23.66% </span>
+                <span class="strong">23.39% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>80/338</span>
+                <span class='fraction'>80/342</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">19.27% </span>
+                <span class="strong">19.04% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>16/83</span>
+                <span class='fraction'>16/84</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">33.72% </span>
+                <span class="strong">33.57% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>228/676</span>
+                <span class='fraction'>228/679</span>
             </div>
         
             
@@ -1367,7 +1367,11 @@
 <a name='L1302'></a><a href='#L1302'>1302</a>
 <a name='L1303'></a><a href='#L1303'>1303</a>
 <a name='L1304'></a><a href='#L1304'>1304</a>
-<a name='L1305'></a><a href='#L1305'>1305</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">84x</span>
+<a name='L1305'></a><a href='#L1305'>1305</a>
+<a name='L1306'></a><a href='#L1306'>1306</a>
+<a name='L1307'></a><a href='#L1307'>1307</a>
+<a name='L1308'></a><a href='#L1308'>1308</a>
+<a name='L1309'></a><a href='#L1309'>1309</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">84x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -2160,6 +2164,10 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -3447,8 +3455,8 @@
 <span class="cstat-no" title="statement not covered" >              updateFavButton(window.userSets.some(<span class="fstat-no" title="function not covered" >x </span>=&gt; <span class="cstat-no" title="statement not covered" >x.contains)</span>);</span>
             });
         } else {
-          // Add to Favorites set
-          let fav = <span class="cstat-no" title="statement not covered" >window.userSets &amp;&amp; window.userSets.find(<span class="fstat-no" title="function not covered" >s </span>=&gt; <span class="cstat-no" title="statement not covered" >s.title === "Favorites")</span>;</span>
+          // Add to the default set
+          let fav = <span class="cstat-no" title="statement not covered" >window.userSets &amp;&amp; window.userSets.find(<span class="fstat-no" title="function not covered" >s </span>=&gt; <span class="cstat-no" title="statement not covered" >s.isDefault)</span>;</span>
 <span class="cstat-no" title="statement not covered" >          if (fav)</span>
 <span class="cstat-no" title="statement not covered" >            fav.contains = true;</span>
 <span class="cstat-no" title="statement not covered" >          updateFavButton(true);</span>
@@ -3466,10 +3474,14 @@
           .then(<span class="fstat-no" title="function not covered" >da</span>ta =&gt; {
 <span class="cstat-no" title="statement not covered" >            if (!data)</span>
 <span class="cstat-no" title="statement not covered" >              return;</span>
-<span class="cstat-no" title="statement not covered" >            if (fav)</span>
-<span class="cstat-no" title="statement not covered" >              fav.contains = true;</span>
+            // The server names the set it added to, which it creates when the player has no default set
+            let added = <span class="cstat-no" title="statement not covered" >Array.isArray(window.userSets) &amp;&amp; window.userSets.find(<span class="fstat-no" title="function not covered" >s </span>=&gt; <span class="cstat-no" title="statement not covered" >s.id == data.set_id)</span>;</span>
+<span class="cstat-no" title="statement not covered" >            if (fav &amp;&amp; fav !== added)</span>
+<span class="cstat-no" title="statement not covered" >              fav.contains = false;</span>
+<span class="cstat-no" title="statement not covered" >            if (added)</span>
+<span class="cstat-no" title="statement not covered" >              added.contains = true;</span>
             else <span class="cstat-no" title="statement not covered" >if (Array.isArray(window.userSets) &amp;&amp; data.set_id)</span>
-<span class="cstat-no" title="statement not covered" >              window.userSets.push({ id: data.set_id, title: data.title || "Favorites", contains: true });</span>
+<span class="cstat-no" title="statement not covered" >              window.userSets.push({ id: data.set_id, title: data.title, contains: true, isDefault: true });</span>
 <span class="cstat-no" title="statement not covered" >            updateFavButton(window.userSets.some(<span class="fstat-no" title="function not covered" >x </span>=&gt; <span class="cstat-no" title="statement not covered" >x.contains)</span>);</span>
           })
           .catch(<span class="fstat-no" title="function not covered" >er</span>r =&gt; {
@@ -3982,7 +3994,7 @@
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-11-01T22:32:45.880Z
+                at 2026-11-01T22:37:24.051Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>
