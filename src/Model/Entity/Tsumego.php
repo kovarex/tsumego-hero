@@ -16,6 +16,7 @@ use DateTimeImmutable;
  * @property DateTimeImmutable|null $created
  * @property bool $alternative_response
  * @property bool $pass
+ * @property bool $played_as_black
  * @property DateTimeImmutable|null $deleted
  * @property TsumegoSemeai|null $tsumego_semeai Only when loaded with contain('TsumegoSemeai')
  */
