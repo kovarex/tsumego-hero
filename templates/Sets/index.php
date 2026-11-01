@@ -33,10 +33,8 @@ use App\Utility\TsumegoFilters;
 				</button>
 				<div align="left" id="dropdown-topics" class="dropdown__menu dropdown__menu--filters">
 					<?php
-						for($i=0; $i<count($setTiles); $i++){
-							if($setTiles[$i] != '[continuation]')
-								echo '<div class="dropdown__tile" id="tile-topics'.$i.'">'.h($setTiles[$i]).'</div>';
-						}
+						for($i=0; $i<count($setTiles); $i++)
+							echo '<div class="dropdown__tile" id="tile-topics'.$i.'">'.h($setTiles[$i]).'</div>';
 					?>
 					<div class="dropdown__tile-actions">
 						<div class="dropdown__tile dropdown__tile-actions__select" id="tile-topics-select-all">Select all</div>
@@ -57,10 +55,8 @@ use App\Utility\TsumegoFilters;
 				</button>
 				<div align="left" id="dropdown-difficulty" class="dropdown__menu dropdown__menu--filters">
 					<?php
-						for($i=0; $i<count($difficultyTiles); $i++){
-							if($difficultyTiles[$i] != '[continuation]')
-								echo '<div class="dropdown__tile dropdown__tile--difficulty" id="tile-difficulty'.$i.'" style="--rank-color:'.Rating::rankColorVar($difficultyTiles[$i]).'">'.h($difficultyTiles[$i]).'</div>';
-						}
+						for($i=0; $i<count($difficultyTiles); $i++)
+							echo '<div class="dropdown__tile dropdown__tile--difficulty" id="tile-difficulty'.$i.'" style="--rank-color:'.Rating::rankColorVar($difficultyTiles[$i]).'">'.h($difficultyTiles[$i]).'</div>';
 					?>
 					<div class="difficulty-range">
 						<div class="difficulty-range__scale" id="difficulty-range-scale" title="Click to show everything up to a rank, or drag to pick a range">
@@ -105,10 +101,8 @@ use App\Utility\TsumegoFilters;
 				</button>
 				<div align="left" id="dropdown-tags" class="dropdown__menu dropdown__menu--filters">
 					<?php
-						for($i=0; $i<count($tagTiles); $i++){
-							if($tagTiles[$i] != '[continuation]')
-								echo '<div class="dropdown__tile" id="tile-tags'.$i.'">'.h($tagTiles[$i]).'</div>';
-						}
+						for($i=0; $i<count($tagTiles); $i++)
+							echo '<div class="dropdown__tile" id="tile-tags'.$i.'">'.h($tagTiles[$i]).'</div>';
 					?>
 					<div class="dropdown__tile-actions">
 						<div class="dropdown__tile dropdown__tile-actions__select" id="tile-tags-select-all">Select all</div>

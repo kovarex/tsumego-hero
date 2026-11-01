@@ -84,6 +84,23 @@ class SetsControllerTest extends IntegrationTestCase
 		$this->fetchTable('TsumegoStatus')->saveOrFail($this->fetchTable('TsumegoStatus')->newEntity(['tsumego_id' => $tsumegoId, 'status' => 'S', 'user_id' => $userId]));
 	}
 
+	//Every approved tag is a tag tile on the sets index, whatever its name; an unapproved one is not
+	public function testIndexOffersEveryApprovedTagAsATile(): void
+	{
+		new ContextPreparator(['tsumego' => [
+			'sets' => [['name' => 'tsumego set 1', 'num' => 1]],
+			'tags' => [['name' => 'Tsumego'], ['name' => 'snapback']]]]);
+		$this->fetchTable('Tag')->saveOrFail($this->fetchTable('Tag')->newEntity(['name' => 'unapproved tag', 'description' => '', 'approved' => 0]));
+
+		$this->get('sets');
+
+		$tagTiles = $this->viewVariable('tagTiles');
+		$this->assertContains('Tsumego', $tagTiles);
+		$this->assertContains('snapback', $tagTiles);
+		$this->assertNotContains('unapproved tag', $tagTiles);
+		$this->assertResponseContains('>Tsumego</div>');
+	}
+
 	public function testIndexRankBased(): void
 	{
 		$contextParams = [];

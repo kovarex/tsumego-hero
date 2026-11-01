@@ -492,7 +492,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 		$difficultyTiles = Rating::ranks();
 
 		//tagTiles
-		$tagTiles = $this->fetchTable('Tag')->find()->select(['name'])->where(['approved' => 1, 'name !=' => 'Tsumego'])->all()->extract('name')->toList();
+		$tagTiles = $this->fetchTable('Tag')->find()->select(['name'])->where(['approved' => 1])->all()->extract('name')->toList();
 
 		$setsSelector = new SetsSelector($tsumegoFilters);
 
