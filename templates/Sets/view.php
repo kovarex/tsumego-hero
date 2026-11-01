@@ -35,11 +35,7 @@ use App\Utility\TsumegoFilters;
  * @var TsumegoFilters $tsumegoFilters
  */
 
-$noImage = false;
-if($isFav) $noImage = true;
-if($set->id == 11969 || $set->id == 29156 || $set->id == 31813 || $set->id == 33007
-|| $set->id == 71790 || $set->id == 74761 || $set->id == 81578 || $set->id == 88156)
-	$noImage = true;
+$noImage = $isFav;
 
 ?>
 	<div class="split">
@@ -329,18 +325,8 @@ if ($hasActiveTiles)
 		</div>
 		<div class="set-view-main">
 		<?php
-	if($set->id != 58 && $set->id != 62 && $set->id != 91 && $set->id != 72 && $set->id != 73 && $set->id != 74
-	&& $set->id != 75 && $set->id != 76 && $set->id != 77 && $set->id != 78 && $set->id != 79 && $set->id != 80
-	&& $set->id != 51 && $set->id != 56 && $set->id != 57 && $set->id != 119
-	&& $set->id != 126 && $set->id != 129 && $set->id != 134 && $set->id != 135)
-		$beta2 = false;
-	else $beta2 = true;
-if(Auth::getUserID() == 72)
-	$beta2 = false;
-
-if(!$beta2)
-	foreach ($tsumegoButtons as $tsumegoButton)
-		$tsumegoButton->render();
+foreach ($tsumegoButtons as $tsumegoButton)
+	$tsumegoButton->render();
 
 $totalPages = $tsumegoButtons->getPageCount($tsumegoFilters->collectionSize);
 if ($totalPages > 1):

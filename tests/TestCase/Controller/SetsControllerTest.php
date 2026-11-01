@@ -52,6 +52,25 @@ class SetsControllerTest extends IntegrationTestCase
 		$this->assertTextContains('"id":' . AchievementId::LIFE_DEATH_ELEMENTARY->value, $this->view, 'The layout renders the achievements the set page unlocked');
 	}
 
+	//No set is singled out by its id: the sets the page once treated differently (the old beta2
+	//sets, the themed sets without a cover, set 60 with a fixed height) look like any other set.
+	public function testSetPageTreatsEverySetAlike(): void
+	{
+		$context = new ContextPreparator(['user' => ['name' => 'setViewer']]);
+		foreach ([58, 60, 11969] as $setId)
+		{
+			$this->createFullySolvedSet($setId, $context->user['id']);
+			$this->fetchTable('Set')->updateAll(['image' => 'cover' . $setId . '.png'], ['id' => $setId]);
+
+			$this->get('sets/' . $setId);
+
+			$this->assertResponseOk();
+			$this->assertResponseContains('<div class="problem-nav__number">1</div>', 'Set ' . $setId . ' shows its problems');
+			$this->assertResponseContains('src="/img/cover' . $setId . '.png"', 'Set ' . $setId . ' shows its cover');
+			$this->assertResponseContains('<div id="content">', 'Set ' . $setId . ' has no fixed page height');
+		}
+	}
+
 	//Create a public set with a single problem that the given user solved.
 	private function createFullySolvedSet(int $setId, int $userId): void
 	{
