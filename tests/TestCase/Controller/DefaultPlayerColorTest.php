@@ -5,6 +5,7 @@
 //"Original" means the player color matches the SGF's first move.
 use App\Model\Table\UserTable;
 use App\Utility\Auth;
+use App\Utility\Util;
 
 class DefaultPlayerColorTest extends IntegrationTestCase
 {
@@ -54,7 +55,7 @@ class DefaultPlayerColorTest extends IntegrationTestCase
 		$context = new ContextPreparator([
 			'user' => ['name' => 'smallBoard'],
 			'tsumego' => [
-				'sets' => [['name' => '9x9 Test Set', 'num' => 1]],
+				'sets' => [['name' => 'Small Board Set', 'num' => 1]],
 				'description' => 'White to play.',
 				'sgf' => ['data' => '(;GM[1]FF[4]SZ[9];W[aa])'],
 			],
@@ -68,6 +69,82 @@ class DefaultPlayerColorTest extends IntegrationTestCase
 		$this->assertTextContains('options.playerColor = "black"', $this->view);
 		$this->assertTextContains('options.swapColors = true', $this->view);
 		$this->assertTextContains('Black to play.', $this->view);
+	}
+
+	//A problem marked played_as_black puts the player on black whatever the setting, as its question
+	//names a color, whichever collection it is played from
+	public function testOriginalForcesBlackInAProblemPlayedAsBlack(): void
+	{
+		Auth::logout();
+		$context = new ContextPreparator([
+			'user' => ['name' => 'playedAsBlack'],
+			'tsumego' => [
+				'played_as_black' => 1,
+				'sets' => [['name' => 'First collection', 'num' => 1], ['name' => 'Second collection', 'num' => 1]],
+				'description' => 'White to play.',
+				'sgf' => ['data' => '(;GM[1]FF[4]SZ[19];W[aa])'],
+			],
+		]);
+		$this->login('playedAsBlack');
+		Auth::saveUserField('player_color_setting', UserTable::PLAYER_COLOR_SETTING_ORIGINAL);
+
+		foreach ($context->tsumegos[0]['set-connections'] as $setConnection)
+		{
+			$this->get('/' . $setConnection['id']);
+			$this->assertResponseOk();
+			$this->assertTextContains('options.playerColor = "black"', $this->view);
+			$this->assertTextContains('options.swapColors = true', $this->view);
+			$this->assertTextContains('Black to play.', $this->view);
+		}
+	}
+
+	//The flag is on the problem: a problem without it in one of the sets the old code picked by id
+	//(109 and others) keeps the player's setting
+	public function testAProblemInAnOldPlayedAsBlackSetKeepsTheSetting(): void
+	{
+		Auth::logout();
+		$context = new ContextPreparator([
+			'user' => ['name' => 'oldSet'],
+			'tsumego' => [
+				'sets' => [['name' => 'Old set', 'num' => 1]],
+				'description' => 'White to play.',
+				'sgf' => ['data' => '(;GM[1]FF[4]SZ[19];W[aa])'],
+			],
+		]);
+		$setID = (int) $context->tsumegos[0]['sets'][0]['id'];
+		Util::execute('SET FOREIGN_KEY_CHECKS = 0');
+		Util::execute('UPDATE set_connection SET set_id = 109 WHERE set_id = ?', [$setID]);
+		Util::execute('UPDATE `set` SET id = 109 WHERE id = ?', [$setID]);
+		Util::execute('SET FOREIGN_KEY_CHECKS = 1');
+		$this->login('oldSet');
+		Auth::saveUserField('player_color_setting', UserTable::PLAYER_COLOR_SETTING_ORIGINAL);
+
+		$this->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		$this->assertResponseOk();
+		$this->assertTextContains('options.playerColor = "white"', $this->view);
+		$this->assertTextContains('options.swapColors = false', $this->view);
+	}
+
+	//The board size comes from the problem's SGF: a set title naming a board size changes nothing
+	public function testSetTitleNamingABoardSizeDoesNotForceBlack(): void
+	{
+		Auth::logout();
+		$context = new ContextPreparator([
+			'user' => ['name' => 'titleSize'],
+			'tsumego' => [
+				'sets' => [['name' => 'Life and death 9x9', 'num' => 1]],
+				'description' => 'White to play.',
+				'sgf' => ['data' => '(;GM[1]FF[4]SZ[19];W[aa])'],
+			],
+		]);
+		$this->login('titleSize');
+		Auth::saveUserField('player_color_setting', UserTable::PLAYER_COLOR_SETTING_ORIGINAL);
+
+		$this->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		$this->assertResponseOk();
+
+		$this->assertTextContains('options.playerColor = "white"', $this->view);
+		$this->assertTextContains('options.swapColors = false', $this->view);
 	}
 
 	public function testPlayerColorPreferenceStoresValue(): void

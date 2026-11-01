@@ -112,11 +112,10 @@ class Play
 		}
 		$this->buildNavigation($setConnection, $set, $tsumegoFilters);
 
-		$boardSize = self::boardSizeFromSetTitle($set->title);
 		$this->buildPlayerColor($request, $sgf->sgf, $tsumegoVariant != null
 			|| $semeai !== null
-			|| $boardSize != 19
-			|| in_array($set->id, self::SETS_PLAYED_AS_BLACK));
+			|| SgfParser::boardSize($sgf->sgf) != 19
+			|| $tsumego->played_as_black);
 		//The corner is purely a visual mirror, it never affects solving. "Original" shows the
 		//problem's canonical orientation, which besogo normalizes to top-left.
 		$this->problem['corner'] = Auth::getBoardOrientationSetting() === UserTable::BOARD_ORIENTATION_SETTING_ORIGINAL ? 'top-left' : self::randomCorner();
@@ -179,9 +178,6 @@ class Play
 			$text);
 	}
 
-	//The sets in which the player is always black: problems where the colors matter for the question
-	private const SETS_PLAYED_AS_BLACK = [109, 233, 236, 239, 243, 244, 246, 251, 253];
-
 	private static function tsumegoStatus(int $tsumegoID): string
 	{
 		if (!Auth::isLoggedIn())
@@ -198,16 +194,6 @@ class Play
 			->orderByDesc('id')
 			->first()
 			?? new Sgf(['id' => null, 'sgf' => Constants::$SGF_PLACEHOLDER, 'user_id' => null, 'created' => null]);
-	}
-
-	//A set titled e.g. "Life and death 9x9" is played on that board size, everything else on 19x19
-	private static function boardSizeFromSetTitle(string $title): int
-	{
-		$boardSize = 19;
-		for ($size = 2; $size <= 19; $size++)
-			if (strpos(';' . $title, $size . 'x' . $size))
-				$boardSize = $size;
-		return $boardSize;
 	}
 
 	//The player's own sets for the heart dropdown, which of them have the problem already, and which
