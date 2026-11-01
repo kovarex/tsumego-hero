@@ -183,7 +183,7 @@ class SandboxTest extends IntegrationTestCase
 		$setId = $context->set['id'];
 
 		$tsumegoTable = $this->fetchTable('Tsumego');
-		$tsumegoId = $tsumegoTable->saveOrFail($tsumegoTable->newEntity(['variance' => 100, 'author' => '']))->id;
+		$tsumegoId = $tsumegoTable->saveOrFail($tsumegoTable->newEntity(['author' => '']))->id;
 
 		$this->post('/sets/addTsumego/' . $setId, [
 			'tsumego_id' => $tsumegoId,
