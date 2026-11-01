@@ -6,6 +6,7 @@ use Cake\Http\Exception\ForbiddenException;
 use Exception;
 use App\Attribute\HttpGet;
 use App\Model\Table\AchievementConditionTable;
+use App\Utility\AchievementId;
 use App\Utility\SchedulePublisher;
 use App\Utility\Trash;
 use App\Utility\Util;
@@ -151,6 +152,13 @@ WHERE
 		throw new Exception("Quote couldn't be generated");
 	}
 
+	//The gem achievements and the rank range of the problems each is hidden in
+	private const GEM_RANK_RANGES = [
+		AchievementId::EMERALD->value => 'ddk',
+		AchievementId::SAPPHIRE->value => 'sdk',
+		AchievementId::RUBY->value => 'dan'];
+	private const GEM_DIFFICULTY_NAMES = ['an easy', 'a regular', 'a difficult'];
+
 	private function createDayRecord(): void
 	{
 		$today = date('Y-m-d');
@@ -161,41 +169,24 @@ WHERE
 		$userOfTheDay = self::deduceUserOfTheDay();
 		$currentQuote = self::deduceQuoteToUse();
 
-		$gemRand1 = rand(0, 2);
-		$gemRand2 = rand(0, 2);
-		$gemRand3 = rand(0, 2);
-
+		//Each gem is hidden in an easy, regular or difficult problem of its rank range today, and its
+		//achievement tells which
+		$gemDifficulties = [];
 		$achievementTable = $this->fetchTable('Achievement');
-		$arch1 = $achievementTable->get(111);
-		if ($gemRand1 == 0)
-			$arch1->description = 'Has a chance to trigger once a day on an easy ddk problem.';
-		elseif ($gemRand1 == 1)
-			$arch1->description = 'Has a chance to trigger once a day on a regular ddk problem.';
-		elseif ($gemRand1 == 2)
-			$arch1->description = 'Has a chance to trigger once a day on a difficult ddk problem.';
-		$achievementTable->saveOrFail($arch1);
-		$arch2 = $achievementTable->get(112);
-		if ($gemRand2 == 0)
-			$arch2->description = 'Has a chance to trigger once a day on an easy sdk problem.';
-		elseif ($gemRand2 == 1)
-			$arch2->description = 'Has a chance to trigger once a day on a regular sdk problem.';
-		elseif ($gemRand2 == 2)
-			$arch2->description = 'Has a chance to trigger once a day on a difficult sdk problem.';
-		$achievementTable->saveOrFail($arch2);
-		$arch3 = $achievementTable->get(113);
-		if ($gemRand3 == 0)
-			$arch3->description = 'Has a chance to trigger once a day on an easy dan problem.';
-		elseif ($gemRand3 == 1)
-			$arch3->description = 'Has a chance to trigger once a day on a regular dan problem.';
-		elseif ($gemRand3 == 2)
-			$arch3->description = 'Has a chance to trigger once a day on a difficult dan problem.';
-		$achievementTable->saveOrFail($arch3);
+		foreach (self::GEM_RANK_RANGES as $achievementId => $rankRange)
+		{
+			$difficulty = rand(0, 2);
+			$gemDifficulties[] = $difficulty;
+			$achievement = $achievementTable->get($achievementId);
+			$achievement->description = 'Has a chance to trigger once a day on ' . self::GEM_DIFFICULTY_NAMES[$difficulty] . ' ' . $rankRange . ' problem.';
+			$achievementTable->saveOrFail($achievement);
+		}
 
 		$dayRecordTable->saveOrFail($dayRecordTable->newEntity([
 			'user_id' => $userOfTheDay,
 			'date' => $today,
 			'quote' => $currentQuote,
-			'gems' => $gemRand1 . '-' . $gemRand2 . '-' . $gemRand3,
+			'gems' => implode('-', $gemDifficulties),
 			'emerald_solves' => 0,
 			'sapphire_solves' => 0,
 			'ruby_solves' => 0,
