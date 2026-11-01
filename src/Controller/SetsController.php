@@ -9,7 +9,6 @@ use Cake\Routing\Router;
 use Exception;
 use App\Model\Entity\Set;
 use App\Model\Table\SetTable;
-use App\Model\Table\TsumegoSemeaiTable;
 use App\Model\Table\SetConnectionTable;
 use App\Model\Table\SgfTable;
 use Cake\Http\Exception\ConflictException;
@@ -972,9 +971,8 @@ ORDER BY sc.num ASC", [(int) $id]);
 			{
 				$achievementChecker = new AchievementChecker();
 				// Set achievements belong to the site's collections only, so nothing is recorded for a
-				// collection a player assembled, however complete it is, nor for one with semeai
-				// problems, whose questions are answered with a click.
-				if (SetTable::isOfficial($set) && !TsumegoSemeaiTable::inSet((int) $set->id))
+				// collection a player assembled, however complete it is.
+				if ($set->id != 210 && SetTable::isOfficial($set))
 				{
 					$this->updateAchievementConditions($set->id, $avgTime2, $accuracy);
 					$achievementChecker->checkSetAchievements($set->id, $setRating);
