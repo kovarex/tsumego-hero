@@ -1561,7 +1561,8 @@ use App\Utility\ViteManifest;
 		<?php
 		if ($tsumego->alternative_response != 1)
 			echo 'options.alternativeResponse = false;';
-		if ($semeai !== null)
+		// without a liberty count no question can be made, the problem is shown without one
+		if ($semeai !== null && $semeai->liberty_count !== null)
 		{
 			[$sStatusB, $sStatusW] = Util::calculateLibertyStatus(
 				$multipleChoiceSquares,

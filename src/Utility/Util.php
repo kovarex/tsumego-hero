@@ -374,8 +374,9 @@ class Util
 		?int $minLiberties,
 		?int $maxLiberties,
 		int $libertyCount,
-		int $variance): array
+		?int $variance): array
 	{
+		// no variance, like 0, is the distance between the minimum and the maximum
 		$minLiberties = max(1, $minLiberties);
 		$maxLiberties = $maxLiberties != 0 ? min($maxLiberties, $libertyCount) : $libertyCount;
 
@@ -387,7 +388,7 @@ class Util
 		// the maximum can be unobtainable when there is not enough places where we can remove white liberties
 		$maxWhiteLiberties = max($maxLiberties, $libertyCount - $multipleChoiceTriangles);
 
-		$variance = $variance != 0 ? $variance : $maxLiberties - $minLiberties;
+		$variance = $variance ?: $maxLiberties - $minLiberties;
 
 		// Restrict Black to values for which a valid White value exists
 		$minBlackLiberties = max($minBlackLiberties, $minWhiteLiberties - $variance);

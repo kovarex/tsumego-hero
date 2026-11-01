@@ -1,6 +1,7 @@
 <?php
 
 use App\Model\Table\SemeaiTypeTable;
+use App\Utility\Util;
 
 //A semeai problem is a problem with a row in tsumego_semeai, which the play page loads
 //with the problem
@@ -41,6 +42,35 @@ class SemeaiTest extends IntegrationTestCase
 		$this->assertResponseNotContains('options.multipleChoice = true;');
 		$this->assertResponseNotContains('id="multipleChoiceAlerts"');
 		$this->assertResponseContains('let multipleChoiceSemeaiType = +"";');
+	}
+
+	//The values the old columns of tsumego could leave empty: without a variance (like 0) the groups can
+	//be as far apart as the minimum and maximum allow; without a liberty count no question can be
+	//made, so the problem shows without one (it was a server error before); a type the explanation
+	//doesn't know is shown with its id, as before
+	public function testPlayPageOfSemeaiProblemsWithMissingValues(): void
+	{
+		foreach ([
+			'no variance' => [['semeai_type_id' => SemeaiTypeTable::TYPE_EYE_VS_NO_EYE, 'liberty_count' => 5], true],
+			'no liberty count' => [['semeai_type_id' => SemeaiTypeTable::TYPE_NO_EYES_FEW_INSIDE_LIBERTIES], false],
+			'unknown type' => [['semeai_type_id' => 9, 'liberty_count' => 4, 'variance' => 1], true]] as $case => [$semeai, $hasQuestion])
+		{
+			if ($semeai['semeai_type_id'] === 9)
+				Util::execute("INSERT IGNORE INTO semeai_type (id, name) VALUES (9, 'unknown 9')");
+			$context = new ContextPreparator(['tsumego' => [
+				'set_order' => 1,
+				'sgf' => '(;GM[1]FF[4]SZ[19]TR[aa][ab]SQ[ba][bb];B[cc])',
+				'semeai' => $semeai]]);
+
+			$this->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+
+			$this->assertResponseOk($case);
+			$this->assertResponseContains('let multipleChoiceSemeaiType = ' . $semeai['semeai_type_id'] . '+"";', $case);
+			if ($hasQuestion)
+				$this->assertResponseContains('options.multipleChoice = true;', $case);
+			else
+				$this->assertResponseNotContains('options.multipleChoice = true;', $case);
+		}
 	}
 
 	//The semeai values belong to their problem and go with it
