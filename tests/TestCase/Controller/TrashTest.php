@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\SemeaiTypeTable;
 use App\Model\Table\SetTable;
 use App\Model\Table\AdminActivityTypeTable;
 use App\Model\Table\RejectTable;
@@ -290,7 +291,8 @@ WHERE c.TABLE_SCHEMA = DATABASE() AND c.COLUMN_NAME = 'tsumego_id'");
 					'sets' => [['name' => 'published', 'num' => 1]],
 					'status' => 'S',
 					'comments' => [['message' => 'nice']],
-					'variants' => [['tsumego_variant_type_id' => TsumegoVariantTable::TYPE_MULTIPLE_CHOICE, 'answer1' => 'a']]],
+					'variants' => [['tsumego_variant_type_id' => TsumegoVariantTable::TYPE_MULTIPLE_CHOICE, 'answer1' => 'a']],
+					'semeai' => ['semeai_type_id' => SemeaiTypeTable::TYPE_EYE_VS_NO_EYE, 'liberty_count' => 4, 'variance' => 0]],
 				['deleted' => self::daysAgo(Trash::$RETENTION_DAYS - 1), 'sets' => [['name' => 'published', 'num' => 2]]],
 				['sets' => [['name' => 'published', 'num' => 3]]]]]);
 		$purgedID = $context->tsumegos[0]['id'];
@@ -300,7 +302,7 @@ WHERE c.TABLE_SCHEMA = DATABASE() AND c.COLUMN_NAME = 'tsumego_id'");
 		$this->get('/cron/daily/' . CRON_SECRET);
 
 		$this->assertNull(self::tsumegoRow($purgedID));
-		foreach (['set_connection', 'tsumego_status', 'tsumego_comment', 'tsumego_variant', 'reject'] as $table)
+		foreach (['set_connection', 'tsumego_status', 'tsumego_comment', 'tsumego_variant', 'tsumego_semeai', 'reject'] as $table)
 			$this->assertSame(0, self::rowCount($table, 'tsumego_id = ?', [$purgedID]), $table);
 		$this->assertNotNull(self::tsumegoRow($context->tsumegos[1]['id']), 'Still within the retention');
 		$this->assertNotNull(self::tsumegoRow($context->tsumegos[2]['id']));
