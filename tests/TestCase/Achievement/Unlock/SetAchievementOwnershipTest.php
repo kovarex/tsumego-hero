@@ -41,6 +41,21 @@ class SetAchievementOwnershipTest extends AchievementTestCase
 		$this->assertAchievementUnlocked(AchievementId::SPEED_I);
 	}
 
+	//A collection left out of the set achievements, like a multiple-choice quiz that a quick guess
+	//would finish, neither records the player's time and accuracy nor unlocks anything
+	public function testCollectionLeftOutOfSetAchievementsDoesNotUnlockSpeedAchievement()
+	{
+		$context = new ContextPreparator();
+		$setId = $this->createSetWithTsumegosAndConnections(1200, 100);
+		$this->fetchTable('Set')->updateAll(['included_in_set_achievements' => 0], ['id' => $setId]);
+		$this->saveAverageTime($context->user['id'], $setId, 4);
+
+		$this->get('sets/view/' . $setId);
+
+		$this->assertAchievementNotUnlocked(AchievementId::SPEED_I);
+		$this->assertNull(AchievementConditionTable::value($context->user['id'], AchievementConditionTable::CATEGORY_SET_ACCURACY, $setId));
+	}
+
 	//The average seconds per problem the set page reads back when it scores a finished
 	//collection. A collection without attempts scores 60 seconds, so a stored value below
 	//that survives the page view.

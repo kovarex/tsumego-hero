@@ -972,8 +972,8 @@ ORDER BY sc.num ASC", [(int) $id]);
 			{
 				$achievementChecker = new AchievementChecker();
 				// Set achievements belong to the site's collections only, so nothing is recorded for a
-				// collection a player assembled, however complete it is.
-				if ($set->id != 210 && SetTable::isOfficial($set))
+				// collection a player assembled, however complete it is, or one left out of them.
+				if ($set->included_in_set_achievements && SetTable::isOfficial($set))
 				{
 					$this->updateAchievementConditions($set->id, $avgTime2, $accuracy);
 					$achievementChecker->checkSetAchievements($set->id, $setRating);
