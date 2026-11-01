@@ -85,14 +85,28 @@ jobs:
       - name: Composer install
         run: composer install --prefer-dist --optimize-autoloader --no-interaction
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v6
-
       - name: Setup Node.js
         uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
-          cache: pnpm
+
+      # pnpm in the version of package.json's packageManager, through Node's own corepack
+      # (pnpm/action-setup installed the newest pnpm with npm and then switched it to that version, 6-10 s).
+      - name: Setup pnpm
+        env:
+          COREPACK_ENABLE_DOWNLOAD_PROMPT: 0
+        run: |
+          corepack enable pnpm
+          echo "COREPACK_ENABLE_DOWNLOAD_PROMPT=0" >> "$GITHUB_ENV"
+          echo "store=$(pnpm store path --silent)" >> "$GITHUB_OUTPUT"
+        id: pnpm
+
+      - name: Cache the pnpm store
+        uses: actions/cache@v6
+        with:
+          path: ${{ steps.pnpm.outputs.store }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: ${{ runner.os }}-pnpm-store-
 
       - name: Install pnpm dependencies
         run: pnpm install --frozen-lockfile
@@ -296,14 +310,28 @@ jobs:
       - name: Composer install
         run: composer install --prefer-dist --optimize-autoloader --no-interaction
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v6
-
       - name: Setup Node.js
         uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
-          cache: pnpm
+
+      # pnpm in the version of package.json's packageManager, through Node's own corepack
+      # (pnpm/action-setup installed the newest pnpm with npm and then switched it to that version, 6-10 s).
+      - name: Setup pnpm
+        env:
+          COREPACK_ENABLE_DOWNLOAD_PROMPT: 0
+        run: |
+          corepack enable pnpm
+          echo "COREPACK_ENABLE_DOWNLOAD_PROMPT=0" >> "$GITHUB_ENV"
+          echo "store=$(pnpm store path --silent)" >> "$GITHUB_OUTPUT"
+        id: pnpm
+
+      - name: Cache the pnpm store
+        uses: actions/cache@v6
+        with:
+          path: ${{ steps.pnpm.outputs.store }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: ${{ runner.os }}-pnpm-store-
 
       - name: Install pnpm dependencies
         run: pnpm install --frozen-lockfile
