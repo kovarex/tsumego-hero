@@ -25,7 +25,7 @@ namespace App\Utility;
  * @phpstan-type PremiumRow array{id?: int, name?: string, ...}
  * @phpstan-type RejectRow array{id?: int, reject_type_id?: int, tsumego_id?: int|null, tag_id?: int|null, tag_name?: string|null, sgf_id?: int|null, user_id?: int, rejected_by_user_id?: int|null, comment?: string|null, created?: string, ...}
  * @phpstan-type RejectTypeRow array{id?: int, name?: string, ...}
- * @phpstan-type SetRow array{id?: int, user_id?: int|null, title?: string|null, title2?: string|null, description?: string|null, image?: string|null, order?: int|null, public?: int, color?: string|null, created?: string|null, included_in_time_mode?: int, board_theme_index?: int|null, deleted?: string|null, ...}
+ * @phpstan-type SetRow array{id?: int, user_id?: int|null, title?: string|null, title2?: string|null, description?: string|null, image?: string|null, order?: int|null, public?: int, color?: string|null, created?: string|null, included_in_time_mode?: int, board_theme_index?: int|null, deleted?: string|null, completion_achievement_id?: int|null, ...}
  * @phpstan-type SgfStatusRow array{id?: int, name?: string, ...}
  * @phpstan-type ThemeRow array{id?: int, name?: string, ...}
  * @phpstan-type TimeModeAttemptStatusRow array{id?: int, name?: string, ...}
