@@ -16,6 +16,7 @@ use DateTimeImmutable;
  * @property string|null $color
  * @property DateTimeImmutable|null $created
  * @property bool $included_in_time_mode
+ * @property bool $played_as_black
  * @property int|null $board_theme_index
  * @property DateTimeImmutable|null $deleted
  */

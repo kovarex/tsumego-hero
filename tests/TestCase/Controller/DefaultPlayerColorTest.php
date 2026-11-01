@@ -54,7 +54,7 @@ class DefaultPlayerColorTest extends IntegrationTestCase
 		$context = new ContextPreparator([
 			'user' => ['name' => 'smallBoard'],
 			'tsumego' => [
-				'sets' => [['name' => '9x9 Test Set', 'num' => 1]],
+				'sets' => [['name' => 'Small Board Set', 'num' => 1]],
 				'description' => 'White to play.',
 				'sgf' => ['data' => '(;GM[1]FF[4]SZ[9];W[aa])'],
 			],
@@ -68,6 +68,52 @@ class DefaultPlayerColorTest extends IntegrationTestCase
 		$this->assertTextContains('options.playerColor = "black"', $this->view);
 		$this->assertTextContains('options.swapColors = true', $this->view);
 		$this->assertTextContains('Black to play.', $this->view);
+	}
+
+	//A set marked played_as_black puts the player on black whatever the setting, as its questions
+	//name a color
+	public function testOriginalForcesBlackInASetPlayedAsBlack(): void
+	{
+		Auth::logout();
+		$context = new ContextPreparator([
+			'user' => ['name' => 'playedAsBlack'],
+			'tsumego' => [
+				'sets' => [['name' => 'Played as black', 'num' => 1, 'played_as_black' => 1]],
+				'description' => 'White to play.',
+				'sgf' => ['data' => '(;GM[1]FF[4]SZ[19];W[aa])'],
+			],
+		]);
+		$this->login('playedAsBlack');
+		Auth::saveUserField('player_color_setting', UserTable::PLAYER_COLOR_SETTING_ORIGINAL);
+
+		$this->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		$this->assertResponseOk();
+
+		$this->assertTextContains('options.playerColor = "black"', $this->view);
+		$this->assertTextContains('options.swapColors = true', $this->view);
+		$this->assertTextContains('Black to play.', $this->view);
+	}
+
+	//The board size comes from the problem's SGF: a set title naming a board size changes nothing
+	public function testSetTitleNamingABoardSizeDoesNotForceBlack(): void
+	{
+		Auth::logout();
+		$context = new ContextPreparator([
+			'user' => ['name' => 'titleSize'],
+			'tsumego' => [
+				'sets' => [['name' => 'Life and death 9x9', 'num' => 1]],
+				'description' => 'White to play.',
+				'sgf' => ['data' => '(;GM[1]FF[4]SZ[19];W[aa])'],
+			],
+		]);
+		$this->login('titleSize');
+		Auth::saveUserField('player_color_setting', UserTable::PLAYER_COLOR_SETTING_ORIGINAL);
+
+		$this->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		$this->assertResponseOk();
+
+		$this->assertTextContains('options.playerColor = "white"', $this->view);
+		$this->assertTextContains('options.swapColors = false', $this->view);
 	}
 
 	public function testPlayerColorPreferenceStoresValue(): void

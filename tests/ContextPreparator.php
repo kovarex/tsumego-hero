@@ -537,6 +537,7 @@ class ContextPreparator
 			'included_in_time_mode' => Util::extract('included_in_time_mode', $setInput),
 			'public' => Util::extract('public', $setInput),
 			'board_theme_index' => Util::extract('board_theme_index', $setInput),
+			'played_as_black' => Util::extract('played_as_black', $setInput),
 			'user_id' => Util::extract('user_id', $setInput),
 			'order' => Util::extractWithDefault('order', $setInput, null),
 			'default' => Util::extract('default', $setInput),
@@ -589,6 +590,7 @@ class ContextPreparator
 			$includedInTimeMode = false;
 			$public = 1;
 			$boardThemeIndex = 1;
+			$playedAsBlack = null;
 			$userId = null;
 			$description = null;
 			$deleted = null;
@@ -599,6 +601,7 @@ class ContextPreparator
 			$includedInTimeMode = Util::extract('included_in_time_mode', $input);
 			$public = Util::extractWithDefault('public', $input, true);
 			$boardThemeIndex = Util::extractWithDefault('board_theme_index', $input, null);
+			$playedAsBlack = Util::extractWithDefault('played_as_black', $input, null);
 			$userId = Util::extract('user_id', $input);
 			$order = Util::extractWithDefault('order', $input, null);
 			$isDefault = Util::extract('default', $input) ?: false;
@@ -614,6 +617,8 @@ class ContextPreparator
 			$set['included_in_time_mode'] = is_null($includedInTimeMode) ? true : $includedInTimeMode;
 			$set['public'] = is_null($public) ? true : $public;
 			$set['board_theme_index'] = $boardThemeIndex;
+			if ($playedAsBlack !== null)
+				$set['played_as_black'] = $playedAsBlack;
 			$set['order'] = $order ?: Constants::$DEFAULT_SET_ORDER;
 			if ($description !== null)
 				$set['description'] = $description;
