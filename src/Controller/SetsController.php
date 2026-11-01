@@ -977,16 +977,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 					$this->updateAchievementConditions($set->id, $avgTime2, $accuracy);
 					$achievementChecker->checkSetAchievements($set->id, $setRating);
 				}
-				if ($id == 50 || $id == 52 || $id == 53 || $id == 54)
-					$achievementChecker->setAchievementSpecial('cc1');
-				elseif ($id == 41 || $id == 49 || $id == 65 || $id == 66)
-					$achievementChecker->setAchievementSpecial('cc2');
-				elseif ($id == 186 || $id == 187 || $id == 196 || $id == 203)
-					$achievementChecker->setAchievementSpecial('cc3');
-				elseif ($id == 190 || $id == 193 || $id == 198)
-					$achievementChecker->setAchievementSpecial('1000w1');
-				elseif ($id == 216)
-					$achievementChecker->setAchievementSpecial('1000w2');
+				$achievementChecker->checkCompletionAchievement($set);
 				$achievementChecker->finalize();
 				$this->set('achievementUpdates', $achievementChecker->updated);
 			}

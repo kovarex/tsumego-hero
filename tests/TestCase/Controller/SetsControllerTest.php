@@ -42,7 +42,10 @@ class SetsControllerTest extends IntegrationTestCase
 	{
 		$context = new ContextPreparator(['user' => ['name' => 'setViewer']]);
 		foreach ([50, 52, 53, 54] as $setId)
+		{
 			$this->createFullySolvedSet($setId, $context->user['id']);
+			$this->fetchTable('Set')->updateAll(['completion_achievement_id' => AchievementId::LIFE_DEATH_ELEMENTARY->value], ['id' => $setId]);
+		}
 		$_COOKIE['disable-achievements'] = false;
 
 		$this->get('sets/50');
