@@ -1,6 +1,7 @@
 <?php
 
 use App\Model\Table\AchievementConditionTable;
+use App\Model\Table\SemeaiTypeTable;
 use App\Utility\AchievementId;
 
 //The accuracy and speed achievements belong to the collections the site itself
@@ -41,19 +42,34 @@ class SetAchievementOwnershipTest extends AchievementTestCase
 		$this->assertAchievementUnlocked(AchievementId::SPEED_I);
 	}
 
-	//A collection left out of the set achievements, like a multiple-choice quiz that a quick guess
-	//would finish, neither records the player's time and accuracy nor unlocks anything
-	public function testCollectionLeftOutOfSetAchievementsDoesNotUnlockSpeedAchievement()
+	//A collection with a semeai problem, whose question is answered with a click, neither records the
+	//player's time and accuracy nor unlocks a set achievement
+	public function testCollectionWithASemeaiProblemDoesNotUnlockSpeedAchievement()
 	{
 		$context = new ContextPreparator();
 		$setId = $this->createSetWithTsumegosAndConnections(1200, 100);
-		$this->fetchTable('Set')->updateAll(['included_in_set_achievements' => 0], ['id' => $setId]);
+		$tsumegoId = $this->fetchTable('SetConnection')->find()->where(['set_id' => $setId])->firstOrFail()->tsumego_id;
+		$semeaiTable = $this->fetchTable('TsumegoSemeai');
+		$semeaiTable->saveOrFail($semeaiTable->newEntity(
+			['tsumego_id' => $tsumegoId, 'semeai_type_id' => SemeaiTypeTable::TYPE_EYE_VS_NO_EYE, 'liberty_count' => 4, 'variance' => 0],
+			['accessibleFields' => ['tsumego_id' => true]]));
 		$this->saveAverageTime($context->user['id'], $setId, 4);
 
 		$this->get('sets/view/' . $setId);
 
 		$this->assertAchievementNotUnlocked(AchievementId::SPEED_I);
 		$this->assertNull(AchievementConditionTable::value($context->user['id'], AchievementConditionTable::CATEGORY_SET_ACCURACY, $setId));
+	}
+
+	//The same collection without one records the accuracy, so it is the semeai problem that leaves it out
+	public function testCollectionWithoutASemeaiProblemRecordsTheAccuracy()
+	{
+		$context = new ContextPreparator();
+		$setId = $this->createSetWithTsumegosAndConnections(1200, 100);
+
+		$this->get('sets/view/' . $setId);
+
+		$this->assertNotNull(AchievementConditionTable::value($context->user['id'], AchievementConditionTable::CATEGORY_SET_ACCURACY, $setId));
 	}
 
 	//The average seconds per problem the set page reads back when it scores a finished
