@@ -83,7 +83,9 @@ class Play
 			throw new NotFoundException("Set connection " . $setConnectionID . " wasn't found in the database.");
 		$tsumegoID = (int) $setConnection->tsumego_id;
 		//The set connection's foreign key deletes it with its problem
-		$tsumego = TableRegistry::getTableLocator()->get('Tsumego')->get($tsumegoID);
+		//A semeai problem comes with its values, joined in the same query
+		$tsumego = TableRegistry::getTableLocator()->get('Tsumego')->get($tsumegoID, contain: ['TsumegoSemeai']);
+		$semeai = $tsumego->tsumego_semeai;
 		//A problem in the trash is gone for everyone but the admins, who can take it back
 		if ($tsumego->deleted !== null && !Auth::isAdmin())
 			throw new NotFoundException('Problem not found');
@@ -103,7 +105,7 @@ class Play
 		$solved = TsumegoUtil::isSolvedForCurrentMode($tsumegoStatus);
 
 		$this->problem['og'] = self::openGraph($setConnection, $set, $tsumego, $sgf, $amountOfOtherCollection);
-		if (!empty($tsumego->semeai_type))
+		if ($semeai !== null)
 		{
 			$this->problem['multipleChoiceTriangles'] = count(Util::getFollowingSgfCoordinates($sgf->sgf, strpos($sgf->sgf, 'TR') + 2));
 			$this->problem['multipleChoiceSquares'] = count(Util::getFollowingSgfCoordinates($sgf->sgf, strpos($sgf->sgf, 'SQ') + 2));
@@ -111,7 +113,7 @@ class Play
 		$this->buildNavigation($setConnection, $set, $tsumegoFilters);
 
 		$this->buildPlayerColor($request, $sgf->sgf, $tsumegoVariant != null
-			|| ($tsumego->semeai_type ?? 0) != 0
+			|| $semeai !== null
 			|| SgfParser::boardSize($sgf->sgf) != 19
 			|| $set->played_as_black);
 		//The corner is purely a visual mirror, it never affects solving. "Original" shows the
@@ -158,6 +160,7 @@ class Play
 		$this->problem['sgf'] = $sgf;
 		$this->problem['set'] = $set;
 		$this->problem['tsumego'] = $tsumego;
+		$this->problem['semeai'] = $semeai;
 		$this->problem['tsumegoStatus'] = $tsumegoStatus;
 		$this->problem['tv'] = $tsumegoVariant;
 		$this->problem['setConnection'] = $setConnection;
