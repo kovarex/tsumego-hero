@@ -228,18 +228,16 @@ jobs:
           mkdir -p /tmp/coverage
           # The first six files of shard 2, the order in which master run 41325948703 failed, three times on every shard
           prefix=$(php scripts/test-shard.php 2 4 | head -6)
+          failed=0
           for i in 1 2 3; do
-            echo "::group::shard 2 prefix, round $i"
-            vendor/bin/phpunit --exclude-group apache-only --exclude-group disabled $prefix || { echo "RACE LOOP FAILED in round $i"; exit 1; }
-            echo "::endgroup::"
+            vendor/bin/phpunit --exclude-group apache-only --exclude-group disabled $prefix > loop.out 2>&1 && echo "shard 2 prefix round $i: $(grep -E '^OK' loop.out)" || { failed=$((failed+1)); echo "LOOP FAILURE shard 2 prefix round $i"; grep -A12 '^[0-9]) ' loop.out; }
           done
-          # The challenge test alone, 25 times, on shard 1
-          if [ "${{ matrix.shard }}" = 1 ]; then
-            for i in $(seq 25); do
-              vendor/bin/phpunit --filter testPlayingAChallengeInTheBrowser tests/TestCase/Controller/ChallengesControllerTest.php > loop.out 2>&1 || { cat loop.out; echo "RACE LOOP FAILED in run $i"; exit 1; }
-              echo "challenge test run $i: $(grep -E '^OK' loop.out)"
-            done
-          fi
+          # The challenge test and two other playWithResult tests, 60 times on every shard
+          for i in $(seq 60); do
+            vendor/bin/phpunit --filter 'testPlayingAChallengeInTheBrowser|testUpdateRatingInAccountWidgetOnSolve|testUpdateRatingInAccountWidgetOnMisplay' tests/TestCase/Controller/ChallengesControllerTest.php tests/TestCase/AccountWidgetTest.php > loop.out 2>&1 && echo "run $i: $(grep -E '^OK' loop.out)" || { failed=$((failed+1)); echo "LOOP FAILURE run $i"; grep -A12 '^[0-9]) ' loop.out; }
+          done
+          echo "LOOP SUMMARY shard ${{ matrix.shard }}: $failed failed of 63"
+          test $failed = 0
 
       - name: Run tests
         env:
