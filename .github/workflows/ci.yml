@@ -67,7 +67,7 @@ jobs:
           php-version: '8.4'
           extensions: mbstring, intl
           # Only master collects coverage, with PCOV: it records only src/ and costs far less than Xdebug.
-          coverage: ${{ (github.ref == 'refs/heads/master' || github.head_ref == 'fix-play-with-result-race') && 'pcov' || 'none' }}
+          coverage: ${{ github.ref == 'refs/heads/master' && 'pcov' || 'none' }}
           # Without opcache's optimizer, as under Xdebug: it merges and drops lines (a run of echos, a jump), and they would drop out of the coverage.
           ini-values: pcov.directory=${{ github.workspace }}/src, opcache.optimization_level=0
 
@@ -115,7 +115,7 @@ jobs:
         run: pnpm run test:scripts
 
       - name: Build React app
-        run: ${{ (github.ref == 'refs/heads/master' || github.head_ref == 'fix-play-with-result-race') && 'pnpm run build:coverage' || 'pnpm run build' }}
+        run: ${{ github.ref == 'refs/heads/master' && 'pnpm run build:coverage' || 'pnpm run build' }}
 
       - name: Generate WebP images
         timeout-minutes: 10
@@ -190,7 +190,7 @@ jobs:
         run: |
           mkdir -p /tmp/coverage
           # Use router script to handle CakePHP dispatcher filter routes
-          if [ "${{ github.ref }}" = "refs/heads/master" ] || [ "${{ github.head_ref }}" = "fix-play-with-result-race" ]; then
+          if [ "${{ github.ref }}" = "refs/heads/master" ]; then
             nohup php -d auto_prepend_file="$PWD/.github/ci/coverage-prepend.php" -S 0.0.0.0:8080 -t webroot .github/ci/router.php > server.log 2>&1 &
           else
             nohup php -S 0.0.0.0:8080 -t webroot .github/ci/router.php > server.log 2>&1 &
@@ -216,30 +216,6 @@ jobs:
       - name: Wait for Selenium
         run: |
           timeout 120 sh -c 'until curl -s http://localhost:4444/status | grep -q "\"ready\": *true"; do sleep 0.5; done' || (cat /tmp/selenium.log; exit 1)
-
-      - name: TEMP race loop for playWithResult (remove before merge)
-        env:
-          TZ: UTC
-          SELENIUM_URL: http://localhost:4444
-          SELENIUM_BROWSER: firefox
-          TEST_APP_URL: https://host.docker.internal:8443
-          TEST_ENVIRONMENT: github-ci
-        run: |
-          mkdir -p /tmp/coverage
-          # The first six files of shard 2, the order in which master run 41325948703 failed, three times on every shard
-          prefix=$(php scripts/test-shard.php 2 4 | head -6)
-          for i in 1 2 3; do
-            echo "::group::shard 2 prefix, round $i"
-            vendor/bin/phpunit --exclude-group apache-only --exclude-group disabled $prefix || { echo "RACE LOOP FAILED in round $i"; exit 1; }
-            echo "::endgroup::"
-          done
-          # The challenge test alone, 25 times, on shard 1
-          if [ "${{ matrix.shard }}" = 1 ]; then
-            for i in $(seq 25); do
-              vendor/bin/phpunit --filter testPlayingAChallengeInTheBrowser tests/TestCase/Controller/ChallengesControllerTest.php > loop.out 2>&1 || { cat loop.out; echo "RACE LOOP FAILED in run $i"; exit 1; }
-              echo "challenge test run $i: $(grep -E '^OK' loop.out)"
-            done
-          fi
 
       - name: Run tests
         env:
