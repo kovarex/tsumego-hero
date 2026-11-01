@@ -12,9 +12,6 @@ class Constants
 
 	public static string $SGF_PLACEHOLDER = '(;GM[1]FF[4]CA[UTF-8]ST[2]RU[Japanese]SZ[19]PW[White]PB[Black])';
 
-	// Default tsumego ID for first-time visitors
-	public static int $DEFAULT_TSUMEGO_ID = 15352;
-
 	public static int $DEFAULT_SET_ORDER = 999;
 
 	public static int $DEFAULT_COLLECTION_SIZE = 200;
