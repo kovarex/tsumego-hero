@@ -623,44 +623,39 @@ besogo.makeToolPanel = function (container, editor) {
         previousButtonLink,
         prevButtonId
       );
-      if (setID != 262)
-      {
-        makeButtonText(
-          besogo.boardInverted ? "White wins" : "Black wins",
-          "",
-          function () {
-            displayScoreEstimatingResult("b");
-          },
-          "besogo-se-black"
-        );
+      makeButtonText(
+        besogo.boardInverted ? "White wins" : "Black wins",
+        "",
+        function () {
+          displayScoreEstimatingResult("b");
+        },
+        "besogo-se-black"
+      );
 
-        makeButtonText(
-          besogo.boardInverted ? "Black wins" : "White wins",
-          "",
-          function () {
-            displayScoreEstimatingResult("w");
-          },
-          "besogo-se-white"
-        );
-        makeButtonText(
-          "-",
-          "",
-          function () {
-            displayScoreEstimatingResult("-");
-          },
-          "besogo-se-less"
-        );
-        makeButtonText(
-          "+",
-          "",
-          function () {
-            displayScoreEstimatingResult("+");
-          },
-          "besogo-se-more"
-        );
-      }
-      else
-        makeResultText("", "se-result-text");
+      makeButtonText(
+        besogo.boardInverted ? "Black wins" : "White wins",
+        "",
+        function () {
+          displayScoreEstimatingResult("w");
+        },
+        "besogo-se-white"
+      );
+      makeButtonText(
+        "-",
+        "",
+        function () {
+          displayScoreEstimatingResult("-");
+        },
+        "besogo-se-less"
+      );
+      makeButtonText(
+        "+",
+        "",
+        function () {
+          displayScoreEstimatingResult("+");
+        },
+        "besogo-se-more"
+      );
       makeHyperlinkText("Next", "next problem", nextButtonLink, "besogo-next-button");
     } else {
       toggleBoardLock(true);
@@ -1080,15 +1075,6 @@ besogo.makeToolPanel = function (container, editor) {
     button.text = text;
     container.appendChild(button);
     return button;
-  }
-
-  // Creates result text
-  function makeResultText(text, id) {
-    var p = document.createElement("p");
-    p.id = id;
-    container.appendChild(p);
-    $("#" + id).text(text);
-    return p;
   }
 
   // Creates image button

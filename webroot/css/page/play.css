@@ -428,32 +428,6 @@ h1 {
   border-top-left-radius: 9px;
   cursor: pointer;
 }
-#se-result-text {
-  width:145px;
-  font-size: 17px;
-  font-style: normal;
-  font-variant: normal;
-  font-weight: 800;
-  text-decoration: none;
-  color: var(--color-white);
-  padding: 10px 13px;
-  margin: 5px;
-  text-transform: none;
-  -moz-border-radius-bottomleft: 9px;
-  -moz-border-radius-bottomright: 9px;
-  border-radius-bottomleft: 9px;
-  border-radius-bottomright: 9px;
-  -moz-border-radius-bottomright: 9px;
-  -moz-border-radius-bottomleft: 9px;
-  border-bottom-right-radius: 9px;
-  border-bottom-left-radius: 9px;
-  -moz-border-radius-topright: 9px;
-  -moz-border-radius-topleft: 9px;
-  border-top-right-radius: 9px;
-  border-top-left-radius: 9px;
-  opacity:0;
-  cursor: context-menu;
-}
 #besogo-multipleChoice1:hover,
 #besogo-multipleChoice2:hover,
 #besogo-multipleChoice3:hover,

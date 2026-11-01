@@ -554,7 +554,6 @@ use App\Utility\ViteManifest;
 	var resetButtonLink = "<?php echo $resetLink; ?>";
 	var noSkipNextButtonLink = "<?php echo $noSkipNextLink; ?>";
 	var timeModeTimer = (mode == 3 ? new TimeModeTimer(<?php echo $timeMode->secondsToSolve; ?>) : null);
-	var setID = <?php echo $set->id ?>;
 	var author = <?php echo json_encode($tsumego->author, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>;
 	var userSets = <?php echo $userSetsJson; ?>;
 	var besogoNoLogin = false;
