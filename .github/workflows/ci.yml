@@ -117,6 +117,17 @@ jobs:
       - name: Generate WebP images
         timeout-minutes: 10
         run: |
+          # The same test as scripts/convert-to-webp.sh: an image needs converting when its .webp is missing or older.
+          # Usually none does, and then the ImageMagick image isn't even pulled.
+          outdated=$(find webroot/img \( -name '*.png' -o -name '*.jpg' -o -name '*.jpeg' \) -type f | while IFS= read -r image; do
+            webp="${image%.*}.webp"
+            if [ ! -f "$webp" ] || [ "$webp" -ot "$image" ]; then echo "$image"; fi
+          done)
+          if [ -z "$outdated" ]; then
+            echo "Every image has an up-to-date .webp"
+            exit 0
+          fi
+          echo "To convert:"; echo "$outdated"
           docker run --rm --user "$(id -u):$(id -g)" -e HOME=/tmp \
             -v "$PWD:/w" -w /w \
             minidocks/imagemagick:latest@sha256:9f4bc19b65901db910d249c2c097a3ec37a56ae7df41df9fb1b04b99789822ff \
