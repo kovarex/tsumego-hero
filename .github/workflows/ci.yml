@@ -71,16 +71,13 @@ jobs:
           # Without opcache's optimizer, as under Xdebug: it merges and drops lines (a run of echos, a jump), and they would drop out of the coverage.
           ini-values: pcov.directory=${{ github.workspace }}/src, opcache.optimization_level=0
 
-      - name: Get composer cache directory
-        id: composer-cache
-        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
-
+      # vendor/ itself, so composer install only checks it against the lock (an older one is brought up to date)
       - name: Cache dependencies
         uses: actions/cache@v6
         with:
-          path: ${{ steps.composer-cache.outputs.dir }}
-          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
-          restore-keys: ${{ runner.os }}-composer-
+          path: vendor
+          key: ${{ runner.os }}-php8.4-vendor-${{ hashFiles('composer.lock') }}
+          restore-keys: ${{ runner.os }}-php8.4-vendor-
 
       - name: Composer install
         run: composer install --prefer-dist --optimize-autoloader --no-interaction
@@ -282,16 +279,13 @@ jobs:
           extensions: mbstring, intl
           coverage: pcov
 
-      - name: Get composer cache directory
-        id: composer-cache
-        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
-
+      # vendor/ itself, so composer install only checks it against the lock (an older one is brought up to date)
       - name: Cache dependencies
         uses: actions/cache@v6
         with:
-          path: ${{ steps.composer-cache.outputs.dir }}
-          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
-          restore-keys: ${{ runner.os }}-composer-
+          path: vendor
+          key: ${{ runner.os }}-php8.4-vendor-${{ hashFiles('composer.lock') }}
+          restore-keys: ${{ runner.os }}-php8.4-vendor-
 
       - name: Composer install
         run: composer install --prefer-dist --optimize-autoloader --no-interaction
@@ -357,16 +351,13 @@ jobs:
           php-version: '8.4'
           extensions: mbstring, intl
 
-      - name: Get composer cache directory
-        id: composer-cache
-        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
-
+      # vendor/ itself, so composer install only checks it against the lock (an older one is brought up to date)
       - name: Cache dependencies
         uses: actions/cache@v6
         with:
-          path: ${{ steps.composer-cache.outputs.dir }}
-          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
-          restore-keys: ${{ runner.os }}-composer-
+          path: vendor
+          key: ${{ runner.os }}-php8.4-vendor-${{ hashFiles('composer.lock') }}
+          restore-keys: ${{ runner.os }}-php8.4-vendor-
 
       - name: Composer install
         run: composer install --prefer-dist --optimize-autoloader --no-interaction
