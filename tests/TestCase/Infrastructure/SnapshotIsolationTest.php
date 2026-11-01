@@ -5,9 +5,10 @@ use App\Utility\Util;
 use Cake\Datasource\EntityInterface;
 use Cake\Event\EventInterface;
 
-//MariaDB 11.6.2 and newer fail a transaction with 1020 "Record has changed since last read" when it
-//updates a row another request changed after the transaction read something (forum#35, forum#102).
-//A plain save isn't a transaction (AppTable::save), an explicit transaction still gets the check.
+//A transaction that read a row and then updates it fails with 1020 "Record has changed since last
+//read" once another request changed that row in between, which is how a server with
+//innodb_snapshot_isolation on behaves (forum#35, forum#102). A plain save is not a transaction
+//(AppTable::save), an explicit transaction still gets the check.
 class SnapshotIsolationTest extends AppTestCase
 {
 	private const TABLE = 'snapshot_isolation_test';
@@ -64,9 +65,9 @@ class SnapshotIsolationTest extends AppTestCase
 	//A transaction that read before another request changed the row still fails, so a lost update can't hide.
 	public function testATransactionThatReadBeforeAnotherRequestChangedTheRowStillFails(): void
 	{
-		$version = Util::query('SELECT VERSION() AS version')[0]['version'];
-		if (version_compare(explode('-', $version)[0], '11.6.2', '<'))
-			$this->markTestSkipped('MariaDB ' . $version . ' has no snapshot isolation');
+		$setting = Util::query("SHOW VARIABLES LIKE 'innodb_snapshot_isolation'");
+		if (empty($setting) || $setting[0]['Value'] !== 'ON')
+			$this->markTestSkipped('The server has snapshot isolation off');
 
 		$connection = Util::connection();
 		$connection->beginTransaction();
