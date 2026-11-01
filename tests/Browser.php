@@ -644,8 +644,13 @@ class Browser
 		@file_put_contents($file . '.html', implode("\n\n", $parts));
 	}
 
+	//Ends the problem on the page as solved ('S') or failed ('F'), as the board does.
+	//displayResult() is defined inline before besogo has built the board and its tool panel, and it
+	//uses both (the Next button, the review button), so it waits for the drawn board first: besogo
+	//creates the board and the panels in one go.
 	public function playWithResult(string $result): void
 	{
+		$this->waitForBoard();
 		$this->waitAndDumpOnTimeout(function ($driver) {
 			return $driver->executeScript('return typeof displayResult === "function";');
 		}, 10, 200, 'displayResult function');
@@ -697,17 +702,24 @@ class Browser
 		}
 	}
 
-	//Wait until the board is drawn, and return its size in intersections.
-	//Returns board size, 19 for a 19x19 board
+	//Wait until the board is drawn, and return its size in intersections, 19 for a 19x19 board.
+	//A page whose script failed never draws its board, so the wait stops at the first JavaScript
+	//error the page reports and fails with it, instead of timing out without the cause.
 	public function waitForBoard(): int
 	{
-		return (int) $this->waitAndDumpOnTimeout(function ($driver) {
-			$size = $driver->executeScript('return typeof besogo !== "undefined" && besogo.scaleParameters ? besogo.scaleParameters.boardCoordSize : null;');
+		$size = (int) $this->waitAndDumpOnTimeout(function ($driver) {
+			$size = $driver->executeScript('if ((window.__jsErrors || []).length > 0) return -1;'
+				. 'return typeof besogo !== "undefined" && besogo.scaleParameters ? besogo.scaleParameters.boardCoordSize : null;');
+			if ($size === -1)
+				return -1;
 			if (!$size)
 				return false;
 			$rects = $driver->findElements(WebDriverBy::cssSelector('rect'));
 			return count($rects) >= $size * $size + 1 ? $size : false;
 		}, 10, 200, 'board rendered');
+		if ($size === -1)
+			$this->assertNoErrors();
+		return $size;
 	}
 
 	public function clickBoard($x, $y)
