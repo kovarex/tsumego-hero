@@ -15,7 +15,7 @@ class SgfParser
 	//Parse SGF and return board, stones and info array.
 	public static function process(string $sgf, array $correctMoves = []): SgfBoard
 	{
-		$boardSize = self::detectBoardSize($sgf);
+		$boardSize = self::boardSize($sgf);
 		$sgfArr = str_split($sgf);
 
 		$blackStones = self::getInitialPosition(strpos($sgf, 'AB'), $sgfArr);
@@ -224,7 +224,8 @@ class SgfParser
 		return null;
 	}
 
-	private static function detectBoardSize(string $sgf): int
+	//The board size the SGF names (SZ), 19 when it names none
+	public static function boardSize(string $sgf): int
 	{
 		$boardSizePos = strpos($sgf, 'SZ');
 		if ($boardSizePos === false)

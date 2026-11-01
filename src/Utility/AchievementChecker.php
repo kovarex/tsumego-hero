@@ -2,6 +2,7 @@
 
 namespace App\Utility;
 
+use App\Model\Entity\Set;
 use App\Model\Entity\Achievement;
 use App\Model\Table\AchievementConditionTable;
 use App\Model\Table\AchievementTable;
@@ -352,32 +353,25 @@ WHERE rn = 1;", [Auth::getUserID(), TimeModeSessionStatusTable::SOLVED]);
 		return $this;
 	}
 
-	//The achievements for solving every problem of a group of the site's collections, by the name
-	//setAchievementSpecial() takes: the ids of the collections and the achievement.
-	private const SPECIAL_SET_GROUPS = [
-		'cc1' => [[50, 52, 53, 54], AchievementId::LIFE_DEATH_ELEMENTARY],
-		'cc2' => [[41, 49, 65, 66], AchievementId::LIFE_DEATH_INTERMEDIATE],
-		'cc3' => [[186, 187, 196, 203], AchievementId::LIFE_DEATH_ADVANCED],
-		'1000w1' => [[190, 193, 198], AchievementId::WEIQI_1000_FIRST_HALF],
-		'1000w2' => [[216], AchievementId::WEIQI_1000_SECOND_HALF],
-	];
-
-	//Unlocks the achievement of a group of collections (see SPECIAL_SET_GROUPS) when the player has
-	//solved every problem of its collections that is not in the trash. It is asked each time the
-	//player looks at a finished page of one of them, so once unlocked nothing is counted again, and
-	//the database counts the problems still unsolved instead of loading them all.
-	public function setAchievementSpecial(?string $setGroup = null): AchievementChecker
+	//Unlocks the completion achievement of the given collection (set.completion_achievement_id) when
+	//the player has solved every problem, not in the trash, of the collections not in the trash that
+	//share it. It is asked each time the player looks at a finished page of one of them, so once
+	//unlocked nothing is counted again, and the database counts the problems still unsolved instead
+	//of loading them all.
+	public function checkCompletionAchievement(Set $set): AchievementChecker
 	{
-		if (!isset(self::SPECIAL_SET_GROUPS[$setGroup]))
+		if ($set->completion_achievement_id === null)
 			return $this;
-		[$setIDs, $achievementID] = self::SPECIAL_SET_GROUPS[$setGroup];
+		$achievementID = AchievementId::from($set->completion_achievement_id);
 		if ($this->unlocked($achievementID))
 			return $this;
-		$unsolved = Util::query('SELECT COUNT(*) AS unsolved FROM set_connection sc'
+		$unsolved = Util::query('SELECT COUNT(*) AS unsolved FROM `set`'
+			. ' JOIN set_connection sc ON sc.set_id = `set`.id'
 			. ' JOIN tsumego ON tsumego.id = sc.tsumego_id AND tsumego.deleted IS NULL'
 			. ' LEFT JOIN tsumego_status ON tsumego_status.user_id = ? AND tsumego_status.tsumego_id = sc.tsumego_id'
 			. " AND tsumego_status.status IN ('S', 'W', 'C')"
-			. ' WHERE sc.set_id IN (' . implode(',', $setIDs) . ') AND tsumego_status.id IS NULL', [Auth::getUserID()])[0]['unsolved'];
+			. ' WHERE `set`.completion_achievement_id = ? AND `set`.deleted IS NULL AND tsumego_status.id IS NULL',
+			[Auth::getUserID(), $achievementID->value])[0]['unsolved'];
 		if ((int) $unsolved === 0)
 			$this->gained($achievementID);
 		return $this;

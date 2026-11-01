@@ -906,7 +906,7 @@ class TsumegosControllerTest extends IntegrationTestCase
 		$context = new ContextPreparator([
 			'user' => ['name' => 'descForcedBlack'],
 			'tsumego' => [
-				'sets' => [['name' => '9x9 Test Set', 'num' => 1]],
+				'sets' => [['name' => 'Small Board Set', 'num' => 1]],
 				'description' => 'White to play. Find the way to kill the black group.',
 				'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[9];W[aa];B[ab];W[ba]C[+])',
 			],

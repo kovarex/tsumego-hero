@@ -207,7 +207,6 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 			{
 				$tsumegoTable = $this->fetchTable('Tsumego');
 				$tsumego = $tsumegoTable->saveOrFail($tsumegoTable->newEntity([
-					'variance' => 100,
 					'description' => 'b to kill',
 					'author' => Auth::getUser()['display_name'],
 					'author_user_id' => Auth::getUserID()]));
@@ -493,7 +492,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 		$difficultyTiles = Rating::ranks();
 
 		//tagTiles
-		$tagTiles = $this->fetchTable('Tag')->find()->select(['name'])->where(['approved' => 1, 'name !=' => 'Tsumego'])->all()->extract('name')->toList();
+		$tagTiles = $this->fetchTable('Tag')->find()->select(['name'])->where(['approved' => 1])->all()->extract('name')->toList();
 
 		$setsSelector = new SetsSelector($tsumegoFilters);
 
@@ -978,16 +977,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 					$this->updateAchievementConditions($set->id, $avgTime2, $accuracy);
 					$achievementChecker->checkSetAchievements($set->id, $setRating);
 				}
-				if ($id == 50 || $id == 52 || $id == 53 || $id == 54)
-					$achievementChecker->setAchievementSpecial('cc1');
-				elseif ($id == 41 || $id == 49 || $id == 65 || $id == 66)
-					$achievementChecker->setAchievementSpecial('cc2');
-				elseif ($id == 186 || $id == 187 || $id == 196 || $id == 203)
-					$achievementChecker->setAchievementSpecial('cc3');
-				elseif ($id == 190 || $id == 193 || $id == 198)
-					$achievementChecker->setAchievementSpecial('1000w1');
-				elseif ($id == 216)
-					$achievementChecker->setAchievementSpecial('1000w2');
+				$achievementChecker->checkCompletionAchievement($set);
 				$achievementChecker->finalize();
 				$this->set('achievementUpdates', $achievementChecker->updated);
 			}

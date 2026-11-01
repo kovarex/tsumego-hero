@@ -56,6 +56,7 @@ use App\Utility\ViteManifest;
  * @var array $setConnections
  * @var \App\Model\Entity\Sgf $sgf
  * @var \App\Model\Entity\Tsumego $tsumego
+ * @var \App\Model\Entity\TsumegoSemeai|null $semeai The values of a semeai problem, null for any other problem
  * @var string $tsumegoStatus The status of the problem for the player
  * @var array $tagData
  * @var TimeMode $timeMode
@@ -223,7 +224,7 @@ use App\Utility\ViteManifest;
 	<!-- BOARD -->
 	<div id="target"></div>
 	<div id="targetLockOverlay"></div>
-	<?php if(!is_null($tsumego->semeai_type) && $tsumego->semeai_type != 0 || ($tv!=null && $tv->tsumego_variant_type_id == TsumegoVariantTable::TYPE_MULTIPLE_CHOICE)){ ?>
+	<?php if($semeai !== null || ($tv!=null && $tv->tsumego_variant_type_id == TsumegoVariantTable::TYPE_MULTIPLE_CHOICE)){ ?>
 	<div align="center">
 	<br>
 		<a href="<?php echo $resetLink; ?>" title="reset problem" id="besogo-next-button">Reset</a>
@@ -455,7 +456,7 @@ use App\Utility\ViteManifest;
 		<?php
 	}
 		?>
-	<?php if(!is_null($tsumego->semeai_type) && $tsumego->semeai_type != 0 || $tv!=null&&$tv->tsumego_variant_type_id == TsumegoVariantTable::TYPE_MULTIPLE_CHOICE){ ?>
+	<?php if($semeai !== null || $tv!=null&&$tv->tsumego_variant_type_id == TsumegoVariantTable::TYPE_MULTIPLE_CHOICE){ ?>
 		<label>
 		<input type="checkbox" class="toast__toggle" id="alertCheckbox" autocomplete="off" />
 		<div class="toast" id="multipleChoiceAlerts">
@@ -562,9 +563,9 @@ use App\Utility\ViteManifest;
 	var playerRatingCalculationModifier = <?php echo Constants::$PLAYER_RATING_CALCULATION_MODIFIER; ?>;
 	let multipleChoiceLibertiesB = 0;
 	let multipleChoiceLibertiesW = 0;
-	let multipleChoiceLibertyCount = <?php echo $tsumego->liberty_count; ?>+"";
-	let multipleChoiceSemeaiType = <?php echo $tsumego->semeai_type; ?>+"";
-	let multipleChoiceInsideLiberties = <?php echo $tsumego->inside_liberties; ?>+"";
+	let multipleChoiceLibertyCount = <?php echo $semeai?->liberty_count; ?>+"";
+	let multipleChoiceSemeaiType = <?php echo $semeai?->semeai_type_id; ?>+"";
+	let multipleChoiceInsideLiberties = <?php echo $semeai?->inside_liberties; ?>+"";
 	let hasChosen = false;
 	let enableDownloads = false;
 	let adminCommentOpened = false;
@@ -960,7 +961,7 @@ use App\Utility\ViteManifest;
 		<?php }
 		} ?>
 
-		<?php if(!is_null($tsumego->semeai_type) && $tsumego->semeai_type != 0 || $tv!=null){ ?>
+		<?php if($semeai !== null || $tv!=null){ ?>
 		$("#alertCheckbox").change(function(){
 			$("#multipleChoiceAlerts").fadeOut(500);
 			});
@@ -1560,21 +1561,22 @@ use App\Utility\ViteManifest;
 		<?php
 		if ($tsumego->alternative_response != 1)
 			echo 'options.alternativeResponse = false;';
-		if (!is_null($tsumego->semeai_type) && $tsumego->semeai_type != 0)
+		// without a liberty count no question can be made, the problem is shown without one
+		if ($semeai !== null && $semeai->liberty_count !== null)
 		{
 			[$sStatusB, $sStatusW] = Util::calculateLibertyStatus(
 				$multipleChoiceSquares,
 				$multipleChoiceTriangles,
-				$tsumego->minimum_liberties,
-				$tsumego->maximum_liberties,
-				$tsumego->liberty_count,
-				$tsumego->variance);
+				$semeai->minimum_liberties,
+				$semeai->maximum_liberties,
+				$semeai->liberty_count,
+				$semeai->variance);
 			echo 'options.multipleChoice = true;';
 			echo 'let sStatusB = '.$sStatusB.';';
 			echo 'let sStatusW = '.$sStatusW.';';
 			echo 'multipleChoiceLibertiesB = sStatusB;';
 			echo 'multipleChoiceLibertiesW = sStatusW;';
-			echo 'multipleChoiceLibertyCount = '.$tsumego->liberty_count.';';
+			echo 'multipleChoiceLibertyCount = '.$semeai->liberty_count.';';
 			echo 'let mVariance = '.$multipleChoiceTriangles.';';
 			echo 'let a1 = []; let a2 = [];
 			for(i=0; i<mVariance; i++)

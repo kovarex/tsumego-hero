@@ -83,7 +83,9 @@ class Play
 			throw new NotFoundException("Set connection " . $setConnectionID . " wasn't found in the database.");
 		$tsumegoID = (int) $setConnection->tsumego_id;
 		//The set connection's foreign key deletes it with its problem
-		$tsumego = TableRegistry::getTableLocator()->get('Tsumego')->get($tsumegoID);
+		//A semeai problem comes with its values, joined in the same query
+		$tsumego = TableRegistry::getTableLocator()->get('Tsumego')->get($tsumegoID, contain: ['TsumegoSemeai']);
+		$semeai = $tsumego->tsumego_semeai;
 		//A problem in the trash is gone for everyone but the admins, who can take it back
 		if ($tsumego->deleted !== null && !Auth::isAdmin())
 			throw new NotFoundException('Problem not found');
@@ -103,18 +105,17 @@ class Play
 		$solved = TsumegoUtil::isSolvedForCurrentMode($tsumegoStatus);
 
 		$this->problem['og'] = self::openGraph($setConnection, $set, $tsumego, $sgf, $amountOfOtherCollection);
-		if (!empty($tsumego->semeai_type))
+		if ($semeai !== null)
 		{
 			$this->problem['multipleChoiceTriangles'] = count(Util::getFollowingSgfCoordinates($sgf->sgf, strpos($sgf->sgf, 'TR') + 2));
 			$this->problem['multipleChoiceSquares'] = count(Util::getFollowingSgfCoordinates($sgf->sgf, strpos($sgf->sgf, 'SQ') + 2));
 		}
 		$this->buildNavigation($setConnection, $set, $tsumegoFilters);
 
-		$boardSize = self::boardSizeFromSetTitle($set->title);
 		$this->buildPlayerColor($request, $sgf->sgf, $tsumegoVariant != null
-			|| ($tsumego->semeai_type ?? 0) != 0
-			|| $boardSize != 19
-			|| in_array($set->id, self::SETS_PLAYED_AS_BLACK));
+			|| $semeai !== null
+			|| SgfParser::boardSize($sgf->sgf) != 19
+			|| $tsumego->played_as_black);
 		//The corner is purely a visual mirror, it never affects solving. "Original" shows the
 		//problem's canonical orientation, which besogo normalizes to top-left.
 		$this->problem['corner'] = Auth::getBoardOrientationSetting() === UserTable::BOARD_ORIENTATION_SETTING_ORIGINAL ? 'top-left' : self::randomCorner();
@@ -159,6 +160,7 @@ class Play
 		$this->problem['sgf'] = $sgf;
 		$this->problem['set'] = $set;
 		$this->problem['tsumego'] = $tsumego;
+		$this->problem['semeai'] = $semeai;
 		$this->problem['tsumegoStatus'] = $tsumegoStatus;
 		$this->problem['tv'] = $tsumegoVariant;
 		$this->problem['setConnection'] = $setConnection;
@@ -175,9 +177,6 @@ class Play
 			fn($match) => ['Black' => 'White', 'black' => 'white', 'White' => 'Black', 'white' => 'black'][$match[1]],
 			$text);
 	}
-
-	//The sets in which the player is always black: problems where the colors matter for the question
-	private const SETS_PLAYED_AS_BLACK = [109, 233, 236, 239, 243, 244, 246, 251, 253];
 
 	private static function tsumegoStatus(int $tsumegoID): string
 	{
@@ -197,17 +196,8 @@ class Play
 			?? new Sgf(['id' => null, 'sgf' => Constants::$SGF_PLACEHOLDER, 'user_id' => null, 'created' => null]);
 	}
 
-	//A set titled e.g. "Life and death 9x9" is played on that board size, everything else on 19x19
-	private static function boardSizeFromSetTitle(string $title): int
-	{
-		$boardSize = 19;
-		for ($size = 2; $size <= 19; $size++)
-			if (strpos(';' . $title, $size . 'x' . $size))
-				$boardSize = $size;
-		return $boardSize;
-	}
-
-	//The player's own sets for the heart dropdown, and which of them have the problem already
+	//The player's own sets for the heart dropdown, which of them have the problem already, and which
+	//is the default one the heart itself adds to
 	private static function playerSets(int $tsumegoID): array
 	{
 		if (!Auth::isLoggedIn())
@@ -218,7 +208,12 @@ FROM `set` s
 LEFT JOIN set_connection sc ON sc.set_id = s.id AND sc.tsumego_id = ?
 WHERE s.user_id = ?
 ORDER BY s.title", [$tsumegoID, Auth::getUserID()]);
-		return array_map(fn($set) => ['id' => $set['id'], 'title' => $set['title'], 'contains' => $set['tsumego_id'] != null], $sets);
+		$defaultSetID = (int) (Auth::getUser()['default_set_id'] ?? 0);
+		return array_map(fn($set) => [
+			'id' => $set['id'],
+			'title' => $set['title'],
+			'contains' => $set['tsumego_id'] != null,
+			'isDefault' => (int) $set['id'] === $defaultSetID], $sets);
 	}
 
 	/** @return array<string, mixed> */

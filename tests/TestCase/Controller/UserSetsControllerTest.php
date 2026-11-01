@@ -454,7 +454,7 @@ class UserSetsControllerTest extends IntegrationTestCase
 		$context = new ContextPreparator(['user' => ['name' => 'alice']]);
 		$setId = $this->_createSet('Favorites', $context->user['id'], 0);
 		$tsumegoTable = $this->fetchTable('Tsumego');
-		$tsumegoId = $tsumegoTable->saveOrFail($tsumegoTable->newEntity(['variance' => 100, 'author' => '']))->id;
+		$tsumegoId = $tsumegoTable->saveOrFail($tsumegoTable->newEntity(['author' => '']))->id;
 		$this->login('alice');
 
 		$data = ['tsumego_id' => $tsumegoId];
@@ -772,7 +772,7 @@ class UserSetsControllerTest extends IntegrationTestCase
 		]);
 		$setId = $this->_createSet('Alice Set', $context->user['id'], 0);
 		$tsumegoTable = $this->fetchTable('Tsumego');
-		$tsumegoId = $tsumegoTable->saveOrFail($tsumegoTable->newEntity(['variance' => 100, 'author' => '']))->id;
+		$tsumegoId = $tsumegoTable->saveOrFail($tsumegoTable->newEntity(['author' => '']))->id;
 		$setConnectionTable = $this->fetchTable('SetConnection');
 		$setConnectionTable->saveOrFail($setConnectionTable->newEntity(['set_id' => $setId, 'tsumego_id' => $tsumegoId, 'num' => 1]));
 		$this->login('bob');
