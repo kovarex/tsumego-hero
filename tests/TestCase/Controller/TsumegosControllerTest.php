@@ -57,11 +57,11 @@ class TsumegosControllerTest extends IntegrationTestCase
 		$setConnectionID = $context->tsumegos[0]['set-connections'][0]['id'];
 
 		$this->get('/' . $setConnectionID);
-		$this->assertResponseContains('<a id="showx6" class="selectable-text mr-5 historyLink">History</a>');
+		$this->assertStringContainsString('historyLink', $this->getStringDom()->getElementById('showx6')->getAttribute('class'));
 
 		Util::execute('UPDATE sgf SET user_id = NULL WHERE tsumego_id = ?', [$context->tsumegos[0]['id']]);
 		$this->get('/' . $setConnectionID);
-		$this->assertResponseContains('<a id="showx6" class="selectable-text mr-5 ">History</a>');
+		$this->assertStringNotContainsString('historyLink', $this->getStringDom()->getElementById('showx6')->getAttribute('class'));
 	}
 
 	public function testTheSgfDownloadIsNamedAfterTheCollectionAndTheProblemNumber(): void
@@ -693,10 +693,30 @@ class TsumegosControllerTest extends IntegrationTestCase
 				'variants' => $variants]]);
 	}
 
+	//Posts the problem's edit form as the play page sends it: every field with the problem's own value,
+	//changed by $changes
+	private function postEditForm(int $tsumegoID, array $changes): void
+	{
+		$this->post('tsumegos/edit/' . $tsumegoID, $this->editFormOf($tsumegoID, $changes));
+	}
+
+	private function editFormOf(int $tsumegoID, array $changes): array
+	{
+		$tsumego = $this->fetchTable('Tsumego')->get($tsumegoID);
+		return $changes + [
+			'redirect' => '/tsumegos/play/' . $tsumegoID,
+			'description' => $tsumego->description,
+			'hint' => $tsumego->hint,
+			'rating' => (string) $tsumego->rating,
+			'minimum-rating' => '',
+			'maximum-rating' => '',
+			'author' => $tsumego->author,
+			'pass' => (string) (int) $tsumego->pass];
+	}
+
 	private function postProblemSettings(ContextPreparator $context, ?int $variantType): void
 	{
-		$this->post('tsumegos/settings/' . $context->tsumegos[0]['id'], [
-			'pass' => 0, 'variant_type' => (string) $variantType]);
+		$this->postEditForm($context->tsumegos[0]['id'], ['variant_type' => (string) $variantType]);
 		$this->assertResponseCode(302);
 	}
 
@@ -740,7 +760,7 @@ class TsumegosControllerTest extends IntegrationTestCase
 		$context = $this->prepareSandboxProblem([['tsumego_variant_type_id' => TsumegoVariantTable::TYPE_MULTIPLE_CHOICE, 'answer1' => 'Seki in sente']]);
 		$tsumegoID = $context->tsumegos[0]['id'];
 
-		$this->post('tsumegos/settings/' . $tsumegoID, ['pass' => 1, 'variant_type' => '2']);
+		$this->postEditForm($tsumegoID, ['pass' => 1, 'variant_type' => '2']);
 
 		$this->assertResponseCode(400);
 		$this->assertSame(0, (int) $this->fetchTable('Tsumego')->get($tsumegoID)->pass);
@@ -754,7 +774,7 @@ class TsumegosControllerTest extends IntegrationTestCase
 		$context = $this->prepareSandboxProblem();
 		$tsumegoID = $context->tsumegos[0]['id'];
 
-		$this->post('tsumegos/settings/' . $tsumegoID, ['alternative_response' => 0, 'pass' => 1]);
+		$this->postEditForm($tsumegoID, ['alternative_response' => 0, 'pass' => 1]);
 
 		$this->assertResponseCode(302);
 		$this->assertSame(1, (int) $this->fetchTable('Tsumego')->get($tsumegoID)->pass);
@@ -772,13 +792,12 @@ class TsumegosControllerTest extends IntegrationTestCase
 
 		$browser = Browser::instance();
 		$browser->get($playPath);
-		$browser->clickId('show5');
-		$browser->waitUntilCssSelectorDisplayed('#msg5');
+		$browser->openPlayEditSection();
 		$browser->clickId('pass-on');
 		$browser->clickId('variant-type-multiple-choice');
-		$browser->clickCssSelect('#msg5 input[type="submit"]');
+		$browser->clickId('tsumego-edit-submit');
 		//Back on the problem, which has a multiple choice question to edit now
-		$browser->waitUntilAnyCssSelectorExists(['#showMC']);
+		$browser->waitUntilAnyCssSelectorExists(['#variant-answer1']);
 
 		$this->assertStringEndsWith($playPath, $browser->driver->getCurrentURL());
 		$this->assertSame(1, (int) $this->fetchTable('Tsumego')->get($tsumegoID)->pass);
@@ -789,7 +808,7 @@ class TsumegosControllerTest extends IntegrationTestCase
 	{
 		$context = new ContextPreparator(['tsumego' => 1]);
 
-		$this->post('tsumegos/settings/' . $context->tsumegos[0]['id'], ['pass' => 1]);
+		$this->post('tsumegos/edit/' . $context->tsumegos[0]['id'], ['pass' => 1]);
 
 		$this->assertResponseCode(403);
 	}
@@ -799,7 +818,8 @@ class TsumegosControllerTest extends IntegrationTestCase
 		$context = $this->prepareSandboxProblem([['tsumego_variant_type_id' => TsumegoVariantTable::TYPE_MULTIPLE_CHOICE, 'answer1' => 'Seki in sente']]);
 		$tsumegoID = $context->tsumegos[0]['id'];
 
-		$this->post('tsumegos/variant/' . $tsumegoID, ['answer1' => 'Ko', 'answer2' => 'Seki', 'answer3' => 'Dead', 'answer4' => 'Alive', 'explanation' => 'Look at the eye', 'correct_answer' => 2]);
+		$this->postEditForm($tsumegoID, ['variant_type' => (string) TsumegoVariantTable::TYPE_MULTIPLE_CHOICE,
+			'answer1' => 'Ko', 'answer2' => 'Seki', 'answer3' => 'Dead', 'answer4' => 'Alive', 'explanation' => 'Look at the eye', 'correct_answer' => 2]);
 
 		$this->assertResponseCode(302);
 		$this->assertSame([['answer1' => 'Ko', 'answer2' => 'Seki', 'answer3' => 'Dead', 'answer4' => 'Alive', 'explanation' => 'Look at the eye', 'correct_answer' => 2]],
@@ -807,13 +827,55 @@ class TsumegosControllerTest extends IntegrationTestCase
 				->select(['answer1', 'answer2', 'answer3', 'answer4', 'explanation', 'correct_answer'])->where(['tsumego_id' => $tsumegoID])->disableHydration()->toArray());
 	}
 
-	public function testVariantIsForAdmins(): void
+	//The SGF file goes with the rest of the problem's form: what changed is saved, and the file goes on
+	//to the page that sets up a new version
+	public function testTheEditFormTakesAnSgfFileWithTheOtherChanges(): void
 	{
-		$context = new ContextPreparator(['tsumego' => ['variants' => [['tsumego_variant_type_id' => TsumegoVariantTable::TYPE_MULTIPLE_CHOICE]]]]);
+		$context = $this->prepareSandboxProblem();
+		$tsumegoID = $context->tsumegos[0]['id'];
+		$sgf = '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[cc];B[aa];W[ab];B[ba]C[+])';
+		$file = tempnam(sys_get_temp_dir(), 'sgf');
+		file_put_contents($file, $sgf);
+		$this->postWithUpload('tsumegos/edit/' . $tsumegoID, 'adminUpload',
+			['name' => 'new.sgf', 'tmp_name' => $file, 'error' => UPLOAD_ERR_OK, 'size' => strlen($sgf)],
+			$this->editFormOf($tsumegoID, ['hint' => 'look at the corner', 'set_connection_id' => $context->tsumegos[0]['set-connections'][0]['id'], 'sgf_description' => 'fixed the corner']));
 
-		$this->post('tsumegos/variant/' . $context->tsumegos[0]['id'], ['answer1' => 'Ko']);
+		$this->assertResponseOk();
+		$this->assertSame($sgf, $this->viewVariable('sgf'));
+		$this->assertSame('fixed the corner', $this->viewVariable('description'));
+		$this->assertSame('look at the corner', $this->fetchTable('Tsumego')->get($tsumegoID)->hint);
+	}
 
-		$this->assertResponseCode(403);
+	//The browser sends the file field empty when no file was chosen: the SGF stays as it is
+	public function testTheEditFormWithoutAnSgfFileKeepsTheSgf(): void
+	{
+		$context = $this->prepareSandboxProblem();
+		$tsumegoID = $context->tsumegos[0]['id'];
+		$sgfsBefore = $this->fetchTable('Sgf')->find()->select(['id', 'sgf'])->where(['tsumego_id' => $tsumegoID])->disableHydration()->toArray();
+
+		$this->postWithUpload('tsumegos/edit/' . $tsumegoID, 'adminUpload',
+			['name' => '', 'tmp_name' => '', 'error' => UPLOAD_ERR_NO_FILE, 'size' => 0],
+			$this->editFormOf($tsumegoID, ['hint' => 'look at the corner', 'set_connection_id' => $context->tsumegos[0]['set-connections'][0]['id']]));
+
+		$this->assertResponseCode(302);
+		$this->assertSame('look at the corner', $this->fetchTable('Tsumego')->get($tsumegoID)->hint);
+		$this->assertSame($sgfsBefore, $this->fetchTable('Sgf')->find()->select(['id', 'sgf'])->where(['tsumego_id' => $tsumegoID])->disableHydration()->toArray());
+	}
+
+	//A file that isn't an SGF stops the whole form, so nothing of it is saved
+	public function testTheEditFormWithAnInvalidSgfSavesNothing(): void
+	{
+		$context = $this->prepareSandboxProblem();
+		$tsumegoID = $context->tsumegos[0]['id'];
+		$file = tempnam(sys_get_temp_dir(), 'sgf');
+		file_put_contents($file, 'not an sgf');
+
+		$this->postWithUpload('tsumegos/edit/' . $tsumegoID, 'adminUpload',
+			['name' => 'new.sgf', 'tmp_name' => $file, 'error' => UPLOAD_ERR_OK, 'size' => 10],
+			$this->editFormOf($tsumegoID, ['hint' => 'look at the corner', 'set_connection_id' => $context->tsumegos[0]['set-connections'][0]['id']]));
+
+		$this->assertResponseCode(400);
+		$this->assertNotSame('look at the corner', $this->fetchTable('Tsumego')->get($tsumegoID)->hint);
 	}
 
 	//When the player's color opposes the SGF's first move the board is inverted and

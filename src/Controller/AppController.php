@@ -105,6 +105,19 @@ class AppController extends Controller
 		return $_FILES[$name] ?? null;
 	}
 
+	//Hands a new version of the problem's SGF to the page that sets it up in the browser
+	//(Tsumegos/setup_new_sgf), for an upload of a file or a save of the board editor
+	protected function renderNewSgfSetup(int $setConnectionID, string $sgf, string $description, ?string $sourceSgfID = null, ?string $transformationFromSource = null): void
+	{
+		$this->set('sgf', $sgf);
+		$this->set('setConnectionID', (string) $setConnectionID);
+		// sent by the board editor, see SgfCommentReorientation
+		$this->set('sourceSgfID', $sourceSgfID);
+		$this->set('transformationFromSource', $transformationFromSource);
+		$this->set('description', $description);
+		$this->render('/Tsumegos/setup_new_sgf');
+	}
+
 	//GET, POST and so on.
 	protected function httpMethod(): string
 	{

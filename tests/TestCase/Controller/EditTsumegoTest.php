@@ -47,7 +47,7 @@ class EditTsumegoTest extends IntegrationTestCase
 				'rating' => 666]]]);
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
-		$browser->clickId("modify-description");
+		$browser->openPlayEditSection();
 
 		$browser->clickCssSelect("#" . $testCase['field']);
 		$browser->driver->getKeyboard()->sendKeys([WebDriverKeys::CONTROL, 'a']);
@@ -160,7 +160,7 @@ class EditTsumegoTest extends IntegrationTestCase
 				'maximum_rating' => Rating::getRankMiddleRatingFromReadableRank("15k")]]]);
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
-		$browser->clickId("modify-description");
+		$browser->openPlayEditSection();
 		$this->assertSame($browser->getElements("#rating")[0]->getAttribute("value"), "10k");
 		$this->assertSame($browser->getElements("#minimum-rating")[0]->getAttribute("value"), "5k");
 		$this->assertSame($browser->getElements("#maximum-rating")[0]->getAttribute("value"), "15k");

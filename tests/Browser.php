@@ -288,6 +288,14 @@ class Browser
 		$this->assertNoErrors();
 	}
 
+	//Opens the section of the play page with what an admin edits or a player proposes (Edit /
+	//Propose a change), which starts collapsed
+	public function openPlayEditSection(): void
+	{
+		$this->clickId('editToggle');
+		$this->waitUntilCssSelectorDisplayed('#editSection');
+	}
+
 	// Click an element and accept any confirm() dialog it opens.
 	public function clickIdAndAcceptAlert($id)
 	{

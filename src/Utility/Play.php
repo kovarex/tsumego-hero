@@ -103,7 +103,6 @@ class Play
 			'problem' => [
 				'tsumegoID' => (int) $tsumego->id,
 				'setConnectionID' => (int) $setConnection->id,
-				'setConnectionNum' => (string) $setConnection->num,
 				'status' => $problem['tsumegoStatus'],
 				'solved' => $problem['solved'],
 				'goldenTsumego' => $problem['goldenTsumego'],

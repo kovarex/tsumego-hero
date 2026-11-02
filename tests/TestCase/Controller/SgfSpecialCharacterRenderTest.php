@@ -109,7 +109,7 @@ class SgfSpecialCharacterRenderTest extends IntegrationTestCase
 		]);
 
 		$browser->get('/' . $context->setConnections[0]['id']);
-		$browser->clickId('show4');
+		$browser->openPlayEditSection();
 
 		$browser->driver->executeScript("
 			var content = arguments[0];
@@ -120,10 +120,10 @@ class SgfSpecialCharacterRenderTest extends IntegrationTestCase
 			input.files = dt.files;
 			input.dispatchEvent(new Event('change', { bubbles: true }));
 		", [self::tortureSgf()]);
-		$browser->clickId('admin-upload-submit');
+		$browser->clickId('tsumego-edit-submit');
 
 		// Wait for setup_new_sgf.php to process and redirect back
-		$browser->waitUntilJs('!location.href.includes("/sgf/upload/")');
+		$browser->waitUntilJs('!location.href.includes("/tsumegos/edit/")');
 
 		// Verify the uploaded SGF was saved to the database
 		$sgfs = $this->fetchTable('Sgf')->find()->where(['tsumego_id' => $context->tsumegos[0]['id']])->orderByDesc('id')->toArray();

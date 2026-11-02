@@ -28,14 +28,8 @@
   color: var(--text-softer-color);
 }
 #showx3,
-#showx4,
 #openSgfLink,
-#show4,
-#show5,
-#showx6,
-#showx7,
 #findSimilarProblems,
-#showx8,
 #showx99 {
   display: none;
 }
@@ -80,11 +74,6 @@
   position: relative;
   top: 10px;
   left: 57px;
-}
-#msg2,
-#msg4,
-#msg5 {
-  display: none;
 }
 #msg2x {
   margin: 2px 14px;
@@ -893,4 +882,36 @@ h1 {
 		vertical-align: -2px;
 	}
 }
+}
+
+.play-edit {
+  margin: 8px auto 12px;
+  max-width: 720px;
+  text-align: left;
+}
+.play-edit__choices input[type="radio"],
+.play-edit__choices label {
+  display: inline;
+  width: auto;
+  margin-right: 6px;
+}
+.play-edit__file {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.play-edit__file input[type="file"] {
+  flex: none;
+  width: auto;
+}
+.play-edit__file input[type="text"] {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+}
+.play-edit-toggle--after-solve {
+  display: none;
+}
+.play-edit__part {
+  margin-bottom: 12px;
 }

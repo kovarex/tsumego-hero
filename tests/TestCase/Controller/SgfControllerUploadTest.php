@@ -32,6 +32,7 @@ class SgfControllerUploadTest extends IntegrationTestCase
 	private function saveFromEditor(Browser $browser, ContextPreparator $context, array $buttons = []): void
 	{
 		$browser->get('/' . $context->setConnections[0]['id']);
+		$browser->openPlayEditSection();
 		$browser->clickId('openSgfLink');
 		foreach ($buttons as $button)
 			$browser->find('input[type="button"][value="' . $button . '"]')->click();
@@ -43,7 +44,7 @@ class SgfControllerUploadTest extends IntegrationTestCase
 	//Uploads an SGF file with the admin upload of the play page the browser is on.
 	private function uploadSgfFile(Browser $browser, string $sgf): void
 	{
-		$browser->clickId('show4');
+		$browser->openPlayEditSection();
 		// Set file content via JavaScript (avoids LocalFileDetector issues with geckodriver in Docker)
 		$browser->driver->executeScript("
 			var content = arguments[0];
@@ -54,7 +55,7 @@ class SgfControllerUploadTest extends IntegrationTestCase
 			input.files = dt.files;
 			input.dispatchEvent(new Event('change', { bubbles: true }));
 		", [$sgf]);
-		$browser->clickId('admin-upload-submit');
+		$browser->clickId('tsumego-edit-submit');
 	}
 
 	public function testUploadSgfViaBesogoEditor()
@@ -72,6 +73,7 @@ class SgfControllerUploadTest extends IntegrationTestCase
 		$this->assertEquals(1, $initialSgfCount, 'Should have initial SGF from ContextPreparator');
 
 		$browser->get('/' . $context->setConnections[0]['id']);
+		$browser->openPlayEditSection();
 
 		$openLink = $browser->find('#openSgfLink');
 		$this->assertTrue($openLink->isDisplayed());

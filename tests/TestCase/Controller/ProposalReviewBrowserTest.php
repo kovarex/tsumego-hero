@@ -137,6 +137,7 @@ class ProposalReviewBrowserTest extends IntegrationTestCase
 			'tsumego' => ['sgf' => self::SGF_VERSION_1, 'status' => 'S', 'set_order' => 1]]);
 		$browser = Browser::instance();
 		$browser->get('/' . $context->setConnections[0]['id']);
+		$browser->openPlayEditSection();
 		$browser->clickId('openSgfLink');
 		$browser->waitUntilJs('typeof besogo !== "undefined" && besogo.editor !== null');
 

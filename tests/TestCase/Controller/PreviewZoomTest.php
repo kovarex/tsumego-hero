@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\SetTable;
 
 #[RetryOnBrowserFailure]
 class PreviewZoomTest extends IntegrationTestCase
@@ -12,7 +13,7 @@ class PreviewZoomTest extends IntegrationTestCase
 			'user' => ['rating' => 1000],
 			'tsumego' => ['set_order' => 1, 'status' => 'S']]);
 		$browser = Browser::instance();
-		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		$browser->get(SetTable::url($context->tsumegos[0]['sets'][0]['id']));
 
 		// Toggle exists
 		$this->assertNotNull($browser->find('.preview-zoom-toggle'));
@@ -33,6 +34,17 @@ class PreviewZoomTest extends IntegrationTestCase
 			. 'var c = el.closest(".set-view-main") || document.documentElement;'
 			. 'return c.classList.contains("preview-zoomed")');
 		$this->assertTrue($zoomed);
+	}
+
+	//The play page never shows the boards of its buttons, so it has no toggle; hovering a button still
+	//shows its board
+	public function testThePlayPageHasNoPreviewToggle(): void
+	{
+		$context = new ContextPreparator(['tsumego' => ['set_order' => 1]]);
+		$browser = Browser::instance();
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+
+		$this->assertCount(0, $browser->getElements('.preview-zoom-toggle'));
 	}
 
 	//The solve history keeps its toggle inside the table it switches, so turning previews off there

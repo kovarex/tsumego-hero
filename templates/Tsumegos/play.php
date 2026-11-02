@@ -1,19 +1,15 @@
 <?php
 
-use App\Model\Table\SgfTable;
 use App\Model\Entity\TsumegoVariant;
 use App\Model\Table\TsumegoVariantTable;
 use App\Utility\Auth;
 use App\Utility\Constants;
 use App\Utility\HeroPowers;
 use App\Utility\Play;
-use App\Utility\Rating;
-use App\Utility\Trash;
 use App\Utility\TsumegoButton;
 use App\Utility\TsumegoButtons;
 use App\Utility\TsumegoFilters;
 use App\Utility\TsumegoXPAndRating;
-use App\Utility\Util;
 use App\Utility\ViteManifest;
 
 /**
@@ -104,57 +100,7 @@ use App\Utility\ViteManifest;
 		echo '<a id="descriptionText">' . h($displayDescription) . '</a> ';
 		if (isset($tsumego->hint) && $tsumego->hint != '')
 			echo '<span class="hint italic">(' . h($tsumego->hint) . ')</span>';
-		if(Auth::isAdmin())
-		{ ?>
-		<a class="grey-link" id="modify-description" href="#" onclick="adminCommentOpened = !adminCommentOpened; $('.modify-description-panel').toggle(0);">(Edit)</a>
-		<div class="modify-description-panel" style="display: none;">
-			<form id="tsumego-edit" method="post" action="/tsumegos/edit/<?php echo $tsumego->id; ?>">
-				<input type="hidden" name="tsumego_id" value="<?php echo $tsumego->id; ?>">
-				<input type="hidden" name="redirect" value="<?php echo h(Util::requestUri()); ?>">
-				<input type="hidden" name="color_swapped" value="<?php echo $swapColors ? '1' : '0'; ?>">
-				<table>
-					<tr>
-						<td><label for="description">Description:</label></td>
-						<td>
-							<textarea name="description" id="description" rows="3" style="width: 100%;"><?php echo h($displayDescription); ?></textarea>
-							<br><small style="color: #888;">Describe the problem. <?php echo ($playerColor === 'white') ? 'White' : 'Black'; ?> is to move.</small>
-						</td>
-					</tr>
-					<tr>
-						<td><label for="hint">Hint:</label></td>
-						<td><textarea name="hint" id="hint" rows="1" style="width: 100%;"><?php echo h($tsumego->hint); ?></textarea></td>
-					</tr>
-					<tr>
-						<td><label for="rating">Rating:</label></td>
-						<td><input type="text" name="rating" id="rating" value="<?php echo Rating::getReadableRankFromRatingWhenPossible($tsumego->rating); ?>"></td>
-					</tr>
-					<tr>
-						<td><label for="minimum-rating">Minimum rating:</label></td>
-						<td><input type="text" name="minimum-rating" id="minimum-rating" value="<?php echo Rating::getReadableRankFromRatingWhenPossible($tsumego->minimum_rating); ?>"></td>
-					</tr>
-					<tr>
-						<td><label for="maximum-rating">Maximum rating:</label></td>
-						<td><input type="text" name="maximum-rating" id="maximum-rating" value="<?php echo Rating::getReadableRankFromRatingWhenPossible($tsumego->maximum_rating); ?>"></td>
-					</tr>
-					<tr>
-						<td><label for="author">Author:</label></td>
-						<td><input type="text" name="author" id="author" value="<?php echo h($tsumego->author); ?>"></td>
-					</tr>
-					<?php if (empty($tsumego->deleted))
-					{ ?>
-					<tr>
-						<td><label for="delete">Delete:</label></td>
-						<td>
-							<input type="text" name="delete" id="delete" value="" placeholder="Type delete">
-							<br><small style="color: #888;">Moves the problem to the trash, it can be restored for <?php echo Trash::$RETENTION_DAYS; ?> days.</small>
-						</td>
-					</tr>
-					<?php } ?>
-				</table>
-				<input type="submit" value="submit" id="tsumego-edit-submit">
-			</form>
-		</div>
-		<?php } ?>
+		?>
 		</div>
 		</td>
 	</tr>
@@ -214,22 +160,6 @@ use App\Utility\ViteManifest;
 	<?php } ?>
 	<div align="center">
 	<?php
-
-		{
-			$makeProposal = '';
-			$proposalSentColor = '';
-			if(Auth::isAdmin())
-				$makeProposal = 'Open';
-			elseif (!$hasSgfProposal)
-			{
-				if($isAllowedToContribute)
-					$makeProposal = 'Make Proposal';
-			}
-			else
-			{
-				$makeProposal = 'Proposal sent';
-				$proposalSentColor = 'color:var(--text-softer-color);';
-			}
 		$tagEditorProps = json_encode([
 			'userId' => Auth::getUserID() ? (int) Auth::getUserID() : null,
 			'isAdmin' => Auth::isAdmin(),
@@ -248,103 +178,30 @@ use App\Utility\ViteManifest;
 				'isHint' => (bool) ($row['hint'] ?? false),
 			], $tagData),
 		]);
-		?>
-		<div class="tag-container" align="center">
-			<div
-				data-tag-editor-root
-				data-props="<?php echo htmlspecialchars($tagEditorProps); ?>"
-			></div>
+	?>
+	<div class="tag-container" align="center">
+		<div data-tag-editor-root data-props="<?php echo htmlspecialchars($tagEditorProps); ?>"></div>
+	</div>
+	<br>
+	<?php
+	//Shown on the line of Filters, so it takes no space of its own. To anyone with something in it right
+	//away (an admin, a contributor, a problem in more collections), to the others once the downloads come.
+	$hasDuplicates = count($setConnections) > 1 && Auth::getMode() != Constants::$TIME_MODE;
+	$moreRightAway = Auth::isAdmin() || $isAllowedToContribute || $hasDuplicates;
+	?>
+	<a id="showFilters" class="selectable-text mr-5" data-toggle="msgFilters">Filters<img class="toggle-arrow" src="/img/greyArrow1.png"></a>
+	<a id="editToggle" class="selectable-text<?php echo $moreRightAway ? '' : ' play-edit-toggle--after-solve'; ?>" data-toggle="editSection">More<img class="toggle-arrow" src="/img/greyArrow1.png"></a>
+	<br><br>
+	<div class="filters-outer">
+		<div id="msgFilters" style="display: none;">
+			<div class="active-tiles-container tiles-view"></div>
 		</div>
-		<br>
-		<?php
-			echo '<a id="openSgfLink" href="/editor/?setConnectionID=' . $setConnection->id . '&sgfID=' . $sgf->id . (Auth::isAdmin() ? '' : '&proposal=1') . '" class="selectable-text mr-5" style="' . $proposalSentColor . '">' . $makeProposal . '</a>';
-			echo '<a id="showx3" class="selectable-text mr-5">Download SGF</a>';
-			echo '<a id="findSimilarProblems" class="selectable-text mr-5">Find Similar Problems</a>';
-			echo '<a id="showFilters" class="selectable-text">Filters<img id="greyArrowFilter" src="/img/greyArrow1.png"></a>';
-			echo ' <label class="preview-toggle" title="Toggle board previews"><input type="checkbox" class="preview-zoom-toggle">🔍 Preview</label>';
-			echo '<br><br>';
-			echo '<div class="filters-outer">
-				<div id="msgFilters">
-					<div class="active-tiles-container tiles-view"></div>
-				</div>
-			</div>';
-	}
-		if (count($setConnections) > 1 && Auth::getMode() != Constants::$TIME_MODE)
-		{
-			echo '<div class="duplicateTable">Is duplicate group:<br>';
-			echo implode(', ', array_map(function ($otherSetConnection) {
-				return '<a href="/' . $otherSetConnection['id'] . '">'
-				. $otherSetConnection['title'] . '</a>';
-			}, $setConnections));
-			echo '</div><br>';
-		}
+	</div>
+	<?php
+	echo $this->element('Tsumegos/play_edit', ['hasDuplicates' => $hasDuplicates]);
 	if (Auth::isLoggedIn())
 	{
-		{
-			// the history is worth a look once a person changed the problem, not for an automatic version alone
-			$adHighlight = $sgf->user_id !== null ? 'historyLink' : '';
-
-			if(Auth::isAdmin())
-			{
-				echo '<a id="showx99" class="selectable-text mr-5">Admin-Request Solution</a>';
-				echo '<a id="showx4" class="selectable-text mr-5">Admin-Download</a>';
-				echo '<a id="show4" class="selectable-text mr-5">Admin-Upload<img id="greyArrow4" src="/img/greyArrow1.png"></a>';
-				echo '<a id="showx6" class="selectable-text mr-5 ' . $adHighlight . '">History</a>';
-				echo '<a id="showx8" class="selectable-text mr-5">Rating</a>';
-				echo '<a id="show5" class="selectable-text">Settings<img id="greyArrow5" src="/img/greyArrow1.png"></a>';
-				$checked = fn(bool $isChecked): string => $isChecked ? 'checked="checked"' : '';
-				$variantType = $tv ? (int) $tv->tsumego_variant_type_id : null;
-				echo '<div id="msg4">
-						<br>
-						<form action="/sgf/upload/' . $setConnection->id . '" method="POST" enctype="multipart/form-data">
-							<input id="admin-upload-button" type="file" name="adminUpload" />
-							<input id="admin-upload-description" type="text" name="description" maxlength="' . SgfTable::DESCRIPTION_MAX_LENGTH . '" placeholder="What changed and why (optional)" />
-							<input id="admin-upload-submit" value="Submit" type="submit"/>
-						</form>
-					</div>
-					<div id="msg5">
-						<br>
-						<form action="/tsumegos/settings/' . $tsumego->id . '" method="POST">
-							<table>
-								<tr>
-									<td>Enable passing</td>
-									<td><input type="radio" id="pass-off" name="pass" value="0" ' . $checked($tsumego->pass != 1) . '><label for="pass-off">no</label></td>
-									<td><input type="radio" id="pass-on" name="pass" value="1" ' . $checked($tsumego->pass == 1) . '><label for="pass-on">yes</label></td>
-								</tr>';
-				if($isSandbox)
-					echo '<tr>
-									<td>Question</td>
-									<td><input type="radio" id="variant-type-none" name="variant_type" value="" ' . $checked($variantType === null) . '><label for="variant-type-none">none</label></td>
-									<td><input type="radio" id="variant-type-multiple-choice" name="variant_type" value="' . TsumegoVariantTable::TYPE_MULTIPLE_CHOICE . '" ' . $checked($variantType === TsumegoVariantTable::TYPE_MULTIPLE_CHOICE) . '><label for="variant-type-multiple-choice">multiple choice</label></td>
-								</tr>';
-				echo '</table>
-							<br>
-							<input value="Submit" type="submit"/>
-						</form>
-					</div>
-					<br><br>';
-			if($isSandbox && $tv != null)
-			{
-				echo '<a id="showMC" class="selectable-text selectable-text--inline">Edit multiple choice
-				<img id="greyArrowMC" src="/img/greyArrow1.png"></a><br><br>';
-				echo '<div id="showxMC">';
-				echo '<form action="/tsumegos/variant/' . $tsumego->id . '" method="post">';
-				for ($answer = 1; $answer <= 4; $answer++)
-					echo '<div class="input text"><label for="variant-answer' . $answer . '">Answer ' . $answer . ': </label><input name="answer' . $answer . '" value="' . h($tv->get('answer' . $answer)) . '" placeholder="Answer ' . $answer . '" type="text" id="variant-answer' . $answer . '"></div>';
-				echo '<div class="input textfield"><label for="variant-explanation">Explanation: </label><input name="explanation" value="' . h($tv->explanation) . '" placeholder="Explanation" type="text" id="variant-explanation"></div>';
-				echo '<br>';
-				echo '<label>Correct: </label>';
-				for ($answer = 1; $answer <= 4; $answer++)
-					echo '<input type="radio" name="correct_answer" id="variant-correct-answer' . $answer . '" value="' . $answer . '"' . ($tv->correct_answer == $answer ? ' checked="checked"' : '') . '><label for="variant-correct-answer' . $answer . '">' . $answer . '</label>';
-				echo '<br><br>';
-				echo '<div class="submit"><input type="submit" value="Submit"></div>';
-				echo '</form>';
-				echo '<br><br>';
-				echo '</div>';
-			}
-		}
-		else echo '<br>';
-	} ?>
+		?>
 
 		<table class="sandboxTable" width="62%">
 		<tr>
@@ -430,12 +287,6 @@ use App\Utility\ViteManifest;
 	var heartResetTime = new Date(new Date().setUTCHours(24,0,0,0)).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
 	var countDownDate = new Date();
 	var revelationUseCount = playPage.page.revelationUseCount;
-	var msg2selected = false;
-	var msg2xselected = false;
-	var msg3selected = false;
-	var msg4selected = false;
-	var msg5selected = false;
-	var msgMCselected = false;
 	var clockStart = 0;
 	var bonusSeconds = 0;
 	var timeToFirstClick = null;
@@ -480,11 +331,9 @@ use App\Utility\ViteManifest;
 	let mText = "";
 	let hasChosen = false;
 	let enableDownloads = false;
-	let adminCommentOpened = false;
 	var boardLockValue = 0;
 	let passEnabled = (playPage.problem.pass ? 1 : 0) + "";
 	let besogoRotation = -1;
-	let msgFilterSelected = false;
 	const activeTopicTiles = playPage.page.activeTopicTiles;
 	const activeDifficultyTiles = playPage.page.activeDifficultyTiles;
 	const activeTagTiles = playPage.page.activeTagTiles;
@@ -561,18 +410,14 @@ use App\Utility\ViteManifest;
 		playPage.page.heroPowers.sprint ? enableSprint() : disableSprint();
 		playPage.page.heroPowers.refinement ? enableRefinement() : disableRefinement();
 	}
-	$("#showFilters").click(function(){
-		if(!msgFilterSelected){
-			$("#msgFilters").fadeIn(250);
-			document.getElementById("greyArrowFilter").src = "/img/greyArrow2.png";
-	}else{
-			$("#msgFilters").fadeOut(250);
-			document.getElementById("greyArrowFilter").src = "/img/greyArrow1.png";
-	}
-		msgFilterSelected = !msgFilterSelected;
+	//A link with data-toggle shows and hides the element it names, its arrow points down while it is open
+	$("[data-toggle]").click(function(event){
+		event.preventDefault();
+		let open = this.dataset.open !== "1";
+		this.dataset.open = open ? "1" : "";
+		$("#" + this.dataset.toggle)[open ? "fadeIn" : "fadeOut"](250);
+		$(this).find(".toggle-arrow").attr("src", open ? "/img/greyArrow2.png" : "/img/greyArrow1.png");
 	});
-
-	$("#msgFilters").css("display", "none");
 
 	drawActiveTiles();
 
@@ -708,15 +553,12 @@ use App\Utility\ViteManifest;
 		$(".mode1").css({"padding-top":"8px"});
 		$(".selectable-text").hide();
 		$("#commentSpace").hide();
-		$("#msg1").hide();
 		$("#reviewButton").hide();
 		$("#reviewButton2").hide();
 	}
 	else if (mode == playPage.page.modes.time)
 		$("#account-bar-user > a").css({color:"#ca6658"});
 
-	if (playPage.page.isAdmin)
-		$("#show5").css("display", "inline-block");
 
 	var goldenTsumego = playPage.problem.goldenTsumego;
 	//A problem failed today is locked until the hearts come back, but in the mistake training
@@ -753,75 +595,6 @@ use App\Utility\ViteManifest;
 				window.location = nextButtonLink;
 	});
 
-		$("#show").click(function(){
-			if(!msg2selected){
-				$("#msg2").fadeIn(250);
-				document.getElementById("greyArrow1").src = "/img/greyArrow2.png";
-	}else{
-				$("#msg2").fadeOut(250);
-				document.getElementById("greyArrow1").src = "/img/greyArrow1.png";
-	}
-			msg2selected = !msg2selected;
-			});
-
-		$("#show2").click(function(){
-			if(!msg2xselected){
-				$("#msg2x").fadeIn(250);
-				document.getElementById("greyArrow").src = "/img/greyArrow2.png";
-	}else{
-				$("#msg2x").fadeOut(250);
-				document.getElementById("greyArrow").src = "/img/greyArrow1.png";
-	}
-			msg2xselected = !msg2xselected;
-			});
-
-		$("#msg3").hide();
-		$("#show3").click(function(){
-			if(!msg3selected){
-				$("#msg3").fadeIn(250);
-				document.getElementById("greyArrow2").src = "/img/greyArrow2.png";
-	}else{
-				$("#msg3").fadeOut(250);
-				document.getElementById("greyArrow2").src = "/img/greyArrow1.png";
-	}
-			msg3selected = !msg3selected;
-	});
-
-		$("#show4").click(function(){
-			if(!msg4selected){
-				$("#msg4").fadeIn(250);
-				document.getElementById("greyArrow4").src = "/img/greyArrow2.png";
-	}else{
-				$("#msg4").fadeOut(250);
-				document.getElementById("greyArrow4").src = "/img/greyArrow1.png";
-	}
-			msg4selected = !msg4selected;
-		});
-
-		$("#show5").click(function(){
-			if(!msg5selected){
-				$("#msg5").fadeIn(250);
-				document.getElementById("greyArrow5").src = "/img/greyArrow2.png";
-	}else{
-				$("#msg5").fadeOut(250);
-				document.getElementById("greyArrow5").src = "/img/greyArrow1.png";
-	}
-			msg5selected = !msg5selected;
-		});
-		if (playPage.problem.variant?.type === 'multiple_choice')
-		{
-			$("#showxMC").hide();
-			$("#showMC").click(function(){
-				if(!msgMCselected){
-					$("#showxMC").fadeIn(250);
-					document.getElementById("greyArrowMC").src = "/img/greyArrow2.png";
-	}else{
-					$("#showxMC").fadeOut(250);
-					document.getElementById("greyArrowMC").src = "/img/greyArrow1.png";
-	}
-				msgMCselected = !msgMCselected;
-				});
-		}
 		let solutionRequest = true;
 		if (playPage.problem.solved || playPage.problem.isSandbox)
 		{
@@ -848,9 +621,6 @@ use App\Utility\ViteManifest;
 		$("#showx3").click(function(){
 			jsCreateDownloadFile(playPage.problem.downloadName);
 		});
-		$("#showx4").click(function(){
-			jsCreateDownloadFile(playPage.problem.setConnectionNum);
-		});
 		$("#findSimilarProblems").click(function(){
 			$('.loader-container').css({"display": "flex"});
 			window.location.href = "/tsumegos/duplicatesearch/" + playPage.problem.setConnectionID;
@@ -868,16 +638,7 @@ use App\Utility\ViteManifest;
 		$("#showx3").css("display", "inline-block");
 		$("#findSimilarProblems").css("display", "inline-block");
 		$("#openSgfLink").css("display", "inline-block");
-		if (playPage.page.isAdmin)
-		{
-			$("#showx6").attr("href", "/sgfs/view/" + tsumegoID);
-			$("#showx8").attr("href", "/tsumegos/history/" + playPage.problem.setConnectionID);
-			$("#showx4").css("display", "inline-block");
-			$("#show4").css("display", "inline-block");
-			$("#show5").css("display", "inline-block");
-			$("#showx6").css("display", "inline-block");
-			$("#showx8").css("display", "inline-block");
-		}
+		$(".play-edit-toggle--after-solve").css("display", "inline");
 	}
 
 	function jsCreateDownloadFile(name){
@@ -929,7 +690,7 @@ use App\Utility\ViteManifest;
 	$(document).keydown(function(event){
 		var keycode = (event.keyCode ? event.keyCode : event.which);
 		if(mode!=2){
-			if(!msg2selected && !adminCommentOpened && !besogo.editor.getReviewMode()){
+			if(document.getElementById("editToggle")?.dataset.open !== "1" && !besogo.editor.getReviewMode()){
 				// Don't navigate if focus is on a textarea or text input
 				var activeElement = document.activeElement;
 				var isTextInput = activeElement && (activeElement.tagName === 'TEXTAREA' || (activeElement.tagName === 'INPUT' && activeElement.type === 'text'));
@@ -1480,12 +1241,6 @@ use App\Utility\ViteManifest;
 		$("#targetLockOverlay").css('top', '235px');
 	</script>
 	<style>
-		#msg2,
-		#msg4,
-		#msg5 {
-			display: none;
-	}
-
 	.besogo-panels {
 		display: none;
 		flex-basis: 50%;

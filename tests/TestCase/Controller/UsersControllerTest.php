@@ -475,6 +475,7 @@ class UsersControllerTest extends IntegrationTestCase
 				'status' => 'S']]]);
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		$browser->openPlayEditSection();
 		$browser->clickId('showx8');
 		$this->assertTextContains('Rating history', $browser->driver->getPageSource());
 		$this->assertTextContains('test set', $browser->driver->getPageSource());

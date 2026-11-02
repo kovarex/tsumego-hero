@@ -253,7 +253,7 @@ class PolicyTest extends AppTestCase
 	public function testTsumegoPolicyAllowsOnlyAdmins()
 	{
 		$policy = new TsumegoPolicy();
-		foreach (['canEdit', 'canEditSettings', 'canMergeForm', 'canMergeFinalForm', 'canSetupSgf', 'canSetupSgfStep2', 'canPerformMerge'] as $method)
+		foreach (['canEdit', 'canMergeForm', 'canMergeFinalForm', 'canSetupSgf', 'canSetupSgfStep2', 'canPerformMerge'] as $method)
 		{
 			$this->assertTrue($policy->{$method}($this->identity(true)), $method . ' allows admin');
 			$this->assertFalse($policy->{$method}($this->identity(false)), $method . ' blocks regular user');
