@@ -7,6 +7,11 @@ use Cake\Datasource\ConnectionManager;
 require dirname(__DIR__) . '/vendor/autoload.php';
 require dirname(__DIR__) . '/config/bootstrap.php';
 
+//Cake's ErrorTrap prints a PHP warning, notice or deprecation and lets the test go on, and PHPUnit
+//only puts in its own handler when there is none. Without the trap PHPUnit gets them, and
+//phpunit.xml.dist makes each one fail the run with its message and place.
+restore_error_handler();
+
 $_SERVER['SCRIPT_NAME'] = '/index.php';
 $_SERVER['PHP_SELF'] = '/index.php';
 $_SERVER['REQUEST_URI'] = '/';

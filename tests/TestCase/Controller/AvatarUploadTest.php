@@ -216,15 +216,13 @@ class AvatarUploadTest extends IntegrationTestCase
 
 	private function upload(string $path, string $name = 'avatar.png'): void
 	{
-		$_FILES['avatar'] = [
+		$this->postWithUpload('/users/avatarUpload', 'avatar', [
 			'name' => $name,
 			'type' => 'image/png',
 			'tmp_name' => $path,
 			'error' => UPLOAD_ERR_OK,
 			'size' => filesize($path),
-		];
-		$this->post('/users/avatarUpload');
-		$_FILES = [];
+		]);
 	}
 
 	/** @return array<string, mixed> */
