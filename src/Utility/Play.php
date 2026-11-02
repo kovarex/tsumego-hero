@@ -6,12 +6,14 @@ use App\Model\Entity\Set;
 use App\Model\Entity\SetConnection;
 use App\Model\Entity\Sgf;
 use App\Model\Entity\Tsumego;
+use App\Model\Entity\TsumegoSemeai;
 use App\Model\Table\SgfTable;
 use App\Model\Table\TsumegoStatusTable;
 use App\Model\Table\AdminActivityTypeTable;
 use App\Model\Table\ClassroomAssignmentTable;
 use App\Model\Table\TagConnectionTable;
 use App\Model\Table\TagTable;
+use App\Model\Table\TsumegoVariantTable;
 use App\Model\Table\UserTable;
 use App\Policy\AdminPolicy;
 use App\Policy\BasePolicy;
@@ -42,6 +44,119 @@ class Play
 	public function viewVars(): array
 	{
 		return array_merge($this->page, $this->problem);
+	}
+
+	//What only the route has (its canonical address, its menu item, its links), it wins over what the
+	//problem would show
+	/** @param array<string, mixed> $routeValues */
+	public function addRouteValues(array $routeValues): void
+	{
+		$this->problem = array_merge($this->problem, $routeValues);
+	}
+
+	//The data the play page's script reads, plain values only: what is around any problem ($page) and
+	//the problem itself ($problem). It is what a request for the next problem will return.
+	/** @return array{page: array<string, mixed>, problem: array<string, mixed>} */
+	public function clientData(string $lightDark): array
+	{
+		$problem = $this->problem;
+		$tsumego = $problem['tsumego'];
+		$set = $problem['set'];
+		$setConnection = $problem['setConnection'];
+		$variant = $problem['tv'];
+		$semeai = $problem['semeai'];
+		$tsumegoFilters = $problem['tsumegoFilters'];
+		return [
+			'page' => [
+				'mode' => Auth::getMode(),
+				'modes' => [
+					'level' => Constants::$LEVEL_MODE,
+					'rating' => Constants::$RATING_MODE,
+					'time' => Constants::$TIME_MODE,
+					'mistakeTraining' => Constants::$MISTAKE_TRAINING_MODE],
+				'userID' => Auth::getUserID(),
+				'isAdmin' => Auth::isAdmin(),
+				'canRequestSolution' => AdminPolicy::canRequestSolution(Auth::getIdentity()),
+				'accountBlocked' => $this->page['accountBlocked'],
+				'currentHealth' => Auth::getRemainingHealth(),
+				'maxHealth' => $this->page['maxHealth'],
+				'fullHeart' => $this->page['fullHeart'],
+				'emptyHeart' => $this->page['emptyHeart'],
+				'revelationUseCount' => HeroPowers::remainingRevelationUseCount(),
+				'heroPowers' => Auth::isInMistakeTrainingMode() ? null : HeroPowers::clientData(),
+				'sprintSeconds' => Constants::$SPRINT_SECONDS,
+				'playerRatingCalculationModifier' => Constants::$PLAYER_RATING_CALCULATION_MODIFIER,
+				'secondsAddedPerMovePlayed' => TimeModeUtil::$SECONDS_ADDED_PER_MOVE_PLAYED,
+				'timeModeSecondsToSolve' => $problem['timeMode']->secondsToSolve ?? null,
+				'playOutcome' => [
+					'solvedClean' => PlayOutcome::SolvedClean->value,
+					'solvedAfterMistake' => PlayOutcome::SolvedAfterMistake->value,
+					'failed' => PlayOutcome::Failed->value,
+					'timedOut' => PlayOutcome::TimedOut->value],
+				'mistakeTrainingQueueLink' => MistakeTraining::$QUEUE_LINK,
+				'light' => $lightDark,
+				'boardPanels' => Auth::isAdmin() ? 'tree+control+tool+comment+file' : 'tree+control',
+				//The tiles of the filters the player chose, but those of the filter the collection is chosen by
+				'activeTopicTiles' => $tsumegoFilters->query != 'topics' ? array_values($tsumegoFilters->sets) : [],
+				'activeDifficultyTiles' => $tsumegoFilters->query != 'difficulty' ? array_values($tsumegoFilters->rankFilterLabels()) : [],
+				'activeTagTiles' => $tsumegoFilters->query != 'tags' ? array_values($tsumegoFilters->tags) : []],
+			'problem' => [
+				'tsumegoID' => (int) $tsumego->id,
+				'setConnectionID' => (int) $setConnection->id,
+				'setConnectionNum' => (string) $setConnection->num,
+				'status' => $problem['tsumegoStatus'],
+				'solved' => $problem['solved'],
+				'goldenTsumego' => $problem['goldenTsumego'],
+				'isSandbox' => $problem['isSandbox'],
+				'assignmentReplay' => $problem['assignmentReplay'],
+				//The author plays the problem as an author, also an admin who asked for its solution
+				'authorProblem' => ($tsumego->author_user_id !== null && $tsumego->author_user_id == Auth::getUserID()) || $problem['requestSolution'],
+				'requestSolution' => (bool) $problem['requestSolution'],
+				'previousLink' => $problem['previousLink'] ?? '',
+				'nextLink' => $problem['nextLink'] ?? '',
+				'resetLink' => $problem['resetLink'],
+				'noSkipNextLink' => $problem['noSkipNextLink'] ?? '',
+				'author' => $tsumego->author,
+				'userSets' => $problem['userSets'],
+				'pass' => (bool) $tsumego->pass,
+				'alternativeResponse' => $tsumego->alternative_response == 1,
+				'sgf' => $problem['sgf']->sgf,
+				'downloadName' => str_replace('&', 'and', $set->title) . ' ' . $setConnection->num,
+				'corner' => $problem['corner'],
+				'playerColor' => $problem['playerColor'],
+				'swapColors' => $problem['swapColors'],
+				'board' => $problem['boardSelection'],
+				'xpStatus' => $problem['tsumegoXPAndRating']->clientData(),
+				'semeai' => $semeai === null ? null : [
+					'libertyCount' => $semeai->liberty_count,
+					'semeaiTypeID' => $semeai->semeai_type_id,
+					'insideLiberties' => $semeai->inside_liberties,
+					//The liberties the question is about, without a liberty count no question can be made
+					'question' => $semeai->liberty_count === null ? null : self::semeaiQuestion($semeai, $problem)],
+				'variant' => $variant === null ? null : [
+					'type' => TsumegoVariantTable::BOARD_TYPE_NAMES[$variant->tsumego_variant_type_id],
+					'answers' => array_values($problem['displayAnswers']),
+					'correctAnswer' => (int) $variant->correct_answer,
+					'winner' => $variant->winner,
+					'explanation' => $variant->explanation ?? ''],
+			],
+		];
+	}
+
+	/**
+	 * @param array<string, mixed> $problem
+	 * @return array{libertiesB: int, libertiesW: int, variance: int}
+	 */
+	private static function semeaiQuestion(TsumegoSemeai $semeai, array $problem): array
+	{
+		[$libertiesB, $libertiesW] = Util::calculateLibertyStatus(
+			$problem['multipleChoiceSquares'],
+			$problem['multipleChoiceTriangles'],
+			$semeai->minimum_liberties,
+			$semeai->maximum_liberties,
+			$semeai->liberty_count,
+			$semeai->variance);
+		return ['libertiesB' => $libertiesB, 'libertiesW' => $libertiesW, 'variance' => $problem['multipleChoiceTriangles']];
 	}
 
 	/** @var array<string, mixed> */
@@ -141,7 +256,7 @@ class Play
 
 		$this->problem['isAllowedToTag'] = Auth::isLoggedIn() && TagConnectionPolicy::canAdd(Auth::getIdentity(), $tsumego);
 		$this->problem['tagData'] = TagTable::getForTsumego($tsumegoID);
-		$this->problem['userSetsJson'] = json_encode(self::playerSets($tsumegoID));
+		$this->problem['userSets'] = self::playerSets($tsumegoID);
 		$this->problem['hasSgfProposal'] = TableRegistry::getTableLocator()->get('Sgf')->exists([
 			'tsumego_id' => $tsumegoID,
 			'user_id' => Auth::getUserID(),

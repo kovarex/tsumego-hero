@@ -2,74 +2,48 @@
 
 use App\Model\Table\SgfTable;
 use App\Model\Entity\TsumegoVariant;
-use App\Model\Table\ClassroomAssignmentTable;
 use App\Model\Table\TsumegoVariantTable;
 use App\Utility\Auth;
 use App\Utility\Constants;
 use App\Utility\HeroPowers;
-use App\Utility\MistakeTraining;
 use App\Utility\Play;
-use App\Utility\PlayOutcome;
 use App\Utility\Rating;
 use App\Utility\TimeMode;
-use App\Utility\TimeModeUtil;
 use App\Utility\Trash;
 use App\Utility\TsumegoButton;
 use App\Utility\TsumegoButtons;
 use App\Utility\TsumegoFilters;
-use App\Utility\TsumegoUtil;
 use App\Utility\TsumegoXPAndRating;
 use App\Utility\Util;
 use App\Utility\ViteManifest;
 
 /**
  * @var \App\View\AppView $this
- * @var bool $accountBlocked
- * @var int $amountOfOtherCollection
- * @var array $boardSelection
  * @var string $playerColor 'black' or 'white'
- * @var string $corner
  * @var bool $swapColors
- * @var float|int|string|null $difficulty
- * @var string $emptyHeart
- * @var string $fullHeart
- * @var bool $goldenTsumego
  * @var bool $hasSgfProposal
  * @var bool $isAllowedToContribute
  * @var bool $isAllowedToTag
  * @var bool $canAddMoreTags
- * @var array|null $classroomAssignment Set by the route of a class assignment, which is the row of buttons
- * @var bool $solvedForAssignment Set with $classroomAssignment: the player solved the problem for the assignment
  * @var bool $isSandbox
  * @var string $lightDark
  * @var int $maxHealth
  * @var bool $mistakeTrainingReplay Set by the training route: the problem was solved today already
- * @var int $multipleChoiceSquares
- * @var int $multipleChoiceTriangles
- * @var string $nextLink
- * @var bool $noSkipNextLink
- * @var string $previousLink
- * @var string $queryTitle
- * @var bool $requestSolution
  * @var \App\Model\Entity\Set $set
  * @var \App\Model\Entity\SetConnection $setConnection
  * @var array $setConnections
  * @var \App\Model\Entity\Sgf $sgf
  * @var \App\Model\Entity\Tsumego $tsumego
  * @var \App\Model\Entity\TsumegoSemeai|null $semeai The values of a semeai problem, null for any other problem
- * @var string $tsumegoStatus The status of the problem for the player
  * @var array $tagData
- * @var TimeMode $timeMode
  * @var TsumegoButton $tsumegoButton
  * @var TsumegoButtons|null $tsumegoButtons
  * @var TsumegoFilters $tsumegoFilters
  * @var TsumegoXPAndRating $tsumegoXPAndRating
  * @var TsumegoVariant|null $tv
- * @var string $userSetsJson
+ * @var array{page: array<string, mixed>, problem: array<string, mixed>} $playPage What the page's script reads, see Play::clientData()
  * @var string $displayDescription The description in the colors the player sees
- * @var array<string, ?string>|null $displayAnswers The answers of the question in the colors the player sees
  * @var bool $solved Solved for the current mode
- * @var bool $assignmentReplay A problem solved before, played again for a class assignment
  * @var string $resetLink
  */
 
@@ -81,15 +55,6 @@ use App\Utility\ViteManifest;
 	$this->start('script');
 	echo ViteManifest::legacyScript('besogo');
 	$this->end();
-
-	if ($lightDark == 'dark')
-	{
-		$playGreenColor = '#0cbb0c';
-	}
-	else
-	{
-		$playGreenColor = 'green';
-	}
 
 	if ($tsumego->deleted !== null)
 		echo $this->element('trash_notice', [
@@ -283,8 +248,6 @@ use App\Utility\ViteManifest;
 					$proposalSentColor = 'color:var(--text-softer-color);';
 				}
 			}
-			$getTitle = str_replace('&','and',$set->title);
-			$getTitle .= ' ' . $setConnection->num;
 		$tagEditorProps = json_encode([
 			'userId' => Auth::getUserID() ? (int) Auth::getUserID() : null,
 			'isAdmin' => Auth::isAdmin(),
@@ -512,15 +475,17 @@ use App\Utility\ViteManifest;
 		?>
 
 <script type="text/javascript">
+	//All the page knows about the player and the problem, see Play::clientData()
+	const playPage = <?php echo json_encode($playPage, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE); ?>;
 	var hadMisplay = false;
 	var tryAgainTomorrow = false;
-	var currentHealth = <?php echo Auth::getRemainingHealth(); ?>;
-	var maxHealth = <?php echo $maxHealth; ?>;
-	var fullHeart = '<?php echo $fullHeart; ?>';
-	var emptyHeart = '<?php echo $emptyHeart; ?>';
+	var currentHealth = playPage.page.currentHealth;
+	var maxHealth = playPage.page.maxHealth;
+	var fullHeart = playPage.page.fullHeart;
+	var emptyHeart = playPage.page.emptyHeart;
 	var heartResetTime = new Date(new Date().setUTCHours(24,0,0,0)).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
 	var countDownDate = new Date();
-	var revelationUseCount = <?php echo HeroPowers::remainingRevelationUseCount(); ?>;
+	var revelationUseCount = playPage.page.revelationUseCount;
 	var msg2selected = false;
 	var msg2xselected = false;
 	var msg3selected = false;
@@ -534,48 +499,51 @@ use App\Utility\ViteManifest;
 	var freePlayMode = false;
 	var reviewEnabled = false;
 	// The effective mode the server plays by, so the board cannot disagree with it.
-	var mode = <?php echo Auth::getMode(); ?>;
-	var authorProblem = false;
-	var tsumegoID = <?php echo $tsumego->id ?>;
-	var playGreenColor = '<?php echo $playGreenColor; ?>';
-	var tStatus = "<?php echo $tsumegoStatus; ?>";
+	var mode = playPage.page.mode;
+	var authorProblem = playPage.problem.authorProblem;
+	var tsumegoID = playPage.problem.tsumegoID;
+	var playGreenColor = playPage.page.light == 'dark' ? '#0cbb0c' : 'green';
+	var tStatus = playPage.problem.status;
 	var failAlreadyReported = false;
 	// A problem solved before, played again for a class assignment: the solve is sent for the
 	// assignment, though it changes nothing else
-	var assignmentReplay = <?php echo Util::boolString($assignmentReplay); ?>;
+	var assignmentReplay = playPage.problem.assignmentReplay;
 	// The fail sent when the line was lost, which the player isn't shown until the line is over
 	var unrevealedFail = null;
 	window._submitResultPromise = null;
 
-	var previousButtonLink = "<?php echo $previousLink; ?>";
-	var nextButtonLink = "<?php echo $nextLink; ?>";
+	var previousButtonLink = playPage.problem.previousLink;
+	var nextButtonLink = playPage.problem.nextLink;
 	// A training try ends at the first mistake, Reset opens the problem again for the next one
-	var resetButtonLink = "<?php echo $resetLink; ?>";
-	var noSkipNextButtonLink = "<?php echo $noSkipNextLink; ?>";
-	var timeModeTimer = (mode == 3 ? new TimeModeTimer(<?php echo $timeMode->secondsToSolve; ?>) : null);
-	var author = <?php echo json_encode($tsumego->author, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>;
-	var userSets = <?php echo $userSetsJson; ?>;
-	var besogoNoLogin = false;
-	var sprintSeconds = <?php echo Constants::$SPRINT_SECONDS; ?>;
-	var problemSolved = <?php echo Util::boolString($solved); ?>;
-	var playerRatingCalculationModifier = <?php echo Constants::$PLAYER_RATING_CALCULATION_MODIFIER; ?>;
+	var resetButtonLink = playPage.problem.resetLink;
+	var noSkipNextButtonLink = playPage.problem.noSkipNextLink;
+	var timeModeTimer = (mode == playPage.page.modes.time ? new TimeModeTimer(playPage.page.timeModeSecondsToSolve) : null);
+	var author = playPage.problem.author;
+	var userSets = playPage.problem.userSets;
+	var besogoNoLogin = playPage.page.userID === null;
+	if (playPage.page.userID !== null)
+		var besogoUserId = playPage.page.userID;
+	var sprintSeconds = playPage.page.sprintSeconds;
+	var problemSolved = playPage.problem.solved;
+	var playerRatingCalculationModifier = playPage.page.playerRatingCalculationModifier;
 	let multipleChoiceLibertiesB = 0;
 	let multipleChoiceLibertiesW = 0;
-	let multipleChoiceLibertyCount = <?php echo $semeai?->liberty_count; ?>+"";
-	let multipleChoiceSemeaiType = <?php echo $semeai?->semeai_type_id; ?>+"";
-	let multipleChoiceInsideLiberties = <?php echo $semeai?->inside_liberties; ?>+"";
+	let multipleChoiceLibertyCount = (playPage.problem.semeai?.libertyCount ?? 0) + "";
+	let multipleChoiceSemeaiType = (playPage.problem.semeai?.semeaiTypeID ?? 0) + "";
+	let multipleChoiceInsideLiberties = (playPage.problem.semeai?.insideLiberties ?? 0) + "";
 	let hasChosen = false;
 	let enableDownloads = false;
 	let adminCommentOpened = false;
 	let customMultipleChoiceAnswer = 0;
 	var boardLockValue = 0;
-	let mText = "";
-	let passEnabled = <?php echo $tsumego->pass; ?>+"";
+	//The explanation a multiple choice question shows after the answer
+	let mText = playPage.problem.variant?.type === 'multiple_choice' ? playPage.problem.variant.explanation : "";
+	let passEnabled = (playPage.problem.pass ? 1 : 0) + "";
 	let besogoRotation = -1;
 	let msgFilterSelected = false;
-	const activeTopicTiles = [];
-	const activeDifficultyTiles = [];
-	const activeTagTiles = [];
+	const activeTopicTiles = playPage.page.activeTopicTiles;
+	const activeDifficultyTiles = playPage.page.activeDifficultyTiles;
+	const activeTagTiles = playPage.page.activeTagTiles;
 
 	function updateCurrentNavigationButton(status)
 	{
@@ -625,7 +593,7 @@ use App\Utility\ViteManifest;
 			// The last problem of the day is solved, so Next leads to the end of the training
 			if (!nextButtonLink)
 			{
-				nextButtonLink = <?php echo json_encode(MistakeTraining::$QUEUE_LINK); ?>;
+				nextButtonLink = playPage.page.mistakeTrainingQueueLink;
 				let next = document.getElementById("besogo-next-button-inactive");
 				if (next)
 				{
@@ -637,11 +605,18 @@ use App\Utility\ViteManifest;
 		}
 	}
 
-	<?php
-		$tsumegoXPAndRating->renderJavascript();
-		if (!Auth::isInMistakeTrainingMode())
-			HeroPowers::renderJavascript();
-	?>
+	if (playPage.problem.xpStatus)
+	{
+		var xpStatus = new XPStatus(playPage.problem.xpStatus);
+		xpStatus.update();
+	}
+	if (playPage.page.heroPowers)
+	{
+		playPage.page.heroPowers.intuition ? enableIntuition() : disableIntuition();
+		playPage.page.heroPowers.rejuvenation ? enableRejuvenation() : disableRejuvenation();
+		playPage.page.heroPowers.sprint ? enableSprint() : disableSprint();
+		playPage.page.heroPowers.refinement ? enableRefinement() : disableRefinement();
+	}
 	$("#showFilters").click(function(){
 		if(!msgFilterSelected){
 			$("#msgFilters").fadeIn(250);
@@ -655,17 +630,6 @@ use App\Utility\ViteManifest;
 
 	$("#msgFilters").css("display", "none");
 
-			<?php
-		if($tsumegoFilters->query != 'topics')
-			foreach ($tsumegoFilters->sets as $setName)
-				echo 'activeTopicTiles.push('.json_encode($setName, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE).');';
-		if($tsumegoFilters->query != 'difficulty')
-			foreach ($tsumegoFilters->rankFilterLabels() as $rankLabel)
-				echo 'activeDifficultyTiles.push('.json_encode($rankLabel, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE).');';
-		if($tsumegoFilters->query != 'tags')
-			foreach ($tsumegoFilters->tags as $tag)
-				echo 'activeTagTiles.push('.json_encode($tag, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE).');';
-		?>
 	drawActiveTiles();
 
 	function drawActiveTiles(){
@@ -707,26 +671,6 @@ use App\Utility\ViteManifest;
 		window.location.reload();
 	}
 
-<?php
-	if($tv!=null){
-	if($tv->tsumego_variant_type_id == TsumegoVariantTable::TYPE_MULTIPLE_CHOICE && $tv->explanation!=""){
-		echo 'mText = '.json_encode($tv->explanation, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE).';';
-	}
-	}
-
-			if(Auth::isLoggedIn()){
-		echo 'var besogoUserId = '.Auth::getUserID().';';
-						}else{
-		echo 'besogoNoLogin = true;';
-	}
-
-	// Author mode is decided by the account link, the author string can be a legacy alias.
-	$authorUserId = $tsumego->author_user_id ?? null;
-	if ($authorUserId !== null && $authorUserId == Auth::getUserID())
-		echo 'authorProblem = true;';
-	if($requestSolution)
-		echo 'authorProblem = true;';
-	?>
 
 
 
@@ -760,12 +704,14 @@ use App\Utility\ViteManifest;
 	$("#reviewButton").hide();
 	$("#reviewButton2").hide();
 
-	<?php if(Auth::isInRatingMode()) echo 'var ratingModeDifficultySelector = new RatingModeDifficultySelector();';	?>
-	<?php if($tv!=null&&$tv->tsumego_variant_type_id == TsumegoVariantTable::TYPE_SCORE_ESTIMATING){ ?>
+	if (mode == playPage.page.modes.rating)
+		var ratingModeDifficultySelector = new RatingModeDifficultySelector();
+	if (playPage.problem.variant?.type === 'score_estimating')
+	{
 		$("#submitScoreEstimatingSE").click(function(e){
 			e.preventDefault();
 			if(!hasChosen){
-				let correctNum = <?php echo json_encode($tv->winner, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>;
+				let correctNum = playPage.problem.variant.winner;
 				let guess = $("#ScoreEstimatingSE").val();
 				if(parseFloat(correctNum.slice(2))===0 || parseFloat(correctNum)===0)
 					correctNum = 0;
@@ -796,64 +742,55 @@ use App\Utility\ViteManifest;
 				adjustScore($("#scoreEstEditField"), change);
 			});
 		});
-	<?php } ?>
-
-	<?php
-	if(Auth::isInRatingMode()){
-		echo '
-			$(".problem-nav").hide();
-			$(".tsumegoNavi-middle").hide();
-			$(".tsumegoNavi-middle2").show();
-			$(".mode1").css({"padding-top":"8px"});
-			$(".selectable-text").hide();
-			$("#commentSpace").hide();
-			$("#msg1").hide();
-			$("#reviewButton").hide();
-			$("#reviewButton2").hide();
-					';
-	}elseif(Auth::isInTimeMode()){
-		echo '$("#account-bar-user > a").css({color:"#ca6658"});';
 	}
 
-			if(Auth::isAdmin())
-		echo '$("#show5").css("display", "inline-block");';
-
-	echo 'var goldenTsumego = '.Util::boolString($goldenTsumego).';';
-
-	if (!Auth::isInMistakeTrainingMode() && ($tsumegoStatus == 'F' || $tsumegoStatus == 'X')) {
-		echo 'var locked=true; tryAgainTomorrow = true;';
-		echo 'toggleBoardLock(true);';
-	} else echo 'var locked=false;';
-
-	if ($accountBlocked)
+	if (mode == playPage.page.modes.rating)
 	{
-		echo 'var locked=true; tryAgainTomorrow = true;';
-		echo 'document.getElementById("status").innerHTML = "<h3><b>Your account is temporarily locked.</b></h3>";
-			document.getElementById("status").style.color = "red";
-			toggleBoardLock(true);';
+		$(".problem-nav").hide();
+		$(".tsumegoNavi-middle").hide();
+		$(".tsumegoNavi-middle2").show();
+		$(".mode1").css({"padding-top":"8px"});
+		$(".selectable-text").hide();
+		$("#commentSpace").hide();
+		$("#msg1").hide();
+		$("#reviewButton").hide();
+		$("#reviewButton2").hide();
+	}
+	else if (mode == playPage.page.modes.time)
+		$("#account-bar-user > a").css({color:"#ca6658"});
+
+	if (playPage.page.isAdmin)
+		$("#show5").css("display", "inline-block");
+
+	var goldenTsumego = playPage.problem.goldenTsumego;
+	//A problem failed today is locked until the hearts come back, but in the mistake training
+	var lockedUntilTomorrow = mode != playPage.page.modes.mistakeTraining && (tStatus == 'F' || tStatus == 'X');
+	var locked = lockedUntilTomorrow || playPage.page.accountBlocked;
+	if (locked)
+	{
+		tryAgainTomorrow = true;
+		toggleBoardLock(true);
+	}
+	if (playPage.page.accountBlocked)
+	{
+		document.getElementById("status").innerHTML = "<h3><b>Your account is temporarily locked.</b></h3>";
+		document.getElementById("status").style.color = "red";
 	}
 
-	if ($tsumegoStatus=='S' || $tsumegoStatus=='C' || !Auth::isLoggedIn() || Auth::isInTimeMode())
-		echo 'var noXP=true;';
-	else
-		echo 'var noXP=false;';
-	?>
+	var noXP = tStatus == 'S' || tStatus == 'C' || playPage.page.userID === null || mode == playPage.page.modes.time;
 
 	$(document).ready(function(){
-	<?php
-		if (!Auth::isInTimeMode() && !Auth::isInMistakeTrainingMode() && ($tsumegoStatus == 'F' || $tsumegoStatus == 'X')){
-		echo '
-				document.getElementById("status").innerHTML = \'<b class="message--locked">This problem is locked until \' + heartResetTime + \'</b>\';
-				tryAgainTomorrow = true;
-				document.getElementById("status").style.color = "var(--feedback-error)";
-				$(".besogo-board").addClass("besogo-board-red-glow");
-				var resetBtn = document.getElementById("besogo-reset-button");
-				if (resetBtn) { resetBtn.id = "besogo-reset-button-inactive"; }';
-	}
-
-		if($solved)
-			echo 'reviewEnabled = true;';
-	?>
+		if (lockedUntilTomorrow && mode != playPage.page.modes.time)
+		{
+			document.getElementById("status").innerHTML = '<b class="message--locked">This problem is locked until ' + heartResetTime + '</b>';
+			tryAgainTomorrow = true;
+			document.getElementById("status").style.color = "var(--feedback-error)";
+			$(".besogo-board").addClass("besogo-board-red-glow");
+			var resetBtn = document.getElementById("besogo-reset-button");
+			if (resetBtn) { resetBtn.id = "besogo-reset-button-inactive"; }
+		}
+		if (playPage.problem.solved)
+			reviewEnabled = true;
 
 		$('.besogo-board').click(function(e){
 			if(locked && nextButtonLink)
@@ -915,8 +852,8 @@ use App\Utility\ViteManifest;
 	}
 			msg5selected = !msg5selected;
 		});
-		<?php if($tv!=null){ ?>
-		<?php if($tv->tsumego_variant_type_id == TsumegoVariantTable::TYPE_MULTIPLE_CHOICE){ ?>
+		if (playPage.problem.variant?.type === 'multiple_choice')
+		{
 			$("#showxMC").hide();
 			$("#showMC").click(function(){
 				if(!msgMCselected){
@@ -928,7 +865,9 @@ use App\Utility\ViteManifest;
 	}
 				msgMCselected = !msgMCselected;
 				});
-		<?php }else{ ?>
+		}
+		else if (playPage.problem.variant)
+		{
 			$("#showxSE").hide();
 			$("#showSE").click(function(){
 				if(!msgSEselected){
@@ -940,30 +879,28 @@ use App\Utility\ViteManifest;
 	}
 				msgSEselected = !msgSEselected;
 				});
-		<?php } ?>
-		<?php } ?>
+		}
 		let solutionRequest = true;
-		<?php if($solved || $isSandbox) { ?>
+		if (playPage.problem.solved || playPage.problem.isSandbox)
+		{
 			displaySettings();
 			solutionRequest = false;
-		<?php } ?>
+		}
 		if(authorProblem)
 			displaySettings();
-		<?php if (\App\Policy\AdminPolicy::canRequestSolution(Auth::getIdentity())) {
-			if (!$requestSolution) { ?>
+		if (playPage.page.canRequestSolution && !playPage.problem.requestSolution)
+		{
 			if(solutionRequest)
 				displaySolutionRequest();
 			$("#showx99").click(function(){
-				window.location.href = "/tsumegos/play/"+<?php echo $tsumego->id; ?>+"?requestSolution="+<?php echo Auth::getUserID(); ?>;
+				window.location.href = "/tsumegos/play/" + tsumegoID + "?requestSolution=" + playPage.page.userID;
 				});
-		<?php }
-		} ?>
+		}
 
-		<?php if($semeai !== null || $tv!=null){ ?>
-		$("#alertCheckbox").change(function(){
-			$("#multipleChoiceAlerts").fadeOut(500);
-			});
-		<?php } ?>
+		if (playPage.problem.semeai || playPage.problem.variant)
+			$("#alertCheckbox").change(function(){
+				$("#multipleChoiceAlerts").fadeOut(500);
+				});
 		$("#customAlertCheckbox").change(function(){
 			$("#customAlerts").fadeOut(500);
 		});
@@ -971,14 +908,14 @@ use App\Utility\ViteManifest;
 			$("#potionAlerts").fadeOut(500);
 		});
 		$("#showx3").click(function(){
-			jsCreateDownloadFile(<?php echo json_encode($getTitle, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>);
+			jsCreateDownloadFile(playPage.problem.downloadName);
 		});
 		$("#showx4").click(function(){
-			jsCreateDownloadFile(<?php echo json_encode((string)$setConnection->num, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>);
+			jsCreateDownloadFile(playPage.problem.setConnectionNum);
 		});
 		$("#findSimilarProblems").click(function(){
 			$('.loader-container').css({"display": "flex"});
-			window.location.href="/tsumegos/duplicatesearch/<?php echo $setConnection->id; ?>";
+			window.location.href = "/tsumegos/duplicatesearch/" + playPage.problem.setConnectionID;
 		});
 	});
 
@@ -993,20 +930,21 @@ use App\Utility\ViteManifest;
 		$("#showx3").css("display", "inline-block");
 		$("#findSimilarProblems").css("display", "inline-block");
 		$("#openSgfLink").css("display", "inline-block");
-		<?php if(Auth::isAdmin()){ ?>
-		$("#showx6").attr("href", "<?php echo '/sgfs/view/' . $tsumego->id; ?>");
-		$("#showx8").attr("href", "<?php echo '/tsumegos/history/'.$setConnection->id; ?>");
-		$("#showx4").css("display", "inline-block");
-		$("#show4").css("display", "inline-block");
-		$("#show5").css("display", "inline-block");
-		$("#showx6").css("display", "inline-block");
-		$("#showx8").css("display", "inline-block");
-	<?php } ?>
+		if (playPage.page.isAdmin)
+		{
+			$("#showx6").attr("href", "/sgfs/view/" + tsumegoID);
+			$("#showx8").attr("href", "/tsumegos/history/" + playPage.problem.setConnectionID);
+			$("#showx4").css("display", "inline-block");
+			$("#show4").css("display", "inline-block");
+			$("#show5").css("display", "inline-block");
+			$("#showx6").css("display", "inline-block");
+			$("#showx8").css("display", "inline-block");
+		}
 	}
 
 	function jsCreateDownloadFile(name){
 		if(enableDownloads){
-			var blob = new Blob([<?php echo json_encode($sgf->sgf, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>],{
+			var blob = new Blob([playPage.problem.sgf],{
 				type: "sgf",
 			});
 			saveAs(blob, name+".sgf");
@@ -1069,9 +1007,7 @@ use App\Utility\ViteManifest;
 		}
 	});
 
-	<?php
-	// Create floating board popup for coordinate hover
-			echo '
+	//The floating board that shows a line of moves when a coordinate is hovered
 	var coordPopupBoard = null;
 	var coordPopupDiv = null;
 	var coordPopupTimeout = null;
@@ -1250,21 +1186,18 @@ use App\Utility\ViteManifest;
 		if (coordPopupDiv) coordPopupDiv.style.display = "none";
 		besogo.editor.displayHoverCoord(-1);
 	}
-		';
-
-	?>
 
 	function addTimeForMovePlayed(multiplier = 1)
 	{
-		bonusSeconds += <?php echo TimeModeUtil::$SECONDS_ADDED_PER_MOVE_PLAYED; ?> * multiplier;
+		bonusSeconds += playPage.page.secondsAddedPerMovePlayed * multiplier;
 	}
 
 	// The outcome values come from the App\Utility\PlayOutcome enum
 	var playOutcome = {
-		solvedClean: '<?php echo PlayOutcome::SolvedClean->value; ?>',
-		solvedAfterMistake: '<?php echo PlayOutcome::SolvedAfterMistake->value; ?>',
-		failed: '<?php echo PlayOutcome::Failed->value; ?>',
-		timedOut: '<?php echo PlayOutcome::TimedOut->value; ?>',
+		solvedClean: playPage.page.playOutcome.solvedClean,
+		solvedAfterMistake: playPage.page.playOutcome.solvedAfterMistake,
+		failed: playPage.page.playOutcome.failed,
+		timedOut: playPage.page.playOutcome.timedOut,
 	};
 
 	function isSolved(outcome)
@@ -1294,7 +1227,7 @@ use App\Utility\ViteManifest;
 		let data = {
 			tsumego_id: tsumegoID,
 			// the part of the set the problem is played from decides the XP reduction of its resets
-			set_connection_id: <?php echo (int) $setConnection->id; ?>,
+			set_connection_id: playPage.problem.setConnectionID,
 			seconds: takeSecondsOfTry(),
 			outcome: outcome,
 			// another tab may have switched the stored mode since this page was opened
@@ -1375,7 +1308,7 @@ use App\Utility\ViteManifest;
 	function displayResult(result)
 	{
 		let success = result == 'S';
-		document.getElementById("status").style.color = "<?php echo $playGreenColor; ?>";
+		document.getElementById("status").style.color = playGreenColor;
 		if (timeModeTimer)
 			timeModeTimer.stop();
 
@@ -1405,9 +1338,9 @@ use App\Utility\ViteManifest;
 			$("#besogo-review-button-inactive").attr("id","besogo-review-button");
 			$("#commentSpace").show();
 
-			if (mode == <?php echo Constants::$TIME_MODE; ?>)
+			if (mode == playPage.page.modes.time)
 			{
-				$("#time-mode-countdown").css("color","<?php echo $playGreenColor; ?>");
+				$("#time-mode-countdown").css("color", playGreenColor);
 				$("#reviewButton").show();
 				$("#reviewButton-inactive").hide();
 			}
@@ -1439,7 +1372,7 @@ use App\Utility\ViteManifest;
 					$("#time-mode-countdown").css("color","var(--feedback-error)");
 					toggleBoardLock(true);
 				}
-				if (mode==<?php echo Constants::$MISTAKE_TRAINING_MODE; ?>)
+				if (mode == playPage.page.modes.mistakeTraining)
 				{
 					// The board locks, but the problem stays in today's training until it is solved
 					toggleBoardLock(true);
@@ -1463,10 +1396,10 @@ use App\Utility\ViteManifest;
 						}
 					}
 					// leaving for the plain problem page would drop the player out of the training
-					if (goldenTsumego && mode != <?php echo Constants::$MISTAKE_TRAINING_MODE; ?>)
+					if (goldenTsumego && mode != playPage.page.modes.mistakeTraining)
 					{
 						// the page is drawn again from the stored result, so it waits for the request of the result
-						let reload = () => window.location.href = '/' + '<?php echo $setConnection->id; ?>';
+						let reload = () => window.location.href = '/' + playPage.problem.setConnectionID;
 						(window._submitResultPromise || Promise.resolve()).finally(reload);
 						return;
 					}
@@ -1503,7 +1436,7 @@ use App\Utility\ViteManifest;
 
 	function resetParameters(isAtStart)
 	{
-		tStatus = "<?php echo $tsumegoStatus; ?>";
+		tStatus = playPage.problem.status;
 		if(tStatus=="S" || tStatus=="C")
 			heartLoss = false;
 		else
@@ -1545,77 +1478,51 @@ use App\Utility\ViteManifest;
 			options[value.shift()] = value.join("=");
 	}
 
-		options.panels = "tree+control";
-		<?php
-		if(Auth::isAdmin()) echo 'options.panels = "tree+control+tool+comment+file";';
-					?>
+		options.panels = playPage.page.boardPanels;
 		options.tsumegoPlayTool = 'auto';
 		options.realstones = true;
 		options.nowheel = true;
 		options.nokeys = true;
 		options.multipleChoice = false;
 		options.multipleChoiceSetup = [];
-		options.alternativeResponse = true;
-		<?php
-		if ($tsumego->alternative_response != 1)
-			echo 'options.alternativeResponse = false;';
-		// without a liberty count no question can be made, the problem is shown without one
-		if ($semeai !== null && $semeai->liberty_count !== null)
+		options.alternativeResponse = playPage.problem.alternativeResponse;
+		let semeaiQuestion = playPage.problem.semeai?.question;
+		if (semeaiQuestion)
 		{
-			[$sStatusB, $sStatusW] = Util::calculateLibertyStatus(
-				$multipleChoiceSquares,
-				$multipleChoiceTriangles,
-				$semeai->minimum_liberties,
-				$semeai->maximum_liberties,
-				$semeai->liberty_count,
-				$semeai->variance);
-			echo 'options.multipleChoice = true;';
-			echo 'let sStatusB = '.$sStatusB.';';
-			echo 'let sStatusW = '.$sStatusW.';';
-			echo 'multipleChoiceLibertiesB = sStatusB;';
-			echo 'multipleChoiceLibertiesW = sStatusW;';
-			echo 'multipleChoiceLibertyCount = '.$semeai->liberty_count.';';
-			echo 'let mVariance = '.$multipleChoiceTriangles.';';
-			echo 'let a1 = []; let a2 = [];
-			for(i=0; i<mVariance; i++)
+			//The liberties of each side, shown as marks in a random order
+			options.multipleChoice = true;
+			multipleChoiceLibertiesB = semeaiQuestion.libertiesB;
+			multipleChoiceLibertiesW = semeaiQuestion.libertiesW;
+			multipleChoiceLibertyCount = playPage.problem.semeai.libertyCount;
+			let sStatusB = semeaiQuestion.libertiesB;
+			let sStatusW = semeaiQuestion.libertiesW;
+			let a1 = []; let a2 = [];
+			for (let i = 0; i < semeaiQuestion.variance; i++)
 			{
-				if(sStatusB>0) a1.push(1);
-				else a1.push(0);
-				if(sStatusW>0) a2.push(1);
-				else a2.push(0);
+				a1.push(sStatusB > 0 ? 1 : 0);
+				a2.push(sStatusW > 0 ? 1 : 0);
 				sStatusB--;
 				sStatusW--;
 			}
-			let a3 = a1.map(value => ({ value, sort: Math.random() })).sort((a, b) => a.sort - b.sort).map(({ value }) => value);
-			let a4 = a2.map(value => ({ value, sort: Math.random() })).sort((a, b) => a.sort - b.sort).map(({ value }) => value);
-			let a5 = [];
-			a5.push(a3);
-			a5.push(a4);
-			';
-			echo 'options.multipleChoiceSetup = a5;';
+			let shuffle = values => values.map(value => ({ value, sort: Math.random() })).sort((a, b) => a.sort - b.sort).map(({ value }) => value);
+			options.multipleChoiceSetup = [shuffle(a1), shuffle(a2)];
 		}
-		else if($tv!=null)
+		else if (playPage.problem.variant)
 		{
-			echo 'options.multipleChoiceCustom = '.json_encode(TsumegoVariantTable::BOARD_TYPE_NAMES[$tv->tsumego_variant_type_id], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE).';';
-			echo 'let a5 = [];
-			a5.push('.json_encode($displayAnswers['answer1'], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE).');
-			a5.push('.json_encode($displayAnswers['answer2'], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE).');
-			a5.push('.json_encode($displayAnswers['answer3'], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE).');
-			a5.push('.json_encode($displayAnswers['answer4'], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE).');
-			customMultipleChoiceAnswer = '.(int)$tv->correct_answer.';
-			options.multipleChoiceCustomSetup = a5;';
+			options.multipleChoiceCustom = playPage.problem.variant.type;
+			customMultipleChoiceAnswer = playPage.problem.variant.correctAnswer;
+			options.multipleChoiceCustomSetup = playPage.problem.variant.answers;
 		}
-	?>
-		options.corner = "<?php echo $corner; ?>";
-		options.playerColor = "<?php echo $playerColor; ?>";
-		options.swapColors = <?php echo $swapColors ? 'true' : 'false'; ?>;
+		options.corner = playPage.problem.corner;
+		options.playerColor = playPage.problem.playerColor;
+		options.swapColors = playPage.problem.swapColors;
 		options.rootPath = '/besogo/';
-		options.theme = '<?php echo $boardSelection['texture']; ?>';
-		options.themeParameters = ['<?php echo $boardSelection['black']; ?>', '<?php echo $boardSelection['white']; ?>'];
+		options.theme = playPage.problem.board.texture;
+		options.themeParameters = [playPage.problem.board.black, playPage.problem.board.white];
 		options.coord = 'western';
 		options.sgf = '/placeholder.sgf';
-		options.sgf2 = <?php echo json_encode($sgf->sgf, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>;
-		options.light = <?php echo json_encode($lightDark, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>;
+		options.sgf2 = playPage.problem.sgf;
+		options.light = playPage.page.light;
 		if (options.theme) addStyleLink('/besogo/css/board-'+options.theme+'.css');
 			if (options.height && options.width && options.resize === 'fixed')
 			{
@@ -1623,11 +1530,7 @@ use App\Utility\ViteManifest;
 				div.style.width = options.width + 'px';
 			}
 		options.reviewMode = false;
-		options.reviewEnabled = <?php echo Util::boolString($solved); ?>;
-	<?php
-		if($requestSolution)
-			echo 'options.reviewEnabled = true;';
-		?>
+		options.reviewEnabled = playPage.problem.solved || playPage.problem.requestSolution;
 	if(authorProblem)
 		options.reviewEnabled = true;
 	besogo.create(div, options);

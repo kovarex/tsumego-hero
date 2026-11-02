@@ -13,6 +13,20 @@ use Cake\ORM\TableRegistry;
 
 class TsumegosControllerTest extends IntegrationTestCase
 {
+	//The play page's script reads one object of plain values, the same a request for the next
+	//problem will return
+	public function testPlayPageDataIsPlainJson(): void
+	{
+		$context = new ContextPreparator(['tsumego' => ['set_order' => 1]]);
+		$this->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+
+		$playPage = $this->viewVariable('playPage');
+		$this->assertSame($playPage, json_decode(json_encode($playPage), true));
+		$this->assertSame((int) $context->tsumegos[0]['id'], $playPage['problem']['tsumegoID']);
+		$this->assertSame((int) $context->tsumegos[0]['set-connections'][0]['id'], $playPage['problem']['setConnectionID']);
+		$this->assertSame((int) $context->user['id'], $playPage['page']['userID']);
+	}
+
 	public function testSetNameAndNumIsVisible()
 	{
 		foreach ([false, true] as $openBySetConnectionID)

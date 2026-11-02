@@ -53,30 +53,28 @@ class TsumegoXPAndRating
 	</div>';
 	}
 
-	public function renderJavascript(): void
+	//What the page's XPStatus (webroot/js/XPStatus.js) needs to show the reward of a solve, null when
+	//the mode gives no XP and no rating or no one is signed in
+	/** @return array<string, mixed>|null */
+	public function clientData(): ?array
 	{
 		if (!Auth::isLoggedIn())
-			return;
+			return null;
 		if (!Auth::XPisGainedInCurrentMode() && !Auth::ratingisGainedInCurrentMode())
-			return;
-		echo '
-	var xpStatus = new XPStatus(
-	{
-		solved: ' . Util::boolString($this->solved) . ',
-		sprintRemainingSeconds: ' . HeroPowers::getSprintRemainingSeconds() . ',
-		sprintMultiplier: ' . Constants::$SPRINT_MULTIPLIER . ',
-		goldenTsumego: ' . Util::boolString($this->goldenTsumego) . ',
-		goldenTsumegoMultiplier: ' . Constants::$GOLDEN_TSUMEGO_XP_MULTIPLIER . ',
-		resolving: ' . Util::boolString($this->resolving) . ',
-		resolvingMultiplier: ' . Constants::$RESOLVING_MULTIPLIER . ',
-		userRating: ' . Auth::getUser()['rating'] . ',
-		tsumegoRating: ' . $this->tsumegoRating . ',
-		progressDeletionCount: ' . $this->progressDeletionCount . ',
-		failsInARow: ' . $this->failsInARow . ',
-		maximumRatedFailsInARow: ' . Constants::$MAXIMUM_RATED_FAILS_IN_A_ROW . '
-	});
-	xpStatus.update();
-';
+			return null;
+		return [
+			'solved' => $this->solved,
+			'sprintRemainingSeconds' => HeroPowers::getSprintRemainingSeconds(),
+			'sprintMultiplier' => Constants::$SPRINT_MULTIPLIER,
+			'goldenTsumego' => $this->goldenTsumego,
+			'goldenTsumegoMultiplier' => Constants::$GOLDEN_TSUMEGO_XP_MULTIPLIER,
+			'resolving' => $this->resolving,
+			'resolvingMultiplier' => Constants::$RESOLVING_MULTIPLIER,
+			'userRating' => Auth::getUser()['rating'],
+			'tsumegoRating' => $this->tsumegoRating,
+			'progressDeletionCount' => $this->progressDeletionCount,
+			'failsInARow' => $this->failsInARow,
+			'maximumRatedFailsInARow' => Constants::$MAXIMUM_RATED_FAILS_IN_A_ROW];
 	}
 
 	// changes here must be reflected in the same method in util.js
