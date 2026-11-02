@@ -5,6 +5,12 @@ https://host.docker.internal:8443, https://localhost:8443 {
     tls internal
     root * /srv
 
+    #Every request with its status, size, duration and protocol, in caddy.log, which CI keeps when a shard fails
+    log {
+        output stdout
+        format json
+    }
+
     #The files of webroot/ come from Caddy, with the ETag and Last-Modified that Apache sends on the
     #site, so the browser caches them between pages. php -S sends neither, so every page downloaded
     #every script, style and picture again.

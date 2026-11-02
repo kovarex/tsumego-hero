@@ -254,6 +254,9 @@ jobs:
           path: |
             tmp/browser-timeout-*.html
             tmp/browser-failure-*
+            tmp/webserver-errors.log
+            server.log
+            caddy.log
           if-no-files-found: ignore
 
       # PHPUnit's phpunit.cov and one webserver-*.cov per request of the Selenium tests (.github/ci/coverage-prepend.php)
