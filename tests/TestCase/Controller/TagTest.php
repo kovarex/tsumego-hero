@@ -824,7 +824,7 @@ class TagTest extends IntegrationTestCase
 		$this->assertStringNotContainsString('proposer', $browser->driver->getPageSource());
 
 		$browser->get('/admin/tag-proposals');
-		$browser->post('/users/acceptTagConnectionProposal/' . $tagConnectionId);
+		$browser->post('/proposals/acceptTag/' . $tagConnectionId);
 
 		$browser->get('/users/added_tags');
 		$this->assertStringContainsString('proposer', $browser->driver->getPageSource());

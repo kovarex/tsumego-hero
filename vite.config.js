@@ -167,6 +167,7 @@ export default defineConfig({
 		legacyBundlePlugin('play', ['webroot/js/PlayPage.js']),
 		legacyBundlePlugin('sets-index', ['webroot/js/SetsIndexPage.js']),
 		legacyBundlePlugin('time-mode', ['webroot/js/TimeModePages.js']),
+		legacyBundlePlugin('schedule', ['webroot/js/SchedulePage.js']),
 	],
 	build: {
 		// All built assets go to webroot/dist/ (CSS bundles, React app, source maps, manifest)
