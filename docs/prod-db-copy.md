@@ -15,7 +15,7 @@ The script:
 - prints how to point the app at it and how to log in.
 
 Then log in as any user with the email `user<id>@example.invalid` (or the user's name) and the password `tsumego-copy-login`.
-kovarex (id 13282, ~70k attempts, the account to profile with) is `user13282@example.invalid`.
+kovarex (id 13282) is `user13282@example.invalid`. The heaviest accounts by attempts: `SELECT user_id, COUNT(*) FROM tsumego_attempt GROUP BY user_id ORDER BY 2 DESC LIMIT 10;`
 The tests keep using the database `test` of the same server, they empty it; never point them at `tsumego_prod`.
 
 The script needs `php` and `vendor/bin/phinx`. Where `composer install` can't download from GitHub (a cloud session behind its proxy, PHP 8.3), this is enough for the migrations:
@@ -39,6 +39,7 @@ mysqldump -h <db host> -u <db user> -p \
 ```
 
 It contains the forum's `phpbb_*` tables too, which the script anonymizes as well.
+A phpMyAdmin export (SQL, not compressed or gzipped) works too; the first real import, a 1.4 GB phpMyAdmin dump, took 5 minutes and became 2.1 GB.
 
 ## Publishing it on the test site
 
