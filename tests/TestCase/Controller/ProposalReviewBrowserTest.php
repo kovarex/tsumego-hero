@@ -23,10 +23,11 @@ class ProposalReviewBrowserTest extends IntegrationTestCase
 		$browser = Browser::instance();
 		$browser->get('/editor/?sgfID=' . $context->tsumegos[0]['sgfs'][1]['id'] . '&diffID=' . $context->tsumegos[0]['sgfs'][0]['id']);
 
-		$browser->waitUntilJs('document.getElementById("diffSummary") !== null');
+		// The panel is built once without what the author wrote and again when that arrives, which
+		// replaces every element of it, so nothing is read before the second build.
+		$browser->waitUntilJs('document.getElementById("diffDescription") !== null');
 		$this->assertStringContainsString('0 added', $browser->find('#diffSummary')->getText());
 		// what the author wrote about the version is above the changes
-		$browser->waitUntilJs('document.getElementById("diffDescription") !== null');
 		$this->assertStringEndsWith('wrote: Made it status based', $browser->find('#diffDescription')->getText());
 		$this->assertStringEndsWith('/users/view/' . $context->user['id'], $browser->find('#diffDescription .besogo-diff-author a')->getAttribute('href'));
 		$this->assertNotEmpty($browser->getElements('#diffDescription .user-avatar'));
