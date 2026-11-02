@@ -7,7 +7,6 @@ use Cake\Http\Exception\NotFoundException;
 use Cake\Http\Response;
 use Cake\Routing\Router;
 use Cake\Validation\Validation;
-use DateTime;
 use Exception;
 use InvalidArgumentException;
 use RuntimeException;
@@ -23,7 +22,6 @@ use App\Model\Table\TimeModeCategoryTable;
 use App\Model\Table\UserTable;
 use App\Utility\AdminActivityLogger;
 use App\Utility\Auth;
-use App\Utility\Avatar;
 use App\Utility\Constants;
 use App\Utility\CookieFlash;
 use App\Utility\GoogleTokenVerifier;
@@ -35,11 +33,11 @@ use App\Utility\PwnedPasswordChecker;
 use App\Utility\PwnedPasswordCheckerInterface;
 use App\Utility\SgfCommentReorientation;
 use App\Utility\UploadedAvatar;
+use App\Utility\UserProfile;
 use App\Utility\UserActivitiesRenderer;
 use App\Utility\Util;
 use App\Attribute\HttpPost;
 use App\Attribute\HttpGet;
-use App\Model\Table\TimeModeSessionStatusTable;
 use Cake\Log\Log;
 use App\Utility\Mailer;
 
@@ -825,160 +823,35 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 	{
 		$this->set('_page', 'user');
 
-		$as = $this->fetchTable('AchievementStatus')->find()->where(['user_id' => $id])->orderByDesc('created')->limit(12)->all();
-
 		$user = UserTable::row($id);
 		if (!$user)
 			return $this->redirect('/sets');
 		$this->assertUserVisible($user);
+		$userID = (int) $user['id'];
 		$this->set('_title', 'Profile of ' . $user['display_name']);
+		$this->set('og', UserProfile::openGraph($user));
 
-		// The profile is shared with the avatar the player picked, at the size a
-		// preview takes. What the site draws is a png of known size and type; an
-		// avatar of another host is shared as its url, and only the size a host is
-		// told to send is known.
-		$avatarChoice = UserTable::avatarChoice($user);
-		$og = [
-			'title' => 'Profile of ' . $user['display_name'],
-			'description' => $user['display_name'] . ' on Tsumego',
-			'image_alt' => 'Avatar of ' . $user['display_name'],
-			'type' => 'profile',
-			'profile_username' => $user['display_name'],
-			'site_name' => 'Tsumego',
-		];
-		if ($avatarChoice === UserTable::AVATAR_BOARD)
-		{
-			$og['image'] = Router::url(Avatar::pngUrl($user['display_name']), true);
-			$og['image_type'] = 'image/png';
-			$og['image_width'] = Avatar::SHARE_SIZE;
-			$og['image_height'] = Avatar::SHARE_SIZE;
-		}
-		elseif ($avatarChoice === UserTable::AVATAR_UPLOADED)
-		{
-			// An uploaded picture is stored at one size and type, so both are known.
-			$og['image'] = Router::url(UserTable::getAvatarUrl($user), true);
-			$og['image_type'] = 'image/webp';
-			$og['image_width'] = UploadedAvatar::SIZE;
-			$og['image_height'] = UploadedAvatar::SIZE;
-		}
-		else
-		{
-			$og['image'] = UserTable::getAvatarUrl($user, Avatar::SHARE_SIZE);
-			if ($avatarChoice === UserTable::AVATAR_GRAVATAR)
-			{
-				// Gravatar answers with the size it is asked for, so the size of the
-				// picture is known even though its format is not.
-				$og['image_width'] = Avatar::SHARE_SIZE;
-				$og['image_height'] = Avatar::SHARE_SIZE;
-			}
-		}
-		$this->set('og', $og);
+		// only admins get to the profile of a deleted account, they see who it was
+		if ($user['deleted'])
+			$user['display_name'] = $user['deleted_name'] . ' ' . UserTable::DELETED_NAME;
+		$this->set('user', $user);
 
-		$oldest = new DateTime(date('Y-m-d', strtotime('-183 days')));
-		$oldest = $oldest->format('Y-m-d');
+		$this->set('dailyResults', UserProfile::dailyResults($userID));
+		$this->set('timeModeRanks', UserProfile::timeModeRanks($userID));
+		$this->set('timeGraph', UserProfile::timeModeRuns($userID));
 
-		$dailyResults = Util::query("
-			SELECT
-				DATE(created) AS day,
-				SUM(CASE WHEN solved = 1 THEN 1 ELSE 0 END) AS Solves,
-				SUM(CASE WHEN solved = 0 THEN 1 ELSE 0 END) AS Fails,
-				MAX(user_rating) AS Rating
-			FROM tsumego_attempt
-			WHERE user_id = :user_id
-			  AND created > :oldest
-			GROUP BY DATE(created)
-			ORDER BY day ASC
-		", ['user_id' => $id, 'oldest'  => $oldest]);
-
-		$this->set('timeModeRanks', Util::query("
-SELECT
-    c.name AS category_name,
-
-    -- 1) Best solved session rank name (highest rank.id)
-    (
-        SELECT time_mode_rank.name
-        FROM time_mode_session s2
-        JOIN time_mode_rank ON time_mode_rank.id = s2.time_mode_rank_id
-        WHERE
-            s2.time_mode_category_id = c.id AND
-            s2.time_mode_session_status_id = " . TimeModeSessionStatusTable::SOLVED . " AND
-            s2.user_id = ?
-        ORDER BY time_mode_rank.id DESC                            -- highest id = best rank
-        LIMIT 1
-    ) AS best_solved_rank_name,
-
-    -- 2) Number of sessions in this category
-    COUNT(s.id) AS session_count
-
-FROM
-	time_mode_category c
-	LEFT JOIN time_mode_session s ON s.user_id = ? AND s.time_mode_category_id = c.id
-GROUP BY c.id, c.name;", [$user['id'], $user['id']]));
-
-		$this->set('timeGraph', Util::query('
-SELECT
-    DATE(time_mode_session.created) AS category,
-    SUM(CASE WHEN time_mode_session.time_mode_session_status_id = ' . TimeModeSessionStatusTable::SOLVED . ' THEN 1 ELSE 0 END) AS Passes,
-    SUM(CASE WHEN time_mode_session.time_mode_session_status_id = ' . TimeModeSessionStatusTable::FAILED . ' THEN 1 ELSE 0 END) AS Fails
-FROM time_mode_session
-WHERE time_mode_session.user_id = ? AND time_mode_session.challenge_id IS NULL
-GROUP BY DATE(time_mode_session.created)
-ORDER BY category DESC', [$user['id']]));
-
-		$progress = TsumegoTable::publicProblemProgress((int) $user['id']);
+		$progress = TsumegoTable::publicProblemProgress($userID);
 		$this->set('solvedProblemCount', (int) $user['solved']);
 		$this->set('tsumegoCount', TsumegoTable::problemCount());
 		$this->set('publishedProblemCount', $progress['total']);
 		$this->set('solvedPublishedCount', $progress['solved']);
 
-		$achievementById = [];
-		foreach ($this->fetchTable('Achievement')->find()->all() as $achievement)
-			$achievementById[$achievement->id] = $achievement;
-
-		$asList = [];
-		foreach ($as as $item)
-		{
-			if (!isset($achievementById[$item->achievement_id]))
-				continue;
-			$achievement = $achievementById[$item->achievement_id];
-			$asList[] = [
-				'a_title' => $achievement->name,
-				'a_description' => $achievement->description,
-				'a_image' => $achievement->image,
-				'a_color' => $achievement->color,
-				'a_id' => $achievement->id,
-				'a_xp' => $achievement->xp,
-				'a_earned_count' => $item->value,
-				'created' => $item->created->format('Y-m-d H:i:s'),
-			];
-		}
-		$as = $asList;
-
-		$counts = Util::query(
-			'SELECT COUNT(DISTINCT achievement_status.achievement_id) AS completed,
-				COALESCE(SUM(CASE WHEN achievement_status.value > 1 THEN achievement_status.value ELSE 0 END), 0) AS earned_times
-			FROM achievement_status
-			WHERE achievement_status.user_id = ?',
-			[$id]
-		)[0];
-		$aNumx = (int) $counts['completed'];
-		$aEarnedTimes = (int) $counts['earned_times'];
-
-		// only admins get to the profile of a deleted account, they see who it was
-		if ($user['deleted'])
-			$user['display_name'] = $user['deleted_name'] . ' ' . UserTable::DELETED_NAME;
-
-		$achievementCount = $this->fetchTable('Achievement')->find()->count();
+		$this->set('latestAchievements', UserProfile::latestAchievements($userID));
+		$this->set('achievementCounts', UserProfile::achievementCounts($userID));
+		$this->set('achievementCount', $this->fetchTable('Achievement')->find()->count());
 
 		// The section of the training shows only for a player who trained.
-		$this->set('mistakeTraining', MistakeTraining::profile((int) $user['id'], MistakeTraining::profileStart()));
-
-		$this->set('dailyResults', $dailyResults);
-		$this->set('user', $user);
-		$this->set('as', $as);
-		$this->set('aNum', $aNumx);
-		$this->set('aEarnedTimes', $aEarnedTimes);
-		$this->set('achievementCount', $achievementCount);
+		$this->set('mistakeTraining', MistakeTraining::profile($userID, MistakeTraining::profileStart()));
 		return null;
 	}
 
