@@ -54,8 +54,7 @@ class TsumegoIssueTable extends AppTable
 	public static function openWith(TsumegoComment $comment): ?TsumegoIssue
 	{
 		// false from the callback rolls the issue back
-		return Util::database()->transactional(function () use ($comment): TsumegoIssue|false
-		{
+		return Util::database()->transactional(function () use ($comment): TsumegoIssue|false {
 			$issueTable = TableRegistry::getTableLocator()->get('TsumegoIssue');
 			$issue = $issueTable->saveOrFail($issueTable->newEntity([
 				'tsumego_id' => $comment->tsumego_id,
