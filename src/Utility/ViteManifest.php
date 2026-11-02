@@ -21,6 +21,7 @@ use RuntimeException;
 //  'besogo-css'   → webroot/besogo/css/besogo-bundle.js  (besogo.css + board-flat.css)
 //  'legacy'       → virtual:legacy-app                   (bundled app global JS)
 //  'besogo'       → virtual:legacy-besogo               (bundled besogo viewer JS)
+//  'sets-index'   → virtual:legacy-sets-index           (the code of the collections page)
 class ViteManifest
 {
 	//Cached manifest contents after first load
@@ -39,6 +40,7 @@ class ViteManifest
 		'legacy'      => 'virtual:legacy-app',
 		'besogo'      => 'virtual:legacy-besogo',
 		'play'        => 'virtual:legacy-play',
+		'sets-index'  => 'virtual:legacy-sets-index',
 	];
 
 	// ---------------------------------------------------------------------------
