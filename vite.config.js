@@ -163,6 +163,7 @@ export default defineConfig({
 		legacyBundlePlugin('jquery', ['node_modules/jquery/dist/jquery.min.js'], { minify: false, instrument: false }),
 		legacyBundlePlugin('app', LEGACY_APP_FILES),
 		legacyBundlePlugin('besogo', LEGACY_BESOGO_FILES, { minify: false }),
+		legacyBundlePlugin('sets-index', ['webroot/js/SetsIndexPage.js']),
 	],
 	build: {
 		// All built assets go to webroot/dist/ (CSS bundles, React app, source maps, manifest)
