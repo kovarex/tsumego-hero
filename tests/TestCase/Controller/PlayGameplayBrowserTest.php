@@ -178,6 +178,63 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 			'Choosing the correct answer should show a Correct banner');
 	}
 
+	//The explanation of a multiple choice question shows once it is answered correctly
+	public function testMultipleChoiceCorrectAnswerShowsItsExplanation(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'mcExplanationUser'],
+			'tsumego' => [
+				'set_order' => 1,
+				'sgf' => self::SGF_19,
+				'variants' => [[
+					'tsumego_variant_type_id' => TsumegoVariantTable::TYPE_MULTIPLE_CHOICE,
+					'answer1' => 'White is dead',
+					'answer2' => 'Ko',
+					'answer3' => 'Seki in sente',
+					'answer4' => 'Seki in gote',
+					'correct_answer' => '2',
+					'explanation' => 'White has no second eye'
+				]]
+			]
+		]);
+		$browser = Browser::instance();
+		$browser->get($this->playUrl($context));
+		$this->waitForBoard($browser);
+
+		$browser->waitUntilJs('document.getElementById("besogo-multipleChoice2") !== null');
+		$browser->clickId('besogo-multipleChoice2');
+
+		$browser->waitUntilJs('document.getElementById("multipleChoiceText").innerText.includes("White has no second eye")');
+		$this->assertStringContainsString('Correct', $browser->find('#status')->getText());
+	}
+
+	//Answering a semeai shows the explanation made from the problem's liberties
+	public function testSemeaiAnswerShowsTheExplanation(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'semeaiAnswerUser'],
+			'tsumego' => [
+				'set_order' => 1,
+				'semeai' => [
+					'semeai_type_id' => SemeaiTypeTable::TYPE_NO_EYES_FEW_INSIDE_LIBERTIES,
+					'minimum_liberties' => 0,
+					'maximum_liberties' => 2,
+					'liberty_count' => 6,
+					'variance' => 2],
+				'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AW[hm][im][gn][jn][go][jo][gp][jp][eq][gq][jq][fr][jr][gs][js]AB[jm][km][in][ln][io][lo][ip][lp];B[aa];W[ab];B[ba]C[+])'
+			]
+		]);
+		$browser = Browser::instance();
+		$browser->get($this->playUrl($context));
+		$this->waitForBoard($browser);
+
+		$browser->waitUntilJs('document.getElementById("besogo-multipleChoice1") !== null');
+		$browser->clickId('besogo-multipleChoice1');
+
+		$browser->waitUntilJs('document.getElementById("multipleChoiceText").innerText.includes("Semeai Type 1")');
+		$this->assertMatchesRegularExpression('/Black has \d+ libert/', $browser->find('#multipleChoiceText')->getText());
+	}
+
 	public function testPostSolveMistakesAreNotPenalized(): void
 	{
 		$context = new ContextPreparator([

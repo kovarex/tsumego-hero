@@ -474,18 +474,19 @@ use App\Utility\ViteManifest;
 	var sprintSeconds = playPage.page.sprintSeconds;
 	var problemSolved = playPage.problem.solved;
 	var playerRatingCalculationModifier = playPage.page.playerRatingCalculationModifier;
+	//The question of the problem, set by setUpQuestion(); webroot/js/multipleChoice*.js read them
 	let multipleChoiceLibertiesB = 0;
 	let multipleChoiceLibertiesW = 0;
-	let multipleChoiceLibertyCount = (playPage.problem.semeai?.libertyCount ?? 0) + "";
-	let multipleChoiceSemeaiType = (playPage.problem.semeai?.semeaiTypeID ?? 0) + "";
-	let multipleChoiceInsideLiberties = (playPage.problem.semeai?.insideLiberties ?? 0) + "";
+	let multipleChoiceLibertyCount = 0;
+	let multipleChoiceSemeaiType = 0;
+	let multipleChoiceInsideLiberties = 0;
+	let customMultipleChoiceAnswer = 0;
+	//The explanation a multiple choice question shows after the answer
+	let mText = "";
 	let hasChosen = false;
 	let enableDownloads = false;
 	let adminCommentOpened = false;
-	let customMultipleChoiceAnswer = 0;
 	var boardLockValue = 0;
-	//The explanation a multiple choice question shows after the answer
-	let mText = playPage.problem.variant?.type === 'multiple_choice' ? playPage.problem.variant.explanation : "";
 	let passEnabled = (playPage.problem.pass ? 1 : 0) + "";
 	let besogoRotation = -1;
 	let msgFilterSelected = false;
@@ -655,6 +656,55 @@ use App\Utility\ViteManifest;
 	if (mode == playPage.page.modes.rating)
 		var ratingModeDifficultySelector = new RatingModeDifficultySelector();
 
+	//The question a problem asks besides its moves, the liberties of a semeai or a multiple choice:
+	//it sets the board options and the state the answer is checked against
+	function setUpQuestion(problem, options)
+	{
+		hasChosen = false;
+		mText = "";
+		options.multipleChoice = false;
+		options.multipleChoiceSetup = [];
+		options.multipleChoiceCustom = false;
+		if (problem.semeai)
+		{
+			multipleChoiceLibertyCount = problem.semeai.libertyCount ?? 0;
+			multipleChoiceSemeaiType = problem.semeai.semeaiTypeID;
+			multipleChoiceInsideLiberties = problem.semeai.insideLiberties ?? 0;
+		}
+		let semeaiQuestion = problem.semeai?.question;
+		if (semeaiQuestion)
+		{
+			//The liberties of each side, shown as marks in a random order
+			options.multipleChoice = true;
+			multipleChoiceLibertiesB = semeaiQuestion.libertiesB;
+			multipleChoiceLibertiesW = semeaiQuestion.libertiesW;
+			let sStatusB = semeaiQuestion.libertiesB;
+			let sStatusW = semeaiQuestion.libertiesW;
+			let a1 = []; let a2 = [];
+			for (let i = 0; i < semeaiQuestion.variance; i++)
+			{
+				a1.push(sStatusB > 0 ? 1 : 0);
+				a2.push(sStatusW > 0 ? 1 : 0);
+				sStatusB--;
+				sStatusW--;
+			}
+			let shuffle = values => values.map(value => ({ value, sort: Math.random() })).sort((a, b) => a.sort - b.sort).map(({ value }) => value);
+			options.multipleChoiceSetup = [shuffle(a1), shuffle(a2)];
+		}
+		else if (problem.variant)
+		{
+			options.multipleChoiceCustom = problem.variant.type;
+			customMultipleChoiceAnswer = problem.variant.correctAnswer;
+			options.multipleChoiceCustomSetup = problem.variant.answers;
+			mText = problem.variant.explanation;
+		}
+	}
+
+	//The explanation of a semeai or a multiple choice is closed by its box
+	$("#alertCheckbox").change(function(){
+		$("#multipleChoiceAlerts").fadeOut(500);
+	});
+
 	if (mode == playPage.page.modes.rating)
 	{
 		$(".problem-nav").hide();
@@ -794,10 +844,6 @@ use App\Utility\ViteManifest;
 				});
 		}
 
-		if (playPage.problem.semeai || playPage.problem.variant)
-			$("#alertCheckbox").change(function(){
-				$("#multipleChoiceAlerts").fadeOut(500);
-				});
 		$("#customAlertCheckbox").change(function(){
 			$("#customAlerts").fadeOut(500);
 		});
@@ -1380,36 +1426,8 @@ use App\Utility\ViteManifest;
 		options.realstones = true;
 		options.nowheel = true;
 		options.nokeys = true;
-		options.multipleChoice = false;
-		options.multipleChoiceSetup = [];
 		options.alternativeResponse = playPage.problem.alternativeResponse;
-		let semeaiQuestion = playPage.problem.semeai?.question;
-		if (semeaiQuestion)
-		{
-			//The liberties of each side, shown as marks in a random order
-			options.multipleChoice = true;
-			multipleChoiceLibertiesB = semeaiQuestion.libertiesB;
-			multipleChoiceLibertiesW = semeaiQuestion.libertiesW;
-			multipleChoiceLibertyCount = playPage.problem.semeai.libertyCount;
-			let sStatusB = semeaiQuestion.libertiesB;
-			let sStatusW = semeaiQuestion.libertiesW;
-			let a1 = []; let a2 = [];
-			for (let i = 0; i < semeaiQuestion.variance; i++)
-			{
-				a1.push(sStatusB > 0 ? 1 : 0);
-				a2.push(sStatusW > 0 ? 1 : 0);
-				sStatusB--;
-				sStatusW--;
-			}
-			let shuffle = values => values.map(value => ({ value, sort: Math.random() })).sort((a, b) => a.sort - b.sort).map(({ value }) => value);
-			options.multipleChoiceSetup = [shuffle(a1), shuffle(a2)];
-		}
-		else if (playPage.problem.variant)
-		{
-			options.multipleChoiceCustom = playPage.problem.variant.type;
-			customMultipleChoiceAnswer = playPage.problem.variant.correctAnswer;
-			options.multipleChoiceCustomSetup = playPage.problem.variant.answers;
-		}
+		setUpQuestion(playPage.problem, options);
 		options.corner = playPage.problem.corner;
 		options.playerColor = playPage.problem.playerColor;
 		options.swapColors = playPage.problem.swapColors;
