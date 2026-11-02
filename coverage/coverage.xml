@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1793579344">
-  <project timestamp="1793579344">
+<coverage generated="1793580533">
+  <project timestamp="1793580533">
     <package name="App">
       <file name="/home/runner/work/tsumego-hero/tsumego-hero/src/Application.php">
         <class name="App\Application" namespace="App">
@@ -1532,8 +1532,8 @@
         <line num="363" type="stmt" count="4"/>
         <line num="364" type="stmt" count="4"/>
         <line num="365" type="stmt" count="4"/>
-        <line num="367" type="stmt" count="2"/>
-        <line num="369" type="stmt" count="2"/>
+        <line num="367" type="stmt" count="1"/>
+        <line num="369" type="stmt" count="1"/>
         <line num="374" type="stmt" count="22"/>
         <line num="375" type="stmt" count="18"/>
         <line num="378" type="stmt" count="5"/>
@@ -4617,8 +4617,8 @@
         <line num="37" type="method" name="require" visibility="public" complexity="3" crap="3" count="1042"/>
         <line num="39" type="stmt" count="1042"/>
         <line num="40" type="stmt" count="943"/>
-        <line num="41" type="stmt" count="106"/>
-        <line num="42" type="stmt" count="38"/>
+        <line num="41" type="stmt" count="105"/>
+        <line num="42" type="stmt" count="37"/>
         <line num="43" type="stmt" count="69"/>
         <line num="46" type="method" name="can" visibility="public" complexity="7" crap="7.07" count="786"/>
         <line num="48" type="stmt" count="786"/>
@@ -4923,7 +4923,7 @@
         <line num="17" type="stmt" count="0"/>
         <line num="18" type="stmt" count="165"/>
         <line num="20" type="stmt" count="165"/>
-        <line num="21" type="stmt" count="160"/>
+        <line num="21" type="stmt" count="159"/>
         <line num="22" type="stmt" count="2"/>
         <line num="23" type="stmt" count="165"/>
         <line num="24" type="stmt" count="14"/>
@@ -8752,7 +8752,7 @@
         <line num="80" type="stmt" count="191"/>
         <line num="84" type="method" name="readCookie" visibility="private" complexity="4" crap="4.01" count="191"/>
         <line num="86" type="stmt" count="191"/>
-        <line num="87" type="stmt" count="129"/>
+        <line num="87" type="stmt" count="128"/>
         <line num="88" type="stmt" count="83"/>
         <line num="90" type="stmt" count="83"/>
         <line num="91" type="stmt" count="83"/>
@@ -9722,11 +9722,11 @@
         <line num="168" type="stmt" count="322"/>
         <line num="169" type="stmt" count="322"/>
         <line num="170" type="stmt" count="322"/>
-        <line num="173" type="method" name="swapColorWords" visibility="public" complexity="1" crap="1" count="57"/>
-        <line num="175" type="stmt" count="57"/>
-        <line num="176" type="stmt" count="57"/>
-        <line num="177" type="stmt" count="57"/>
-        <line num="178" type="stmt" count="57"/>
+        <line num="173" type="method" name="swapColorWords" visibility="public" complexity="1" crap="1" count="52"/>
+        <line num="175" type="stmt" count="52"/>
+        <line num="176" type="stmt" count="52"/>
+        <line num="177" type="stmt" count="52"/>
+        <line num="178" type="stmt" count="52"/>
         <line num="181" type="method" name="tsumegoStatus" visibility="private" complexity="2" crap="2" count="324"/>
         <line num="183" type="stmt" count="324"/>
         <line num="184" type="stmt" count="6"/>
@@ -10406,7 +10406,7 @@
       </file>
       <file name="/home/runner/work/tsumego-hero/tsumego-hero/src/Utility/SetImage.php">
         <class name="App\Utility\SetImage" namespace="App\Utility">
-          <metrics complexity="26" methods="6" coveredmethods="4" conditionals="0" coveredconditionals="0" statements="55" coveredstatements="53" elements="61" coveredelements="57"/>
+          <metrics complexity="26" methods="6" coveredmethods="4" conditionals="0" coveredconditionals="0" statements="55" coveredstatements="52" elements="61" coveredelements="56"/>
         </class>
         <line num="22" type="method" name="store" visibility="public" complexity="5" crap="5.07" count="9"/>
         <line num="24" type="stmt" count="9"/>
@@ -10434,7 +10434,7 @@
         <line num="64" type="stmt" count="13"/>
         <line num="69" type="method" name="pathOf" visibility="private" complexity="1" crap="1" count="8"/>
         <line num="71" type="stmt" count="8"/>
-        <line num="78" type="method" name="process" visibility="public" complexity="10" crap="10" count="10"/>
+        <line num="78" type="method" name="process" visibility="public" complexity="10" crap="10.02" count="10"/>
         <line num="80" type="stmt" count="10"/>
         <line num="81" type="stmt" count="7"/>
         <line num="82" type="stmt" count="3"/>
@@ -10443,7 +10443,7 @@
         <line num="85" type="stmt" count="1"/>
         <line num="87" type="stmt" count="1"/>
         <line num="89" type="stmt" count="9"/>
-        <line num="90" type="stmt" count="1"/>
+        <line num="90" type="stmt" count="0"/>
         <line num="92" type="stmt" count="9"/>
         <line num="93" type="stmt" count="9"/>
         <line num="94" type="stmt" count="9"/>
@@ -10469,7 +10469,7 @@
         <line num="123" type="stmt" count="9"/>
         <line num="124" type="stmt" count="9"/>
         <line num="125" type="stmt" count="9"/>
-        <metrics loc="128" ncloc="109" classes="1" methods="6" coveredmethods="4" conditionals="0" coveredconditionals="0" statements="55" coveredstatements="53" elements="61" coveredelements="57"/>
+        <metrics loc="128" ncloc="109" classes="1" methods="6" coveredmethods="4" conditionals="0" coveredconditionals="0" statements="55" coveredstatements="52" elements="61" coveredelements="56"/>
       </file>
       <file name="/home/runner/work/tsumego-hero/tsumego-hero/src/Utility/SetNavigationButtons.php">
         <class name="App\Utility\SetNavigationButtons" namespace="App\Utility">
@@ -13256,6 +13256,6 @@
         <metrics loc="70" ncloc="54" classes="1" methods="1" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="30" coveredstatements="28" elements="31" coveredelements="28"/>
       </file>
     </package>
-    <metrics files="229" loc="26441" ncloc="22598" classes="167" methods="1218" coveredmethods="953" conditionals="0" coveredconditionals="0" statements="10647" coveredstatements="10074" elements="11865" coveredelements="11027"/>
+    <metrics files="229" loc="26441" ncloc="22598" classes="167" methods="1218" coveredmethods="953" conditionals="0" coveredconditionals="0" statements="10647" coveredstatements="10073" elements="11865" coveredelements="11026"/>
   </project>
 </coverage>
