@@ -23,16 +23,16 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">72.52% </span>
+                <span class="strong">73.11% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>66/91</span>
+                <span class='fraction'>68/93</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">59.34% </span>
+                <span class="strong">59.13% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>54/91</span>
+                <span class='fraction'>55/93</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">75.64% </span>
+                <span class="strong">76.25% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>59/78</span>
+                <span class='fraction'>61/80</span>
             </div>
         
             
@@ -296,7 +296,17 @@
 <a name='L231'></a><a href='#L231'>231</a>
 <a name='L232'></a><a href='#L232'>232</a>
 <a name='L233'></a><a href='#L233'>233</a>
-<a name='L234'></a><a href='#L234'>234</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L234'></a><a href='#L234'>234</a>
+<a name='L235'></a><a href='#L235'>235</a>
+<a name='L236'></a><a href='#L236'>236</a>
+<a name='L237'></a><a href='#L237'>237</a>
+<a name='L238'></a><a href='#L238'>238</a>
+<a name='L239'></a><a href='#L239'>239</a>
+<a name='L240'></a><a href='#L240'>240</a>
+<a name='L241'></a><a href='#L241'>241</a>
+<a name='L242'></a><a href='#L242'>242</a>
+<a name='L243'></a><a href='#L243'>243</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -411,7 +421,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">84x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">44x</span>
+<span class="cline-any cline-yes">45x</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">84x</span>
@@ -450,11 +460,8 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">27x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -529,7 +536,19 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">27x</span>
+<span class="cline-any cline-yes">27x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import { useState, useRef, useCallback, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useMutation } from '@tanstack/react-query';
 import { useAuth } from '../shared/AuthContext';
 import type { TagItem } from './tagTypes';
@@ -683,11 +702,8 @@ export function TagEditor({ tsumegoId, isTimeMode, problemSolved, canAddMoreTags
 <span class="cstat-no" title="statement not covered" >		return &lt;div data-testid="tag-editor"&gt;{tagList}&lt;/div&gt;;</span>
 	}
 &nbsp;
-	return (
-		&lt;div data-testid="tag-editor"&gt;
-			{tagList}
-&nbsp;
-			{error &amp;&amp; <span class="branch-1 cbranch-no" title="branch not covered" >&lt;div style={{ color: 'var(--feedback-error)', marginBottom: 6 }} data-testid="tag-error"&gt;{error}&lt;/div&gt;}</span>
+	const adding = (
+		&lt;&gt;
 &nbsp;
 			{!canTag &amp;&amp; (
 				&lt;div style={{ color: 'var(--text-softer-color)', fontSize: 14 }} data-testid="tag-solve-first"&gt;Solve the problem to add tags.&lt;/div&gt;
@@ -759,6 +775,17 @@ export function TagEditor({ tsumegoId, isTimeMode, problemSolved, canAddMoreTags
 			&lt;/div&gt;
 			&lt;/&gt;
 			)}
+		&lt;/&gt;
+	);
+&nbsp;
+	//On the play page the adding goes to its edit section, so a player who only solves sees just the tags
+	const addingTarget = document.getElementById('tag-adding');
+	return (
+		&lt;div data-testid="tag-editor"&gt;
+			{tagList}
+			{/* next to the tags, so an error of removing one shows while the edit section is closed */}
+			{error &amp;&amp; <span class="branch-1 cbranch-no" title="branch not covered" >&lt;div style={{ color: 'var(--feedback-error)', marginBottom: 6 }} data-testid="tag-error"&gt;{error}&lt;/div&gt;}</span>
+			{addingTarget ? createPortal(adding, addingTarget) : <span class="branch-1 cbranch-no" title="branch not covered" >adding}</span>
 		&lt;/div&gt;
 	);
 }
@@ -769,7 +796,7 @@ export function TagEditor({ tsumegoId, isTimeMode, problemSolved, canAddMoreTags
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-11-02T05:23:52.665Z
+                at 2026-11-02T06:48:12.708Z
             </div>
         <script src="../../prettify.js"></script>
         <script>
