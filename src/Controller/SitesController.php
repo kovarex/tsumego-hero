@@ -5,13 +5,11 @@ namespace App\Controller;
 use App\Model\Table\AchievementStatusTable;
 use App\Model\Table\UserTable;
 use App\Utility\Auth;
-use App\Utility\Constants;
 use App\Utility\MistakeTraining;
 use App\Utility\SiteGrowth;
 use App\Utility\TsumegoButtons;
 use App\Utility\TsumegoFilters;
 use App\Attribute\HttpGet;
-use App\Utility\Util;
 
 class SitesController extends AppController
 {
@@ -20,10 +18,6 @@ class SitesController extends AppController
 	{
 		$this->set('_page', 'home');
 		$this->set('_title', 'Tsumego Hero');
-
-		// Set default lastVisit tsumego ID if not already set (for first-time visitors)
-		if (empty(Util::cookie('lastVisit')))
-			Util::setCookie('lastVisit', Constants::$DEFAULT_TSUMEGO_ID);
 
 		$today = date('Y-m-d');
 		$dayRecordTable = $this->fetchTable('DayRecord');

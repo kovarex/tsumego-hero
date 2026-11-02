@@ -2,8 +2,10 @@
 
 use App\Model\Table\UserTable;
 use Facebook\WebDriver\WebDriverBy;
+use App\Utility\Auth;
 use App\Utility\Avatar;
 use App\Utility\Constants;
+use App\Utility\TsumegoUtil;
 use App\Utility\SiteGrowth;
 use PHPUnit\Framework\Attributes\Group;
 
@@ -217,22 +219,50 @@ class SitesControllerTest extends IntegrationTestCase
 		$this->assertStringContainsString('/changelog', $browser->driver->getCurrentURL());
 	}
 
-	public function testPlayButtonsWorkWithoutLastVisitSession()
+	//Play leads a first-time visitor to the first problem of the first site collection in the order
+	//of the collections page: not one in the trash, not one of a player's collection
+	public function testPlayLeadsAFirstVisitToTheFirstProblemOfTheSiteCollections()
 	{
-		$browser = Browser::instance();
-		new ContextPreparator();
-
-		// Clear lastVisit cookie to simulate first-time visitor
+		$context = new ContextPreparator(['tsumegos' => [
+			['sets' => [['name' => 'second collection', 'num' => 1, 'order' => 2]]],
+			['sets' => [['name' => 'first collection', 'num' => 2, 'order' => 1]]],
+			['sets' => [['name' => 'first collection', 'num' => 3, 'order' => 1]]],
+			['sets' => [['name' => 'first collection', 'num' => 1, 'order' => 1]], 'deleted' => '2026-01-01 00:00:00'],
+			['sets' => [['name' => 'player collection', 'num' => 1, 'order' => 0, 'user_id' => 'self']]]]]);
+		Auth::logout();
 		unset($_COOKIE['lastVisit']);
-		$this->assertFalse(isset($_COOKIE['lastVisit']), 'lastVisit should be cleared initially');
 
-		// Act: Load the index page
-		$browser->get('sites/index');
+		$this->get('/');
 
-		// Assert: Check that the play button links contain the default tsumego ID
-		$pageSource = $browser->driver->getPageSource();
-		$this->assertStringContainsString('/tsumegos/play/' . Constants::$DEFAULT_TSUMEGO_ID, $pageSource,
-			'Play button should use default tsumego ID when no lastVisit session exists');
+		$expected = 'href="/tsumegos/play/' . $context->tsumegos[1]['id'] . '"';
+		$this->assertResponseContains($expected, 'The menu Play leads to the first problem');
+		$this->assertGreaterThanOrEqual(2, substr_count((string) $this->_response->getBody(), $expected), 'The Level Mode tile leads there too');
+	}
+
+	//A site without a problem in its collections has nothing to play, so Play shows the collections
+	public function testPlayLeadsToTheCollectionsWithoutAnyProblem()
+	{
+		new ContextPreparator();
+		Auth::logout();
+		unset($_COOKIE['lastVisit']);
+
+		$this->assertNull(TsumegoUtil::firstProblemID());
+		$this->assertSame('/sets', TsumegoUtil::playUrl());
+	}
+
+	//A returning visitor continues with the problem opened last
+	public function testPlayLeadsToTheProblemOpenedLast()
+	{
+		$context = new ContextPreparator(['tsumegos' => [
+			['sets' => [['name' => 'first collection', 'num' => 1, 'order' => 1]]],
+			['sets' => [['name' => 'first collection', 'num' => 2, 'order' => 1]]]]]);
+		Auth::logout();
+		$_COOKIE['lastVisit'] = (string) $context->tsumegos[1]['id'];
+
+		$this->get('/');
+
+		$this->assertResponseContains('href="/tsumegos/play/' . $context->tsumegos[1]['id'] . '"');
+		$this->assertResponseNotContains('href="/tsumegos/play/' . $context->tsumegos[0]['id'] . '"');
 	}
 
 	//The Rating Mode tile opens the rating mode; it used to open a problem in the level mode.
