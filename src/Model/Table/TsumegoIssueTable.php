@@ -2,6 +2,8 @@
 
 namespace App\Model\Table;
 
+use App\Model\Entity\TsumegoComment;
+use App\Model\Entity\TsumegoIssue;
 use App\Utility\Util;
 use Cake\ORM\TableRegistry;
 
@@ -27,6 +29,42 @@ class TsumegoIssueTable extends AppTable
 			. ' WHERE any_connection.tsumego_id = ' . $tsumegoIdColumn . '))';
 	}
 
+
+	//An issue with its comments as the comment section shows it (app/issues/issueTypes.ts).
+	/**
+	 * @param list<TsumegoComment> $comments The comments of the issue, in the order they were written
+	 * @param array<int, array<string, mixed>> $authors The writers of the issue and its comments, see TsumegoCommentTable::authorsOf()
+	 * @return array<string, mixed>
+	 */
+	public static function payload(TsumegoIssue $issue, array $comments, array $authors): array
+	{
+		return [
+			'id' => $issue->id,
+			'tsumego_issue_status_id' => $issue->tsumego_issue_status_id,
+			'created' => $issue->created->format('c'),
+			'user_id' => $issue->user_id,
+		] + TsumegoCommentTable::authorPayload($authors[$issue->user_id] ?? null) + [
+			'comments' => array_map(fn(TsumegoComment $comment) => TsumegoCommentTable::payload($comment, $authors[$comment->user_id] ?? null), $comments),
+		];
+	}
+
+	//Opens an issue on the problem of the comment, with the comment as its first one; the writer
+	//of the comment is the author of the issue. The comment is saved, new or moved from elsewhere.
+	//Returns the issue, null when the comment fails the validation (nothing is saved then)
+	public static function openWith(TsumegoComment $comment): ?TsumegoIssue
+	{
+		// false from the callback rolls the issue back
+		return Util::database()->transactional(function () use ($comment): TsumegoIssue|false {
+			$issueTable = TableRegistry::getTableLocator()->get('TsumegoIssue');
+			$issue = $issueTable->saveOrFail($issueTable->newEntity([
+				'tsumego_id' => $comment->tsumego_id,
+				'user_id' => $comment->user_id,
+				'tsumego_issue_status_id' => self::OPENED_STATUS,
+			]));
+			$comment->tsumego_issue_id = $issue->id;
+			return TableRegistry::getTableLocator()->get('TsumegoComment')->save($comment) ? $issue : false;
+		}) ?: null;
+	}
 
 	//Delete an issue if it has no non-deleted comments.
 	//Should be called after a comment is deleted or removed from an issue to clean up empty issues automatically.

@@ -21,9 +21,11 @@ class MalformedIdTest extends IntegrationTestCase
 		'/sets/removeTsumego/abc',
 		'/sets/reorderTsumego/abc',
 		'/sets/resetProgress/abc/1',
-		'/users/acceptSGFProposal/abc',
-		'/users/rejectSGFProposal/abc',
-		'/users/reopenSGFProposal/abc',
+		'/proposals/acceptSgf/abc',
+		'/proposals/rejectSgf/abc',
+		'/proposals/reopenSgf/abc',
+		'/proposals/acceptTag/abc',
+		'/proposals/rejectTag/abc',
 	];
 
 	public function testAMalformedIdIsNotFound(): void
