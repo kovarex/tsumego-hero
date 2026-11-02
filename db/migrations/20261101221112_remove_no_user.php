@@ -6,11 +6,14 @@ use Phinx\Migration\AbstractMigration;
 
 //User 33 was "noUser", a fake account the automatic SGF versions were stored under, which the code
 //singled out by its id and its name. An automatic version has no user now (sgf.user_id NULL), so its
-//versions move to NULL and the account goes.
+//versions move to NULL and the account goes, with what it left behind: its problem statuses, its
+//comments and its issues are deleted (another player's comment on such an issue stays, as a plain
+//comment), and a day it was the user of the day keeps its statistics without a user.
 //Anything else that still points at the account stops the migration, with each column and its count,
 //read from the schema: an integer column with a foreign key to user, named *user_id or an author,
 //teacher, owner or creator id, that holds 33, or a text column named like author, name or user that
-//holds 'noUser'. The forum tables (phpbb_*) have their own users and are left out.
+//holds 'noUser'. The forum tables (phpbb_*) have their own users and are left out. A stop changes
+//nothing: the cleanup runs in the same transaction.
 final class RemoveNoUser extends AbstractMigration
 {
 	private const USER_ID = 33;
@@ -24,26 +27,64 @@ final class RemoveNoUser extends AbstractMigration
 		if ($user['name'] !== self::NAME && $user['display_name'] !== self::NAME)
 			throw new RuntimeException('User ' . self::USER_ID . ' is not ' . self::NAME . ' but ' . ($user['display_name'] ?? $user['name']) . ', nothing was changed');
 
+		$connection = $this->getAdapter()->getConnection();
+		$ownTransaction = !$connection->inTransaction();
+		if ($ownTransaction)
+			$connection->beginTransaction();
+		try
+		{
+			self::cleanUp($this);
+			$references = self::references($this);
+			if ($references)
+				throw new RuntimeException('User ' . self::USER_ID . ' (' . self::NAME . ') is still referenced, nothing was changed: ' . implode(', ', $references));
+
+			$this->execute('UPDATE sgf SET user_id = NULL WHERE user_id = ' . self::USER_ID);
+			$this->execute('DELETE FROM user WHERE id = ' . self::USER_ID);
+			if ($ownTransaction)
+				$connection->commit();
+		}
+		catch (Throwable $exception)
+		{
+			if ($connection->inTransaction())
+				$connection->rollBack();
+			throw $exception;
+		}
+	}
+
+	//What the account left behind and goes with it. A comment of another player on an issue of the
+	//account keeps its text as a plain comment; the foreign key would delete it with the issue.
+	private static function cleanUp(AbstractMigration $migration): void
+	{
+		$userID = self::USER_ID;
+		$migration->execute("UPDATE tsumego_comment SET tsumego_issue_id = NULL
+			WHERE user_id <> $userID AND tsumego_issue_id IN (SELECT id FROM tsumego_issue WHERE user_id = $userID)");
+		$migration->execute("DELETE FROM tsumego_comment WHERE user_id = $userID");
+		$migration->execute("DELETE FROM tsumego_issue WHERE user_id = $userID");
+		$migration->execute("DELETE FROM tsumego_status WHERE user_id = $userID");
+		// the foreign key would delete the day with the account
+		$migration->execute("UPDATE day_record SET user_id = NULL WHERE user_id = $userID");
+	}
+
+	//Every column that still points at the account, but the automatic SGF versions, with its count
+	/** @return list<string> */
+	private static function references(AbstractMigration $migration): array
+	{
 		$references = [];
-		foreach (self::userIDColumns($this) as $column)
+		foreach (self::userIDColumns($migration) as $column)
 		{
 			if ($column['table_name'] === 'sgf' && $column['column_name'] === 'user_id')
 				continue;
-			$count = (int) $this->fetchRow('SELECT COUNT(*) AS n FROM `' . $column['table_name'] . '` WHERE `' . $column['column_name'] . '` = ' . self::USER_ID)['n'];
+			$count = (int) $migration->fetchRow('SELECT COUNT(*) AS n FROM `' . $column['table_name'] . '` WHERE `' . $column['column_name'] . '` = ' . self::USER_ID)['n'];
 			if ($count > 0)
 				$references[] = $column['table_name'] . '.' . $column['column_name'] . ': ' . $count;
 		}
-		foreach (self::userNameColumns($this) as $column)
+		foreach (self::userNameColumns($migration) as $column)
 		{
-			$count = (int) $this->fetchRow('SELECT COUNT(*) AS n FROM `' . $column['table_name'] . '` WHERE `' . $column['column_name'] . "` = '" . self::NAME . "'")['n'];
+			$count = (int) $migration->fetchRow('SELECT COUNT(*) AS n FROM `' . $column['table_name'] . '` WHERE `' . $column['column_name'] . "` = '" . self::NAME . "'")['n'];
 			if ($count > 0)
 				$references[] = $column['table_name'] . '.' . $column['column_name'] . " = '" . self::NAME . "': " . $count;
 		}
-		if ($references)
-			throw new RuntimeException('User ' . self::USER_ID . ' (' . self::NAME . ') is still referenced, nothing was changed: ' . implode(', ', $references));
-
-		$this->execute('UPDATE sgf SET user_id = NULL WHERE user_id = ' . self::USER_ID);
-		$this->execute('DELETE FROM user WHERE id = ' . self::USER_ID);
+		return $references;
 	}
 
 	public function down(): void
