@@ -5,7 +5,14 @@
          backupGlobals="true"
          stderr="true"
          colors="true"
-         cacheDirectory="tmp/phpunit-cache">
+         cacheDirectory="tmp/phpunit-cache"
+         failOnWarning="true"
+         failOnNotice="true"
+         failOnDeprecation="true"
+         displayDetailsOnTestsThatTriggerWarnings="true"
+         displayDetailsOnTestsThatTriggerNotices="true"
+         displayDetailsOnTestsThatTriggerDeprecations="true"
+         displayDetailsOnTestsThatTriggerErrors="true">
     <php>
         <ini name="memory_limit" value="-1"/>
     </php>
