@@ -45,6 +45,8 @@ class AchievementChecker
 			'achievement_id' => $achievementID->value,
 			'user_id' => Auth::getUserID(),
 		]));
+		// unlocked from now on, so a second reason to gain it in the same check does not insert it again
+		$this->existingStatuses[$achievementID->value] = true;
 
 		$this->updated[] = $this->fetchTable('Achievement')->get($achievementID->value);
 	}
