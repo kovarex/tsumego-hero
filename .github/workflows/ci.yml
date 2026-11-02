@@ -22,7 +22,7 @@ jobs:
   test-shard:
     name: tests (shard ${{ matrix.shard }}/${{ strategy.job-total }})
     runs-on: ubuntu-24.04
-    timeout-minutes: 120
+    timeout-minutes: 60
     strategy:
       fail-fast: false
       matrix:
@@ -67,7 +67,7 @@ jobs:
           php-version: '8.4'
           extensions: mbstring, intl
           # Only master collects coverage, with PCOV: it records only src/ and costs far less than Xdebug.
-          coverage: ${{ (github.ref == 'refs/heads/master' || github.head_ref == 'besogo-load-failure') && 'pcov' || 'none' }}
+          coverage: ${{ github.ref == 'refs/heads/master' && 'pcov' || 'none' }}
           # Without opcache's optimizer, as under Xdebug: it merges and drops lines (a run of echos, a jump), and they would drop out of the coverage.
           ini-values: pcov.directory=${{ github.workspace }}/src, opcache.optimization_level=0
 
@@ -112,7 +112,7 @@ jobs:
         run: pnpm run test:scripts
 
       - name: Build React app
-        run: ${{ (github.ref == 'refs/heads/master' || github.head_ref == 'besogo-load-failure') && 'pnpm run build:coverage' || 'pnpm run build' }}
+        run: ${{ github.ref == 'refs/heads/master' && 'pnpm run build:coverage' || 'pnpm run build' }}
 
       - name: Generate WebP images
         timeout-minutes: 10
@@ -194,7 +194,7 @@ jobs:
         run: |
           mkdir -p /tmp/coverage
           # Use router script to handle CakePHP dispatcher filter routes
-          if [ "${{ github.ref }}" = "refs/heads/master" ] || [ "${{ github.head_ref }}" = "besogo-load-failure" ]; then
+          if [ "${{ github.ref }}" = "refs/heads/master" ]; then
             nohup php -d auto_prepend_file="$PWD/.github/ci/coverage-prepend.php" -S 0.0.0.0:8080 -t webroot .github/ci/router.php > server.log 2>&1 &
           else
             nohup php -S 0.0.0.0:8080 -t webroot .github/ci/router.php > server.log 2>&1 &
@@ -220,25 +220,6 @@ jobs:
       - name: Wait for Selenium
         run: |
           timeout 120 sh -c 'until curl -s http://localhost:4444/status | grep -q "\"ready\": *true"; do sleep 0.5; done' || (cat /tmp/selenium.log; exit 1)
-
-      - name: TEMP loop of the shard with master's coverage setup (remove before merge)
-        env:
-          TZ: UTC
-          SELENIUM_URL: http://localhost:4444
-          SELENIUM_BROWSER: firefox
-          TEST_APP_URL: https://host.docker.internal:8443
-          TEST_ENVIRONMENT: github-ci
-        run: |
-          mkdir -p /tmp/coverage
-          files=$(php scripts/test-shard.php ${{ matrix.shard }} ${{ strategy.job-total }})
-          failed=0
-          for i in 1 2 3 4 5 6; do
-            rm -f /tmp/coverage/webserver-*.cov /tmp/coverage/js-raw-*.json
-            vendor/bin/phpunit --exclude-group apache-only --exclude-group disabled $files > loop.out 2>&1 && echo "round $i: $(grep -E '^OK' loop.out)" || { failed=$((failed+1)); echo "LOOP FAILURE round $i"; grep -A14 '^[0-9]*) ' loop.out; }
-          done
-          rm -f /tmp/coverage/webserver-*.cov /tmp/coverage/js-raw-*.json
-          echo "LOOP SUMMARY shard ${{ matrix.shard }}: $failed failed rounds of 6"
-          grep -c '"status":' caddy.log | sed 's/^/caddy requests logged: /'
 
       - name: Run tests
         env:
@@ -266,7 +247,7 @@ jobs:
           if-no-files-found: ignore
 
       - name: Upload browser failure dumps
-        if: always()
+        if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: browser-failure-dumps-${{ matrix.shard }}
