@@ -8,7 +8,6 @@ use App\Model\Table\AchievementConditionTable;
 use App\Utility\AchievementChecker;
 use App\Utility\AchievementId;
 use App\Utility\Auth;
-use App\Utility\TsumegoUtil;
 
 abstract class AchievementTestCase extends IntegrationTestCase
 {
@@ -81,8 +80,7 @@ abstract class AchievementTestCase extends IntegrationTestCase
 	}
 
 	//Create a set with multiple tsumegos + SetConnection records
-	//KEY DISCOVERY: TsumegoUtil::collectTsumegosFromSet() requires SetConnection records!
-	//Without them, the method returns empty array and achievements don't unlock.
+	//The problems belong to the set through SetConnection records, without them achievements don't unlock.
 	//$public: Set visibility (1 = public)
 	//$userId: Owner of the collection (null = the site's own collection)
 	/**

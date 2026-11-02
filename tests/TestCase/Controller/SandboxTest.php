@@ -58,6 +58,29 @@ class SandboxTest extends IntegrationTestCase
 		$this->assertNotContains('public set', $names);
 	}
 
+	public function testSandboxCardCountsSolvedAndDifficultyOfTheProblemsOutOfTheTrash(): void
+	{
+		new ContextPreparator([
+			'user' => ['premium' => 1],
+			'tsumegos' => [
+				['status' => 'S', 'sets' => [['name' => 'build', 'public' => 0, 'num' => 1]]],
+				['status' => 'C', 'sets' => [['name' => 'build', 'public' => 0, 'num' => 2]]],
+				['sets' => [['name' => 'build', 'public' => 0, 'num' => 3]]],
+				['status' => 'S', 'deleted' => '2026-01-01 00:00:00', 'sets' => [['name' => 'build', 'public' => 0, 'num' => 4]]],
+				['sets' => [['name' => 'empty build', 'public' => 0, 'num' => 1]], 'deleted' => '2026-01-01 00:00:00'],
+			]]);
+
+		$this->get('/sets/sandbox');
+
+		$cards = array_column($this->viewVariable('setsNew'), null, 'name');
+		$this->assertSame(3, $cards['build']['amount']);
+		$this->assertSame(67, $cards['build']['solved']);
+		$this->assertSame('11k', $cards['build']['difficulty']);
+		$this->assertSame(0, $cards['empty build']['amount']);
+		$this->assertSame(0, $cards['empty build']['solved']);
+		$this->assertSame(3, $this->viewVariable('overallCounter'));
+	}
+
 	public function testSandboxSetsPageVariable(): void
 	{
 		new ContextPreparator(['user' => ['premium' => 1]]);
