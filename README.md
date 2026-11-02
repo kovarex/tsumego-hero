@@ -42,6 +42,7 @@ ddev start
 ```
 ddev import-db --file=/mnt/c/db-tsumego-xyz.sql
 ```
+- An anonymized copy of the production database in a local MariaDB (also for Claude sessions): [docs/prod-db-copy.md](docs/prod-db-copy.md)
 
 - To jump to your app in browser:
 

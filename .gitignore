@@ -74,3 +74,5 @@ vite.config.*.timestamp-*
 
 # Test site deploy hook, installed by hand from scripts/deploy-test-hook.cgi
 /webroot/deploy-hook.cgi
+# The dump of the production database on the test site, docs/prod-db-copy.md
+/webroot/db-dump/
