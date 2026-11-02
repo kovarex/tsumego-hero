@@ -18,8 +18,8 @@ use App\Model\Table\SgfTable;
 use App\Model\Table\TsumegoStatusTable;
 use App\Model\Table\TsumegoTable;
 use App\Model\Table\AdminActivityTypeTable;
-use App\Model\Table\RejectTable;
 use App\Model\Table\TimeModeCategoryTable;
+use App\Model\Table\TimeModeRankTable;
 use App\Model\Table\UserTable;
 use App\Utility\AdminActivityLogger;
 use App\Utility\Auth;
@@ -28,12 +28,11 @@ use App\Utility\Constants;
 use App\Utility\CookieFlash;
 use App\Utility\GoogleTokenVerifier;
 use App\Utility\GoogleTokenVerifierInterface;
+use App\Utility\Highscore;
 use App\Utility\JwtAuth;
 use App\Utility\MistakeTraining;
-use App\Utility\ProposalFeedback;
 use App\Utility\PwnedPasswordChecker;
 use App\Utility\PwnedPasswordCheckerInterface;
-use App\Utility\SgfCommentReorientation;
 use App\Utility\UploadedAvatar;
 use App\Utility\UserActivitiesRenderer;
 use App\Utility\Util;
@@ -542,15 +541,8 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 	{
 		$this->set('_page', 'levelHighscore');
 		$this->set('_title', 'Tsumego Hero - Highscore');
-
-		$this->set('users', $this->queryHighscoreWithSelfView(
-			"SELECT id, display_name, external_id, picture, avatar_setting_id, uploaded_avatar_hash, email, rating, premium_id, level, xp, solved,
-				ROW_NUMBER() OVER (ORDER BY level DESC, xp DESC) as position
-			FROM user
-			WHERE deleted IS NULL",
-			topRows: 1000
-		));
-		$this->set('totalUsers', $this->countActiveUsers());
+		$this->set('users', Highscore::level());
+		$this->set('totalUsers', Highscore::activePlayerCount());
 	}
 
 	#[HttpGet]
@@ -558,17 +550,10 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 	{
 		$this->set('_page', 'ratingHighscore');
 		$this->set('_title', 'Tsumego Hero - Rating');
-
 		if (Auth::isLoggedIn())
 			Auth::saveUserField('highscore_page_id', Constants::$HIGHSCORE_RATING);
-
-		$this->set('users', $this->queryHighscoreWithSelfView(
-			"SELECT id, display_name, external_id, picture, avatar_setting_id, uploaded_avatar_hash, email, rating, premium_id,
-				ROW_NUMBER() OVER (ORDER BY rating DESC) as position
-			FROM user
-			WHERE deleted IS NULL"
-		));
-		$this->set('totalUsers', $this->countActiveUsers());
+		$this->set('users', Highscore::rating());
+		$this->set('totalUsers', Highscore::activePlayerCount());
 	}
 
 	#[HttpGet]
@@ -576,27 +561,8 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 	{
 		$this->set('_page', 'tagHighscore');
 		$this->set('_title', 'Tsumego Hero - Added Tags');
-
-		$userId = Auth::isLoggedIn() ? Auth::getUserID() : -1;
-
-		$this->set('tagContributors', $this->queryHighscoreWithSelfView("
-			SELECT
-				user.id as id,
-				user.display_name as display_name,
-				user.external_id as external_id,
-				user.picture as picture,
-				user.avatar_setting_id as avatar_setting_id,
-				user.uploaded_avatar_hash as uploaded_avatar_hash,
-				user.email as email,
-				user.rating as rating,
-				user.premium_id AS premium_id,
-				COUNT(tag_connection.id) AS tag_count,
-				ROW_NUMBER() OVER (ORDER BY COUNT(tag_connection.id) DESC) as position
-			FROM user
-			LEFT JOIN tag_connection ON tag_connection.user_id = user.id AND tag_connection.approved = true
-			WHERE (tag_connection.id IS NOT NULL OR user.id = ?) AND user.deleted IS NULL
-			GROUP BY user.id", 'id', [$userId]));
-		$this->set('totalUsers', $this->countActiveUsers());
+		$this->set('tagContributors', Highscore::tags());
+		$this->set('totalUsers', Highscore::activePlayerCount());
 	}
 
 	#[HttpGet]
@@ -604,175 +570,43 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 	{
 		$this->set('_page', 'achievementHighscore');
 		$this->set('_title', 'Tsumego Hero - Achievements Highscore');
-		$this->set('totalUsers', null); // no count of the players under this table
-
 		if (Auth::isLoggedIn())
 			Auth::saveUserField('highscore_page_id', Constants::$HIGHSCORE_RATING);
-
-		$userId = Auth::isLoggedIn() ? Auth::getUserID() : -1;
-
-		$this->set('users', $this->queryHighscoreWithSelfView("
-			SELECT
-				user.id AS id,
-				user.display_name AS display_name,
-				user.rating AS rating,
-				user.picture AS picture,
-				user.avatar_setting_id AS avatar_setting_id,
-				user.uploaded_avatar_hash AS uploaded_avatar_hash,
-				user.external_id AS external_id,
-				user.premium_id AS premium_id,
-				user.email AS email,
-				COUNT(DISTINCT achievement_status.achievement_id) AS achievement_score,
-				COALESCE(SUM(CASE WHEN achievement_status.value > 1 THEN achievement_status.value ELSE 0 END), 0) AS achievement_earned_times,
-				ROW_NUMBER() OVER (
-					ORDER BY COUNT(DISTINCT achievement_status.achievement_id) DESC,
-						COALESCE(SUM(achievement_status.value), 0) DESC) as position
-			FROM user
-			LEFT JOIN achievement_status
-				ON achievement_status.user_id = user.id
-			WHERE (achievement_status.id IS NOT NULL OR user.id = ?) AND user.deleted IS NULL
-			GROUP BY user.id", 'id', [$userId]));
+		$this->set('users', Highscore::achievements());
+		$this->set('totalUsers', null); // no count of the players under this table
 	}
 
+	//The best runs of a time mode category at one rank. The category is the one the player
+	//played last until the buttons pick one, the rank 15k.
 	#[HttpGet]
 	public function time_mode(): void
 	{
 		$this->set('_page', 'timeHighscore');
 		$this->set('_title', 'Tsumego Hero - Time Highscore');
-
-		// Build rank name -> ID lookup
-		$rankNameToId = $this->fetchTable('TimeModeRank')->find('list', keyField: 'name', valueField: 'id')->toArray();
-
-		$currentRank = '';
-		$params1 = '';
-		$params2 = '';
-
 		if (Auth::isLoggedIn())
 			Auth::saveUserField('highscore_page_id', Constants::$HIGHSCORE_TIME_MODE);
 
+		// the buttons pass the category as its id - 1, and the rank by its name
 		if ($this->query('category') !== null)
 		{
-			$params1 = $this->query('category');
-			$params2 = $this->query('rank') ?? '15k';
-			$currentRank = $params2;
-			$categoryId = intval($params1) + 1;
-			$rankId = $rankNameToId[$params2] ?? 1;
+			$categoryID = (int) $this->query('category') + 1;
+			$rankName = $this->query('rank') ?? '15k';
 		}
 		else
 		{
-			$user = Auth::isLoggedIn() ? Auth::getUser() : null;
-			if ($user && ($user['last_time_mode_category_id'] ?? null))
-				$categoryId = $user['last_time_mode_category_id'];
-			else
-				$categoryId = TimeModeCategoryTable::SLOW;
-
-			$params1 = $categoryId - 1;
-			$params2 = '15k';
-			$currentRank = $params2;
-			$rankId = $rankNameToId[$params2] ?? 1;
+			$categoryID = (int) ((Auth::isLoggedIn() ? Auth::getUser()['last_time_mode_category_id'] : null) ?: TimeModeCategoryTable::SLOW);
+			$rankName = '15k';
 		}
 
-		$userId = Auth::isLoggedIn() ? Auth::getUserID() : -1;
+		$rankNames = $this->fetchTable('TimeModeRank')->find('list', keyField: 'id', valueField: 'name')->orderBy(['id'])->toArray();
+		$rankID = array_search($rankName, $rankNames, true) ?: TimeModeRankTable::RANK_15K;
 
-		$this->set('users', $this->queryHighscoreWithSelfView("
-			SELECT
-				user.id AS id,
-				user.display_name AS display_name,
-				user.external_id AS external_id,
-				user.picture AS picture,
-				user.avatar_setting_id AS avatar_setting_id,
-				user.uploaded_avatar_hash AS uploaded_avatar_hash,
-				user.email AS email,
-				user.rating AS rating,
-				user.premium_id AS premium_id,
-				COALESCE(MAX(time_mode_session.points), 0) AS points,
-				ROW_NUMBER() OVER (ORDER BY COALESCE(MAX(time_mode_session.points), 0) DESC) as position
-			FROM user
-			LEFT JOIN time_mode_session ON time_mode_session.user_id = user.id
-				AND time_mode_session.time_mode_category_id = " . intval($categoryId) . "
-				AND time_mode_session.time_mode_rank_id = " . intval($rankId) . "
-			WHERE (time_mode_session.id IS NOT NULL OR user.id = ?) AND user.deleted IS NULL
-			GROUP BY user.id", 'id', [$userId]));
-		$this->set('totalUsers', $this->countActiveUsers());
-
-		// Build rank buttons: single query replaces 60+ individual lookups
-		$existingSessions = Util::query("
-			SELECT time_mode_category_id, time_mode_rank_id
-			FROM time_mode_session
-			GROUP BY time_mode_category_id, time_mode_rank_id");
-		$sessionExists = [];
-		foreach ($existingSessions as $row)
-			$sessionExists[$row['time_mode_category_id'] . '_' . $row['time_mode_rank_id']] = true;
-
-		$rankNames = $this->buildRankNames();
-		$modes = [];
-		$modes2 = [];
-		for ($i = 0; $i < 3; $i++)
-		{
-			$modes[$i] = [];
-			$modes2[$i] = [];
-			foreach ($rankNames as $j => $rankName)
-			{
-				$modes2[$i][$j] = $rankName;
-				$rId = $rankNameToId[$rankName] ?? null;
-				$modes[$i][$j] = ($rId && isset($sessionExists[($i + 1) . '_' . $rId])) ? 1 : $rankName;
-			}
-		}
-
-		$this->set('params1', $params1);
-		$this->set('params2', $params2);
-		$this->set('modes', $modes);
-		$this->set('modes2', $modes2);
-	}
-
-	private function countActiveUsers(): int
-	{
-		return $this->fetchTable('User')->find()->where(['deleted IS' => null])->count();
-	}
-
-	//Run a single CTE query that returns the top ranked rows plus the rows around
-	//the current user. The $rankedQuery must be a SELECT that produces a `position`
-	//column via ROW_NUMBER().
-	//$rankedQuery: SQL SELECT with ROW_NUMBER() ... as position
-	//$idColumn: Column name used to identify the current user (default: 'id')
-	//$topRows: How many top rows are always listed
-	/**
-	 * @param array<int, mixed> $extraParams Extra bound parameters for the ranked query
-	 * @return array<int, array<string, mixed>>
-	 */
-	private function queryHighscoreWithSelfView(string $rankedQuery, string $idColumn = 'id', array $extraParams = [], int $topRows = 30): array
-	{
-		$userId = Auth::isLoggedIn() ? Auth::getUserID() : -1;
-		$neighborRadius = 3;
-
-		$sql = "
-			WITH ranked AS ({$rankedQuery}),
-			self_pos AS (SELECT position FROM ranked WHERE {$idColumn} = ?)
-			SELECT r.*
-			FROM ranked r
-			LEFT JOIN self_pos sp ON 1=1
-			WHERE r.position <= {$topRows}
-			   OR (sp.position IS NOT NULL
-			       AND r.position BETWEEN sp.position - ? AND sp.position + ?)
-			ORDER BY r.position";
-
-		return Util::query($sql, array_merge($extraParams, [$userId, $neighborRadius, $neighborRadius]));
-	}
-
-	//Build array of rank names from 15k down to 5d (matching time_mode_rank table order).
-	private function buildRankNames(): array
-	{
-		$names = [];
-		$rank = 15;
-		while ($rank > -5)
-		{
-			if ($rank >= 1)
-				$names[] = $rank . 'k';
-			else
-				$names[] = (($rank - 1) * -1) . 'd';
-			$rank--;
-		}
-		return $names;
+		$this->set('users', Highscore::timeMode($categoryID, $rankID));
+		$this->set('totalUsers', Highscore::activePlayerCount());
+		$this->set('categoryIndex', $categoryID - 1);
+		$this->set('rankName', $rankName);
+		$this->set('rankNames', $rankNames);
+		$this->set('playedRankIDs', Highscore::playedTimeModeRankIDs($categoryID));
 	}
 
 	#[HttpGet]
@@ -780,19 +614,8 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 	{
 		$this->set('_page', 'dailyHighscore');
 		$this->set('_title', 'Tsumego Hero - Daily Highscore');
-
-		$userId = Auth::isLoggedIn() ? Auth::getUserID() : -1;
-
-		$this->set('users', $this->queryHighscoreWithSelfView(
-			"SELECT id, name, display_name, external_id, picture, avatar_setting_id, uploaded_avatar_hash, email, rating, premium_id, daily_xp, daily_solved,
-				ROW_NUMBER() OVER (ORDER BY daily_xp DESC) as position
-			FROM user
-			WHERE (daily_xp > 0 OR id = ?) AND deleted IS NULL",
-			'id',
-			[$userId]
-		));
-
-		$this->set('totalUsers', Util::query("SELECT COUNT(*) as cnt FROM user WHERE daily_xp > 0 AND deleted IS NULL")[0]['cnt']);
+		$this->set('users', Highscore::daily());
+		$this->set('totalUsers', Highscore::dailyPlayerCount());
 	}
 
 	//Redirect to the logged-in user's own profile page.
@@ -1371,214 +1194,6 @@ OFFSET " . $offset, [$userID, $userID]);
 		$this->set('pageIndex', $pageIndex);
 		$this->set('PAGE_SIZE', $PAGE_SIZE);
 		$this->set('attempts', $attempts);
-	}
-
-	#[HttpPost]
-	public function acceptSGFProposal(int $sgfID)
-	{
-		$this->Authorization->authorize('Admin');
-
-		$proposalToApprove = $this->fetchTable('Sgf')->find()->where(['id' => $sgfID])->first();
-		if (!$proposalToApprove)
-		{
-			CookieFlash::set('Sgf proposal doesn\'t exist.', 'fail');
-			return $this->redirect('/admin/sgf-proposals');
-		}
-
-		if ($proposalToApprove->sgf_status_id != SgfTable::STATUS_PROPOSED)
-		{
-			CookieFlash::set('Sgf proposal was already decided.', 'fail');
-			return $this->redirect('/admin/sgf-proposals');
-		}
-		$replacedSgfID = SgfTable::findCurrentVersionID($proposalToApprove->tsumego_id);
-		SgfTable::accept($proposalToApprove->id, Auth::getUserID());
-		SgfCommentReorientation::afterAccepted($proposalToApprove->id);
-
-		CookieFlash::set('Sgf proposal accepted', 'success');
-
-		$userToApprove = $this->fetchTable('User')->find()->select(['display_name'])->where(['id' => $proposalToApprove->user_id])->first();
-		AdminActivityLogger::log(AdminActivityTypeTable::ACCEPT_PROPOSAL, $proposalToApprove->tsumego_id, null, null, $userToApprove?->display_name);
-
-		$tsumegoID = $proposalToApprove->tsumego_id;
-		ProposalFeedback::send(
-			(int) $proposalToApprove->user_id,
-			'Your proposal for ' . ProposalFeedback::problemName($tsumegoID) . ' was accepted by ' . ProposalFeedback::adminName() . ', it is the current version of the problem now.',
-			$tsumegoID,
-			$proposalToApprove->description,
-			ProposalFeedback::commentFromRequest($this->input('comment')),
-			$this->_getEmailer(),
-			ProposalFeedback::diffUrl($proposalToApprove->id, $replacedSgfID));
-
-		return $this->redirect('/admin/sgf-proposals');
-	}
-
-	#[HttpPost]
-	public function rejectSGFProposal(int $sgfID)
-	{
-		$this->Authorization->authorize('Admin');
-
-		$proposalToReject = $this->fetchTable('Sgf')->find()->where(['id' => $sgfID])->first();
-		if (!$proposalToReject)
-		{
-			CookieFlash::set('Sgf proposal doesn\'t exist.', 'fail');
-			return $this->redirect('/admin/sgf-proposals');
-		}
-
-		if ($proposalToReject->sgf_status_id != SgfTable::STATUS_PROPOSED)
-		{
-			CookieFlash::set('Sgf proposal was already decided.', 'fail');
-			return $this->redirect('/admin/sgf-proposals');
-		}
-
-		$comment = ProposalFeedback::commentFromRequest($this->input('comment'));
-		if ($comment === '')
-		{
-			CookieFlash::set('Write the proposer why the proposal is rejected.', 'fail');
-			return $this->redirect('/admin/sgf-proposals');
-		}
-
-		$rejectTable = $this->fetchTable('Reject');
-		$rejectTable->saveOrFail($rejectTable->newEntity([
-			'user_id' => $proposalToReject->user_id,
-			'rejected_by_user_id' => Auth::getUserID(),
-			'comment' => $comment,
-			'tsumego_id' => $proposalToReject->tsumego_id,
-			'sgf_id' => $proposalToReject->id,
-			'reject_type_id' => RejectTable::TYPE_PROPOSAL]));
-		// kept, so the proposer can still see what they proposed
-		SgfTable::setStatus($proposalToReject->id, SgfTable::STATUS_REJECTED);
-		CookieFlash::set('Sgf proposal rejected', 'success');
-
-		$userToReject = $this->fetchTable('User')->find()->select(['display_name'])->where(['id' => $proposalToReject->user_id])->first();
-		AdminActivityLogger::log(AdminActivityTypeTable::REJECT_PROPOSAL, $proposalToReject->tsumego_id, null, null, $userToReject?->display_name);
-
-		$tsumegoID = $proposalToReject->tsumego_id;
-		ProposalFeedback::send(
-			(int) $proposalToReject->user_id,
-			'Your proposal for ' . ProposalFeedback::problemName($tsumegoID) . ' was rejected by ' . ProposalFeedback::adminName() . '.',
-			$tsumegoID,
-			$proposalToReject->description,
-			$comment,
-			$this->_getEmailer(),
-			ProposalFeedback::diffUrl($proposalToReject->id, SgfTable::findCurrentVersionID($tsumegoID)));
-
-		return $this->redirect('/admin/sgf-proposals');
-	}
-
-	//Puts a rejected SGF proposal back among the ones waiting for a decision.
-	#[HttpPost]
-	public function reopenSGFProposal(int $sgfID)
-	{
-		$this->Authorization->authorize('Admin');
-
-		$proposalToReopen = $this->fetchTable('Sgf')->find()->where(['id' => $sgfID])->first();
-		if (!$proposalToReopen || $proposalToReopen->sgf_status_id != SgfTable::STATUS_REJECTED)
-		{
-			CookieFlash::set('There is no rejected sgf proposal to reopen.', 'fail');
-			return $this->redirect('/admin/sgf-proposals');
-		}
-		SgfTable::setStatus($proposalToReopen->id, SgfTable::STATUS_PROPOSED);
-		$this->fetchTable('Reject')->deleteAll(['sgf_id' => $proposalToReopen->id]);
-		CookieFlash::set('Sgf proposal reopened', 'success');
-
-		$proposer = $this->fetchTable('User')->find()->select(['display_name'])->where(['id' => $proposalToReopen->user_id])->first();
-		AdminActivityLogger::log(AdminActivityTypeTable::REOPEN_PROPOSAL, $proposalToReopen->tsumego_id, null, null, $proposer?->display_name);
-
-		return $this->redirect('/admin/sgf-proposals');
-	}
-
-	#[HttpPost]
-	public function acceptTagConnectionProposal(string $tagConnectionID)
-	{
-		$this->Authorization->authorize('Admin');
-
-		$tagConnectionTable = $this->fetchTable('TagConnection');
-		$proposalToApprove = $tagConnectionTable->find()->where(['id' => (int) $tagConnectionID])->first();
-		if (!$proposalToApprove)
-		{
-			CookieFlash::set('Tag proposal doesn\'t exist.', 'fail');
-			return $this->redirect('/admin/tag-proposals');
-		}
-
-		if ($proposalToApprove->approved)
-		{
-			CookieFlash::set('Tag proposal was already accepted.', 'fail');
-			return $this->redirect('/admin/tag-proposals');
-		}
-		$proposalToApprove->approved = true;
-
-		$tag = $this->fetchTable('Tag')->get($proposalToApprove->tag_id);
-		AdminActivityLogger::log(AdminActivityTypeTable::ACCEPT_TAG, $proposalToApprove->tsumego_id, null, null, $tag->name);
-		$tagConnectionTable->saveOrFail($proposalToApprove);
-
-		// tags are accepted by the dozen, so the proposer only hears about it when the admin had something to say
-		$comment = ProposalFeedback::commentFromRequest($this->input('comment'));
-		if ($comment !== '')
-		{
-			$tsumegoID = $proposalToApprove->tsumego_id;
-			ProposalFeedback::send(
-				(int) $proposalToApprove->user_id,
-				'Your tag ' . $tag->name . ' on ' . ProposalFeedback::problemName($tsumegoID) . ' was accepted by ' . ProposalFeedback::adminName() . '.',
-				$tsumegoID,
-				null,
-				$comment,
-				$this->_getEmailer());
-		}
-		return $this->redirect('/admin/tag-proposals');
-	}
-
-	#[HttpPost]
-	public function rejectTagConnectionProposal(string $tagConnectionID)
-	{
-		$this->Authorization->authorize('Admin');
-
-		$tagConnectionTable = $this->fetchTable('TagConnection');
-		$proposalToReject = $tagConnectionTable->find()->where(['id' => (int) $tagConnectionID])->first();
-		if (!$proposalToReject)
-		{
-			CookieFlash::set('Tag proposal doesn\'t exist.', 'fail');
-			return $this->redirect('/admin/tag-proposals');
-		}
-
-		if ($proposalToReject->approved)
-		{
-			CookieFlash::set('Tag proposal was already accepted.', 'fail');
-			return $this->redirect('/admin/tag-proposals');
-		}
-
-		$comment = ProposalFeedback::commentFromRequest($this->input('comment'));
-		if ($comment === '')
-		{
-			CookieFlash::set('Write the proposer why the tag is rejected.', 'fail');
-			return $this->redirect('/admin/tag-proposals');
-		}
-
-		$tag = $this->fetchTable('Tag')->get($proposalToReject->tag_id);
-
-		AdminActivityLogger::log(AdminActivityTypeTable::REJECT_TAG, $proposalToReject->tsumego_id, null, $tag->name, null);
-
-		$rejectTable = $this->fetchTable('Reject');
-		$rejectTable->saveOrFail($rejectTable->newEntity([
-			'user_id' => $proposalToReject->user_id,
-			'rejected_by_user_id' => Auth::getUserID(),
-			'comment' => $comment,
-			'tsumego_id' => $proposalToReject->tsumego_id,
-			'reject_type_id' => RejectTable::TYPE_TAG,
-			'tag_id' => $tag->id,
-			'tag_name' => $tag->name]));
-		$tagConnectionTable->deleteOrFail($proposalToReject);
-
-		$tsumegoID = $proposalToReject->tsumego_id;
-		ProposalFeedback::send(
-			(int) $proposalToReject->user_id,
-			'Your tag ' . $tag->name . ' on ' . ProposalFeedback::problemName($tsumegoID) . ' was rejected by ' . ProposalFeedback::adminName() . '.',
-			$tsumegoID,
-			null,
-			$comment,
-			$this->_getEmailer());
-
-		CookieFlash::set('Tag proposal rejected', 'success');
-		return $this->redirect('/admin/tag-proposals');
 	}
 
 	#[HttpPost]

@@ -54,7 +54,7 @@ class ProposalFeedbackTest extends IntegrationTestCase
 		$proposal = $this->prepareSgfProposal($context);
 		$proposer = $context->otherUsers[0];
 
-		$this->post('/users/rejectSGFProposal/' . $proposal['id'], ['comment' => 'The stone at D16 changes nothing.']);
+		$this->post('/proposals/rejectSgf/' . $proposal['id'], ['comment' => 'The stone at D16 changes nothing.']);
 
 		$this->assertEquals(SgfTable::STATUS_REJECTED, $this->fetchTable('Sgf')->get($proposal['id'])->sgf_status_id, 'kept for the link in the message');
 		$messages = $this->messagesTo($proposer['id']);
@@ -75,7 +75,7 @@ class ProposalFeedbackTest extends IntegrationTestCase
 	{
 		$proposal = $this->prepareSgfProposal($context);
 		$proposer = $context->otherUsers[0];
-		$this->post('/users/rejectSGFProposal/' . $proposal['id'], ['comment' => 'The stone at D16 changes nothing.']);
+		$this->post('/proposals/rejectSgf/' . $proposal['id'], ['comment' => 'The stone at D16 changes nothing.']);
 
 		$reject = $this->fetchTable('Reject')->find()->where(['sgf_id' => $proposal['id']])->firstOrFail();
 		$this->assertSame($proposer['id'], $reject->user_id);
@@ -89,7 +89,7 @@ class ProposalFeedbackTest extends IntegrationTestCase
 		$this->assertStringContainsString('The stone at D16 changes nothing.', $this->view);
 		$this->assertStringContainsString('id="reopen-' . $proposal['id'] . '"', $this->view);
 
-		$this->post('/users/reopenSGFProposal/' . $proposal['id'], []);
+		$this->post('/proposals/reopenSgf/' . $proposal['id'], []);
 
 		$this->assertEquals(SgfTable::STATUS_PROPOSED, $this->fetchTable('Sgf')->get($proposal['id'])->sgf_status_id);
 		$this->assertSame([], Util::query('SELECT * FROM reject WHERE sgf_id = ?', [$proposal['id']]), 'gone from the contributions of the proposer');
@@ -105,8 +105,8 @@ class ProposalFeedbackTest extends IntegrationTestCase
 	{
 		$proposal = $this->prepareSgfProposal($context);
 
-		$this->post('/users/reopenSGFProposal/' . $context->tsumegos[0]['sgfs'][0]['id'], []);
-		$this->post('/users/reopenSGFProposal/' . $proposal['id'], []);
+		$this->post('/proposals/reopenSgf/' . $context->tsumegos[0]['sgfs'][0]['id'], []);
+		$this->post('/proposals/reopenSgf/' . $proposal['id'], []);
 
 		$this->assertEquals(SgfTable::STATUS_ACCEPTED, $this->fetchTable('Sgf')->get($context->tsumegos[0]['sgfs'][0]['id'])->sgf_status_id);
 		$this->assertEquals(SgfTable::STATUS_PROPOSED, $this->fetchTable('Sgf')->get($proposal['id'])->sgf_status_id);
@@ -117,7 +117,7 @@ class ProposalFeedbackTest extends IntegrationTestCase
 	{
 		$proposal = $this->prepareSgfProposal($context);
 
-		$this->post('/users/rejectSGFProposal/' . $proposal['id'], ['comment' => '  ']);
+		$this->post('/proposals/rejectSgf/' . $proposal['id'], ['comment' => '  ']);
 
 		$this->assertNotEmpty($this->fetchTable('Sgf')->find()->where(['id' => $proposal['id']])->first());
 		$this->assertSame([], $this->messagesTo($context->otherUsers[0]['id']));
@@ -127,7 +127,7 @@ class ProposalFeedbackTest extends IntegrationTestCase
 	{
 		$proposal = $this->prepareSgfProposal($context);
 
-		$this->post('/users/acceptSGFProposal/' . $proposal['id'], ['comment' => '']);
+		$this->post('/proposals/acceptSgf/' . $proposal['id'], ['comment' => '']);
 
 		$this->assertEquals(SgfTable::STATUS_ACCEPTED, $this->fetchTable('Sgf')->get($proposal['id'])->sgf_status_id);
 		$messages = $this->messagesTo($context->otherUsers[0]['id']);
@@ -144,7 +144,7 @@ class ProposalFeedbackTest extends IntegrationTestCase
 			['data' => self::SGF_VERSION_1, 'sgf_status_id' => SgfTable::STATUS_ACCEPTED],
 			['data' => self::SGF_VERSION_2, 'sgf_status_id' => SgfTable::STATUS_PROPOSED]]]);
 
-		$this->post('/users/acceptSGFProposal/' . $context->tsumegos[0]['sgfs'][1]['id'], ['comment' => 'Thanks me']);
+		$this->post('/proposals/acceptSgf/' . $context->tsumegos[0]['sgfs'][1]['id'], ['comment' => 'Thanks me']);
 
 		$this->assertSame([], Util::query('SELECT * FROM message'));
 	}
@@ -154,7 +154,7 @@ class ProposalFeedbackTest extends IntegrationTestCase
 		$context = $this->prepare(['tags' => [['name' => 'snapback', 'user' => 'proposer', 'approved' => 0]]]);
 		$tagConnectionID = $context->tsumegos[0]['tag-connections'][0]->id;
 
-		$this->post('/users/rejectTagConnectionProposal/' . $tagConnectionID, ['comment' => 'There is no snapback here.']);
+		$this->post('/proposals/rejectTag/' . $tagConnectionID, ['comment' => 'There is no snapback here.']);
 
 		$this->assertFalse($this->fetchTable('TagConnection')->exists(['id' => $tagConnectionID]));
 		$messages = $this->messagesTo($context->otherUsers[0]['id']);
@@ -169,9 +169,35 @@ class ProposalFeedbackTest extends IntegrationTestCase
 		$context = $this->prepare(['tags' => [['name' => 'snapback', 'user' => 'proposer', 'approved' => 0]]]);
 		$tagConnectionID = $context->tsumegos[0]['tag-connections'][0]->id;
 
-		$this->post('/users/rejectTagConnectionProposal/' . $tagConnectionID, []);
+		$this->post('/proposals/rejectTag/' . $tagConnectionID, []);
 
 		$this->assertTrue($this->fetchTable('TagConnection')->exists(['id' => $tagConnectionID]));
+		$this->assertSame([], Util::query('SELECT * FROM message'));
+	}
+
+	public function testADecidedSgfProposalIsNotDecidedAgain(): void
+	{
+		$proposal = $this->prepareSgfProposal($context);
+		SgfTable::setStatus($proposal['id'], SgfTable::STATUS_REJECTED);
+
+		$this->post('/proposals/acceptSgf/' . $proposal['id'], ['comment' => 'Fine after all']);
+		$this->post('/proposals/rejectSgf/' . $proposal['id'], ['comment' => 'Still no']);
+
+		$this->assertEquals(SgfTable::STATUS_REJECTED, $this->fetchTable('Sgf')->get($proposal['id'])->sgf_status_id);
+		$this->assertSame([], Util::query('SELECT * FROM reject'));
+		$this->assertSame([], Util::query('SELECT * FROM admin_activity'));
+		$this->assertSame([], $this->messagesTo($context->otherUsers[0]['id']));
+	}
+
+	public function testAnAcceptedTagOnProblemIsNotRejected(): void
+	{
+		$context = $this->prepare(['tags' => [['name' => 'snapback', 'user' => 'proposer', 'approved' => 1]]]);
+		$tagConnectionID = $context->tsumegos[0]['tag-connections'][0]->id;
+
+		$this->post('/proposals/rejectTag/' . $tagConnectionID, ['comment' => 'There is no snapback here.']);
+
+		$this->assertTrue($this->fetchTable('TagConnection')->exists(['id' => $tagConnectionID]));
+		$this->assertSame([], Util::query('SELECT * FROM reject'));
 		$this->assertSame([], Util::query('SELECT * FROM message'));
 	}
 
@@ -183,10 +209,10 @@ class ProposalFeedbackTest extends IntegrationTestCase
 			['name' => 'ladder', 'user' => 'proposer', 'approved' => 0]]]);
 		$proposerID = $context->otherUsers[0]['id'];
 
-		$this->post('/users/acceptTagConnectionProposal/' . $context->tsumegos[0]['tag-connections'][0]->id, ['comment' => '']);
+		$this->post('/proposals/acceptTag/' . $context->tsumegos[0]['tag-connections'][0]->id, ['comment' => '']);
 		$this->assertSame([], $this->messagesTo($proposerID));
 
-		$this->post('/users/acceptTagConnectionProposal/' . $context->tsumegos[0]['tag-connections'][1]->id, ['comment' => 'Nice find.']);
+		$this->post('/proposals/acceptTag/' . $context->tsumegos[0]['tag-connections'][1]->id, ['comment' => 'Nice find.']);
 		$messages = $this->messagesTo($proposerID);
 		$this->assertCount(1, $messages);
 		$this->assertStringContainsString('Your tag ladder on ', $messages[0]['text']);

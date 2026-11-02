@@ -4,165 +4,90 @@ namespace App\Controller;
 
 use Cake\Http\Response;
 use Cake\Http\Exception\BadRequestException;
-use Cake\Http\Exception\InternalErrorException;
 use Cake\Http\Exception\NotFoundException;
 use App\Attribute\HttpGet;
 use App\Attribute\HttpPost;
 use Cake\Http\Exception\UnprocessableContentException;
+use App\Model\Entity\TsumegoComment;
+use App\Model\Entity\TsumegoIssue;
+use App\Model\Table\TsumegoCommentTable;
 use App\Model\Table\TsumegoIssueTable;
-//Controller for managing tsumego issues.
-//Issues are reports about problems with tsumego solutions (missing moves, wrong answers, etc.).
-//Each issue contains one or more comments discussing the problem.
-use App\Model\Table\UserTable;
 use App\Utility\Auth;
-use App\Utility\Query;
 
+//Issues: reports of a problem with a tsumego (a missing move, a wrong answer, ...), each a thread
+//of comments. The comment section of the play page (app/comments) and the issues page (app/issues)
+//talk to the JSON actions here.
 class TsumegoIssuesController extends AppController
 {
-	//API endpoint to fetch issues list with pagination and filtering.
-	//Query params:
-	//- status: 'opened', 'closed', 'all' (default: 'opened')
-	//- page: int (for pagination)
-	/** @return Response|null */
+	private const ISSUES_PER_PAGE = 20;
+
+	//The issues of the issues page, as JSON.
+	//?status: 'opened' (the default), 'closed' or 'all'
+	//?page: from 1
 	#[HttpGet]
-	public function api()
+	public function api(): Response
 	{
 		$statusFilter = $this->query('status') ?: 'opened';
 		$page = (int) ($this->query('page') ?: 1);
-		$perPage = 20;
 
-		$issues = TsumegoIssueTable::findForIndex($statusFilter, $perPage, $page);
 		$counts = TsumegoIssueTable::getIndexCounts();
-
 		$totalCount = match ($statusFilter)
 		{
 			'opened' => $counts['open'],
 			'closed' => $counts['closed'],
 			default => $counts['open'] + $counts['closed'],
 		};
-		$totalPages = (int) ceil($totalCount / $perPage);
 
 		return $this->respondJson([
-			'issues' => $issues,
+			'issues' => TsumegoIssueTable::findForIndex($statusFilter, self::ISSUES_PER_PAGE, $page),
 			'counts' => $counts,
-			'totalPages' => $totalPages,
+			'totalPages' => (int) ceil($totalCount / self::ISSUES_PER_PAGE),
 			'currentPage' => $page,
 		]);
 	}
 
-	//List all issues page
-	//Query params:
-	//- status: 'opened', 'closed', 'all' (default: 'opened')
-	//- page: int (for pagination)
+	//The issues page, which loads its issues from api(); the query string is its first state, as there.
 	#[HttpGet]
 	public function index(): void
 	{
 		$this->set('_title', 'Tsumego Hero - Issues');
 		$this->set('_page', 'issues');
-
-		// Get filter and pagination params from URL (used for initial state)
-		$statusFilter = $this->query('status') ?: 'opened';
-		$page = (int) ($this->query('page') ?: 1);
-
-		$this->set(compact('statusFilter'));
-		$this->set('currentPage', $page);
+		$this->set('statusFilter', $this->query('status') ?: 'opened');
+		$this->set('currentPage', (int) ($this->query('page') ?: 1));
 	}
 
-	//Create a new issue with an initial comment.
-	//POST data:
-	//- Issue.tsumego_id: int
-	//- Issue.message: string (first comment)
-	//- Issue.position: string|null (board position for first comment)
-	/** @return Response|null */
+	//Opens an issue with its first comment, from {"tsumego_id", "text", "position"}.
 	#[HttpPost]
-	public function create()
+	public function create(): Response
 	{
 		$this->Authorization->authorize('TsumegoIssue', 'create');
 
-		// Parse JSON request body
 		$input = json_decode($this->requestBody(), true);
 		$tsumegoId = $input['tsumego_id'] ?? null;
 		$message = $input['text'] ?? null;
-		$position = $input['position'] ?? null;
-
 		if (empty($tsumegoId) || empty($message))
 			throw new BadRequestException('Tsumego ID and message are required');
 
-		$tsumegoIssueTable = $this->fetchTable('TsumegoIssue');
-		$tsumegoCommentTable = $this->fetchTable('TsumegoComment');
-
-		// Create the issue
-		$issue = $tsumegoIssueTable->saveOrFail($tsumegoIssueTable->newEntity([
+		$comment = $this->fetchTable('TsumegoComment')->newEntity([
 			'tsumego_id' => $tsumegoId,
-			'user_id' => Auth::getUserID(),
-			'tsumego_issue_status_id' => TsumegoIssueTable::OPENED_STATUS,
-		]));
-		$issueId = $issue->id;
-
-		// Create the first comment attached to this issue
-		$comment = $tsumegoCommentTable->newEntity([
-			'tsumego_id' => $tsumegoId,
-			'tsumego_issue_id' => $issueId,
 			'message' => $message,
-			'position' => $position,
+			'position' => $input['position'] ?? null,
 			'user_id' => Auth::getUserID(),
 		]);
-		if (!$tsumegoCommentTable->save($comment))
-		{
-			// Rollback: delete the issue if comment fails
-			$tsumegoIssueTable->deleteAll(['id' => $issueId]);
+		$issue = TsumegoIssueTable::openWith($comment);
+		if (!$issue)
 			throw new UnprocessableContentException('Failed to create issue');
-		}
-
-		// Return full issue data for initial state
-		$user = Auth::getUser();
-
-		$issueData = [
-			'id' => $issueId,
-			'tsumego_issue_status_id' => TsumegoIssueTable::OPENED_STATUS,
-			'created' => date('c'),
-			'user_id' => Auth::getUserID(),
-			'user_display_name' => $user['display_name'],
-			'user_avatar_url' => UserTable::getAvatarUrl($user),
-			'user_rating' => $user['rating'],
-			'isAdmin' => Auth::isAdmin(),
-			'comments' => [[
-				'id' => $comment->id,
-				'text' => $message,
-				'user_id' => Auth::getUserID(),
-				'user_display_name' => $user['display_name'],
-				'user_avatar_url' => UserTable::getAvatarUrl($user),
-				'user_rating' => $user['rating'],
-				'isAdmin' => Auth::isAdmin(),
-				'created' => date('c'),
-				'position' => $position,
-			]],
-		];
-
-		return $this->respondJson(['success' => true, 'issue' => $issueData]);
+		return $this->respondJson(['success' => true, 'issue' => self::issuePayload($issue, $comment)]);
 	}
 
-	//Close an issue.
-	//Only admin or issue author can close. Optionally add a closing comment.
-	//$id: Issue ID
-	/** @return Response|null */
+	//Closes an issue, with a closing comment when `message` is given. The author of the issue or an admin.
 	#[HttpPost]
-	public function close(string $id)
+	public function close(string $id): Response
 	{
-		$tsumegoIssueTable = $this->fetchTable('TsumegoIssue');
-		$issue = $tsumegoIssueTable->find()->where(['id' => (int) $id])->first();
-
-		if (!$issue)
-			throw new NotFoundException('Issue not found');
-
+		$issue = $this->findIssue($id);
 		$this->Authorization->authorize(['TsumegoIssue' => $issue], 'close');
+		$this->setStatus($issue, TsumegoIssueTable::CLOSED_STATUS);
 
-		// Update status to closed
-		$issue->tsumego_issue_status_id = TsumegoIssueTable::CLOSED_STATUS;
-		if (!$tsumegoIssueTable->save($issue))
-			throw new InternalErrorException('Failed to close issue');
-
-		// Add closing comment if provided
 		$closingMessage = $this->input('message');
 		if (!empty($closingMessage))
 		{
@@ -175,125 +100,71 @@ class TsumegoIssuesController extends AppController
 				'user_id' => Auth::getUserID(),
 			]));
 		}
-
 		return $this->respondJson(['success' => true]);
 	}
 
-	//Reopen a closed issue.
-	//Admin only.
-	//$id: Issue ID
-	/** @return Response|null */
+	//Reopens a closed issue. Admin only.
 	#[HttpPost]
-	public function reopen(string $id)
+	public function reopen(string $id): Response
 	{
-		$tsumegoIssueTable = $this->fetchTable('TsumegoIssue');
-		$issue = $tsumegoIssueTable->find()->where(['id' => (int) $id])->first();
-
-		if (!$issue)
-			throw new NotFoundException('Issue not found');
-
+		$issue = $this->findIssue($id);
 		$this->Authorization->authorize(['TsumegoIssue' => $issue], 'reopen');
-
-		$issue->tsumego_issue_status_id = TsumegoIssueTable::OPENED_STATUS;
-		if (!$tsumegoIssueTable->save($issue))
-			throw new InternalErrorException('Failed to reopen issue');
-
+		$this->setStatus($issue, TsumegoIssueTable::OPENED_STATUS);
 		return $this->respondJson(['success' => true]);
 	}
 
-	//Move an existing comment into an issue (new or existing), or make it standalone.
-	//Admin only.
-	//POST data:
-	//- Comment.tsumego_issue_id: 'standalone' | 'new' | int (issue ID)
-	/** @return Response|null */
+	//Moves a comment into an issue, into a new issue of its own or out of its issue. Admin only.
+	//An issue left without comments is deleted.
+	//tsumego_issue_id: an issue id, 'new' or 'standalone'
 	#[HttpPost]
-	public function moveComment(string $commentId)
+	public function moveComment(string $commentId): Response
 	{
 		$this->Authorization->authorize('TsumegoIssue', 'moveComment');
 
 		$tsumegoCommentTable = $this->fetchTable('TsumegoComment');
 		$comment = $tsumegoCommentTable->find()->where(['id' => (int) $commentId])->first();
-
 		if (!$comment)
 			throw new NotFoundException('Comment not found');
 
-		$targetIssueId = $this->input('tsumego_issue_id');
-		$currentIssueId = $comment->tsumego_issue_id;
-
-		// Handle 'standalone' - remove from issue
-		if ($targetIssueId === 'standalone')
+		$target = $this->input('tsumego_issue_id');
+		$sourceIssueId = $comment->tsumego_issue_id;
+		if ($target === 'new')
 		{
-			if (empty($currentIssueId))
-				return $this->respondJson(['success' => true]);
-
-			$comment->tsumego_issue_id = null;
-			if ($tsumegoCommentTable->save($comment))
-			{
-				// Check if issue is now empty and delete it
-				TsumegoIssueTable::deleteIfEmpty($currentIssueId);
-				return $this->respondJson(['success' => true]);
-			}
-
-			throw new InternalErrorException('Failed to remove comment from issue');
+			// the writer of the comment becomes the author of the issue
+			$issue = TsumegoIssueTable::openWith($comment);
+			if (!$issue)
+				throw new UnprocessableContentException('Failed to create issue');
+			return $this->respondJson(['success' => true, 'issue' => self::issuePayload($issue, $comment), 'comment_id' => $commentId]);
 		}
 
-		// Handle 'new' - create new issue
-		if ($targetIssueId === 'new')
-		{
-			$tsumegoIssueTable = $this->fetchTable('TsumegoIssue');
-
-			$issue = $tsumegoIssueTable->saveOrFail($tsumegoIssueTable->newEntity([
-				'tsumego_id' => $comment->tsumego_id,
-				'user_id' => $comment->user_id, // Original comment author becomes issue author
-				'tsumego_issue_status_id' => TsumegoIssueTable::OPENED_STATUS,
-			]));
-			$targetIssueId = $issue->id;
-
-			// Move comment to this new issue
-			$comment->tsumego_issue_id = $targetIssueId;
-			$tsumegoCommentTable->saveOrFail($comment);
-
-			$commentUser = UserTable::row($comment->user_id);
-
-			$issueData = [
-				'id' => $targetIssueId,
-				'status' => 'open',
-				'created' => date('c'),
-				'user_id' => $comment->user_id,
-				'user_display_name' => UserTable::displayNameOrNull($commentUser),
-				'user_avatar_url' => UserTable::avatarOrNull($commentUser),
-				'user_rating' => $commentUser['rating'],
-				'isAdmin' => UserTable::isAdmin($commentUser),
-				'comments' => [[
-					'id' => $commentId,
-					'text' => $comment->message,
-					'user_id' => $comment->user_id,
-					'user_display_name' => UserTable::displayNameOrNull($commentUser),
-					'user_avatar_url' => UserTable::avatarOrNull($commentUser),
-					'user_rating' => $commentUser['rating'],
-					'isAdmin' => UserTable::isAdmin($commentUser),
-					'created' => $comment->created->format('c'),
-					'position' => $comment->position,
-				]],
-			];
-
-			return $this->respondJson(['success' => true, 'issue' => $issueData, 'comment_id' => $commentId]);
-		}
-
-		// Check if moving to same issue
-		if ($currentIssueId == $targetIssueId)
+		$targetIssueId = $target === 'standalone' ? null : (int) $target;
+		if ($sourceIssueId === $targetIssueId)
 			return $this->respondJson(['success' => true]);
+		$comment->tsumego_issue_id = $targetIssueId;
+		$tsumegoCommentTable->saveOrFail($comment);
+		if ($sourceIssueId !== null)
+			TsumegoIssueTable::deleteIfEmpty($sourceIssueId);
+		return $this->respondJson(['success' => true]);
+	}
 
-		// Move the comment to the target issue
-		$comment->tsumego_issue_id = (int) $targetIssueId;
-		if ($tsumegoCommentTable->save($comment))
-		{
-			// Check if old issue is now empty and delete it
-			if (!empty($currentIssueId))
-				TsumegoIssueTable::deleteIfEmpty($currentIssueId);
-			return $this->respondJson(['success' => true]);
-		}
+	private function findIssue(string $id): TsumegoIssue
+	{
+		$issue = $this->fetchTable('TsumegoIssue')->find()->where(['id' => (int) $id])->first();
+		if (!$issue)
+			throw new NotFoundException('Issue not found');
+		return $issue;
+	}
 
-		throw new InternalErrorException('Failed to move comment');
+	private function setStatus(TsumegoIssue $issue, int $statusId): void
+	{
+		$issue->tsumego_issue_status_id = $statusId;
+		$this->fetchTable('TsumegoIssue')->saveOrFail($issue);
+	}
+
+	//A new issue with its one comment, as the comment section shows it.
+	/** @return array<string, mixed> */
+	private static function issuePayload(TsumegoIssue $issue, TsumegoComment $comment): array
+	{
+		return TsumegoIssueTable::payload($issue, [$comment], TsumegoCommentTable::authorsOf([$issue, $comment]));
 	}
 }
