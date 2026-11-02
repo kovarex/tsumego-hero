@@ -1313,41 +1313,33 @@ OFFSET " . $offset, [$userID, $userID]);
 	#[HttpPost]
 	public function playerColorPreference(): Response
 	{
-		$this->Authorization->authorize('User', 'editPreferences');
-
-		$color = (int) ($this->input('color') ?? UserTable::PLAYER_COLOR_SETTING_RANDOM);
-		if ($color < 0 || $color > 1)
-			$color = UserTable::PLAYER_COLOR_SETTING_RANDOM;
-
-		Auth::saveUserField('player_color_setting', $color);
-
-		return $this->respondJson(['status' => 'ok']);
+		return $this->saveChoice('player_color_setting', 'color',
+			[UserTable::PLAYER_COLOR_SETTING_RANDOM, UserTable::PLAYER_COLOR_SETTING_ORIGINAL], UserTable::PLAYER_COLOR_SETTING_RANDOM);
 	}
 
 	#[HttpPost]
 	public function boardOrientationPreference(): Response
 	{
-		$this->Authorization->authorize('User', 'editPreferences');
-
-		$orientation = (int) ($this->input('orientation') ?? UserTable::BOARD_ORIENTATION_SETTING_RANDOM);
-		if ($orientation < 0 || $orientation > 1)
-			$orientation = UserTable::BOARD_ORIENTATION_SETTING_RANDOM;
-
-		Auth::saveUserField('board_orientation_setting', $orientation);
-
-		return $this->respondJson(['status' => 'ok']);
+		return $this->saveChoice('board_orientation_setting', 'orientation',
+			[UserTable::BOARD_ORIENTATION_SETTING_RANDOM, UserTable::BOARD_ORIENTATION_SETTING_ORIGINAL], UserTable::BOARD_ORIENTATION_SETTING_RANDOM);
 	}
 
 	#[HttpPost]
 	public function dateFormatPreference(): Response
 	{
+		return $this->saveChoice('date_format_id', 'format',
+			range(UserTable::DATE_FORMAT_ISO, UserTable::DATE_FORMAT_BROWSER), UserTable::DATE_FORMAT_ISO);
+	}
+
+	//Store the setting the player picked on the settings page; a value that is not one of the
+	//choices stores the default.
+	/** @param array<int> $choices */
+	private function saveChoice(string $column, string $inputName, array $choices, int $default): Response
+	{
 		$this->Authorization->authorize('User', 'editPreferences');
 
-		$format = (int) ($this->input('format') ?? UserTable::DATE_FORMAT_ISO);
-		if ($format < UserTable::DATE_FORMAT_ISO || $format > UserTable::DATE_FORMAT_BROWSER)
-			$format = UserTable::DATE_FORMAT_ISO;
-
-		Auth::saveUserField('date_format_id', $format);
+		$value = (int) ($this->input($inputName) ?? $default);
+		Auth::saveUserField($column, in_array($value, $choices, true) ? $value : $default);
 
 		return $this->respondJson(['status' => 'ok']);
 	}

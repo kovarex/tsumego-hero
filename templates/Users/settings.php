@@ -4,6 +4,7 @@ use App\Model\Table\UserTable;
 use App\Utility\Auth;
 use App\Utility\Constants;
 use App\Utility\UploadedAvatar;
+use App\Utility\ViteManifest;
 
 /**
  * Everything a player can change about their account and about how the site
@@ -32,7 +33,7 @@ use App\Utility\UploadedAvatar;
 				<td><strong>Email:</strong> <?php echo h($user['email']); ?></td>
 				<td>
 					<?php if (!UserTable::isGoogleUser($user)): ?>
-						<button type="button" id="change-email" class="link">change</button>
+						<button type="button" id="change-email" class="link" data-opens="email-form">change</button>
 					<?php endif; ?>
 				</td>
 			</tr>
@@ -63,7 +64,7 @@ use App\Utility\UploadedAvatar;
 			</tr>
 			<tr>
 				<td><strong>Password:</strong> ********</td>
-				<td><button type="button" id="change-password" class="link">change</button></td>
+				<td><button type="button" id="change-password" class="link" data-opens="password-form">change</button></td>
 			</tr>
 			<tr>
 				<td colspan="2">
@@ -93,7 +94,7 @@ use App\Utility\UploadedAvatar;
 					foreach (UserTable::avatarChoices($user) as $avatarValue => $avatarLabel)
 					{
 						$avatarChecked = $chosenAvatar === $avatarValue ? 'checked="checked"' : '';
-						echo '<label class="field__option"><input type="radio" name="avatar" value="' . $avatarValue . '" onclick="avatarPreference(this.value);" ' . $avatarChecked . '> ' . h($avatarLabel) . '</label>';
+						echo '<label class="field__option"><input type="radio" name="avatar" value="' . $avatarValue . '" data-save="/users/avatarPreference" data-field="avatar" data-reload ' . $avatarChecked . '> ' . h($avatarLabel) . '</label>';
 					}
 					if ($chosenAvatar === UserTable::AVATAR_GRAVATAR)
 						echo '<div class="hint">Change it at <a href="https://gravatar.com" target="_blank" rel="noopener">gravatar.com</a></div>';
@@ -118,8 +119,8 @@ use App\Utility\UploadedAvatar;
 			<div class="field">
 				<span class="field__label">Email me when a message arrives</span>
 				<?php $emailOnNewMessage = (bool) $user['email_on_new_message']; ?>
-				<label class="field__option"><input type="radio" name="emailOnNewMessage" value="1" onclick="emailOnNewMessagePreference(this.value);" <?php echo $emailOnNewMessage ? 'checked="checked"' : ''; ?>> Yes</label>
-				<label class="field__option"><input type="radio" name="emailOnNewMessage" value="0" onclick="emailOnNewMessagePreference(this.value);" <?php echo $emailOnNewMessage ? '' : 'checked="checked"'; ?>> No</label>
+				<label class="field__option"><input type="radio" name="emailOnNewMessage" value="1" data-save="/users/emailOnNewMessagePreference" data-field="enabled" <?php echo $emailOnNewMessage ? 'checked="checked"' : ''; ?>> Yes</label>
+				<label class="field__option"><input type="radio" name="emailOnNewMessage" value="0" data-save="/users/emailOnNewMessagePreference" data-field="enabled" <?php echo $emailOnNewMessage ? '' : 'checked="checked"'; ?>> No</label>
 				<div class="hint">One email for the first message of a player you haven't read yet, to <?php echo h($user['email']); ?>.</div>
 			</div>
 		</div>
@@ -132,19 +133,19 @@ use App\Utility\UploadedAvatar;
 				<?php
 				$levelBarDisplay = (int) $levelBar;
 				?>
-				<label class="field__option"><input type="radio" id="levelBarDisplay1" name="levelBarDisplay" value="1" onclick="levelBarChange(1);" <?php echo $levelBarDisplay === UserTable::LEVEL_BAR_LEVEL ? 'checked="checked"' : ''; ?>> Level</label>
-				<label class="field__option"><input type="radio" id="levelBarDisplay2" name="levelBarDisplay" value="2" onclick="levelBarChange(2);" <?php echo $levelBarDisplay === UserTable::LEVEL_BAR_RATING ? 'checked="checked"' : ''; ?>> Rating</label>
+				<label class="field__option"><input type="radio" id="levelBarDisplay1" name="levelBarDisplay" value="1" data-appearance="levelBar" <?php echo $levelBarDisplay === UserTable::LEVEL_BAR_LEVEL ? 'checked="checked"' : ''; ?>> Level</label>
+				<label class="field__option"><input type="radio" id="levelBarDisplay2" name="levelBarDisplay" value="2" data-appearance="levelBar" <?php echo $levelBarDisplay === UserTable::LEVEL_BAR_RATING ? 'checked="checked"' : ''; ?>> Rating</label>
 			</div>
 			<div class="field">
 				<span class="field__label">Theme</span>
-				<label class="field__option"><input type="radio" name="theme" value="light" onclick="settingsTheme('light');" <?php echo $lightDark === 'dark' ? '' : 'checked="checked"'; ?>> Light</label>
-				<label class="field__option"><input type="radio" name="theme" value="dark" onclick="settingsTheme('dark');" <?php echo $lightDark === 'dark' ? 'checked="checked"' : ''; ?>> Dark</label>
+				<label class="field__option"><input type="radio" name="theme" value="light" data-appearance="theme" <?php echo $lightDark === 'dark' ? '' : 'checked="checked"'; ?>> Light</label>
+				<label class="field__option"><input type="radio" name="theme" value="dark" data-appearance="theme" <?php echo $lightDark === 'dark' ? 'checked="checked"' : ''; ?>> Dark</label>
 			</div>
 			<div class="field">
 				<span class="field__label">Sound</span>
 				<?php $soundIsOn = UserTable::soundIsOn($user); ?>
-				<label class="field__option"><input type="radio" name="sound" value="on" onclick="settingsSound('on');" <?php echo $soundIsOn ? 'checked="checked"' : ''; ?>> On</label>
-				<label class="field__option"><input type="radio" name="sound" value="off" onclick="settingsSound('off');" <?php echo $soundIsOn ? '' : 'checked="checked"'; ?>> Off</label>
+				<label class="field__option"><input type="radio" name="sound" value="on" data-appearance="sound" <?php echo $soundIsOn ? 'checked="checked"' : ''; ?>> On</label>
+				<label class="field__option"><input type="radio" name="sound" value="off" data-appearance="sound" <?php echo $soundIsOn ? '' : 'checked="checked"'; ?>> Off</label>
 			</div>
 			<div class="field">
 				<span class="field__label">Date format</span>
@@ -157,7 +158,7 @@ use App\Utility\UploadedAvatar;
 					UserTable::DATE_FORMAT_BROWSER => 'Browser language'] as $dateFormatValue => $dateFormatLabel)
 				{
 					$dateFormatChecked = $dateFormat === $dateFormatValue ? 'checked="checked"' : '';
-					echo '<label class="field__option"><input type="radio" name="dateFormat" value="' . $dateFormatValue . '" onclick="dateFormatPreference(this.value);" ' . $dateFormatChecked . '> ' . $dateFormatLabel . '</label>';
+					echo '<label class="field__option"><input type="radio" name="dateFormat" value="' . $dateFormatValue . '" data-save="/users/dateFormatPreference" data-field="format" data-reload ' . $dateFormatChecked . '> ' . $dateFormatLabel . '</label>';
 				}
 				?>
 			</div>
@@ -176,8 +177,8 @@ use App\Utility\UploadedAvatar;
 				$playerColorRandomChecked = $playerColor === UserTable::PLAYER_COLOR_SETTING_RANDOM ? 'checked="checked"' : '';
 				$playerColorOriginalChecked = $playerColor === UserTable::PLAYER_COLOR_SETTING_ORIGINAL ? 'checked="checked"' : '';
 				?>
-				<label class="field__option"><input type="radio" name="playerColor" value="<?php echo UserTable::PLAYER_COLOR_SETTING_RANDOM; ?>" onclick="playerColorPreference(this.value);" <?php echo $playerColorRandomChecked; ?>> Random</label>
-				<label class="field__option"><input type="radio" name="playerColor" value="<?php echo UserTable::PLAYER_COLOR_SETTING_ORIGINAL; ?>" onclick="playerColorPreference(this.value);" <?php echo $playerColorOriginalChecked; ?>> Original</label>
+				<label class="field__option"><input type="radio" name="playerColor" value="<?php echo UserTable::PLAYER_COLOR_SETTING_RANDOM; ?>" data-save="/users/playerColorPreference" data-field="color" <?php echo $playerColorRandomChecked; ?>> Random</label>
+				<label class="field__option"><input type="radio" name="playerColor" value="<?php echo UserTable::PLAYER_COLOR_SETTING_ORIGINAL; ?>" data-save="/users/playerColorPreference" data-field="color" <?php echo $playerColorOriginalChecked; ?>> Original</label>
 			</div>
 			<div class="field">
 				<span class="field__label">Board orientation</span>
@@ -186,8 +187,8 @@ use App\Utility\UploadedAvatar;
 				$boardOrientationRandomChecked = $boardOrientation === UserTable::BOARD_ORIENTATION_SETTING_RANDOM ? 'checked="checked"' : '';
 				$boardOrientationOriginalChecked = $boardOrientation === UserTable::BOARD_ORIENTATION_SETTING_ORIGINAL ? 'checked="checked"' : '';
 				?>
-				<label class="field__option"><input type="radio" name="boardOrientation" value="<?php echo UserTable::BOARD_ORIENTATION_SETTING_RANDOM; ?>" onclick="boardOrientationPreference(this.value);" <?php echo $boardOrientationRandomChecked; ?>> Random</label>
-				<label class="field__option"><input type="radio" name="boardOrientation" value="<?php echo UserTable::BOARD_ORIENTATION_SETTING_ORIGINAL; ?>" onclick="boardOrientationPreference(this.value);" <?php echo $boardOrientationOriginalChecked; ?>> Original</label>
+				<label class="field__option"><input type="radio" name="boardOrientation" value="<?php echo UserTable::BOARD_ORIENTATION_SETTING_RANDOM; ?>" data-save="/users/boardOrientationPreference" data-field="orientation" <?php echo $boardOrientationRandomChecked; ?>> Random</label>
+				<label class="field__option"><input type="radio" name="boardOrientation" value="<?php echo UserTable::BOARD_ORIENTATION_SETTING_ORIGINAL; ?>" data-save="/users/boardOrientationPreference" data-field="orientation" <?php echo $boardOrientationOriginalChecked; ?>> Original</label>
 			</div>
 		</div>
 	</div>
@@ -195,7 +196,7 @@ use App\Utility\UploadedAvatar;
 		<div class="card__title">Progress</div>
 		<div class="stack">
 			<?php if ($canResetOldTsumegoStatuses): ?>
-				<a class="btn" href="#" onclick="delUts(); return false;" id="reset-statuses-button">Reset old progress (<?php echo $tsumegoStatusToRestCount; ?>)</a>
+				<a class="btn" href="#" data-reset-count="<?php echo $tsumegoStatusToRestCount; ?>" id="reset-statuses-button">Reset old progress (<?php echo $tsumegoStatusToRestCount; ?>)</a>
 			<?php else: ?>
 				<a class="btn btn--disabled" href="#" id="reset-statuses-button">Reset old progress (<?php echo $tsumegoStatusToRestCount; ?>)</a>
 				<span class="hint">Available after <?php echo Constants::$MINIMUM_PERCENT_OF_TSUMEGOS_TO_BE_SOLVED_BEFORE_RESET_IS_ALLOWED; ?>% completion</span>
@@ -214,110 +215,4 @@ use App\Utility\UploadedAvatar;
 	</div>
 </div>
 
-<script>
-
-// The change buttons only reveal the form they belong to, so the page stays a list
-// of what is set now until the player asks to edit one of them.
-function editing(buttonID, formID)
-{
-	const button = document.getElementById(buttonID);
-	const form = document.getElementById(formID);
-	if (!button || !form)
-		return;
-
-	button.addEventListener('click', function() {
-		const opened = form.style.display !== 'none';
-		form.style.display = opened ? 'none' : 'block';
-		button.textContent = opened ? 'change' : 'cancel';
-	});
-}
-
-editing('change-email', 'email-form');
-editing('change-password', 'password-form');
-
-function settingsTheme(mode)
-{
-	// darkAndLight() switches and stores the choice, so it is only called when the
-	// player picked the other theme.
-	if ((mode === 'dark') === !light)
-		return;
-	darkAndLight();
-}
-
-function settingsSound(value)
-{
-	setSoundCookie(value);
-
-	updateSoundValue(value === 'on');
-
-	const icon = document.getElementById('soundButtonImage');
-	if (icon)
-		icon.src = value === 'on' ? '/img/sound-icon1.png' : '/img/sound-icon2.png';
-}
-
-function avatarPreference(avatar)
-{
-	fetch('/users/avatarPreference', {
-		method: 'POST',
-		headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-		body: 'avatar=' + encodeURIComponent(avatar)
-	}).then(function(response) {
-		// The avatar is drawn by the server, so the page is reloaded to show the new one
-		if (response.ok)
-			location.reload();
-	});
-}
-
-function playerColorPreference(color)
-{
-	fetch('/users/playerColorPreference', {
-		method: 'POST',
-		headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-		body: 'color=' + encodeURIComponent(color)
-	});
-}
-
-function boardOrientationPreference(orientation)
-{
-	fetch('/users/boardOrientationPreference', {
-		method: 'POST',
-		headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-		body: 'orientation=' + encodeURIComponent(orientation)
-	});
-}
-
-function emailOnNewMessagePreference(enabled)
-{
-	fetch('/users/emailOnNewMessagePreference', {
-		method: 'POST',
-		headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-		body: 'enabled=' + encodeURIComponent(enabled)
-	});
-}
-
-function dateFormatPreference(format)
-{
-	fetch('/users/dateFormatPreference', {
-		method: 'POST',
-		headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-		body: 'format=' + encodeURIComponent(format)
-	}).then(function(response) {
-		// The dates are written when the page loads, so it is reloaded to show them in the new format
-		if (response.ok)
-			location.reload();
-	});
-}
-
-function delUts()
-{
-	var confirmed = confirm("Are you sure that you want to delete your progress on <?php echo $tsumegoStatusToRestCount; ?> problems?");
-	if (!confirmed)
-		return;
-
-	var form = document.createElement('form');
-	form.method = 'POST';
-	form.action = '/users/deleteOldTsumegoStatuses';
-	document.body.appendChild(form);
-	form.submit();
-}
-</script>
+<?php echo ViteManifest::legacyScript('settings'); ?>
