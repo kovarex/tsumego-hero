@@ -5,27 +5,23 @@ namespace App\Model\Table;
 use App\Utility\AdminActivityLogger;
 use Cake\ORM\TableRegistry;
 
-//What makes a problem a multiple choice or a score estimating one: its answers. A problem has one variant at most.
+//What makes a problem a multiple choice one: its answers. A problem has one variant at most.
 class TsumegoVariantTable extends AppTable
 {
 	// the rows of tsumego_variant_type
 	public const TYPE_MULTIPLE_CHOICE = 1;
-	public const TYPE_SCORE_ESTIMATING = 2;
 
 	//The names the board (besogo's multipleChoiceCustom) knows the types by.
 	public const BOARD_TYPE_NAMES = [
-		self::TYPE_MULTIPLE_CHOICE => 'multiple_choice',
-		self::TYPE_SCORE_ESTIMATING => 'score_estimating'];
+		self::TYPE_MULTIPLE_CHOICE => 'multiple_choice'];
 
-	//Makes a problem a multiple choice or a score estimating problem, or neither (null). A problem has
+	//Makes a problem a multiple choice problem, or not (null). A problem has
 	//one variant at most, and keeps the answers of its variant while the type stays.
 	public static function changeType(int $tsumegoID, ?int $type): void
 	{
 		$variantTable = TableRegistry::getTableLocator()->get('TsumegoVariant');
 		$variant = $variantTable->find()->where(['tsumego_id' => $tsumegoID])->first();
-		$activityTypes = [
-			self::TYPE_MULTIPLE_CHOICE => AdminActivityTypeTable::MULTIPLE_CHOICE,
-			self::TYPE_SCORE_ESTIMATING => AdminActivityTypeTable::SCORE_ESTIMATING];
+		$activityTypes = [self::TYPE_MULTIPLE_CHOICE => AdminActivityTypeTable::MULTIPLE_CHOICE];
 		$currentType = $variant ? $variant->tsumego_variant_type_id : null;
 		if ($currentType === $type)
 			return;
@@ -38,11 +34,8 @@ class TsumegoVariantTable extends AppTable
 			return;
 
 		AdminActivityLogger::log($activityTypes[$type], $tsumegoID, null, null, '1');
-		$newVariant = ['tsumego_id' => $tsumegoID, 'tsumego_variant_type_id' => $type];
-		if ($type === self::TYPE_MULTIPLE_CHOICE)
-			$newVariant += ['answer1' => 'Black is dead', 'answer2' => 'White is dead', 'answer3' => 'Ko', 'answer4' => 'Seki', 'correct_answer' => 1];
-		else //the komi, the captures of black and of white, and the score
-			$newVariant += ['answer1' => '0', 'answer2' => '0', 'answer3' => '0', 'winner' => '0'];
+		$newVariant = ['tsumego_id' => $tsumegoID, 'tsumego_variant_type_id' => $type,
+			'answer1' => 'Black is dead', 'answer2' => 'White is dead', 'answer3' => 'Ko', 'answer4' => 'Seki', 'correct_answer' => 1];
 		$variantTable->saveOrFail($variantTable->newEntity($newVariant));
 	}
 }

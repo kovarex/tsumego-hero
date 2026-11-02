@@ -178,78 +178,6 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 			'Choosing the correct answer should show a Correct banner');
 	}
 
-	public function testScoreEstimatingAnswerClickShowsSolved(): void
-	{
-		$context = new ContextPreparator([
-			'user' => ['name' => 'seUser', 'admin' => true],
-			'tsumego' => [
-				'set_order' => 1,
-				'sgf' => self::SGF_19,
-				'variants' => [[
-					'tsumego_variant_type_id' => TsumegoVariantTable::TYPE_SCORE_ESTIMATING,
-					'answer1' => '6.5',
-					'answer2' => '3',
-					'answer3' => '6',
-					'winner' => '0',
-					'correct_answer' => '0',
-				]],
-			],
-		]);
-		$browser = Browser::instance();
-		$browser->get($this->playUrl($context));
-		$this->waitForBoard($browser);
-
-		$browser->waitUntilJs('document.getElementById("besogo-se-black") !== null');
-
-		// Pick Black wins (sets the estimate to B+0), then submit it. The winning
-		// answer of '0' (jigo) matches, so the result should be Correct.
-		$browser->clickId('besogo-se-black');
-		$browser->clickId('submitScoreEstimatingSE');
-
-		$browser->waitUntilJs('document.getElementById("status").innerText.includes("Correct")');
-
-		$this->assertStringContainsString('Correct', $browser->find('#status')->getText(),
-			'Submitting a correct score estimate should show a Correct banner');
-	}
-
-	//The buttons set who wins and move the score by half a point, for the player's estimate and for
-	//the admin's correct answer on a sandbox problem
-	public function testScoreButtonsChangeTheScore(): void
-	{
-		$context = new ContextPreparator([
-			'user' => ['name' => 'seUser', 'admin' => true],
-			'tsumego' => [
-				'sgf' => self::SGF_19,
-				'sets' => [['name' => 'sandbox', 'public' => 0, 'num' => 1]],
-				'variants' => [[
-					'tsumego_variant_type_id' => TsumegoVariantTable::TYPE_SCORE_ESTIMATING,
-					'answer1' => '6.5',
-					'answer2' => '3',
-					'answer3' => '6',
-					'winner' => 'B+2',
-				]],
-			],
-		]);
-		$browser = Browser::instance();
-		$browser->get($this->playUrl($context));
-		$this->waitForBoard($browser);
-		$browser->waitUntilJs('document.getElementById("besogo-se-black") !== null');
-
-		$scoreAfter = function (array $buttons, string $input) use ($browser): string {
-			foreach ($buttons as $button)
-				$browser->clickId($button);
-			return $browser->find('#' . $input)->getAttribute('value');
-		};
-		$this->assertSame('W+0', $scoreAfter(['besogo-se-white'], 'ScoreEstimatingSE'));
-		$this->assertSame('W+1', $scoreAfter(['besogo-se-more', 'besogo-se-more'], 'ScoreEstimatingSE'));
-		$this->assertSame('B+0.5', $scoreAfter(['besogo-se-less', 'besogo-se-black'], 'ScoreEstimatingSE'));
-
-		$browser->clickId('showSE');
-		$browser->waitUntilCssSelectorDisplayed('#scoreEstEditField');
-		$this->assertSame('W+2.5', $scoreAfter(['besogo-se-edit-white', 'besogo-se-edit-more'], 'scoreEstEditField'));
-		$this->assertSame('W+2', $scoreAfter(['besogo-se-edit-less'], 'scoreEstEditField'));
-	}
-
 	public function testPostSolveMistakesAreNotPenalized(): void
 	{
 		$context = new ContextPreparator([
@@ -948,37 +876,6 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 
 		$this->assertSame('Black is dead', $browser->find('#besogo-multipleChoice1')->getAttribute('value'));
 		$this->assertSame('White to play. What is the result?', $browser->find('#descriptionText')->getText());
-	}
-
-	public function testOrientationButtonSwapsScoreButtons(): void
-	{
-		$context = new ContextPreparator([
-			'user' => ['admin' => true, 'player_color_setting' => UserTable::PLAYER_COLOR_SETTING_ORIGINAL],
-			'tsumego' => [
-				'set_order' => 1,
-				'description' => 'Who wins?',
-				'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19];B[aa];W[ab];B[ba]C[+])',
-				'variants' => [[
-					'tsumego_variant_type_id' => TsumegoVariantTable::TYPE_SCORE_ESTIMATING,
-					'answer1' => '6.5',
-					'answer2' => '3',
-					'answer3' => '6',
-					'correct_answer' => '0',
-				]],
-			],
-		]);
-
-		$browser = Browser::instance();
-		$browser->get((string) $context->tsumegos[0]['set-connections'][0]['id']);
-
-		$browser->waitUntilJs('typeof besogo !== "undefined" && document.getElementById("besogo-se-black") !== null');
-
-		$this->assertSame('Black wins', $browser->find('#besogo-se-black')->getAttribute('value'));
-
-		$browser->driver->executeScript("document.getElementById('colorOrientation').click();");
-
-		$this->assertSame('White wins', $browser->find('#besogo-se-black')->getAttribute('value'));
-		$this->assertSame('Black wins', $browser->find('#besogo-se-white')->getAttribute('value'));
 	}
 
 	//Browser test: the orientation button swaps the semeai "Black is dead" /

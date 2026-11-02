@@ -137,7 +137,6 @@ class Play
 					'type' => TsumegoVariantTable::BOARD_TYPE_NAMES[$variant->tsumego_variant_type_id],
 					'answers' => array_values($problem['displayAnswers']),
 					'correctAnswer' => (int) $variant->correct_answer,
-					'winner' => $variant->winner,
 					'explanation' => $variant->explanation ?? ''],
 			],
 		];

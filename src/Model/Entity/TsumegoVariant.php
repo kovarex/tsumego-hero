@@ -13,7 +13,6 @@ use DateTimeImmutable;
  * @property string $answer2
  * @property string $answer3
  * @property string $answer4
- * @property string|null $winner
  * @property string|null $explanation
  * @property DateTimeImmutable $created
  */
