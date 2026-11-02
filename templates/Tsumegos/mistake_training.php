@@ -98,7 +98,7 @@ use App\Utility\RungInsignia;
 				[$kind, $symbols] = RungInsignia::of($row['rung'], count(MistakeTraining::ladder()));
 				$rungName = MistakeTraining::rungName($row['rung']);
 				$dueDay = substr($row['next_due'], 0, 10);
-				if ($row['next_due'] <= date('Y-m-d H:i:s'))
+				if ($row['due'])
 					$nextReview = $row['missed_today'] ? 'today, missed' : 'today';
 				else
 				{
