@@ -75,7 +75,22 @@ final class RemoveBracersAroundBlocksWithOneCommandFixer extends AbstractFixer {
 		$result['whitespace-line-break-count'] = 0;
 		$result['if-without-else'] = false;
 		$result['comment-count'] = 0;
+		$result['has-markup-or-declaration'] = false;
 		for ($index = $startIndex + 1; $index < $endIndex; $index++) {
+			//A block of a template that closes the PHP tag must keep its braces: without them the
+			//closing tag ends the statement and the markup after it is printed always
+			if ($tokens[$index]->isGivenKind([T_CLOSE_TAG, T_OPEN_TAG, T_OPEN_TAG_WITH_ECHO, T_INLINE_HTML])) {
+				$result['has-markup-or-declaration'] = true;
+			}
+
+			//A named function or class can't be the single statement of an if without braces
+			if ($tokens[$index]->isGivenKind([T_FUNCTION, T_CLASS, T_INTERFACE, T_TRAIT, T_ENUM])) {
+				$nameIndex = $tokens->getNextMeaningfulToken($index);
+				if ($nameIndex !== null && ($tokens[$nameIndex]->isGivenKind(T_STRING) || $tokens[$nameIndex]->getContent() == '&')) {
+					$result['has-markup-or-declaration'] = true;
+				}
+			}
+
 			if ($tokens[$index]->getContent() == ';') {
 				$count++;
 			}
@@ -177,6 +192,10 @@ final class RemoveBracersAroundBlocksWithOneCommandFixer extends AbstractFixer {
 			//   {}
 			//
 			if ($blockInfo['command-count'] == 0) {
+				continue;
+			}
+
+			if ($blockInfo['has-markup-or-declaration']) {
 				continue;
 			}
 
