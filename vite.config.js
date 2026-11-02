@@ -166,6 +166,7 @@ export default defineConfig({
 		legacyBundlePlugin('besogo', LEGACY_BESOGO_FILES, { minify: false }),
 		//The play page's own script, apart from the data the page prints (see templates/Tsumegos/play.php)
 		legacyBundlePlugin('play', ['webroot/js/PlayPage.js']),
+		legacyBundlePlugin('profile', ['webroot/js/ProfilePage.js']),
 		legacyBundlePlugin('sets-index', ['webroot/js/SetsIndexPage.js']),
 		legacyBundlePlugin('schedule', ['webroot/js/SchedulePage.js']),
 	],
