@@ -270,7 +270,7 @@ $challengesBadge = $challengesWaiting > 0
 	if (typeof showAchievementPopup === "function")
 		achievementUpdates.forEach(showAchievementPopup);
 	<?php endif; ?>
-	let light = <?php echo Util::boolString($lightDark !== 'dark'); ?>;
+	let light = <?php echo json_encode($lightDark !== 'dark'); ?>;
 	<?php if (!Auth::isLoggedIn()): ?>
 	<?php //A guest's settings live in the cookies only, kept for another year by every page ?>
 	setCookie("lightDark", <?php echo json_encode($lightDark, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>);

@@ -3,7 +3,6 @@
 use App\View\Helper\AchievementHelper;
 use App\Model\Table\UserTable;
 use App\Utility\Auth;
-use App\Utility\ChartRenderer;
 use App\Utility\HeroPowers;
 use App\Utility\Level;
 use App\Utility\Rating;
@@ -12,9 +11,8 @@ use App\Utility\Util;
 /**
  * @var \App\View\AppView $this
  * @var int $achievementCount
- * @var int $aNum
- * @var int $aEarnedTimes
- * @var array $as
+ * @var array{completed: int, earned_times: int} $achievementCounts
+ * @var array $latestAchievements
  * @var array $dailyResults
  * @var array|null $mistakeTraining
  * @var int $solvedProblemCount
@@ -152,11 +150,11 @@ use App\Utility\Util;
 			</tr>
 			<tr>
 				<td>Achievements:</td>
-				<td><?php echo $aNum . ' of ' . $achievementCount . AchievementHelper::renderEarnedTimes($aEarnedTimes); ?></td>
+				<td><?php echo $achievementCounts['completed'] . ' of ' . $achievementCount . AchievementHelper::renderEarnedTimes($achievementCounts['earned_times']); ?></td>
 			</tr>
 			<tr>
 				<td colspan="2">
-					<?php $achievementPercent = $achievementCount > 0 ? round($aNum / $achievementCount * 100) : 0; ?>
+					<?php $achievementPercent = $achievementCount > 0 ? round($achievementCounts['completed'] / $achievementCount * 100) : 0; ?>
 					<div class="progress">
 						<div class="progress__fill" style="width:<?php echo $achievementPercent; ?>%"></div>
 						<div class="progress__label"><?php echo $achievementPercent; ?>%</div>
@@ -237,65 +235,8 @@ foreach ($heroPowers as $power)
 	<br>
 	<table class="profileTable" width="100%" border="0">
 		<tr>
-			<?php
-if (!function_exists('showStatistics'))
-			{
-function showStatistics($side, $as, $user, $dailyResults, $timeGraph)
-{
-	echo '
-		<td width="50%">
-			<div id="userShowLevel' . $side . '">
-				' . ChartRenderer::bar('Problems in level mode', array_reverse($dailyResults), 'day', [
-		['label' => 'Solves', 'color' => '#74d14c'],
-		['label' => 'Fails', 'color' => '#d63a49']]) . '
-			</div>
-			<div id="userShowRating' . $side . '">
-				' . ChartRenderer::ratingLine('Overall rating', $dailyResults) . '
-			</div>
-			<div id="userShowTime' . $side . '">
-				' . ChartRenderer::bar('Time mode runs', $timeGraph, 'category', [
-			['label' => 'Passes', 'color' => '#c8723d'],
-			['label' => 'Fails', 'color' => '#888888']]) . '
-			</div>
-			<div id="userShowAchievements' . $side . '">
-				<table width="95%" border="0">
-					<tr>
-						<td class="h1profile"><h1 class="h1">Achievements</h1></td>
-						<td style="text-align:right;"><b class="profileTable2"><a href="/achievements/user/' . $user['id'] . '">View Achievements</a></b></td>
-					</tr>
-				</table>';
-	for($i = 0; $i < count($as); $i++)
-	{
-		if (strlen($as[$i]['a_title']) > 30)
-			$adjust = 'style="font-weight:normal;font-size:17px;"';
-		else $adjust = '';
-		$earnedCount = (int) ($as[$i]['a_earned_count'] ?? 1);
-	?>
-		<a href="/achievements/view/<?php echo $as[$i]['a_id'] . '/' . $user['id']; ?>">
-		<div align="center" class="achievementSmall <?php echo $as[$i]['a_color']; ?>">
-			<div class="acTitle2">
-				<b <?php echo $adjust; ?>><?php echo h($as[$i]['a_title']); ?></b>
-			</div>
-			<div class="acImg">
-				<img src="/img/<?php echo h($as[$i]['a_image']); ?>.png" title="<?php echo h($as[$i]['a_description']); ?>">
-				<?php echo AchievementHelper::renderEarnedBadge($earnedCount); ?>
-				<div class="acImgXp">
-				<?php echo $as[$i]['a_xp']; ?> XP
-				</div>
-			</div>
-			<div class="acDate2">
-				<time datetime="<?php echo Util::toIso8601($as[$i]['created']) ?>" data-format="datetime"><?php echo h($as[$i]['created']) ?></time>
-			</div>
-		</div>
-		</a>
-		<?php } ?>
-	</div>
-	</td>
-<?php
-}
-} // function_exists
-showStatistics('Left', $as, $user, $dailyResults, $timeGraph);
-showStatistics('Right', $as, $user, $dailyResults, $timeGraph); ?>
+			<?php foreach (['Left', 'Right'] as $side)
+				echo $this->element('profile_statistics', compact('side', 'user', 'latestAchievements', 'dailyResults', 'timeGraph')); ?>
 	</tr></table>
 </div>
 

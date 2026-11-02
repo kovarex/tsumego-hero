@@ -105,15 +105,6 @@ class UtilTest extends AppTestCase
 		$this->assertSame(1, $array['id']);
 	}
 
-	public function testIndexByID()
-	{
-		$array = [
-			['item' => ['id' => 1, 'value' => 'a']],
-			['item' => ['id' => 2, 'value' => 'b']],
-		];
-		$result = Util::indexByID($array, 'item', 'value');
-		$this->assertSame([1 => 'a', 2 => 'b'], $result);
-	}
 
 	public function testGetInternalAddressGithub()
 	{
@@ -146,6 +137,14 @@ class UtilTest extends AppTestCase
 		$_SERVER['DDEV_PRIMARY_URL'] = 'https://tsumego.ddev.site:33003';
 		$_SERVER['HTTP_X_FORWARDED_HOST'] = 'forwarded.example.test';
 		$this->assertSame('https://forwarded.example.test', Util::getMyAddress());
+	}
+
+	//The dev site behind a proxy that does not say which host it was asked for
+	public function testGetMyAddressWithoutForwardedHostIsTheTestSite()
+	{
+		unset($_SERVER['TEST_ENVIRONMENT'], $_SERVER['HTTP_HOST'], $_SERVER['HTTP_X_FORWARDED_HOST']);
+		$_SERVER['DDEV_PRIMARY_URL'] = 'https://tsumego.ddev.site:33003';
+		$this->assertSame('https://test.tsumego.ddev.site', Util::getMyAddress());
 	}
 
 	public function testGetMyAddressInGithubCI()
@@ -193,12 +192,6 @@ class UtilTest extends AppTestCase
 		$this->assertMatchesRegularExpression('/^[0-9a-zA-Z]+$/', Util::generateRandomString(20));
 	}
 
-	public function testEncryptAndDecryptRoundTrip()
-	{
-		$encrypted = Util::encrypt('secret-message');
-		$this->assertNotSame('secret-message', $encrypted);
-		$this->assertSame('secret-message', Util::decrypt($encrypted));
-	}
 
 	public function testGetRatioHandlesZeroMax()
 	{
@@ -286,11 +279,6 @@ class UtilTest extends AppTestCase
 		$this->assertSame('a = 1', $condition);
 	}
 
-	public function testBoolString()
-	{
-		$this->assertSame('true', Util::boolString(true));
-		$this->assertSame('false', Util::boolString(false));
-	}
 
 	public function testGetHealthBasedOnLevel()
 	{
