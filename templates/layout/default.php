@@ -238,7 +238,9 @@ $challengesBadge = $challengesWaiting > 0
 		<div class="site-nav__signin"><a class="menuLi <?php echo $_page == 'login' ? 'nav__link--active ' : ''; ?>" id="signInMenu" href="/users/login">Sign In</a></div>
 		<?php endif; ?>
 	</div>
-	<?php AccountWidget::render($timeMode, $unreadMessageCount); ?>
+	<?php if (Auth::isLoggedIn()): ?>
+		<?php echo $this->element('account_widget', ['bar' => AccountWidget::bar($timeMode), 'unreadMessageCount' => $unreadMessageCount]); ?>
+	<?php endif; ?>
 	<div align="left" class="whitebox2">
 		<div id="content">
 			<?php
