@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useMutation } from '@tanstack/react-query';
 import { useAuth } from '../shared/AuthContext';
 import type { TagItem } from './tagTypes';
@@ -152,11 +153,8 @@ export function TagEditor({ tsumegoId, isTimeMode, problemSolved, canAddMoreTags
 		return <div data-testid="tag-editor">{tagList}</div>;
 	}
 
-	return (
-		<div data-testid="tag-editor">
-			{tagList}
-
-			{error && <div style={{ color: 'var(--feedback-error)', marginBottom: 6 }} data-testid="tag-error">{error}</div>}
+	const adding = (
+		<>
 
 			{!canTag && (
 				<div style={{ color: 'var(--text-softer-color)', fontSize: 14 }} data-testid="tag-solve-first">Solve the problem to add tags.</div>
@@ -228,6 +226,17 @@ export function TagEditor({ tsumegoId, isTimeMode, problemSolved, canAddMoreTags
 			</div>
 			</>
 			)}
+		</>
+	);
+
+	//On the play page the adding goes to its edit section, so a player who only solves sees just the tags
+	const addingTarget = document.getElementById('tag-adding');
+	return (
+		<div data-testid="tag-editor">
+			{tagList}
+			{/* next to the tags, so an error of removing one shows while the edit section is closed */}
+			{error && <div style={{ color: 'var(--feedback-error)', marginBottom: 6 }} data-testid="tag-error">{error}</div>}
+			{addingTarget ? createPortal(adding, addingTarget) : adding}
 		</div>
 	);
 }

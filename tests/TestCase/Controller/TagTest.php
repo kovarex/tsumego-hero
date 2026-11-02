@@ -12,8 +12,10 @@ use App\Utility\Util;
 #[RetryOnBrowserFailure]
 class TagTest extends IntegrationTestCase
 {
+	//The adding of tags is in the edit section of the play page, which starts collapsed
 	private function openEditorAndType(Browser $browser, string $query): void
 	{
+		$browser->openPlayEditSection();
 		$browser->clickCssSelect('[data-testid="tag-search-input"]');
 		$browser->find('[data-testid="tag-search-input"]')->sendKeys($query);
 	}
@@ -51,7 +53,7 @@ class TagTest extends IntegrationTestCase
 
 		// atari is already added - shouldn't show in suggestions
 		$this->openEditorAndType($browser, 'ata');
-		$this->assertCount(0, $browser->getElements('[data-testid="tag-editor"] [role="option"]'));
+		$this->assertCount(0, $browser->getElements('[data-testid="tag-adding"] [role="option"]'));
 	}
 
 	public function testTagEditorHiddenForUsersWhoCannotContribute()
@@ -112,7 +114,7 @@ class TagTest extends IntegrationTestCase
 
 		$this->assertCount(1, $browser->getElements('[data-testid="tag-atari"]'));
 		$this->openEditorAndType($browser, 'ata');
-		$this->assertCount(0, $browser->getElements('[data-testid="tag-editor"] [role="option"]'));
+		$this->assertCount(0, $browser->getElements('[data-testid="tag-adding"] [role="option"]'));
 	}
 
 	public function testDontShowOthersApprovedTagsInAddTags()
@@ -128,7 +130,7 @@ class TagTest extends IntegrationTestCase
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 
 		$this->openEditorAndType($browser, 'snap');
-		$this->assertCount(1, $browser->getElements('[data-testid="tag-editor"] [role="option"]'));
+		$this->assertCount(1, $browser->getElements('[data-testid="tag-adding"] [role="option"]'));
 		$browser->clickId('tag-snapback');
 		$browser->find('[data-testid="tag-snapback"]');
 	}
@@ -153,7 +155,7 @@ class TagTest extends IntegrationTestCase
 		// signal that the list is done: a clickable option would be there at the same moment.
 		$suggestion = $browser->find('[data-testid="tag-nonaddable-atari"]');
 		$this->assertStringContainsString('already proposed', $suggestion->getText());
-		$this->assertCount(0, $browser->getElements('[data-testid="tag-editor"] [role="option"]'));
+		$this->assertCount(0, $browser->getElements('[data-testid="tag-adding"] [role="option"]'));
 
 		// clicking the note does not add the tag
 		$browser->startRecordingRequests();
@@ -503,6 +505,7 @@ class TagTest extends IntegrationTestCase
 			$context = new ContextPreparator(['user' => ['admin' => true], 'tsumego' => ['set_order' => 1, 'status' => 'S']]);
 			$browser->get('/' . $context->setConnections[0]['id']);
 
+			$browser->openPlayEditSection();
 			$browser->clickId('create-new-tag');
 
 			$browser->clickId('tag_name');
@@ -538,6 +541,7 @@ class TagTest extends IntegrationTestCase
 			'tsumego' => ['set_order' => 1, 'status' => 'S']]);
 		$browser->get('/' . $context->setConnections[0]['id']);
 
+		$browser->openPlayEditSection();
 		$browser->clickId('create-new-tag');
 
 		$browser->clickId('tag_name');

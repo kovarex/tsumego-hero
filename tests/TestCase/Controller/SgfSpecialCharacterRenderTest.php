@@ -109,7 +109,7 @@ class SgfSpecialCharacterRenderTest extends IntegrationTestCase
 		]);
 
 		$browser->get('/' . $context->setConnections[0]['id']);
-		$browser->clickId('show4');
+		$browser->openPlayEditSection();
 
 		$browser->driver->executeScript("
 			var content = arguments[0];

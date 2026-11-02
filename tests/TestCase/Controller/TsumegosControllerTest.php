@@ -57,11 +57,11 @@ class TsumegosControllerTest extends IntegrationTestCase
 		$setConnectionID = $context->tsumegos[0]['set-connections'][0]['id'];
 
 		$this->get('/' . $setConnectionID);
-		$this->assertResponseContains('<a id="showx6" class="selectable-text mr-5 historyLink">History</a>');
+		$this->assertStringContainsString('historyLink', $this->getStringDom()->getElementById('showx6')->getAttribute('class'));
 
 		Util::execute('UPDATE sgf SET user_id = NULL WHERE tsumego_id = ?', [$context->tsumegos[0]['id']]);
 		$this->get('/' . $setConnectionID);
-		$this->assertResponseContains('<a id="showx6" class="selectable-text mr-5 ">History</a>');
+		$this->assertStringNotContainsString('historyLink', $this->getStringDom()->getElementById('showx6')->getAttribute('class'));
 	}
 
 	public function testTheSgfDownloadIsNamedAfterTheCollectionAndTheProblemNumber(): void
@@ -772,13 +772,12 @@ class TsumegosControllerTest extends IntegrationTestCase
 
 		$browser = Browser::instance();
 		$browser->get($playPath);
-		$browser->clickId('show5');
-		$browser->waitUntilCssSelectorDisplayed('#msg5');
+		$browser->openPlayEditSection();
 		$browser->clickId('pass-on');
 		$browser->clickId('variant-type-multiple-choice');
 		$browser->clickCssSelect('#msg5 input[type="submit"]');
 		//Back on the problem, which has a multiple choice question to edit now
-		$browser->waitUntilAnyCssSelectorExists(['#showMC']);
+		$browser->waitUntilAnyCssSelectorExists(['#showxMC']);
 
 		$this->assertStringEndsWith($playPath, $browser->driver->getCurrentURL());
 		$this->assertSame(1, (int) $this->fetchTable('Tsumego')->get($tsumegoID)->pass);

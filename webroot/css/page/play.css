@@ -28,14 +28,8 @@
   color: var(--text-softer-color);
 }
 #showx3,
-#showx4,
 #openSgfLink,
-#show4,
-#show5,
-#showx6,
-#showx7,
 #findSimilarProblems,
-#showx8,
 #showx99 {
   display: none;
 }
@@ -80,11 +74,6 @@
   position: relative;
   top: 10px;
   left: 57px;
-}
-#msg2,
-#msg4,
-#msg5 {
-  display: none;
 }
 #msg2x {
   margin: 2px 14px;
@@ -893,4 +882,13 @@ h1 {
 		vertical-align: -2px;
 	}
 }
+}
+
+.play-edit {
+  margin: 0 auto 12px;
+  max-width: 720px;
+  text-align: left;
+}
+.play-edit__part {
+  margin-bottom: 12px;
 }

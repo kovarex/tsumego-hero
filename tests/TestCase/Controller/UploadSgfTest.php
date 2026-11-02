@@ -15,6 +15,7 @@ class UploadSgfTest extends IntegrationTestCase
 		$this->assertSame(0, $initialCount);
 		$browser->get($context->setConnections[0]['id']);
 		$this->assertSame(0, count($this->fetchTable('Sgf')->find()->where(['tsumego_id' => $context->tsumegos[0]['id']])->toArray()));
+		$browser->openPlayEditSection();
 		$openLink = $browser->find('#openSgfLink');
 		$this->assertTrue($openLink->isDisplayed());
 		$this->assertSame($openLink->getText(), "Open");
