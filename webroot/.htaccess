@@ -24,8 +24,10 @@
 # The bundles under /dist/ get a new name whenever their content changes (Vite puts a hash of it in
 # the file name), so a browser may keep each one for a year without asking again. Without a
 # Cache-Control it guesses from Last-Modified, which is only minutes after a deploy.
+# On the server the project root rewrites every request into webroot/, so the address is
+# /webroot/dist/... by the time this file is read.
 <IfModule mod_headers.c>
-	<If "%{REQUEST_URI} =~ m#^/dist/#">
+	<If "%{REQUEST_URI} =~ m#^(/webroot)?/dist/#">
 		Header set Cache-Control "public, max-age=31536000, immutable"
 	</If>
 </IfModule>
