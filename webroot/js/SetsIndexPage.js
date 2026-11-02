@@ -1,224 +1,185 @@
 //The collections page (Sets/index.php): its filter tiles and the active filters above the cards.
 //The template gives the data of the request in setsIndexPage, the code is the same for everyone and is cached.
-let query = setsIndexPage.query;
-let queryRefresh = setsIndexPage.queryRefresh;
-let filteredSets = [];
-let filteredTags = [];
-let searchText1 = "";
-let searchText2 = "";
-let searchText3 = "";
-let initialTopicTiles = [];
-let initialTagTiles = [];
-let topicsToggle = false;
-let difficultyToggle = false;
-let tagsToggle = false;
-let tileTopicsBool = [];
-let activeTopicTiles = [];
-let allTopicTiles = [];
+const query = setsIndexPage.query;
+const queryRefresh = setsIndexPage.queryRefresh;
+const allRanks = setsIndexPage.ranks;
+
+//The topics and the tags are picked from tiles: the names of the tiles, the picked ones in the order they
+//were picked, the ones picked when the page came, and whether each tile is shown as picked.
+const tileKinds = {
+	topics: { tiles: setsIndexPage.topicTiles, active: [], initial: [], picked: [], color: "var(--color-tile-green)", chip: "dropdown__tile--green", cookie: "filtered_sets", selectAll: false },
+	tags: { tiles: setsIndexPage.tagTiles, active: [], initial: [], picked: [], color: "var(--color-tile-brown)", chip: "dropdown__tile--brown", cookie: "filtered_tags", selectAll: false },
+};
+const topics = tileKinds.topics;
+const tags = tileKinds.tags;
+
+//The cards of the topics query: the id and name of each, a collection split into parts has a card of each.
+//A topic picked on this page shows only its cards until the page reloads with it.
+const topicCards = setsIndexPage.topics;
 let activeTopicIds = [];
-let allTopicIds = [];
-let allTopicNames = [];
-let allRanks = [];
+
 let activeRankTiles = [];
 let activeRankRange = null;
-let serverRankLabels = [];
 let rankDragStart = null;
 let rankDragMoved = false;
-let tileTagsBool = [];
-let activeTagTiles = [];
-let allTagTiles = [];
-for (const set of setsIndexPage.topics)
-		{
-			allTopicIds.push(set.id);
-			allTopicNames.push(set.name);
-		}
 
-		function toggleTopic(index, name, e) {
-			e.stopPropagation();
-			if(!tileTopicsBool[index]){
-				handleTiles(name, "topics", true);
-				activeTopicTiles.push(name);
-				if(query === "topics") {
-					for(let i=0;i<allTopicNames.length;i++)
-						if(allTopicNames[i] === name)
-							activeTopicIds.push(allTopicIds[i]);
-						}
-					}else{
-						handleTiles(name, "topics", false);
-						let newActiveTopicTiles = [];
-						for(let i=0;i<activeTopicTiles.length;i++){
-							if(activeTopicTiles[i] !== name)
-								newActiveTopicTiles.push(activeTopicTiles[i]);
-						}
-						activeTopicTiles = newActiveTopicTiles;
-						if(query === "topics"){
-							for(let i=0;i<allTopicNames.length;i++){
-								if(allTopicNames[i] === name){
-									unselectTopic(allTopicIds[i]);
-									break;
-								}
-							}
-						}
-					}
-					drawActiveCollections();
-					drawActiveTiles();
-				};
+function byRankOrder(a, b){
+	return allRanks.indexOf(a) - allRanks.indexOf(b);
+}
 
-		function toggleTag(index, name, e) {
-					e.stopPropagation();
-					if(!tileTagsBool[index]){
-						handleTiles(name, "tags", true);
-						activeTagTiles.push(name);
-					}else{
-						handleTiles(name, "tags", false);
-						let newActiveTagTiles = [];
-						for(let i=0;i<activeTagTiles.length;i++){
-							if(activeTagTiles[i] !== name)
-								newActiveTagTiles.push(activeTagTiles[i]);
-						}
-						activeTagTiles = newActiveTagTiles;
-					}
-					drawActiveCollections();
-					drawActiveTiles();
-				};
+//The indexes of the two ends of a range of ranks, weakest first.
+function rangeIndexes(range){
+	const from = allRanks.indexOf(range.from);
+	const to = allRanks.indexOf(range.to);
+	return from <= to ? [from, to] : [to, from];
+}
 
-		setsIndexPage.topicTiles.forEach(function(name, index){
-			allTopicTiles.push(name);
-			tileTopicsBool.push(false);
-			$("#tile-topics" + index).click(function(e){ toggleTopic(index, name, e); });
-		});
+// ── The topic and tag tiles ──
 
-		allRanks = setsIndexPage.ranks;
-		serverRankLabels = setsIndexPage.rankLabels;
+//Shows a tile picked or not.
+function paintTile(kindName, name, select){
+	const kind = tileKinds[kindName];
+	const position = kind.tiles.lastIndexOf(name);
+	$("#tile-" + kindName + position).css("background", select ? kind.color : "var(--surface-translucent)");
+	kind.picked[position] = select;
+}
 
-		allRanks.forEach(function(rankName, index){
-			$("#tile-difficulty" + index).click(function(e){ toggleRank(index, rankName, e); });
-		});
+//The id of the first card of a topic, the one its tile stands for.
+function topicCardId(name){
+	const card = topicCards.find(function(card){ return card.name === name; });
+	return card ? card.id : undefined;
+}
 
-		setsIndexPage.tagTiles.forEach(function(name, index){
-			allTagTiles.push(name);
-			tileTagsBool.push(false);
-			$("#tile-tags" + index).click(function(e){ toggleTag(index, name, e); });
-		});
-
-		for (const set of setsIndexPage.filteredSets)
-		{
-			filteredSets.push(set);
-			activeTopicTiles.push(set);
-			handleTiles(set, "topics", true);
-		}
-		for (const tag of setsIndexPage.filteredTags)
-		{
-			filteredTags.push(tag);
-			activeTagTiles.push(tag);
-			handleTiles(tag, "tags", true);
-		}
-$(document).ready(function(){
-	setCookie("query", query);
-	$("#tile-topics-select-all").html(selectAllTopics ? "Unselect all" : "Select all");
-	$("#tile-tags-select-all").html(selectAllTags ? "Unselect all" : "Select all");
-	initRankFilter();
-	colorRankSelects();
+function toggleTile(kindName, index, name, e){
+	e.stopPropagation();
+	const kind = tileKinds[kindName];
+	if(!kind.picked[index]){
+		paintTile(kindName, name, true);
+		kind.active.push(name);
+		if(kindName === "topics" && query === "topics")
+			for(const card of topicCards)
+				if(card.name === name)
+					activeTopicIds.push(card.id);
+	}else{
+		paintTile(kindName, name, false);
+		kind.active = kind.active.filter(function(activeName){ return activeName !== name; });
+		if(kindName === "topics" && query === "topics")
+			unselectTopic(topicCardId(name));
+	}
 	drawActiveCollections();
-	drawActiveTiles(true);
-});
-function handleTiles(name, query, select){
-	let color = "var(--surface-translucent)";
-	if(select){
-		if(query === "topics"){
-			color = "var(--color-tile-green)";
-		}else if(query === "tags"){
-			color = "var(--color-tile-brown)";
-		}
-	}
-	let position = -1;
-	if(query === "topics"){
-		for(let i=0;i<allTopicTiles.length;i++)
-			if(name === allTopicTiles[i])
-				position = i;
-		$("#tile-"+query+position).css("background", color);
-		tileTopicsBool[position] = select;
-	}else if(query === "tags"){
-		for(let i=0;i<allTagTiles.length;i++)
-			if(name === allTagTiles[i])
-				position = i;
-		$("#tile-"+query+position).css("background", color);
-		tileTagsBool[position] = !tileTagsBool[position];
-	}
+	drawActiveTiles();
 }
+
+function unselectTopic(id){
+	activeTopicIds = activeTopicIds.filter(function(activeId){ return activeId !== id; });
+}
+
+//Removes the chip of a picked topic or tag. The page reloads when the cards are of another kind, or when
+//the server already filtered them by this kind.
+function removeActiveTile(kindName, index){
+	const kind = tileKinds[kindName];
+	const name = kind.active[index];
+	if(kindName === "topics")
+		unselectTopic(topicCardId(name));
+	kind.tiles.forEach(function(tile, i){
+		if(tile === name)
+			$("#tile-" + kindName + i).css("background", "#ffffff1a");
+	});
+	kind.active = kind.active.filter(function(activeName, i){ return i !== index; });
+
+	drawActiveCollections();
+	drawActiveTiles();
+	if(query !== kindName || queryRefresh)
+		window.location.href = "/sets";
+}
+
+function toggleSelectAll(kindName){
+	const kind = tileKinds[kindName];
+	kind.selectAll = !kind.selectAll;
+	$("#tile-" + kindName + "-select-all").html(kind.selectAll ? "Unselect all" : "Select all");
+	kind.active = kind.selectAll ? kind.tiles.slice() : [];
+	if(kindName === "topics")
+		activeTopicIds = topicCards.map(function(card){ return card.id; });
+	kind.tiles.forEach(function(tile, i){
+		$("#tile-" + kindName + i).css("background", kind.selectAll ? kind.color : "#ffffff1a");
+		kind.picked[i] = kind.selectAll;
+	});
+	drawActiveTiles();
+	drawActiveCollections();
+}
+
+//Shows the cards of the picked topics only, all of them when none is picked.
 function drawActiveCollections(){
-	if (setsIndexPage.query === 'topics')
-	{
-		if(activeTopicIds.length<1){
-			for(let i=0;i<allTopicIds.length;i++)
-				$(".topic-box"+allTopicIds[i]).css("display", "grid");
-		}else{
-			for(let i=0;i<allTopicIds.length;i++)
-				if(!activeTopicIds.includes(allTopicIds[i]))
-					$(".topic-box"+allTopicIds[i]).css("display", "none");
-			let pos = [];
-			let posX = [];
-			for(let i=0;i<activeTopicIds.length;i++){
-				for(let j=0;j<allTopicIds.length;j++){
-					if(activeTopicIds[i] === allTopicIds[j] && !posX.includes(allTopicIds[j])){
-						posX.push(allTopicIds[j]);
-						pos.push(j);
-					}
-				}
-			}
-			let posXX = [];
-			for(let i=0;i<pos.length;i++)
-				posXX.push(allTopicNames[pos[i]]);
-			for(let i=0;i<tileTopicsBool.length;i++)
-				tileTopicsBool[i] = false;
-			for(let i=0;i<allTopicTiles.length;i++)
-				if(posXX.includes(allTopicTiles[i]))
-					tileTopicsBool[i] = true;
-			for(let i=0;i<activeTopicIds.length;i++)
-				$(".topic-box"+activeTopicIds[i]).fadeIn(250);
-		}
+	if(query !== "topics")
+		return;
+	if(activeTopicIds.length < 1){
+		for(const card of topicCards)
+			$(".topic-box" + card.id).css("display", "grid");
+		return;
 	}
+	for(const card of topicCards)
+		if(!activeTopicIds.includes(card.id))
+			$(".topic-box" + card.id).css("display", "none");
+	const pickedNames = activeTopicIds.map(function(id){
+		return topicCards.find(function(card){ return card.id === id; }).name;
+	});
+	topics.tiles.forEach(function(tile, i){
+		topics.picked[i] = pickedNames.includes(tile);
+	});
+	for(const id of activeTopicIds)
+		$(".topic-box" + id).fadeIn(250);
 }
+
+//A chip of an active filter, a click on it removes the filter.
+function chip(className, id, text, remove, index){
+	return $("<div>").addClass("dropdown__tile " + className).attr("id", id).attr("data-remove", remove).attr("data-index", index).text(text);
+}
+
+//The chips of the active filters above the cards, and the cookies that carry the filters to the server.
+//A topic or tag picked on this page has a chip only when the cards are of its kind.
 function drawActiveTiles(initialDraw = false){
-	$(".active-tiles-container").html("");
+	const container = $(".active-tiles-container");
+	container.html("");
 
 	if(initialDraw){
-		for(let i=0;i<activeTopicTiles.length;i++)
-			initialTopicTiles.push(activeTopicTiles[i]);
-		for(let i=0;i<activeTagTiles.length;i++)
-			initialTagTiles.push(activeTagTiles[i]);
+		topics.initial.push(...topics.active);
+		tags.initial.push(...tags.active);
 	}
-	for(let i=0;i<activeTopicTiles.length;i++){
-		let initialTile = false;
-		for(let j=0;j<initialTopicTiles.length;j++)
-			if(activeTopicTiles[i] === initialTopicTiles[j])
-				initialTile = true;
-		if(query == "topics" || initialTile)
-			$(".active-tiles-container").append('<div class="dropdown__tile dropdown__tile--green" id="active-tiles-element'+i+'" onclick="removeActiveTopic('+i+')">'+activeTopicTiles[i]+'</div>');
-	}
+	topics.active.forEach(function(name, i){
+		if(query == "topics" || topics.initial.includes(name))
+			container.append(chip(topics.chip, "active-tiles-element" + i, name, "topics", i));
+	});
 	// Rank picks are kept from every page, so their chips are not bound to the
 	// difficulty query the way the topic and tag chips are.
-	for(let i=0;i<activeRankTiles.length;i++)
-		if(!rankInRange(activeRankTiles[i]))
-			$(".active-tiles-container").append('<div class="dropdown__tile dropdown__tile--difficulty" style="--rank-color:var(--rank-'+activeRankTiles[i]+')" id="active-tiles-rank'+i+'" onclick="removeRankTile('+i+')">'+activeRankTiles[i]+'</div>');
+	activeRankTiles.forEach(function(rank, i){
+		if(!rankInRange(rank))
+			container.append(chip("dropdown__tile--difficulty", "active-tiles-rank" + i, rank, "rank", i).attr("style", "--rank-color:var(--rank-" + rank + ")"));
+	});
 	if(activeRankRange)
-		$(".active-tiles-container").append('<div class="dropdown__tile dropdown__tile--purple" id="active-tiles-difficulty" onclick="clearRankRange()">'+rangeLabel(activeRankRange)+'</div>');
-	for(let i=0;i<activeTagTiles.length;i++){
-		let initialTile = false;
-		for(let j=0;j<initialTagTiles.length;j++)
-			if(activeTagTiles[i] === initialTagTiles[j])
-				initialTile = true;
-		if(query == "tags" || initialTile)
-			$(".active-tiles-container").append('<div class="dropdown__tile dropdown__tile--brown" id="active-tiles-element'+i+'" onclick="removeActiveTag('+i+')">'+activeTagTiles[i]+'</div>');
-	}
-	setCookie("filtered_sets", activeTopicTiles.length == 0 ? 'clear' : activeTopicTiles.join('@'));
+		container.append(chip("dropdown__tile--purple", "active-tiles-difficulty", rangeLabel(activeRankRange), "range", 0));
+	tags.active.forEach(function(name, i){
+		if(query == "tags" || tags.initial.includes(name))
+			container.append(chip(tags.chip, "active-tiles-element" + i, name, "tags", i));
+	});
+	setCookie(topics.cookie, topics.active.length == 0 ? "clear" : topics.active.join("@"));
 	setCookie("filtered_ranks", selectedRankCookieValue());
-	setCookie("filtered_tags", activeTagTiles.length == 0 ? 'clear' : activeTagTiles.join('@'));
-	if($(".active-tiles-container").children().length > 0)
-		$(".active-tiles-container").append('<a class="dropdown__tile dropdown__tile--muted" href="" id="unselect-active-tiles">clear</a>');
+	setCookie(tags.cookie, tags.active.length == 0 ? "clear" : tags.active.join("@"));
+	if(container.children().length > 0)
+		container.append('<a class="dropdown__tile dropdown__tile--muted" href="" id="unselect-active-tiles">clear</a>');
 }
 
-$(".active-tiles-container").on("click", "#unselect-active-tiles", function(e) {
+$(".active-tiles-container").on("click", "[data-remove]", function(){
+	const index = Number(this.getAttribute("data-index"));
+	const remove = this.getAttribute("data-remove");
+	if(remove === "rank")
+		removeRankTile(index);
+	else if(remove === "range")
+		clearRankRange();
+	else
+		removeActiveTile(remove, index);
+});
+
+$(".active-tiles-container").on("click", "#unselect-active-tiles", function(e){
 	e.preventDefault();
 	$(".active-tiles-container").html("");
 	setCookie("filtered_sets", "clear");
@@ -227,93 +188,59 @@ $(".active-tiles-container").on("click", "#unselect-active-tiles", function(e) {
 	window.location.href = "/sets";
 });
 
-function removeActiveTopic(index){
-	let removeMap = 0;
-	for(let i=0;i<allTopicTiles.length;i++){
-		if(allTopicTiles[i] === activeTopicTiles[index])
-			removeMap = i;
-	}
-	for(let i=0;i<allTopicNames.length;i++){
-		if(allTopicNames[i] === allTopicTiles[removeMap]){
-			unselectTopic(allTopicIds[i]);
-			break;
-		}
-	}
-	for(let i=0;i<allTopicTiles.length;i++){
-		if(allTopicTiles[i] === activeTopicTiles[index])
-			$("#tile-topics"+i).css("background", "#ffffff1a");
-	}
-	let newTiles = [];
-	for(let i=0;i<activeTopicTiles.length;i++){
-		if(i !== index)
-			newTiles.push(activeTopicTiles[i]);
-	}
-	activeTopicTiles = newTiles;
+// ── The ranks: separate ranks picked from tiles, or one range from the selects or the scale ──
 
-	drawActiveCollections();
-	drawActiveTiles();
-	if(query !== "topics" || queryRefresh)
-		window.location.href = "/sets";
+function clearRangeSelects(){
+	$("#difficulty-from").val("");
+	$("#difficulty-to").val("");
 }
 
 function clearRankRange(){
 	activeRankRange = null;
-	$("#difficulty-from").val("");
-	$("#difficulty-to").val("");
+	clearRangeSelects();
 	setCookie("filtered_ranks", selectedRankCookieValue());
 	window.location.href = "/sets";
 }
 
 function initRankFilter(){
-	for(let i=0;i<serverRankLabels.length;i++){
-		let label = serverRankLabels[i];
+	for(const label of setsIndexPage.rankLabels){
 		if(label.includes("-")){
 			if(activeRankRange === null){
-				let parts = label.split("-");
+				const parts = label.split("-");
 				activeRankRange = { from: parts[0], to: parts[1] };
 			}
 		}else
 			activeRankTiles.push(label);
 	}
-	activeRankTiles.sort(function(a, b){ return allRanks.indexOf(a) - allRanks.indexOf(b); });
+	activeRankTiles.sort(byRankOrder);
 	paintRankTiles();
 }
 
 function rankInRange(rank){
 	if(!activeRankRange)
 		return false;
-	let rangeFrom = allRanks.indexOf(activeRankRange.from);
-	let rangeTo = allRanks.indexOf(activeRankRange.to);
-	if(rangeFrom > rangeTo){
-		let swap = rangeFrom;
-		rangeFrom = rangeTo;
-		rangeTo = swap;
-	}
-	let index = allRanks.indexOf(rank);
+	const [rangeFrom, rangeTo] = rangeIndexes(activeRankRange);
+	const index = allRanks.indexOf(rank);
 	return index >= rangeFrom && index <= rangeTo;
 }
 
 function rankChips(){
-	let chips = [];
-	for(let i=0;i<activeRankTiles.length;i++)
-		if(!rankInRange(activeRankTiles[i]))
-			chips.push(activeRankTiles[i]);
+	const chips = activeRankTiles.filter(function(rank){ return !rankInRange(rank); });
 	if(activeRankRange)
 		chips.push(rangeLabel(activeRankRange));
-	chips.sort(function(a, b){ return allRanks.indexOf(a.split("-")[0]) - allRanks.indexOf(b.split("-")[0]); });
+	chips.sort(function(a, b){ return byRankOrder(a.split("-")[0], b.split("-")[0]); });
 	return chips;
 }
 
 function paintRankTiles(){
-	for(let i=0;i<allRanks.length;i++){
-		let selected = activeRankTiles.indexOf(allRanks[i]) !== -1 || rankInRange(allRanks[i]);
-		$("#tile-difficulty"+i).toggleClass("is-selected", selected);
-	}
+	allRanks.forEach(function(rank, i){
+		$("#tile-difficulty" + i).toggleClass("is-selected", activeRankTiles.includes(rank) || rankInRange(rank));
+	});
 	updateRangeScale();
 }
 
 function updateRangeScale(){
-	let fill = document.getElementById("difficulty-range-fill");
+	const fill = document.getElementById("difficulty-range-fill");
 	if(!fill)
 		return;
 	let range = activeRankRange;
@@ -323,15 +250,9 @@ function updateRangeScale(){
 		fill.style.clipPath = "inset(0 100% 0 0)";
 		return;
 	}
-	let from = allRanks.indexOf(range.from);
-	let to = allRanks.indexOf(range.to);
-	if(from > to){
-		let swap = from;
-		from = to;
-		to = swap;
-	}
-	let left = from / allRanks.length * 100;
-	let right = (to + 1) / allRanks.length * 100;
+	const [from, to] = rangeIndexes(range);
+	const left = from / allRanks.length * 100;
+	const right = (to + 1) / allRanks.length * 100;
 	fill.style.clipPath = "inset(0 " + (100 - right) + "% 0 " + left + "%)";
 }
 
@@ -341,37 +262,34 @@ function syncRangeSelects(){
 	if(activeRankTiles.length === 1){
 		$("#difficulty-from").val(activeRankTiles[0]);
 		$("#difficulty-to").val(activeRankTiles[0]);
-	}else{
-		$("#difficulty-from").val("");
-		$("#difficulty-to").val("");
-	}
+	}else
+		clearRangeSelects();
 	colorRankSelects();
 }
 
 function colorRankSelects(){
 	["difficulty-from", "difficulty-to"].forEach(function(id){
-		let select = document.getElementById(id);
-		let rank = select.value;
+		const select = document.getElementById(id);
+		const rank = select.value;
 		select.style.color = rank ? "var(--rank-" + rank + ")" : "";
 	});
 }
 
-function toggleRank(index, name, e){
+function toggleRank(name, e){
 	e.stopPropagation();
 	if(rankInRange(name)){
 		// A range is one filter of its own; picking one of its ranks switches
 		// back to separate ranks so the pick is visible.
 		activeRankRange = null;
-		$("#difficulty-from").val("");
-		$("#difficulty-to").val("");
+		clearRangeSelects();
 		activeRankTiles = activeRankTiles.filter(function(rank){ return rank !== name; });
 	}
-	let position = activeRankTiles.indexOf(name);
+	const position = activeRankTiles.indexOf(name);
 	if(position === -1)
 		activeRankTiles.push(name);
 	else
 		activeRankTiles.splice(position, 1);
-	activeRankTiles.sort(function(a, b){ return allRanks.indexOf(a) - allRanks.indexOf(b); });
+	activeRankTiles.sort(byRankOrder);
 	syncRangeSelects();
 	paintRankTiles();
 	drawActiveTiles();
@@ -382,7 +300,7 @@ function rangeLabel(range){
 }
 
 function selectedRankCookieValue(){
-	let chips = rankChips();
+	const chips = rankChips();
 	return chips.length === 0 ? "clear" : chips.join("@");
 }
 
@@ -392,182 +310,17 @@ function removeRankTile(index){
 	window.location.href = "/sets";
 }
 
-function removeActiveTag(index){
-	let removeMap = 0;
-	for(let i=0;i<allTagTiles.length;i++){
-		if(allTagTiles[i] === activeTagTiles[index])
-			removeMap = i;
-	}
-	for(let i=0;i<allTagTiles.length;i++){
-		if(allTagTiles[i] === activeTagTiles[index])
-			$("#tile-tags"+i).css("background", "#ffffff1a");
-	}
-	let newTiles = [];
-	for(let i=0;i<activeTagTiles.length;i++){
-		if(i !== index)
-			newTiles.push(activeTagTiles[i]);
-	}
-	activeTagTiles = newTiles;
-
-	drawActiveCollections();
-	drawActiveTiles();
-	if(query !== "tags" || queryRefresh)
-		window.location.href = "/sets";
-}
-
-function unselectTopic(id){
-	let newActiveIds = [];
-	for(let i=0;i<activeTopicIds.length;i++){
-		if(activeTopicIds[i] !== id){
-			newActiveIds.push(activeTopicIds[i]);
-		}
-	}
-	activeTopicIds = newActiveIds;
-}
-
-$("#topics-button").click(function(e){
-	e.stopPropagation();
-	this.querySelector('#set-button-icon-topics .set-filter-chevron').classList.toggle('rotateArrow');
-	if(!topicsToggle){
-		topicsToggle = true;
-		$("#dropdown-topics").fadeIn(250);
-		if(difficultyToggle){
-			document.querySelector('#set-button-icon-difficulty .set-filter-chevron').classList.toggle('rotateArrow');
-			difficultyToggle = false;
-			$("#dropdown-difficulty").fadeOut(250);
-		}
-		if(tagsToggle){
-			document.querySelector('#set-button-icon-tags .set-filter-chevron').classList.toggle('rotateArrow');
-			tagsToggle = false;
-			$("#dropdown-tags").fadeOut(250);
-		}
-	}else{
-		topicsToggle = false;
-		$("#dropdown-topics").fadeOut(250);
-	}
-});
-$("#difficulty-button").click(function(e){
-	e.stopPropagation();
-	this.querySelector('#set-button-icon-difficulty .set-filter-chevron').classList.toggle('rotateArrow');
-	if(!difficultyToggle){
-		difficultyToggle = true;
-		$("#dropdown-difficulty").fadeIn(250);
-		if(topicsToggle){
-			document.querySelector('#set-button-icon-topics .set-filter-chevron').classList.toggle('rotateArrow');
-			topicsToggle = false;
-			$("#dropdown-topics").fadeOut(250);
-		}
-		if(tagsToggle){
-			document.querySelector('#set-button-icon-tags .set-filter-chevron').classList.toggle('rotateArrow');
-			tagsToggle = false;
-			$("#dropdown-tags").fadeOut(250);
-		}
-	}else{
-		difficultyToggle = false;
-		$("#dropdown-difficulty").fadeOut(250);
-	}
-});
-$("#tags-button").click(function(e){
-	e.stopPropagation();
-	this.querySelector('#set-button-icon-tags .set-filter-chevron').classList.toggle('rotateArrow');
-	if(!tagsToggle){
-		tagsToggle = true;
-		$("#dropdown-tags").fadeIn(250);
-		if(topicsToggle){
-			document.querySelector('#set-button-icon-topics .set-filter-chevron').classList.toggle('rotateArrow');
-			topicsToggle = false;
-			$("#dropdown-topics").fadeOut(250);
-		}
-		if(difficultyToggle){
-			document.querySelector('#set-button-icon-difficulty .set-filter-chevron').classList.toggle('rotateArrow');
-			difficultyToggle = false;
-			$("#dropdown-difficulty").fadeOut(250);
-		}
-	}else{
-		tagsToggle = false;
-		$("#dropdown-tags").fadeOut(250);
-	}
-});
-$(".dropdown__menu").click(function(e){
-	e.stopPropagation();
-});
-$(".whitebox2").click(function(e){
-	if(topicsToggle){
-		document.querySelector('#set-button-icon-topics .set-filter-chevron').classList.toggle('rotateArrow');
-		topicsToggle = false;
-		$("#dropdown-topics").fadeOut(250);
-	}
-	if(difficultyToggle){
-		document.querySelector('#set-button-icon-difficulty .set-filter-chevron').classList.toggle('rotateArrow');
-		difficultyToggle = false;
-		$("#dropdown-difficulty").fadeOut(250);
-	}
-	if(tagsToggle){
-		document.querySelector('#set-button-icon-tags .set-filter-chevron').classList.toggle('rotateArrow');
-		tagsToggle = false;
-		$("#dropdown-tags").fadeOut(250);
-	}
-});
-
-$("#tile-topics-submit").click(function(e){
-	setCookie("query", "topics");
-	window.location.href = "/sets";
-});
-$("#tile-difficulty-submit").click(function(e){
-	e.preventDefault();
-	setCookie("query", "difficulty");
-	setCookie("filtered_ranks", selectedRankCookieValue());
-	window.location.href = "/sets";
-});
-$("#tile-difficulty-reset").click(function(e){
-	e.stopPropagation();
-	activeRankTiles = [];
-	activeRankRange = null;
-	$("#difficulty-from").val("");
-	$("#difficulty-to").val("");
-	paintRankTiles();
-	drawActiveTiles();
-	setCookie("filtered_ranks", "clear");
-	window.location.href = "/sets";
-});
-$("#difficulty-from, #difficulty-to").change(function(e){
-	e.stopPropagation();
-	let from = $("#difficulty-from").val();
-	let to = $("#difficulty-to").val();
-	activeRankRange = null;
-	if(from || to){
-		let fromIndex = from ? allRanks.indexOf(from) : 0;
-		let toIndex = to ? allRanks.indexOf(to) : allRanks.length - 1;
-		if(fromIndex > toIndex){
-			let swap = fromIndex;
-			fromIndex = toIndex;
-			toIndex = swap;
-		}
-		activeRankRange = { from: allRanks[fromIndex], to: allRanks[toIndex] };
-	}
-	colorRankSelects();
-	paintRankTiles();
-	drawActiveTiles();
-});
-
 function rankIndexFromPointer(event){
-	let track = document.querySelector(".difficulty-range__scale-track");
-	let rect = track.getBoundingClientRect();
-	let ratio = (event.clientX - rect.left) / rect.width;
-	let index = Math.floor(ratio * allRanks.length);
+	const rect = document.querySelector(".difficulty-range__scale-track").getBoundingClientRect();
+	const index = Math.floor((event.clientX - rect.left) / rect.width * allRanks.length);
 	return Math.max(0, Math.min(allRanks.length - 1, index));
 }
 
+//The select a pointer over the scale moves: the end of the range nearer to it.
 function affectedSelectId(index){
 	if(!activeRankRange)
 		return "difficulty-to";
-	let from = allRanks.indexOf(activeRankRange.from);
-	let to = allRanks.indexOf(activeRankRange.to);
-	if(from > to){
-		let swap = from;
-		from = to;
-		to = swap;
-	}
+	const [from, to] = rangeIndexes(activeRankRange);
 	if(index <= from)
 		return "difficulty-from";
 	if(index >= to)
@@ -577,7 +330,7 @@ function affectedSelectId(index){
 
 function previewRangeSelect(index){
 	restoreRangeSelects();
-	let select = document.getElementById(affectedSelectId(index));
+	const select = document.getElementById(affectedSelectId(index));
 	select.value = allRanks[index];
 	select.style.color = "var(--rank-" + allRanks[index] + ")";
 }
@@ -592,8 +345,8 @@ function restoreRangeSelects(){
 }
 
 function applyRankRange(fromIndex, toIndex){
-	let from = Math.min(fromIndex, toIndex);
-	let to = Math.max(fromIndex, toIndex);
+	const from = Math.min(fromIndex, toIndex);
+	const to = Math.max(fromIndex, toIndex);
 	activeRankRange = { from: allRanks[from], to: allRanks[to] };
 	$("#difficulty-from").val(from === 0 ? "" : activeRankRange.from);
 	$("#difficulty-to").val(activeRankRange.to);
@@ -602,28 +355,131 @@ function applyRankRange(fromIndex, toIndex){
 	drawActiveTiles();
 }
 
+//A click on the scale moves the end of the range nearer to it, or picks everything up to it.
 function applyNearestRangeEnd(index){
 	if(!activeRankRange){
-		// Nothing picked yet: clicking the scale means "everything up to here".
 		applyRankRange(0, index);
 		return;
 	}
-	let from = allRanks.indexOf(activeRankRange.from);
-	let to = allRanks.indexOf(activeRankRange.to);
-	if(from > to){
-		let swap = from;
-		from = to;
-		to = swap;
-	}
-	if(index <= from)
-		applyRankRange(index, to);
-	else if(index >= to)
-		applyRankRange(from, index);
-	else if(index - from <= to - index)
+	const [from, to] = rangeIndexes(activeRankRange);
+	if(affectedSelectId(index) === "difficulty-from")
 		applyRankRange(index, to);
 	else
 		applyRankRange(from, index);
 }
+
+// ── The three filter menus: one is open at a time, a click elsewhere on the page closes it ──
+
+let openMenu = null;
+
+function setMenuOpen(name, open){
+	document.querySelector("#set-button-icon-" + name + " .set-filter-chevron").classList.toggle("rotateArrow");
+	if(open)
+		$("#dropdown-" + name).fadeIn(250);
+	else
+		$("#dropdown-" + name).fadeOut(250);
+	openMenu = open ? name : null;
+}
+
+function closeOpenMenu(){
+	if(openMenu !== null)
+		setMenuOpen(openMenu, false);
+}
+
+["topics", "difficulty", "tags"].forEach(function(name){
+	$("#" + name + "-button").click(function(e){
+		e.stopPropagation();
+		if(openMenu === name){
+			setMenuOpen(name, false);
+			return;
+		}
+		closeOpenMenu();
+		setMenuOpen(name, true);
+	});
+});
+$(".dropdown__menu").click(function(e){
+	e.stopPropagation();
+});
+$(".whitebox2").click(function(){
+	closeOpenMenu();
+});
+
+// ── The tiles and buttons of the menus ──
+
+topics.tiles.forEach(function(name, index){
+	topics.picked.push(false);
+	$("#tile-topics" + index).click(function(e){ toggleTile("topics", index, name, e); });
+});
+allRanks.forEach(function(rankName, index){
+	$("#tile-difficulty" + index).click(function(e){ toggleRank(rankName, e); });
+});
+tags.tiles.forEach(function(name, index){
+	tags.picked.push(false);
+	$("#tile-tags" + index).click(function(e){ toggleTile("tags", index, name, e); });
+});
+
+for(const name of setsIndexPage.filteredSets){
+	topics.active.push(name);
+	paintTile("topics", name, true);
+}
+for(const name of setsIndexPage.filteredTags){
+	tags.active.push(name);
+	paintTile("tags", name, true);
+}
+
+function isAllSelected(kind){
+	return kind.tiles.length > 0 && kind.tiles.every(function(tile){ return kind.active.includes(tile); });
+}
+topics.selectAll = isAllSelected(topics);
+tags.selectAll = isAllSelected(tags);
+
+$("#tile-topics-select-all").click(function(e){
+	e.stopPropagation();
+	toggleSelectAll("topics");
+});
+$("#tile-tags-select-all").click(function(e){
+	e.stopPropagation();
+	toggleSelectAll("tags");
+});
+
+$("#tile-topics-submit").click(function(){
+	setCookie("query", "topics");
+	window.location.href = "/sets";
+});
+$("#tile-tags-submit").click(function(){
+	setCookie("query", "tags");
+	window.location.href = "/sets";
+});
+$("#tile-difficulty-submit").click(function(e){
+	e.preventDefault();
+	setCookie("query", "difficulty");
+	setCookie("filtered_ranks", selectedRankCookieValue());
+	window.location.href = "/sets";
+});
+$("#tile-difficulty-reset").click(function(e){
+	e.stopPropagation();
+	activeRankTiles = [];
+	activeRankRange = null;
+	clearRangeSelects();
+	paintRankTiles();
+	drawActiveTiles();
+	setCookie("filtered_ranks", "clear");
+	window.location.href = "/sets";
+});
+$("#difficulty-from, #difficulty-to").change(function(e){
+	e.stopPropagation();
+	const from = $("#difficulty-from").val();
+	const to = $("#difficulty-to").val();
+	activeRankRange = null;
+	if(from || to){
+		const fromIndex = from ? allRanks.indexOf(from) : 0;
+		const toIndex = to ? allRanks.indexOf(to) : allRanks.length - 1;
+		activeRankRange = { from: allRanks[Math.min(fromIndex, toIndex)], to: allRanks[Math.max(fromIndex, toIndex)] };
+	}
+	colorRankSelects();
+	paintRankTiles();
+	drawActiveTiles();
+});
 
 $("#difficulty-range-scale")
 	.on("pointerdown", function(e){
@@ -637,7 +493,7 @@ $("#difficulty-range-scale")
 		}
 	})
 	.on("pointermove", function(e){
-		let index = rankIndexFromPointer(e);
+		const index = rankIndexFromPointer(e);
 		if(rankDragStart === null){
 			previewRangeSelect(index);
 			return;
@@ -651,9 +507,9 @@ $("#difficulty-range-scale")
 		e.stopPropagation();
 		if(rankDragStart === null)
 			return;
-		let start = rankDragStart;
-		let index = rankIndexFromPointer(e);
-		let moved = rankDragMoved;
+		const start = rankDragStart;
+		const index = rankIndexFromPointer(e);
+		const moved = rankDragMoved;
 		rankDragStart = null;
 		rankDragMoved = false;
 		if(moved || start !== index)
@@ -670,58 +526,13 @@ $("#difficulty-range-scale")
 		rankDragMoved = false;
 		restoreRangeSelects();
 	});
-$("#tile-tags-submit").click(function(e){
-	setCookie("query", "tags");
-	window.location.href = "/sets";
-});
 
-function isAllSelected(active, all){
-	return all.length > 0 && all.every(function(t){ return active.indexOf(t) !== -1; });
-}
-let selectAllTopics = isAllSelected(activeTopicTiles, allTopicTiles);
-let selectAllTags = isAllSelected(activeTagTiles, allTagTiles);
-
-$("#tile-topics-select-all").click(function(e){
-	e.stopPropagation();
-	if(selectAllTopics){
-		$("#tile-topics-select-all").html("Select all");
-		activeTopicTiles = [];
-		activeTopicIds = allTopicIds;
-		for(let i=0;i<allTopicTiles.length;i++)
-			$("#tile-topics"+i).css("background", "#ffffff1a");
-		for(let i=0;i<tileTopicsBool.length;i++)
-			tileTopicsBool[i] = false;
-	}else{
-		$("#tile-topics-select-all").html("Unselect all");
-		activeTopicTiles = allTopicTiles;
-		activeTopicIds = allTopicIds;
-		for(let i=0;i<allTopicTiles.length;i++)
-			$("#tile-topics"+i).css("background", "var(--color-tile-green)");
-		for(let i=0;i<tileTopicsBool.length;i++)
-			tileTopicsBool[i] = true;
-	}
-	selectAllTopics = !selectAllTopics;
-	drawActiveTiles();
+$(document).ready(function(){
+	setCookie("query", query);
+	$("#tile-topics-select-all").html(topics.selectAll ? "Unselect all" : "Select all");
+	$("#tile-tags-select-all").html(tags.selectAll ? "Unselect all" : "Select all");
+	initRankFilter();
+	colorRankSelects();
 	drawActiveCollections();
-});
-$("#tile-tags-select-all").click(function(e){
-	e.stopPropagation();
-	if(selectAllTags){
-		$("#tile-tags-select-all").html("Select all");
-		activeTagTiles = [];
-		for(let i=0;i<allTagTiles.length;i++)
-			$("#tile-tags"+i).css("background", "#ffffff1a");
-		for(let i=0;i<tileTagsBool.length;i++)
-			tileTagsBool[i] = false;
-	}else{
-		$("#tile-tags-select-all").html("Unselect all");
-		activeTagTiles = allTagTiles;
-		for(let i=0;i<allTagTiles.length;i++)
-			$("#tile-tags"+i).css("background", "var(--color-tile-brown)");
-		for(let i=0;i<tileTagsBool.length;i++)
-			tileTagsBool[i] = true;
-	}
-	selectAllTags = !selectAllTags;
-	drawActiveTiles();
-	drawActiveCollections();
+	drawActiveTiles(true);
 });
