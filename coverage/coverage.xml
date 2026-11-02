@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1793578123">
-  <project timestamp="1793578123">
+<coverage generated="1793578429">
+  <project timestamp="1793578429">
     <package name="App">
       <file name="/home/runner/work/tsumego-hero/tsumego-hero/src/Application.php">
         <class name="App\Application" namespace="App">
@@ -356,10 +356,10 @@
         <line num="272" type="stmt" count="1425"/>
         <line num="273" type="stmt" count="0"/>
         <line num="274" type="stmt" count="1425"/>
-        <line num="276" type="stmt" count="396"/>
-        <line num="277" type="stmt" count="396"/>
+        <line num="276" type="stmt" count="397"/>
+        <line num="277" type="stmt" count="397"/>
         <line num="279" type="stmt" count="1425"/>
-        <line num="280" type="stmt" count="396"/>
+        <line num="280" type="stmt" count="397"/>
         <line num="281" type="stmt" count="1425"/>
         <line num="282" type="stmt" count="1"/>
         <line num="283" type="stmt" count="1425"/>
@@ -1332,7 +1332,7 @@
       </file>
       <file name="/home/runner/work/tsumego-hero/tsumego-hero/src/Controller/SetsController.php">
         <class name="App\Controller\SetsController" namespace="App\Controller">
-          <metrics complexity="196" methods="22" coveredmethods="8" conditionals="0" coveredconditionals="0" statements="638" coveredstatements="589" elements="660" coveredelements="597"/>
+          <metrics complexity="195" methods="22" coveredmethods="8" conditionals="0" coveredconditionals="0" statements="638" coveredstatements="589" elements="660" coveredelements="597"/>
         </class>
         <line num="39" type="method" name="sandbox" visibility="public" complexity="12" crap="12.04" count="11"/>
         <line num="42" type="stmt" count="11"/>
@@ -1771,7 +1771,7 @@
         <line num="744" type="stmt" count="2"/>
         <line num="746" type="stmt" count="2"/>
         <line num="747" type="stmt" count="2"/>
-        <line num="750" type="method" name="view" visibility="public" complexity="51" crap="51" count="53"/>
+        <line num="750" type="method" name="view" visibility="public" complexity="50" crap="50" count="53"/>
         <line num="754" type="stmt" count="53"/>
         <line num="757" type="stmt" count="53"/>
         <line num="759" type="stmt" count="2"/>
@@ -4653,7 +4653,7 @@
       </file>
       <file name="/home/runner/work/tsumego-hero/tsumego-hero/src/Controller/Component/PlayResultProcessorComponent.php">
         <class name="App\Controller\Component\PlayResultProcessorComponent" namespace="App\Controller\Component">
-          <metrics complexity="90" methods="16" coveredmethods="14" conditionals="0" coveredconditionals="0" statements="232" coveredstatements="230" elements="248" coveredelements="244"/>
+          <metrics complexity="90" methods="16" coveredmethods="13" conditionals="0" coveredconditionals="0" statements="232" coveredstatements="229" elements="248" coveredelements="242"/>
         </class>
         <line num="41" type="method" name="processResult" visibility="public" complexity="1" crap="1" count="119"/>
         <line num="43" type="stmt" count="119"/>
@@ -4675,7 +4675,7 @@
         <line num="83" type="stmt" count="119"/>
         <line num="85" type="stmt" count="119"/>
         <line num="86" type="stmt" count="119"/>
-        <line num="87" type="stmt" count="1"/>
+        <line num="87" type="stmt" count="0"/>
         <line num="89" type="stmt" count="119"/>
         <line num="91" type="stmt" count="12"/>
         <line num="92" type="stmt" count="12"/>
@@ -4903,7 +4903,7 @@
         <line num="434" type="stmt" count="6"/>
         <line num="435" type="stmt" count="4"/>
         <line num="437" type="stmt" count="3"/>
-        <metrics loc="440" ncloc="386" classes="1" methods="16" coveredmethods="14" conditionals="0" coveredconditionals="0" statements="232" coveredstatements="230" elements="248" coveredelements="244"/>
+        <metrics loc="440" ncloc="386" classes="1" methods="16" coveredmethods="13" conditionals="0" coveredconditionals="0" statements="232" coveredstatements="229" elements="248" coveredelements="242"/>
       </file>
     </package>
     <package name="App\Database">
@@ -7754,19 +7754,19 @@
         <line num="119" type="stmt" count="926"/>
         <line num="123" type="method" name="getAvatarSetting" visibility="public" complexity="2" crap="6" count="0"/>
         <line num="125" type="stmt" count="0"/>
-        <line num="130" type="method" name="assertUserFieldExists" visibility="private" complexity="2" crap="2" count="760"/>
-        <line num="132" type="stmt" count="760"/>
+        <line num="130" type="method" name="assertUserFieldExists" visibility="private" complexity="2" crap="2" count="761"/>
+        <line num="132" type="stmt" count="761"/>
         <line num="133" type="stmt" count="3"/>
-        <line num="136" type="method" name="saveUserField" visibility="public" complexity="1" crap="1" count="574"/>
-        <line num="138" type="stmt" count="574"/>
-        <line num="144" type="method" name="saveUserFields" visibility="public" complexity="4" crap="4" count="756"/>
-        <line num="147" type="stmt" count="756"/>
-        <line num="148" type="stmt" count="756"/>
-        <line num="149" type="stmt" count="754"/>
-        <line num="150" type="stmt" count="754"/>
-        <line num="151" type="stmt" count="754"/>
-        <line num="152" type="stmt" count="754"/>
-        <line num="153" type="stmt" count="754"/>
+        <line num="136" type="method" name="saveUserField" visibility="public" complexity="1" crap="1" count="575"/>
+        <line num="138" type="stmt" count="575"/>
+        <line num="144" type="method" name="saveUserFields" visibility="public" complexity="4" crap="4" count="757"/>
+        <line num="147" type="stmt" count="757"/>
+        <line num="148" type="stmt" count="757"/>
+        <line num="149" type="stmt" count="755"/>
+        <line num="150" type="stmt" count="755"/>
+        <line num="151" type="stmt" count="755"/>
+        <line num="152" type="stmt" count="755"/>
+        <line num="153" type="stmt" count="755"/>
         <line num="156" type="method" name="incrementUserField" visibility="public" complexity="1" crap="1" count="84"/>
         <line num="159" type="stmt" count="84"/>
         <line num="160" type="stmt" count="83"/>
@@ -9726,11 +9726,11 @@
         <line num="168" type="stmt" count="324"/>
         <line num="169" type="stmt" count="324"/>
         <line num="170" type="stmt" count="324"/>
-        <line num="173" type="method" name="swapColorWords" visibility="public" complexity="1" crap="1" count="53"/>
-        <line num="175" type="stmt" count="53"/>
-        <line num="176" type="stmt" count="53"/>
-        <line num="177" type="stmt" count="53"/>
-        <line num="178" type="stmt" count="53"/>
+        <line num="173" type="method" name="swapColorWords" visibility="public" complexity="1" crap="1" count="45"/>
+        <line num="175" type="stmt" count="45"/>
+        <line num="176" type="stmt" count="45"/>
+        <line num="177" type="stmt" count="45"/>
+        <line num="178" type="stmt" count="45"/>
         <line num="181" type="method" name="tsumegoStatus" visibility="private" complexity="2" crap="2" count="326"/>
         <line num="183" type="stmt" count="326"/>
         <line num="184" type="stmt" count="6"/>
@@ -12728,8 +12728,8 @@
         <line num="65" type="stmt" count="3131"/>
         <line num="66" type="stmt" count="0"/>
         <line num="67" type="stmt" count="3131"/>
-        <line num="71" type="method" name="forgetCookie" visibility="public" complexity="1" crap="1" count="396"/>
-        <line num="73" type="stmt" count="396"/>
+        <line num="71" type="method" name="forgetCookie" visibility="public" complexity="1" crap="1" count="397"/>
+        <line num="73" type="stmt" count="397"/>
         <line num="78" type="method" name="sentCookie" visibility="public" complexity="1" crap="1" count="2"/>
         <line num="80" type="stmt" count="2"/>
         <line num="84" type="method" name="sendCookie" visibility="private" complexity="1" crap="1" count="3133"/>
@@ -12846,10 +12846,10 @@
         <line num="301" type="method" name="isolationLevel" visibility="public" complexity="1" crap="1" count="14"/>
         <line num="303" type="stmt" count="14"/>
         <line num="304" type="stmt" count="14"/>
-        <line num="308" type="method" name="execute" visibility="public" complexity="1" crap="1" count="1145"/>
-        <line num="310" type="stmt" count="1145"/>
-        <line num="311" type="stmt" count="1145"/>
-        <line num="312" type="stmt" count="1145"/>
+        <line num="308" type="method" name="execute" visibility="public" complexity="1" crap="1" count="1146"/>
+        <line num="310" type="stmt" count="1146"/>
+        <line num="311" type="stmt" count="1146"/>
+        <line num="312" type="stmt" count="1146"/>
         <line num="315" type="method" name="clampOptional" visibility="public" complexity="3" crap="3" count="85"/>
         <line num="317" type="stmt" count="85"/>
         <line num="318" type="stmt" count="85"/>
@@ -13257,6 +13257,6 @@
         <metrics loc="70" ncloc="54" classes="1" methods="1" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="30" coveredstatements="28" elements="31" coveredelements="28"/>
       </file>
     </package>
-    <metrics files="229" loc="26442" ncloc="22602" classes="167" methods="1218" coveredmethods="954" conditionals="0" coveredconditionals="0" statements="10648" coveredstatements="10072" elements="11866" coveredelements="11026"/>
+    <metrics files="229" loc="26442" ncloc="22602" classes="167" methods="1218" coveredmethods="953" conditionals="0" coveredconditionals="0" statements="10648" coveredstatements="10071" elements="11866" coveredelements="11024"/>
   </project>
 </coverage>
