@@ -895,6 +895,20 @@ h1 {
   width: auto;
   margin-right: 6px;
 }
+.play-edit__file {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.play-edit__file input[type="file"] {
+  flex: none;
+  width: auto;
+}
+.play-edit__file input[type="text"] {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+}
 .play-edit-toggle--after-solve {
   display: none;
 }

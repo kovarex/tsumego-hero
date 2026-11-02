@@ -116,9 +116,9 @@ $variantType = $tv ? (int) $tv->tsumego_variant_type_id : null;
 				<?php endif; ?>
 				<tr>
 					<td><label for="admin-upload-button">New SGF:</label></td>
-					<td>
+					<td class="play-edit__file">
 						<input id="admin-upload-button" type="file" name="adminUpload" />
-						<input id="admin-upload-description" type="text" name="sgf_description" maxlength="<?php echo SgfTable::DESCRIPTION_MAX_LENGTH; ?>" placeholder="What changed and why (optional)" />
+						<input id="admin-upload-description" type="text" name="sgf_description" maxlength="<?php echo SgfTable::DESCRIPTION_MAX_LENGTH; ?>" placeholder="What changed and why" />
 					</td>
 				</tr>
 				<?php if (empty($tsumego->deleted)): ?>
