@@ -1,5 +1,6 @@
 <?php
 use App\Model\Table\SetTable;
+
 /**
  * Shared set card component used by the sets index, sandbox and "my sets" pages.
  *
@@ -13,9 +14,7 @@ $problems = $set['amount'] == 1 ? 'problem' : 'problems';
 $tilde = $set['amount'] == 1 ? '' : '~';
 $partition = $set['partition'] ?? -1;
 if ($partition == -1)
-{
 	$partitionText = '';
-}
 else
 	$partitionText = ' #' . ($partition + 1);
 $backgroundImage = $backgroundImage ?? 'linear-gradient(rgba(169, 169, 169, 0.30), rgba(0, 0, 0, 0.35))';

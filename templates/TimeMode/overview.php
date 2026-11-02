@@ -17,7 +17,7 @@
 <br>
 <div align="center">
 	<a class="btn btn--inactive" href="#">Select</a>
-	<?php echo '<a class="btn'.($hasFinishedSesssion ? ' btn--primary' : ' btn--inactive').'" href="'.($hasFinishedSesssion ? '/timeMode/result' : '#').'">Results</a>'; ?>
+	<?php echo '<a class="btn' . ($hasFinishedSesssion ? ' btn--primary' : ' btn--inactive') . '" href="' . ($hasFinishedSesssion ? '/timeMode/result' : '#') . '">Results</a>'; ?>
 	<a class="btn btn--primary" href="/challenges">Challenge a friend</a>
 </div>
 <?php if ($challengeInProgressID): ?>
@@ -32,12 +32,12 @@
 	foreach ($timeModeCategories as $timeModeCategory)
 	{
 		$categoryID = $timeModeCategory->id;
-		echo '<img id="timeMode'.$categoryID.'"'.
-			' src="/img/timeMode'.$categoryID.'2.png" '.
-			' width="200"'.
-			' onclick="setTimeModeCategory('.$categoryID.');"'.
-			' onmouseover="this.src=\'/img/timeMode'.$categoryID.'hover2.png\';"'.
-			' onmouseout="this.src=\'/img/timeMode'.$categoryID.'\' + (timeModeCategoryID == '.$categoryID.' ? \'\' : \'inactive\') + \'2.png\';"/>';
+		echo '<img id="timeMode' . $categoryID . '"'
+			. ' src="/img/timeMode' . $categoryID . '2.png" '
+			. ' width="200"'
+			. ' onclick="setTimeModeCategory(' . $categoryID . ');"'
+			. ' onmouseover="this.src=\'/img/timeMode' . $categoryID . 'hover2.png\';"'
+			. ' onmouseout="this.src=\'/img/timeMode' . $categoryID . '\' + (timeModeCategoryID == ' . $categoryID . ' ? \'\' : \'inactive\') + \'2.png\';"/>';
 	}
 	?>
 	</div>
@@ -47,18 +47,18 @@
 foreach ($timeModeCategories as $timeModeCategory)
 {
 	$categoryID = $timeModeCategory->id;
-	echo '<div id="time-mode'.$categoryID.'">';
+	echo '<div id="time-mode' . $categoryID . '">';
 	$unlocked = true; // first is always unlocked
 	foreach ($timeModeRanks as $timeModeRank)
 	{
 		$rank = $timeModeRank['name'];
 		$rankID = $timeModeRank['id'];
 
-		echo '<div class="imageContainer1" id="rank-selector-'.$categoryID.'-'.$rankID.'">';
+		echo '<div class="imageContainer1" id="rank-selector-' . $categoryID . '-' . $rankID . '">';
 		if ($unlocked)
-			echo '<a style="text-decoration:none;" href="/timeMode/start?categoryID='.$categoryID.'&rankID='.$rankID.'">';
-		echo '<img src="/img/rankButton'.$rank.($unlocked ? '' : 'inactive').'.png" '.($unlocked ? 'onmouseover="this.src = \'/img/rankButton'.$rank.'hover.png\';" onmouseout="this.src = \'/img/rankButton'.$rank.'.png\';"' : '').'>';
-		echo '<div class="imageContainerText2"> <img class="timeModeIcons" src="/img/timeModeStored.png">'.$timeModeRank['tsumego_count'].'</div>';
+			echo '<a style="text-decoration:none;" href="/timeMode/start?categoryID=' . $categoryID . '&rankID=' . $rankID . '">';
+		echo '<img src="/img/rankButton' . $rank . ($unlocked ? '' : 'inactive') . '.png" ' . ($unlocked ? 'onmouseover="this.src = \'/img/rankButton' . $rank . 'hover.png\';" onmouseout="this.src = \'/img/rankButton' . $rank . '.png\';"' : '') . '>';
+		echo '<div class="imageContainerText2"> <img class="timeModeIcons" src="/img/timeModeStored.png">' . $timeModeRank['tsumego_count'] . '</div>';
 		if ($unlocked)
 			echo '</a>';
 		echo '</div>';
@@ -71,7 +71,9 @@ echo '</div>';
 	var timeModeCategoryID = getCookie('lastTimeModeCategoryID') || <?php echo $lastTimeModeCategoryID; ?>;
 	function setTimeModeCategory(categoryIDToSet, shouldSetCookie = true)
 	{
-		for (const categoryID of [<?php $result = []; foreach ($timeModeCategories as $timeModeCategory) $result[] = $timeModeCategory->id; echo implode(',', $result); ?>])
+		for (const categoryID of [<?php $result = [];
+		foreach ($timeModeCategories as $timeModeCategory) $result[] = $timeModeCategory->id;
+		echo implode(',', $result); ?>])
 		{
 			var element = document.getElementById("timeMode" + categoryID);
 			element.style = "cursor: pointer;";
@@ -109,7 +111,7 @@ echo '</div>';
 			$bestSolvedRank = $solvedMap[$timeModeCategoryID][$bestSolvedRankID];
 		else
 			$bestSolvedRank = 'no rank';
-		echo "if (timeModeCategoryID == ".$timeModeCategoryID.") return '".$bestSolvedRank."';";
+		echo "if (timeModeCategoryID == " . $timeModeCategoryID . ") return '" . $bestSolvedRank . "';";
 	}
 	?>
 	}

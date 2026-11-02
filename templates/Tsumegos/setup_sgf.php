@@ -7,6 +7,7 @@
  */
 
 use App\Utility\ViteManifest;
+
 $this->start('script');
 echo ViteManifest::legacyScript('besogo');
 $this->end();
@@ -23,5 +24,5 @@ $this->end();
 	let firstColor = 'N';
 	if (root.nextMove())
 		firstColor = root.nextMove() == BLACK ? 'B' : 'W';
-	window.location.href = '/tsumegos/setupSgfStep2/<?php echo (int)$sgfID ?>/' + firstColor + '/' + correctMoves;
+	window.location.href = '/tsumegos/setupSgfStep2/<?php echo (int) $sgfID ?>/' + firstColor + '/' + correctMoves;
 </script>

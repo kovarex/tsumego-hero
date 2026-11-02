@@ -6,6 +6,7 @@
  */
 
 use App\Model\Table\UserTable;
+
 ?>
 <div align="center">
 <p class="title">

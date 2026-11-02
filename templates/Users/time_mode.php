@@ -1,6 +1,7 @@
 <?php
 
 use App\View\Helper\HighscoreHelper;
+
 /**
  * @var \App\View\AppView $this
  * @var array $params1

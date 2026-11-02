@@ -4,7 +4,6 @@ use App\View\Helper\AchievementHelper;
 use App\Model\Table\UserTable;
 use App\Utility\Auth;
 use App\Utility\ChartRenderer;
-use App\Utility\Constants;
 use App\Utility\HeroPowers;
 use App\Utility\Level;
 use App\Utility\Rating;
@@ -174,10 +173,8 @@ $isPremium = HeroPowers::hasPremiumUnlock($user);
 $hasRevelationBonus = HeroPowers::hasContributionRevelationBonus($user);
 $unlockedCount = 0;
 foreach ($heroPowers as $power)
-{
 	if ($user['level'] >= $power['level'])
 		$unlockedCount++;
-}
 ?>
 <div class="hero-powers">
 	<div class="hero-powers__title">Hero Powers: <?php echo $unlockedCount . ' of ' . count($heroPowers); ?> unlocked</div>
@@ -209,9 +206,9 @@ foreach ($heroPowers as $power)
 	$size = count($dailyResults);
 	if ($size < 10)
 		$height = '400';
-	else if($size < 30)
+	elseif($size < 30)
 		$height = '600';
-	else if ($size < 50)
+	elseif ($size < 50)
 		$height = '900';
 	else
 		$height = '1200';
@@ -242,23 +239,23 @@ foreach ($heroPowers as $power)
 		<tr>
 			<?php
 if (!function_exists('showStatistics'))
-{
+			{
 function showStatistics($side, $as, $user, $dailyResults, $timeGraph)
 {
 	echo '
 		<td width="50%">
 			<div id="userShowLevel' . $side . '">
 				' . ChartRenderer::bar('Problems in level mode', array_reverse($dailyResults), 'day', [
-					['label' => 'Solves', 'color' => '#74d14c'],
-					['label' => 'Fails', 'color' => '#d63a49']]) . '
+		['label' => 'Solves', 'color' => '#74d14c'],
+		['label' => 'Fails', 'color' => '#d63a49']]) . '
 			</div>
 			<div id="userShowRating' . $side . '">
 				' . ChartRenderer::ratingLine('Overall rating', $dailyResults) . '
 			</div>
 			<div id="userShowTime' . $side . '">
 				' . ChartRenderer::bar('Time mode runs', $timeGraph, 'category', [
-					['label' => 'Passes', 'color' => '#c8723d'],
-					['label' => 'Fails', 'color' => '#888888']]) . '
+			['label' => 'Passes', 'color' => '#c8723d'],
+			['label' => 'Fails', 'color' => '#888888']]) . '
 			</div>
 			<div id="userShowAchievements' . $side . '">
 				<table width="95%" border="0">
@@ -267,7 +264,7 @@ function showStatistics($side, $as, $user, $dailyResults, $timeGraph)
 						<td style="text-align:right;"><b class="profileTable2"><a href="/achievements/user/' . $user['id'] . '">View Achievements</a></b></td>
 					</tr>
 				</table>';
-	for($i=0; $i<count($as); $i++)
+	for($i = 0; $i < count($as); $i++)
 	{
 		if (strlen($as[$i]['a_title']) > 30)
 			$adjust = 'style="font-weight:normal;font-size:17px;"';

@@ -1,7 +1,6 @@
 <?php
 
 use App\Model\Table\ChallengeTable;
-
 /**
  * The page of a challenge: what is played, the table of its players and a way in for the ones who
  * aren't in yet. How every player did with each problem shows to the players who finished their own

@@ -33,12 +33,13 @@ use App\Utility\TsumegoFilters;
 				</button>
 				<div align="left" id="dropdown-topics" class="dropdown__menu dropdown__menu--filters">
 					<?php
-						for($i=0; $i<count($setTiles); $i++)
-							echo '<div class="dropdown__tile" id="tile-topics'.$i.'">'.h($setTiles[$i]).'</div>';
+						for($i = 0; $i < count($setTiles); $i++)
+							echo '<div class="dropdown__tile" id="tile-topics' . $i . '">' . h($setTiles[$i]) . '</div>';
 					?>
 					<div class="dropdown__tile-actions">
 						<div class="dropdown__tile dropdown__tile-actions__select" id="tile-topics-select-all">Select all</div>
-						<?php if($tsumegoFilters->query){ ?>
+						<?php if($tsumegoFilters->query)
+						{ ?>
 							<a class="dropdown__tile dropdown__tile-actions__submit" id="tile-topics-submit" href="">Search</a>
 						<?php } ?>
 					</div>
@@ -55,8 +56,8 @@ use App\Utility\TsumegoFilters;
 				</button>
 				<div align="left" id="dropdown-difficulty" class="dropdown__menu dropdown__menu--filters">
 					<?php
-						for($i=0; $i<count($difficultyTiles); $i++)
-							echo '<div class="dropdown__tile dropdown__tile--difficulty" id="tile-difficulty'.$i.'" style="--rank-color:'.Rating::rankColorVar($difficultyTiles[$i]).'">'.h($difficultyTiles[$i]).'</div>';
+						for($i = 0; $i < count($difficultyTiles); $i++)
+							echo '<div class="dropdown__tile dropdown__tile--difficulty" id="tile-difficulty' . $i . '" style="--rank-color:' . Rating::rankColorVar($difficultyTiles[$i]) . '">' . h($difficultyTiles[$i]) . '</div>';
 					?>
 					<div class="difficulty-range">
 						<div class="difficulty-range__scale" id="difficulty-range-scale" title="Click to show everything up to a rank, or drag to pick a range">
@@ -101,12 +102,13 @@ use App\Utility\TsumegoFilters;
 				</button>
 				<div align="left" id="dropdown-tags" class="dropdown__menu dropdown__menu--filters">
 					<?php
-						for($i=0; $i<count($tagTiles); $i++)
-							echo '<div class="dropdown__tile" id="tile-tags'.$i.'">'.h($tagTiles[$i]).'</div>';
+						for($i = 0; $i < count($tagTiles); $i++)
+							echo '<div class="dropdown__tile" id="tile-tags' . $i . '">' . h($tagTiles[$i]) . '</div>';
 					?>
 					<div class="dropdown__tile-actions">
 						<div class="dropdown__tile dropdown__tile-actions__select" id="tile-tags-select-all">Select all</div>
-						<?php if($tsumegoFilters->query){ ?>
+						<?php if($tsumegoFilters->query)
+						{ ?>
 							<a class="dropdown__tile dropdown__tile-actions__submit" id="tile-tags-submit" href="">Search</a>
 						<?php } ?>
 					</div>
@@ -130,7 +132,7 @@ use App\Utility\TsumegoFilters;
 	<div class="active-tiles-container"></div>
 	<div align="center" class="set-index display1">
 	<?php
-	if($lightDark=='light')
+	if($lightDark == 'light')
 		$lightDarkBoxes = '4';
 	else
 		$lightDarkBoxes = '3';
@@ -141,14 +143,15 @@ use App\Utility\TsumegoFilters;
 	$renderCard = function (array $set, string $backgroundImage) use ($setCardFile): void {
 		include $setCardFile;
 	};
-	foreach ($setsSelector->sets as $i => $set) {
+	foreach ($setsSelector->sets as $i => $set)
+	{
 		if ($lightDark == 'light')
 		{
 			$lightDarkBoxes = '3';
 			if ($set['partition'] >= 4)
 				$lightDarkBoxes = '6';
 		}
-		$backgroundImage = 'linear-gradient(rgba(169, 169, 169, 0.'.$lightDarkBoxes.'0), rgba(0, 0, 0, 0.'.$lightDarkBoxes.'5));';
+		$backgroundImage = 'linear-gradient(rgba(169, 169, 169, 0.' . $lightDarkBoxes . '0), rgba(0, 0, 0, 0.' . $lightDarkBoxes . '5));';
 
 		$renderCard([
 			'id' => $set['id'],
@@ -263,44 +266,50 @@ use App\Utility\TsumegoFilters;
 					drawActiveTiles();
 				};';
 
-			foreach ($setTiles as $index => $setName) {
+			foreach ($setTiles as $index => $setName)
+			{
 				$jsName = json_encode($setName, $jsFlags);
-				echo 'allTopicTiles.push('.$jsName.');';
+				echo 'allTopicTiles.push(' . $jsName . ');';
 				echo 'tileTopicsBool.push(false);';
-				echo '$("#tile-topics'.$index.'").click(function(e){ toggleTopic('.$index.', '.$jsName.', e); });';
+				echo '$("#tile-topics' . $index . '").click(function(e){ toggleTopic(' . $index . ', ' . $jsName . ', e); });';
 			}
 
 			echo 'allRanks = ' . json_encode($difficultyTiles, $jsFlags) . ';';
 			echo 'serverRankLabels = ' . json_encode(array_values($rankFilterLabels), $jsFlags) . ';';
 
-			foreach ($difficultyTiles as $index => $rankName) {
+			foreach ($difficultyTiles as $index => $rankName)
+			{
 				$jsRankName = json_encode($rankName, $jsFlags);
-				echo '$("#tile-difficulty'.$index.'").click(function(e){ toggleRank('.$index.', '.$jsRankName.', e); });';
+				echo '$("#tile-difficulty' . $index . '").click(function(e){ toggleRank(' . $index . ', ' . $jsRankName . ', e); });';
 			}
 
-			foreach ($tagList as $tag) {
-				echo 'allTagIds.push("'.$tag['id'].'");';
-				echo 'allTagNames.push('.json_encode($tag['name'], $jsFlags).');';
+			foreach ($tagList as $tag)
+			{
+				echo 'allTagIds.push("' . $tag['id'] . '");';
+				echo 'allTagNames.push(' . json_encode($tag['name'], $jsFlags) . ');';
 			}
 
-			foreach ($tagTiles as $index => $tagName) {
+			foreach ($tagTiles as $index => $tagName)
+			{
 				$jsTagName = json_encode($tagName, $jsFlags);
-				echo 'allTagTiles.push('.$jsTagName.');';
+				echo 'allTagTiles.push(' . $jsTagName . ');';
 				echo 'tileTagsBool.push(false);';
-				echo '$("#tile-tags'.$index.'").click(function(e){ toggleTag('.$index.', '.$jsTagName.', e); });';
+				echo '$("#tile-tags' . $index . '").click(function(e){ toggleTag(' . $index . ', ' . $jsTagName . ', e); });';
 			}
 
-			foreach ($tsumegoFilters->sets as $set) {
+			foreach ($tsumegoFilters->sets as $set)
+			{
 				$jsSet = json_encode($set, $jsFlags);
-				echo 'filteredSets.push('.$jsSet.');';
-				echo 'activeTopicTiles.push('.$jsSet.');';
-				echo 'handleTiles('.$jsSet.', "topics", true);';
+				echo 'filteredSets.push(' . $jsSet . ');';
+				echo 'activeTopicTiles.push(' . $jsSet . ');';
+				echo 'handleTiles(' . $jsSet . ', "topics", true);';
 			}
-			foreach ($tsumegoFilters->tags as $tag) {
+			foreach ($tsumegoFilters->tags as $tag)
+			{
 				$jsTag = json_encode($tag, $jsFlags);
-				echo 'filteredTags.push('.$jsTag.');';
-				echo 'activeTagTiles.push('.$jsTag.');';
-				echo 'handleTiles('.$jsTag.', "tags", true);';
+				echo 'filteredTags.push(' . $jsTag . ');';
+				echo 'activeTagTiles.push(' . $jsTag . ');';
+				echo 'handleTiles(' . $jsTag . ', "tags", true);';
 			}
 		?>
 		$(document).ready(function(){
@@ -337,7 +346,8 @@ use App\Utility\TsumegoFilters;
 			}
 		}
 		function drawActiveCollections(){
-			<?php if($tsumegoFilters->query == 'topics'){ ?>
+			<?php if($tsumegoFilters->query == 'topics')
+			{ ?>
 				if(activeTopicIds.length<1){
 					for(let i=0;i<allTopicIds.length;i++)
 						$(".topic-box"+allTopicIds[i]).css("display", "grid");
@@ -366,7 +376,9 @@ use App\Utility\TsumegoFilters;
 					for(let i=0;i<activeTopicIds.length;i++)
 						$(".topic-box"+activeTopicIds[i]).fadeIn(250);
 				}
-			<?php }else if ( $tsumegoFilters->query == 'tags'){ ?>
+			<?php }
+		elseif ($tsumegoFilters->query == 'tags')
+		{ ?>
 				if(activeTagIds.length<1){
 					for(let i=0;i<allTagIds.length;i++)
 						$(".tag-box"+allTagIds[i]).css("display", "grid");

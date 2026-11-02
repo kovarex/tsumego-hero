@@ -14,6 +14,7 @@
 <?php
 use App\Utility\ChartRenderer;
 use App\Utility\TsumegoAttemptsRenderer;
+
 echo ChartRenderer::ratingLine('Rating history', $dailyResults);
 new TsumegoAttemptsRenderer($urlParams, $setConnection->tsumego_id)->render();
 ?>

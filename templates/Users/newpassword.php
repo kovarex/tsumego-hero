@@ -11,11 +11,11 @@ use App\Utility\CookieFlash;
  * @var bool $valid
  */
 
-	if(Auth::isLoggedIn()){
+	if(Auth::isLoggedIn())
 		echo '<script type="text/javascript">window.location.href = "/sets";</script>';
-	}
 ?>
-<?php if($valid){ ?>
+<?php if($valid)
+{ ?>
 <div id="login-box" class="users form">
 	<div class="left signin">
 		<?php echo CookieFlash::render(); ?>
@@ -37,8 +37,11 @@ use App\Utility\CookieFlash;
 	</div>
 </div>
 <br>
-<?php }else{ 
-	if($done){
+<?php }
+else
+{
+	if($done)
+	{
 ?>
 	<div id="login-box" class="users form">
 	<div class="left signin">
@@ -49,7 +52,9 @@ use App\Utility\CookieFlash;
 	<div class="right">
 	</div>
 	</div>
-<?php }else{ ?>
+<?php }
+else
+{ ?>
 	<div id="login-box" class="users form">
 	<div class="left signin">
 		 <h1>This link is not valid any more.</h1>

@@ -10,11 +10,11 @@ use App\Utility\CookieFlash;
  * @var bool $sent
  */
 
-	if(Auth::isLoggedIn()){
+	if(Auth::isLoggedIn())
 		echo '<script type="text/javascript">window.location.href = "/sets";</script>';
-	}
 ?>
-<?php if(!$sent){ ?>
+<?php if(!$sent)
+{ ?>
 <div id="login-box" class="users form">
 	<div class="left signin">
 		<?php echo CookieFlash::render(); ?>
@@ -34,7 +34,9 @@ use App\Utility\CookieFlash;
 	</div>
 </div>
 <br>
-<?php }else{ ?>
+<?php }
+else
+{ ?>
 <div id="login-box" class="users form">
 	<div class="left signin">
 		<?php echo CookieFlash::render(); ?>
