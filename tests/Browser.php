@@ -640,9 +640,20 @@ class Browser
 		}
 		$parts = ["TEST: " . $test];
 		$parts[] = "URL: " . $browser->driverDump(fn() => $browser->driver->getCurrentURL());
+		// How each file of the page arrived: a script that failed to load shows its status (0 when the
+		// connection broke), protocol, bytes and time here, next to the caddy.log line of the request
+		$parts[] = "RESOURCES:\n" . $browser->driverDump(fn() => implode("\n", $browser->driver->executeScript(self::READ_RESOURCES)));
 		$parts[] = $browser->driverDump(fn() => $browser->driver->getPageSource());
 		@file_put_contents($file . '.html', implode("\n\n", $parts));
 	}
+
+	//One line per file the page requested: status, protocol, bytes on the wire and in the body, milliseconds, URL.
+	private const string READ_RESOURCES = <<<'JS'
+		return performance.getEntriesByType('resource').map(function (entry) {
+			return [entry.responseStatus, entry.nextHopProtocol || '-', entry.transferSize, entry.encodedBodySize,
+				Math.round(entry.duration), entry.name].join(' ');
+		});
+		JS;
 
 	//Ends the problem on the page as solved ('S') or failed ('F'), as the board does.
 	//displayResult() is defined inline before besogo has built the board and its tool panel, and it
