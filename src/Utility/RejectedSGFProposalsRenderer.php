@@ -101,7 +101,7 @@ OFFSET " . $this->offset);
 		}
 		echo '</td>';
 		echo '<td>';
-		echo '<form method="post" action="/users/reopenSGFProposal/' . $item['rejected_id'] . '" onsubmit="return confirm(\'Put this proposal back among the ones waiting for a decision?\');">';
+		echo '<form method="post" action="/proposals/reopenSgf/' . $item['rejected_id'] . '" onsubmit="return confirm(\'Put this proposal back among the ones waiting for a decision?\');">';
 		echo '<button type="submit" class="btn btn--small" id="reopen-' . $item['rejected_id'] . '">Reopen</button>';
 		echo '</form>';
 		echo '</td>';

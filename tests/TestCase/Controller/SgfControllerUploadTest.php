@@ -220,7 +220,7 @@ class SgfControllerUploadTest extends IntegrationTestCase
 
 		$this->fetchTable('User')->updateAll(['user_role_id' => UserTable::ROLE_ADMIN], ['id' => $context->user['id']]);
 		$browser->get('/admin/sgf-proposals');
-		$browser->post('/users/acceptSGFProposal/' . $proposal->id);
+		$browser->post('/proposals/acceptSgf/' . $proposal->id);
 
 		$comment = $this->comment($context);
 		$this->assertSame('black T19 then w T18', $comment->message);

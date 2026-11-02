@@ -53,24 +53,7 @@ LIMIT 1', [$set['id']]);
 		return array_map(fn($row) => $row + ['title' => $row['set_title'] . ' ' . $row['num']], $rows);
 	}
 
-	public static function collectTsumegosFromSet(int $setID): array
-	{
-		// the problems of the set in its order, the position of each in it
-		$tsumegoIDs = array_column(Util::query('SELECT tsumego_id FROM set_connection WHERE set_id = ? ORDER BY num ASC', [$setID]), 'tsumego_id');
-		$positions = array_flip($tsumegoIDs);
-		// a problem in the trash is not in the set anymore
-		$tsumegos = $tsumegoIDs ? Util::query('SELECT * FROM tsumego WHERE id IN (' . implode(',', array_fill(0, count($tsumegoIDs), '?')) . ') AND deleted IS NULL', $tsumegoIDs) : [];
-		$result = [];
-		foreach ($tsumegos as $tsumego)
-			$result[$positions[$tsumego['id']]] = ['Tsumego' => $tsumego + ['set_id' => $setID]];
-
-		// in the order of the set, and numbered from 0 even when some of its problems were left out
-		ksort($result);
-		return array_values($result);
-	}
-
-	//How many problems the set has. The same number as count(collectTsumegosFromSet()),
-	//but the database counts them, so no tsumego rows are loaded into PHP.
+	//How many problems the set has, the ones in the trash left out.
 	public static function countTsumegosFromSet(int $setID): int
 	{
 		$rows = Util::query(

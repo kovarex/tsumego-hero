@@ -30,6 +30,7 @@ const LEGACY_APP_FILES = [
 	'webroot/js/imageZoom.js',
 	'webroot/js/setProgress.js',
 	'webroot/js/siteMenu.js',
+	'webroot/js/keepAlive.js',
 ];
 
 //Besogo Go board viewer JS files (global-scope, loaded on puzzle pages).
@@ -166,6 +167,7 @@ export default defineConfig({
 		//The play page's own script, apart from the data the page prints (see templates/Tsumegos/play.php)
 		legacyBundlePlugin('play', ['webroot/js/PlayPage.js']),
 		legacyBundlePlugin('sets-index', ['webroot/js/SetsIndexPage.js']),
+		legacyBundlePlugin('schedule', ['webroot/js/SchedulePage.js']),
 	],
 	build: {
 		// All built assets go to webroot/dist/ (CSS bundles, React app, source maps, manifest)

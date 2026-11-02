@@ -43,51 +43,8 @@ class SetsController extends AppController
 
 		$this->set('_page', 'sandbox');
 		$this->set('_title', 'Tsumego Hero - Collections');
-		$setsNew = [];
-
-		$sets = Util::query('SELECT id, title, color FROM `set` WHERE public = 0 AND user_id IS NULL AND deleted IS NULL ORDER BY `order`');
-
-		if (Auth::isLoggedIn())
-		{
-			$tsumegoStatusMap = [];
-			foreach (Util::query('SELECT tsumego_id, status FROM tsumego_status WHERE user_id = ?', [Auth::getUserID()]) as $userTsumegoStatus)
-				$tsumegoStatusMap[$userTsumegoStatus['tsumego_id']] = $userTsumegoStatus['status'];
-		}
-		$overallCounter = 0;
-
-		$setsCount = count($sets);
-		for ($i = 0; $i < $setsCount; $i++)
-		{
-			$ts = TsumegoUtil::collectTsumegosFromSet($sets[$i]['id']);
-			$counter = 0;
-			$elo = 0;
-			$tsCount3 = count($ts);
-			for ($k = 0; $k < $tsCount3; $k++)
-			{
-
-				$elo += $ts[$k]['Tsumego']['rating'];
-				if (Auth::isLoggedIn())
-					if (isset($tsumegoStatusMap[$ts[$k]['Tsumego']['id']]))
-						if ($tsumegoStatusMap[$ts[$k]['Tsumego']['id']] == 'S' || $tsumegoStatusMap[$ts[$k]['Tsumego']['id']] == 'W' || $tsumegoStatusMap[$ts[$k]['Tsumego']['id']] == 'C')
-							$counter++;
-			}
-			if (count($ts) > 0)
-				$elo = $elo / count($ts);
-			else
-				$elo = 0;
-			$percent = 0;
-			if (count($ts) > 0)
-				$percent = Util::getPercentButAvoid100UntilComplete($counter, count($ts));
-			$overallCounter += count($ts);
-			$sn = [];
-			$sn['id'] = $sets[$i]['id'];
-			$sn['name'] = $sets[$i]['title'];
-			$sn['amount'] = count($ts);
-			$sn['color'] = $sets[$i]['color'];
-			$sn['difficulty'] = Rating::getReadableRankFromRating($elo);
-			$sn['solved'] = $percent;
-			array_push($setsNew, $sn);
-		}
+		// the sandbox: the builds of the admins, not published yet and owned by nobody
+		$setsNew = SetTable::cards('s.public = 0 AND s.user_id IS NULL AND s.deleted IS NULL', [], Auth::getUserID());
 
 		$admins = $this->fetchTable('User')->find()
 			->select(['display_name'])
@@ -99,7 +56,7 @@ class SetsController extends AppController
 
 		$this->set('admins', $admins);
 		$this->set('setsNew', $setsNew);
-		$this->set('overallCounter', $overallCounter);
+		$this->set('overallCounter', array_sum(array_column($setsNew, 'amount')));
 	}
 
 	#[HttpGet]
@@ -132,40 +89,8 @@ class SetsController extends AppController
 		$this->set('canonicalPath', '/sets/user/' . $userId);
 
 		// Own sets (or an admin browsing) show all sets; others only see public ones
-		$publicFilter = ($isOwn || Auth::isAdmin()) ? '' : 'AND s.public = 1';
-
-		$rows = Util::query("
-SELECT
-	s.id,
-	s.title,
-	s.color,
-	COUNT(sc.tsumego_id) AS amount,
-	COALESCE(SUM(t.rating), 0) AS elo_sum,
-	COALESCE(SUM(CASE WHEN ts.status IN ('S','W','C') THEN 1 ELSE 0 END), 0) AS solved
-FROM `set` s
-LEFT JOIN (set_connection sc
-	JOIN tsumego t ON t.id = sc.tsumego_id AND t.deleted IS NULL) ON sc.set_id = s.id
-LEFT JOIN tsumego_status ts ON ts.tsumego_id = sc.tsumego_id AND ts.user_id = ?
-WHERE s.user_id = ? $publicFilter
-GROUP BY s.id, s.title, s.color
-ORDER BY s.order", [Auth::getUserID(), $userId]);
-
-		$setsNew = [];
-		foreach ($rows as $row)
-		{
-			$amount = (int) $row['amount'];
-			$elo = $amount > 0 ? (float) $row['elo_sum'] / $amount : 0.0;
-			$percent = $amount > 0 ? Util::getPercentButAvoid100UntilComplete((int) $row['solved'], $amount) : 0;
-
-			$setsNew[] = [
-				'id' => $row['id'],
-				'name' => $row['title'],
-				'amount' => $amount,
-				'color' => $row['color'],
-				'difficulty' => Rating::getReadableRankFromRating($elo),
-				'solved' => $percent,
-			];
-		}
+		$publicFilter = ($isOwn || Auth::isAdmin()) ? '' : ' AND s.public = 1';
+		$setsNew = SetTable::cards('s.user_id = ?' . $publicFilter, [$userId], Auth::getUserID());
 
 		$this->set('setsNew', $setsNew);
 		$this->render('user_sets');
