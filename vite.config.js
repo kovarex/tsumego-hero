@@ -163,6 +163,8 @@ export default defineConfig({
 		legacyBundlePlugin('jquery', ['node_modules/jquery/dist/jquery.min.js'], { minify: false, instrument: false }),
 		legacyBundlePlugin('app', LEGACY_APP_FILES),
 		legacyBundlePlugin('besogo', LEGACY_BESOGO_FILES, { minify: false }),
+		//The play page's own script, apart from the data the page prints (see templates/Tsumegos/play.php)
+		legacyBundlePlugin('play', ['webroot/js/PlayPage.js']),
 	],
 	build: {
 		// All built assets go to webroot/dist/ (CSS bundles, React app, source maps, manifest)

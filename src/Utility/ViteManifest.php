@@ -38,6 +38,7 @@ class ViteManifest
 		'jquery'      => 'virtual:legacy-jquery',
 		'legacy'      => 'virtual:legacy-app',
 		'besogo'      => 'virtual:legacy-besogo',
+		'play'        => 'virtual:legacy-play',
 	];
 
 	// ---------------------------------------------------------------------------
