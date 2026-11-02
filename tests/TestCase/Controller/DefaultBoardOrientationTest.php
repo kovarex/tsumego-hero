@@ -31,7 +31,7 @@ class DefaultBoardOrientationTest extends IntegrationTestCase
 
 		// besogo's loadSgf normalizes the board to top-left internally, so
 		// "Original" shows the canonical orientation (matching the thumbnail).
-		$this->assertTextContains('options.corner = "top-left"', $this->view);
+		$this->assertSame('top-left', $this->playPage()['problem']['corner']);
 	}
 
 	public function testRandomSelectsAValidCorner(): void
@@ -47,7 +47,7 @@ class DefaultBoardOrientationTest extends IntegrationTestCase
 		$this->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		$this->assertResponseOk();
 
-		$this->assertMatchesRegularExpression('/options\.corner = "(top-left|top-right|bottom-left|bottom-right)"/', $this->view);
+		$this->assertContains($this->playPage()['problem']['corner'], ['top-left', 'top-right', 'bottom-left', 'bottom-right']);
 	}
 
 	public function testBoardOrientationPreferenceStoresValue(): void

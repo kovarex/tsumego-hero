@@ -808,11 +808,11 @@ class ClassroomsControllerTest extends IntegrationTestCase
 
 		$this->get('/classes/play/' . $assignmentId);
 
-		$this->assertStringContainsString('var tsumegoID = ' . $this->context->tsumegos[1]['id'] . ';', $this->view);
+		$this->assertSame((int) $this->context->tsumegos[1]['id'], $this->playPage()['problem']['tsumegoID']);
 		$buttons = (array) $this->viewVariable('tsumegoButtons');
 		$this->assertSame([1, 2, 3], array_map(fn($button) => $button->order, $buttons));
 		$this->assertSame(['S', 'W', 'N'], array_map(fn($button) => $button->status, $buttons));
-		$this->assertStringContainsString('var assignmentReplay = true;', $this->view);
+		$this->assertTrue($this->playPage()['problem']['assignmentReplay']);
 		$this->assertSame('Homework 1', $buttons[2]->description);
 		$text = preg_replace('/\s+/', ' ', $this->view);
 		$this->assertStringContainsString('Week two 2/3</a>', $text);

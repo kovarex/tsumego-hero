@@ -131,6 +131,14 @@ class IntegrationTestCase extends AppTestCase
 		return $this->_response->hasHeader($name) ? $this->_response->getHeaderLine($name) : null;
 	}
 
+	//The data the play page's script reads (Play::clientData()), as the page printed it
+	/** @return array{page: array<string, mixed>, problem: array<string, mixed>} */
+	protected function playPage(): array
+	{
+		$this->assertSame(1, preg_match('/const playPage = (.*);\n/', $this->view, $match), 'The page has no playPage');
+		return json_decode($match[1], true, flags: JSON_THROW_ON_ERROR);
+	}
+
 	public function getStringDom(): HTMLDocument
 	{
 		if ($this->domSource !== $this->view)

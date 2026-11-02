@@ -42,7 +42,7 @@ class MistakeTrainingControllerTest extends IntegrationTestCase
 
 		$this->assertMatchesRegularExpression('/<div id="status2" align="center">\s*<font size="4">\s*' . preg_quote(Rating::getReadableRankFromRating(1500), '/') . ' /',
 			$this->view, 'The rank shows as in the level mode');
-		$this->assertStringNotContainsString('new XPStatus(', $this->view, 'The training gives no XP');
+		$this->assertNull($this->playPage()['problem']['xpStatus'], 'The training gives no XP');
 	}
 
 	public function testAllCaughtUpWhenNoDueProblems()
@@ -68,7 +68,7 @@ class MistakeTrainingControllerTest extends IntegrationTestCase
 		$this->get('/mistake-training');
 		// Renders the next due problem's play page directly (no redirect), and
 		// puts the user into mistake-training mode.
-		$this->assertStringContainsString('var tsumegoID = ' . $context->tsumegos[0]['id'] . ';', $this->view,
+		$this->assertSame((int) $context->tsumegos[0]['id'], $this->playPage()['problem']['tsumegoID'],
 			'The play page of the due problem is rendered');
 		$this->assertStringContainsString('problem-nav__rung', $this->view, 'With the training row under the board');
 		$this->assertTrue(Auth::isInMistakeTrainingMode());
@@ -205,7 +205,7 @@ class MistakeTrainingControllerTest extends IntegrationTestCase
 
 		$this->get('/mistake-training');
 
-		$this->assertStringContainsString('var tsumegoID = ' . $context->tsumegos[1]['id'] . ';', $this->view,
+		$this->assertSame((int) $context->tsumegos[1]['id'], $this->playPage()['problem']['tsumegoID'],
 			'The training opens the problem that came in first');
 		$this->assertStringContainsString('Mistake Training 1/3', $this->view);
 	}
@@ -279,9 +279,8 @@ class MistakeTrainingControllerTest extends IntegrationTestCase
 
 		$this->get('/mistake-training/play/' . self::setConnectionId($context, 0));
 
-		$this->assertStringContainsString(
-			'var nextButtonLink = "' . MistakeTraining::$PLAY_LINK_PREFIX . self::setConnectionId($context, 2) . '"', $this->view);
-		$this->assertStringContainsString('var previousButtonLink = ""', $this->view,
+		$this->assertSame(MistakeTraining::$PLAY_LINK_PREFIX . self::setConnectionId($context, 2), $this->playPage()['problem']['nextLink']);
+		$this->assertSame('', $this->playPage()['problem']['previousLink'],
 			'Back at the start of the row has nowhere to go, so the page turns it off');
 	}
 
@@ -291,9 +290,9 @@ class MistakeTrainingControllerTest extends IntegrationTestCase
 
 		$this->get('/mistake-training/play/' . self::setConnectionId($context, 1));
 
-		$this->assertStringContainsString('var nextButtonLink = ""', $this->view,
+		$this->assertSame('', $this->playPage()['problem']['nextLink'],
 			'The queue page would only serve the same problem again; the solve turns Next on');
-		$this->assertStringContainsString('var previousButtonLink = "' . MistakeTraining::$PLAY_LINK_PREFIX . self::setConnectionId($context, 0) . '"', $this->view);
+		$this->assertSame(MistakeTraining::$PLAY_LINK_PREFIX . self::setConnectionId($context, 0), $this->playPage()['problem']['previousLink']);
 	}
 
 	public function testAllCaughtUpSaysWhatTodaySolved()
@@ -493,8 +492,8 @@ class MistakeTrainingControllerTest extends IntegrationTestCase
 
 		$this->get('/mistake-training');
 		$openConnection = (int) $context->tsumegos[0]['set-connections'][1]['id'];
-		$this->assertStringContainsString('var tsumegoID = ' . $context->tsumegos[0]['id'] . ';', $this->view);
-		$this->assertStringContainsString('set_connection_id: ' . $openConnection . ',', $this->view,
+		$this->assertSame((int) $context->tsumegos[0]['id'], $this->playPage()['problem']['tsumegoID']);
+		$this->assertSame((int) $openConnection, $this->playPage()['problem']['setConnectionID'],
 			'The problem is played in the collection that is still there');
 	}
 
@@ -560,7 +559,7 @@ class MistakeTrainingControllerTest extends IntegrationTestCase
 		]);
 
 		$this->get('/mistake-training');
-		$this->assertStringContainsString('var tsumegoID = ' . $context->tsumegos[0]['id'] . ';', $this->view,
+		$this->assertSame((int) $context->tsumegos[0]['id'], $this->playPage()['problem']['tsumegoID'],
 			'Premium players may play sandbox collections, so the training opens the problem');
 	}
 
