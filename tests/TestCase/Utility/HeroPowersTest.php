@@ -250,8 +250,9 @@ class HeroPowersTest extends IntegrationTestCase
 		$context = new ContextPreparator([
 			'user' => ['level' => HeroPowers::$REFINEMENT_MINIMUM_LEVEL, 'rating' => 1500],
 			'tsumegos' => [
-				['rating' => 1500, 'sets' => [['name' => 'set 1', 'num' => 1]]],
-				['rating' => 1550, 'status' => 'S', 'sets' => [['name' => 'set 1', 'num' => 2]]]]]);
+				['rating' => 3000, 'sets' => [['name' => 'set 1', 'num' => 1]]],
+				['rating' => 1550, 'status' => 'S', 'sets' => [['name' => 'set 1', 'num' => 2]]],
+				['rating' => 100, 'sets' => [['name' => 'set 1', 'num' => 3]]]]]);
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		$this->checkPowerIsActive($browser, 'refinement');
 		$this->assertStringEndsWith('/img/hp4.png', $browser->find('#refinement')->getAttribute('src'));
