@@ -829,12 +829,15 @@ class Browser
 
 	//Expand the comments section and wait for React to render content.
 	//On the play page the comments are in More, which is opened first.
-	//Clicks the COMMENTS tab once it is there; clicking the already active tab is harmless.
 	public function expandComments()
 	{
 		if ($this->idExists('editToggle'))
 			$this->openPlayEditSection();
-		$this->find('.tsumego-comments__tab[data-filter="open"]', 5)->click();
+		//Opening More opens the COMMENTS tab already when it holds something; a click on the active tab
+		//would close it again
+		$tab = $this->find('.tsumego-comments__tab[data-filter="open"]', 5);
+		if (!str_contains($tab->getAttribute('class'), 'active'))
+			$tab->click();
 
 		// Wait for actual content (not skeletons) - either comments/issues, form, or login prompt
 		$this->waitUntilAnyCssSelectorExists([

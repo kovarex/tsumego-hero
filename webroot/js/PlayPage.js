@@ -140,6 +140,9 @@ $("[data-toggle]").click(function(event){
 	this.dataset.open = open ? "1" : "";
 	$("#" + this.dataset.toggle)[open ? "fadeIn" : "fadeOut"](250);
 	$(this).find(".toggle-arrow").attr("src", open ? "/img/greyArrow2.png" : "/img/greyArrow1.png");
+	//More that tells of comments or open issues opens them too (CommentSection listens)
+	if (open && this.id === "editToggle" && $("#moreCommentSummary").is(":visible"))
+		window.dispatchEvent(new Event("comments-open"));
 });
 
 drawActiveTiles();

@@ -202,6 +202,19 @@ export function CommentSection({ tsumegoId, initialCounts, initialAnchoredPositi
 		setActiveTab(current => (current === tab ? null : tab));
 	};
 
+	// The play page's More tells what the comments hold; opening it opens them right away, so a
+	// player sees the comments (and the open issues, on the same tab) without a second click
+	useEffect(() =>
+	{
+		const open = () =>
+		{
+			setHasEverOpened(true);
+			setActiveTab('open');
+		};
+		window.addEventListener('comments-open', open);
+		return () => window.removeEventListener('comments-open', open);
+	}, []);
+
 	// Reset UI state when switching problems (intentional reset when prop changes)
 	useEffect(() =>
 	{

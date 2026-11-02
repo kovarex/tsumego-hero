@@ -527,18 +527,34 @@ class CommentsControllerTest extends IntegrationTestCase
 		$content = $browser->findById('msg2x');
 		$this->assertFalse($content->isDisplayed(), 'Comments should be hidden by default');
 
-		// Click COMMENTS tab to EXPAND
+		// Opening More, which tells of the comment, opens the COMMENTS tab with it
 		$browser->openPlayEditSection();
 		$commentsTab = $browser->find('.tsumego-comments__tab[data-filter="open"]');
-		$commentsTab->click();
 		$browser->waitUntilCssSelectorDisplayed('#msg2x');
-		$this->assertTrue($content->isDisplayed(), 'Comments should be visible after clicking COMMENTS tab');
-		$this->assertTrue($commentsTab->getAttribute('class') === 'tsumego-comments__tab active' || strpos($commentsTab->getAttribute('class'), 'active') !== false, 'COMMENTS tab should be active');
+		$this->assertStringContainsString('active', $commentsTab->getAttribute('class'), 'COMMENTS tab should be active');
+		$browser->waitUntilJs('document.getElementById("msg2x").innerText.includes("test comment")');
 
-		// Click same tab again to COLLAPSE
+		// Click the tab to COLLAPSE
 		$commentsTab->click();
 		$browser->waitUntilCssSelectorNotDisplayed('#msg2x');
-		$this->assertFalse($content->isDisplayed(), 'Comments should be hidden after clicking COMMENTS tab again');
+		$this->assertFalse($content->isDisplayed(), 'Comments should be hidden after clicking COMMENTS tab');
+
+		// Click it again to EXPAND
+		$commentsTab->click();
+		$browser->waitUntilCssSelectorDisplayed('#msg2x');
+	}
+
+	//Without comments or open issues More says nothing of them, and opening it leaves the tabs closed
+	public function testOpeningMoreWithoutCommentsLeavesThemClosed(): void
+	{
+		$context = new ContextPreparator(['tsumego' => ['set_order' => 1, 'status' => 'S']]);
+		$browser = Browser::instance();
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+
+		$browser->openPlayEditSection();
+
+		$this->assertStringNotContainsString('active', $browser->find('.tsumego-comments__tab[data-filter="open"]')->getAttribute('class'));
+		$this->assertFalse($browser->findById('msg2x')->isDisplayed());
 	}
 
 	public function testIssueDisplayed()
