@@ -6,6 +6,7 @@ use App\Utility\JwtAuth;
 use App\Utility\Preferences;
 use Cake\Cache\Cache;
 use Cake\TestSuite\TestCase;
+use PHPUnit\Framework\Attributes\After;
 use PHPUnit\Framework\Attributes\Before;
 use PHPUnit\Framework\IncompleteTest;
 use PHPUnit\Framework\SkippedTest;
@@ -35,6 +36,21 @@ abstract class AppTestCase extends TestCase
 				continue;
 			Cache::clear($config);
 		}
+	}
+
+	//The PHP warnings, notices and deprecations the web server of the browser tests raised while
+	//the test ran (written by .github/ci/core.local.php) fail it. A request still running when the
+	//test ends is counted for the next one.
+	#[After]
+	protected function failOnWebServerErrors(): void
+	{
+		$path = TMP . 'webserver-errors.log';
+		clearstatcache(true, $path);
+		if (!is_file($path) || filesize($path) === 0)
+			return;
+		$errors = (string) file_get_contents($path);
+		file_put_contents($path, '');
+		$this->fail("The web server raised PHP errors:\n" . $errors);
 	}
 
 	//A failed browser test leaves a screenshot and the page in tmp/ (Browser::dumpFailure()).

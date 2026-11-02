@@ -70,6 +70,23 @@ class IntegrationTestCase extends AppTestCase
 		$this->view = $this->_getBodyAsString();
 	}
 
+	//Posts with $file uploaded in the form field $field. The site reads uploads from $_FILES
+	//(AppController::uploadedFile()), so the file is there for this request only; one left behind
+	//would be uploaded again by the next request of the test, after its temporary file is gone.
+	/** @param array{name: string, tmp_name: string, error: int, size: int, type?: string} $file */
+	protected function postWithUpload(string $url, string $field, array $file, array $data = []): void
+	{
+		$_FILES[$field] = $file;
+		try
+		{
+			$this->post($url, $data);
+		}
+		finally
+		{
+			unset($_FILES[$field]);
+		}
+	}
+
 	//The cookie jar a browser keeps after the response: what the app set during the request,
 	//plus what the request came with.
 	//The trait restores $_COOKIE once the request is over, so the moment to read the cookies
