@@ -13,7 +13,7 @@ class TsumegoButtons extends ArrayObject
 	{
 		if (!$tsumegoFilters)
 			return;
-		$this->fill('', $tsumegoFilters, $id);
+		$this->fill($tsumegoFilters, $id);
 
 		// The opened problem might not be part of the difficulty or tag collection (another tab switched
 		// the collection, or the rating of the problem moved it to another rank). The navigation would
@@ -24,7 +24,7 @@ class TsumegoButtons extends ArrayObject
 		{
 			$tsumegoFilters->query = 'topics';
 			$this->exchangeArray([]);
-			$this->fill('', $tsumegoFilters, $id);
+			$this->fill($tsumegoFilters, $id);
 		}
 
 		// in topics we respect the orders specified by set connections, in other cases, it is kind of a
@@ -92,7 +92,7 @@ class TsumegoButtons extends ArrayObject
 		return $result;
 	}
 
-	public function fill(string $condition, TsumegoFilters $tsumegoFilters, string|int|null $id): void
+	public function fill(TsumegoFilters $tsumegoFilters, string|int|null $id): void
 	{
 		$queryBuilder = new TsumegoButtonsQueryBuilder($tsumegoFilters, $id);
 		$result = Util::query($queryBuilder->query->str());

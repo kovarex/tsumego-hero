@@ -12,6 +12,7 @@ class SetImage
 {
 	public const MAX_EDGE = 1600;
 	public const QUALITY = 80;
+	public const MAX_UPLOAD_BYTES = 2097152;
 
 	//Store the picture of a set and answer the name it is known by, relative to
 	//the webroot. The name carries a part of the hash of the picture, so a cover
@@ -29,6 +30,34 @@ class SetImage
 		if (@file_put_contents(self::pathOf($image), $processed['data']) === false)
 			throw new RuntimeException('The image could not be stored.');
 
+		return $image;
+	}
+
+	//The extension of the name of an uploaded file, lower case.
+	public static function extensionOf(string $fileName): string
+	{
+		return strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+	}
+
+	//Why an uploaded file can't be a cover, null when it can.
+	/** @param array{name: string, size: int} $upload */
+	public static function refusalOf(array $upload): ?string
+	{
+		if (!in_array(self::extensionOf($upload['name']), ['png', 'jpg', 'jpeg', 'webp']))
+			return 'png/jpg/webp allowed.';
+		if ($upload['size'] > self::MAX_UPLOAD_BYTES)
+			return 'The file is too large (max 2MB).';
+		return null;
+	}
+
+	//Store an uploaded picture as the cover of a set in place of its old one, and answer its name.
+	//The name of a cover carries the hash of its picture, so an upload is a new file and the
+	//cover it replaces is removed here.
+	public static function replace(int $setId, ?string $oldImage, string $sourcePath, string $ext): string
+	{
+		$image = self::store($setId, self::process($sourcePath, $ext));
+		if ($oldImage !== $image)
+			self::remove($oldImage);
 		return $image;
 	}
 
