@@ -15,6 +15,7 @@ The script:
 - prints how to point the app at it and how to log in.
 
 Then log in as any user with the email `user<id>@example.invalid` (or the user's name) and the password `tsumego-copy-login`.
+kovarex (id 13282, ~70k attempts, the account to profile with) is `user13282@example.invalid`.
 The tests keep using the database `test` of the same server, they empty it; never point them at `tsumego_prod`.
 
 The script needs `php` and `vendor/bin/phinx`. Where `composer install` can't download from GitHub (a cloud session behind its proxy, PHP 8.3), this is enough for the migrations:

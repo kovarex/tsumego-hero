@@ -284,6 +284,7 @@ The app: config/database.php (a copy of config/database.example.php) with
 	\$default: 'host' => '127.0.0.1', 'login' => 'root', 'password' => '$ROOT_PASSWORD', 'database' => '$DATABASE'
 	\$test:    'host' => '127.0.0.1', 'login' => 'root', 'password' => '$ROOT_PASSWORD', 'database' => 'test'
 Log in as any user at /users/login with the email user<id>@example.invalid (or the user's name)
-and the password $TEST_PASSWORD. The id of a user: SELECT id FROM user WHERE name = '...';
+and the password $TEST_PASSWORD, kovarex for one: user13282@example.invalid.
+The id of a user: SELECT id FROM user WHERE name = '...';
 Stop: docker stop $CONTAINER (the data stays in the volume $CONTAINER-data), start again: docker start $CONTAINER
 TEXT
