@@ -81,8 +81,8 @@ OFFSET " . $this->offset, [Auth::getUserID()]);
 		echo '</td>';
 		echo '<td>';
 		ProposalDecisionForm::render(
-			'/users/acceptSGFProposal/' . $item['proposed_id'],
-			'/users/rejectSGFProposal/' . $item['proposed_id'],
+			'/proposals/acceptSgf/' . $item['proposed_id'],
+			'/proposals/rejectSgf/' . $item['proposed_id'],
 			'accept-' . $item['proposed_id'],
 			'reject-' . $item['proposed_id'],
 			'comment-' . $item['proposed_id']);
