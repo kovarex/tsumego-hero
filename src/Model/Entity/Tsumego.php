@@ -14,7 +14,6 @@ use DateTimeImmutable;
  * @property float|null $minimum_rating
  * @property float|null $maximum_rating
  * @property DateTimeImmutable|null $created
- * @property bool $alternative_response
  * @property bool $pass
  * @property bool $played_as_black
  * @property DateTimeImmutable|null $deleted

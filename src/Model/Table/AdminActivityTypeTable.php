@@ -18,7 +18,7 @@ class AdminActivityTypeTable extends AppTable
 	public const SGF_EDIT = 27;
 
 	// Problem Settings (multi-state: 0=disabled, 1=enabled)
-	public const ALTERNATIVE_RESPONSE = 4;
+	public const ALTERNATIVE_RESPONSE = 4; //The mode is always on now, the type stays for the old log entries
 	public const PASS_MODE = 5;
 
 	// Problem Type Changes (multi-state: 0=delete, 1=add)
@@ -41,7 +41,7 @@ class AdminActivityTypeTable extends AppTable
 	public const SET_RESTORE = 42; // taken back from the trash
 
 	// Set Bulk Operations (multi-state: 0=disabled, 1=enabled)
-	public const SET_ALTERNATIVE_RESPONSE = 15;
+	public const SET_ALTERNATIVE_RESPONSE = 15; //The mode is always on now, the type stays for the old log entries
 	public const SET_PASS_MODE = 16;
 
 	// Tags

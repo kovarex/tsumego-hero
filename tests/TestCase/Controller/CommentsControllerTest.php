@@ -173,7 +173,7 @@ class CommentsControllerTest extends IntegrationTestCase
 	public function testMultipleCommentBadgesOnDifferentNodes()
 	{
 		$browser = Browser::instance();
-		$context = $this->openSolvedTsumego($browser, ['sgf' => self::SOLVED_SGF, 'alternative_response' => 0]);
+		$context = $this->openSolvedTsumego($browser, ['sgf' => self::SOLVED_SGF]);
 
 		// The position strings of move 1 and move 2, as the comment form makes them
 		$positions = $browser->driver->executeScript("

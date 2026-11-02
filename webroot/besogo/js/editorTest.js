@@ -15,7 +15,7 @@ function loadEditor(sgf)
 
 // Runs the method on an editor set up like the play page (autoplay, no review), with the timers of the editor
 // (the autoplay, the required answers) queued instead of waited for: flush() runs them in order.
-function withPlayEditor(root, alternativeResponse, method)
+function withPlayEditor(root, method)
 {
 	let editor = besogo.makeEditor(19, 19, {});
 	editor.loadRoot(root);
@@ -30,13 +30,11 @@ function withPlayEditor(root, alternativeResponse, method)
 	let originalSetTimeout = window.setTimeout;
 	let originalRandom = Math.random;
 	let originalIsMutable = window.isMutable;
-	let originalAlternativeResponse = besogo.alternativeResponse;
 	let originalDisplayMessage = window.displayMessage;
 	let queue = [];
 	window.setTimeout = callback => queue.push(callback);
 	Math.random = () => 0; // the autoplay picks the first reply
 	window.isMutable = true;
-	besogo.alternativeResponse = alternativeResponse;
 	window.displayMessage = () => {}; // the message box of the play page
 	try
 	{
@@ -47,7 +45,6 @@ function withPlayEditor(root, alternativeResponse, method)
 		window.setTimeout = originalSetTimeout;
 		Math.random = originalRandom;
 		window.isMutable = originalIsMutable;
-		besogo.alternativeResponse = originalAlternativeResponse;
 		window.displayMessage = originalDisplayMessage;
 	}
 }
@@ -96,7 +93,7 @@ besogo.addTest("Editor", "AutoplayWithoutAReplyItMayPickEndsTheLine", function()
 	let line = [];
 	for (let node = last; node.parent; node = node.parent)
 		line.unshift(node);
-	withPlayEditor(root, false, function(editor, flush, results)
+	withPlayEditor(root, function(editor, flush, results)
 	{
 		for (let node of line)
 			if (node.move.color == root.firstMove)
@@ -123,7 +120,7 @@ besogo.addTest("Editor", "ExploringPastTheEndKeepsTheVerdicts", function()
 	wrongMove.statusSource = besogo.makeStatusSimple(STATUS_ALIVE);
 	root.registerChild(wrongMove);
 
-	withPlayEditor(root, false, function(editor, flush, results)
+	withPlayEditor(root, function(editor, flush, results)
 	{
 		editor.click(1, 1, false, false);
 		flush();
@@ -156,7 +153,7 @@ besogo.addTest("Editor", "RequiredAnswerVisitedElsewhereDoesntDropTheOthers", fu
 	answers[1].registerMove(6, 6).setCorrectSource(true);
 	answers[2].registerMove(7, 7).setCorrectSource(true);
 
-	withPlayEditor(root, true, function(editor, flush, results, comments)
+	withPlayEditor(root, function(editor, flush, results, comments)
 	{
 		editor.click(1, 1, false, false);
 		flush();
@@ -191,7 +188,7 @@ besogo.addTest("Editor", "ResetCancelsTheWaitForTheNextRequiredAnswer", function
 	answers[0].registerMove(5, 5).setCorrectSource(true);
 	answers[1].registerMove(6, 6).setCorrectSource(true);
 
-	withPlayEditor(root, true, function(editor, flush)
+	withPlayEditor(root, function(editor, flush)
 	{
 		editor.click(1, 1, false, false);
 		flush();

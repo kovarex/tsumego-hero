@@ -117,29 +117,26 @@ class TsumegosController extends AppController
 		return null;
 	}
 
-	//The problem settings an admin changes on the play page: the alternative response mode,
-	//passing, and on a sandbox problem whether it is a multiple choice one
+	//The problem settings an admin changes on the play page: passing, and on a sandbox problem whether it is a multiple choice one
 	#[HttpPost]
 	public function settings(string $tsumegoID): Response
 	{
 		$this->Authorization->authorize('Tsumego', 'editSettings');
 		$tsumegoTable = $this->fetchTable('Tsumego');
-		$tsumego = $tsumegoTable->find()->select(['id', 'alternative_response', 'pass'])->where(['id' => (int) $tsumegoID])->first();
+		$tsumego = $tsumegoTable->find()->select(['id', 'pass'])->where(['id' => (int) $tsumegoID])->first();
 		if (!$tsumego)
 			throw new NotFoundException('Problem not found');
 		$data = $this->inputs();
 		$variantType = ($data['variant_type'] ?? '') === '' ? null : (int) $data['variant_type'];
 		if ($variantType !== null && !isset(TsumegoVariantTable::BOARD_TYPE_NAMES[$variantType]))
 			throw new BadRequestException('Unknown question type');
-		foreach (['alternative_response' => AdminActivityTypeTable::ALTERNATIVE_RESPONSE, 'pass' => AdminActivityTypeTable::PASS_MODE] as $field => $activityType)
+		$pass = empty($data['pass']) ? 0 : 1;
+		if ((int) $tsumego->pass !== $pass)
 		{
-			$value = empty($data[$field]) ? 0 : 1;
-			if ((int) $tsumego->get($field) === $value)
-				continue;
-			AdminActivityLogger::log($activityType, (int) $tsumegoID, null, null, (string) $value);
-			$tsumego->set($field, (bool) $value);
+			AdminActivityLogger::log(AdminActivityTypeTable::PASS_MODE, (int) $tsumegoID, null, null, (string) $pass);
+			$tsumego->pass = (bool) $pass;
+			$tsumegoTable->saveOrFail($tsumego);
 		}
-		$tsumegoTable->saveOrFail($tsumego);
 		if (array_key_exists('variant_type', $data))
 			TsumegoVariantTable::changeType((int) $tsumegoID, $variantType);
 		return $this->redirect($this->referer('/tsumegos/play/' . (int) $tsumegoID, true));

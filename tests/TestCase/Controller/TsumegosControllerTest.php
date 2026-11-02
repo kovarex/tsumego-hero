@@ -696,7 +696,7 @@ class TsumegosControllerTest extends IntegrationTestCase
 	private function postProblemSettings(ContextPreparator $context, ?int $variantType): void
 	{
 		$this->post('tsumegos/settings/' . $context->tsumegos[0]['id'], [
-			'alternative_response' => 0, 'pass' => 0, 'variant_type' => (string) $variantType]);
+			'pass' => 0, 'variant_type' => (string) $variantType]);
 		$this->assertResponseCode(302);
 	}
 
@@ -740,15 +740,16 @@ class TsumegosControllerTest extends IntegrationTestCase
 		$context = $this->prepareSandboxProblem([['tsumego_variant_type_id' => TsumegoVariantTable::TYPE_MULTIPLE_CHOICE, 'answer1' => 'Seki in sente']]);
 		$tsumegoID = $context->tsumegos[0]['id'];
 
-		$this->post('tsumegos/settings/' . $tsumegoID, ['alternative_response' => 0, 'pass' => 1, 'variant_type' => '2']);
+		$this->post('tsumegos/settings/' . $tsumegoID, ['pass' => 1, 'variant_type' => '2']);
 
 		$this->assertResponseCode(400);
 		$this->assertSame(0, (int) $this->fetchTable('Tsumego')->get($tsumegoID)->pass);
 		$this->assertSame([['tsumego_variant_type_id' => TsumegoVariantTable::TYPE_MULTIPLE_CHOICE, 'answer1' => 'Seki in sente']], self::variantsOf($tsumegoID));
 	}
 
-	//A problem starts with the alternative response mode on and passing off
-	public function testProblemSettingsSaveAlternativeResponseAndPassing(): void
+	//A problem starts with passing off; the alternative response mode is no setting any more, a sent
+	//value of it changes nothing
+	public function testProblemSettingsSavePassing(): void
 	{
 		$context = $this->prepareSandboxProblem();
 		$tsumegoID = $context->tsumegos[0]['id'];
@@ -756,9 +757,8 @@ class TsumegosControllerTest extends IntegrationTestCase
 		$this->post('tsumegos/settings/' . $tsumegoID, ['alternative_response' => 0, 'pass' => 1]);
 
 		$this->assertResponseCode(302);
-		$tsumego = $this->fetchTable('Tsumego')->get($tsumegoID);
-		$this->assertSame([0, 1], [(int) $tsumego->alternative_response, (int) $tsumego->pass]);
-		$this->assertSame([[AdminActivityTypeTable::ALTERNATIVE_RESPONSE, '0'], [AdminActivityTypeTable::PASS_MODE, '1']], array_map(
+		$this->assertSame(1, (int) $this->fetchTable('Tsumego')->get($tsumegoID)->pass);
+		$this->assertSame([[AdminActivityTypeTable::PASS_MODE, '1']], array_map(
 			fn($activity) => [(int) $activity['type'], $activity['new_value']],
 			Util::query('SELECT type, new_value FROM admin_activity WHERE tsumego_id = ? ORDER BY id', [$tsumegoID])));
 	}
@@ -789,7 +789,7 @@ class TsumegosControllerTest extends IntegrationTestCase
 	{
 		$context = new ContextPreparator(['tsumego' => 1]);
 
-		$this->post('tsumegos/settings/' . $context->tsumegos[0]['id'], ['alternative_response' => 1, 'pass' => 1]);
+		$this->post('tsumegos/settings/' . $context->tsumegos[0]['id'], ['pass' => 1]);
 
 		$this->assertResponseCode(403);
 	}
