@@ -33,31 +33,31 @@ class AdminPolicy extends BasePolicy
 	}
 
 	/** @param UserRow|null $user */
-	public static function canAcceptSGFProposal(?array $user): bool
+	public static function canAcceptSgf(?array $user): bool
 	{
 		return static::isAdmin($user);
 	}
 
 	/** @param UserRow|null $user */
-	public static function canRejectSGFProposal(?array $user): bool
+	public static function canRejectSgf(?array $user): bool
 	{
 		return static::isAdmin($user);
 	}
 
 	/** @param UserRow|null $user */
-	public static function canReopenSGFProposal(?array $user): bool
+	public static function canReopenSgf(?array $user): bool
 	{
 		return static::isAdmin($user);
 	}
 
 	/** @param UserRow|null $user */
-	public static function canAcceptTagConnectionProposal(?array $user): bool
+	public static function canAcceptTag(?array $user): bool
 	{
 		return static::isAdmin($user);
 	}
 
 	/** @param UserRow|null $user */
-	public static function canRejectTagConnectionProposal(?array $user): bool
+	public static function canRejectTag(?array $user): bool
 	{
 		return static::isAdmin($user);
 	}
