@@ -480,6 +480,10 @@ h1 {
   flex-wrap: wrap;
   max-width: 100%;
 }
+/* Not wider than its share of the row, a wider tree scrolls in its box */
+.besogo-panels {
+  min-width: 0;
+}
 .besogo-bottom-panels {
   align-items: center;
   padding: 0px 5px;
@@ -497,10 +501,13 @@ h1 {
 .besogo-tool {
   width: auto !important;
 }
+/* A big tree scrolls both ways in its own box, so its scrollbars and the buttons under it stay in sight */
 .besogo-tree {
   flex: none !important;
   width: auto !important;
   max-width: 625px;
+  max-height: 350px;
+  overflow: auto;
 }
 .besogo-comment {
   flex: none !important;
