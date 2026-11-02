@@ -23,6 +23,8 @@ use App\Utility\Util;
  * @var bool $isAllowedToContribute
  * @var bool $hasDuplicates
  * @var array<int, array<string, mixed>> $setConnections
+ * @var array{total: int, comments: int, issues: int, openIssues: int}|null $commentCounts null for a guest, who has no comments
+ * @var bool $solved
  */
 
 $checked = fn(bool $isChecked): string => $isChecked ? 'checked="checked"' : '';
@@ -136,5 +138,8 @@ $variantType = $tv ? (int) $tv->tsumego_variant_type_id : null;
 	<?php endif; ?>
 	<?php if ($isAllowedToContribute): ?>
 		<div id="tag-adding" class="play-edit__part" data-testid="tag-adding"></div>
+	<?php endif; ?>
+	<?php if ($commentCounts !== null): ?>
+		<?php echo $this->element('TsumegoComments/section', ['tsumegoId' => $tsumego->id, 'solved' => $solved, 'counts' => $commentCounts]); ?>
 	<?php endif; ?>
 </div>
