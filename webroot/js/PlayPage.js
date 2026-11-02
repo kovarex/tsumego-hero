@@ -759,6 +759,7 @@ function displayResult(result)
 		besogo.editor.setControlButtonLock(false);
 		$("#besogo-review-button-inactive").attr("id","besogo-review-button");
 		$("#commentSpace").show();
+		$("#moreCommentSummary").show();
 
 		if (mode == playPage.page.modes.time)
 		{

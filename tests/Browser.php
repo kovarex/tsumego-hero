@@ -292,6 +292,8 @@ class Browser
 	//Propose a change), which starts collapsed
 	public function openPlayEditSection(): void
 	{
+		if ($this->driver->executeScript('return document.getElementById("editToggle")?.dataset.open === "1";'))
+			return;
 		$this->clickId('editToggle');
 		$this->waitUntilCssSelectorDisplayed('#editSection');
 	}
@@ -826,9 +828,12 @@ class Browser
 	}
 
 	//Expand the comments section and wait for React to render content.
+	//On the play page the comments are in More, which is opened first.
 	//Clicks the COMMENTS tab once it is there; clicking the already active tab is harmless.
 	public function expandComments()
 	{
+		if ($this->idExists('editToggle'))
+			$this->openPlayEditSection();
 		$this->find('.tsumego-comments__tab[data-filter="open"]', 5)->click();
 
 		// Wait for actual content (not skeletons) - either comments/issues, form, or login prompt

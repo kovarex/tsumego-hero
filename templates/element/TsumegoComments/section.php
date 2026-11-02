@@ -11,6 +11,7 @@ use Cake\ORM\TableRegistry;
  * @var \App\View\AppView $this
  * @var int $tsumegoId The tsumego ID
  * @var bool $solved Whether the problem is solved for the current mode
+ * @var array{total: int, comments: int, issues: int, openIssues: int}|null $counts The counts when the page has them already
  */
 
 // Determine if comments should be visible (solved, completed, or admin)
@@ -18,7 +19,7 @@ $shouldShowComments = Auth::isAdmin() || $solved;
 $userId = Auth::isLoggedIn() ? Auth::getUserID() : null;
 
 // Calculate counts for tabs (only thing we need from server)
-$counts = TsumegoIssueTable::getCommentSectionCounts($tsumegoId);
+$counts = $counts ?? TsumegoIssueTable::getCommentSectionCounts($tsumegoId);
 
 // Slim list of position-anchored comment positions so the review tree can show
 // badges before the user opens the comments tab (avoids fetching all comments).

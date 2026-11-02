@@ -1,6 +1,7 @@
 <?php
 
 use App\Model\Entity\TsumegoVariant;
+use App\Model\Table\TsumegoIssueTable;
 use App\Model\Table\TsumegoVariantTable;
 use App\Utility\Auth;
 use App\Utility\Constants;
@@ -188,9 +189,15 @@ use App\Utility\ViteManifest;
 	//away (an admin, a contributor, a problem in more collections), to the others once the downloads come.
 	$hasDuplicates = count($setConnections) > 1 && Auth::getMode() != Constants::$TIME_MODE;
 	$moreRightAway = Auth::isAdmin() || $isAllowedToContribute || $hasDuplicates;
+	//The comments are in More too; what they hold shows on the toggle, once they may be read
+	$commentCounts = Auth::isLoggedIn() ? TsumegoIssueTable::getCommentSectionCounts((int) $tsumego->id) : null;
+	$commentsVisible = Auth::isAdmin() || $solved;
 	?>
 	<a id="showFilters" class="selectable-text mr-5" data-toggle="msgFilters">Filters<img class="toggle-arrow" src="/img/greyArrow1.png"></a>
-	<a id="editToggle" class="selectable-text<?php echo $moreRightAway ? '' : ' play-edit-toggle--after-solve'; ?>" data-toggle="editSection">More<img class="toggle-arrow" src="/img/greyArrow1.png"></a>
+	<a id="editToggle" class="selectable-text<?php echo $moreRightAway ? '' : ' play-edit-toggle--after-solve'; ?>" data-toggle="editSection">More<img class="toggle-arrow" src="/img/greyArrow1.png"><?php
+	if ($commentCounts !== null && ($summary = TsumegoIssueTable::commentSummary($commentCounts)) !== '')
+		echo '<span id="moreCommentSummary" class="play-more__summary"' . ($commentsVisible ? '' : ' style="display: none;"') . '>' . h($summary) . '</span>';
+	?></a>
 	<br><br>
 	<div class="filters-outer">
 		<div id="msgFilters" style="display: none;">
@@ -198,19 +205,10 @@ use App\Utility\ViteManifest;
 		</div>
 	</div>
 	<?php
-	echo $this->element('Tsumegos/play_edit', ['hasDuplicates' => $hasDuplicates]);
+	echo $this->element('Tsumegos/play_edit', ['hasDuplicates' => $hasDuplicates, 'commentCounts' => $commentCounts]);
 	if (Auth::isLoggedIn())
 	{
 		?>
-
-		<table class="sandboxTable" width="62%">
-		<tr>
-				<td><?php echo $this->element('TsumegoComments/section', [
-					'tsumegoId' => $tsumego->id,
-					'solved' => $solved,
-				]); ?></td>
-					</tr>
-					</table>
 			</div>
 		<?php
 	}

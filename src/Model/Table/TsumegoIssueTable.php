@@ -241,4 +241,21 @@ class TsumegoIssueTable extends AppTable
 			'openIssues' => $openIssueCount,
 		];
 	}
+
+	//What the comments of a problem hold, in a few words for the More toggle of the play page, like
+	//"3 comments, 1 open issue, 2 closed issues"; empty when there is nothing
+	/** @param array{total: int, comments: int, issues: int, openIssues: int} $counts */
+	public static function commentSummary(array $counts): string
+	{
+		$plural = fn(int $count, string $word) => $count . ' ' . $word . ($count === 1 ? '' : 's');
+		$parts = [];
+		if ($counts['comments'] > 0)
+			$parts[] = $plural($counts['comments'], 'comment');
+		if ($counts['openIssues'] > 0)
+			$parts[] = $plural($counts['openIssues'], 'open issue');
+		$closedIssues = $counts['issues'] - $counts['openIssues'];
+		if ($closedIssues > 0)
+			$parts[] = $plural($closedIssues, 'closed issue');
+		return implode(', ', $parts);
+	}
 }
