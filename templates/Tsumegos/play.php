@@ -183,12 +183,14 @@ use App\Utility\ViteManifest;
 		<div data-tag-editor-root data-props="<?php echo htmlspecialchars($tagEditorProps); ?>"></div>
 	</div>
 	<br>
-	<a id="showx3" class="selectable-text mr-5">Download SGF</a>
-	<a id="findSimilarProblems" class="selectable-text mr-5">Find Similar Problems</a>
+	<?php
+	//Shown on the line of Filters, so it takes no space of its own. To anyone with something in it right
+	//away (an admin, a contributor, a problem in more collections), to the others once the downloads come.
+	$hasDuplicates = count($setConnections) > 1 && Auth::getMode() != Constants::$TIME_MODE;
+	$moreRightAway = Auth::isAdmin() || $isAllowedToContribute || $hasDuplicates;
+	?>
 	<a id="showFilters" class="selectable-text mr-5" data-toggle="msgFilters">Filters<img class="toggle-arrow" src="/img/greyArrow1.png"></a>
-	<?php if (Auth::isAdmin() || $isAllowedToContribute): ?>
-		<a id="editToggle" class="selectable-text" data-toggle="editSection"><?php echo Auth::isAdmin() ? 'Edit' : 'Propose a change'; ?><img class="toggle-arrow" src="/img/greyArrow1.png"></a>
-	<?php endif; ?>
+	<a id="editToggle" class="selectable-text<?php echo $moreRightAway ? '' : ' play-edit-toggle--after-solve'; ?>" data-toggle="editSection">More<img class="toggle-arrow" src="/img/greyArrow1.png"></a>
 	<br><br>
 	<div class="filters-outer">
 		<div id="msgFilters" style="display: none;">
@@ -196,17 +198,7 @@ use App\Utility\ViteManifest;
 		</div>
 	</div>
 	<?php
-		if (count($setConnections) > 1 && Auth::getMode() != Constants::$TIME_MODE)
-		{
-			echo '<div class="duplicateTable">Is duplicate group:<br>';
-			echo implode(', ', array_map(function ($otherSetConnection) {
-				return '<a href="/' . $otherSetConnection['id'] . '">'
-				. $otherSetConnection['title'] . '</a>';
-			}, $setConnections));
-			echo '</div><br>';
-		}
-	if (Auth::isAdmin() || $isAllowedToContribute)
-		echo $this->element('Tsumegos/play_edit');
+	echo $this->element('Tsumegos/play_edit', ['hasDuplicates' => $hasDuplicates]);
 	if (Auth::isLoggedIn())
 	{
 		?>
@@ -419,7 +411,8 @@ use App\Utility\ViteManifest;
 		playPage.page.heroPowers.refinement ? enableRefinement() : disableRefinement();
 	}
 	//A link with data-toggle shows and hides the element it names, its arrow points down while it is open
-	$("[data-toggle]").click(function(){
+	$("[data-toggle]").click(function(event){
+		event.preventDefault();
 		let open = this.dataset.open !== "1";
 		this.dataset.open = open ? "1" : "";
 		$("#" + this.dataset.toggle)[open ? "fadeIn" : "fadeOut"](250);
@@ -645,6 +638,7 @@ use App\Utility\ViteManifest;
 		$("#showx3").css("display", "inline-block");
 		$("#findSimilarProblems").css("display", "inline-block");
 		$("#openSgfLink").css("display", "inline-block");
+		$(".play-edit-toggle--after-solve").css("display", "inline");
 	}
 
 	function jsCreateDownloadFile(name){

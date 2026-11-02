@@ -885,9 +885,18 @@ h1 {
 }
 
 .play-edit {
-  margin: 0 auto 12px;
+  margin: 8px auto 12px;
   max-width: 720px;
   text-align: left;
+}
+.play-edit__choices input[type="radio"],
+.play-edit__choices label {
+  display: inline;
+  width: auto;
+  margin-right: 6px;
+}
+.play-edit-toggle--after-solve {
+  display: none;
 }
 .play-edit__part {
   margin-bottom: 12px;

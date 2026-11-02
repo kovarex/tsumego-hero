@@ -13,12 +13,6 @@ class TsumegoPolicy extends BasePolicy
 	}
 
 	/** @param UserRow|null $user */
-	public static function canEditSettings(?array $user): bool
-	{
-		return static::isAdmin($user);
-	}
-
-	/** @param UserRow|null $user */
 	public static function canMergeForm(?array $user): bool
 	{
 		return static::isAdmin($user);

@@ -117,46 +117,6 @@ class TsumegosController extends AppController
 		return null;
 	}
 
-	//The problem settings an admin changes on the play page: passing, and on a sandbox problem whether it is a multiple choice one
-	#[HttpPost]
-	public function settings(string $tsumegoID): Response
-	{
-		$this->Authorization->authorize('Tsumego', 'editSettings');
-		$tsumegoTable = $this->fetchTable('Tsumego');
-		$tsumego = $tsumegoTable->find()->select(['id', 'pass'])->where(['id' => (int) $tsumegoID])->first();
-		if (!$tsumego)
-			throw new NotFoundException('Problem not found');
-		$data = $this->inputs();
-		$variantType = ($data['variant_type'] ?? '') === '' ? null : (int) $data['variant_type'];
-		if ($variantType !== null && !isset(TsumegoVariantTable::BOARD_TYPE_NAMES[$variantType]))
-			throw new BadRequestException('Unknown question type');
-		$pass = empty($data['pass']) ? 0 : 1;
-		if ((int) $tsumego->pass !== $pass)
-		{
-			AdminActivityLogger::log(AdminActivityTypeTable::PASS_MODE, (int) $tsumegoID, null, null, (string) $pass);
-			$tsumego->pass = (bool) $pass;
-			$tsumegoTable->saveOrFail($tsumego);
-		}
-		if (array_key_exists('variant_type', $data))
-			TsumegoVariantTable::changeType((int) $tsumegoID, $variantType);
-		return $this->redirect($this->referer('/tsumegos/play/' . (int) $tsumegoID, true));
-	}
-
-	//The answers of the problem's multiple choice question
-	#[HttpPost]
-	public function variant(string $tsumegoID): Response
-	{
-		$this->Authorization->authorize('Tsumego', 'editSettings');
-		$variantTable = $this->fetchTable('TsumegoVariant');
-		$variant = $variantTable->find()->where(['tsumego_id' => (int) $tsumegoID])->first();
-		if (!$variant)
-			throw new NotFoundException('The problem has no question to answer');
-		$fields = ['answer1', 'answer2', 'answer3', 'answer4', 'explanation', 'correct_answer'];
-		$variantTable->patchEntity($variant, array_intersect_key($this->inputs(), array_flip($fields)));
-		$variantTable->saveOrFail($variant);
-		return $this->redirect($this->referer('/tsumegos/play/' . (int) $tsumegoID, true));
-	}
-
 	#[HttpGet]
 	public function duplicatesearch(string $setConnectionID): mixed
 	{
@@ -199,6 +159,20 @@ class TsumegosController extends AppController
 
 		if (($this->input('delete') ?? '') == 'delete')
 			return $this->moveToTrash((int) $tsumegoID);
+
+		//All that is sent is checked first, so a wrong part saves nothing
+		$data = $this->inputs();
+		$variantType = ($data['variant_type'] ?? '') === '' ? null : (int) $data['variant_type'];
+		if ($variantType !== null && !isset(TsumegoVariantTable::BOARD_TYPE_NAMES[$variantType]))
+			throw new BadRequestException('Unknown question type');
+		$newSgf = $this->uploadedSgf();
+		$setConnection = null;
+		if ($newSgf !== null)
+		{
+			$setConnection = $this->fetchTable('SetConnection')->find()->where(['id' => (int) $this->input('set_connection_id'), 'tsumego_id' => (int) $tsumegoID])->first();
+			if (!$setConnection)
+				throw new BadRequestException('The SGF has to be uploaded to the problem in one of its collections');
+		}
 
 		try
 		{
@@ -288,8 +262,55 @@ class TsumegosController extends AppController
 
 		$tsumego->rating = Util::clampOptional($rating, $minimumRating, $maximumRating);
 
+		if (array_key_exists('pass', $data) && (int) $tsumego->pass !== (empty($data['pass']) ? 0 : 1))
+		{
+			$pass = empty($data['pass']) ? 0 : 1;
+			AdminActivityLogger::log(AdminActivityTypeTable::PASS_MODE, (int) $tsumegoID, null, null, (string) $pass);
+			$tsumego->pass = (bool) $pass;
+		}
+
 		$tsumegoTable->saveOrFail($tsumego);
+		$this->saveQuestion((int) $tsumegoID, $data, $variantType);
+
+		if ($newSgf !== null)
+		{
+			AdminActivityLogger::log(AdminActivityTypeTable::SGF_EDIT, (int) $tsumegoID, $setConnection->set_id);
+			$this->renderNewSgfSetup($setConnection->id, $newSgf, (string) ($data['sgf_description'] ?? ''));
+			return null;
+		}
 		return $this->redirect($this->input('redirect'));
+	}
+
+	//The question of a sandbox problem: its type (none or multiple choice) and the answers of a multiple
+	//choice the form showed, which go only to a question that stays a multiple choice
+	/** @param array<string, mixed> $data */
+	private function saveQuestion(int $tsumegoID, array $data, ?int $variantType): void
+	{
+		if (!array_key_exists('variant_type', $data))
+			return;
+		$variantTable = $this->fetchTable('TsumegoVariant');
+		$variant = $variantTable->find()->where(['tsumego_id' => $tsumegoID])->first();
+		$keepsItsQuestion = $variant !== null && $variant->tsumego_variant_type_id === $variantType;
+		TsumegoVariantTable::changeType($tsumegoID, $variantType);
+		if (!$keepsItsQuestion)
+			return;
+		$fields = ['answer1', 'answer2', 'answer3', 'answer4', 'explanation', 'correct_answer'];
+		$variantTable->patchEntity($variant, array_intersect_key($data, array_flip($fields)));
+		$variantTable->saveOrFail($variant);
+	}
+
+	//The SGF file attached to the problem's edit form, checked, or null when none was attached
+	private function uploadedSgf(): ?string
+	{
+		$file = $this->uploadedFile('adminUpload');
+		if ($file === null || $file['error'] === UPLOAD_ERR_NO_FILE)
+			return null;
+		if ($file['error'] !== UPLOAD_ERR_OK)
+			throw new BadRequestException('The SGF file could not be uploaded.');
+		$sgf = (string) file_get_contents($file['tmp_name']);
+		if ($problem = SgfParser::validationProblem($sgf))
+			throw new BadRequestException('Invalid SGF format: ' . $problem);
+		return $sgf;
 	}
 
 	//Moves the problem to the trash and goes back to its collection, or to the list of collections

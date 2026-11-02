@@ -70,12 +70,11 @@ class SgfController extends AppController
 			$setConnection->set_id,
 		);
 
-		$this->set('sgf', $sgfDataOrFile);
-		$this->set('setConnectionID', $setConnectionID);
-		// sent by the board editor, see SgfCommentReorientation
-		$this->set('sourceSgfID', $fileUpload ? null : $this->input('sourceSgfID'));
-		$this->set('transformationFromSource', $fileUpload ? null : $this->input('transformationFromSource'));
-		$this->set('description', (string) ($this->input('description') ?? ''));
-		$this->render('/Tsumegos/setup_new_sgf');
+		$this->renderNewSgfSetup(
+			(int) $setConnectionID,
+			$sgfDataOrFile,
+			(string) ($this->input('description') ?? ''),
+			$fileUpload ? null : $this->input('sourceSgfID'),
+			$fileUpload ? null : $this->input('transformationFromSource'));
 	}
 }

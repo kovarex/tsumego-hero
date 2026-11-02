@@ -55,7 +55,7 @@ class SgfControllerUploadTest extends IntegrationTestCase
 			input.files = dt.files;
 			input.dispatchEvent(new Event('change', { bubbles: true }));
 		", [$sgf]);
-		$browser->clickId('admin-upload-submit');
+		$browser->clickId('tsumego-edit-submit');
 	}
 
 	public function testUploadSgfViaBesogoEditor()
