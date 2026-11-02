@@ -1083,15 +1083,7 @@ class UserSetsControllerTest extends IntegrationTestCase
 		$this->login('alice');
 
 		$tmp = $this->_createTempImage(400, 200);
-		$_FILES['image'] = [
-			'name' => 'cover.png',
-			'type' => 'image/png',
-			'tmp_name' => $tmp,
-			'error' => UPLOAD_ERR_OK,
-			'size' => filesize($tmp),
-		];
-
-		$this->post("/sets/edit/{$setId}");
+		$this->postWithUpload("/sets/edit/{$setId}", 'image', $this->_coverUpload($tmp));
 
 		$set = $this->fetchTable('Set')->find()->where(['id' => $setId])->first();
 		$this->assertMatchesRegularExpression('#^sets/' . $setId . '/[0-9a-f]{16}\.webp$#', $set->image);
@@ -1114,20 +1106,13 @@ class UserSetsControllerTest extends IntegrationTestCase
 		$this->login('alice');
 
 		$tmp = $this->_createTempImage(400, 200);
-		$_FILES['image'] = [
-			'name' => 'cover.png',
-			'type' => 'image/png',
-			'tmp_name' => $tmp,
-			'error' => UPLOAD_ERR_OK,
-			'size' => filesize($tmp),
-		];
 
 		$setsDir = WWW_ROOT . 'img' . DS . 'sets';
 		$permissions = fileperms($setsDir) & 0777;
 		chmod($setsDir, 0555);
 		try
 		{
-			$this->post("/sets/edit/{$setId}");
+			$this->postWithUpload("/sets/edit/{$setId}", 'image', $this->_coverUpload($tmp));
 		}
 		finally
 		{
@@ -1213,20 +1198,20 @@ class UserSetsControllerTest extends IntegrationTestCase
 		$set = $this->fetchTable('Set')->find()->where(['id' => $setId])->first();
 		$this->assertSame('', $set->image);
 		$this->assertFileDoesNotExist($imagePath);
+		@rmdir(WWW_ROOT . 'img' . DS . 'sets' . DS . $setId);
 	}
 
 	private function _uploadImage(int $setId, int $width, int $height): void
 	{
 		$tmp = $this->_createTempImage($width, $height);
-		$_FILES['image'] = [
-			'name' => 'cover.png',
-			'type' => 'image/png',
-			'tmp_name' => $tmp,
-			'error' => UPLOAD_ERR_OK,
-			'size' => filesize($tmp),
-		];
-		$this->post("/sets/edit/{$setId}");
+		$this->postWithUpload("/sets/edit/{$setId}", 'image', $this->_coverUpload($tmp));
 		@unlink($tmp);
+	}
+
+	/** @return array{name: string, type: string, tmp_name: string, error: int, size: int} */
+	private function _coverUpload(string $tmp): array
+	{
+		return ['name' => 'cover.png', 'type' => 'image/png', 'tmp_name' => $tmp, 'error' => UPLOAD_ERR_OK, 'size' => filesize($tmp)];
 	}
 
 	private function _createTempImage(int $width, int $height): string

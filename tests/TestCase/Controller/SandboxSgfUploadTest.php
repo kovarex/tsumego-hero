@@ -15,17 +15,11 @@ class SandboxSgfUploadTest extends IntegrationTestCase
 		$tmpFile = tempnam(sys_get_temp_dir(), 'sgf');
 		file_put_contents($tmpFile, $sgfContent);
 
-		// Simulate file upload via $_FILES
-		$_FILES['adminUpload'] = [
+		$this->postWithUpload('/sets/createAndAddTsumego/' . $setID, 'adminUpload', [
 			'name' => 'test.sgf',
 			'tmp_name' => $tmpFile,
 			'size' => strlen($sgfContent),
-			'error' => UPLOAD_ERR_OK];
-
-		// POST to addTsumego endpoint
-		$data = ['order' => 1];
-
-		$this->post('/sets/createAndAddTsumego/' . $setID, $data);
+			'error' => UPLOAD_ERR_OK], ['order' => 1]);
 
 		// Verify tsumego was created
 		$tsumego = $this->fetchTable('Tsumego')->find()->orderByDesc('id')->first();
