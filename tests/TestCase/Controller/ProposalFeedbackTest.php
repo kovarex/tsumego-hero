@@ -1,5 +1,6 @@
 <?php
 
+use App\Utility\CookieFlash;
 use Cake\Http\Exception\BadRequestException;
 use Cake\Routing\Router;
 use App\Model\Table\SgfTable;
@@ -207,6 +208,23 @@ class ProposalFeedbackTest extends IntegrationTestCase
 		$this->assertCount(1, $messages);
 		$this->assertStringContainsString('Your new tag snapback was rejected by DN_reviewer.', $messages[0]['text']);
 		$this->assertStringContainsString('DN_reviewer: We have it already.', $messages[0]['text']);
+	}
+
+	//Only a tag still waiting for a decision can be accepted or rejected.
+	public function testAnApprovedOrMissingTagIsNoProposal(): void
+	{
+		$context = $this->prepare([], [['name' => 'snapback', 'approved' => 1]]);
+		$tagID = $context->tags[0]->id;
+
+		$this->post('/tags/rejectTagProposal/' . $tagID, ['comment' => 'We have it already.']);
+		$this->assertTrue($this->fetchTable('Tag')->exists(['id' => $tagID]));
+		$this->assertSame('Tag to reject was already approved', CookieFlash::get());
+
+		$this->post('/tags/acceptTagProposal/' . $tagID, []);
+		$this->assertSame('Tag to approve was already approved', CookieFlash::get());
+
+		$this->post('/tags/rejectTagProposal/' . ($tagID + 1000), ['comment' => 'We have it already.']);
+		$this->assertSame('Tag to reject not found', CookieFlash::get());
 	}
 
 	public function testProposalNeedsADescription(): void
