@@ -42,6 +42,7 @@ class ViteManifest
 		'besogo'      => 'virtual:legacy-besogo',
 		'play'        => 'virtual:legacy-play',
 		'sets-index'  => 'virtual:legacy-sets-index',
+		'time-mode'   => 'virtual:legacy-time-mode',
 	];
 
 	// ---------------------------------------------------------------------------
