@@ -12,8 +12,6 @@ function updateSoundValue(value)
 //setting: 'on', 'off', or null when a guest has not picked yet, who hears sound like the button shows
 function initSound(setting)
 {
-	if (setting)
-		setCookie('sound', setting);
 	updateSoundValue(setting !== 'off');
 }
 
@@ -31,7 +29,7 @@ function setSoundCookie(value)
 function changeSound()
 {
 	//A visitor who has not picked anything hears sound: only an explicit "off" is silent.
-	var soundIsOn = getCookie('sound') != 'off';
+	var soundIsOn = soundsEnabled;
 	document.getElementById('soundButtonImage').src = soundIsOn ? '/img/sound-icon2.png' : '/img/sound-icon1.png';
 	setSoundCookie(soundIsOn ? 'off' : 'on');
 	updateSoundValue(!soundIsOn);

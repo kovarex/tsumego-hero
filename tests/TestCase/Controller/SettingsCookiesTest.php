@@ -3,8 +3,8 @@
 use App\Model\Table\UserTable;
 use App\Utility\Util;
 
-//The theme, sound and level bar cookies come with every request of a signed in player
-//(AppController::saveSettingsFromCookies()); the account is written only when one differs from it.
+//The theme, sound and level bar cookies carry a change a signed in player made to the account
+//(AppController::saveSettingsFromCookies()), which is written only when it differs from the account.
 class SettingsCookiesTest extends IntegrationTestCase
 {
 	//The UPDATE statements the database ran for this connection during the request
@@ -41,5 +41,56 @@ class SettingsCookiesTest extends IntegrationTestCase
 		$this->assertSame(UserTable::THEME_DARK, (int) $user['theme_id']);
 		$this->assertSame(UserTable::LEVEL_BAR_RATING, (int) $user['level_bar_id']);
 		$this->assertFalse((bool) $user['sound']);
+	}
+
+	//The account is what counts: a cookie that is left in a browser would set the setting back
+	//after the player changed it in another browser
+	public function testTheCookiesAreDroppedOnceSaved(): void
+	{
+		$context = new ContextPreparator(['user' => ['name' => 'switchingPlayer']]);
+		$this->login('switchingPlayer');
+		$_COOKIE['lightDark'] = 'dark';
+		$_COOKIE['levelBar'] = (string) UserTable::LEVEL_BAR_RATING;
+		$_COOKIE['sound'] = 'on';
+
+		$this->get('/sites/impressum');
+
+		foreach (['lightDark', 'levelBar', 'sound'] as $name)
+		{
+			$this->assertSame('', Util::sentCookie($name)['value'], $name);
+			$this->assertLessThan(time(), Util::sentCookie($name)['options']['expires'], $name);
+		}
+		$this->assertSame(UserTable::THEME_DARK, (int) $context->reloadUser()['theme_id']);
+	}
+
+	//The page of a signed in player shows the account's settings and leaves the cookies to the changes
+	public function testThePageOfASignedInPlayerDoesNotPutTheSettingsInCookies(): void
+	{
+		new ContextPreparator(['user' => ['name' => 'quietPlayer', 'sound' => 1]]);
+		$this->login('quietPlayer');
+
+		$this->get('/sites/impressum');
+
+		$this->assertResponseOk();
+		$this->assertStringNotContainsString('setCookie("lightDark"', $this->view);
+		$this->assertStringNotContainsString('setCookie("sound"', $this->view);
+	}
+
+	//A browser the player left open in the dark theme does not set the theme back after they
+	//switched to the light one elsewhere
+	public function testAThemeChangedElsewhereIsKeptByAnotherBrowser(): void
+	{
+		$context = new ContextPreparator(['user' => ['name' => 'twoDevices']]);
+		$browser = Browser::instance();
+		$browser->get('users/settings');
+		$browser->find('input[name="theme"][value="dark"]')->click();
+		$browser->get('users/settings');
+		$this->assertSame(UserTable::THEME_DARK, (int) $context->reloadUser()['theme_id']);
+
+		Util::execute('UPDATE user SET theme_id = ? WHERE id = ?', [UserTable::THEME_LIGHT, $context->user['id']]);
+		$browser->get('users/settings');
+
+		$this->assertSame(UserTable::THEME_LIGHT, (int) $context->reloadUser()['theme_id']);
+		$this->assertSame('light', $browser->driver->executeScript('return document.documentElement.dataset.theme;'));
 	}
 }
