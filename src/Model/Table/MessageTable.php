@@ -38,13 +38,22 @@ class MessageTable extends AppTable
 	//players who answer is never limited.
 	public const DAILY_UNANSWERED_RECIPIENTS = 10;
 
+	//The columns of the user table playerPayload() reads.
+	public const PLAYER_COLUMNS = 'user.id AS user_id, user.display_name, user.deleted, user.external_id, user.picture, user.email, user.avatar_setting_id, user.uploaded_avatar_hash, user.rating';
+
 	//Why a message can't be sent, null when it can. The sender is the one asking, so this
 	//only looks at the recipient and the text.
 	public static function problemWith(int $senderUserId, int $recipientUserId, string $text): ?string
 	{
+		return self::problemWithRecipient($senderUserId, $recipientUserId, UserTable::row($recipientUserId), $text);
+	}
+
+	//problemWith() with the user row of the recipient at hand, null when there is none.
+	/** @param array<string, mixed>|null $recipient */
+	private static function problemWithRecipient(int $senderUserId, int $recipientUserId, ?array $recipient, string $text): ?string
+	{
 		if ($senderUserId === $recipientUserId)
 			return 'You can not send a message to yourself.';
-		$recipient = UserTable::row($recipientUserId);
 		if (!$recipient || UserTable::isDeleted($recipient))
 			return 'The player does not exist.';
 		$text = self::normalizeText($text);
@@ -63,7 +72,8 @@ class MessageTable extends AppTable
 	//Returns the id of the new message
 	public static function send(int $senderUserId, int $recipientUserId, string $text, Mailer $emailer): int
 	{
-		$problem = self::problemWith($senderUserId, $recipientUserId, $text);
+		$recipient = UserTable::row($recipientUserId);
+		$problem = self::problemWithRecipient($senderUserId, $recipientUserId, $recipient, $text);
 		if ($problem !== null)
 			throw new InvalidArgumentException($problem);
 
@@ -75,7 +85,7 @@ class MessageTable extends AppTable
 			'text' => $text,
 		]));
 
-		self::notifyByEmail($senderUserId, $recipientUserId, $text, $emailer);
+		self::notifyByEmail($senderUserId, $recipient, $text, $emailer);
 		return $message->id;
 	}
 
@@ -85,14 +95,14 @@ class MessageTable extends AppTable
 		return trim(str_replace(["\r\n", "\r"], "\n", $text));
 	}
 
-	private static function notifyByEmail(int $senderUserId, int $recipientUserId, string $text, Mailer $emailer): void
+	/** @param array<string, mixed> $recipient The user row */
+	private static function notifyByEmail(int $senderUserId, array $recipient, string $text, Mailer $emailer): void
 	{
-		$recipient = UserTable::row($recipientUserId);
 		if (!$recipient['email_on_new_message'] || empty($recipient['email']))
 			return;
 
 		// An earlier message the recipient didn't read yet was already announced.
-		if (self::unreadCountFrom($recipientUserId, $senderUserId) > 1)
+		if (self::unreadCountFrom((int) $recipient['id'], $senderUserId) > 1)
 			return;
 
 		$sender = UserTable::row($senderUserId);
@@ -128,7 +138,7 @@ You get an email for the first message you have not read yet. You can turn these
 			SELECT
 				conversation.unread_count,
 				message.id, message.sender_user_id, message.text, message.created, message.read_at,
-				user.id AS user_id, user.display_name, user.deleted, user.external_id, user.picture, user.email, user.avatar_setting_id, user.uploaded_avatar_hash, user.rating
+				' . self::PLAYER_COLUMNS . '
 			FROM (
 				SELECT partner_user_id, MAX(id) AS last_message_id, SUM(unread) AS unread_count
 				FROM (
@@ -231,17 +241,17 @@ You get an email for the first message you have not read yet. You can turn these
 			return [];
 		$escaped = addcslashes($query, '\\%_');
 		$rows = Util::query('
-			SELECT id AS user_id, display_name, deleted, external_id, picture, email, avatar_setting_id, uploaded_avatar_hash, rating
+			SELECT ' . self::PLAYER_COLUMNS . '
 			FROM user
-			WHERE deleted IS NULL AND id <> ? AND display_name LIKE ?
-			ORDER BY display_name LIKE ? DESC, CHAR_LENGTH(display_name), display_name
+			WHERE user.deleted IS NULL AND user.id <> ? AND user.display_name LIKE ?
+			ORDER BY user.display_name LIKE ? DESC, CHAR_LENGTH(user.display_name), user.display_name
 			LIMIT ' . self::RECIPIENT_SEARCH_LIMIT, [$userId, '%' . $escaped . '%', $escaped . '%']);
 		return array_map(fn(array $row) => self::playerPayload($row), $rows);
 	}
 
 	//A player the way the page shows them. A deleted account has no name and no avatar, the page writes it as deleted.
 	/**
-	 * @param array<string, mixed> $row With user_id, display_name, deleted, external_id, picture, email, avatar_setting_id, uploaded_avatar_hash, rating
+	 * @param array<string, mixed> $row With PLAYER_COLUMNS
 	 * @return array{id: int, displayName: string|null, avatarUrl: string|null, rating: float}
 	 */
 	public static function playerPayload(array $row): array
