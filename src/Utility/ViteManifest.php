@@ -22,6 +22,7 @@ use RuntimeException;
 //  'legacy'       → virtual:legacy-app                   (bundled app global JS)
 //  'besogo'       → virtual:legacy-besogo               (bundled besogo viewer JS)
 //  'sets-index'   → virtual:legacy-sets-index           (the code of the collections page)
+//  'sets-view'    → virtual:legacy-sets-view            (the code of the page of a collection)
 //  'play'         → virtual:legacy-play                 (the code of the play page)
 class ViteManifest
 {
@@ -42,6 +43,7 @@ class ViteManifest
 		'besogo'      => 'virtual:legacy-besogo',
 		'play'        => 'virtual:legacy-play',
 		'sets-index'  => 'virtual:legacy-sets-index',
+		'sets-view'   => 'virtual:legacy-sets-view',
 	];
 
 	// ---------------------------------------------------------------------------

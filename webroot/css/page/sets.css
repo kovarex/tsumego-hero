@@ -184,6 +184,25 @@
 .set-search-menu.query-tags #tags-button {
   border: 1px solid var(--color-tile-brown);
 }
+/* The active filters above the problems of a collection, folded in under the Filters link. */
+.set-view-problems #msgFilters {
+	display: none;
+	margin: 0 4px 8px;
+}
+
+.set-view-problems .showFilters {
+	display: inline-block;
+	margin: 8px 4px;
+}
+
+.set-view-problems #showFilters {
+	margin: 8px 4px;
+}
+
+.set-view-problems .showFilters--hidden {
+	display: none;
+}
+
 .set-view-main {
   width: 100%;
   margin-top: 12px;
