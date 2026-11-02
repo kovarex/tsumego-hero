@@ -1,6 +1,8 @@
 <?php
 // One-off diagnostic, run from the project root on the server:
 //   php profile-page.php /5058 USER_ID [USER_ID ...]
+// To send the cookies a browser sends as well, put its Cookie header in the COOKIES environment variable:
+//   COOKIES='name=value; name2=value2' php profile-page.php /5058 USER_ID
 // Renders the page the way the site does for each user (without sending anything), and prints how long
 // it took and every SQL statement of it with its time, the slowest first. It does what a visit of that
 // user does, including the writes a visit makes (the visited status of the problem). Delete it after use.
@@ -43,7 +45,14 @@ foreach ($userIds as $index => $userId)
 	$user = $pdo->query('SELECT id, name, password_hash FROM user WHERE id = ' . $userId)->fetch(PDO::FETCH_ASSOC);
 	if (!$user)
 		exit("user $userId not found\n");
-	$_COOKIE = ['auth_token' => JwtAuth::createToken($userId, null, $user['password_hash'])];
+	$_COOKIE = [];
+	foreach (array_filter(explode(';', (string) getenv('COOKIES'))) as $pair)
+		if (str_contains($pair, '='))
+		{
+			[$name, $value] = explode('=', trim($pair), 2);
+			$_COOKIE[$name] = urldecode($value);
+		}
+	$_COOKIE['auth_token'] = JwtAuth::createToken($userId, null, $user['password_hash']);
 	$request = ServerRequestFactory::fromGlobals();
 
 	$pdo->exec('SET profiling_history_size = 100');
