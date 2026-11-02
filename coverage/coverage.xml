@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1793611603">
-  <project timestamp="1793611603">
+<coverage generated="1793613667">
+  <project timestamp="1793613667">
     <package name="App">
       <file name="/home/runner/work/tsumego-hero/tsumego-hero/src/Application.php">
         <class name="App\Application" namespace="App">
@@ -3412,11 +3412,11 @@
         <line num="220" type="stmt" count="1"/>
         <line num="224" type="stmt" count="25"/>
         <line num="225" type="stmt" count="25"/>
-        <line num="226" type="stmt" count="5"/>
-        <line num="227" type="stmt" count="5"/>
-        <line num="228" type="stmt" count="5"/>
-        <line num="229" type="stmt" count="5"/>
-        <line num="230" type="stmt" count="5"/>
+        <line num="226" type="stmt" count="4"/>
+        <line num="227" type="stmt" count="4"/>
+        <line num="228" type="stmt" count="4"/>
+        <line num="229" type="stmt" count="4"/>
+        <line num="230" type="stmt" count="4"/>
         <line num="232" type="stmt" count="25"/>
         <line num="234" type="stmt" count="3"/>
         <line num="235" type="stmt" count="3"/>
@@ -9819,11 +9819,11 @@
         <line num="280" type="stmt" count="326"/>
         <line num="281" type="stmt" count="326"/>
         <line num="282" type="stmt" count="326"/>
-        <line num="285" type="method" name="swapColorWords" visibility="public" complexity="1" crap="1" count="47"/>
-        <line num="287" type="stmt" count="47"/>
-        <line num="288" type="stmt" count="47"/>
-        <line num="289" type="stmt" count="47"/>
-        <line num="290" type="stmt" count="47"/>
+        <line num="285" type="method" name="swapColorWords" visibility="public" complexity="1" crap="1" count="50"/>
+        <line num="287" type="stmt" count="50"/>
+        <line num="288" type="stmt" count="50"/>
+        <line num="289" type="stmt" count="50"/>
+        <line num="290" type="stmt" count="50"/>
         <line num="293" type="method" name="tsumegoStatus" visibility="private" complexity="2" crap="2" count="328"/>
         <line num="295" type="stmt" count="328"/>
         <line num="296" type="stmt" count="6"/>
@@ -12196,7 +12196,7 @@
         <line num="238" type="stmt" count="295"/>
         <line num="239" type="stmt" count="271"/>
         <line num="241" type="stmt" count="295"/>
-        <line num="242" type="stmt" count="40"/>
+        <line num="242" type="stmt" count="41"/>
         <line num="243" type="stmt" count="295"/>
         <line num="244" type="stmt" count="61"/>
         <line num="245" type="stmt" count="295"/>
