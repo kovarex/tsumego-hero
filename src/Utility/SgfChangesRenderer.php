@@ -197,7 +197,11 @@ OFFSET " . $this->offset, [$this->userID, ...$parameters]);
 			? '<span class="sgf-changes__unknown" title="Accepted before the site recorded who accepted a proposal">unknown</span>'
 			: UserTable::renderLink(self::userOf($item, 'accepted_by'));
 		echo '</td>';
-		echo '<td class="sgf-changes__author">' . ($isProposal ? UserTable::renderLink(self::userOf($item, 'author')) : '') . '</td>';
+		echo '<td class="sgf-changes__author">';
+		// an automatic version has no author
+		if ($isProposal)
+			echo $item['user_id'] === null ? 'automatically generated' : UserTable::renderLink(self::userOf($item, 'author'));
+		echo '</td>';
 		echo '<td class="proposal-description" id="description-' . $id . '">' . SgfDescription::render($item['description']) . '</td>';
 		echo '<td><time datetime="' . Util::toIso8601($item['accepted']) . '" data-format="datetime"'
 			. ($isProposal ? ' title="Proposed ' . h($item['created']) . '"' : '') . '>' . h($item['accepted']) . '</time></td>';

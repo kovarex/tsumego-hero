@@ -25,7 +25,8 @@ class SgfsController extends AppController
 		{
 			$sgfTable = $this->fetchTable('Sgf');
 			$sDel = $sgfTable->find()->select(['id', 'user_id'])->where(['id' => $this->query('delete')])->first();
-			if ($sDel && Auth::getUserID() == $sDel->user_id)
+			// an automatic version (no user) is nobody's to delete
+			if ($sDel && $sDel->user_id !== null && $sDel->user_id === Auth::getUserID())
 				$sgfTable->deleteOrFail($sDel);
 		}
 
@@ -74,9 +75,8 @@ class SgfsController extends AppController
 		$sCount = count($versions);
 		for ($i = 0; $i < $sCount; $i++)
 		{
-
-
-			$user = UserTable::row((int) $versions[$i]['user_id']);
+			// an automatic version has no user
+			$user = $versions[$i]['user_id'] === null ? null : UserTable::row((int) $versions[$i]['user_id']);
 			$ux = $user ? UserTable::displayName($user) : '';
 			$versions[$i]['user'] = $ux;
 			$displaySetConnection = SetConnectionTable::findDisplaySetConnection((int) $versions[$i]['tsumego_id']);
@@ -90,12 +90,7 @@ class SgfsController extends AppController
 				$versionCounter[$displaySetConnection->tsumego_id] = 0;
 			$versions[$i]['version'] = $this->fetchTable('Sgf')->find()->where(['tsumego_id' => $displaySetConnection->tsumego_id, 'sgf_status_id !=' => SgfTable::STATUS_REJECTED])->count() - $versionCounter[$displaySetConnection->tsumego_id];
 
-			if ($versions[$i]['user'] == 'noUser')
-				$versions[$i]['user'] = 'automatically generated';
-			if (Auth::getUserID() == $versions[$i]['user_id'])
-				$versions[$i]['delete'] = true;
-			else
-				$versions[$i]['delete'] = false;
+			$versions[$i]['delete'] = $versions[$i]['user_id'] !== null && (int) $versions[$i]['user_id'] === Auth::getUserID();
 			$versions[$i]['diff'] = SgfTable::findPreviousVersionID((int) $versions[$i]['tsumego_id'], (int) $versions[$i]['id']);
 		}
 

@@ -59,7 +59,7 @@ use App\Utility\Util;
 				<time datetime="'.Util::toIso8601($versions[$i]['created']).'" data-format="datetime">'.$versions[$i]['created'].'</time>
 			</td>
 			<td class="timeTableMiddle versionColor" align="left">';
-			if($versions[$i]['user_id']==33)
+			if($versions[$i]['user_id'] === null)
 				echo 'automatically generated';
 			else
 				echo '<a href="/sgfs/view/'.$versions[$i]['tsumego_id'].'?user='.$versions[$i]['user_id'].'">'.h($versions[$i]['user']).'</a>';

@@ -291,6 +291,17 @@ class SgfChangesTest extends IntegrationTestCase
 		$this->assertStringNotContainsString('title="Proposed', $this->view);
 	}
 
+	//An automatic version has no user, and its author says so instead of showing a gone account
+	public function testAnAutomaticVersionIsAutomaticallyGenerated(): void
+	{
+		$context = $this->prepare(1);
+		[$automatic] = self::sgfIDs($context);
+		Util::execute('UPDATE sgf SET user_id = NULL, accepted_by_user_id = NULL WHERE id = ?', [$automatic]);
+
+		$this->get('/admin/sgf-changes?show=all');
+		$this->assertSame('automatically generated', $this->cell('sgf-changes__author', $automatic));
+	}
+
 	//Proposals accepted before the site recorded the decision say that the admin is not known.
 	public function testAnOldAcceptedProposalHasNoKnownAdmin(): void
 	{
