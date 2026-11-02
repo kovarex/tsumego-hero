@@ -5,93 +5,26 @@ namespace App\Controller;
 use Cake\Http\Response;
 use Cake\Http\Exception\BadRequestException;
 use Cake\Http\Exception\NotFoundException;
-use App\Model\Table\SetTable;
 use App\Attribute\HttpGet;
 use App\Attribute\HttpPost;
-use App\Model\Entity\Schedule;
 use App\Model\Table\AdminActivityTypeTable;
+use App\Model\Table\ScheduleTable;
 use App\Utility\AdminActivityLogger;
 use App\Utility\Auth;
 use App\Utility\CookieFlash;
 use App\Utility\SchedulePublisher;
 use App\Utility\TsumegoButton;
-use App\Utility\Util;
 
 class ScheduleController extends AppController
 {
-	//A sandbox set: an unpublished collection of the site that is not in the trash.
-	private const SANDBOX_CONDITION = '`Set`.public = 0 AND `Set`.user_id IS NULL AND `Set`.deleted IS NULL';
-
 	#[HttpGet]
 	public function index(): void
 	{
 		$this->Authorization->authorize('Schedule');
-
-		$upcoming = Util::query("
-SELECT
-	schedule.id AS id,
-	schedule.date AS date,
-	schedule.tsumego_id AS tsumego_id,
-	schedule.set_id AS set_id,
-	COALESCE(sandbox_sc.num, target_sc.num) AS num,
-	sandbox_source.set_id AS sandbox_set_id,
-	sandbox_set.title AS sandbox_set_title,
-	sandbox_set.title2 AS sandbox_set_title2,
-	target_set.title AS target_set_title,
-	COALESCE(sandbox_sc.id, target_sc.id) AS sc_id,
-	sgf.sgf AS sgf,
-	tsumego.deleted AS tsumego_deleted,
-	creator.name AS created_by_name,
-	creator.id AS created_by_id
-FROM schedule
-LEFT JOIN tsumego ON tsumego.id = schedule.tsumego_id
-LEFT JOIN set_connection target_sc
-	ON target_sc.tsumego_id = schedule.tsumego_id
-	AND target_sc.set_id = schedule.set_id
-LEFT JOIN `set` target_set ON target_set.id = schedule.set_id
-LEFT JOIN (
-	SELECT sc.tsumego_id, MIN(sc.set_id) AS set_id
-	FROM set_connection sc
-	JOIN `set` st ON st.id = sc.set_id
-	WHERE st.public = 0 AND st.user_id IS NULL
-	GROUP BY sc.tsumego_id
-) sandbox_source ON sandbox_source.tsumego_id = schedule.tsumego_id
-LEFT JOIN set_connection sandbox_sc
-	ON sandbox_sc.tsumego_id = schedule.tsumego_id
-	AND sandbox_sc.set_id = sandbox_source.set_id
-LEFT JOIN `set` sandbox_set ON sandbox_set.id = sandbox_sc.set_id
-LEFT JOIN sgf ON sgf.id = (
-	SELECT s1.id FROM sgf s1
-	WHERE s1.tsumego_id = schedule.tsumego_id
-	ORDER BY s1.id DESC LIMIT 1
-)
-LEFT JOIN `user` creator ON creator.id = schedule.created_by_user_id
-WHERE schedule.published = 0
-ORDER BY schedule.date ASC");
-
-		$this->set('upcoming', $upcoming);
-
-		$recentlyPublished = Util::query("
-SELECT
-	schedule.id AS id,
-	schedule.date AS date,
-	schedule.tsumego_id AS tsumego_id,
-	schedule.set_id AS set_id,
-	target_sc.num AS num,
-	target_set.title AS target_set_title
-FROM schedule
-LEFT JOIN set_connection target_sc
-	ON target_sc.tsumego_id = schedule.tsumego_id
-	AND target_sc.set_id = schedule.set_id
-LEFT JOIN `set` target_set ON target_set.id = schedule.set_id
-WHERE schedule.published = 1
-	AND schedule.date >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
-ORDER BY schedule.date DESC, schedule.id DESC");
-		$this->set('recentlyPublished', $recentlyPublished);
-
-		$setTable = $this->fetchTable('Set');
-		$this->set('sandboxSets', $setTable->find()->select(['id', 'title'])->where([self::SANDBOX_CONDITION])->orderBy('Set.order')->disableHydration()->toArray());
-		$this->set('publicSets', $setTable->find()->select(['id', 'title'])->where([SetTable::officialCondition('Set')])->orderBy('Set.order')->disableHydration()->toArray());
+		$this->set('upcoming', ScheduleTable::upcoming());
+		$this->set('recentlyPublished', ScheduleTable::recentlyPublished());
+		$this->set('sandboxSets', ScheduleTable::sandboxSets());
+		$this->set('publicSets', ScheduleTable::targetSets());
 	}
 
 	//Schedule sandbox problems for publishing. Admin only.
@@ -122,14 +55,12 @@ ORDER BY schedule.date DESC, schedule.id DESC");
 		if (strtotime($startDate) < strtotime('today'))
 			throw new BadRequestException('Start date must be today or later.');
 
-		$setTable = $this->fetchTable('Set');
-		if (!$setTable->exists(['Set.id' => $setIdFrom, self::SANDBOX_CONDITION]))
+		if (!ScheduleTable::isSandboxSet($setIdFrom))
 			throw new BadRequestException('Source set must be a sandbox set.');
-
-		if (!$setTable->exists(['Set.id' => $targetSetId, SetTable::officialCondition('Set')]))
+		if (!ScheduleTable::isTargetSet($targetSetId))
 			throw new BadRequestException('Target set must be a public collection of the site.');
 
-		$candidates = self::candidates($setIdFrom, $targetSetId, $num, $count);
+		$candidates = ScheduleTable::candidates($setIdFrom, $targetSetId, $num, $count);
 
 		$scheduleTable = $this->fetchTable('Schedule');
 		$scheduled = 0;
@@ -176,7 +107,7 @@ ORDER BY schedule.date DESC, schedule.id DESC");
 		if ($setIdFrom <= 0 || $targetSetId <= 0 || ($count !== null && $count < 1))
 			return $this->respondJson([]);
 
-		$candidates = self::candidates($setIdFrom, $targetSetId, $num, $count);
+		$candidates = ScheduleTable::candidates($setIdFrom, $targetSetId, $num, $count);
 
 		// Pre-parse SGF to preview data so the client doesn't need to
 		$existingNums = $this->fetchTable('SetConnection')->find('list', keyField: 'num', valueField: 'num')->where(['set_id' => $targetSetId])->toArray();
@@ -196,25 +127,6 @@ ORDER BY schedule.date DESC, schedule.id DESC");
 	private static function count(mixed $value): ?int
 	{
 		return $value === null || $value === '' ? null : (int) $value;
-	}
-
-	//The problems of the source set that the next schedule takes, in the order of the set: the
-	//ones not waiting in the schedule already, not in the target set already and not in the
-	//trash, from position `num` on when it is given, at most `count` of them when it is given.
-	/** @return array<array{tsumego_id: int, sc_id: int, num: int, sgf: ?string}> */
-	private static function candidates(int $setIdFrom, int $targetSetId, int $num, ?int $count): array
-	{
-		return Util::query("
-SELECT sc.tsumego_id, sc.id AS sc_id, sc.num,
-	(SELECT s1.sgf FROM sgf s1 WHERE s1.tsumego_id = sc.tsumego_id ORDER BY s1.id DESC LIMIT 1) AS sgf
-FROM set_connection sc
-JOIN tsumego ON tsumego.id = sc.tsumego_id AND tsumego.deleted IS NULL
-WHERE sc.set_id = ?
-	AND sc.num >= ?
-	AND NOT EXISTS (SELECT 1 FROM schedule WHERE schedule.tsumego_id = sc.tsumego_id AND schedule.published = 0)
-	AND NOT EXISTS (SELECT 1 FROM set_connection target WHERE target.tsumego_id = sc.tsumego_id AND target.set_id = ?)
-ORDER BY sc.num ASC" . ($count === null ? '' : "
-LIMIT " . $count), [$setIdFrom, $num, $targetSetId]);
 	}
 
 	//Cancel a pending schedule entry. Admin only.

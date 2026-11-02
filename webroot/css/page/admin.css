@@ -209,4 +209,10 @@
   gap: 8px;
   align-items: center;
 }
+
+/* The schedule page: the boards of the previews a bit larger than on a collection. */
+.schedule-page .preview-zoomed .tooltip-box svg { max-height: 110px; width: auto; height: auto; }
+.schedule-page .preview-day { margin-bottom: var(--space-3); }
+/* A number the target set has already, which publishing renumbers. */
+.schedule-page .problem-nav__number--collision::before { content: "\21BB"; margin-right: 2px; font-size: 0.7em; vertical-align: 1px; color: #c0392b; }
 }
