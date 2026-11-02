@@ -307,11 +307,6 @@ use App\Utility\ViteManifest;
 						<form action="/tsumegos/settings/' . $tsumego->id . '" method="POST">
 							<table>
 								<tr>
-									<td>Alternative Response Mode</td>
-									<td><input type="radio" id="alternative-response-on" name="alternative_response" value="1" ' . $checked($tsumego->alternative_response == 1) . '><label for="alternative-response-on">on</label></td>
-									<td><input type="radio" id="alternative-response-off" name="alternative_response" value="0" ' . $checked($tsumego->alternative_response != 1) . '><label for="alternative-response-off">off</label></td>
-								</tr>
-								<tr>
 									<td>Enable passing</td>
 									<td><input type="radio" id="pass-off" name="pass" value="0" ' . $checked($tsumego->pass != 1) . '><label for="pass-off">no</label></td>
 									<td><input type="radio" id="pass-on" name="pass" value="1" ' . $checked($tsumego->pass == 1) . '><label for="pass-on">yes</label></td>
@@ -1426,7 +1421,6 @@ use App\Utility\ViteManifest;
 		options.realstones = true;
 		options.nowheel = true;
 		options.nokeys = true;
-		options.alternativeResponse = playPage.problem.alternativeResponse;
 		setUpQuestion(playPage.problem, options);
 		options.corner = playPage.problem.corner;
 		options.playerColor = playPage.problem.playerColor;

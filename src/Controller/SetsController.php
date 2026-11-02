@@ -240,7 +240,7 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 		// Problems in this set, in display order
 		$problems = Util::query("
 SELECT sc.id AS set_connection_id, sc.num, sc.tsumego_id, t.rating,
-	t.alternative_response, t.pass
+	t.pass
 FROM set_connection sc
 JOIN tsumego t ON t.id = sc.tsumego_id AND t.deleted IS NULL
 WHERE sc.set_id = ?
@@ -299,22 +299,11 @@ ORDER BY sc.num ASC", [(int) $id]);
 				AdminActivityLogger::log(AdminActivityTypeTable::SET_RATING_EDIT, null, (int) $id);
 			}
 
-		// Alternative response / pass mode for all problems (admin only)
+		// Pass mode for all problems (admin only)
 		if ($canEditSettings && $formSent)
 		{
-			// each of the two settings is sent only when the admin picked a choice for it
-			$alternativeResponse = $this->input('r39');
+			// sent only when the admin picked a choice for it
 			$passMode = $this->input('r43');
-			if ($alternativeResponse == 'on')
-			{
-				$this->setProblemsField($problems, 'alternative_response', true);
-				AdminActivityLogger::log(AdminActivityTypeTable::SET_ALTERNATIVE_RESPONSE, null, (int) $id, null, '1');
-			}
-			if ($alternativeResponse == 'off')
-			{
-				$this->setProblemsField($problems, 'alternative_response', false);
-				AdminActivityLogger::log(AdminActivityTypeTable::SET_ALTERNATIVE_RESPONSE, null, (int) $id, null, '0');
-			}
 			if ($passMode == 'yes')
 			{
 				$this->setProblemsField($problems, 'pass', true);
@@ -375,16 +364,10 @@ ORDER BY sc.num ASC", [(int) $id]);
 			return $this->redirect('/sets/edit/' . (int) $id);
 
 		// Solve-mode states for the admin settings panel
-		$allArActive = true;
-		$allArInactive = true;
 		$allPassActive = true;
 		$allPassInactive = true;
 		foreach ($problems as $problem)
 		{
-			if (!$problem['alternative_response'])
-				$allArActive = false;
-			if ($problem['alternative_response'])
-				$allArInactive = false;
 			if (!$problem['pass'])
 				$allPassActive = false;
 			if ($problem['pass'])
@@ -403,8 +386,6 @@ ORDER BY sc.num ASC", [(int) $id]);
 		$this->set('canEditSettings', $canEditSettings);
 		$this->set('canDelete', $this->Authorization->can($set, 'delete'));
 		$this->set('isSandbox', $isSandbox);
-		$this->set('allArActive', $allArActive);
-		$this->set('allArInactive', $allArInactive);
 		$this->set('allPassActive', $allPassActive);
 		$this->set('allPassInactive', $allPassInactive);
 		$this->set('setRating', $setRating);

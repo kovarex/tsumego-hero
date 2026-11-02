@@ -27,7 +27,6 @@
   besogo.controlButtonLock = true;
   besogo.theme = "";
   besogo.light = null; //light or dark theme
-  besogo.alternativeResponse = true; //alternative response mode
   besogo.multipleChoice = null; //multiple choice problems
   besogo.multipleChoiceSetup = []; //multiple choice random stone placement
   besogo.multipleChoiceCustom = false;
@@ -349,8 +348,6 @@
 
     besogo.theme = options.theme;
     besogo.light = options.light;
-    if (typeof options.alternativeResponse === "boolean")
-      besogo.alternativeResponse = options.alternativeResponse;
     if (typeof options.multipleChoice === "boolean")
       besogo.multipleChoice = options.multipleChoice;
     if (typeof options.multipleChoiceCustom === "string")

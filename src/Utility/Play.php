@@ -119,7 +119,6 @@ class Play
 				'author' => $tsumego->author,
 				'userSets' => $problem['userSets'],
 				'pass' => (bool) $tsumego->pass,
-				'alternativeResponse' => $tsumego->alternative_response == 1,
 				'sgf' => $problem['sgf']->sgf,
 				'downloadName' => str_replace('&', 'and', $set->title) . ' ' . $setConnection->num,
 				'corner' => $problem['corner'],

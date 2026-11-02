@@ -546,19 +546,16 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
             selectOpponentMove = Math.floor(Math.random() * selectionCount);
         }
 
-        //if alternative response mode is turned on
-        if (besogo.alternativeResponse)
-        {
-          for (let i = 0; i < current.children.length; i++)
-            if (i !== selectOpponentMove)
-              addToRequired(current.children[i], current);
+        //The replies the board didn't pick are required too (the alternative response mode)
+        for (let i = 0; i < current.children.length; i++)
+          if (i !== selectOpponentMove)
+            addToRequired(current.children[i], current);
 
-          if (current.children.length == 0)
-            // alternative responses are taken from the virtual moves only if direct moves aren't there
-            for (let i = 0; i < current.virtualChildren.length; i++)
-              if (i + current.children.length !== selectOpponentMove)
-                addToRequired(current.virtualChildren[i].target, current);
-        }
+        if (current.children.length == 0)
+          // alternative responses are taken from the virtual moves only if direct moves aren't there
+          for (let i = 0; i < current.virtualChildren.length; i++)
+            if (i + current.children.length !== selectOpponentMove)
+              addToRequired(current.virtualChildren[i].target, current);
         nextNode(1, selectOpponentMove, true /* autoplay move*/);
       }, 240);
     }

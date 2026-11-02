@@ -8,8 +8,6 @@ use App\Utility\TsumegoButtons;
 
 /**
  * @var \App\View\AppView $this
- * @var bool $allArActive
- * @var bool $allArInactive
  * @var bool $allPassActive
  * @var bool $allPassInactive
  * @var bool $canDelete
@@ -142,15 +140,6 @@ if ($currentColor !== '' && !in_array(strtolower($currentColor), array_map('strt
 				<p class="hint">Sets the rating of every problem in this collection. Problems are shared, so this changes their rating everywhere. Leave empty to skip.</p>
 
 				<h3 class="set-edit__heading">Solve Modes</h3>
-				<div class="set-edit__mode">
-					<span class="set-edit__mode-label">Alternative Response</span>
-					<span class="set-edit__mode-hint"><?php echo $allArActive ? 'all on' : ($allArInactive ? 'all off' : 'mixed'); ?></span>
-					<select name="r39">
-						<option value="">no change</option>
-						<option value="on">on</option>
-						<option value="off">off</option>
-					</select>
-				</div>
 				<div class="set-edit__mode">
 					<span class="set-edit__mode-label">Passing</span>
 					<span class="set-edit__mode-hint"><?php echo $allPassActive ? 'all on' : ($allPassInactive ? 'all off' : 'mixed'); ?></span>

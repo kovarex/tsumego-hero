@@ -99,7 +99,7 @@ class SetPolicy extends BasePolicy
 		return $user !== null;
 	}
 
-	//Editing set-level settings (re-rate, alternative response, pass mode): admin only.
+	//Editing set-level settings (re-rate, pass mode): admin only.
 	/** @param UserRow|null $user */
 	public static function canEditSettings(?array $user): bool
 	{

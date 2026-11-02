@@ -726,24 +726,6 @@ class UserSetsControllerTest extends IntegrationTestCase
 		$this->assertEquals(1000, $tsumego->rating);
 	}
 
-	public function testAdminCanToggleAlternativeResponseOn(): void
-	{
-		new ContextPreparator([
-			'user' => ['name' => 'admin', 'admin' => true],
-			'tsumegos' => [
-				['rating' => 1000, 'alternative_response' => 0, 'sets' => [['name' => 'Sandbox Set', 'num' => 1, 'public' => 0]]],
-			],
-		]);
-		$this->login('admin');
-		$setId = $this->fetchTable('Set')->find()->where(['title' => 'Sandbox Set'])->first()->id;
-		$tsumegoId = $this->fetchTable('Tsumego')->find()->orderByDesc('id')->first()->id;
-
-		$this->post("/sets/edit/{$setId}", ['r39' => 'on']);
-
-		$tsumego = $this->fetchTable('Tsumego')->find()->where(['id' => $tsumegoId])->first();
-		$this->assertSame(1, (int) $tsumego->alternative_response);
-	}
-
 	public function testAdminCanTogglePassingOn(): void
 	{
 		new ContextPreparator([
