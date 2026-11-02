@@ -34,6 +34,7 @@ class TimeMode
 
 		// is TimeModeUtil::$PROBLEM_COUNT normally, but can be less when not enough problems found
 		$attempts = $this->fetchTable('TimeModeAttempt')->find()->where(['time_mode_session_id' => $this->currentSession->id])->toArray();
+		$recordedCount = 0;
 		foreach ($attempts as $attempt)
 		{
 			if ($attempt->time_mode_attempt_status_id == TimeModeUtil::$ATTEMPT_RESULT_SOLVED)
@@ -43,6 +44,8 @@ class TimeMode
 				|| $attempt->time_mode_attempt_status_id == TimeModeUtil::$ATTEMPT_STATUS_SKIPPED
 				|| $attempt->time_mode_attempt_status_id == TimeModeUtil::$ATTEMPT_STATUS_TIMEOUT)
 					$this->failCount++;
+			if ($attempt->time_mode_attempt_status_id != TimeModeUtil::$ATTEMPT_RESULT_QUEUED)
+				$recordedCount++;
 		}
 		$this->overallCount = count($attempts);
 
@@ -52,9 +55,7 @@ class TimeMode
 			return;
 		}
 
-		$this->currentOrder = $this->fetchTable('TimeModeAttempt')->find()->where([
-			'time_mode_session_id' => $this->currentSession->id,
-			'time_mode_attempt_status_id !=' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED])->count() + 1;
+		$this->currentOrder = $recordedCount + 1;
 
 		// the run of a challenge has the time the challenge gives, a run of the time mode the time of its category
 		if ($challengeID = $this->currentSession->challenge_id)
@@ -89,13 +90,7 @@ class TimeMode
 		if (empty($tsumegoIDs))
 			throw new InternalErrorException('The challenge has no problems.');
 		$this->leaveCurrentSession();
-
-		Auth::saveUserField('mode_id', Constants::$TIME_MODE);
-		$sessionTable = $this->fetchTable('TimeModeSession');
-		$session = $sessionTable->saveOrFail($sessionTable->newEntity([
-			'user_id' => Auth::getUserID(),
-			'time_mode_session_status_id' => TimeModeSessionStatusTable::IN_PROGRESS,
-			'challenge_id' => $challenge['id']]));
+		$session = $this->createSession(['challenge_id' => $challenge['id']]);
 		$this->createSessionAttempts($session->id, $tsumegoIDs);
 	}
 
@@ -129,12 +124,7 @@ class TimeMode
 			'time_mode_session_id' => $session->id,
 			'time_mode_attempt_status_id' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED])->toArray();
 		foreach ($queuedAttempts as $attempt)
-		{
-			$attempt->time_mode_attempt_status_id = TimeModeUtil::$ATTEMPT_STATUS_SKIPPED;
-			$attempt->seconds = '0';
-			$attempt->points = '0';
-			$attemptTable->saveOrFail($attempt);
-		}
+			self::recordAttempt($attempt, TimeModeUtil::$ATTEMPT_STATUS_SKIPPED, 0, 0);
 		self::score($session);
 	}
 
@@ -147,13 +137,19 @@ class TimeMode
 		if (!$this->fetchTable('TimeModeRank')->exists(['id' => $rankID]))
 			throw new NotFoundException("Time mode rank category with id=" . $rankID . " not found");
 
+		return $this->createSession(['time_mode_category_id' => $timeModeCategory->id, 'time_mode_rank_id' => $rankID]);
+	}
+
+	//Starts a run of the current player, of a time mode category and rank or of a challenge, and puts them in the time mode.
+	/** @param array<string, mixed> $fields */
+	private function createSession(array $fields): TimeModeSession
+	{
 		Auth::saveUserField('mode_id', Constants::$TIME_MODE);
 		$sessionTable = $this->fetchTable('TimeModeSession');
 		return $sessionTable->saveOrFail($sessionTable->newEntity([
 			'user_id' => Auth::getUserID(),
 			'time_mode_session_status_id' => TimeModeSessionStatusTable::IN_PROGRESS,
-			'time_mode_category_id' => $timeModeCategory->id,
-			'time_mode_rank_id' => $rankID]));
+			...$fields]));
 	}
 
 	public static function getRatingBounds(?int $timeModeRankID): RatingBounds
@@ -216,6 +212,15 @@ class TimeMode
 				'time_mode_attempt_status_id' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED]));
 	}
 
+	//Records how a problem of the run ended: its status, the seconds it took and the points it got.
+	private static function recordAttempt(TimeModeAttempt $attempt, int $statusID, float|int $seconds, float|int $points): void
+	{
+		$attempt->time_mode_attempt_status_id = $statusID;
+		$attempt->seconds = (string) $seconds;
+		$attempt->points = (string) $points;
+		TableRegistry::getTableLocator()->get('TimeModeAttempt')->saveOrFail($attempt);
+	}
+
 	private static function deduceAttemptStatus(array $result, bool $timeout): int
 	{
 		if ($timeout)
@@ -236,15 +241,9 @@ class TimeMode
 			'time_mode_attempt_status_id' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED])->first();
 		if (!$currentAttempt)
 			return; // this tsumego is not related to our time mode session, we ignore it
-		$currentAttempt->time_mode_attempt_status_id = self::deduceAttemptStatus($result, $timeout);
-		if ($timeout)
-			$seconds = $this->overallSecondsToSolve;
-
-		$seconds = min($seconds, $this->overallSecondsToSolve);
-
-		$currentAttempt->seconds = (string) $seconds;
-		$currentAttempt->points = (string) ($result['solved'] ? self::calculatePoints($seconds, $this->overallSecondsToSolve) : 0);
-		$attemptTable->saveOrFail($currentAttempt);
+		$seconds = $timeout ? $this->overallSecondsToSolve : min($seconds, $this->overallSecondsToSolve);
+		self::recordAttempt($currentAttempt, self::deduceAttemptStatus($result, $timeout), $seconds,
+			$result['solved'] ? self::calculatePoints($seconds, $this->overallSecondsToSolve) : 0);
 		$this->currentOrder++;
 	}
 
@@ -255,10 +254,8 @@ class TimeMode
 		$attempt = $this->findAttemptToSkip($position);
 		if (!$attempt)
 			return;
-		$attempt->time_mode_attempt_status_id = TimeModeUtil::$ATTEMPT_STATUS_SKIPPED;
-		$attempt->seconds = (string) min($this->overallSecondsToSolve, time() - $attempt->started->getTimestamp());
-		$attempt->points = '0';
-		$this->fetchTable('TimeModeAttempt')->saveOrFail($attempt);
+		self::recordAttempt($attempt, TimeModeUtil::$ATTEMPT_STATUS_SKIPPED,
+			min($this->overallSecondsToSolve, time() - $attempt->started->getTimestamp()), 0);
 		$this->currentOrder++;
 	}
 
@@ -325,10 +322,7 @@ class TimeMode
 			$this->secondsToSolve = (int) max(0, floor($this->secondsToSolve - $secondsSinceStarted));
 			if ($this->secondsToSolve == 0)
 			{
-				$attempt->time_mode_attempt_status_id = TimeModeUtil::$ATTEMPT_STATUS_TIMEOUT;
-				$attempt->seconds = (string) $this->overallSecondsToSolve;
-				$attempt->points = '0';
-				$this->fetchTable('TimeModeAttempt')->saveOrFail($attempt);
+				self::recordAttempt($attempt, TimeModeUtil::$ATTEMPT_STATUS_TIMEOUT, $this->overallSecondsToSolve, 0);
 				$this->currentOrder++;
 				return $this->prepareWhateverIsLeft();
 			}
