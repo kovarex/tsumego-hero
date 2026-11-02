@@ -50,50 +50,40 @@ class SetsSelector
 		$this->sets = [];
 		foreach ($sets as $set)
 		{
-			$partition = $set['partition'];
-			$colorValue = 1 - (($partition == -1) ? 0 : -($partition * 0.15));
-			$this->sets[] = [
-				'id' => $set['name'],
-				'amount' => $set['usage_count'],
-				'name' => $set['name'],
-				'color' => str_replace('[o]', (string) $colorValue, SetsSelector::getTagColor((int) $set['color'])),
-				'solved_percent' => Util::getPercentButAvoid100UntilComplete($set['solved_count'], $set['usage_count']),
-				'partition' => $partition,
-			];
+			$opacity = $set['partition'] == -1 ? 1 : 1 + $set['partition'] * 0.15;
+			// a tag's card is addressed by its name
+			$this->sets[] = self::card(['id' => $set['name']] + $set, str_replace('[o]', (string) $opacity, self::TAG_COLORS[(int) $set['color']]), false);
 		}
 	}
 
-	private static function getTagColor(int $pos): string
-	{
-		$colors = [];
-		$colors[0] = 'rgba(217, 135, 135, [o])';
-		$colors[1] = 'rgba(135, 149, 101, [o])';
-		$colors[2] = 'rgba(190, 151, 131, [o])';
-		$colors[3] = 'rgba(188, 116, 45, [o])';
-		$colors[4] = 'rgba(153, 111, 31, [o])';
-		$colors[5] = 'rgba(159, 54, 0, [o])';
-		$colors[6] = 'rgba(153, 151, 31, [o])';
-		$colors[7] = 'rgba(114, 9, 183, [o])';
-		$colors[8] = 'rgba(149, 77, 63, [o])';
-		$colors[9] = 'rgba(179, 181, 37, [o])';
-		$colors[10] = 'rgba(137, 153, 31, [o])';
-		$colors[11] = 'rgba(145, 61, 91, [o])';
-		$colors[12] = 'rgba(79, 68, 68, [o])';
-		$colors[13] = 'rgba(182, 137, 199, [o])';
-		$colors[14] = 'rgba(166, 88, 125, [o])';
-		$colors[15] = 'rgba(45, 37, 79, [o])';
-		$colors[16] = 'rgba(154, 50, 138, [o])';
-		$colors[17] = 'rgba(102, 51, 122, [o])';
-		$colors[18] = 'rgba(184, 46, 126, [o])';
-		$colors[19] = 'rgba(119, 50, 154, [o])';
-		$colors[20] = 'rgba(187, 70, 196, [o])';
-		$colors[21] = 'rgba(125, 8, 8, [o])';
-		$colors[22] = 'rgba(136, 67, 56, [o])';
-		$colors[23] = 'rgba(190, 165, 136, [o])';
-		$colors[24] = 'rgba(128, 118, 123, [o])';
-
-		return $colors[$pos];
-	}
+	//The colors of the tags by tag.color, [o] is the opacity of the card
+	private const TAG_COLORS = [
+		'rgba(217, 135, 135, [o])',
+		'rgba(135, 149, 101, [o])',
+		'rgba(190, 151, 131, [o])',
+		'rgba(188, 116, 45, [o])',
+		'rgba(153, 111, 31, [o])',
+		'rgba(159, 54, 0, [o])',
+		'rgba(153, 151, 31, [o])',
+		'rgba(114, 9, 183, [o])',
+		'rgba(149, 77, 63, [o])',
+		'rgba(179, 181, 37, [o])',
+		'rgba(137, 153, 31, [o])',
+		'rgba(145, 61, 91, [o])',
+		'rgba(79, 68, 68, [o])',
+		'rgba(182, 137, 199, [o])',
+		'rgba(166, 88, 125, [o])',
+		'rgba(45, 37, 79, [o])',
+		'rgba(154, 50, 138, [o])',
+		'rgba(102, 51, 122, [o])',
+		'rgba(184, 46, 126, [o])',
+		'rgba(119, 50, 154, [o])',
+		'rgba(187, 70, 196, [o])',
+		'rgba(125, 8, 8, [o])',
+		'rgba(136, 67, 56, [o])',
+		'rgba(190, 165, 136, [o])',
+		'rgba(128, 118, 123, [o])',
+	];
 
 	private function selectByTopics(): void
 	{
@@ -135,19 +125,7 @@ class SetsSelector
 				return $a['partition'] <=> $b['partition'];
 			return $a['id'] <=> $b['id'];
 		});
-		$this->sets = [];
-		foreach ($sets as $set)
-		{
-			$this->sets[] = [
-				'id' => $set['id'],
-				'name' => $set['name'],
-				'amount' => $set['usage_count'],
-				'color' => $set['color'],
-				'solved_percent' => Util::getPercentButAvoid100UntilComplete($set['solved_count'], $set['usage_count']),
-				'difficulty' => Rating::getReadableRankFromRating($set['rating_sum'] / $set['usage_count']),
-				'partition' => $set['partition'],
-			];
-		}
+		$this->sets = array_map(fn($set) => self::card($set, $set['color'], true), $sets);
 	}
 
 	private function selectByDifficulty(): void
@@ -178,25 +156,11 @@ class SetsSelector
 		// restrict to the rating range covered by the bands, so rows that would
 		// never match a band are not transferred; rows falling into a gap between
 		// two bands are dropped by the assignment loop below.
-		$hasOpenLower = false;
-		$hasOpenUpper = false;
-		$minRating = null;
-		$maxRating = null;
-		foreach ($bands as $band)
-		{
-			if ($band['min'] === null)
-				$hasOpenLower = true;
-			elseif ($minRating === null || $band['min'] < $minRating)
-				$minRating = $band['min'];
-			if ($band['max'] === null)
-				$hasOpenUpper = true;
-			elseif ($maxRating === null || $band['max'] > $maxRating)
-				$maxRating = $band['max'];
-		}
-		if ($hasOpenLower)
-			$minRating = null;
-		if ($hasOpenUpper)
-			$maxRating = null;
+		// a band open at one end leaves the range open at that end
+		$minimums = array_column($bands, 'min');
+		$maximums = array_column($bands, 'max');
+		$minRating = $minimums === [] || in_array(null, $minimums, true) ? null : min($minimums);
+		$maxRating = $maximums === [] || in_array(null, $maximums, true) ? null : max($maximums);
 		if ($minRating !== null)
 			$query->conditions[] = 'tsumego.rating >= ' . $minRating;
 		if ($maxRating !== null)
@@ -227,21 +191,7 @@ class SetsSelector
 				return $a['order'] <=> $b['order'];
 			return $a['partition'] <=> $b['partition'];
 		});
-		$this->sets = [];
-		foreach ($sets as $set)
-		{
-			$partition = $set['partition'];
-			$opacity = ($partition === -1) ? 1 : 1 - ($partition * 0.15);
-			$this->sets[] = [
-				'id' => $set['name'],
-				'name' => $set['name'],
-				'amount' => $set['usage_count'],
-				'partition' => $partition,
-				'color' => str_replace('[o]', (string) $opacity, $set['color']),
-				'solved_percent' => Util::getPercentButAvoid100UntilComplete($set['solved_count'], $set['usage_count']),
-				'difficulty' => Rating::getReadableRankFromRating($set['rating_sum'] / $set['usage_count']),
-			];
-		}
+		$this->sets = array_map(fn($set) => self::card($set, $set['color'], true), $sets);
 	}
 
 	//Rank bands to display, weakest first, as [weakest, strongest] pairs.
@@ -341,6 +291,22 @@ class SetsSelector
 		return $sets;
 	}
 
+	//The card of a part of a collection as the page shows it. The parts of a tag have no difficulty.
+	private static function card(array $set, ?string $color, bool $withDifficulty): array
+	{
+		$card = [
+			'id' => $set['id'],
+			'name' => $set['name'],
+			'amount' => $set['usage_count'],
+			'color' => $color,
+			'solved_percent' => Util::getPercentButAvoid100UntilComplete($set['solved_count'], $set['usage_count']),
+			'partition' => $set['partition'],
+		];
+		if ($withDifficulty)
+			$card['difficulty'] = Rating::getReadableRankFromRating($set['rating_sum'] / $set['usage_count']);
+		return $card;
+	}
+
 	/** @param array{name: string, color: string, order: mixed} $collection */
 	private static function partitionCard(int|string $id, array $collection, int $partition, int $total, int $count, float $ratingSum, int $solvedCount): array
 	{
@@ -363,7 +329,7 @@ class SetsSelector
 	{
 		if (!Auth::isLoggedIn())
 			return [];
-		$rows = Util::query("SELECT tsumego_id FROM tsumego_status WHERE user_id = " . Auth::getUserID() . " AND status IN ('S', 'W', 'C')");
+		$rows = Util::query("SELECT tsumego_id FROM tsumego_status WHERE user_id = ? AND status IN ('S', 'W', 'C')", [Auth::getUserID()]);
 		$solved = [];
 		foreach ($rows as $row)
 			$solved[(int) $row['tsumego_id']] = true;

@@ -27,9 +27,6 @@ let rankDragMoved = false;
 let tileTagsBool = [];
 let activeTagTiles = [];
 let allTagTiles = [];
-let activeTagIds = [];
-let allTagIds = [];
-let allTagNames = [];
 for (const set of setsIndexPage.topics)
 		{
 			allTopicIds.push(set.id);
@@ -72,11 +69,6 @@ for (const set of setsIndexPage.topics)
 					if(!tileTagsBool[index]){
 						handleTiles(name, "tags", true);
 						activeTagTiles.push(name);
-						if(query === "tags"){
-							for(let i=0;i<allTagNames.length;i++)
-								if(allTagNames[i] === name)
-									activeTagIds.push(allTagIds[i]);
-						}
 					}else{
 						handleTiles(name, "tags", false);
 						let newActiveTagTiles = [];
@@ -85,14 +77,6 @@ for (const set of setsIndexPage.topics)
 								newActiveTagTiles.push(activeTagTiles[i]);
 						}
 						activeTagTiles = newActiveTagTiles;
-						if(query === "tags"){
-							for(let i=0;i<allTagNames.length;i++){
-								if(allTagNames[i] === name){
-									unselectTag(allTagIds[i]);
-									break;
-								}
-							}
-						}
 					}
 					drawActiveCollections();
 					drawActiveTiles();
@@ -110,12 +94,6 @@ for (const set of setsIndexPage.topics)
 		allRanks.forEach(function(rankName, index){
 			$("#tile-difficulty" + index).click(function(e){ toggleRank(index, rankName, e); });
 		});
-
-		for (const tag of setsIndexPage.tags)
-		{
-			allTagIds.push(tag.id);
-			allTagNames.push(tag.name);
-		}
 
 		setsIndexPage.tagTiles.forEach(function(name, index){
 			allTagTiles.push(name);
@@ -198,37 +176,6 @@ function drawActiveCollections(){
 					tileTopicsBool[i] = true;
 			for(let i=0;i<activeTopicIds.length;i++)
 				$(".topic-box"+activeTopicIds[i]).fadeIn(250);
-		}
-	}
-	else if (setsIndexPage.query === 'tags')
-	{
-		if(activeTagIds.length<1){
-			for(let i=0;i<allTagIds.length;i++)
-				$(".tag-box"+allTagIds[i]).css("display", "grid");
-		}else{
-			for(let i=0;i<allTagIds.length;i++)
-				if(!activeTagIds.includes(allTagIds[i]))
-					$(".tag-box"+allTagIds[i]).css("display", "none");
-			let pos = [];
-			let posX = [];
-			for(let i=0;i<activeTagIds.length;i++){
-				for(let j=0;j<allTagIds.length;j++){
-					if(activeTagIds[i] === allTagIds[j] && !posX.includes(allTagIds[j])){
-						posX.push(allTagIds[j]);
-						pos.push(j);
-					}
-				}
-			}
-			let posXX = [];
-			for(let i=0;i<pos.length;i++)
-				posXX.push(allTagNames[pos[i]]);
-			for(let i=0;i<tileTagsBool.length;i++)
-				tileTagsBool[i] = false;
-			for(let i=0;i<allTagTiles.length;i++)
-				if(posXX.includes(allTagTiles[i]))
-					tileTagsBool[i] = true;
-			for(let i=0;i<activeTagIds.length;i++)
-				$(".tag-box"+activeTagIds[i]).fadeIn(250);
 		}
 	}
 }
@@ -451,12 +398,6 @@ function removeActiveTag(index){
 		if(allTagTiles[i] === activeTagTiles[index])
 			removeMap = i;
 	}
-	for(let i=0;i<allTagNames.length;i++){
-		if(allTagNames[i] === allTagTiles[removeMap]){
-			unselectTag(allTagIds[i]);
-			break;
-		}
-	}
 	for(let i=0;i<allTagTiles.length;i++){
 		if(allTagTiles[i] === activeTagTiles[index])
 			$("#tile-tags"+i).css("background", "#ffffff1a");
@@ -482,15 +423,6 @@ function unselectTopic(id){
 		}
 	}
 	activeTopicIds = newActiveIds;
-}
-function unselectTag(id){
-	let newActiveIds = [];
-	for(let i=0;i<activeTagIds.length;i++){
-		if(activeTagIds[i] != id){
-			newActiveIds.push(activeTagIds[i]);
-		}
-	}
-	activeTagIds = newActiveIds;
 }
 
 $("#topics-button").click(function(e){
@@ -777,7 +709,6 @@ $("#tile-tags-select-all").click(function(e){
 	if(selectAllTags){
 		$("#tile-tags-select-all").html("Select all");
 		activeTagTiles = [];
-		activeTagIds = allTagIds;
 		for(let i=0;i<allTagTiles.length;i++)
 			$("#tile-tags"+i).css("background", "#ffffff1a");
 		for(let i=0;i<tileTagsBool.length;i++)
@@ -785,7 +716,6 @@ $("#tile-tags-select-all").click(function(e){
 	}else{
 		$("#tile-tags-select-all").html("Unselect all");
 		activeTagTiles = allTagTiles;
-		activeTagIds = allTagIds;
 		for(let i=0;i<allTagTiles.length;i++)
 			$("#tile-tags"+i).css("background", "var(--color-tile-brown)");
 		for(let i=0;i<tileTagsBool.length;i++)
