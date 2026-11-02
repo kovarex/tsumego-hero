@@ -96,7 +96,8 @@ $this->set('title_for_layout', $errorTitle);
 						// Build trace with #-1 throw location
 						$traceLines = [];
 						$traceLines[] = '#-1 ' . h($relativePath($error->getFile())) . '(' . h($error->getLine()) . ')';
-						foreach ($error->getTrace() as $i => $frame) {
+						foreach ($error->getTrace() as $i => $frame)
+						{
 							$line = '#' . $i . ' ';
 							$line .= (isset($frame['file']) ? $relativePath($frame['file']) : '[internal function]') . '(' . ($frame['line'] ?? '') . '): ';
 							if (!empty($frame['class']))

@@ -21,6 +21,7 @@ config/define.local.php
 .phpunit.result.cache
 /phpunit.xml
 .php-cs-fixer.cache
+.php-cs-fixer.templates.cache
 /.php-cs-fixer.php
 
 # User-uploaded set cover images (keep the cache-control .htaccess)

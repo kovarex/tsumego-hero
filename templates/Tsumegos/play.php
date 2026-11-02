@@ -8,7 +8,6 @@ use App\Utility\Constants;
 use App\Utility\HeroPowers;
 use App\Utility\Play;
 use App\Utility\Rating;
-use App\Utility\TimeMode;
 use App\Utility\Trash;
 use App\Utility\TsumegoButton;
 use App\Utility\TsumegoButtons;
@@ -75,9 +74,9 @@ use App\Utility\ViteManifest;
 			<?php
 			if (Auth::isLoggedIn())
 			{
-				echo '<span id="health-counter" class="health-counter">' . (int)Auth::getRemainingHealth() . ' / ' . (int)$maxHealth . '</span>';
+				echo '<span id="health-counter" class="health-counter">' . (int) Auth::getRemainingHealth() . ' / ' . (int) $maxHealth . '</span>';
 				for ($i = 0; $i < $maxHealth; $i++)
-					echo '<img title="Heart" id="heart'.$i.'">';
+					echo '<img title="Heart" id="heart' . $i . '">';
 			}
 			?>
 		</div>
@@ -98,25 +97,24 @@ use App\Utility\ViteManifest;
 		<?php
 		if (Auth::isInLevelMode())
 			echo '<div id="titleDescription" class="titleDescription1">';
-		elseif (Auth::isInRatingMode()|| Auth::isInTimeMode())
+		elseif (Auth::isInRatingMode() || Auth::isInTimeMode())
 			echo '<div id="titleDescription" class="titleDescription2">';
 		else
 			echo '<div id="titleDescription" class="titleDescription1">';
-		echo '<a id="descriptionText">'.h($displayDescription).'</a> ';
-		if (isset($tsumego->hint) && $tsumego->hint!='')
-			echo '<span class="hint italic">('.h($tsumego->hint).')</span>';
-		if($tv!=null)
-		{
+		echo '<a id="descriptionText">' . h($displayDescription) . '</a> ';
+		if (isset($tsumego->hint) && $tsumego->hint != '')
+			echo '<span class="hint italic">(' . h($tsumego->hint) . ')</span>';
+		if($tv != null)
 			if($tv->tsumego_variant_type_id == TsumegoVariantTable::TYPE_SCORE_ESTIMATING)
 			{
-				$capturesLabels = 'Black captures: '.$tv->answer2.' | White captures: '.$tv->answer3;
+				$capturesLabels = 'Black captures: ' . $tv->answer2 . ' | White captures: ' . $tv->answer3;
 				if ($swapColors)
 					$capturesLabels = Play::swapColorWords($capturesLabels);
 				echo '<br>';
-				echo '<span id="scoreEstimatingLabels">'.h($capturesLabels).' | Komi: '.h($tv->answer1).'</span>';
+				echo '<span id="scoreEstimatingLabels">' . h($capturesLabels) . ' | Komi: ' . h($tv->answer1) . '</span>';
 			}
-		}
-		if(Auth::isAdmin()) { ?>
+		if(Auth::isAdmin())
+		{ ?>
 		<a class="grey-link" id="modify-description" href="#" onclick="adminCommentOpened = !adminCommentOpened; $('.modify-description-panel').toggle(0);">(Edit)</a>
 		<div class="modify-description-panel" style="display: none;">
 			<form id="tsumego-edit" method="post" action="/tsumegos/edit/<?php echo $tsumego->id; ?>">
@@ -151,7 +149,8 @@ use App\Utility\ViteManifest;
 						<td><label for="author">Author:</label></td>
 						<td><input type="text" name="author" id="author" value="<?php echo h($tsumego->author); ?>"></td>
 					</tr>
-					<?php if (empty($tsumego->deleted)) { ?>
+					<?php if (empty($tsumego->deleted))
+					{ ?>
 					<tr>
 						<td><label for="delete">Delete:</label></td>
 						<td>
@@ -189,13 +188,16 @@ use App\Utility\ViteManifest;
 	<!-- BOARD -->
 	<div id="target"></div>
 	<div id="targetLockOverlay"></div>
-	<?php if($semeai !== null || ($tv!=null && $tv->tsumego_variant_type_id == TsumegoVariantTable::TYPE_MULTIPLE_CHOICE)){ ?>
+	<?php if($semeai !== null || ($tv != null && $tv->tsumego_variant_type_id == TsumegoVariantTable::TYPE_MULTIPLE_CHOICE))
+	{ ?>
 	<div align="center">
 	<br>
 		<a href="<?php echo $resetLink; ?>" title="reset problem" id="besogo-next-button">Reset</a>
 		<br><br>
 	</div>
-	<?php }else if($tv!=null && $tv->tsumego_variant_type_id == TsumegoVariantTable::TYPE_SCORE_ESTIMATING){ ?>
+	<?php }
+		elseif($tv != null && $tv->tsumego_variant_type_id == TsumegoVariantTable::TYPE_SCORE_ESTIMATING)
+		{ ?>
 	<div align="center">
 		<a href="<?php echo $resetLink; ?>" title="reset problem" id="besogo-next-button">Reset</a>
 		<input value="0" placeholder="Score" type="text" id="ScoreEstimatingSE">
@@ -207,18 +209,19 @@ use App\Utility\ViteManifest;
 		<div id="errorMessage"></div>
 	</div>
 	<?php
-	if (Auth::isInLevelMode() || Auth::isInTimeMode()) {
+	if (Auth::isInLevelMode() || Auth::isInTimeMode())
 		$naviAdjust1 = 38;
-	} elseif (Auth::isInRatingMode()) {
+	elseif (Auth::isInRatingMode())
 		$naviAdjust1 = 25;
-	}
 	?>
 
-<?php if (isset($tsumegoButtons)) { ?>
+<?php if (isset($tsumegoButtons))
+{ ?>
 	<div class="problem-nav">
 		<div class="problem-nav__inner">
 			<?php
-			foreach ($tsumegoButtons as $index => $tsumegoButton) {
+			foreach ($tsumegoButtons as $index => $tsumegoButton)
+			{
 				$tsumegoButton->render();
 				if($index == 0 || $index == count($tsumegoButtons) - 2)
 					echo '<span class="gap10"></span>';
@@ -235,18 +238,15 @@ use App\Utility\ViteManifest;
 			$proposalSentColor = '';
 			if(Auth::isAdmin())
 				$makeProposal = 'Open';
+			elseif (!$hasSgfProposal)
+			{
+				if($isAllowedToContribute)
+					$makeProposal = 'Make Proposal';
+			}
 			else
 			{
-				if (!$hasSgfProposal)
-				{
-					if($isAllowedToContribute)
-						$makeProposal = 'Make Proposal';
-				}
-				else
-				{
-					$makeProposal = 'Proposal sent';
-					$proposalSentColor = 'color:var(--text-softer-color);';
-				}
+				$makeProposal = 'Proposal sent';
+				$proposalSentColor = 'color:var(--text-softer-color);';
 			}
 		$tagEditorProps = json_encode([
 			'userId' => Auth::getUserID() ? (int) Auth::getUserID() : null,
@@ -275,7 +275,7 @@ use App\Utility\ViteManifest;
 		</div>
 		<br>
 		<?php
-			echo '<a id="openSgfLink" href="/editor/?setConnectionID='.$setConnection->id.'&sgfID='.$sgf->id.(Auth::isAdmin() ? '' : '&proposal=1').'" class="selectable-text mr-5" style="'.$proposalSentColor.'">'.$makeProposal.'</a>';
+			echo '<a id="openSgfLink" href="/editor/?setConnectionID=' . $setConnection->id . '&sgfID=' . $sgf->id . (Auth::isAdmin() ? '' : '&proposal=1') . '" class="selectable-text mr-5" style="' . $proposalSentColor . '">' . $makeProposal . '</a>';
 			echo '<a id="showx3" class="selectable-text mr-5">Download SGF</a>';
 			echo '<a id="findSimilarProblems" class="selectable-text mr-5">Find Similar Problems</a>';
 			echo '<a id="showFilters" class="selectable-text">Filters<img id="greyArrowFilter" src="/img/greyArrow1.png"></a>';
@@ -290,8 +290,7 @@ use App\Utility\ViteManifest;
 		if (count($setConnections) > 1 && Auth::getMode() != Constants::$TIME_MODE)
 		{
 			echo '<div class="duplicateTable">Is duplicate group:<br>';
-			echo implode(', ', array_map(function ($otherSetConnection)
-			{
+			echo implode(', ', array_map(function ($otherSetConnection) {
 				return '<a href="/' . $otherSetConnection['id'] . '">'
 				. $otherSetConnection['title'] . '</a>';
 			}, $setConnections));
@@ -308,7 +307,7 @@ use App\Utility\ViteManifest;
 				echo '<a id="showx99" class="selectable-text mr-5">Admin-Request Solution</a>';
 				echo '<a id="showx4" class="selectable-text mr-5">Admin-Download</a>';
 				echo '<a id="show4" class="selectable-text mr-5">Admin-Upload<img id="greyArrow4" src="/img/greyArrow1.png"></a>';
-				echo '<a id="showx6" class="selectable-text mr-5 '.$adHighlight.'">History</a>';
+				echo '<a id="showx6" class="selectable-text mr-5 ' . $adHighlight . '">History</a>';
 				echo '<a id="showx8" class="selectable-text mr-5">Rating</a>';
 				echo '<a id="show5" class="selectable-text">Settings<img id="greyArrow5" src="/img/greyArrow1.png"></a>';
 				$checked = fn(bool $isChecked): string => $isChecked ? 'checked="checked"' : '';
@@ -348,8 +347,7 @@ use App\Utility\ViteManifest;
 						</form>
 					</div>
 					<br><br>';
-			if($isSandbox && $tv!=null)
-			{
+			if($isSandbox && $tv != null)
 				if($tv->tsumego_variant_type_id == TsumegoVariantTable::TYPE_MULTIPLE_CHOICE)
 				{
 						echo '<a id="showMC" class="selectable-text selectable-text--inline">Edit multiple choice
@@ -368,7 +366,9 @@ use App\Utility\ViteManifest;
 						echo '</form>';
 						echo '<br><br>';
 						echo '</div>';
-	}else{
+	}
+	else
+	{
 						echo '<a id="showSE" class="selectable-text selectable-text--inline">Edit correct answer
 						<img id="greyArrowSE" src="/img/greyArrow1.png"></a><br><br>';
 						echo '<div id="showxSE">';
@@ -381,19 +381,19 @@ use App\Utility\ViteManifest;
 						echo '<table><tr><td>';
 						echo '<label for="scoreEstEditField">Correct answer: </label>';
 						echo '</td><td>';
-						echo '<input name="winner" value="'.h($tv->winner).'" placeholder="Score" id="scoreEstEditField" type="text">';
+						echo '<input name="winner" value="' . h($tv->winner) . '" placeholder="Score" id="scoreEstEditField" type="text">';
 						echo '</td></tr><tr><td>';
 						echo '<label for="scoreEstEditField2">Komi: </label>';
 						echo '</td><td>';
-						echo '<input name="answer1" value="'.h($tv->answer1).'" placeholder="Komi" id="scoreEstEditField2" type="text">';
+						echo '<input name="answer1" value="' . h($tv->answer1) . '" placeholder="Komi" id="scoreEstEditField2" type="text">';
 						echo '</td></tr><tr><td>';
 						echo '<label for="scoreEstEditField3">Black captures: </label>';
 						echo '</td><td>';
-						echo '<input name="answer2" value="'.h($tv->answer2).'" placeholder="Black captures" id="scoreEstEditField3" type="text">';
+						echo '<input name="answer2" value="' . h($tv->answer2) . '" placeholder="Black captures" id="scoreEstEditField3" type="text">';
 						echo '</td></tr><tr><td>';
 						echo '<label for="scoreEstEditField4">White captures: </label>';
 						echo '</td><td>';
-						echo '<input name="answer3" value="'.h($tv->answer3).'" placeholder="White captures" id="scoreEstEditField4" type="text">';
+						echo '<input name="answer3" value="' . h($tv->answer3) . '" placeholder="White captures" id="scoreEstEditField4" type="text">';
 						echo '</td></tr></table>';
 						echo '<br>';
 						echo '<div class="submit"><input type="submit" value="Submit" id="scoreEstEditSubmit"></div>';
@@ -401,23 +401,24 @@ use App\Utility\ViteManifest;
 						echo '<br>';
 						echo '</div>';
 	}
-	}
-			}else echo '<br>';
+			}
+			else echo '<br>';
 	} ?>
 
 		<table class="sandboxTable" width="62%">
 		<tr>
 				<td><?php echo $this->element('TsumegoComments/section', [
-						'tsumegoId' => $tsumego->id,
-						'solved' => $solved,
-					]); ?></td>
+					'tsumegoId' => $tsumego->id,
+					'solved' => $solved,
+				]); ?></td>
 					</tr>
 					</table>
 			</div>
 		<?php
 	}
 		?>
-	<?php if($semeai !== null || $tv!=null&&$tv->tsumego_variant_type_id == TsumegoVariantTable::TYPE_MULTIPLE_CHOICE){ ?>
+	<?php if($semeai !== null || $tv != null && $tv->tsumego_variant_type_id == TsumegoVariantTable::TYPE_MULTIPLE_CHOICE)
+	{ ?>
 		<label>
 		<input type="checkbox" class="toast__toggle" id="alertCheckbox" autocomplete="off" />
 		<div class="toast" id="multipleChoiceAlerts">
@@ -431,7 +432,9 @@ use App\Utility\ViteManifest;
 		</span>
 					</div>
 		</label>
-	<?php }else{ ?>
+	<?php }
+		else
+		{ ?>
 		<label>
 			<input type="checkbox" class="toast__toggle" id="potionAlertCheckbox" autocomplete="off" />
 			<div class="toast" id="potionAlerts">

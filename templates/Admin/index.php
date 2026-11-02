@@ -14,8 +14,7 @@ use App\Utility\Auth;
  */
 
 //A link of the admin page, with a red count when something waits there
-$renderLink = function (string $url, string $label, int $count = 0, string $countMeaning = ''): void
-{
+$renderLink = function (string $url, string $label, int $count = 0, string $countMeaning = ''): void {
 	echo '<li><a class="admin-area__link" href="' . $url . '">' . $label;
 	if ($count > 0)
 		echo '<span class="admin-area__badge" title="' . h($countMeaning) . '">' . $count . '</span>';

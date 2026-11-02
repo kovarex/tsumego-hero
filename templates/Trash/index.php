@@ -10,8 +10,7 @@ use App\Utility\Util;
  * @var array $problems
  */
 
-$renderDates = function (string $deleted): string
-{
+$renderDates = function (string $deleted): string {
 	$purgeDate = Trash::purgeDate($deleted);
 	return '<td><time datetime="' . Util::toIso8601($deleted) . '" data-format="datetime">' . h($deleted) . '</time></td>'
 		. '<td><time datetime="' . Util::toIso8601($purgeDate) . '" data-format="date">' . h($purgeDate) . '</time></td>';
