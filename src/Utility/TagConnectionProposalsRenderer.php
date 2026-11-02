@@ -78,8 +78,8 @@ OFFSET " . $this->offset, [Auth::getUserID()]);
 		echo '</td>';
 		echo '<td>';
 		ProposalDecisionForm::render(
-			'/users/acceptTagConnectionProposal/' . $item['tag_connection_id'],
-			'/users/rejectTagConnectionProposal/' . $item['tag_connection_id'],
+			'/proposals/acceptTag/' . $item['tag_connection_id'],
+			'/proposals/rejectTag/' . $item['tag_connection_id'],
 			'tag-connection-accept-' . $item['tag_connection_id'],
 			'tag-connection-reject-' . $item['tag_connection_id'],
 			'tag-connection-comment-' . $item['tag_connection_id']);

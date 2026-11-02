@@ -37,11 +37,11 @@ class AdminGuardTest extends IntegrationTestCase
 		new ContextPreparator(['user' => ['name' => 'regular', 'admin' => false]]);
 
 		foreach ([
-			'/users/acceptSGFProposal/1',
-			'/users/rejectSGFProposal/1',
-			'/users/acceptTagConnectionProposal/1',
-			'/users/rejectTagConnectionProposal/1',
-			'/users/reopenSGFProposal/1',
+			'/proposals/acceptSgf/1',
+			'/proposals/rejectSgf/1',
+			'/proposals/acceptTag/1',
+			'/proposals/rejectTag/1',
+			'/proposals/reopenSgf/1',
 		] as $url)
 		{
 			$this->post($url);

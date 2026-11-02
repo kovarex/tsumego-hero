@@ -76,6 +76,16 @@ class SetConnectionTable extends AppTable
 		return '(' . $playable . ')';
 	}
 
+	//The set connection a problem is shown by, as findDisplaySetConnection() picks it, as a
+	//subquery to join on: JOIN set_connection sc ON sc.id = <this>.
+	public static function displaySetConnectionIdSql(string $tsumegoIdColumn): string
+	{
+		return '(SELECT display_sc.id FROM set_connection display_sc'
+			. ' JOIN `set` display_set ON display_set.id = display_sc.set_id'
+			. ' WHERE display_sc.tsumego_id = ' . $tsumegoIdColumn
+			. ' ORDER BY ' . self::displayOrderSql('display_set', 'display_sc') . ' LIMIT 1)';
+	}
+
 	//Find a representative set connection for a tsumego, for display only.
 	public static function findDisplaySetConnection(int $tsumegoID): ?SetConnection
 	{

@@ -11,6 +11,13 @@ use Throwable;
 //A tag problems can carry, like snapback or ko. A player's new tag is a proposal until an admin approves it.
 class TagTable extends AppTable
 {
+	//The approved tags by their names, as rows of the tag table.
+	/** @return list<array<string, mixed>> */
+	public static function approved(): array
+	{
+		return Util::query('SELECT * FROM tag WHERE approved = 1 ORDER BY tag.name');
+	}
+
 	//Return all tags with their connection status for a given tsumego.
 	public static function getForTsumego(int $tsumegoId): array
 	{
@@ -62,12 +69,7 @@ SELECT
 	`set`.title AS set_title
 FROM tag_connection
 JOIN tsumego ON tsumego.id = tag_connection.tsumego_id AND tsumego.deleted IS NULL
-LEFT JOIN set_connection ON set_connection.id = (
-	SELECT sc2.id FROM set_connection sc2
-	JOIN `set` s2 ON s2.id = sc2.set_id
-	WHERE sc2.tsumego_id = tag_connection.tsumego_id
-	ORDER BY " . SetConnectionTable::displayOrderSql('s2', 'sc2') . "
-	LIMIT 1)
+LEFT JOIN set_connection ON set_connection.id = " . SetConnectionTable::displaySetConnectionIdSql('tag_connection.tsumego_id') . "
 LEFT JOIN `set` ON `set`.id = set_connection.set_id
 WHERE tag_connection.tag_id = ?
 ORDER BY `set`.id IS NULL, " . SetConnectionTable::displayOrderForSetSql('`set`') . ", set_connection.num, tag_connection.tsumego_id", [$tagId]);

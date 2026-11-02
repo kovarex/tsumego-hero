@@ -333,7 +333,7 @@ class PolicyTest extends AppTestCase
 	public function testAdminPolicyProposalActionsAllowOnlyAdmins()
 	{
 		$policy = new AdminPolicy();
-		foreach (['canAcceptSGFProposal', 'canRejectSGFProposal', 'canReopenSGFProposal', 'canAcceptTagConnectionProposal', 'canRejectTagConnectionProposal'] as $method)
+		foreach (['canAcceptSgf', 'canRejectSgf', 'canReopenSgf', 'canAcceptTag', 'canRejectTag'] as $method)
 		{
 			$this->assertTrue($policy->{$method}($this->identity(true)), $method . ' allows admin');
 			$this->assertFalse($policy->{$method}($this->identity(false)), $method . ' blocks regular user');
