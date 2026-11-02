@@ -2,6 +2,7 @@
 
 
 use App\Model\Table\AchievementConditionTable;
+use App\Utility\AchievementId;
 use App\Model\Table\UserTable;
 use App\Utility\Auth;
 use App\Utility\Constants;
@@ -124,6 +125,22 @@ class CronControllerTest extends IntegrationTestCase
 
 		$this->assertSame(1, $this->fetchTable('DayRecord')->find()->count());
 		$this->assertSame(1, $this->fetchTable('AchievementCondition')->find()->where(['achievement_condition_category_id' => AchievementConditionTable::CATEGORY_USER_OF_THE_DAY])->count());
+	}
+
+	//The daily cron hides each gem in an easy, regular or difficult problem, stores the choice in
+	//the day record and tells it in the description of the gem's achievement
+	public function testDailyCronDescribesWhereEachGemIsHidden()
+	{
+		new ContextPreparator(['user' => ['daily_xp' => 5, 'daily_solved' => 1]]);
+
+		$this->get('/cron/daily/' . CRON_SECRET);
+
+		$gems = explode('-', $this->fetchTable('DayRecord')->find()->firstOrFail()->gems);
+		$difficulties = ['an easy', 'a regular', 'a difficult'];
+		foreach ([[AchievementId::EMERALD, 'ddk'], [AchievementId::SAPPHIRE, 'sdk'], [AchievementId::RUBY, 'dan']] as $index => [$achievementId, $rankRange])
+			$this->assertSame(
+				'Has a chance to trigger once a day on ' . $difficulties[(int) $gems[$index]] . ' ' . $rankRange . ' problem.',
+				$this->fetchTable('Achievement')->get($achievementId->value)->description);
 	}
 
 	public function testPublish()

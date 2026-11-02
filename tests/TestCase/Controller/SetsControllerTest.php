@@ -42,7 +42,10 @@ class SetsControllerTest extends IntegrationTestCase
 	{
 		$context = new ContextPreparator(['user' => ['name' => 'setViewer']]);
 		foreach ([50, 52, 53, 54] as $setId)
+		{
 			$this->createFullySolvedSet($setId, $context->user['id']);
+			$this->fetchTable('Set')->updateAll(['completion_achievement_id' => AchievementId::LIFE_DEATH_ELEMENTARY->value], ['id' => $setId]);
+		}
 		$_COOKIE['disable-achievements'] = false;
 
 		$this->get('sets/50');
@@ -50,6 +53,25 @@ class SetsControllerTest extends IntegrationTestCase
 		$popups = array_column($this->viewVariable('achievementUpdates'), 'id');
 		$this->assertContains(AchievementId::LIFE_DEATH_ELEMENTARY->value, $popups, 'The set page hands the achievements it unlocked to the layout');
 		$this->assertTextContains('"id":' . AchievementId::LIFE_DEATH_ELEMENTARY->value, $this->view, 'The layout renders the achievements the set page unlocked');
+	}
+
+	//No set is singled out by its id: the sets the page once treated differently (the old beta2
+	//sets, the themed sets without a cover, set 60 with a fixed height) look like any other set.
+	public function testSetPageTreatsEverySetAlike(): void
+	{
+		$context = new ContextPreparator(['user' => ['name' => 'setViewer']]);
+		foreach ([58, 60, 11969] as $setId)
+		{
+			$this->createFullySolvedSet($setId, $context->user['id']);
+			$this->fetchTable('Set')->updateAll(['image' => 'cover' . $setId . '.png'], ['id' => $setId]);
+
+			$this->get('sets/' . $setId);
+
+			$this->assertResponseOk();
+			$this->assertResponseContains('<div class="problem-nav__number">1</div>', 'Set ' . $setId . ' shows its problems');
+			$this->assertResponseContains('src="/img/cover' . $setId . '.png"', 'Set ' . $setId . ' shows its cover');
+			$this->assertResponseContains('<div id="content">', 'Set ' . $setId . ' has no fixed page height');
+		}
 	}
 
 	//Create a public set with a single problem that the given user solved.
@@ -60,6 +82,23 @@ class SetsControllerTest extends IntegrationTestCase
 		$this->fetchTable('SetConnection')->saveOrFail($this->fetchTable('SetConnection')->newEntity(['set_id' => $setId, 'tsumego_id' => $tsumegoId, 'num' => 1]));
 		$this->fetchTable('Sgf')->saveOrFail($this->fetchTable('Sgf')->newEntity(['tsumego_id' => $tsumegoId, 'sgf' => '(;GM[1]FF[4]SZ[19])', 'user_id' => $userId, 'sgf_status_id' => SgfTable::STATUS_ACCEPTED]));
 		$this->fetchTable('TsumegoStatus')->saveOrFail($this->fetchTable('TsumegoStatus')->newEntity(['tsumego_id' => $tsumegoId, 'status' => 'S', 'user_id' => $userId]));
+	}
+
+	//Every approved tag is a tag tile on the sets index, whatever its name; an unapproved one is not
+	public function testIndexOffersEveryApprovedTagAsATile(): void
+	{
+		new ContextPreparator(['tsumego' => [
+			'sets' => [['name' => 'tsumego set 1', 'num' => 1]],
+			'tags' => [['name' => 'Tsumego'], ['name' => 'snapback']]]]);
+		$this->fetchTable('Tag')->saveOrFail($this->fetchTable('Tag')->newEntity(['name' => 'unapproved tag', 'description' => '', 'approved' => 0]));
+
+		$this->get('sets');
+
+		$tagTiles = $this->viewVariable('tagTiles');
+		$this->assertContains('Tsumego', $tagTiles);
+		$this->assertContains('snapback', $tagTiles);
+		$this->assertNotContains('unapproved tag', $tagTiles);
+		$this->assertResponseContains('>Tsumego</div>');
 	}
 
 	public function testIndexRankBased(): void

@@ -4,10 +4,9 @@ use App\Model\Table\SetTable;
 use App\Model\Table\UserTable;
 use App\Utility\Auth;
 use App\Utility\ChartRenderer;
-use App\Utility\Constants;
 use App\Utility\MistakeTraining;
 use App\Utility\TsumegoButtons;
-use App\Utility\Util;
+use App\Utility\TsumegoUtil;
 
 /**
  * @var \App\View\AppView $this
@@ -21,7 +20,7 @@ use App\Utility\Util;
  */
 
 $loggedIn = Auth::isLoggedIn();
-$levelModeUrl = '/tsumegos/play/' . (int) (Util::cookie('lastVisit') ?? Constants::$DEFAULT_TSUMEGO_ID);
+$levelModeUrl = TsumegoUtil::playUrl();
 $modes = [
 	['name' => 'level', 'url' => $levelModeUrl, 'label' => 'Level Mode', 'enabled' => true],
 	['name' => 'rating', 'url' => '/ratingMode', 'label' => 'Rating Mode', 'enabled' => $loggedIn],

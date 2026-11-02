@@ -17,6 +17,7 @@ use DateTimeImmutable;
  * @property DateTimeImmutable|null $created
  * @property bool $included_in_time_mode
  * @property int|null $board_theme_index
+ * @property int|null $completion_achievement_id
  * @property DateTimeImmutable|null $deleted
  */
 class Set extends AppEntity {}

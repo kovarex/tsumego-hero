@@ -252,6 +252,7 @@ class ContextPreparator
 		$tsumego['maximum_rating'] = Util::extract('maximum_rating', $tsumegoInput) ?: null;
 		$tsumego['alternative_response'] = Util::extract('alternative_response', $tsumegoInput) ?? 1;
 		$tsumego['pass'] = Util::extract('pass', $tsumegoInput) ?? 0;
+		$tsumego['played_as_black'] = Util::extract('played_as_black', $tsumegoInput) ?? 0;
 		$semeai = Util::extract('semeai', $tsumegoInput);
 		$tsumego['deleted'] = Util::extract('deleted', $tsumegoInput);
 		$tsumego['author'] = Util::extract('author', $tsumegoInput) ?: '';

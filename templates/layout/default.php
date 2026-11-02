@@ -1,6 +1,5 @@
 <?php
 
-use App\Model\Entity\Set;
 use App\Model\Table\SetTable;
 use App\Model\Table\ChallengeTable;
 use App\Model\Table\ClassroomMemberTable;
@@ -9,9 +8,9 @@ use App\Model\Table\UserTable;
 use App\Utility\AccountWidget;
 use App\Utility\AchievementChecker;
 use App\Utility\Auth;
-use App\Utility\Constants;
 use App\Utility\CookieFlash;
 use App\Utility\TimeMode;
+use App\Utility\TsumegoUtil;
 use App\Utility\Util;
 use App\Utility\ViteManifest;
 
@@ -96,7 +95,7 @@ echo ViteManifest::legacyScript('legacy');
 $_page = $_page ?? '';
 //Marks the menu item of the page being shown
 $active = fn(string ...$pages): string => in_array($_page, $pages, true) ? 'nav__link--active' : '';
-$lastVisitedTsumegoID = (int) (Util::cookie('lastVisit') ?? Constants::$DEFAULT_TSUMEGO_ID);
+$playUrl = TsumegoUtil::playUrl();
 if (Auth::isLoggedIn())
 {
 	$unreadMessageCount = MessageTable::unreadCount(Auth::getUserID());
@@ -183,9 +182,9 @@ $challengesBadge = $challengesWaiting > 0
 							</ul>
 							<?php endif; ?>
 						</li>
-						<li><a class="homeMenuLink nav__play-link" href="/tsumegos/play/<?php echo $lastVisitedTsumegoID; ?>">Play<?php echo $challengesBadge; ?></a>
+						<li><a class="homeMenuLink nav__play-link" href="<?php echo $playUrl; ?>">Play<?php echo $challengesBadge; ?></a>
 							<ul class="newMenuLi3">
-								<li><a class="<?php echo $active('level mode'); ?>" href="/tsumegos/play/<?php echo $lastVisitedTsumegoID; ?>?mode=1">Level</a></li>
+								<li><a class="<?php echo $active('level mode'); ?>" href="<?php echo $playUrl; ?>?mode=1">Level</a></li>
 								<?php if (Auth::isLoggedIn()): ?>
 								<li><a class="<?php echo $active('rating mode'); ?>" href="/ratingMode">Rating</a></li>
 								<li><a class="<?php echo $active('time mode'); ?>" href="/timeMode/overview">Time</a></li>
@@ -241,7 +240,7 @@ $challengesBadge = $challengesWaiting > 0
 	</div>
 	<?php AccountWidget::render($timeMode, $unreadMessageCount); ?>
 	<div align="left" class="whitebox2">
-		<div id="content"<?php if (isset($set) && $set instanceof Set && $set->id == 60) echo ' style="height:1340px;"'; ?>>
+		<div id="content">
 			<?php
 			echo CookieFlash::render();
 			echo $this->fetch('content');
