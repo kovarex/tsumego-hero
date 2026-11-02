@@ -24,6 +24,7 @@ use RuntimeException;
 //  'sets-index'   → virtual:legacy-sets-index           (the code of the collections page)
 //  'play'         → virtual:legacy-play                 (the code of the play page)
 //  'schedule'     → virtual:legacy-schedule             (the code of the schedule page)
+//  'time-mode'    → virtual:legacy-time-mode            (the code of the time mode overview and results)
 class ViteManifest
 {
 	//Cached manifest contents after first load
