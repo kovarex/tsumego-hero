@@ -20,6 +20,7 @@ use App\Model\Table\TsumegoTable;
 use App\Model\Table\AdminActivityTypeTable;
 use App\Model\Table\RejectTable;
 use App\Model\Table\TimeModeCategoryTable;
+use App\Model\Table\TimeModeRankTable;
 use App\Model\Table\UserTable;
 use App\Utility\AdminActivityLogger;
 use App\Utility\Auth;
@@ -28,6 +29,7 @@ use App\Utility\Constants;
 use App\Utility\CookieFlash;
 use App\Utility\GoogleTokenVerifier;
 use App\Utility\GoogleTokenVerifierInterface;
+use App\Utility\Highscore;
 use App\Utility\JwtAuth;
 use App\Utility\MistakeTraining;
 use App\Utility\ProposalFeedback;
@@ -542,15 +544,8 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 	{
 		$this->set('_page', 'levelHighscore');
 		$this->set('_title', 'Tsumego Hero - Highscore');
-
-		$this->set('users', $this->queryHighscoreWithSelfView(
-			"SELECT id, display_name, external_id, picture, avatar_setting_id, uploaded_avatar_hash, email, rating, premium_id, level, xp, solved,
-				ROW_NUMBER() OVER (ORDER BY level DESC, xp DESC) as position
-			FROM user
-			WHERE deleted IS NULL",
-			topRows: 1000
-		));
-		$this->set('totalUsers', $this->countActiveUsers());
+		$this->set('users', Highscore::level());
+		$this->set('totalUsers', Highscore::activePlayerCount());
 	}
 
 	#[HttpGet]
@@ -558,17 +553,10 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 	{
 		$this->set('_page', 'ratingHighscore');
 		$this->set('_title', 'Tsumego Hero - Rating');
-
 		if (Auth::isLoggedIn())
 			Auth::saveUserField('highscore_page_id', Constants::$HIGHSCORE_RATING);
-
-		$this->set('users', $this->queryHighscoreWithSelfView(
-			"SELECT id, display_name, external_id, picture, avatar_setting_id, uploaded_avatar_hash, email, rating, premium_id,
-				ROW_NUMBER() OVER (ORDER BY rating DESC) as position
-			FROM user
-			WHERE deleted IS NULL"
-		));
-		$this->set('totalUsers', $this->countActiveUsers());
+		$this->set('users', Highscore::rating());
+		$this->set('totalUsers', Highscore::activePlayerCount());
 	}
 
 	#[HttpGet]
@@ -576,27 +564,8 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 	{
 		$this->set('_page', 'tagHighscore');
 		$this->set('_title', 'Tsumego Hero - Added Tags');
-
-		$userId = Auth::isLoggedIn() ? Auth::getUserID() : -1;
-
-		$this->set('tagContributors', $this->queryHighscoreWithSelfView("
-			SELECT
-				user.id as id,
-				user.display_name as display_name,
-				user.external_id as external_id,
-				user.picture as picture,
-				user.avatar_setting_id as avatar_setting_id,
-				user.uploaded_avatar_hash as uploaded_avatar_hash,
-				user.email as email,
-				user.rating as rating,
-				user.premium_id AS premium_id,
-				COUNT(tag_connection.id) AS tag_count,
-				ROW_NUMBER() OVER (ORDER BY COUNT(tag_connection.id) DESC) as position
-			FROM user
-			LEFT JOIN tag_connection ON tag_connection.user_id = user.id AND tag_connection.approved = true
-			WHERE (tag_connection.id IS NOT NULL OR user.id = ?) AND user.deleted IS NULL
-			GROUP BY user.id", 'id', [$userId]));
-		$this->set('totalUsers', $this->countActiveUsers());
+		$this->set('tagContributors', Highscore::tags());
+		$this->set('totalUsers', Highscore::activePlayerCount());
 	}
 
 	#[HttpGet]
@@ -604,175 +573,43 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 	{
 		$this->set('_page', 'achievementHighscore');
 		$this->set('_title', 'Tsumego Hero - Achievements Highscore');
-		$this->set('totalUsers', null); // no count of the players under this table
-
 		if (Auth::isLoggedIn())
 			Auth::saveUserField('highscore_page_id', Constants::$HIGHSCORE_RATING);
-
-		$userId = Auth::isLoggedIn() ? Auth::getUserID() : -1;
-
-		$this->set('users', $this->queryHighscoreWithSelfView("
-			SELECT
-				user.id AS id,
-				user.display_name AS display_name,
-				user.rating AS rating,
-				user.picture AS picture,
-				user.avatar_setting_id AS avatar_setting_id,
-				user.uploaded_avatar_hash AS uploaded_avatar_hash,
-				user.external_id AS external_id,
-				user.premium_id AS premium_id,
-				user.email AS email,
-				COUNT(DISTINCT achievement_status.achievement_id) AS achievement_score,
-				COALESCE(SUM(CASE WHEN achievement_status.value > 1 THEN achievement_status.value ELSE 0 END), 0) AS achievement_earned_times,
-				ROW_NUMBER() OVER (
-					ORDER BY COUNT(DISTINCT achievement_status.achievement_id) DESC,
-						COALESCE(SUM(achievement_status.value), 0) DESC) as position
-			FROM user
-			LEFT JOIN achievement_status
-				ON achievement_status.user_id = user.id
-			WHERE (achievement_status.id IS NOT NULL OR user.id = ?) AND user.deleted IS NULL
-			GROUP BY user.id", 'id', [$userId]));
+		$this->set('users', Highscore::achievements());
+		$this->set('totalUsers', null); // no count of the players under this table
 	}
 
+	//The best runs of a time mode category at one rank. The category is the one the player
+	//played last until the buttons pick one, the rank 15k.
 	#[HttpGet]
 	public function time_mode(): void
 	{
 		$this->set('_page', 'timeHighscore');
 		$this->set('_title', 'Tsumego Hero - Time Highscore');
-
-		// Build rank name -> ID lookup
-		$rankNameToId = $this->fetchTable('TimeModeRank')->find('list', keyField: 'name', valueField: 'id')->toArray();
-
-		$currentRank = '';
-		$params1 = '';
-		$params2 = '';
-
 		if (Auth::isLoggedIn())
 			Auth::saveUserField('highscore_page_id', Constants::$HIGHSCORE_TIME_MODE);
 
+		// the buttons pass the category as its id - 1, and the rank by its name
 		if ($this->query('category') !== null)
 		{
-			$params1 = $this->query('category');
-			$params2 = $this->query('rank') ?? '15k';
-			$currentRank = $params2;
-			$categoryId = intval($params1) + 1;
-			$rankId = $rankNameToId[$params2] ?? 1;
+			$categoryID = (int) $this->query('category') + 1;
+			$rankName = $this->query('rank') ?? '15k';
 		}
 		else
 		{
-			$user = Auth::isLoggedIn() ? Auth::getUser() : null;
-			if ($user && ($user['last_time_mode_category_id'] ?? null))
-				$categoryId = $user['last_time_mode_category_id'];
-			else
-				$categoryId = TimeModeCategoryTable::SLOW;
-
-			$params1 = $categoryId - 1;
-			$params2 = '15k';
-			$currentRank = $params2;
-			$rankId = $rankNameToId[$params2] ?? 1;
+			$categoryID = (int) ((Auth::isLoggedIn() ? Auth::getUser()['last_time_mode_category_id'] : null) ?: TimeModeCategoryTable::SLOW);
+			$rankName = '15k';
 		}
 
-		$userId = Auth::isLoggedIn() ? Auth::getUserID() : -1;
+		$rankNames = $this->fetchTable('TimeModeRank')->find('list', keyField: 'id', valueField: 'name')->orderBy(['id'])->toArray();
+		$rankID = array_search($rankName, $rankNames, true) ?: TimeModeRankTable::RANK_15K;
 
-		$this->set('users', $this->queryHighscoreWithSelfView("
-			SELECT
-				user.id AS id,
-				user.display_name AS display_name,
-				user.external_id AS external_id,
-				user.picture AS picture,
-				user.avatar_setting_id AS avatar_setting_id,
-				user.uploaded_avatar_hash AS uploaded_avatar_hash,
-				user.email AS email,
-				user.rating AS rating,
-				user.premium_id AS premium_id,
-				COALESCE(MAX(time_mode_session.points), 0) AS points,
-				ROW_NUMBER() OVER (ORDER BY COALESCE(MAX(time_mode_session.points), 0) DESC) as position
-			FROM user
-			LEFT JOIN time_mode_session ON time_mode_session.user_id = user.id
-				AND time_mode_session.time_mode_category_id = " . intval($categoryId) . "
-				AND time_mode_session.time_mode_rank_id = " . intval($rankId) . "
-			WHERE (time_mode_session.id IS NOT NULL OR user.id = ?) AND user.deleted IS NULL
-			GROUP BY user.id", 'id', [$userId]));
-		$this->set('totalUsers', $this->countActiveUsers());
-
-		// Build rank buttons: single query replaces 60+ individual lookups
-		$existingSessions = Util::query("
-			SELECT time_mode_category_id, time_mode_rank_id
-			FROM time_mode_session
-			GROUP BY time_mode_category_id, time_mode_rank_id");
-		$sessionExists = [];
-		foreach ($existingSessions as $row)
-			$sessionExists[$row['time_mode_category_id'] . '_' . $row['time_mode_rank_id']] = true;
-
-		$rankNames = $this->buildRankNames();
-		$modes = [];
-		$modes2 = [];
-		for ($i = 0; $i < 3; $i++)
-		{
-			$modes[$i] = [];
-			$modes2[$i] = [];
-			foreach ($rankNames as $j => $rankName)
-			{
-				$modes2[$i][$j] = $rankName;
-				$rId = $rankNameToId[$rankName] ?? null;
-				$modes[$i][$j] = ($rId && isset($sessionExists[($i + 1) . '_' . $rId])) ? 1 : $rankName;
-			}
-		}
-
-		$this->set('params1', $params1);
-		$this->set('params2', $params2);
-		$this->set('modes', $modes);
-		$this->set('modes2', $modes2);
-	}
-
-	private function countActiveUsers(): int
-	{
-		return $this->fetchTable('User')->find()->where(['deleted IS' => null])->count();
-	}
-
-	//Run a single CTE query that returns the top ranked rows plus the rows around
-	//the current user. The $rankedQuery must be a SELECT that produces a `position`
-	//column via ROW_NUMBER().
-	//$rankedQuery: SQL SELECT with ROW_NUMBER() ... as position
-	//$idColumn: Column name used to identify the current user (default: 'id')
-	//$topRows: How many top rows are always listed
-	/**
-	 * @param array<int, mixed> $extraParams Extra bound parameters for the ranked query
-	 * @return array<int, array<string, mixed>>
-	 */
-	private function queryHighscoreWithSelfView(string $rankedQuery, string $idColumn = 'id', array $extraParams = [], int $topRows = 30): array
-	{
-		$userId = Auth::isLoggedIn() ? Auth::getUserID() : -1;
-		$neighborRadius = 3;
-
-		$sql = "
-			WITH ranked AS ({$rankedQuery}),
-			self_pos AS (SELECT position FROM ranked WHERE {$idColumn} = ?)
-			SELECT r.*
-			FROM ranked r
-			LEFT JOIN self_pos sp ON 1=1
-			WHERE r.position <= {$topRows}
-			   OR (sp.position IS NOT NULL
-			       AND r.position BETWEEN sp.position - ? AND sp.position + ?)
-			ORDER BY r.position";
-
-		return Util::query($sql, array_merge($extraParams, [$userId, $neighborRadius, $neighborRadius]));
-	}
-
-	//Build array of rank names from 15k down to 5d (matching time_mode_rank table order).
-	private function buildRankNames(): array
-	{
-		$names = [];
-		$rank = 15;
-		while ($rank > -5)
-		{
-			if ($rank >= 1)
-				$names[] = $rank . 'k';
-			else
-				$names[] = (($rank - 1) * -1) . 'd';
-			$rank--;
-		}
-		return $names;
+		$this->set('users', Highscore::timeMode($categoryID, $rankID));
+		$this->set('totalUsers', Highscore::activePlayerCount());
+		$this->set('categoryIndex', $categoryID - 1);
+		$this->set('rankName', $rankName);
+		$this->set('rankNames', $rankNames);
+		$this->set('playedRankIDs', Highscore::playedTimeModeRankIDs($categoryID));
 	}
 
 	#[HttpGet]
@@ -780,19 +617,8 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 	{
 		$this->set('_page', 'dailyHighscore');
 		$this->set('_title', 'Tsumego Hero - Daily Highscore');
-
-		$userId = Auth::isLoggedIn() ? Auth::getUserID() : -1;
-
-		$this->set('users', $this->queryHighscoreWithSelfView(
-			"SELECT id, name, display_name, external_id, picture, avatar_setting_id, uploaded_avatar_hash, email, rating, premium_id, daily_xp, daily_solved,
-				ROW_NUMBER() OVER (ORDER BY daily_xp DESC) as position
-			FROM user
-			WHERE (daily_xp > 0 OR id = ?) AND deleted IS NULL",
-			'id',
-			[$userId]
-		));
-
-		$this->set('totalUsers', Util::query("SELECT COUNT(*) as cnt FROM user WHERE daily_xp > 0 AND deleted IS NULL")[0]['cnt']);
+		$this->set('users', Highscore::daily());
+		$this->set('totalUsers', Highscore::dailyPlayerCount());
 	}
 
 	//Redirect to the logged-in user's own profile page.
