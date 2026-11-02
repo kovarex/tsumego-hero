@@ -242,8 +242,8 @@ class TsumegoIssueTable extends AppTable
 		];
 	}
 
-	//What the comments of a problem hold, in a few words for the More toggle of the play page, like
-	//"3 comments, 1 open issue, 2 closed issues"; empty when there is nothing
+	//What the comments of a problem hold that may need a look, in a few words for the More toggle of the
+	//play page, like "3 comments, 1 open issue"; closed issues are done, so they aren't mentioned
 	/** @param array{total: int, comments: int, issues: int, openIssues: int} $counts */
 	public static function commentSummary(array $counts): string
 	{
@@ -253,9 +253,6 @@ class TsumegoIssueTable extends AppTable
 			$parts[] = $plural($counts['comments'], 'comment');
 		if ($counts['openIssues'] > 0)
 			$parts[] = $plural($counts['openIssues'], 'open issue');
-		$closedIssues = $counts['issues'] - $counts['openIssues'];
-		if ($closedIssues > 0)
-			$parts[] = $plural($closedIssues, 'closed issue');
 		return implode(', ', $parts);
 	}
 }

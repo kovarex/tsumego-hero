@@ -454,7 +454,8 @@ class CommentsControllerTest extends IntegrationTestCase
 		$browser->waitUntilCssSelectorDisplayed('#commentSpace');
 	}
 
-	//The comments are in More, which tells what they hold without being opened
+	//The comments are in More, which tells what needs a look without being opened: the comments and
+	//the open issues, not the closed ones
 	public function testMoreSummarizesTheCommentsAndIssues(): void
 	{
 		$context = new ContextPreparator(['tsumego' => ['set_order' => 1, 'status' => 'S',
@@ -463,7 +464,17 @@ class CommentsControllerTest extends IntegrationTestCase
 
 		$this->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 
-		$this->assertSame('2 comments, 1 open issue, 1 closed issue', $this->getStringDom()->getElementById('moreCommentSummary')->textContent);
+		$this->assertSame('2 comments, 1 open issue', $this->getStringDom()->getElementById('moreCommentSummary')->textContent);
+	}
+
+	public function testMoreDoesntMentionOnlyClosedIssues(): void
+	{
+		$context = new ContextPreparator(['tsumego' => ['set_order' => 1, 'status' => 'S',
+			'issues' => [['message' => 'fixed', 'status' => TsumegoIssueTable::CLOSED_STATUS]]]]);
+
+		$this->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+
+		$this->assertNull($this->getStringDom()->getElementById('moreCommentSummary'));
 	}
 
 	public function testShowCommentOnVisitingAlreadySolvedTsumego()
