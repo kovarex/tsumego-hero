@@ -13,6 +13,22 @@ use Cake\ORM\TableRegistry;
 
 class TsumegosControllerTest extends IntegrationTestCase
 {
+	//The play page's script reads one object of plain values, the same a request for the next
+	//problem will return
+	public function testPlayPageDataIsPlainJson(): void
+	{
+		$context = new ContextPreparator(['tsumego' => ['set_order' => 1]]);
+		$this->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+
+		//Numbers may come back as integers, nothing may come back changed otherwise
+		$playPage = $this->viewVariable('playPage');
+		$this->assertEquals($playPage, json_decode(json_encode($playPage), true));
+		$this->assertEquals($playPage, $this->playPage());
+		$this->assertSame((int) $context->tsumegos[0]['id'], $playPage['problem']['tsumegoID']);
+		$this->assertSame((int) $context->tsumegos[0]['set-connections'][0]['id'], $playPage['problem']['setConnectionID']);
+		$this->assertSame((int) $context->user['id'], $playPage['page']['userID']);
+	}
+
 	public function testSetNameAndNumIsVisible()
 	{
 		foreach ([false, true] as $openBySetConnectionID)
@@ -52,7 +68,7 @@ class TsumegosControllerTest extends IntegrationTestCase
 	{
 		$context = new ContextPreparator(['tsumego' => ['set_order' => 666]]);
 		$this->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
-		$this->assertStringContainsString('jsCreateDownloadFile("test set 666")', $this->view);
+		$this->assertSame('test set 666', $this->playPage()['problem']['downloadName']);
 	}
 
 	public function testTheFirstProblemOfACollectionLeadsBackToTheCollectionPage(): void
@@ -67,8 +83,8 @@ class TsumegosControllerTest extends IntegrationTestCase
 
 		$this->get('/tsumegos/play/' . $context->tsumegos[0]['id']);
 
-		$this->assertStringContainsString('var previousButtonLink = "/sets/' . $first['set_id'] . '"', $this->view);
-		$this->assertStringContainsString('var nextButtonLink = "/' . $second['id'] . '"', $this->view);
+		$this->assertSame('/sets/' . $first['set_id'], $this->playPage()['problem']['previousLink']);
+		$this->assertSame('/' . $second['id'], $this->playPage()['problem']['nextLink']);
 	}
 
 	public function testProblemKeepsOneAddressInBothUrlShapes()
@@ -97,14 +113,12 @@ class TsumegosControllerTest extends IntegrationTestCase
 		$context = new ContextPreparator(['tsumego' => ['set_order' => 666]]);
 		$url = '/' . $context->tsumegos[0]['set-connections'][0]['id'];
 		$this->get($url);
-		$page = $this->view;
-		$this->assertStringNotContainsString('?requestSolution=', $page);
+		$this->assertFalse($this->playPage()['page']['canRequestSolution']);
 
 		$adminContext = new ContextPreparator(['user' => ['name' => 'admin', 'admin' => true], 'tsumego' => ['set_order' => 666]]);
 		$adminUrl = '/' . $adminContext->tsumegos[0]['set-connections'][0]['id'];
 		$this->get($adminUrl);
-		$page = $this->view;
-		$this->assertStringContainsString('?requestSolution=', $page);
+		$this->assertTrue($this->playPage()['page']['canRequestSolution']);
 	}
 
 	public function testPageTitleShowsRealSetCount()

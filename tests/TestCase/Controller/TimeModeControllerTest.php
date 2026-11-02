@@ -304,10 +304,8 @@ class TimeModeControllerTest extends IntegrationTestCase
 					['order' => 2, 'status' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED, 'tsumego_id' => 'other:1']]]]]);
 
 		$this->post('/timeMode/play/2');
-		$html = $this->view;
 
-		preg_match('/var tsumegoID = (\d+);/', $html, $matches);
-		$this->assertSame((int) $context->tsumegos[1]['id'], (int) ($matches[1] ?? 0));
+		$this->assertSame((int) $context->tsumegos[1]['id'], $this->playPage()['problem']['tsumegoID']);
 	}
 
 	public function testTimeModeNextLinkLeadsToTheNextProblemOrToTheResult()
@@ -328,10 +326,8 @@ class TimeModeControllerTest extends IntegrationTestCase
 			2 => '/timeMode/result/' . $context->timeModeSessions[0]->id] as $position => $expectedLink)
 		{
 			$this->post('/timeMode/play/' . $position);
-			$html = $this->view;
 
-			preg_match('/var noSkipNextButtonLink = "([^"]*)";/', $html, $matches);
-			$this->assertSame($expectedLink, $matches[1] ?? 'not rendered');
+			$this->assertSame($expectedLink, $this->playPage()['problem']['noSkipNextLink']);
 		}
 	}
 
@@ -430,9 +426,7 @@ class TimeModeControllerTest extends IntegrationTestCase
 		$sessionID = $context->timeModeSessions[0]->id;
 
 		$this->post('/timeMode/play/2');
-		$html = $this->view;
-		preg_match('/var nextButtonLink = "([^"]*)";/', $html, $matches);
-		$this->assertSame('/timeMode/skip/2', $matches[1] ?? 'not rendered');
+		$this->assertSame('/timeMode/skip/2', $this->playPage()['problem']['nextLink']);
 
 		$this->get('/timeMode/skip/2');
 		$this->assertSame(Util::getInternalAddress() . '/timeMode/play/3', $this->headerValue('Location'));
@@ -443,10 +437,8 @@ class TimeModeControllerTest extends IntegrationTestCase
 			(int) $attempt->time_mode_attempt_status_id);
 
 		$this->post('/timeMode/play/3');
-		$html = $this->view;
 
-		preg_match('/var tsumegoID = (\d+);/', $html, $matches);
-		$this->assertSame((int) $context->tsumegos[2]['id'], (int) ($matches[1] ?? 0));
+		$this->assertSame((int) $context->tsumegos[2]['id'], $this->playPage()['problem']['tsumegoID']);
 	}
 
 	public function testTimeModeSkipOfAProblemThatIsNotOpenSkipsNothing()
@@ -501,10 +493,8 @@ class TimeModeControllerTest extends IntegrationTestCase
 		$sessionID = $context->timeModeSessions[0]->id;
 
 		$this->post('/timeMode/play/1');
-		$html = $this->view;
 
-		preg_match('/var tsumegoID = (\d+);/', $html, $matches);
-		$this->assertSame((int) $context->tsumegos[1]['id'], (int) ($matches[1] ?? 0));
+		$this->assertSame((int) $context->tsumegos[1]['id'], $this->playPage()['problem']['tsumegoID']);
 
 		$attempt = $this->fetchTable('TimeModeAttempt')->find()->where(['time_mode_session_id' => $sessionID, 'order' => 1])->first();
 		$this->assertSame(
@@ -530,10 +520,8 @@ class TimeModeControllerTest extends IntegrationTestCase
 					['order' => 3, 'status' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED, 'tsumego_id' => 'other:2']]]]]);
 
 		$this->post('/timeMode/play/2');
-		$html = $this->view;
 
-		preg_match('/var tsumegoID = (\d+);/', $html, $matches);
-		$this->assertSame((int) $context->tsumegos[2]['id'], (int) ($matches[1] ?? 0));
+		$this->assertSame((int) $context->tsumegos[2]['id'], $this->playPage()['problem']['tsumegoID']);
 	}
 
 	public function testTimeModePlayPastTheEndServesTheNextUnplayedProblem()
@@ -553,10 +541,8 @@ class TimeModeControllerTest extends IntegrationTestCase
 					['order' => 3, 'status' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED, 'tsumego_id' => 'other:2']]]]]);
 
 		$this->post('/timeMode/play/9');
-		$html = $this->view;
 
-		preg_match('/var tsumegoID = (\d+);/', $html, $matches);
-		$this->assertSame((int) $context->tsumegos[1]['id'], (int) ($matches[1] ?? 0));
+		$this->assertSame((int) $context->tsumegos[1]['id'], $this->playPage()['problem']['tsumegoID']);
 	}
 
 	public function testTimeModePlayPastTheEndWaitsWhileAResultIsOnItsWay()

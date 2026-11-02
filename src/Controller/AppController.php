@@ -53,8 +53,10 @@ class AppController extends Controller
 	 */
 	protected function renderPlay(int $setConnectionID, array $viewVars = [], ?array $classroomAssignment = null): void
 	{
-		$this->set(new Play($setConnectionID, $this->request, $classroomAssignment)->viewVars());
-		$this->set($viewVars);
+		$play = new Play($setConnectionID, $this->request, $classroomAssignment);
+		$play->addRouteValues($viewVars);
+		$this->set($play->viewVars());
+		$this->set('playPage', $play->clientData((string) $this->viewBuilder()->getVar('lightDark')));
 		$this->render('/Tsumegos/play');
 	}
 

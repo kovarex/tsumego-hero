@@ -875,7 +875,7 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 		$this->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		$this->assertSame(Constants::$LEVEL_MODE, (int) $context->reloadUser()['mode_id'],
 			'DB mode should be LEVEL right after opening a problem directly');
-		$this->assertTextContains('var mode = 1;', $this->view,
+		$this->assertSame(Constants::$LEVEL_MODE, $this->playPage()['page']['mode'],
 			'Play page should render as level mode (no one-request lag)');
 
 		// Solve immediately; the mode used for the result must still be level (XP gained, mode unchanged).

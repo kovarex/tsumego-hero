@@ -38,7 +38,7 @@ class FavoritesViewTest extends IntegrationTestCase
 		$setConnectionTable->saveOrFail($setConnectionTable->newEntity(['set_id' => $createdSet->id, 'tsumego_id' => $tsumegoId, 'num' => 2]));
 
 		$this->get('/tsumegos/play/' . $tsumegoId);
-		$sets = json_decode($this->viewVariable('userSetsJson'), true);
+		$sets = $this->viewVariable('playPage')['problem']['userSets'];
 		$this->assertNotEmpty($sets);
 		$this->assertTrue(in_array(true, array_column($sets, 'contains'), true));
 	}
@@ -63,7 +63,7 @@ class FavoritesViewTest extends IntegrationTestCase
 
 		$this->get('/tsumegos/play/' . $context->tsumegos[0]['id']);
 
-		$sets = array_column(json_decode($this->viewVariable('userSetsJson'), true), 'isDefault', 'title');
+		$sets = array_column($this->viewVariable('playPage')['problem']['userSets'], 'isDefault', 'title');
 		$this->assertSame(['Favorites' => false, 'My Problems' => true], $sets);
 	}
 
@@ -75,8 +75,8 @@ class FavoritesViewTest extends IntegrationTestCase
 		]);
 
 		$this->get('/tsumegos/play/' . $context->tsumegos[0]['id']);
-		$sets = json_decode($this->viewVariable('userSetsJson'), true);
-		// No user sets created, so userSetsJson should be empty
+		$sets = $this->viewVariable('playPage')['problem']['userSets'];
+		// No user sets created, so the player's sets should be empty
 		$this->assertEmpty($sets);
 	}
 
@@ -102,7 +102,7 @@ class FavoritesViewTest extends IntegrationTestCase
 		}
 
 		$this->get('/tsumegos/play/' . $tsumegoId);
-		$sets = json_decode($this->viewVariable('userSetsJson'), true);
+		$sets = $this->viewVariable('playPage')['problem']['userSets'];
 		$contains = array_column($sets, 'contains');
 		$this->assertCount(2, array_filter($contains));
 	}

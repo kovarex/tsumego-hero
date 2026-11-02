@@ -23,13 +23,14 @@ class SemeaiTest extends IntegrationTestCase
 		$this->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 
 		$this->assertResponseOk();
-		$this->assertResponseContains('options.multipleChoice = true;');
-		$this->assertResponseContains('let multipleChoiceSemeaiType = ' . SemeaiTypeTable::TYPE_NO_EYES_INSIDE_LIBERTIES . '+"";');
-		$this->assertResponseContains('let multipleChoiceInsideLiberties = 3+"";');
-		$this->assertResponseContains('multipleChoiceLibertyCount = 6;');
+		$problem = $this->playPage()['problem'];
+		$this->assertSame(SemeaiTypeTable::TYPE_NO_EYES_INSIDE_LIBERTIES, $problem['semeai']['semeaiTypeID']);
+		$this->assertSame(3, $problem['semeai']['insideLiberties']);
+		$this->assertSame(6, $problem['semeai']['libertyCount']);
+		$this->assertNotNull($problem['semeai']['question']);
 		$this->assertResponseContains('id="multipleChoiceAlerts"');
 		// a semeai problem always shows the player black
-		$this->assertResponseContains('options.playerColor = "black"');
+		$this->assertSame('black', $problem['playerColor']);
 	}
 
 	public function testPlayPageShowsNoSemeaiQuestionForAnyOtherProblem(): void
@@ -39,9 +40,8 @@ class SemeaiTest extends IntegrationTestCase
 		$this->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 
 		$this->assertResponseOk();
-		$this->assertResponseNotContains('options.multipleChoice = true;');
 		$this->assertResponseNotContains('id="multipleChoiceAlerts"');
-		$this->assertResponseContains('let multipleChoiceSemeaiType = +"";');
+		$this->assertNull($this->playPage()['problem']['semeai']);
 	}
 
 	//The values the old columns of tsumego could leave empty: without a variance (like 0) the groups can
@@ -65,11 +65,9 @@ class SemeaiTest extends IntegrationTestCase
 			$this->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 
 			$this->assertResponseOk($case);
-			$this->assertResponseContains('let multipleChoiceSemeaiType = ' . $semeai['semeai_type_id'] . '+"";', $case);
-			if ($hasQuestion)
-				$this->assertResponseContains('options.multipleChoice = true;', $case);
-			else
-				$this->assertResponseNotContains('options.multipleChoice = true;', $case);
+			$problemSemeai = $this->playPage()['problem']['semeai'];
+			$this->assertSame($semeai['semeai_type_id'], $problemSemeai['semeaiTypeID'], $case);
+			$this->assertSame($hasQuestion, $problemSemeai['question'] !== null, $case);
 		}
 	}
 

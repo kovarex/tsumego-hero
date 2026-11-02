@@ -52,14 +52,17 @@ class HeroPowers
 		self::renderPotion();
 	}
 
-	public static function renderJavascript(): void
+	//Which of the powers the player can use now, null for a guest, who has none
+	/** @return array{intuition: bool, rejuvenation: bool, sprint: bool, refinement: bool}|null */
+	public static function clientData(): ?array
 	{
 		if (!Auth::isLoggedIn())
-			return;
-		echo self::canUseIntuition() ? "enableIntuition();" : "disableIntuition();";
-		echo self::canUseRejuvanation() ? "enableRejuvenation();" : "disableRejuvenation();";
-		echo self::canUseSprint() ? "enableSprint();" : "disableSprint();";
-		echo self::canUseRefinement() ? "enableRefinement();" : "disableRefinement();";
+			return null;
+		return [
+			'intuition' => self::canUseIntuition(),
+			'rejuvenation' => self::canUseRejuvanation(),
+			'sprint' => self::canUseSprint(),
+			'refinement' => self::canUseRefinement()];
 	}
 
 	public static function canUseRejuvanation(): bool

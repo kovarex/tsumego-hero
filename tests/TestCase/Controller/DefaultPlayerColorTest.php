@@ -22,8 +22,8 @@ class DefaultPlayerColorTest extends IntegrationTestCase
 		$this->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		$this->assertResponseOk();
 
-		$this->assertTextContains('options.playerColor = "black"', $this->view);
-		$this->assertTextContains('options.swapColors = false', $this->view);
+		$this->assertSame('black', $this->playPage()['problem']['playerColor']);
+		$this->assertSame(false, $this->playPage()['problem']['swapColors']);
 		$this->assertTextContains('Black to play.', $this->view);
 	}
 
@@ -44,8 +44,8 @@ class DefaultPlayerColorTest extends IntegrationTestCase
 		$this->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		$this->assertResponseOk();
 
-		$this->assertTextContains('options.playerColor = "white"', $this->view);
-		$this->assertTextContains('options.swapColors = false', $this->view);
+		$this->assertSame('white', $this->playPage()['problem']['playerColor']);
+		$this->assertSame(false, $this->playPage()['problem']['swapColors']);
 		$this->assertTextContains('White to play.', $this->view);
 	}
 
@@ -66,8 +66,8 @@ class DefaultPlayerColorTest extends IntegrationTestCase
 		$this->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		$this->assertResponseOk();
 
-		$this->assertTextContains('options.playerColor = "black"', $this->view);
-		$this->assertTextContains('options.swapColors = true', $this->view);
+		$this->assertSame('black', $this->playPage()['problem']['playerColor']);
+		$this->assertSame(true, $this->playPage()['problem']['swapColors']);
 		$this->assertTextContains('Black to play.', $this->view);
 	}
 
@@ -92,8 +92,8 @@ class DefaultPlayerColorTest extends IntegrationTestCase
 		{
 			$this->get('/' . $setConnection['id']);
 			$this->assertResponseOk();
-			$this->assertTextContains('options.playerColor = "black"', $this->view);
-			$this->assertTextContains('options.swapColors = true', $this->view);
+			$this->assertSame('black', $this->playPage()['problem']['playerColor']);
+			$this->assertSame(true, $this->playPage()['problem']['swapColors']);
 			$this->assertTextContains('Black to play.', $this->view);
 		}
 	}
@@ -121,8 +121,8 @@ class DefaultPlayerColorTest extends IntegrationTestCase
 
 		$this->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		$this->assertResponseOk();
-		$this->assertTextContains('options.playerColor = "white"', $this->view);
-		$this->assertTextContains('options.swapColors = false', $this->view);
+		$this->assertSame('white', $this->playPage()['problem']['playerColor']);
+		$this->assertSame(false, $this->playPage()['problem']['swapColors']);
 	}
 
 	//The board size comes from the problem's SGF: a set title naming a board size changes nothing
@@ -143,8 +143,8 @@ class DefaultPlayerColorTest extends IntegrationTestCase
 		$this->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		$this->assertResponseOk();
 
-		$this->assertTextContains('options.playerColor = "white"', $this->view);
-		$this->assertTextContains('options.swapColors = false', $this->view);
+		$this->assertSame('white', $this->playPage()['problem']['playerColor']);
+		$this->assertSame(false, $this->playPage()['problem']['swapColors']);
 	}
 
 	public function testPlayerColorPreferenceStoresValue(): void
@@ -198,14 +198,8 @@ class DefaultPlayerColorTest extends IntegrationTestCase
 		$this->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		$this->assertResponseOk();
 
-		preg_match('/options\.playerColor = "(black|white)"/', $this->view, $playerColorMatch);
-		preg_match('/options\.swapColors = (true|false)/', $this->view, $swapColorsMatch);
-
-		$this->assertNotEmpty($playerColorMatch);
-		$this->assertNotEmpty($swapColorsMatch);
-		$this->assertSame(
-			$playerColorMatch[1] === 'white' ? 'true' : 'false',
-			$swapColorsMatch[1]
-		);
+		$problem = $this->playPage()['problem'];
+		$this->assertContains($problem['playerColor'], ['black', 'white']);
+		$this->assertSame($problem['playerColor'] === 'white', $problem['swapColors']);
 	}
 }
