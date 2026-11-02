@@ -23,7 +23,7 @@ class AdminActivityTypeTable extends AppTable
 
 	// Problem Type Changes (multi-state: 0=delete, 1=add)
 	public const MULTIPLE_CHOICE = 6;
-	public const SCORE_ESTIMATING = 7;
+	public const SCORE_ESTIMATING = 7; //Score estimating problems are gone, the type stays for the old log entries
 
 	// Requests
 	public const SOLUTION_REQUEST = 8;

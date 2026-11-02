@@ -613,50 +613,6 @@ besogo.makeToolPanel = function (container, editor) {
         );
       }
       makeHyperlinkText("Next", "next problem", nextButtonLink, "besogo-next-button");
-    } else if (besogo.multipleChoiceCustom === "score_estimating") {
-      toggleBoardLock(true);
-      let prevButtonId;
-      prevButtonId = "besogo-back-button";
-      makeHyperlinkText(
-        "Back",
-        "previous problem",
-        previousButtonLink,
-        prevButtonId
-      );
-      makeButtonText(
-        besogo.boardInverted ? "White wins" : "Black wins",
-        "",
-        function () {
-          displayScoreEstimatingResult("b");
-        },
-        "besogo-se-black"
-      );
-
-      makeButtonText(
-        besogo.boardInverted ? "Black wins" : "White wins",
-        "",
-        function () {
-          displayScoreEstimatingResult("w");
-        },
-        "besogo-se-white"
-      );
-      makeButtonText(
-        "-",
-        "",
-        function () {
-          displayScoreEstimatingResult("-");
-        },
-        "besogo-se-less"
-      );
-      makeButtonText(
-        "+",
-        "",
-        function () {
-          displayScoreEstimatingResult("+");
-        },
-        "besogo-se-more"
-      );
-      makeHyperlinkText("Next", "next problem", nextButtonLink, "besogo-next-button");
     } else {
       toggleBoardLock(true);
       let prevButtonId;
@@ -722,13 +678,6 @@ besogo.makeToolPanel = function (container, editor) {
           let el = $("#" + id);
           if (el.length) el.val(swapColorWords(el.val()));
         });
-        // Score-estimating result buttons and summary labels.
-        ["besogo-se-black", "besogo-se-white"].forEach(function (id) {
-          let el = $("#" + id);
-          if (el.length) el.val(swapColorWords(el.val()));
-        });
-        let scoreLabels = $("#scoreEstimatingLabels");
-        if (scoreLabels.length) scoreLabels.text(swapColorWords(scoreLabels.text()));
         besogo.editor.applyTransformation(transformation);
       }
     );

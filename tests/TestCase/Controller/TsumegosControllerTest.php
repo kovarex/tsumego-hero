@@ -729,12 +729,22 @@ class TsumegosControllerTest extends IntegrationTestCase
 	{
 		$context = $this->prepareSandboxProblem([['tsumego_variant_type_id' => TsumegoVariantTable::TYPE_MULTIPLE_CHOICE, 'answer1' => 'Seki in sente']]);
 
-		$this->postProblemSettings($context, TsumegoVariantTable::TYPE_SCORE_ESTIMATING);
-		// a new score estimating problem starts at komi 0
-		$this->assertSame([['tsumego_variant_type_id' => TsumegoVariantTable::TYPE_SCORE_ESTIMATING, 'answer1' => '0']], self::variantsOf($context->tsumegos[0]['id']));
-
 		$this->postProblemSettings($context, null);
 		$this->assertSame([], self::variantsOf($context->tsumegos[0]['id']));
+	}
+
+	//Multiple choice is the only question type; the score estimating one (2) is gone, and an
+	//unknown type changes nothing
+	public function testProblemSettingsRejectAnUnknownQuestionType(): void
+	{
+		$context = $this->prepareSandboxProblem([['tsumego_variant_type_id' => TsumegoVariantTable::TYPE_MULTIPLE_CHOICE, 'answer1' => 'Seki in sente']]);
+		$tsumegoID = $context->tsumegos[0]['id'];
+
+		$this->post('tsumegos/settings/' . $tsumegoID, ['alternative_response' => 0, 'pass' => 1, 'variant_type' => '2']);
+
+		$this->assertResponseCode(400);
+		$this->assertSame(0, (int) $this->fetchTable('Tsumego')->get($tsumegoID)->pass);
+		$this->assertSame([['tsumego_variant_type_id' => TsumegoVariantTable::TYPE_MULTIPLE_CHOICE, 'answer1' => 'Seki in sente']], self::variantsOf($tsumegoID));
 	}
 
 	//A problem starts with the alternative response mode on and passing off
@@ -765,14 +775,14 @@ class TsumegosControllerTest extends IntegrationTestCase
 		$browser->clickId('show5');
 		$browser->waitUntilCssSelectorDisplayed('#msg5');
 		$browser->clickId('pass-on');
-		$browser->clickId('variant-type-score-estimating');
+		$browser->clickId('variant-type-multiple-choice');
 		$browser->clickCssSelect('#msg5 input[type="submit"]');
-		//Back on the problem, which has a score estimating question to edit now
-		$browser->waitUntilAnyCssSelectorExists(['#showSE']);
+		//Back on the problem, which has a multiple choice question to edit now
+		$browser->waitUntilAnyCssSelectorExists(['#showMC']);
 
 		$this->assertStringEndsWith($playPath, $browser->driver->getCurrentURL());
 		$this->assertSame(1, (int) $this->fetchTable('Tsumego')->get($tsumegoID)->pass);
-		$this->assertSame([['tsumego_variant_type_id' => TsumegoVariantTable::TYPE_SCORE_ESTIMATING, 'answer1' => '0']], self::variantsOf($tsumegoID));
+		$this->assertSame([['tsumego_variant_type_id' => TsumegoVariantTable::TYPE_MULTIPLE_CHOICE, 'answer1' => 'Black is dead']], self::variantsOf($tsumegoID));
 	}
 
 	public function testProblemSettingsAreForAdmins(): void
@@ -789,7 +799,7 @@ class TsumegosControllerTest extends IntegrationTestCase
 		$context = $this->prepareSandboxProblem([['tsumego_variant_type_id' => TsumegoVariantTable::TYPE_MULTIPLE_CHOICE, 'answer1' => 'Seki in sente']]);
 		$tsumegoID = $context->tsumegos[0]['id'];
 
-		$this->post('tsumegos/variant/' . $tsumegoID, ['answer1' => 'Ko', 'answer2' => 'Seki', 'answer3' => 'Dead', 'answer4' => 'Alive', 'explanation' => 'Look at the eye', 'correct_answer' => 2, 'winner' => 'ignored']);
+		$this->post('tsumegos/variant/' . $tsumegoID, ['answer1' => 'Ko', 'answer2' => 'Seki', 'answer3' => 'Dead', 'answer4' => 'Alive', 'explanation' => 'Look at the eye', 'correct_answer' => 2]);
 
 		$this->assertResponseCode(302);
 		$this->assertSame([['answer1' => 'Ko', 'answer2' => 'Seki', 'answer3' => 'Dead', 'answer4' => 'Alive', 'explanation' => 'Look at the eye', 'correct_answer' => 2]],
@@ -804,36 +814,6 @@ class TsumegosControllerTest extends IntegrationTestCase
 		$this->post('tsumegos/variant/' . $context->tsumegos[0]['id'], ['answer1' => 'Ko']);
 
 		$this->assertResponseCode(403);
-	}
-
-	//Score-estimating summary labels are stored in true colors. When the board
-	//is inverted, the "Black/White captures" labels swap while the numeric
-	//values stay in place.
-	public function testScoreEstimatingLabelsSwapWhenBoardInverted(): void
-	{
-		$context = new ContextPreparator([
-			'user' => ['mode' => Constants::$LEVEL_MODE],
-			'tsumego' => [
-				'set_order' => 1,
-				'description' => 'Who wins?',
-				'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19];B[aa];W[ab];B[ba]C[+])',
-				'variants' => [[
-					'tsumego_variant_type_id' => TsumegoVariantTable::TYPE_SCORE_ESTIMATING,
-					'answer1' => '6.5',
-					'answer2' => '3',
-					'answer3' => '6',
-					'correct_answer' => '0',
-				]],
-			],
-		]);
-
-		$this->get('tsumegos/play/' . $context->tsumegos[0]['id']);
-		$this->assertStringContainsString('Black captures: 3', $this->view);
-		$this->assertStringContainsString('White captures: 6', $this->view);
-
-		$this->get('tsumegos/play/' . $context->tsumegos[0]['id'] . '?playercolor=white');
-		$this->assertStringContainsString('White captures: 3', $this->view);
-		$this->assertStringContainsString('Black captures: 6', $this->view);
 	}
 
 	//When the player's color opposes the SGF's first move the board is inverted and

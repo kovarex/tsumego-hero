@@ -104,15 +104,6 @@ use App\Utility\ViteManifest;
 		echo '<a id="descriptionText">' . h($displayDescription) . '</a> ';
 		if (isset($tsumego->hint) && $tsumego->hint != '')
 			echo '<span class="hint italic">(' . h($tsumego->hint) . ')</span>';
-		if($tv != null)
-			if($tv->tsumego_variant_type_id == TsumegoVariantTable::TYPE_SCORE_ESTIMATING)
-			{
-				$capturesLabels = 'Black captures: ' . $tv->answer2 . ' | White captures: ' . $tv->answer3;
-				if ($swapColors)
-					$capturesLabels = Play::swapColorWords($capturesLabels);
-				echo '<br>';
-				echo '<span id="scoreEstimatingLabels">' . h($capturesLabels) . ' | Komi: ' . h($tv->answer1) . '</span>';
-			}
 		if(Auth::isAdmin())
 		{ ?>
 		<a class="grey-link" id="modify-description" href="#" onclick="adminCommentOpened = !adminCommentOpened; $('.modify-description-panel').toggle(0);">(Edit)</a>
@@ -193,15 +184,6 @@ use App\Utility\ViteManifest;
 	<div align="center">
 	<br>
 		<a href="<?php echo $resetLink; ?>" title="reset problem" id="besogo-next-button">Reset</a>
-		<br><br>
-	</div>
-	<?php }
-		elseif($tv != null && $tv->tsumego_variant_type_id == TsumegoVariantTable::TYPE_SCORE_ESTIMATING)
-		{ ?>
-	<div align="center">
-		<a href="<?php echo $resetLink; ?>" title="reset problem" id="besogo-next-button">Reset</a>
-		<input value="0" placeholder="Score" type="text" id="ScoreEstimatingSE">
-		<a id="submitScoreEstimatingSE" href="#">Submit</a>
 		<br><br>
 	</div>
 	<?php } ?>
@@ -339,7 +321,6 @@ use App\Utility\ViteManifest;
 									<td>Question</td>
 									<td><input type="radio" id="variant-type-none" name="variant_type" value="" ' . $checked($variantType === null) . '><label for="variant-type-none">none</label></td>
 									<td><input type="radio" id="variant-type-multiple-choice" name="variant_type" value="' . TsumegoVariantTable::TYPE_MULTIPLE_CHOICE . '" ' . $checked($variantType === TsumegoVariantTable::TYPE_MULTIPLE_CHOICE) . '><label for="variant-type-multiple-choice">multiple choice</label></td>
-									<td><input type="radio" id="variant-type-score-estimating" name="variant_type" value="' . TsumegoVariantTable::TYPE_SCORE_ESTIMATING . '" ' . $checked($variantType === TsumegoVariantTable::TYPE_SCORE_ESTIMATING) . '><label for="variant-type-score-estimating">score estimating</label></td>
 								</tr>';
 				echo '</table>
 							<br>
@@ -348,61 +329,26 @@ use App\Utility\ViteManifest;
 					</div>
 					<br><br>';
 			if($isSandbox && $tv != null)
-				if($tv->tsumego_variant_type_id == TsumegoVariantTable::TYPE_MULTIPLE_CHOICE)
-				{
-						echo '<a id="showMC" class="selectable-text selectable-text--inline">Edit multiple choice
-						<img id="greyArrowMC" src="/img/greyArrow1.png"></a><br><br>';
-						echo '<div id="showxMC">';
-						echo '<form action="/tsumegos/variant/' . $tsumego->id . '" method="post">';
-						for ($answer = 1; $answer <= 4; $answer++)
-							echo '<div class="input text"><label for="variant-answer' . $answer . '">Answer ' . $answer . ': </label><input name="answer' . $answer . '" value="' . h($tv->get('answer' . $answer)) . '" placeholder="Answer ' . $answer . '" type="text" id="variant-answer' . $answer . '"></div>';
-						echo '<div class="input textfield"><label for="variant-explanation">Explanation: </label><input name="explanation" value="' . h($tv->explanation) . '" placeholder="Explanation" type="text" id="variant-explanation"></div>';
-						echo '<br>';
-						echo '<label>Correct: </label>';
-						for ($answer = 1; $answer <= 4; $answer++)
-							echo '<input type="radio" name="correct_answer" id="variant-correct-answer' . $answer . '" value="' . $answer . '"' . ($tv->correct_answer == $answer ? ' checked="checked"' : '') . '><label for="variant-correct-answer' . $answer . '">' . $answer . '</label>';
-						echo '<br><br>';
-						echo '<div class="submit"><input type="submit" value="Submit"></div>';
-						echo '</form>';
-						echo '<br><br>';
-						echo '</div>';
-	}
-	else
-	{
-						echo '<a id="showSE" class="selectable-text selectable-text--inline">Edit correct answer
-						<img id="greyArrowSE" src="/img/greyArrow1.png"></a><br><br>';
-						echo '<div id="showxSE">';
-						echo '<input type="button" value="Black wins" id="besogo-se-edit-black">';
-						echo '<input type="button" value="White wins" id="besogo-se-edit-white">';
-						echo '<input type="button" value="-" id="besogo-se-edit-less">';
-						echo '<input type="button" value="+" id="besogo-se-edit-more">';
-						echo '<br><br>';
-						echo '<form action="/tsumegos/variant/' . $tsumego->id . '" method="post">';
-						echo '<table><tr><td>';
-						echo '<label for="scoreEstEditField">Correct answer: </label>';
-						echo '</td><td>';
-						echo '<input name="winner" value="' . h($tv->winner) . '" placeholder="Score" id="scoreEstEditField" type="text">';
-						echo '</td></tr><tr><td>';
-						echo '<label for="scoreEstEditField2">Komi: </label>';
-						echo '</td><td>';
-						echo '<input name="answer1" value="' . h($tv->answer1) . '" placeholder="Komi" id="scoreEstEditField2" type="text">';
-						echo '</td></tr><tr><td>';
-						echo '<label for="scoreEstEditField3">Black captures: </label>';
-						echo '</td><td>';
-						echo '<input name="answer2" value="' . h($tv->answer2) . '" placeholder="Black captures" id="scoreEstEditField3" type="text">';
-						echo '</td></tr><tr><td>';
-						echo '<label for="scoreEstEditField4">White captures: </label>';
-						echo '</td><td>';
-						echo '<input name="answer3" value="' . h($tv->answer3) . '" placeholder="White captures" id="scoreEstEditField4" type="text">';
-						echo '</td></tr></table>';
-						echo '<br>';
-						echo '<div class="submit"><input type="submit" value="Submit" id="scoreEstEditSubmit"></div>';
-						echo '</form>';
-						echo '<br>';
-						echo '</div>';
-	}
+			{
+				echo '<a id="showMC" class="selectable-text selectable-text--inline">Edit multiple choice
+				<img id="greyArrowMC" src="/img/greyArrow1.png"></a><br><br>';
+				echo '<div id="showxMC">';
+				echo '<form action="/tsumegos/variant/' . $tsumego->id . '" method="post">';
+				for ($answer = 1; $answer <= 4; $answer++)
+					echo '<div class="input text"><label for="variant-answer' . $answer . '">Answer ' . $answer . ': </label><input name="answer' . $answer . '" value="' . h($tv->get('answer' . $answer)) . '" placeholder="Answer ' . $answer . '" type="text" id="variant-answer' . $answer . '"></div>';
+				echo '<div class="input textfield"><label for="variant-explanation">Explanation: </label><input name="explanation" value="' . h($tv->explanation) . '" placeholder="Explanation" type="text" id="variant-explanation"></div>';
+				echo '<br>';
+				echo '<label>Correct: </label>';
+				for ($answer = 1; $answer <= 4; $answer++)
+					echo '<input type="radio" name="correct_answer" id="variant-correct-answer' . $answer . '" value="' . $answer . '"' . ($tv->correct_answer == $answer ? ' checked="checked"' : '') . '><label for="variant-correct-answer' . $answer . '">' . $answer . '</label>';
+				echo '<br><br>';
+				echo '<div class="submit"><input type="submit" value="Submit"></div>';
+				echo '</form>';
+				echo '<br><br>';
+				echo '</div>';
 			}
-			else echo '<br>';
+		}
+		else echo '<br>';
 	} ?>
 
 		<table class="sandboxTable" width="62%">
@@ -495,7 +441,6 @@ use App\Utility\ViteManifest;
 	var msg4selected = false;
 	var msg5selected = false;
 	var msgMCselected = false;
-	var msgSEselected = false;
 	var clockStart = 0;
 	var bonusSeconds = 0;
 	var timeToFirstClick = null;
@@ -709,43 +654,6 @@ use App\Utility\ViteManifest;
 
 	if (mode == playPage.page.modes.rating)
 		var ratingModeDifficultySelector = new RatingModeDifficultySelector();
-	if (playPage.problem.variant?.type === 'score_estimating')
-	{
-		$("#submitScoreEstimatingSE").click(function(e){
-			e.preventDefault();
-			if(!hasChosen){
-				let correctNum = playPage.problem.variant.winner;
-				let guess = $("#ScoreEstimatingSE").val();
-				if(parseFloat(correctNum.slice(2))===0 || parseFloat(correctNum)===0)
-					correctNum = 0;
-				if(parseFloat(guess.slice(2))===0 || parseFloat(guess)===0)
-					guess = 0;
-				let color = "#e0747f";
-				if(guess==correctNum){
-					displayResult("S");
-					color = "#3ecf78";
-	}else{
-					displayResult("F");
-					color = "#e0747f";
-	}
-				hasChosen = true;
-				locked = true;
-				$("#ScoreEstimatingSE").prop("disabled", true);
-				$("#besogo-se-black").css("background-color", color);
-				$("#besogo-se-white").css("background-color", color);
-				$("#besogo-se-more").css("background-color", color);
-				$("#besogo-se-less").css("background-color", color);
-				$("#submitScoreEstimatingSE").css("background-color", color);
-	}
-		});
-		[['black', 'b'], ['white', 'w'], ['more', '+'], ['less', '-']].forEach(function ([button, change])
-		{
-			$("#besogo-se-edit-" + button).click(function(e){
-				e.preventDefault();
-				adjustScore($("#scoreEstEditField"), change);
-			});
-		});
-	}
 
 	if (mode == playPage.page.modes.rating)
 	{
@@ -867,20 +775,6 @@ use App\Utility\ViteManifest;
 					document.getElementById("greyArrowMC").src = "/img/greyArrow1.png";
 	}
 				msgMCselected = !msgMCselected;
-				});
-		}
-		else if (playPage.problem.variant)
-		{
-			$("#showxSE").hide();
-			$("#showSE").click(function(){
-				if(!msgSEselected){
-					$("#showxSE").fadeIn(250);
-					document.getElementById("greyArrowSE").src = "/img/greyArrow2.png";
-	}else{
-					$("#showxSE").fadeOut(250);
-					document.getElementById("greyArrowSE").src = "/img/greyArrow1.png";
-	}
-				msgSEselected = !msgSEselected;
 				});
 		}
 		let solutionRequest = true;
