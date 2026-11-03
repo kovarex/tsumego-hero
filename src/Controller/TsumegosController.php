@@ -81,13 +81,7 @@ class TsumegosController extends AppController
 
 		if ($setConnectionID)
 		{
-			if (Auth::isLoggedIn())
-			{
-				$setConnection = $this->fetchTable('SetConnection')->find()->select(['tsumego_id'])->where(['id' => (int) $setConnectionID])->first();
-				if ($setConnection)
-					$this->PlayResultProcessor->markAsVisited($setConnection->tsumego_id);
-			}
-			$this->renderPlay((int) $setConnectionID, ['canonicalPath' => '/' . (int) $setConnectionID]);
+			$this->renderPlay((int) $setConnectionID, ['canonicalPath' => '/' . (int) $setConnectionID], markAsVisited: true);
 			return null;
 		}
 
@@ -105,15 +99,12 @@ class TsumegosController extends AppController
 			return $this->redirect('/sets');
 		}
 
-		if (Auth::isLoggedIn())
-			$this->PlayResultProcessor->markAsVisited((int) $id);
-
 		$setConnections = TsumegoUtil::getSetConnectionsWithTitles((int) $id);
 		if (!$setConnections)
 			throw new NotFoundException("Problem not found in any set");
 		$setConnection = $this->deduceRelevantSetConnection($setConnections);
 
-		$this->renderPlay((int) $setConnection['id'], ['canonicalPath' => '/' . $setConnections[0]['id']]);
+		$this->renderPlay((int) $setConnection['id'], ['canonicalPath' => '/' . $setConnections[0]['id']], markAsVisited: true);
 		return null;
 	}
 

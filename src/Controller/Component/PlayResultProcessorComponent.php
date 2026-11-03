@@ -194,15 +194,6 @@ class PlayResultProcessorComponent extends Component
 		return $xp;
 	}
 
-	//Marks a tsumego as visited (status 'V') if no status exists yet.
-	public function markAsVisited(int $tsumegoID): void
-	{
-		Util::execute(
-			'INSERT INTO tsumego_status (user_id, tsumego_id, status) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE status = status',
-			[Auth::getUserID(), $tsumegoID, TsumegoStatusTable::$VISITED]
-		);
-	}
-
 	//Potion: triggers after a fail when damage meets or exceeds max health.
 	public function processPotion(): bool
 	{

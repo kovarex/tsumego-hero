@@ -32,8 +32,9 @@ class Play
 	//($problem), which is all a page will need to show the next problem without loading again.
 	//$classroomAssignment: the class assignment the problem is played in, with its collections, set by
 	//its route (ClassroomsController::play()): its problems are the row of buttons and Next walks them.
+	//$markAsVisited: the normal modes mark a problem the player opens for the first time as visited.
 	/** @param array<string, mixed>|null $classroomAssignment */
-	public function __construct(int $setConnectionID, ServerRequest $request, private ?array $classroomAssignment = null)
+	public function __construct(int $setConnectionID, ServerRequest $request, private ?array $classroomAssignment = null, private bool $markAsVisited = false)
 	{
 		$this->buildPage();
 		$this->buildProblem($setConnectionID, $request);
@@ -272,7 +273,7 @@ class Play
 
 		$tsumegoVariant = TableRegistry::getTableLocator()->get('TsumegoVariant')->find()->where(['tsumego_id' => $tsumegoID])->first();
 		$tsumegoFilters = new TsumegoFilters();
-		$tsumegoStatus = self::tsumegoStatus($tsumegoID);
+		$tsumegoStatus = $this->tsumegoStatus($tsumegoID);
 		$goldenTsumego = $tsumegoStatus == TsumegoStatusTable::$GOLDEN;
 		$amountOfOtherCollection = TsumegoUtil::countTsumegosFromSet((int) $set->id);
 		$sgf = self::acceptedSgf($tsumegoID);
@@ -354,11 +355,19 @@ class Play
 			$text);
 	}
 
-	private static function tsumegoStatus(int $tsumegoID): string
+	//The player's status of the problem, visited when there is none. A first visit is stored when the
+	//route marks it ($markAsVisited); a status written meanwhile by another request is kept, and read.
+	private function tsumegoStatus(int $tsumegoID): string
 	{
 		if (!Auth::isLoggedIn())
 			return TsumegoStatusTable::$VISITED;
-		return TsumegoStatusTable::statusOf(Auth::getUserID(), $tsumegoID) ?? TsumegoStatusTable::$VISITED;
+		$status = TsumegoStatusTable::statusOf(Auth::getUserID(), $tsumegoID);
+		if ($status !== null || !$this->markAsVisited)
+			return $status ?? TsumegoStatusTable::$VISITED;
+		$inserted = Util::execute(
+			'INSERT INTO tsumego_status (user_id, tsumego_id, status) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE status = status',
+			[Auth::getUserID(), $tsumegoID, TsumegoStatusTable::$VISITED]);
+		return $inserted ? TsumegoStatusTable::$VISITED : TsumegoStatusTable::statusOf(Auth::getUserID(), $tsumegoID) ?? TsumegoStatusTable::$VISITED;
 	}
 
 	//The newest accepted SGF of the problem, a placeholder board when it has none
