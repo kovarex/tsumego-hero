@@ -50,6 +50,3 @@ use App\Utility\Constants;
   </div>
 </div>
 <br>
-
-<script>
-	</script>

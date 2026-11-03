@@ -20,6 +20,7 @@ use App\Utility\PwnedPasswordCheckerInterface;
 use App\Utility\Util;
 use Cake\Core\Configure;
 use Cake\Event\EventInterface;
+use Cake\Http\Response;
 use Cake\Log\Log;
 use Cake\Routing\Router;
 use Cake\Validation\Validation;
@@ -94,13 +95,16 @@ class AccountController extends AppController
 
 	#[HttpGet]
 	#[HttpPost]
-	public function resetpassword(): void
+	public function resetpassword(): ?Response
 	{
+		// a signed in player has a password to change in the settings instead
+		if (Auth::isLoggedIn())
+			return $this->redirect('/sets');
 		$this->set('_page', 'user');
 		$this->set('_title', 'Tsumego Hero - Sign In');
 		$this->set('sent', !empty($this->inputs()));
 		if (empty($this->inputs()))
-			return;
+			return null;
 
 		$userEmail = $this->input('email');
 
@@ -111,14 +115,14 @@ class AccountController extends AppController
 			// An address that can not get a link is answered like one that has no account,
 			// so the form says nothing about which addresses are taken. The sign-in page
 			// points Google accounts to their button before they submit this form.
-			return;
+			return null;
 		}
 
 		// Another mail on top of the one just sent only fills the inbox. The answer is
 		// the same either way, so nothing about the account is revealed by skipping it.
 		$askedAt = $user->password_reset_token_created;
 		if ($askedAt && $askedAt->getTimestamp() > strtotime('-' . self::$PASSWORD_RESET_MINUTES_BETWEEN_MAILS . ' minutes'))
-			return;
+			return null;
 
 		$hours = self::$PASSWORD_RESET_LINK_VALID_HOURS;
 		$randomString = Util::generateRandomString(20);
@@ -129,7 +133,7 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 		{
 			$this->set('sent', false);
 			CookieFlash::set('The mail could not be sent. Please try again in a minute.', 'error');
-			return;
+			return null;
 		}
 
 		// The link works with the token alone, so the token is remembered only once the mail
@@ -137,6 +141,7 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 		$this->fetchTable('User')->updateAll([
 			'password_reset_token' => $randomString,
 			'password_reset_token_created' => date('Y-m-d H:i:s')], ['id' => $user->id]);
+		return null;
 	}
 
 	//A mail to the account from the site; send it with linkMailWasSent() or sendNotification()
@@ -202,6 +207,9 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 	#[HttpPost]
 	public function newpassword(?string $checksum = null): mixed
 	{
+		// a signed in player has a password to change in the settings instead
+		if (Auth::isLoggedIn())
+			return $this->redirect('/sets');
 		$this->set('_page', 'user');
 		$this->set('_title', 'Tsumego Hero - Sign In');
 		$this->set('valid', false);
@@ -516,9 +524,10 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 	}
 
 	#[HttpGet]
-	public function logout(): void
+	public function logout(): Response
 	{
 		Auth::logout();
+		return $this->redirect('/');
 	}
 
 	private function validateLogin(array $data, User $user): bool
@@ -528,7 +537,7 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 		return password_verify($data['password'], $user->password_hash);
 	}
 
-	/** @return \Cake\Http\Response|null */
+	/** @return Response|null */
 	#[HttpPost]
 	public function googlesignin()
 	{

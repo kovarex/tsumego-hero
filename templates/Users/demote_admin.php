@@ -2,8 +2,7 @@
 /**
  * @var \App\View\AppView $this
  * @var array $admin
- * @var string $status
- * @var bool $redirect
+ * @var string|null $error Why the role stayed, after a submit that did not demote
  */
 ?>
 <div align="center">
@@ -31,10 +30,7 @@
 
 	echo '<div class="submit"><input type="submit" value="Submit"/></div></form>';
 	echo '<br>';
-	echo $status;
+	if ($error !== null)
+		echo '<p style="color:#d63a49">' . h($error) . '</p>';
 ?>
 </div>
-<?php
-	if($redirect)
-		echo '<script type="text/javascript">window.location.href = "/users/view/' . $admin['id'] . '";</script>';
-?>

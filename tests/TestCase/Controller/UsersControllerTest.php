@@ -681,8 +681,8 @@ class UsersControllerTest extends IntegrationTestCase
 
 		$user = UserTable::row((int) $context->user['id']);
 		$this->assertSame(UserTable::ROLE_PLAYER, (int) $user['user_role_id']);
-		// The view must redirect to the demoted user's own profile with the id filled in.
-		$this->assertStringContainsString('/users/view/' . $context->user['id'], $this->view);
+		// The demoted user is sent to their own profile.
+		$this->assertRedirect('/users/view/' . $context->user['id']);
 	}
 
 	public function testAdminCanDemoteSelfInBrowser()
@@ -699,6 +699,29 @@ class UsersControllerTest extends IntegrationTestCase
 
 		$user = UserTable::row((int) $context->user['id']);
 		$this->assertSame(UserTable::ROLE_PLAYER, (int) $user['user_role_id']);
+	}
+
+	public function testAWrongPasswordKeepsTheAdminRole()
+	{
+		$context = new ContextPreparator(['user' => ['name' => 'admin', 'admin' => true]]);
+
+		$this->post('/users/demote_admin', ['demote' => 'not the password']);
+
+		$this->assertSame(UserTable::ROLE_ADMIN, (int) UserTable::row((int) $context->user['id'])['user_role_id']);
+		$this->assertStringContainsString('Password incorrect.', $this->view);
+	}
+
+	//The pages of a forgotten password and of signing out send a signed in player on
+	public function testTheAccountPagesSendASignedInPlayerOn()
+	{
+		new ContextPreparator(['user' => ['name' => 'player']]);
+
+		$this->get('/users/resetpassword');
+		$this->assertRedirect('/sets');
+		$this->get('/users/newpassword/sometoken');
+		$this->assertRedirect('/sets');
+		$this->get('/users/logout');
+		$this->assertRedirect('/');
 	}
 
 	public function testLastOwnerCantDemoteSelf()

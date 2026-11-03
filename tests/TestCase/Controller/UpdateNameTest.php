@@ -386,7 +386,8 @@ class UpdateNameTest extends IntegrationTestCase
 
 		$this->get('/users/newpassword/reset-checksum');
 
-		$this->assertResponseCode(200);
+		// signed in, the player is sent to the collections, as from any reset link
+		$this->assertRedirect('/sets');
 		$this->assertStringNotContainsString('/users/changename', $this->headerValue('Location') ?? '');
 	}
 

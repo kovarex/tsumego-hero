@@ -276,30 +276,26 @@ class UsersController extends AppController
 		return $this->redirect('/admin/deleted-accounts');
 	}
 
+	//An admin giving up the admin role, confirmed by the password. The profile opens once it is done.
 	#[HttpGet]
 	#[HttpPost]
 	public function demote_admin()
 	{
-		$redirect = false;
-		$status = '';
 		if (!Auth::isLoggedIn())
 			return $this->redirect('/users/login');
 
-		if (!empty($this->inputs()))
-			if ($this->input('demote') !== null)
-				if (password_verify($this->input('demote'), Auth::getUser()['password_hash']))
-				{
-					if ($error = UserTable::changeRole(Auth::getUserID(), UserTable::ROLE_PLAYER))
-						$status = '<p style="color:#d63a49">' . h($error) . '</p>';
-					else
-						$redirect = true;
-				}
-				else
-					$status = '<p style="color:#d63a49">Password incorrect.</p>';
+		$error = null;
+		if ($this->input('demote') !== null)
+		{
+			if (!password_verify($this->input('demote'), Auth::getUser()['password_hash']))
+				$error = 'Password incorrect.';
+			elseif (!($error = UserTable::changeRole(Auth::getUserID(), UserTable::ROLE_PLAYER)))
+				return $this->redirect('/users/view/' . Auth::getUserID());
+		}
 
-		$this->set('redirect', $redirect);
-		$this->set('status', $status);
+		$this->set('error', $error);
 		$this->set('admin', Auth::getUser());
+		return null;
 	}
 
 	#[HttpGet]
