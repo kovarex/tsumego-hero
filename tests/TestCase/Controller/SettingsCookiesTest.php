@@ -1,6 +1,7 @@
 <?php
 
 use App\Model\Table\UserTable;
+use App\Utility\BoardSelector;
 use App\Utility\Util;
 
 //The theme, sound and level bar cookies carry a change a signed in player made to the account
@@ -92,5 +93,22 @@ class SettingsCookiesTest extends IntegrationTestCase
 
 		$this->assertSame(UserTable::THEME_LIGHT, (int) $context->reloadUser()['theme_id']);
 		$this->assertSame('light', $browser->driver->executeScript('return document.documentElement.dataset.theme;'));
+	}
+
+	//A guest's choice of boards is taken from the cookie it came in, and only a cookie that came is dropped
+	public function testTheBoardsOfAGuestComeFromTheCookieTheyCameIn(): void
+	{
+		new ContextPreparator(['user' => null]);
+		// what a request sends is kept for the tests across requests, so this one is told apart
+		Util::setCookie('boards_bitmask', 'before');
+		unset($_COOKIE['boards_bitmask']);
+		$this->get('/sites/impressum');
+		$this->assertSame('before', Util::sentCookie('boards_bitmask')['value']);
+		$this->assertSame(BoardSelector::$DEFAULT_BOARDS_BITMASK, $this->viewVariable('boardsBitmask'));
+
+		$_COOKIE['boards_bitmask'] = '3';
+		$this->get('/sites/impressum');
+		$this->assertSame('', Util::sentCookie('boards_bitmask')['value']);
+		$this->assertSame(3, $this->viewVariable('boardsBitmask'));
 	}
 }
