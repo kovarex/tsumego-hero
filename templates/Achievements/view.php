@@ -113,3 +113,4 @@ $markedCollections = count(array_filter($collections, fn(array $collection) => $
 	<?php endif; ?>
 	</font>
 	</div>
+</div>
