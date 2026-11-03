@@ -1351,8 +1351,8 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 	{
 		$links = 'return Array.from(document.querySelectorAll("#editSection > p > a")).map(link => link.textContent.trim());';
 		foreach ([
-			[['admin' => true], ['Open', 'Download SGF', 'Find Similar Problems', 'History', 'Rating', 'Request Solution']],
-			[['admin' => false, 'rating' => Constants::$MINIMUM_RATING_TO_CONTRIBUTE], ['Make Proposal', 'Download SGF', 'Find Similar Problems']]] as [$user, $expected])
+			[['admin' => true], ['Open', 'Find Similar Problems', 'History', 'Rating', 'Request Solution']],
+			[['admin' => false, 'rating' => Constants::$MINIMUM_RATING_TO_CONTRIBUTE], ['Make Proposal', 'Find Similar Problems']]] as [$user, $expected])
 		{
 			$context = new ContextPreparator(['user' => $user, 'tsumego' => ['set_order' => 1, 'status' => 'S', 'sgf' => '(;GM[1]FF[4]SZ[19]AB[cc];B[aa]C[+])']]);
 			$browser = Browser::instance();

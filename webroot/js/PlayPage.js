@@ -213,9 +213,6 @@ $(document).ready(function(){
 	$("#potionAlertCheckbox").change(function(){
 		$("#potionAlerts").fadeOut(500);
 	});
-	$("#showx3").click(function(){
-		jsCreateDownloadFile(playPage.problem.downloadName);
-	});
 	$("#findSimilarProblems").click(function(){
 		$('.loader-container').css({"display": "flex"});
 		window.location.href = "/tsumegos/duplicatesearch/" + playPage.problem.setConnectionID;
@@ -229,19 +226,8 @@ function displaySolutionRequest(){
 
 function displaySettings(){
 	$("#showx99").css("display", "none");
-	enableDownloads = true;
-	$("#showx3").css("display", "inline-block");
 	$("#openSgfLink").css("display", "inline-block");
 	$(".play-edit-toggle--after-solve").css("display", "inline");
-}
-
-function jsCreateDownloadFile(name){
-	if(enableDownloads){
-		var blob = new Blob([playPage.problem.sgf],{
-			type: "sgf",
-		});
-		saveAs(blob, name+".sgf");
-}
 }
 
 function rejuvenation(){

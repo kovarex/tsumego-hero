@@ -40,7 +40,6 @@ $variantType = $tv ? (int) $tv->tsumego_variant_type_id : null;
 		<?php elseif ($isAllowedToContribute): ?>
 			<a id="openSgfLink" href="/editor/?setConnectionID=<?php echo $setConnection->id; ?>&sgfID=<?php echo $sgf->id; ?>&proposal=1" class="selectable-text mr-5">Make Proposal</a>
 		<?php endif; ?>
-		<a id="showx3" class="selectable-text mr-5">Download SGF</a>
 		<a id="findSimilarProblems" class="selectable-text mr-5">Find Similar Problems</a>
 		<?php if (Auth::isAdmin()): ?>
 			<?php //the history is worth a look once a person changed the problem, not for an automatic version alone ?>
