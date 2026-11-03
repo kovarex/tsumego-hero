@@ -62,7 +62,6 @@ class Play
 	{
 		$problem = $this->problem;
 		$tsumego = $problem['tsumego'];
-		$set = $problem['set'];
 		$setConnection = $problem['setConnection'];
 		$variant = $problem['tv'];
 		$semeai = $problem['semeai'];
@@ -120,7 +119,6 @@ class Play
 				'userSets' => $problem['userSets'],
 				'pass' => (bool) $tsumego->pass,
 				'sgf' => $problem['sgf']->sgf,
-				'downloadName' => str_replace('&', 'and', $set->title) . ' ' . $setConnection->num,
 				'corner' => $problem['corner'],
 				'playerColor' => $problem['playerColor'],
 				'swapColors' => $problem['swapColors'],

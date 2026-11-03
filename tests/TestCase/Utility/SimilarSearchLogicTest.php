@@ -3,8 +3,7 @@
 #[RetryOnBrowserFailure]
 class SimilarSearchLogicTest extends AppTestCase
 {
-	//Looking for similar problems tells nothing about the solution, so it is there before the problem is solved,
-	//unlike the download of the SGF
+	//Looking for similar problems tells nothing about the solution, so it is there before the problem is solved
 	public function testFindSimilarProblemsIsInMoreOfAnUnsolvedProblem()
 	{
 		$browser = Browser::instance();
@@ -13,7 +12,6 @@ class SimilarSearchLogicTest extends AppTestCase
 		$browser->get('/' . $context->setConnections[0]['id']);
 		$browser->openPlayEditSection();
 		$this->assertTrue($browser->find('#findSimilarProblems')->isDisplayed());
-		$this->assertFalse($browser->find('#showx3')->isDisplayed(), 'The SGF is downloaded only once the problem is solved');
 	}
 
 	public function testSimilarSearchSameProblem()

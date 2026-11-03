@@ -55,7 +55,6 @@ let customMultipleChoiceAnswer = 0;
 //The explanation a multiple choice question shows after the answer
 let mText = "";
 let hasChosen = false;
-let enableDownloads = false;
 var boardLockValue = 0;
 let passEnabled = (playPage.problem.pass ? 1 : 0) + "";
 let besogoRotation = -1;

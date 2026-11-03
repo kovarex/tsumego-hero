@@ -32,18 +32,20 @@ $variantType = $tv ? (int) $tv->tsumego_variant_type_id : null;
 ?>
 <div id="editSection" class="play-edit" style="display: none;">
 	<p>
-		<a id="showx3" class="selectable-text mr-5">Download SGF</a>
-		<a id="findSimilarProblems" class="selectable-text mr-5">Find Similar Problems</a>
+		<?php //Opening the problem in the editor, or proposing a change in it, comes first ?>
 		<?php if (Auth::isAdmin()): ?>
 			<a id="openSgfLink" href="/editor/?setConnectionID=<?php echo $setConnection->id; ?>&sgfID=<?php echo $sgf->id; ?>" class="selectable-text mr-5">Open</a>
-			<?php //the history is worth a look once a person changed the problem, not for an automatic version alone ?>
-			<a id="showx6" href="/sgfs/view/<?php echo $tsumego->id; ?>" class="selectable-text mr-5 <?php echo $sgf->user_id !== null ? 'historyLink' : ''; ?>">History</a>
-			<a id="showx8" href="/tsumegos/history/<?php echo $setConnection->id; ?>" class="selectable-text mr-5">Rating</a>
-			<a id="showx99" class="selectable-text mr-5">Request Solution</a>
 		<?php elseif ($isAllowedToContribute && $hasSgfProposal): ?>
 			<a id="openSgfLink" href="/editor/?setConnectionID=<?php echo $setConnection->id; ?>&sgfID=<?php echo $sgf->id; ?>&proposal=1" class="selectable-text mr-5" style="color:var(--text-softer-color);">Proposal sent</a>
 		<?php elseif ($isAllowedToContribute): ?>
 			<a id="openSgfLink" href="/editor/?setConnectionID=<?php echo $setConnection->id; ?>&sgfID=<?php echo $sgf->id; ?>&proposal=1" class="selectable-text mr-5">Make Proposal</a>
+		<?php endif; ?>
+		<a id="findSimilarProblems" class="selectable-text mr-5">Find Similar Problems</a>
+		<?php if (Auth::isAdmin()): ?>
+			<?php //the history is worth a look once a person changed the problem, not for an automatic version alone ?>
+			<a id="showx6" href="/sgfs/view/<?php echo $tsumego->id; ?>" class="selectable-text mr-5 <?php echo $sgf->user_id !== null ? 'historyLink' : ''; ?>">History</a>
+			<a id="showx8" href="/tsumegos/history/<?php echo $setConnection->id; ?>" class="selectable-text mr-5">Rating</a>
+			<a id="showx99" class="selectable-text mr-5">Request Solution</a>
 		<?php endif; ?>
 	</p>
 	<?php if ($hasDuplicates): ?>

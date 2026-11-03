@@ -64,13 +64,6 @@ class TsumegosControllerTest extends IntegrationTestCase
 		$this->assertStringNotContainsString('historyLink', $this->getStringDom()->getElementById('showx6')->getAttribute('class'));
 	}
 
-	public function testTheSgfDownloadIsNamedAfterTheCollectionAndTheProblemNumber(): void
-	{
-		$context = new ContextPreparator(['tsumego' => ['set_order' => 666]]);
-		$this->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
-		$this->assertSame('test set 666', $this->playPage()['problem']['downloadName']);
-	}
-
 	public function testTheFirstProblemOfACollectionLeadsBackToTheCollectionPage(): void
 	{
 		$context = new ContextPreparator([
