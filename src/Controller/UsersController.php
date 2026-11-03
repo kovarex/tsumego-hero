@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use Cake\Core\Configure;
 use Cake\Http\Exception\NotFoundException;
 use Cake\Http\Response;
 use InvalidArgumentException;
@@ -291,18 +292,29 @@ class UsersController extends AppController
 		if (!Auth::isLoggedIn())
 			return $this->redirect('/users/login');
 
+		$admin = Auth::getUser();
+		$isGoogleUser = UserTable::isGoogleUser($admin);
 		$error = null;
 		if ($this->input('demote') !== null)
 		{
-			if (!password_verify($this->input('demote'), Auth::getUser()['password_hash']))
-				$error = 'Password incorrect.';
+			if ($isGoogleUser ? !hash_equals(self::demotionToken((int) $admin['id']), (string) $this->input('demote')) : !password_verify((string) $this->input('demote'), $admin['password_hash']))
+				$error = $isGoogleUser ? 'The form has expired, please submit it again.' : 'Password incorrect.';
 			elseif (!($error = UserTable::changeRole(Auth::getUserID(), UserTable::ROLE_PLAYER)))
 				return $this->redirect('/users/view/' . Auth::getUserID());
 		}
 
 		$this->set('error', $error);
-		$this->set('admin', Auth::getUser());
+		$this->set('admin', $admin);
+		$this->set('demotionToken', $isGoogleUser ? self::demotionToken((int) $admin['id']) : null);
 		return null;
+	}
+
+	//What the demotion form of a Google account carries instead of a password: the account has
+	//none, and the cookie of the session is sent along by a form on any other site too, so only a
+	//form this site rendered for the account can demote it.
+	private static function demotionToken(int $userID): string
+	{
+		return hash_hmac('sha256', 'demote_admin ' . $userID, Configure::read('Security.salt'));
 	}
 
 	#[HttpGet]

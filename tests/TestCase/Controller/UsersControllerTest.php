@@ -697,6 +697,30 @@ class UsersControllerTest extends IntegrationTestCase
 		$this->assertResponseCode(302);
 	}
 
+	//A Google account has no password: the form it gets confirms the demotion by itself.
+	public function testGoogleAdminCanDemoteSelf()
+	{
+		$context = new ContextPreparator(['user' => ['name' => 'googleAdmin', 'admin' => true, 'external_id' => 'google-123']]);
+
+		$this->get('/users/demote_admin');
+		$this->assertMatchesRegularExpression('/name="demote" value="([0-9a-f]{64})"/', $this->view);
+		preg_match('/name="demote" value="([0-9a-f]{64})"/', $this->view, $token);
+		$this->post('/users/demote_admin', ['demote' => $token[1]]);
+
+		$this->assertRedirect('/users/view/' . $context->user['id']);
+		$this->assertSame(UserTable::ROLE_PLAYER, (int) UserTable::row((int) $context->user['id'])['user_role_id']);
+	}
+
+	//A form of another site sends the session cookie along, but not the token of the account.
+	public function testGoogleAdminIsNotDemotedByAFormOfAnotherSite()
+	{
+		$context = new ContextPreparator(['user' => ['name' => 'googleAdmin', 'admin' => true, 'external_id' => 'google-123']]);
+
+		$this->post('/users/demote_admin', ['demote' => 'o474w544a4n4q5g4y2']);
+
+		$this->assertSame(UserTable::ROLE_ADMIN, (int) UserTable::row((int) $context->user['id'])['user_role_id']);
+	}
+
 	public function testAdminCanDemoteSelf()
 	{
 		$context = new ContextPreparator(['user' => ['name' => 'admin', 'admin' => true]]);
