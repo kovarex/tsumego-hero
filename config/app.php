@@ -64,7 +64,7 @@ return [
 	//(see App\Mailer\Transport\DkimMailTransport), unsigned without it.
 	'EmailTransport' => ['default' => ['className' => 'DkimMail']],
 	//Quoted-printable keeps the body 7-bit, so no relay re-encodes it and breaks the DKIM body hash.
-	'Email' => ['default' => ['transport' => 'default', 'from' => ['noreply@tsumego.com' => 'Tsumego Hero'], 'transferEncoding' => 'quoted-printable']],
+	'Email' => ['default' => ['transport' => 'default', 'from' => ['no-reply@tsumego.com' => 'Tsumego Hero'], 'transferEncoding' => 'quoted-printable']],
 	'Datasources' => [
 		'default' => [
 			'className' => Connection::class,
