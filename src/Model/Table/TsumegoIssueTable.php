@@ -254,29 +254,24 @@ class TsumegoIssueTable extends AppTable
 		return ['open' => (int) $row['open'], 'closed' => (int) $row['closed']];
 	}
 
-	//Get comment section counts for a specific tsumego.
-	//Used for updating the comment tabs (ALL/COMMENTS/ISSUES).
+	//What the tabs of the comment section count on a problem: its standalone comments, its issues and
+	//the open ones among them. The play page asks for it on every view, so it is one query.
 	/** @return array{total: int, comments: int, issues: int, openIssues: int} */
 	public static function getCommentSectionCounts(int $tsumegoId): array
 	{
-		// Count standalone comments (not in any issue)
-		$commentCount = TableRegistry::getTableLocator()->get('TsumegoComment')->find()
-			->where(['tsumego_id' => $tsumegoId, 'tsumego_issue_id IS' => null, 'deleted IS' => null])
-			->count();
-
-		$tsumegoIssueTable = TableRegistry::getTableLocator()->get('TsumegoIssue');
-
-		// Count issues for this tsumego
-		$issueCount = $tsumegoIssueTable->find()->where(['tsumego_id' => $tsumegoId])->count();
-
-		// Count open issues for this tsumego
-		$openIssueCount = $tsumegoIssueTable->find()->where(['tsumego_id' => $tsumegoId, 'tsumego_issue_status_id' => self::OPENED_STATUS])->count();
-
+		$row = Util::query('SELECT
+				(SELECT COUNT(*) FROM tsumego_comment WHERE tsumego_id = ? AND tsumego_issue_id IS NULL AND deleted IS NULL) AS comments,
+				COUNT(*) AS issues,
+				COALESCE(SUM(tsumego_issue_status_id = ?), 0) AS open_issues
+			FROM tsumego_issue WHERE tsumego_id = ?',
+			[$tsumegoId, self::OPENED_STATUS, $tsumegoId])[0];
+		$comments = (int) $row['comments'];
+		$issues = (int) $row['issues'];
 		return [
-			'total' => $commentCount + $issueCount,
-			'comments' => $commentCount,
-			'issues' => $issueCount,
-			'openIssues' => $openIssueCount,
+			'total' => $comments + $issues,
+			'comments' => $comments,
+			'issues' => $issues,
+			'openIssues' => (int) $row['open_issues'],
 		];
 	}
 
