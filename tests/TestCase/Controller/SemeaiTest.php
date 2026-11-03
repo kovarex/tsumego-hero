@@ -84,4 +84,39 @@ class SemeaiTest extends IntegrationTestCase
 
 		$this->assertFalse($this->fetchTable('TsumegoSemeai')->exists(['tsumego_id' => $tsumegoID]));
 	}
+
+	//The answer is checked against the liberties the page left each side, and the race is explained
+	public function testTheAnswerIsCheckedAndExplained(): void
+	{
+		$context = new ContextPreparator(['tsumego' => [
+			'set_order' => 1,
+			'sgf' => '(;GM[1]FF[4]SZ[19]TR[aa][ab][ac]SQ[ba][bb][bc];B[cc])',
+			'semeai' => [
+				'semeai_type_id' => SemeaiTypeTable::TYPE_BIG_EYE_VS_SMALLER_EYE,
+				'liberty_count' => 6,
+				'minimum_liberties' => 1,
+				'maximum_liberties' => 6,
+				'variance' => 2,
+				'inside_liberties' => 0]]]);
+		$browser = Browser::instance();
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+
+		// the liberties each side keeps: its count less those taken by the other color's marks
+		$question = $browser->driver->executeScript('return window.eval("playPage.problem.semeai.question");');
+		$black = 6 - $question['libertiesW'];
+		$white = 6 - $question['libertiesB'];
+		$correct = $black < $white ? 1 : ($black > $white ? 2 : 3);
+		$browser->clickId('besogo-multipleChoice' . $correct);
+
+		$this->assertTrue($browser->find('#multipleChoiceAlerts')->isDisplayed());
+		$explanation = $browser->find('#multipleChoiceText')->getText();
+		$this->assertStringContainsString('Semeai Type 5: Big eye vs smaller eye.', $explanation);
+		$this->assertStringContainsString("Black has $black liberties.", $explanation);
+		$this->assertStringContainsString("White has $white liberties.", $explanation);
+		foreach ([1, 2, 3, 4] as $answer)
+			$this->assertSame(
+				$answer === $correct ? 'rgb(62, 207, 120)' : 'rgb(224, 116, 127)',
+				$browser->find('#besogo-multipleChoice' . $answer)->getCssValue('background-color'),
+				"answer $answer");
+	}
 }

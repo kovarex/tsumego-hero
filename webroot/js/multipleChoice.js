@@ -1,536 +1,218 @@
-function displayMultipleChoiceResult(num) {
-  let correct = 0;
-  let mText = "";
-  let mText2 = "";
-  let mText3 = 0;
-  let mTextPlural = "s";
-  let libPlural1 = "liberties";
-  let libPlural2 = "liberties";
-  let multipleChoiceLibertiesB2 =
-    multipleChoiceLibertyCount - multipleChoiceLibertiesB;
-  let multipleChoiceLibertiesW2 =
-    multipleChoiceLibertyCount - multipleChoiceLibertiesW;
-  let libCalcB, libCalcW, libCalcB2, libCalcW2, libCalc3;
-  let blackLiberties = multipleChoiceLibertyCount - multipleChoiceLibertiesW;
-  let whiteLiberties = multipleChoiceLibertyCount - multipleChoiceLibertiesB;
-
-  if (!hasChosen) {
-    $("#besogo-multipleChoice1").css("background-color", "#e0747f");
-    $("#besogo-multipleChoice2").css("background-color", "#e0747f");
-    $("#besogo-multipleChoice3").css("background-color", "#e0747f");
-    $("#besogo-multipleChoice4").css("background-color", "#e0747f");
-    if (multipleChoiceSemeaiType == 1) {
-      if (blackLiberties < whiteLiberties) {
-        correct = 1;
-        $("#besogo-multipleChoice1").css("background-color", "#3ecf78");
-        mText3 = multipleChoiceLibertiesW - multipleChoiceLibertiesB;
-        if (mText3 == 1) mTextPlural = "";
-        mText2 =
-          "Black is dead. (" + mText3 + " move" + mTextPlural + " behind)";
-      } else if (blackLiberties > whiteLiberties) {
-        correct = 2;
-        $("#besogo-multipleChoice2").css("background-color", "#3ecf78");
-        mText3 = multipleChoiceLibertiesB - multipleChoiceLibertiesW;
-        if (mText3 == 1) mTextPlural = "";
-        mText2 =
-          "White is dead. (" + mText3 + " move" + mTextPlural + " behind)";
-      } else {
-        correct = 3;
-        $("#besogo-multipleChoice3").css("background-color", "#3ecf78");
-        mText2 = "The position is unsettled. (Whoever plays first wins.)";
-      }
-      if (blackLiberties == 1) libPlural1 = "liberty";
-      if (whiteLiberties == 1) libPlural2 = "liberty";
-      mText =
-        "Semeai Type 1: No eyes, less than 2 inside liberties.<br>No Seki possible.<br> Black has " +
-        blackLiberties +
-        " " +
-        libPlural1 +
-        ".<br> White has " +
-        whiteLiberties +
-        " " +
-        libPlural2 +
-        ".<br>" +
-        mText2;
-    } else if (multipleChoiceSemeaiType == 2) {
-      mText =
-        "Semeai Type 2: No eyes, 2 or more inside liberties.<br>The favorite's task is to kill.<br>The favorite counts his outside liberties plus 1 inside liberty.<br>The underdog's task is Seki.<br>The underdog counts his outside liberties plus all inside liberties.<br>";
-      let underdog = "Black";
-      if (tsumegoID == 29813) {
-        mText += "Seki.<br>";
-        $("#besogo-multipleChoice4").css("background-color", "#3ecf78");
-        correct = 4;
-      } else if (multipleChoiceLibertiesB < multipleChoiceLibertiesW) {
-        mText += "White is the favorite with more outside liberties.<br>";
-        underdog = "Black";
-        libCalcB =
-          parseInt(multipleChoiceLibertyCount) -
-          parseInt(multipleChoiceLibertiesW) +
-          parseInt(multipleChoiceInsideLiberties);
-        libCalcW =
-          parseInt(multipleChoiceLibertyCount) -
-          parseInt(multipleChoiceLibertiesB) +
-          1;
-        libCalcB2 =
-          parseInt(multipleChoiceLibertyCount) -
-          parseInt(multipleChoiceLibertiesW);
-        libCalcW2 =
-          parseInt(multipleChoiceLibertyCount) -
-          parseInt(multipleChoiceLibertiesB);
-        if (libCalcB == 1) libPlural1 = "liberty";
-        if (libCalcW == 1) libPlural2 = "liberty";
-        mText +=
-          "Black has " +
-          libCalcB +
-          " " +
-          libPlural1 +
-          ".(underdog: " +
-          libCalcB2 +
-          " outside + " +
-          multipleChoiceInsideLiberties +
-          " inside)<br>";
-        mText +=
-          "White has " +
-          libCalcW +
-          " " +
-          libPlural2 +
-          ".(favorite: " +
-          libCalcW2 +
-          " outside + 1 inside)<br>";
-        libCalc3 = libCalcW - libCalcB;
-        if (libCalc3 === 0) {
-          mText += "Unsettled. (whoever plays first accomplishes the task)<br>";
-          $("#besogo-multipleChoice3").css("background-color", "#3ecf78");
-          correct = 3;
-        } else if (libCalc3 < 0) {
-          mText += "Seki.<br>";
-          $("#besogo-multipleChoice4").css("background-color", "#3ecf78");
-          correct = 4;
-        } else {
-          mText += "Black is dead. (" + libCalc3 + " move(s) behind)<br>";
-          $("#besogo-multipleChoice1").css("background-color", "#3ecf78");
-          correct = 1;
-        }
-      } else if (multipleChoiceLibertiesB > multipleChoiceLibertiesW) {
-        mText += "Black is the favorite with more outside liberties.<br>";
-        underdog = "White";
-        libCalcB =
-          parseInt(multipleChoiceLibertyCount) -
-          parseInt(multipleChoiceLibertiesW) +
-          1;
-        libCalcW =
-          parseInt(multipleChoiceLibertyCount) -
-          parseInt(multipleChoiceLibertiesB) +
-          parseInt(multipleChoiceInsideLiberties);
-        libCalcB2 =
-          parseInt(multipleChoiceLibertyCount) -
-          parseInt(multipleChoiceLibertiesW);
-        libCalcW2 =
-          parseInt(multipleChoiceLibertyCount) -
-          parseInt(multipleChoiceLibertiesB);
-        if (libCalcB == 1) libPlural1 = "liberty";
-        if (libCalcW == 1) libPlural2 = "liberty";
-        mText +=
-          "White has " +
-          libCalcW +
-          " " +
-          libPlural2 +
-          ".(underdog: " +
-          libCalcW2 +
-          " outside + " +
-          multipleChoiceInsideLiberties +
-          " inside)<br>";
-        mText +=
-          "Black has " +
-          libCalcB +
-          " " +
-          libPlural1 +
-          ".(favorite: " +
-          libCalcB2 +
-          " outside + 1 inside)<br>";
-        libCalc3 = libCalcB - libCalcW;
-        if (libCalc3 === 0) {
-          mText += "Unsettled. (whoever plays first accomplishes the task)<br>";
-          $("#besogo-multipleChoice3").css("background-color", "#3ecf78");
-          correct = 3;
-        } else if (libCalc3 < 0) {
-          mText += "Seki.<br>";
-          $("#besogo-multipleChoice4").css("background-color", "#3ecf78");
-          correct = 4;
-        } else {
-          mText += "White is dead. (" + libCalc3 + " move(s) behind)<br>";
-          $("#besogo-multipleChoice2").css("background-color", "#3ecf78");
-          correct = 2;
-        }
-      } else {
-        mText += "Seki - same amount of liberties.<br>";
-        $("#besogo-multipleChoice4").css("background-color", "#3ecf78");
-        correct = 4;
-      }
-    } else if (multipleChoiceSemeaiType == 3)
+//The answer to the question of a semeai problem (the play page asks who wins the capturing race):
+//the four choices are coloured right and wrong and the explanation of the race is shown.
+//num: the choice of the player, as the SEMEAI_ANSWER below
+function displayMultipleChoiceResult(num)
+{
+	if (hasChosen)
+		return;
+	const {text, correct} = semeaiExplanation();
+	for (let answer = 1; answer <= 4; answer++)
+		$("#besogo-multipleChoice" + answer).css("background-color", answer == correct ? "#3ecf78" : "#e0747f");
+	if (num == correct)
 	{
-		let moreText = "";
-      if (tsumegoID == 29824)
-        moreText =
-          "White can play 2 under the stones tesujis to gain 2 more liberties.<br>";
-      if (
-        (tsumegoID == 29824 &&
-          multipleChoiceLibertiesB == 1 &&
-          multipleChoiceLibertiesW == 2) ||
-        (tsumegoID == 29825 &&
-          multipleChoiceLibertiesB == 1 &&
-          multipleChoiceLibertiesW == 2) ||
-        (tsumegoID == 29826 &&
-          multipleChoiceLibertiesB == 1 &&
-          multipleChoiceLibertiesW == 2)
-      ) {
-        multipleChoiceLibertiesB = 1;
-        multipleChoiceLibertiesW = 1;
-        multipleChoiceLibertiesB2 = 5;
-        multipleChoiceLibertiesW2 = 5;
-        if (tsumegoID == 29824) {
-          multipleChoiceLibertiesB2 = 7;
-          multipleChoiceLibertiesW2 = 7;
-        }
-      } else if (
-        tsumegoID == 29827 &&
-        multipleChoiceLibertiesB == 1 &&
-        multipleChoiceLibertiesW == 2
-      ) {
-        multipleChoiceLibertiesB = 1;
-        multipleChoiceLibertiesW = 1;
-        multipleChoiceLibertiesB2 = 15;
-        multipleChoiceLibertiesW2 = 15;
-      }
-      if (multipleChoiceLibertiesB < multipleChoiceLibertiesW) {
-        correct = 1;
-        $("#besogo-multipleChoice1").css("background-color", "#3ecf78");
-        mText3 = multipleChoiceLibertiesW - multipleChoiceLibertiesB;
-        if (mText3 == 1) mTextPlural = "";
-        mText2 =
-          "Black is dead. (" + mText3 + " move" + mTextPlural + " behind)";
-      } else if (multipleChoiceLibertiesB > multipleChoiceLibertiesW) {
-        correct = 2;
-        $("#besogo-multipleChoice2").css("background-color", "#3ecf78");
-        mText3 = multipleChoiceLibertiesB - multipleChoiceLibertiesW;
-        if (mText3 == 1) mTextPlural = "";
-        mText2 =
-          "White is dead. (" + mText3 + " move" + mTextPlural + " behind)";
-      } else {
-        correct = 3;
-        $("#besogo-multipleChoice3").css("background-color", "#3ecf78");
-        mText2 = "The position is unsettled. (Whoever plays first wins.)";
-      }
-      if (multipleChoiceLibertiesW2 == 1) libPlural1 = "liberty";
-      if (multipleChoiceLibertiesB2 == 1) libPlural2 = "liberty";
-      mText =
-        "Semeai Type 3: Eye vs no eye.<br>No Seki possible.<br> All inside liberties count for the group with the eye.<br>Black has " +
-        multipleChoiceLibertiesW2 +
-        " " +
-        libPlural1 +
-        ".<br> White has " +
-        multipleChoiceLibertiesB2 +
-        " " +
-        libPlural2 +
-        ".<br>" +
-        moreText +
-        mText2;
-    } else if (multipleChoiceSemeaiType == 4) {
-      let x3 = "";
-      let bx1 = "";
-      let wx1 = "";
-      let blackLibertiesBefore = "";
-      let whiteLibertiesBefore = "";
-      let fav = "";
-      let bwSum = "";
-      let plural = "";
-      let x1 = "";
-      let x5 = "";
-      let x2 = "";
-      if (blackLiberties > whiteLiberties) {
-        fav = "Black is the favorite with more exclusive liberties.<br>";
-        blackLibertiesBefore = blackLiberties;
-        whiteLibertiesBefore = whiteLiberties;
-        whiteLiberties += parseInt(multipleChoiceInsideLiberties);
-        bx1 = "favorite: " + blackLibertiesBefore + " exclusive liberties";
-        wx1 =
-          "underdog: " +
-          whiteLibertiesBefore +
-          " exclusive + " +
-          multipleChoiceInsideLiberties +
-          " inside";
-      } else if (whiteLiberties > blackLiberties) {
-        fav = "White is the favorite with more exclusive liberties.<br>";
-        whiteLibertiesBefore = whiteLiberties;
-        blackLibertiesBefore = blackLiberties;
-        blackLiberties += parseInt(multipleChoiceInsideLiberties);
-        bx1 =
-          "underdog: " +
-          blackLibertiesBefore +
-          " exclusive + " +
-          multipleChoiceInsideLiberties +
-          " inside";
-        wx1 = "favorite: " + whiteLibertiesBefore + " exclusive liberties";
-      } else {
-        fav = "Seki - same amount of liberties.<br>";
-        correct = 4;
-        $("#besogo-multipleChoice4").css("background-color", "#3ecf78");
-      }
-      if (whiteLiberties > blackLiberties) {
-        bwSum = whiteLiberties - blackLiberties;
-        plural = "";
-        if (bwSum > 1) plural = "s";
+		displayResult("S");
+		$(".toast__banner").addClass("toast__banner--success");
+		$(".toast__banner").html('Correct!<span class="toast__close">x</span>');
+	}
+	else
+	{
+		displayResult("F");
+		$(".toast__banner").addClass("toast__banner--error");
+		$(".toast__banner").html('Incorrect!<span class="toast__close">x</span>');
+	}
+	$("#multipleChoiceText").html(text);
+	$("#multipleChoiceAlerts").fadeIn(500);
+	hasChosen = true;
+}
 
-        if (fav == "Black is the favorite with more exclusive liberties.<br>") {
-          x1 =
-            "Seki. (Black is " +
-            bwSum +
-            " move" +
-            plural +
-            " behind for killing)";
-          correct = 4;
-          $("#besogo-multipleChoice4").css("background-color", "#3ecf78");
-        } else {
-          x1 = "Black is dead. (" + bwSum + " move" + plural + " behind)";
-          correct = 1;
-          $("#besogo-multipleChoice1").css("background-color", "#3ecf78");
-        }
-      }
-      if (whiteLiberties < blackLiberties) {
-        bwSum = blackLiberties - whiteLiberties;
-        plural = "";
-        if (bwSum > 1) plural = "s";
-        if (fav == "White is the favorite with more exclusive liberties.<br>") {
-          x1 =
-            "Seki. (White is " +
-            bwSum +
-            " move" +
-            plural +
-            " behind for killing)";
-          correct = 4;
-          $("#besogo-multipleChoice4").css("background-color", "#3ecf78");
-        } else {
-          x1 = "White is dead. (" + bwSum + " move" + plural + " behind)";
-          correct = 2;
-          $("#besogo-multipleChoice2").css("background-color", "#3ecf78");
-        }
-      }
-      if (
-        whiteLiberties == blackLiberties &&
-        fav !== "Seki - same amount of liberties.<br>"
-      ) {
-        x1 = "Unsettled. (whoever plays first accomplishes the task)";
-        correct = 3;
-        $("#besogo-multipleChoice3").css("background-color", "#3ecf78");
-      }
+const SEMEAI_ANSWER = {blackDead: 1, whiteDead: 2, unsettled: 3, seki: 4};
 
-      if (fav !== "Seki - same amount of liberties.<br>") {
-        x3 =
-          "Black has " +
-          blackLiberties +
-          " liberties. (" +
-          bx1 +
-          ")<br> White has " +
-          whiteLiberties +
-          " liberties. (" +
-          wx1 +
-          ")<br>" +
-          x1;
-        if (multipleChoiceInsideLiberties == 0) {
-          x3 =
-            "Black has " +
-            blackLiberties +
-            " liberties. <br> White has " +
-            whiteLiberties +
-            " liberties. <br>" +
-            x1;
-        }
-      } else {
-        if (multipleChoiceInsideLiberties == 0) {
-          x1 = "Unsettled. (whoever plays first wins)";
-          x3 =
-            "Black has " +
-            blackLiberties +
-            " liberties. <br> White has " +
-            whiteLiberties +
-            " liberties. <br>" +
-            x1;
-          correct = 3;
-          $("#besogo-multipleChoice3").css("background-color", "#3ecf78");
-          $("#besogo-multipleChoice4").css("background-color", "#e0747f");
-        }
-      }
-      if (multipleChoiceInsideLiberties == 0) {
-        x5 = "No Seki possible because there are no inside liberties.<br>";
-        fav = "";
-      } else {
-        x5 =
-          "Seki possible if there is one or more inside liberties.<br>The favorite's task is to kill.<br>The favorite counts his exclusive liberties.<br>The underdog's task is Seki.<br>The underdog counts his exclusive plus all inside liberties.<br>";
-      }
-      mText =
-        "Semeai Type 4: Same sized big eyes.<br>" + x5 + " " + fav + " " + x3;
-    } else if (multipleChoiceSemeaiType == 5) {
-      let x3 = "";
-      let bx1 = "";
-      let wx1 = "";
-      let blackLibertiesBefore = "";
-      let whiteLibertiesBefore = "";
-      let fav = "";
-      let bwSum = "";
-      let plural = "";
-      let x1 = "";
-      let x5 = "";
-      let x2 = "";
-      let sum1 = "";
-      let sum2 = "";
-      if (whiteLiberties > blackLiberties) {
-        sum1 = whiteLiberties - blackLiberties;
-        sum2 = "";
-        if (sum1 > 1) sum2 = "s";
-        x1 = "Black is dead. (" + sum1 + " move" + sum2 + " behind)";
-        correct = 1;
-        $("#besogo-multipleChoice1").css("background-color", "#3ecf78");
-      }
-      if (whiteLiberties < blackLiberties) {
-        sum1 = blackLiberties - whiteLiberties;
-        sum2 = "";
-        if (sum1 > 1) sum2 = "s";
-        x1 = "White is dead. (" + sum1 + " move" + sum2 + " behind)";
-        correct = 2;
-        $("#besogo-multipleChoice2").css("background-color", "#3ecf78");
-      }
-      if (whiteLiberties == blackLiberties) {
-        x1 = "The position is unsettled. (whoever plays first wins)";
-        correct = 3;
-        $("#besogo-multipleChoice3").css("background-color", "#3ecf78");
-      }
-      mText =
-        "Semeai Type 5: Big eye vs smaller eye.<br>No Seki possible.<br> All inside liberties count for the group with the bigger eye.<br> Black has " +
-        blackLiberties +
-        " liberties.<br> White has " +
-        whiteLiberties +
-        " liberties.<br>" +
-        x1;
-    } else if (multipleChoiceSemeaiType == 6) {
-      let x3 = "";
-      let bx1 = "";
-      let wx1 = "";
-      let blackLibertiesBefore = "";
-      let whiteLibertiesBefore = "";
-      let fav = "";
-      let bwSum = "";
-      let plural = "";
-      let x1 = "";
-      let x5 = "";
-      let x2 = "";
-      let sum1 = "";
-      let sum2 = "";
-      if (blackLiberties > whiteLiberties) {
-        fav = "Black is the favorite with more exclusive liberties.<br>";
-        blackLibertiesBefore = blackLiberties;
-        whiteLibertiesBefore = whiteLiberties;
-        whiteLiberties += parseInt(multipleChoiceInsideLiberties);
-        bx1 = "favorite: " + blackLibertiesBefore + " exclusive liberties";
-        wx1 =
-          "underdog: " +
-          whiteLibertiesBefore +
-          " exclusive + " +
-          multipleChoiceInsideLiberties +
-          " inside";
-      } else if (whiteLiberties > blackLiberties) {
-        fav = "White is the favorite with more exclusive liberties.<br>";
-        whiteLibertiesBefore = whiteLiberties;
-        blackLibertiesBefore = blackLiberties;
-        blackLiberties += parseInt(multipleChoiceInsideLiberties);
-        bx1 =
-          "underdog: " +
-          blackLibertiesBefore +
-          " exclusive + " +
-          multipleChoiceInsideLiberties +
-          " inside";
-        wx1 = "favorite: " + whiteLibertiesBefore + " exclusive liberties";
-      }
-		else if (multipleChoiceInsideLiberties != 0)
-		{
-			fav = "Seki - same amount of liberties.<br>";
-			correct = 4;
-			$("#besogo-multipleChoice4").css("background-color", "#3ecf78");
-		}
-      if (whiteLiberties > blackLiberties) {
-        bwSum = whiteLiberties - blackLiberties;
-        plural = "";
-        if (bwSum > 1) plural = "s";
-        if (fav == "Black is the favorite with more exclusive liberties.<br>") {
-          x1 =
-            "Seki. (Black is " +
-            bwSum +
-            " move" +
-            plural +
-            " behind for killing)";
-          correct = 4;
-          $("#besogo-multipleChoice4").css("background-color", "#3ecf78");
-        } else {
-          x1 = "Black is dead. (" + bwSum + " move" + plural + " behind)";
-          correct = 1;
-          $("#besogo-multipleChoice1").css("background-color", "#3ecf78");
-        }
-      }
-      if (whiteLiberties < blackLiberties) {
-        bwSum = blackLiberties - whiteLiberties;
-        plural = "";
-        if (bwSum > 1) plural = "s";
-        if (fav == "White is the favorite with more exclusive liberties.<br>") {
-          x1 =
-            "Seki. (White is " +
-            bwSum +
-            " move" +
-            plural +
-            " behind for killing)";
-          correct = 4;
-          $("#besogo-multipleChoice4").css("background-color", "#3ecf78");
-        } else {
-          x1 = "White is dead. (" + bwSum + " move" + plural + " behind)";
-          correct = 2;
-          $("#besogo-multipleChoice2").css("background-color", "#3ecf78");
-        }
-      }
-      if (whiteLiberties == blackLiberties && fav != "Seki - same amount of liberties.<br>") {
-        x1 = "Unsettled. (whoever plays first accomplishes the task)";
-        correct = 3;
-        $("#besogo-multipleChoice3").css("background-color", "#3ecf78");
-      }
+const SEMEAI_SEKI_RULES = "Seki possible if there is one or more inside liberties.<br>The favorite's task is to kill.<br>The favorite counts his exclusive liberties.<br>The underdog's task is Seki.<br>The underdog counts his exclusive plus all inside liberties.<br>";
 
-      if (fav != "Seki - same amount of liberties.<br>") {
-        x3 =
-          "Black has " +
-          blackLiberties +
-          " liberties. (" +
-          bx1 +
-          ")<br> White has " +
-          whiteLiberties +
-          " liberties. (" +
-          wx1 +
-          ")<br>" +
-          x1;
-      }
-      x5 =
-        "Seki possible if there is one or more inside liberties.<br>The favorite's task is to kill.<br>The favorite counts his exclusive liberties.<br>The underdog's task is Seki.<br>The underdog counts his exclusive plus all inside liberties.<br>";
-      mText =
-        "Semeai Type 6: Small eye vs small eye.<br>" + x5 + " " + fav + x3;
-    }
-    if (num == correct) {
-      displayResult("S");
-      //$(".alertBanner").css("background-color", "rgb(18, 121, 59)");
-      $(".toast__banner").addClass("toast__banner--success");
-      $(".toast__banner").html('Correct!<span class="toast__close">x</span>');
-    } else {
-      displayResult("F");
-      //$(".alertBanner").css("background-color", "linear-gradient(rgba(214,70,74,1), rgba(201,95,105,1))");
-      $(".toast__banner").addClass("toast__banner--error");
-      $(".toast__banner").html('Incorrect!<span class="toast__close">x</span>');
-    }
-    $("#multipleChoiceText").html(mText);
-    $("#multipleChoiceAlerts").fadeIn(500);
-    hasChosen = true;
-  }
+//The explanation of the problem's race and the right answer, from the liberties the play page
+//left each side (PlayPage.js): its liberty count less those it took from the other color
+function semeaiExplanation()
+{
+	const count = parseInt(multipleChoiceLibertyCount);
+	const inside = parseInt(multipleChoiceInsideLiberties);
+	const black = count - parseInt(multipleChoiceLibertiesW);
+	const white = count - parseInt(multipleChoiceLibertiesB);
+	switch (Number(multipleChoiceSemeaiType))
+	{
+		case 1: return semeaiNoEyesFewInsideLiberties(black, white);
+		case 2: return semeaiNoEyesInsideLiberties(black, white, inside);
+		case 3: return semeaiEyeAgainstNoEye(count);
+		case 4: return semeaiSameSizedBigEyes(black, white, inside);
+		case 5: return semeaiBigEyeAgainstSmallerEye(black, white);
+		case 6: return semeaiSmallEyes(black, white, inside);
+		default: return {text: "", correct: 0};
+	}
+}
+
+function semeaiNoEyesFewInsideLiberties(black, white)
+{
+	const result = semeaiPlainRace(black, white, "The position is unsettled. (Whoever plays first wins.)");
+	result.text = "Semeai Type 1: No eyes, less than 2 inside liberties.<br>No Seki possible.<br> Black has " + semeaiLiberties(black)
+		+ ".<br> White has " + semeaiLiberties(white) + ".<br>" + result.text;
+	return result;
+}
+
+//The favorite (more outside liberties) counts one inside liberty, the underdog all of them
+function semeaiNoEyesInsideLiberties(black, white, inside)
+{
+	let text = "Semeai Type 2: No eyes, 2 or more inside liberties.<br>The favorite's task is to kill.<br>The favorite counts his outside liberties plus 1 inside liberty.<br>The underdog's task is Seki.<br>The underdog counts his outside liberties plus all inside liberties.<br>";
+	if (tsumegoID == 29813)
+		return {text: text + "Seki.<br>", correct: SEMEAI_ANSWER.seki};
+	if (black == white)
+		return {text: text + "Seki - same amount of liberties.<br>", correct: SEMEAI_ANSWER.seki};
+	const favorite = black > white ? {name: "Black", outside: black} : {name: "White", outside: white};
+	const underdog = black > white ? {name: "White", outside: white} : {name: "Black", outside: black};
+	const favoriteLiberties = favorite.outside + 1;
+	const underdogLiberties = underdog.outside + inside;
+	text += favorite.name + " is the favorite with more outside liberties.<br>"
+		+ underdog.name + " has " + semeaiLiberties(underdogLiberties) + ".(underdog: " + underdog.outside + " outside + " + inside + " inside)<br>"
+		+ favorite.name + " has " + semeaiLiberties(favoriteLiberties) + ".(favorite: " + favorite.outside + " outside + 1 inside)<br>";
+	const lead = favoriteLiberties - underdogLiberties;
+	if (lead === 0)
+		return {text: text + "Unsettled. (whoever plays first accomplishes the task)<br>", correct: SEMEAI_ANSWER.unsettled};
+	if (lead < 0)
+		return {text: text + "Seki.<br>", correct: SEMEAI_ANSWER.seki};
+	return {text: text + underdog.name + " is dead. (" + lead + " move(s) behind)<br>", correct: semeaiDeadAnswer(underdog.name)};
+}
+
+//All inside liberties count for the group with the eye. A few problems show the liberties as the
+//tesujis that gain some leave them.
+function semeaiEyeAgainstNoEye(count)
+{
+	let takenFromBlack = multipleChoiceLibertiesB;
+	let takenFromWhite = multipleChoiceLibertiesW;
+	let shownBlack = count - takenFromWhite;
+	let shownWhite = count - takenFromBlack;
+	if ([29824, 29825, 29826, 29827].some(id => id == tsumegoID) && takenFromBlack == 1 && takenFromWhite == 2)
+	{
+		takenFromWhite = 1;
+		shownBlack = shownWhite = {29824: 7, 29827: 15}[tsumegoID] ?? 5;
+	}
+	const result = semeaiPlainRace(count - takenFromWhite, count - takenFromBlack, "The position is unsettled. (Whoever plays first wins.)");
+	const tesujis = tsumegoID == 29824 ? "White can play 2 under the stones tesujis to gain 2 more liberties.<br>" : "";
+	result.text = "Semeai Type 3: Eye vs no eye.<br>No Seki possible.<br> All inside liberties count for the group with the eye.<br>Black has "
+		+ semeaiLiberties(shownBlack) + ".<br> White has " + semeaiLiberties(shownWhite) + ".<br>" + tesujis + result.text;
+	return result;
+}
+
+function semeaiSameSizedBigEyes(black, white, inside)
+{
+	let favoriteLine = "";
+	let race;
+	if (black == white && inside != 0)
+	{
+		favoriteLine = "Seki - same amount of liberties.<br>";
+		race = {text: "", correct: SEMEAI_ANSWER.seki};
+	}
+	else if (black == white)
+		race = {text: "Black has " + black + " liberties. <br> White has " + white + " liberties. <br>Unsettled. (whoever plays first wins)", correct: SEMEAI_ANSWER.unsettled};
+	else
+	{
+		race = semeaiExclusiveLibertiesRace(black, white, inside);
+		if (inside == 0)
+			race.text = "Black has " + race.black + " liberties. <br> White has " + race.white + " liberties. <br>" + race.result;
+		else
+			favoriteLine = race.favoriteLine;
+	}
+	const rules = inside == 0 ? "No Seki possible because there are no inside liberties.<br>" : SEMEAI_SEKI_RULES;
+	return {text: "Semeai Type 4: Same sized big eyes.<br>" + rules + " " + favoriteLine + " " + race.text, correct: race.correct};
+}
+
+function semeaiBigEyeAgainstSmallerEye(black, white)
+{
+	const result = semeaiPlainRace(black, white, "The position is unsettled. (whoever plays first wins)");
+	result.text = "Semeai Type 5: Big eye vs smaller eye.<br>No Seki possible.<br> All inside liberties count for the group with the bigger eye.<br> Black has "
+		+ black + " liberties.<br> White has " + white + " liberties.<br>" + result.text;
+	return result;
+}
+
+function semeaiSmallEyes(black, white, inside)
+{
+	let favoriteLine = "";
+	let race;
+	if (black == white && inside != 0)
+	{
+		favoriteLine = "Seki - same amount of liberties.<br>";
+		race = {text: "", correct: SEMEAI_ANSWER.seki};
+	}
+	else if (black == white)
+		race = {text: "Black has " + black + " liberties. ()<br> White has " + white + " liberties. ()<br>Unsettled. (whoever plays first accomplishes the task)", correct: SEMEAI_ANSWER.unsettled};
+	else
+	{
+		race = semeaiExclusiveLibertiesRace(black, white, inside);
+		favoriteLine = race.favoriteLine;
+	}
+	return {text: "Semeai Type 6: Small eye vs small eye.<br>" + SEMEAI_SEKI_RULES + " " + favoriteLine + race.text, correct: race.correct};
+}
+
+//The side with fewer liberties dies, the same number is unsettled
+function semeaiPlainRace(black, white, unsettled)
+{
+	if (black < white)
+		return {text: semeaiDead("Black", white - black), correct: SEMEAI_ANSWER.blackDead};
+	if (black > white)
+		return {text: semeaiDead("White", black - white), correct: SEMEAI_ANSWER.whiteDead};
+	return {text: unsettled, correct: SEMEAI_ANSWER.unsettled};
+}
+
+//Eyes of a kind (types 4 and 6): the favorite (more exclusive liberties) counts those and has to
+//kill, the underdog adds all inside liberties and lives in seki when that is more
+function semeaiExclusiveLibertiesRace(black, white, inside)
+{
+	const favorite = black > white ? "Black" : "White";
+	const underdog = black > white ? "White" : "Black";
+	const favoriteLiberties = Math.max(black, white);
+	const underdogExclusive = Math.min(black, white);
+	const underdogLiberties = underdogExclusive + inside;
+	const liberties = {[favorite]: favoriteLiberties, [underdog]: underdogLiberties};
+	const notes = {[favorite]: "favorite: " + favoriteLiberties + " exclusive liberties", [underdog]: "underdog: " + underdogExclusive + " exclusive + " + inside + " inside"};
+	let result;
+	let correct;
+	if (underdogLiberties > favoriteLiberties)
+	{
+		result = "Seki. (" + favorite + " is " + semeaiMoves(underdogLiberties - favoriteLiberties) + " behind for killing)";
+		correct = SEMEAI_ANSWER.seki;
+	}
+	else if (underdogLiberties < favoriteLiberties)
+	{
+		result = semeaiDead(underdog, favoriteLiberties - underdogLiberties);
+		correct = semeaiDeadAnswer(underdog);
+	}
+	else
+	{
+		result = "Unsettled. (whoever plays first accomplishes the task)";
+		correct = SEMEAI_ANSWER.unsettled;
+	}
+	return {
+		favoriteLine: favorite + " is the favorite with more exclusive liberties.<br>",
+		black: liberties.Black,
+		white: liberties.White,
+		result,
+		text: "Black has " + liberties.Black + " liberties. (" + notes.Black + ")<br> White has " + liberties.White + " liberties. (" + notes.White + ")<br>" + result,
+		correct};
+}
+
+function semeaiDead(color, movesBehind)
+{
+	return color + " is dead. (" + semeaiMoves(movesBehind) + " behind)";
+}
+
+function semeaiDeadAnswer(color)
+{
+	return color == "Black" ? SEMEAI_ANSWER.blackDead : SEMEAI_ANSWER.whiteDead;
+}
+
+function semeaiMoves(count)
+{
+	return count + " move" + (count == 1 ? "" : "s");
+}
+
+function semeaiLiberties(count)
+{
+	return count + " " + (count == 1 ? "liberty" : "liberties");
 }
