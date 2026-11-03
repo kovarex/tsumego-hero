@@ -2,6 +2,7 @@
 
 namespace App\Utility;
 
+use App\Model\Table\TsumegoTable;
 use Cake\Cache\Cache;
 
 //The "Site Growth" graph of the home page: how many problems the site offers and how many players
@@ -29,10 +30,12 @@ class SiteGrowth
 		return $chartData;
 	}
 
-	//Drops the cached graph, so that a deletion, a restore or a publication shows on it at once.
+	//Drops the cached graph, so that a deletion, a restore or a publication shows on it at once, and
+	//the count of the problems of the official collections, which the same changes change.
 	public static function forget(): void
 	{
 		Cache::delete(self::CACHE_KEY, 'long');
+		TsumegoTable::forgetPublicProblemCount();
 	}
 
 	/** @return array<int, array{date: string, problems: int|null, users: int|null}> */

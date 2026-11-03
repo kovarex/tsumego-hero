@@ -53,7 +53,11 @@ class PersonalCollectionContentTest extends IntegrationTestCase
 	public function testPublicProblemCountDoesNotCountPlayerProblems(): void
 	{
 		$context = new ContextPreparator(['user' => ['name' => 'alice']]);
-		$total = fn(): int => TsumegoTable::publicProblemProgress($context->user['id'])['total'];
+		// the collections are written straight into the tables, past the places that drop the kept count
+		$total = function () use ($context): int {
+			TsumegoTable::forgetPublicProblemCount();
+			return TsumegoTable::publicProblemProgress($context->user['id'])['total'];
+		};
 		$before = $total();
 
 		$this->_createCollection('Site Collection', null, 1);
