@@ -55,54 +55,45 @@ class CommentsRenderer
 
 	public function render(): void
 	{
-		$parameters = [];
-		$parameters[] = Auth::getUserID();
-
-		$queryCondition = "tsumego_comment.deleted IS NULL AND tsumego.deleted IS NULL";
-		if ($this->userID)
-			Util::addSqlCondition($queryCondition, "tsumego_comment.user_id = " . $this->userID);
-
-		$querySelects = "
-SELECT
-	tsumego_comment.message AS message,
-	tsumego_comment.tsumego_id AS tsumego_id,
-	tsumego_comment.created AS created,
-	tsumego_status.status AS status,
-	" . UserTable::isAdminSql('user.user_role_id') . " AS from_admin,
-	user.display_name as from_display_name,
-	user.id as from_id,
-	tsumego_comment.id as id,
-	set_connection.id AS set_connection_id,
-	CONCAT_WS(' ', `set`.title, `set`.title2) as set_title,
-	set_connection.num as set_num,
-	COALESCE(sgf.sgf, '') AS sgf";
-		$queryFrom = "
-FROM
-	tsumego_comment
-	JOIN tsumego ON tsumego_comment.tsumego_id = tsumego.id
-    LEFT JOIN sgf ON sgf.id = " . SgfTable::currentVersionIDSql('tsumego.id') . "
-	JOIN user ON tsumego_comment.user_id = user.id
-	LEFT JOIN tsumego_status ON tsumego_status.tsumego_id = tsumego.id AND tsumego_status.user_id = ?
-    LEFT JOIN set_connection ON set_connection.id = (
-        SELECT sc.id
-        FROM set_connection sc
-        JOIN `set` s ON s.id = sc.set_id
-        WHERE sc.tsumego_id = tsumego.id AND " . SetConnectionTable::visibilitySql('s') . "
-        ORDER BY " . SetConnectionTable::displayOrderSql('s', 'sc') . "
-        LIMIT 1)
-    LEFT JOIN `set` ON set_connection.set_id = `set`.id";
-
-		if (!empty($queryCondition))
-			$queryFrom .= " WHERE " . $queryCondition;
-		$queryFrom .= ' ORDER BY tsumego_comment.created DESC';
-		$queryFrom .= ' LIMIT ' . self::$PAGE_SIZE;
+		// the comments of the list, of the player when given; the problem and its collection join only the page of them
+		$listed = 'FROM tsumego_comment
+			JOIN tsumego ON tsumego.id = tsumego_comment.tsumego_id
+			JOIN user ON user.id = tsumego_comment.user_id
+			WHERE tsumego_comment.deleted IS NULL AND tsumego.deleted IS NULL'
+			. ($this->userID ? ' AND tsumego_comment.user_id = ' . $this->userID : '');
+		$count = (int) Util::query('SELECT COUNT(*) AS count ' . $listed)[0]['count'];
 
 		$pageIndex = isset($this->params[$this->name]) ? max(1, (int) $this->params[$this->name]) : 1;
-		$count = Util::query("SELECT COUNT(*) " . $queryFrom, $parameters)[0]['COUNT(*)'];
-
 		$offset = ($pageIndex - 1) * self::$PAGE_SIZE;
-		$queryFrom .= ' OFFSET ' . $offset;
-		$comments = Util::query($querySelects . $queryFrom, $parameters);
+		$comments = Util::query("SELECT
+				tsumego_comment.message,
+				tsumego_comment.tsumego_id,
+				tsumego_comment.created,
+				tsumego_status.status,
+				" . UserTable::isAdminSql('user.user_role_id') . " AS from_admin,
+				user.display_name AS from_display_name,
+				user.id AS from_id,
+				tsumego_comment.id,
+				set_connection.id AS set_connection_id,
+				CONCAT_WS(' ', `set`.title, `set`.title2) AS set_title,
+				set_connection.num AS set_num,
+				COALESCE(sgf.sgf, '') AS sgf
+			FROM (SELECT tsumego_comment.id " . $listed . "
+				ORDER BY tsumego_comment.created DESC, tsumego_comment.id DESC
+				LIMIT " . self::$PAGE_SIZE . " OFFSET " . $offset . ") page
+			JOIN tsumego_comment ON tsumego_comment.id = page.id
+			JOIN user ON user.id = tsumego_comment.user_id
+			LEFT JOIN sgf ON sgf.id = " . SgfTable::currentVersionIDSql('tsumego_comment.tsumego_id') . "
+			LEFT JOIN tsumego_status ON tsumego_status.tsumego_id = tsumego_comment.tsumego_id AND tsumego_status.user_id = ?
+			LEFT JOIN set_connection ON set_connection.id = (
+				SELECT sc.id
+				FROM set_connection sc
+				JOIN `set` s ON s.id = sc.set_id
+				WHERE sc.tsumego_id = tsumego_comment.tsumego_id AND " . SetConnectionTable::visibilitySql('s') . "
+				ORDER BY " . SetConnectionTable::displayOrderSql('s', 'sc') . "
+				LIMIT 1)
+			LEFT JOIN `set` ON `set`.id = set_connection.set_id
+			ORDER BY tsumego_comment.created DESC, tsumego_comment.id DESC", [Auth::getUserID()]);
 		echo PaginationHelper::render($pageIndex, intval(ceil($count / self::$PAGE_SIZE)), $this->name);
 		foreach ($comments as $index => $comment)
 		{
