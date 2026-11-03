@@ -1,6 +1,5 @@
 <?php
 
-use App\Utility\Auth;
 use App\Utility\Constants;
 use App\Utility\CookieFlash;
 
@@ -10,9 +9,6 @@ use App\Utility\CookieFlash;
  * @var bool $done
  * @var bool $valid
  */
-
-	if(Auth::isLoggedIn())
-		echo '<script type="text/javascript">window.location.href = "/sets";</script>';
 ?>
 <?php if($valid)
 { ?>
@@ -71,5 +67,3 @@ else
 
 
 } ?>
-<script>
-	</script>

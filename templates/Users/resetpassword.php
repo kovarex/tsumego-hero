@@ -1,7 +1,6 @@
 <?php
 
 use App\Model\Table\UserTable;
-use App\Utility\Auth;
 use App\Utility\CookieFlash;
 
 /**
@@ -9,9 +8,6 @@ use App\Utility\CookieFlash;
  * @var string $lightDark
  * @var bool $sent
  */
-
-	if(Auth::isLoggedIn())
-		echo '<script type="text/javascript">window.location.href = "/sets";</script>';
 ?>
 <?php if(!$sent)
 { ?>
@@ -49,5 +45,3 @@ else
 </div>
 <br>
 <?php } ?>
-<script>
-	</script>
