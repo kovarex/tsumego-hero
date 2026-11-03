@@ -201,4 +201,18 @@ class TimeModeAchievementTest extends AchievementTestCase
 		new AchievementChecker()->checkTimeModeAchievements();
 		$this->assertAchievementUnlocked(AchievementId::TIME_MODE_PRECISION_IV, "Precision IV: 850+ at 4k");
 	}
+
+	//Two passed runs that both reach the same precision achievement unlock it once
+	public function testPrecisionAchievementOfTwoRuns()
+	{
+		$context = new ContextPreparator([
+			'time-mode-ranks' => ['10k'],
+			'time-mode-sessions' => [
+				['category' => TimeModeCategoryTable::SLOW, 'status' => TimeModeSessionStatusTable::SOLVED, 'rank' => '10k'],
+				['category' => TimeModeCategoryTable::FAST, 'status' => TimeModeSessionStatusTable::SOLVED, 'rank' => '10k']]]);
+		$this->fetchTable('TimeModeSession')->updateAll(['points' => 950], ['user_id' => $context->user['id']]);
+		$checker = new AchievementChecker()->checkTimeModeAchievements();
+		$this->assertAchievementUnlocked(AchievementId::TIME_MODE_PRECISION_I);
+		$this->assertCount(1, array_filter($checker->updated, fn($achievement) => $achievement->id == AchievementId::TIME_MODE_PRECISION_I->value));
+	}
 }

@@ -410,11 +410,19 @@ class MistakeTraining
 	{
 		return ' JOIN tsumego t ON t.id = p.tsumego_id AND t.deleted IS NULL'
 			. ' WHERE p.user_id = ?'
-			. ' AND EXISTS (SELECT 1' . self::playableConnectionsSql('p.tsumego_id') . ')';
+			. ' AND ' . self::isPlayableSql('p.tsumego_id');
+	}
+
+	//Whether the problem is in a collection the player can play. Not EXISTS(): MariaDB turns that into
+	//a semi-join that collects the playable connections of the whole site for every query, where this
+	//looks up the connections of each problem by its index.
+	private static function isPlayableSql(string $tsumegoID): string
+	{
+		return '(SELECT 1' . self::playableConnectionsSql($tsumegoID) . ' LIMIT 1) IS NOT NULL';
 	}
 
 	//The connections of a problem the player can play, as the FROM and WHERE of a query:
-	//wrapped in EXISTS() it asks whether the problem is in any of them, picked with LIMIT 1
+	//isPlayableSql() asks whether the problem is in any of them, picked with LIMIT 1
 	//after the display order it names the one the training opens the problem in.
 	private static function playableConnectionsSql(string $tsumegoID): string
 	{
@@ -458,13 +466,7 @@ class MistakeTraining
 	//graduated problem (no next review) is not in the training any more.
 	public static function totalInTraining(int $userId): int
 	{
-		$rows = Util::query(
-			'SELECT COUNT(*) AS total FROM mistake_training_pool p' . self::servableSql()
-			. ' AND p.next_due IS NOT NULL',
-			[$userId]
-		);
-
-		return (int) $rows[0]['total'];
+		return count(self::poolRows($userId));
 	}
 
 	//Whether the player ever had a problem in the training, graduated ones included,
@@ -605,18 +607,21 @@ class MistakeTraining
 	//the overview: each with the collection it will open in and its number, its rung and
 	//its next review. A graduated problem has left the training, and one the training
 	//cannot serve is not shown, like in todaysTraining().
-	/** @return list<array{tsumego_id: int, set_title: string, num: int, rung: int, next_due: string, missed_today: bool}> */
+	/** @return list<array{tsumego_id: int, set_title: string, num: int, rung: int, next_due: string, due: bool, missed_today: bool}> */
 	public static function poolRows(int $userId): array
 	{
+		// Each problem with its first playable connection in the display order: one sort of the
+		// connections of the pool, where a subquery per problem sorted them problem by problem.
 		$rows = Util::query(
-			'SELECT p.tsumego_id, p.rung, p.next_due, p.last_review_day, p.last_mistake_training_result_id, st.title AS set_title, sc.num'
+			'SELECT tsumego_id, rung, next_due, last_review_day, last_mistake_training_result_id, set_title, num FROM ('
+			. 'SELECT p.id, p.tsumego_id, p.rung, p.next_due, p.last_review_day, p.last_mistake_training_result_id, st.title AS set_title, sc.num,'
+			. ' ROW_NUMBER() OVER (PARTITION BY p.tsumego_id ORDER BY ' . SetConnectionTable::displayOrderForSetSql('st') . ', sc.id) AS rn'
 			. ' FROM mistake_training_pool p'
-			. ' JOIN set_connection sc ON sc.id = (SELECT c.id' . self::playableConnectionsSql('p.tsumego_id')
-			. ' ORDER BY ' . SetConnectionTable::displayOrderForSetSql('s') . ', c.id LIMIT 1)'
-			. ' JOIN `set` st ON st.id = sc.set_id'
-			. self::servableSql()
-			. ' AND p.next_due IS NOT NULL'
-			. ' ORDER BY p.next_due ASC, p.id ASC',
+			. ' JOIN tsumego t ON t.id = p.tsumego_id AND t.deleted IS NULL'
+			. ' JOIN set_connection sc ON sc.tsumego_id = p.tsumego_id'
+			. ' JOIN `set` st ON st.id = sc.set_id AND ' . SetConnectionTable::playableSql('st')
+			. ' WHERE p.user_id = ? AND p.next_due IS NOT NULL'
+			. ') x WHERE rn = 1 ORDER BY next_due ASC, id ASC',
 			[$userId]
 		);
 		return array_map(fn(array $row) => [
@@ -625,6 +630,7 @@ class MistakeTraining
 			'num' => (int) $row['num'],
 			'rung' => (int) $row['rung'],
 			'next_due' => (string) $row['next_due'],
+			'due' => self::isRowDue($row),
 			'missed_today' => self::wasMissedToday($row),
 		], $rows);
 	}
@@ -708,21 +714,20 @@ class MistakeTraining
 
 	//Upcoming reviews per day, for the "all caught up" view: the next $maxDays
 	//days that have reviews, how many further days are scheduled, and the last
-	//of them.
-	//Counts are aggregated over the whole pool, so a day is never cut off halfway through by a row limit.
-	/** @return array{days: array<string, int>, furtherDays: int, lastDay: ?string} */
-	public static function upcomingByDay(int $userId, int $maxDays = 7): array
+	//of them. Counts every row of the pool, so a day is never cut off halfway through.
+	/**
+	 * @param list<array{next_due: string, due: bool}> $poolRows What poolRows() returned
+	 * @return array{days: array<string, int>, furtherDays: int, lastDay: ?string}
+	 */
+	public static function upcomingByDay(array $poolRows, int $maxDays = 7): array
 	{
-		$rows = Util::query(
-			'SELECT DATE(p.next_due) AS day, COUNT(*) AS day_count FROM mistake_training_pool p'
-			. self::servableSql()
-			. ' AND p.next_due > ?'
-			. ' GROUP BY DATE(p.next_due) ORDER BY day',
-			[$userId, date('Y-m-d H:i:s')]
-		);
 		$countsByDay = [];
-		foreach ($rows as $row)
-			$countsByDay[$row['day']] = (int) $row['day_count'];
+		foreach ($poolRows as $row)
+			if (!$row['due'])
+			{
+				$day = substr($row['next_due'], 0, 10);
+				$countsByDay[$day] = ($countsByDay[$day] ?? 0) + 1;
+			}
 
 		return [
 			'days' => array_slice($countsByDay, 0, $maxDays, true),

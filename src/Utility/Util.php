@@ -14,6 +14,8 @@ class Util
 	//the parts of the request a view or a helper needs below, and the server's environment.
 	//In Cake 5 the request carries them, so these methods change and their callers do not.
 
+	//The request
+
 	//The address the browser asked for, with its query string.
 	public static function requestUri(): string
 	{
@@ -27,7 +29,7 @@ class Util
 		return $_GET;
 	}
 
-	//Every cookie of the site is read and written here.
+	//The cookies: every cookie of the site is read and written here
 
 	//What setCookie() and clearCookie() send unless told otherwise.
 	private const COOKIE_DEFAULTS = ['path' => '/', 'secure' => true, 'httponly' => false, 'samesite' => 'Lax'];
@@ -88,7 +90,7 @@ class Util
 		setcookie($name, $value, $options);
 	}
 
-	/* @return Int value of the cleared cookie, returns null if the cookeie isn't present. throws if it isn't numeric */
+	//Clears the cookie and returns its value as a number, null when it was not sent; a value that is not a number throws.
 	public static function clearNumericCookie(string $name): ?int
 	{
 		$result = Util::clearCookie($name);
@@ -99,7 +101,7 @@ class Util
 		return intval($result);
 	}
 
-	/* @return Int value of the cleared cookie, throws excpetion when the cookie isn't present or isn't numeric */
+	//As clearNumericCookie(), but a missing cookie throws too.
 	public static function clearRequiredNumericCookie(string $name): int
 	{
 		$result = Util::clearNumericCookie($name);
@@ -108,86 +110,7 @@ class Util
 		return $result;
 	}
 
-	//A random string of letters and digits. It is used for tokens that end up in a
-	//link, so it comes from the cryptographic source and not from rand().
-	public static function generateRandomString(int $length = 20): string
-	{
-		$characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-		$charactersLength = strlen($characters);
-		$randomString = '';
-		for ($i = 0; $i < $length; $i++)
-			$randomString .= $characters[random_int(0, $charactersLength - 1)];
-		return $randomString;
-	}
-
-	public static function getPercentButAvoid100UntilComplete(int $value, int $max): int
-	{
-		assert($value >= 0);
-		assert($max >= 0);
-		$value = min($value, $max);
-		$result = (int) round(Util::getRatio($value, $max) * 100);
-		if ($result == 100 && $value < $max)
-			return 99;
-		return $result;
-	}
-
-	private const SECRET_KEY = 'my_simple_secret_keyx';
-	private const SECRET_IV = 'my_simple_secret_ivx';
-	private const ENCRYPT_METHOD = 'AES-256-CBC';
-
-	public static function encrypt(string $str): string
-	{
-		$key = hash('sha256', self::SECRET_KEY);
-		$iv = substr(hash('sha256', self::SECRET_IV), 0, 16);
-		return base64_encode(openssl_encrypt($str, self::ENCRYPT_METHOD, $key, 0, $iv));
-	}
-
-	public static function decrypt(string $str): string
-	{
-		$key = hash('sha256', self::SECRET_KEY);
-		$iv = substr(hash('sha256', self::SECRET_IV), 0, 16);
-		return openssl_decrypt(base64_decode($str), self::ENCRYPT_METHOD, $key, 0, $iv);
-	}
-
-	//Takes the value out of the array, null when the array has none: the keys extracted are options.
-	public static function extract(string $name, array &$inputArray): mixed
-	{
-		$result = $inputArray[$name] ?? null;
-		unset($inputArray[$name]);
-		return $result;
-	}
-
-	public static function extractWithDefault(string $name, array &$inputArray, mixed $default): mixed
-	{
-		return self::extract($name, $inputArray) ?? $default;
-	}
-
-	public static function getRatio(float|int $amount, float|int $max): float
-	{
-		if ($max == 0)
-			return 0;
-		return $amount / $max;
-	}
-
-	public static function isHttpUrl(string $url): bool
-	{
-		$scheme = strtolower((string) parse_url(trim($url), PHP_URL_SCHEME));
-
-		return in_array($scheme, ['http', 'https'], true);
-	}
-
-	public static function getPercent(float|int $amount, float|int $max): float
-	{
-		return self::getRatio($amount, $max) * 100;
-	}
-
-	public static function indexByID(array $array, string $prefix1, string $prefix2): array
-	{
-		$result = [];
-		foreach ($array as $value)
-			$result[$value[$prefix1]['id']] = $value[$prefix1][$prefix2];
-		return $result;
-	}
+	//Where the site runs
 
 	public static function isInGithubCI(): bool
 	{
@@ -225,7 +148,7 @@ class Util
 	{
 		if (Util::isInGithubCI())
 			return $_SERVER['TEST_APP_URL'];
-		if ($url = @$_SERVER['DDEV_PRIMARY_URL'] && $_SERVER['HTTP_X_FORWARDED_HOST'])
+		if (!empty($_SERVER['DDEV_PRIMARY_URL']) && !empty($_SERVER['HTTP_X_FORWARDED_HOST']))
 			return 'https://' . $_SERVER['HTTP_X_FORWARDED_HOST'];
 		return "https://test.tsumego.ddev.site";
 	}
@@ -235,6 +158,47 @@ class Util
 		if (Util::isInGithubCI())
 			return 'https://host.docker.internal:8443';
 		return 'http://localhost';
+	}
+
+	//The database
+
+	public static function query(string $sql, array $params = []): array
+	{
+		$stmt = self::connection()->prepare($sql);
+		$stmt->execute($params);
+		return $stmt->fetchAll(PDO::FETCH_ASSOC);
+	}
+
+	//Execute a non-SELECT SQL statement (INSERT, UPDATE, DELETE) and return the number of affected rows.
+	public static function execute(string $sql, array $params = []): int
+	{
+		$stmt = self::connection()->prepare($sql);
+		$stmt->execute($params);
+		return $stmt->rowCount();
+	}
+
+	//The database connection of the ORM, with its begin(), commit() and rollback().
+	public static function database(): Connection
+	{
+		/** @var Connection */
+		return ConnectionManager::get('default');
+	}
+
+	//The PDO of the database connection.
+	public static function connection(): PDO
+	{
+		/** @var MysqlDriver $driver */
+		$driver = self::database()->getDriver();
+		return $driver->pdo();
+	}
+
+	//The isolation level of the transactions of this connection, as in 'REPEATABLE-READ'. MariaDB 11.1
+	//renamed the variable to transaction_isolation and deprecated tx_isolation, the only name 10.11
+	//knows; the view has whichever the server has.
+	public static function isolationLevel(): string
+	{
+		return self::query("SELECT VARIABLE_VALUE AS isolation FROM information_schema.SESSION_VARIABLES
+			WHERE VARIABLE_NAME IN ('TRANSACTION_ISOLATION', 'TX_ISOLATION') LIMIT 1")[0]['isolation'];
 	}
 
 	public static function addSqlCondition(string &$existingCondition, string $condition): void
@@ -263,53 +227,29 @@ class Util
 		$existingCondition .= " OR " . $condition;
 	}
 
-	public static function boolString(bool $bool): string
+	//Numbers
+
+	public static function getRatio(float|int $amount, float|int $max): float
 	{
-		return $bool ? 'true' : 'false';
+		if ($max == 0)
+			return 0;
+		return $amount / $max;
 	}
 
-	public static function getHealthBasedOnLevel(int $level): int
+	public static function getPercent(float|int $amount, float|int $max): float
 	{
-		return intdiv($level, 5) + 10;
+		return self::getRatio($amount, $max) * 100;
 	}
 
-	public static function query(string $sql, array $params = []): array
+	public static function getPercentButAvoid100UntilComplete(int $value, int $max): int
 	{
-		$stmt = self::connection()->prepare($sql);
-		$stmt->execute($params);
-		return $stmt->fetchAll(PDO::FETCH_ASSOC);
-	}
-
-	//The database connection of the ORM, with its begin(), commit() and rollback().
-	public static function database(): Connection
-	{
-		/** @var Connection */
-		return ConnectionManager::get('default');
-	}
-
-	//The PDO of the database connection.
-	public static function connection(): PDO
-	{
-		/** @var MysqlDriver $driver */
-		$driver = self::database()->getDriver();
-		return $driver->pdo();
-	}
-
-	//The isolation level of the transactions of this connection, as in 'REPEATABLE-READ'. MariaDB 11.1
-	//renamed the variable to transaction_isolation and deprecated tx_isolation, the only name 10.11
-	//knows; the view has whichever the server has.
-	public static function isolationLevel(): string
-	{
-		return self::query("SELECT VARIABLE_VALUE AS isolation FROM information_schema.SESSION_VARIABLES
-			WHERE VARIABLE_NAME IN ('TRANSACTION_ISOLATION', 'TX_ISOLATION') LIMIT 1")[0]['isolation'];
-	}
-
-	//Execute a non-SELECT SQL statement (INSERT, UPDATE, DELETE) and return the number of affected rows.
-	public static function execute(string $sql, array $params = []): int
-	{
-		$stmt = self::connection()->prepare($sql);
-		$stmt->execute($params);
-		return $stmt->rowCount();
+		assert($value >= 0);
+		assert($max >= 0);
+		$value = min($value, $max);
+		$result = (int) round(Util::getRatio($value, $max) * 100);
+		if ($result == 100 && $value < $max)
+			return 99;
+		return $result;
 	}
 
 	public static function clampOptional(mixed $value, int|float|null $min, int|float|null $max): mixed
@@ -322,6 +262,26 @@ class Util
 		return $result;
 	}
 
+	public static function getHealthBasedOnLevel(int $level): int
+	{
+		return intdiv($level, 5) + 10;
+	}
+
+	//Values, arrays and text
+
+	//Takes the value out of the array, null when the array has none: the keys extracted are options.
+	public static function extract(string $name, array &$inputArray): mixed
+	{
+		$result = $inputArray[$name] ?? null;
+		unset($inputArray[$name]);
+		return $result;
+	}
+
+	public static function extractWithDefault(string $name, array &$inputArray, mixed $default): mixed
+	{
+		return self::extract($name, $inputArray) ?? $default;
+	}
+
 	public static function strOrNull(mixed $input): ?string
 	{
 		if (is_null($input))
@@ -329,25 +289,23 @@ class Util
 		return strval($input);
 	}
 
-	public static function getFollowingSgfCoordinates(string $string, int $position): array
+	//A random string of letters and digits. It is used for tokens that end up in a
+	//link, so it comes from the cryptographic source and not from rand().
+	public static function generateRandomString(int $length = 20): string
 	{
-		$result = [];
-		do
-		{
-			$next = substr($string, $position, 4);
-			if ($next[0] != '[')
-				break;
-			if ($next[3] != ']')
-				break;
-			if ($next[1] < 'a' || $next[1] > 't')
-				break;
-			if ($next[2] < 'a' || $next[2] > 't')
-				break;
-			$result [] = substr($string, $position + 1, 2);
-			$position += 4;
-		}
-		while (true);
-		return $result;
+		$characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+		$charactersLength = strlen($characters);
+		$randomString = '';
+		for ($i = 0; $i < $length; $i++)
+			$randomString .= $characters[random_int(0, $charactersLength - 1)];
+		return $randomString;
+	}
+
+	public static function isHttpUrl(string $url): bool
+	{
+		$scheme = strtolower((string) parse_url(trim($url), PHP_URL_SCHEME));
+
+		return in_array($scheme, ['http', 'https'], true);
 	}
 
 	//Convert a MySQL datetime (an instant) to ISO 8601 for the client-side
@@ -366,44 +324,5 @@ class Util
 		if (in_array($number % 100, [11, 12, 13], true))
 			return $number . 'th';
 		return $number . (['th', 'st', 'nd', 'rd'][$number % 10] ?? 'th');
-	}
-
-	public static function calculateLibertyStatus(
-		int $multipleChoiceSquares,
-		int $multipleChoiceTriangles,
-		?int $minLiberties,
-		?int $maxLiberties,
-		int $libertyCount,
-		?int $variance): array
-	{
-		// no variance, like 0, is the distance between the minimum and the maximum
-		$minLiberties = max(1, $minLiberties);
-		$maxLiberties = $maxLiberties != 0 ? min($maxLiberties, $libertyCount) : $libertyCount;
-
-		$minBlackLiberties = max($minLiberties, $libertyCount - $multipleChoiceSquares);
-		// the maximum can be unobtainable when there is not enough places where we can remove black liberties
-		$maxBlackLiberties = max($maxLiberties, $libertyCount - $multipleChoiceSquares);
-
-		$minWhiteLiberties = max($minLiberties, $libertyCount - $multipleChoiceTriangles);
-		// the maximum can be unobtainable when there is not enough places where we can remove white liberties
-		$maxWhiteLiberties = max($maxLiberties, $libertyCount - $multipleChoiceTriangles);
-
-		$variance = $variance ?: $maxLiberties - $minLiberties;
-
-		// Restrict Black to values for which a valid White value exists
-		$minBlackLiberties = max($minBlackLiberties, $minWhiteLiberties - $variance);
-		$maxBlackLiberties = min($maxBlackLiberties, $maxWhiteLiberties + $variance);
-
-		$remainingBlackLiberties = random_int($minBlackLiberties, $maxBlackLiberties);
-
-		// Calculate valid White range
-		$validMinWhiteLiberties = max($minWhiteLiberties, $remainingBlackLiberties - $variance);
-		$validMaxWhiteLiberties = min($maxWhiteLiberties, $remainingBlackLiberties + $variance);
-
-		// Pick remaining White liberties
-		$remainingW = random_int($validMinWhiteLiberties, $validMaxWhiteLiberties);
-
-		// Return number of liberties to remove
-		return [$libertyCount - $remainingBlackLiberties, $libertyCount - $remainingW];
 	}
 }

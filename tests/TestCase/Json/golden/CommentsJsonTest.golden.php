@@ -305,7 +305,7 @@ return [
 			'success' => true,
 			'issue' => [
 				'id' => '@int',
-				'status' => 'open',
+				'tsumego_issue_status_id' => 1,
 				'created' => '@datetime',
 				'user_id' => '@int',
 				'user_display_name' => 'DN_kovarex',
@@ -314,7 +314,7 @@ return [
 				'isAdmin' => true,
 				'comments' => [
 					[
-						'id' => '@digits',
+						'id' => '@int',
 						'text' => 'nice problem',
 						'user_id' => '@int',
 						'user_display_name' => 'DN_kovarex',

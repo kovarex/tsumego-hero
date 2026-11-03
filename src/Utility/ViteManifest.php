@@ -23,6 +23,8 @@ use RuntimeException;
 //  'besogo'       → virtual:legacy-besogo               (bundled besogo viewer JS)
 //  'sets-index'   → virtual:legacy-sets-index           (the code of the collections page)
 //  'play'         → virtual:legacy-play                 (the code of the play page)
+//  'schedule'     → virtual:legacy-schedule             (the code of the schedule page)
+//  'settings'     → virtual:legacy-settings             (the code of the settings page)
 class ViteManifest
 {
 	//Cached manifest contents after first load
@@ -42,6 +44,8 @@ class ViteManifest
 		'besogo'      => 'virtual:legacy-besogo',
 		'play'        => 'virtual:legacy-play',
 		'sets-index'  => 'virtual:legacy-sets-index',
+		'schedule'    => 'virtual:legacy-schedule',
+		'settings'    => 'virtual:legacy-settings',
 	];
 
 	// ---------------------------------------------------------------------------

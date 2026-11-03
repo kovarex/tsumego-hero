@@ -281,22 +281,29 @@ class AppController extends Controller
 		return !in_array($page, self::ACTIONS_ALLOWED_BEFORE_NAME_CHANGE, true);
 	}
 
-	//The pages change some settings in cookies, the player keeps them from the next request on
+	//The pages change some settings in cookies, the player keeps them from the next request on.
+	//The theme, sound and level bar cookies stay in the browser and come with every request, so
+	//only what differs from the account is written, in one update.
 	private function saveSettingsFromCookies(): void
 	{
+		$settings = [];
 		if ($lastTimeModeCategoryID = Util::clearCookie('lastTimeModeCategoryID'))
-			Auth::saveUserField('last_time_mode_category_id', $lastTimeModeCategoryID);
+			$settings['last_time_mode_category_id'] = (int) $lastTimeModeCategoryID;
 		if (Util::cookie('sound') !== null && Util::cookie('sound') != '0')
 		{
-			Auth::saveUserField('sound', Util::cookie('sound') === 'on');
+			$settings['sound'] = Util::cookie('sound') === 'on';
 			Util::forgetCookie('sound');
 		}
 		if (Util::cookie('lightDark') !== null && Util::cookie('lightDark') != '0')
-			Auth::saveUserField('theme_id', Util::cookie('lightDark') === 'dark' ? UserTable::THEME_DARK : UserTable::THEME_LIGHT);
+			$settings['theme_id'] = Util::cookie('lightDark') === 'dark' ? UserTable::THEME_DARK : UserTable::THEME_LIGHT;
 		if (Util::cookie('levelBar') !== null && Util::cookie('levelBar') != '0')
-			Auth::saveUserField('level_bar_id', self::levelBar((int) Util::cookie('levelBar')));
+			$settings['level_bar_id'] = self::levelBar((int) Util::cookie('levelBar'));
 		if (!is_null($boardsBitmask = Util::clearCookie('boards_bitmask')))
-			Auth::saveUserField('boards_bitmask', BoardSelector::filterValidBits((int) $boardsBitmask));
+			$settings['boards_bitmask'] = BoardSelector::filterValidBits((int) $boardsBitmask);
+		$user = Auth::getUser();
+		$changed = array_filter($settings, fn(int|bool $value, string $field) => !isset($user[$field]) || (int) $user[$field] !== (int) $value, ARRAY_FILTER_USE_BOTH);
+		if ($changed)
+			Auth::saveUserFields($changed);
 		new TsumegoFilters(); //keeps the collection filters the pages set in cookies
 	}
 
