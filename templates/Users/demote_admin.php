@@ -3,6 +3,7 @@
  * @var \App\View\AppView $this
  * @var array $admin
  * @var string|null $error Why the role stayed, after a submit that did not demote
+ * @var string|null $demotionToken What a Google account confirms with, it has no password
  */
 ?>
 <div align="center">
@@ -14,7 +15,7 @@
 <br><br>
 
 <?php
-	if($admin['external_id'] == null)
+	if ($demotionToken === null)
 	{
 		echo 'Confirm demotion by entering your password.<br><br>';
 		echo '<form action="/users/demote_admin" id="UserDemoteAdminForm" method="post" accept-charset="utf-8"><div style="display:none;"><input type="hidden" name="_method" value="POST"/></div>';
@@ -25,7 +26,7 @@
 	{
 		echo 'Submit your demotion request.<br><br>';
 		echo '<form action="/users/demote_admin" id="UserDemoteAdminForm" method="post" accept-charset="utf-8"><div style="display:none;"><input type="hidden" name="_method" value="POST"/></div>';
-		echo '<input type="hidden" name="demote" value="o474w544a4n4q5g4y2" id="UserDemote"/>';
+		echo '<input type="hidden" name="demote" value="' . h($demotionToken) . '" id="UserDemote"/>';
 	}
 
 	echo '<div class="submit"><input type="submit" value="Submit"/></div></form>';
