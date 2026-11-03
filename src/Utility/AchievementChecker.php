@@ -72,9 +72,9 @@ class AchievementChecker
 
 	private function fillExistingStatuses(): void
 	{
-		$achievementStatuses = $this->fetchTable('AchievementStatus')->find()->where(['user_id' => Auth::getUserID()])->all();
-		foreach ($achievementStatuses as $achievementStatus)
-			$this->existingStatuses[$achievementStatus->achievement_id] = true;
+		// only the ids, this runs on every page of a signed-in player
+		foreach (Util::query('SELECT achievement_id FROM achievement_status WHERE user_id = ?', [Auth::getUserID()]) as $row)
+			$this->existingStatuses[(int) $row['achievement_id']] = true;
 	}
 
 	//The value of the player's condition of a category that is not per set, null when the player has
