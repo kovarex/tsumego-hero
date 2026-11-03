@@ -26,14 +26,10 @@ class TsumegoFilters
 			return array_values(array_filter(explode('@', $input)));
 		});
 
-		foreach ($rawSets as $set)
+		foreach (self::findByNames($rawSets, '`set`', 'title', SetTable::officialCondition('candidate')) as $position => $found)
 		{
-			$found = TableRegistry::getTableLocator()->get('Set')->find()->select(['id'])->where(['title' => $set, SetTable::officialCondition('Set')])->first();
-			if ($found)
-			{
-				$this->sets[] = $set;
-				$this->setIDs[] = $found->id;
-			}
+			$this->sets[] = $rawSets[$position];
+			$this->setIDs[] = (int) $found['id'];
 		}
 
 		$rawRanks = self::processItem('filtered_ranks', [], function ($input) {
@@ -58,16 +54,38 @@ class TsumegoFilters
 			return array_values(array_filter(explode('@', $input)));
 		});
 
-		foreach ($rawTags as $tag)
+		foreach (self::findByNames($rawTags, 'tag', 'name') as $position => $found)
 		{
-			$found = TableRegistry::getTableLocator()->get('Tag')->find()->where(['name' => $tag])->first();
-			if ($found)
-			{
-				$this->tags[] = $tag;
-				$this->tagIDs[] = $found->id;
-				$this->tagColors[$tag] = $found->color;
-			}
+			$tag = $rawTags[$position];
+			$this->tags[] = $tag;
+			$this->tagIDs[] = (int) $found['id'];
+			$this->tagColors[$tag] = (int) $found['color'];
 		}
+	}
+
+	//The row of the table each of the names matches, by the position of the name; a name nothing matches is left
+	//out. The names are compared in the database, as the collation of the column says (as one lookup per name
+	//did before), and all of them in one query.
+	//$table: Table to look in
+	//$condition: More conditions on the row, as alias `candidate`
+	/**
+	 * @param string[] $names
+	 * @return array<int, array<string, mixed>>
+	 */
+	private static function findByNames(array $names, string $table, string $nameColumn, string $condition = '1 = 1'): array
+	{
+		if (empty($names))
+			return [];
+		$parameters = [];
+		foreach (array_values($names) as $position => $name)
+			array_push($parameters, $position, $name);
+		$found = [];
+		foreach (Util::query('SELECT names.position, found.* FROM ('
+			. implode(' UNION ALL ', array_fill(0, count($names), 'SELECT ? AS position, ? AS name')) . ') names'
+			. " JOIN $table found ON found.id = (SELECT candidate.id FROM $table candidate WHERE candidate.$nameColumn = names.name AND $condition LIMIT 1)"
+			. ' ORDER BY names.position', $parameters) as $row)
+			$found[(int) $row['position']] = $row;
+		return $found;
 	}
 
 
