@@ -6,6 +6,7 @@ use App\Model\Table\TimeModeCategoryTable;
 use App\Model\Table\TimeModeSessionStatusTable;
 use App\Utility\Auth;
 use App\Utility\Constants;
+use App\Utility\CookieFlash;
 use App\Utility\PlayOutcome;
 use App\Utility\Rating;
 use App\Utility\TimeModeUtil;
@@ -184,6 +185,32 @@ class ChallengesControllerTest extends IntegrationTestCase
 
 		$this->assertSame([$this->userId('challenger')], $this->participants($challengeId));
 		$this->assertEmpty(Util::query('SELECT * FROM message'));
+	}
+
+	//The invitations of one request fill the challenge up to its limit, the names after that are told it is full.
+	public function testInvitingStopsWhenTheChallengeIsFull(): void
+	{
+		$others = [['name' => 'friend'], ['name' => 'stranger']];
+		for ($index = 0; $index < ChallengeTable::MAXIMUM_PARTICIPANTS - 2; $index++)
+			$others[] = ['name' => 'filler player ' . $index];
+		Auth::logout();
+		$this->context = new ContextPreparator([
+			'user' => ['name' => 'challenger', 'mode' => Constants::$LEVEL_MODE],
+			'other-users' => $others,
+			'time-mode-ranks' => ['5k'],
+			'tsumegos' => range(1, 12),
+		]);
+		$this->login('challenger');
+		$challengeId = $this->create();
+		foreach (array_slice($this->context->otherUsers, 2) as $filler)
+			ChallengeTable::addParticipant($challengeId, (int) $filler['id'], null);
+
+		$this->post('/challenges/invite/' . $challengeId, ['players' => 'DN_friend, DN_stranger']);
+
+		$this->assertSame(ChallengeTable::MAXIMUM_PARTICIPANTS, ChallengeTable::participantCount($challengeId));
+		$this->assertTrue(ChallengeTable::isParticipant($challengeId, $this->userId('friend')));
+		$this->assertFalse(ChallengeTable::isParticipant($challengeId, $this->userId('stranger')));
+		$this->assertSame('Invited DN_friend. The challenge waits for them in their challenges. The challenge is full, DN_stranger can\'t be invited.', CookieFlash::get());
 	}
 
 	public function testOnlyThePlayersOfAChallengeInvite(): void
