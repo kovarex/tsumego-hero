@@ -46,9 +46,9 @@ class SgfsControllerTest extends IntegrationTestCase
 		preg_match('~<tr id="' . $ownID . '">.*?</tr>~s', $this->view, $ownRow);
 		$this->assertStringContainsString('automatically generated', $automaticRow[0]);
 		$this->assertStringNotContainsString('?user=', $automaticRow[0]);
-		$this->assertStringNotContainsString('delV(', $automaticRow[0]);
+		$this->assertStringNotContainsString('data-delete=', $automaticRow[0]);
 		$this->assertStringContainsString('?user=' . Auth::getUserID(), $ownRow[0]);
-		$this->assertStringContainsString('delV(' . $ownID . ')', $ownRow[0]);
+		$this->assertStringContainsString('data-delete="' . $ownID . '"', $ownRow[0]);
 
 		$this->get('/sgfs/view/' . $tsumegoID . '?delete=' . $automaticID);
 		$this->assertTrue($this->fetchTable('Sgf')->exists(['id' => $automaticID]));
