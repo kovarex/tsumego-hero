@@ -146,7 +146,7 @@ class Play
 	 */
 	private static function semeaiQuestion(TsumegoSemeai $semeai, array $problem): array
 	{
-		[$libertiesB, $libertiesW] = Util::calculateLibertyStatus(
+		[$libertiesB, $libertiesW] = self::calculateLibertyStatus(
 			$problem['multipleChoiceSquares'],
 			$problem['multipleChoiceTriangles'],
 			$semeai->minimum_liberties,
@@ -154,6 +154,70 @@ class Play
 			$semeai->liberty_count,
 			$semeai->variance);
 		return ['libertiesB' => $libertiesB, 'libertiesW' => $libertiesW, 'variance' => $problem['multipleChoiceTriangles']];
+	}
+
+	//The coordinates of the property values [xx][yy]... that start at $position
+	/** @return list<string> */
+	private static function getFollowingSgfCoordinates(string $string, int $position): array
+	{
+		$result = [];
+		do
+		{
+			$next = substr($string, $position, 4);
+			if ($next[0] != '[')
+				break;
+			if ($next[3] != ']')
+				break;
+			if ($next[1] < 'a' || $next[1] > 't')
+				break;
+			if ($next[2] < 'a' || $next[2] > 't')
+				break;
+			$result [] = substr($string, $position + 1, 2);
+			$position += 4;
+		}
+		while (true);
+		return $result;
+	}
+
+	//The liberties to take from Black and from White in a semeai question, at random within its limits
+	/** @return array{int, int} */
+	private static function calculateLibertyStatus(
+		int $multipleChoiceSquares,
+		int $multipleChoiceTriangles,
+		?int $minLiberties,
+		?int $maxLiberties,
+		int $libertyCount,
+		?int $variance): array
+	{
+		// no variance, like 0, is the distance between the minimum and the maximum
+		$minLiberties = max(1, $minLiberties);
+		$maxLiberties = $maxLiberties != 0 ? min($maxLiberties, $libertyCount) : $libertyCount;
+
+		$minBlackLiberties = max($minLiberties, $libertyCount - $multipleChoiceSquares);
+		// the maximum can be unobtainable when there is not enough places where we can remove black liberties
+		$maxBlackLiberties = max($maxLiberties, $libertyCount - $multipleChoiceSquares);
+
+		$minWhiteLiberties = max($minLiberties, $libertyCount - $multipleChoiceTriangles);
+		// the maximum can be unobtainable when there is not enough places where we can remove white liberties
+		$maxWhiteLiberties = max($maxLiberties, $libertyCount - $multipleChoiceTriangles);
+
+		$variance = $variance ?: $maxLiberties - $minLiberties;
+
+		// Restrict Black to values for which a valid White value exists
+		$minBlackLiberties = max($minBlackLiberties, $minWhiteLiberties - $variance);
+		$maxBlackLiberties = min($maxBlackLiberties, $maxWhiteLiberties + $variance);
+
+		$remainingBlackLiberties = random_int($minBlackLiberties, $maxBlackLiberties);
+
+		// Calculate valid White range
+		$validMinWhiteLiberties = max($minWhiteLiberties, $remainingBlackLiberties - $variance);
+		$validMaxWhiteLiberties = min($maxWhiteLiberties, $remainingBlackLiberties + $variance);
+
+		// Pick remaining White liberties
+		$remainingW = random_int($validMinWhiteLiberties, $validMaxWhiteLiberties);
+
+		// Return number of liberties to remove
+		return [$libertyCount - $remainingBlackLiberties, $libertyCount - $remainingW];
 	}
 
 	/** @var array<string, mixed> */
@@ -219,8 +283,8 @@ class Play
 		$this->problem['og'] = self::openGraph($setConnection, $set, $tsumego, $sgf, $amountOfOtherCollection);
 		if ($semeai !== null)
 		{
-			$this->problem['multipleChoiceTriangles'] = count(Util::getFollowingSgfCoordinates($sgf->sgf, strpos($sgf->sgf, 'TR') + 2));
-			$this->problem['multipleChoiceSquares'] = count(Util::getFollowingSgfCoordinates($sgf->sgf, strpos($sgf->sgf, 'SQ') + 2));
+			$this->problem['multipleChoiceTriangles'] = count(self::getFollowingSgfCoordinates($sgf->sgf, strpos($sgf->sgf, 'TR') + 2));
+			$this->problem['multipleChoiceSquares'] = count(self::getFollowingSgfCoordinates($sgf->sgf, strpos($sgf->sgf, 'SQ') + 2));
 		}
 		$this->buildNavigation($setConnection, $set, $tsumegoFilters);
 
