@@ -65,16 +65,16 @@ class SetsController extends AppController
 		if (!Auth::isLoggedIn())
 			return $this->redirect('/');
 
-		$this->_showUserSets(Auth::getUserID());
+		$this->showUserSets(Auth::getUserID());
 	}
 
 	#[HttpGet]
 	public function userSets(string $userId): void
 	{
-		$this->_showUserSets((int) $userId);
+		$this->showUserSets((int) $userId);
 	}
 
-	private function _showUserSets(int $userId): void
+	private function showUserSets(int $userId): void
 	{
 		$isOwn = ($userId === Auth::getUserID());
 		$profileUser = UserTable::row($userId);
@@ -193,7 +193,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 				$set->order = (int) $this->input('order');
 			$setTable->saveOrFail($set);
 
-			if ($this->_isElevatedSetEdit($set))
+			if ($this->isElevatedSetEdit($set))
 			{
 				if ($oldTitle != $set->title)
 					AdminActivityLogger::log(AdminActivityTypeTable::SET_TITLE_EDIT, null, (int) $id, $oldTitle, $set->title);
@@ -406,7 +406,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 		return ($tsumegoButtons[0] ?? null)?->setConnectionID;
 	}
 
-	private function decodeQueryType(string $input): string
+	private static function decodeQueryType(string $input): string
 	{
 		if (is_numeric($input))
 			return 'topics';
@@ -427,7 +427,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 	{
 		if ($setID === 'favorites')
 		{
-			$set = $this->_getOrCreateDefaultFavoritesSet();
+			$set = $this->getOrCreateDefaultFavoritesSet();
 			$setID = $set->id;
 		}
 		else
@@ -517,7 +517,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 	}
 
 	//Get or create the user's default "Favorites" set.
-	private function _getOrCreateDefaultFavoritesSet(): Set
+	private function getOrCreateDefaultFavoritesSet(): Set
 	{
 		$userId = Auth::getUserID();
 		$defaultSetId = Auth::getUser()['default_set_id'] ?? null;
@@ -614,7 +614,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 		{
 			if (!Auth::isLoggedIn())
 				return $this->redirect('/');
-			$defaultSet = $this->_getOrCreateDefaultFavoritesSet();
+			$defaultSet = $this->getOrCreateDefaultFavoritesSet();
 			return $this->redirect(SetTable::url((int) $defaultSet->id));
 		}
 
@@ -627,7 +627,6 @@ ORDER BY sc.num ASC", [(int) $id]);
 
 		$this->set('_page', $id != '1' ? 'set' : 'favs');
 		$this->set('canEdit', false);
-		$this->set('isFav', false);
 		// the collection is found and authorized before the filters, which save the query to the preferences
 		$queryType = self::decodeQueryType((string) $id);
 		$set = $this->loadViewedCollection($queryType, $id);
@@ -690,7 +689,6 @@ ORDER BY sc.num ASC", [(int) $id]);
 		$this->set('tsumegoFilters', $tsumegoFilters);
 		$this->set('tsumegoButtons', $tsumegoButtons);
 		$this->set('set', $set);
-		$this->set('refreshView', false);
 		$this->set('avgTime', $avgTime);
 		$this->set('accuracy', $accuracy);
 		$this->set('scoring', $scoring);
@@ -712,9 +710,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 			return new Set(['id' => $id, 'title' => $id, 'public' => true, 'user_id' => null, 'description' => $tag->description, 'image' => '', 'deleted' => null]);
 		}
 
-		$set = $this->fetchTable('Set')->find()->where(['id' => $id])->first();
-		if (!$set)
-			throw new NotFoundException("Set not found");
+		$set = $this->findSet($id);
 		$this->Authorization->authorize($set, "view");
 		if ($set->public == 0 && $set->user_id === null)
 			$this->set('_page', 'sandbox');
@@ -850,7 +846,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 	}
 
 	//True when an admin edits a set they do not own (elevated privilege).
-	private function _isElevatedSetEdit(Set $set): bool
+	private function isElevatedSetEdit(Set $set): bool
 	{
 		return Auth::isAdmin() && $set->user_id != Auth::getUserID();
 	}
