@@ -3,6 +3,7 @@
 use App\Model\Table\AdminActivityTypeTable;
 use App\Model\Table\UserTable;
 use App\Utility\Auth;
+use App\Utility\CookieFlash;
 use App\Utility\Rating;
 use Facebook\WebDriver\WebDriverKeys;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -32,6 +33,50 @@ class EditTsumegoTest extends IntegrationTestCase
 			'non-admin' => [['field' => 'description', 'value' => 'bar', 'result' => 'foo', 'admin' => false]],
 			'invalid-tsumego' => [['field' => 'description', 'value' => 'bar', 'result' => 'foo', 'invalid-tsumego' => true]],
 		];
+	}
+
+	private function postEdit(ContextPreparator $context, array $fields): void
+	{
+		$this->post('/tsumegos/edit/' . $context->tsumegos[0]['id'], $fields + [
+			'description' => 'foo', 'hint' => 'think', 'author' => 'Ivan Detkov', 'rating' => '666', 'redirect' => '/sets']);
+	}
+
+	private function prepareProblem(): ContextPreparator
+	{
+		return new ContextPreparator([
+			'user' => ['admin' => true],
+			'tsumegos' => [['sets' => [['name' => 'set-1', 'num' => 1]], 'description' => 'foo', 'hint' => 'think', 'author' => 'Ivan Detkov', 'rating' => 666]]]);
+	}
+
+	public function testAWrongRatingIsNamedAfterItsFieldAndNothingIsSaved(): void
+	{
+		foreach (['rating' => 'Rating', 'minimum-rating' => 'Minimum rating', 'maximum-rating' => 'Maximum rating'] as $field => $label)
+		{
+			$context = $this->prepareProblem();
+			$this->postEdit($context, [$field => 'hello', 'description' => 'changed']);
+
+			$this->assertSame('error', CookieFlash::getType());
+			$this->assertStringStartsWith($label . ' parse error:', (string) CookieFlash::get());
+			$this->assertSame('foo', $this->fetchTable('Tsumego')->get($context->tsumegos[0]['id'])->description);
+		}
+	}
+
+	//Each field the form changed is noted with its old and new value, the ones it kept are not.
+	public function testTheChangedFieldsAreNotedInTheAdminActivity(): void
+	{
+		$context = $this->prepareProblem();
+
+		$this->postEdit($context, ['description' => 'bar', 'author' => 'Someone', 'minimum-rating' => '1000']);
+
+		$activities = array_map(fn($activity) => [$activity->type, $activity->old_value, $activity->new_value],
+			$this->fetchTable('AdminActivity')->find()->orderBy('id')->toArray());
+		$this->assertSame([
+			[AdminActivityTypeTable::DESCRIPTION_EDIT, 'foo', 'bar'],
+			[AdminActivityTypeTable::AUTHOR_EDIT, 'Ivan Detkov', 'Someone'],
+			[AdminActivityTypeTable::MINIMUM_RATING_EDIT, null, '1000'],
+		], $activities);
+		$tsumego = $this->fetchTable('Tsumego')->get($context->tsumegos[0]['id']);
+		$this->assertSame(1000.0, $tsumego->rating, 'the rating is raised to the minimum');
 	}
 
 	#[DataProvider('editTsumegoProvider')]
