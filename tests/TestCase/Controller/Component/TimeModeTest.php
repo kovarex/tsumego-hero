@@ -537,6 +537,21 @@ class TimeModeTest extends IntegrationTestCase
 		}
 	}
 
+	//The results show the account bar of the player as any other page does
+	public function testTimeModeResultShowsThePlayersOwnAccountBar(): void
+	{
+		$browser = Browser::instance();
+		$context = new ContextPreparator([
+			'user' => ['mode' => Constants::$LEVEL_MODE],
+			'time-mode-ranks' => ['5k'],
+			'time-mode-sessions' => [['category' => TimeModeCategoryTable::BLITZ, 'rank' => '5k', 'status' => TimeModeSessionStatusTable::SOLVED]]]);
+		$browser->get('timeMode/result/' . $context->timeModeSessions[0]->id);
+
+		// the level, raised by the XP of the time mode achievement the page unlocks
+		$this->assertStringStartsWith('Level ', $browser->find('#account-bar-xp')->getText());
+		$this->assertTrue($browser->find('#modeSelector')->isDisplayed());
+	}
+
 	//A rank opens to its runs and closes again
 	public function testTimeModeResultRankOpensAndCloses(): void
 	{

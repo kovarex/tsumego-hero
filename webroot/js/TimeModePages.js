@@ -1,7 +1,7 @@
 //The pages of the time mode around its runs: the overview, where the player picks a category and a
 //rank, and the results. Each page prints its data (timeModeOverviewPage, timeModeResultPage).
 
-//On these pages the account bar is the bar of the time mode, full, with the given text
+//On the overview the account bar is the bar of the time mode, full, with the given text
 function showTimeModeAccountBar(text)
 {
 	$('#xp-bar-fill').attr('class', 'xp-bar-fill-c3').css('width', '100%');
@@ -58,12 +58,10 @@ function initTimeModeResult(page)
 			title.querySelector('.rankArrow').setAttribute('src', opening ? page.rankArrowOpened : page.rankArrowClosed);
 		});
 
-	$(document).ready(function() {
-		showTimeModeAccountBar(page.accountBarText);
-		$('#modeSelector').hide();
-		if (page.unlock)
+	if (page.unlock)
+		$(document).ready(function() {
 			$('.toast').fadeIn(500);
-	});
+		});
 
 	$('#alertCheckbox').change(function() {
 		$('.toast').fadeOut(500);
