@@ -1,9 +1,9 @@
 <?php
 
 use App\Model\Table\TimeModeCategoryTable;
+use App\Model\Table\TimeModeAttemptStatusTable;
 use App\Model\Table\TimeModeSessionStatusTable;
 use App\Utility\Constants;
-use App\Utility\TimeModeUtil;
 
 //A line that can no longer end correct is sent as a fail the moment it is lost, so leaving
 //or refreshing before it is played out doesn't escape the fail (#112). The player is shown
@@ -227,8 +227,8 @@ class PlayLostLineBrowserTest extends IntegrationTestCase
 				'status' => TimeModeSessionStatusTable::IN_PROGRESS,
 				'attempts' => [
 					// the attempt has been running for all but the last seconds of Blitz
-					['order' => 1, 'status' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED, 'started-seconds-ago' => $blitzSeconds - 6],
-					['order' => 2, 'status' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED, 'tsumego_id' => 'other:1']]]]]);
+					['order' => 1, 'status' => TimeModeAttemptStatusTable::QUEUED, 'started-seconds-ago' => $blitzSeconds - 6],
+					['order' => 2, 'status' => TimeModeAttemptStatusTable::QUEUED, 'tsumego_id' => 'other:1']]]]]);
 		$browser = Browser::instance();
 		$browser->get('/timeMode/play');
 		$this->startWatching($browser);
@@ -239,7 +239,7 @@ class PlayLostLineBrowserTest extends IntegrationTestCase
 		$browser->waitUntilJs('document.getElementById("status").textContent.includes("Time\'s up!")');
 		$this->assertSame(['failed'], $this->sentOutcomes($browser), 'The lost line was already sent, the clock adds nothing');
 		$this->assertSame(
-			TimeModeUtil::$ATTEMPT_RESULT_FAILED,
+			TimeModeAttemptStatusTable::FAILED,
 			(int) $this->fetchTable('TimeModeAttempt')->find()->where(['time_mode_session_id' => $context->timeModeSessions[0]->id, 'order' => 1])->first()->time_mode_attempt_status_id);
 	}
 }

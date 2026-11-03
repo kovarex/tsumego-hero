@@ -3,6 +3,7 @@
 use App\Model\Table\SetConnectionTable;
 use App\Model\Table\ChallengeTable;
 use App\Model\Table\TimeModeCategoryTable;
+use App\Model\Table\TimeModeAttemptStatusTable;
 use App\Model\Table\TimeModeSessionStatusTable;
 use App\Utility\Auth;
 use App\Utility\Constants;
@@ -268,7 +269,7 @@ class ChallengesControllerTest extends IntegrationTestCase
 			'outcome' => PlayOutcome::SolvedClean->value]);
 		$attempt = $this->runAttempts($challengeId, 'stranger')[0];
 		$this->assertSame(30.0, (float) $attempt['seconds']);
-		$this->assertSame(100 * TimeModeUtil::$POINTS_RATIO_FOR_FINISHING, (float) $attempt['points']);
+		$this->assertSame(100 * TimeModeUtil::POINTS_RATIO_FOR_FINISHING, (float) $attempt['points']);
 	}
 
 	public function testAPlayerPlaysTheirRunOnlyOnce(): void
@@ -388,7 +389,7 @@ class ChallengesControllerTest extends IntegrationTestCase
 		$session = ChallengeTable::runOf($challengeId, $this->userId('challenger'));
 		$this->assertNotSame(TimeModeSessionStatusTable::IN_PROGRESS, $session->time_mode_session_status_id);
 		$this->assertSame(
-			[TimeModeUtil::$ATTEMPT_RESULT_SOLVED, TimeModeUtil::$ATTEMPT_STATUS_SKIPPED, TimeModeUtil::$ATTEMPT_STATUS_SKIPPED, TimeModeUtil::$ATTEMPT_STATUS_SKIPPED, TimeModeUtil::$ATTEMPT_STATUS_SKIPPED],
+			[TimeModeAttemptStatusTable::SOLVED, TimeModeAttemptStatusTable::SKIPPED, TimeModeAttemptStatusTable::SKIPPED, TimeModeAttemptStatusTable::SKIPPED, TimeModeAttemptStatusTable::SKIPPED],
 			array_map(fn(array $attempt) => (int) $attempt['time_mode_attempt_status_id'], $this->runAttempts($challengeId, 'challenger')));
 
 		// and the new time mode run is the one being played

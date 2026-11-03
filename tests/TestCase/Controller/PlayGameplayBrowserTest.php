@@ -2,6 +2,7 @@
 
 use App\Model\Table\SemeaiTypeTable;
 use App\Model\Table\TimeModeCategoryTable;
+use App\Model\Table\TimeModeAttemptStatusTable;
 use App\Model\Table\TimeModeSessionStatusTable;
 use App\Model\Table\TsumegoVariantTable;
 use App\Model\Table\UserTable;
@@ -1022,9 +1023,9 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 	//status is given, so the player is on the problem that has not been recorded yet.
 	private function startTimeMode(Browser $browser, ?int $firstAttemptStatus = null, int $problemCount = 2, array $firstAttemptFields = []): ContextPreparator
 	{
-		$attempts = [array_merge(['order' => 1, 'status' => $firstAttemptStatus ?? TimeModeUtil::$ATTEMPT_RESULT_QUEUED], $firstAttemptFields)];
+		$attempts = [array_merge(['order' => 1, 'status' => $firstAttemptStatus ?? TimeModeAttemptStatusTable::QUEUED], $firstAttemptFields)];
 		for ($order = 2; $order <= $problemCount; $order++)
-			$attempts[] = ['order' => $order, 'status' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED, 'tsumego_id' => 'other:' . ($order - 1)];
+			$attempts[] = ['order' => $order, 'status' => TimeModeAttemptStatusTable::QUEUED, 'tsumego_id' => 'other:' . ($order - 1)];
 
 		$context = new ContextPreparator([
 			'tsumego' => ['set_order' => 1, 'sgf' => self::SGF_19],
@@ -1057,7 +1058,7 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 		$this->assertSame('timed_out', $browser->driver->executeScript('return window._sent[0].outcome;'));
 		$this->assertSame("Time's up!", trim($browser->findById('status')->getText()));
 		$this->assertSame(
-			TimeModeUtil::$ATTEMPT_STATUS_TIMEOUT,
+			TimeModeAttemptStatusTable::TIMEOUT,
 			(int) $this->fetchTable('TimeModeAttempt')->find()->where(['time_mode_session_id' => $context->timeModeSessions[0]->id, 'order' => 1])->first()->time_mode_attempt_status_id);
 	}
 
@@ -1130,7 +1131,7 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 	public function testTimeModeResultPageWaitsForTheLastSolve(): void
 	{
 		$browser = Browser::instance();
-		$context = $this->startTimeMode($browser, TimeModeUtil::$ATTEMPT_RESULT_SOLVED);
+		$context = $this->startTimeMode($browser, TimeModeAttemptStatusTable::SOLVED);
 		$sessionID = $context->timeModeSessions[0]->id;
 
 		// only the last problem is left and it has not been recorded yet
@@ -1139,7 +1140,7 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 
 		// the result of the last problem arrives
 		$attempt = $this->fetchTable('TimeModeAttempt')->find()->where(['time_mode_session_id' => $sessionID, 'order' => 2])->first();
-		$attempt->time_mode_attempt_status_id = TimeModeUtil::$ATTEMPT_RESULT_SOLVED;
+		$attempt->time_mode_attempt_status_id = TimeModeAttemptStatusTable::SOLVED;
 		$attempt->seconds = '10';
 		$attempt->points = '50';
 		$this->fetchTable('TimeModeAttempt')->saveOrFail($attempt);
@@ -1154,7 +1155,7 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 	//keeps asking. The waiting has to end and the session has to be scored.
 	public function testASessionIsScoredWhenTheLastResultNeverArrives(): void
 	{
-		$categorySeconds = TimeModeUtil::$CATEGORY_SLOW_SPEED_SECONDS;
+		$categorySeconds = TimeModeUtil::CATEGORY_SLOW_SPEED_SECONDS;
 		$context = new ContextPreparator([
 			'tsumego' => ['set_order' => 1, 'sgf' => self::SGF_19],
 			'tsumegos' => [['set_order' => 2, 'sgf' => self::SGF_19]],
@@ -1164,9 +1165,9 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 				'rank' => '5k',
 				'status' => TimeModeSessionStatusTable::IN_PROGRESS,
 				'attempts' => [
-					['order' => 1, 'status' => TimeModeUtil::$ATTEMPT_RESULT_SOLVED],
+					['order' => 1, 'status' => TimeModeAttemptStatusTable::SOLVED],
 					// the last problem was left behind and its result never arrived
-					['order' => 2, 'status' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED, 'tsumego_id' => 'other:1',
+					['order' => 2, 'status' => TimeModeAttemptStatusTable::QUEUED, 'tsumego_id' => 'other:1',
 						'started-seconds-ago' => $categorySeconds + 1]]]]]);
 		$browser = Browser::instance();
 
@@ -1177,7 +1178,7 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 
 		// the player has been waiting almost the whole limit already
 		$browser->driver->executeScript('sessionStorage.setItem("timeModeWaitStarted", Date.now() - '
-			. (TimeModeUtil::$WAITING_FOR_RESULT_SECONDS * 1000 - 500) . ');');
+			. (TimeModeUtil::WAITING_FOR_RESULT_SECONDS * 1000 - 500) . ');');
 		$browser->get('/timeMode/play/3');
 
 		$browser->waitUntilJs('document.body && document.body.textContent.indexOf("Time Mode Results") !== -1');
@@ -1208,7 +1209,7 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 	//the score of all of them.
 	public function testPlayingAWholeTimeModeSessionRecordsEveryOutcome(): void
 	{
-		$categorySeconds = TimeModeUtil::$CATEGORY_SLOW_SPEED_SECONDS;
+		$categorySeconds = TimeModeUtil::CATEGORY_SLOW_SPEED_SECONDS;
 		$context = new ContextPreparator([
 			'tsumego' => ['set_order' => 1, 'sgf' => self::SGF_19],
 			'tsumegos' => [
@@ -1221,11 +1222,11 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 				'rank' => '5k',
 				'status' => TimeModeSessionStatusTable::IN_PROGRESS,
 				'attempts' => [
-					['order' => 1, 'status' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED],
-					['order' => 2, 'status' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED, 'tsumego_id' => 'other:1'],
-					['order' => 3, 'status' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED, 'tsumego_id' => 'other:2'],
+					['order' => 1, 'status' => TimeModeAttemptStatusTable::QUEUED],
+					['order' => 2, 'status' => TimeModeAttemptStatusTable::QUEUED, 'tsumego_id' => 'other:1'],
+					['order' => 3, 'status' => TimeModeAttemptStatusTable::QUEUED, 'tsumego_id' => 'other:2'],
 					// the last problem was presented and left behind, so its time ran out
-					['order' => 4, 'status' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED, 'tsumego_id' => 'other:3',
+					['order' => 4, 'status' => TimeModeAttemptStatusTable::QUEUED, 'tsumego_id' => 'other:3',
 						'started-seconds-ago' => $categorySeconds + 1]]]]]);
 		$sessionID = $context->timeModeSessions[0]->id;
 		$browser = Browser::instance();
@@ -1246,7 +1247,7 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 		$browser->waitForSubmitResult();
 		$browser->dismissAchievementPopups();
 		$this->assertStringContainsString('Correct', $status());
-		$this->assertSame(TimeModeUtil::$ATTEMPT_RESULT_SOLVED, (int) $attempt(1)->time_mode_attempt_status_id);
+		$this->assertSame(TimeModeAttemptStatusTable::SOLVED, (int) $attempt(1)->time_mode_attempt_status_id);
 		$this->assertGreaterThan(0, (int) $attempt(1)->points, 'A solved problem scores');
 
 		$browser->clickId('besogo-next-button');
@@ -1258,7 +1259,7 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 		$browser->clickBoard(2, 1);
 		$browser->waitUntilJs('document.getElementById("status").textContent.indexOf("Incorrect") !== -1');
 		$browser->waitForSubmitResult();
-		$this->assertSame(TimeModeUtil::$ATTEMPT_RESULT_FAILED, (int) $attempt(2)->time_mode_attempt_status_id);
+		$this->assertSame(TimeModeAttemptStatusTable::FAILED, (int) $attempt(2)->time_mode_attempt_status_id);
 		$this->assertSame(0, (int) $attempt(2)->points, 'A misplayed problem scores nothing');
 
 		$browser->clickId('besogo-next-button');
@@ -1269,9 +1270,9 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 		// the third problem is given up on, which brings up the last one that ran out of time
 		$browser->clickId('besogo-next-button');
 		$browser->waitUntilJs('location.pathname === "/timeMode/result/' . $sessionID . '"');
-		$this->assertSame(TimeModeUtil::$ATTEMPT_STATUS_SKIPPED, (int) $attempt(3)->time_mode_attempt_status_id);
+		$this->assertSame(TimeModeAttemptStatusTable::SKIPPED, (int) $attempt(3)->time_mode_attempt_status_id);
 		$this->assertSame(0, (int) $attempt(3)->points, 'A problem given up on scores nothing');
-		$this->assertSame(TimeModeUtil::$ATTEMPT_STATUS_TIMEOUT, (int) $attempt(4)->time_mode_attempt_status_id);
+		$this->assertSame(TimeModeAttemptStatusTable::TIMEOUT, (int) $attempt(4)->time_mode_attempt_status_id);
 		$this->assertSame($categorySeconds, (int) $attempt(4)->seconds,
 			'A problem left behind is recorded with the time it was given');
 		$this->assertSame(0, (int) $attempt(4)->points, 'A problem that ran out of time scores nothing');
@@ -1304,7 +1305,7 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 	//the page is open, and the problem is given up on by itself.
 	public function testAProblemWhoseCountdownRunsOutIsGivenUpOnByItself(): void
 	{
-		$categorySeconds = TimeModeUtil::$CATEGORY_SLOW_SPEED_SECONDS;
+		$categorySeconds = TimeModeUtil::CATEGORY_SLOW_SPEED_SECONDS;
 		$context = new ContextPreparator([
 			'tsumego' => ['set_order' => 1, 'sgf' => self::SGF_19],
 			'tsumegos' => [['set_order' => 2, 'sgf' => self::SGF_19]],
@@ -1314,8 +1315,8 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 				'rank' => '5k',
 				'status' => TimeModeSessionStatusTable::IN_PROGRESS,
 				'attempts' => [
-					['order' => 1, 'status' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED],
-					['order' => 2, 'status' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED, 'tsumego_id' => 'other:1']]]]]);
+					['order' => 1, 'status' => TimeModeAttemptStatusTable::QUEUED],
+					['order' => 2, 'status' => TimeModeAttemptStatusTable::QUEUED, 'tsumego_id' => 'other:1']]]]]);
 		$sessionID = $context->timeModeSessions[0]->id;
 		$browser = Browser::instance();
 
@@ -1335,7 +1336,7 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 		$browser->waitForSubmitResult();
 
 		$attempt = $this->fetchTable('TimeModeAttempt')->find()->where(['time_mode_session_id' => $sessionID, 'order' => 1])->first();
-		$this->assertSame(TimeModeUtil::$ATTEMPT_STATUS_TIMEOUT, $attempt->time_mode_attempt_status_id);
+		$this->assertSame(TimeModeAttemptStatusTable::TIMEOUT, $attempt->time_mode_attempt_status_id);
 		$this->assertSame($categorySeconds, (int) $attempt->seconds,
 			'Running out of time is recorded with the time the problem was given');
 		$this->assertSame(0, (int) $attempt->points);

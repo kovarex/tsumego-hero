@@ -2,8 +2,8 @@
 
 use App\Model\Table\AdminActivityTypeTable;
 use App\Model\Table\TimeModeCategoryTable;
+use App\Model\Table\TimeModeAttemptStatusTable;
 use App\Model\Table\TimeModeSessionStatusTable;
-use App\Utility\TimeModeUtil;
 use App\Utility\Util;
 
 #[RetryOnBrowserFailure]
@@ -49,7 +49,7 @@ class TsumegoMergeTest extends IntegrationTestCase
 					'category' => TimeModeCategoryTable::BLITZ,
 					'rank' => '5k',
 					'status' => TimeModeSessionStatusTable::IN_PROGRESS,
-					'attempts' => [['order' => 1, 'status' => TimeModeUtil::$ATTEMPT_RESULT_SOLVED, 'tsumego_id' => 'other:1']]]]]);
+					'attempts' => [['order' => 1, 'status' => TimeModeAttemptStatusTable::SOLVED, 'tsumego_id' => 'other:1']]]]]);
 
 			// For non-double-favorite cases, remove master from Favorites
 			if ($testCase != 'mergeWithDoubleFavorite')

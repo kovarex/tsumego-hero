@@ -1,6 +1,7 @@
 <?php
 
 use App\Model\Table\TimeModeCategoryTable;
+use App\Model\Table\TimeModeAttemptStatusTable;
 use App\Model\Table\TimeModeSessionStatusTable;
 use App\Utility\Auth;
 use App\Utility\Constants;
@@ -14,8 +15,8 @@ class TimeModeTest extends IntegrationTestCase
 {
 	public function testPointsCalculation()
 	{
-		$this->assertSame(TimeMode::calculatePoints(30, 30), 100 * TimeModeUtil::$POINTS_RATIO_FOR_FINISHING);
-		$this->assertSame(TimeMode::calculatePoints(50, 100), 100 * (1 + TimeModeUtil::$POINTS_RATIO_FOR_FINISHING) / 2);
+		$this->assertSame(TimeMode::calculatePoints(30, 30), 100 * TimeModeUtil::POINTS_RATIO_FOR_FINISHING);
+		$this->assertSame(TimeMode::calculatePoints(50, 100), 100 * (1 + TimeModeUtil::POINTS_RATIO_FOR_FINISHING) / 2);
 		$this->assertSame(TimeMode::calculatePoints(0, 30), 100.0);
 	}
 
@@ -104,7 +105,7 @@ class TimeModeTest extends IntegrationTestCase
 
 		$attempts = $this->fetchTable('TimeModeAttempt')->find()->where(['time_mode_session_id' => $sessions[0]->id])->toArray();
 		$this->assertTrue(count($attempts) > 0);
-		$this->assertSame($attempts[0]->time_mode_attempt_status_id, TimeModeUtil::$ATTEMPT_RESULT_QUEUED);
+		$this->assertSame($attempts[0]->time_mode_attempt_status_id, TimeModeAttemptStatusTable::QUEUED);
 	}
 
 	public function getTimeModeReportedTime($browser): array
@@ -122,7 +123,7 @@ class TimeModeTest extends IntegrationTestCase
 		$contextParameters['time-mode-ranks'] = ['5k'];
 		$contextParameters['tsumegos'] = [];
 
-		for ($i = 0; $i < TimeModeUtil::$PROBLEM_COUNT + 1; ++$i)
+		for ($i = 0; $i < TimeModeUtil::PROBLEM_COUNT + 1; ++$i)
 			$contextParameters['tsumegos'] [] = $i;
 
 		$context = new ContextPreparator($contextParameters);
@@ -145,31 +146,31 @@ class TimeModeTest extends IntegrationTestCase
 		Auth::init();
 		$this->assertTrue(Auth::isInTimeMode());
 
-		for ($i = 0; $i < TimeModeUtil::$PROBLEM_COUNT + 1; $i++)
+		for ($i = 0; $i < TimeModeUtil::PROBLEM_COUNT + 1; $i++)
 		{
-			if ($i < TimeModeUtil::$PROBLEM_COUNT)
+			if ($i < TimeModeUtil::PROBLEM_COUNT)
 			{
 				$result = $this->getTimeModeReportedTime($browser);
 				$totalSeconds = $result['minutes'] * 60 + $result['seconds'] + $result['decimals'] * 0.1;
-				$this->assertTrue($totalSeconds > 0 && $totalSeconds <= TimeModeUtil::$CATEGORY_SLOW_SPEED_SECONDS,
+				$this->assertTrue($totalSeconds > 0 && $totalSeconds <= TimeModeUtil::CATEGORY_SLOW_SPEED_SECONDS,
 					"Timer should be counting down, got {$totalSeconds}s");
 			}
 			$solvedAttempts = $this->fetchTable('TimeModeAttempt')->find()->where([
 				'time_mode_session_id' => $session->id,
-				'time_mode_attempt_status_id' => TimeModeUtil::$ATTEMPT_RESULT_SOLVED])->toArray();
+				'time_mode_attempt_status_id' => TimeModeAttemptStatusTable::SOLVED])->toArray();
 			$failedAttempts = $this->fetchTable('TimeModeAttempt')->find()->where([
 				'time_mode_session_id' => $session->id,
-				'time_mode_attempt_status_id' => TimeModeUtil::$ATTEMPT_RESULT_FAILED])->toArray();
+				'time_mode_attempt_status_id' => TimeModeAttemptStatusTable::FAILED])->toArray();
 			$this->assertSame(count($failedAttempts), 0);
 			$this->assertSame(count($solvedAttempts), $i);
 
 			$queuedAttempts = $this->fetchTable('TimeModeAttempt')->find()->where([
 				'time_mode_session_id' => $session->id,
-				'time_mode_attempt_status_id' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED])->toArray();
-			$this->assertSame(count($queuedAttempts), TimeModeUtil::$PROBLEM_COUNT - $i);
+				'time_mode_attempt_status_id' => TimeModeAttemptStatusTable::QUEUED])->toArray();
+			$this->assertSame(count($queuedAttempts), TimeModeUtil::PROBLEM_COUNT - $i);
 			foreach ($solvedAttempts as $solvedAttempt)
 				$this->assertTrue((float) $solvedAttempt->points > 20);
-			if ($i == TimeModeUtil::$PROBLEM_COUNT)
+			if ($i == TimeModeUtil::PROBLEM_COUNT)
 				break;
 			$browser->playWithResult('S');
 			$nextButton = $browser->find('#besogo-next-button');
@@ -229,7 +230,7 @@ class TimeModeTest extends IntegrationTestCase
 			'tsumego_id' => $tsumegoID])->first();
 		$this->assertSame(
 			$attempt->time_mode_attempt_status_id,
-			TimeModeUtil::$ATTEMPT_RESULT_SOLVED,
+			TimeModeAttemptStatusTable::SOLVED,
 			'Solving a previously solved time mode problem must record the attempt as solved.'
 		);
 
@@ -280,7 +281,7 @@ class TimeModeTest extends IntegrationTestCase
 		$contextParameters['user'] = ['mode' => Constants::$LEVEL_MODE];
 		$contextParameters['time-mode-ranks'] = ['5k'];
 		$contextParameters['tsumegos'] = [];
-		for ($i = 0; $i < TimeModeUtil::$PROBLEM_COUNT + 1; ++$i)
+		for ($i = 0; $i < TimeModeUtil::PROBLEM_COUNT + 1; ++$i)
 			$contextParameters['tsumegos'] [] = $i;
 		$context = new ContextPreparator($contextParameters);
 
@@ -296,8 +297,8 @@ class TimeModeTest extends IntegrationTestCase
 		$browser->waitUntilJs('/\d+:[0-5]\d\.\d/.test(document.querySelector("#time-mode-countdown").textContent)');
 		$result = $this->getTimeModeReportedTime($browser);
 		$resultTotal = $result['minutes'] * 60 + $result['seconds'] + $result['decimals'] * 0.1;
-		$this->assertTrue($resultTotal > 200 && $resultTotal <= TimeModeUtil::$CATEGORY_SLOW_SPEED_SECONDS,
-			"Timer should show close to " . TimeModeUtil::$CATEGORY_SLOW_SPEED_SECONDS . "s, got {$resultTotal}s");
+		$this->assertTrue($resultTotal > 200 && $resultTotal <= TimeModeUtil::CATEGORY_SLOW_SPEED_SECONDS,
+			"Timer should show close to " . TimeModeUtil::CATEGORY_SLOW_SPEED_SECONDS . "s, got {$resultTotal}s");
 
 		// refresh
 		$browser->get('timeMode/play');
@@ -305,19 +306,19 @@ class TimeModeTest extends IntegrationTestCase
 		$timeModeSessionID = $this->fetchTable('TimeModeSession')->find()->firstOrFail()->id;
 		$queuedAttempts = $this->fetchTable('TimeModeAttempt')->find()->where([
 			'time_mode_session_id' => $timeModeSessionID,
-			'time_mode_attempt_status_id' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED])->toArray();
-		$this->assertSame(count($queuedAttempts), TimeModeUtil::$PROBLEM_COUNT);
+			'time_mode_attempt_status_id' => TimeModeAttemptStatusTable::QUEUED])->toArray();
+		$this->assertSame(count($queuedAttempts), TimeModeUtil::PROBLEM_COUNT);
 
 		$startedQueuedAttempts = $this->fetchTable('TimeModeAttempt')->find()->where([
 			'time_mode_session_id' => $timeModeSessionID,
-			'time_mode_attempt_status_id' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED,
+			'time_mode_attempt_status_id' => TimeModeAttemptStatusTable::QUEUED,
 			'started IS NOT' => null])->toArray();
 		$this->assertSame(count($startedQueuedAttempts), 1);
 
 		$newResult = $this->getTimeModeReportedTime($browser);
 		$newTotal = $newResult['minutes'] * 60 + $newResult['seconds'] + $newResult['decimals'] * 0.1;
-		$this->assertTrue($newTotal > 200 && $newTotal <= TimeModeUtil::$CATEGORY_SLOW_SPEED_SECONDS,
-			"Timer should show close to " . TimeModeUtil::$CATEGORY_SLOW_SPEED_SECONDS . "s after refresh, got {$newTotal}s");
+		$this->assertTrue($newTotal > 200 && $newTotal <= TimeModeUtil::CATEGORY_SLOW_SPEED_SECONDS,
+			"Timer should show close to " . TimeModeUtil::CATEGORY_SLOW_SPEED_SECONDS . "s after refresh, got {$newTotal}s");
 		$this->assertTrue($newTotal < $resultTotal,
 			"Started attempt time: " . $startedQueuedAttempts[0]->started->format('Y-m-d H:i:s.u')
 			. " Reported time: " . $newResult['minutes'] . ':' . $newResult['seconds'] . '.' . $newResult['decimals']
@@ -330,7 +331,7 @@ class TimeModeTest extends IntegrationTestCase
 		$contextParameters['user'] = ['mode' => Constants::$LEVEL_MODE];
 		$contextParameters['time-mode-ranks'] = ['5k'];
 		$contextParameters['tsumegos'] = [];
-		for ($i = 0; $i < TimeModeUtil::$PROBLEM_COUNT + 1; ++$i)
+		for ($i = 0; $i < TimeModeUtil::PROBLEM_COUNT + 1; ++$i)
 			$contextParameters['tsumegos'] [] = $i;
 		$context = new ContextPreparator($contextParameters);
 
@@ -344,7 +345,7 @@ class TimeModeTest extends IntegrationTestCase
 
 		// Wait for countdown JS to be ready
 		$browser->waitUntilJs('/\d+:[0-5]\d\.\d/.test(document.querySelector("#time-mode-countdown").textContent)');
-		$openForTooLong = (TimeModeUtil::$CATEGORY_SLOW_SPEED_SECONDS + 1) * 1000;
+		$openForTooLong = (TimeModeUtil::CATEGORY_SLOW_SPEED_SECONDS + 1) * 1000;
 		$browser->driver->executeScript("window.clockStart -= {$openForTooLong};");
 		// Wait for countdown to show 0:00.0
 		$browser->waitUntilJs('document.querySelector("#time-mode-countdown").textContent.includes("0:00.0")');
@@ -360,7 +361,7 @@ class TimeModeTest extends IntegrationTestCase
 			'user_id' => Auth::getUserID(),
 			'time_mode_session_status_id' => TimeModeSessionStatusTable::IN_PROGRESS])->first();
 		$attempt = $this->fetchTable('TimeModeAttempt')->find()->where(['time_mode_session_id' => $session->id])->orderBy('id')->first();
-		$this->assertSame($attempt->time_mode_attempt_status_id, TimeModeUtil::$ATTEMPT_STATUS_TIMEOUT);
+		$this->assertSame($attempt->time_mode_attempt_status_id, TimeModeAttemptStatusTable::TIMEOUT);
 	}
 
 	public function testNextButtonTitleFromSkipToNextInTheTimeMode()
@@ -369,7 +370,7 @@ class TimeModeTest extends IntegrationTestCase
 		$contextParameters['user'] = ['mode' => Constants::$LEVEL_MODE];
 		$contextParameters['time-mode-ranks'] = ['5k'];
 		$contextParameters['tsumegos'] = [];
-		for ($i = 0; $i < TimeModeUtil::$PROBLEM_COUNT + 1; ++$i)
+		for ($i = 0; $i < TimeModeUtil::PROBLEM_COUNT + 1; ++$i)
 			$contextParameters['tsumegos'] [] = $i;
 		$context = new ContextPreparator($contextParameters);
 
@@ -391,7 +392,7 @@ class TimeModeTest extends IntegrationTestCase
 		$contextParameters['user'] = ['mode' => Constants::$LEVEL_MODE];
 		$contextParameters['time-mode-ranks'] = ['5k'];
 		$contextParameters['tsumegos'] = [];
-		for ($i = 0; $i < TimeModeUtil::$PROBLEM_COUNT + 1; ++$i)
+		for ($i = 0; $i < TimeModeUtil::PROBLEM_COUNT + 1; ++$i)
 			$contextParameters['tsumegos'] [] = $i;
 		$context = new ContextPreparator($contextParameters);
 
@@ -407,7 +408,7 @@ class TimeModeTest extends IntegrationTestCase
 			'user_id' => Auth::getUserID(),
 			'time_mode_session_status_id' => TimeModeSessionStatusTable::IN_PROGRESS])->first();
 		$attempt = $this->fetchTable('TimeModeAttempt')->find()->where(['time_mode_session_id' => $session->id])->orderBy('id')->first();
-		$this->assertSame($attempt->time_mode_attempt_status_id, TimeModeUtil::$ATTEMPT_STATUS_SKIPPED);
+		$this->assertSame($attempt->time_mode_attempt_status_id, TimeModeAttemptStatusTable::SKIPPED);
 	}
 
 	public function testTimeTitleWithDifferentTsumegoFilters()
@@ -416,7 +417,7 @@ class TimeModeTest extends IntegrationTestCase
 		$contextParameters['user'] = ['mode' => Constants::$LEVEL_MODE, 'query' => 'favorites'];
 		$contextParameters['time-mode-ranks'] = ['5k'];
 		$contextParameters['tsumegos'] = [];
-		for ($i = 0; $i < TimeModeUtil::$PROBLEM_COUNT + 1; ++$i)
+		for ($i = 0; $i < TimeModeUtil::PROBLEM_COUNT + 1; ++$i)
 			$contextParameters['tsumegos'] [] = $i;
 		$context = new ContextPreparator($contextParameters);
 
@@ -442,7 +443,7 @@ class TimeModeTest extends IntegrationTestCase
 				'category' => TimeModeCategoryTable::BLITZ,
 				'rank' => '5k',
 				'status' => TimeModeSessionStatusTable::SOLVED,
-				'attempts' => [['order' => 1, 'status' => TimeModeUtil::$ATTEMPT_RESULT_SOLVED]]];
+				'attempts' => [['order' => 1, 'status' => TimeModeAttemptStatusTable::SOLVED]]];
 		}
 		if ($conditions['higherRankPresent'])
 			$contextParameters['time-mode-ranks'] [] = '1d';
@@ -451,7 +452,7 @@ class TimeModeTest extends IntegrationTestCase
 			'category' => TimeModeCategoryTable::BLITZ,
 			'rank' => '5k',
 			'status' => TimeModeSessionStatusTable::IN_PROGRESS,
-			'attempts' => [['order' => 1, 'status' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED]]];
+			'attempts' => [['order' => 1, 'status' => TimeModeAttemptStatusTable::QUEUED]]];
 		if ($conditions['failedSessionOnRankToBeUnlocked'])
 		{
 			$contextParameters['time-mode-sessions'] [] = [
@@ -739,7 +740,7 @@ class TimeModeTest extends IntegrationTestCase
 			'time-mode-ranks' => ['5k']];
 
 		// I prepare tsumegos in a way that one will be always left from the time mode selection
-		for ($i = 0; $i < TimeModeUtil::$PROBLEM_COUNT + 1; ++$i)
+		for ($i = 0; $i < TimeModeUtil::PROBLEM_COUNT + 1; ++$i)
 			$contextParameters['tsumegos'][] = $i;
 		$context = new ContextPreparator($contextParameters);
 
@@ -781,7 +782,7 @@ class TimeModeTest extends IntegrationTestCase
 		$contextParameters['time-mode-ranks'] = ['5k'];
 		$contextParameters['tsumegos'] = [];
 		$sgf = '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[cc];B[aa];W[ab];B[ba]C[+])';
-		for ($i = 0; $i < TimeModeUtil::$PROBLEM_COUNT + 1; ++$i)
+		for ($i = 0; $i < TimeModeUtil::PROBLEM_COUNT + 1; ++$i)
 			$contextParameters['tsumegos'] [] = ['sgf' => $sgf, 'set_order' => $i];
 		$context = new ContextPreparator($contextParameters);
 

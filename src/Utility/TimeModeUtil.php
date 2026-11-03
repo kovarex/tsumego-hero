@@ -2,35 +2,17 @@
 
 namespace App\Utility;
 
+//The settings of the time mode. How a problem of a run ended is TimeModeAttemptStatusTable.
 class TimeModeUtil
 {
-	public static int $PROBLEM_COUNT = 10;
-	public static float $RATIO_OF_SOLVED_TO_SUCCEED = 0.79;
-	public static float $SECONDS_ADDED_PER_MOVE_PLAYED = 3;
+	public const int PROBLEM_COUNT = 10;
+	public const float RATIO_OF_SOLVED_TO_SUCCEED = 0.79;
+	public const float SECONDS_ADDED_PER_MOVE_PLAYED = 3;
 
 	//The seconds of a problem in the Slow category, the seconds of its row in time_mode_category
-	public static int $CATEGORY_SLOW_SPEED_SECONDS = 240;
+	public const int CATEGORY_SLOW_SPEED_SECONDS = 240;
 
-	public static int $WAITING_FOR_RESULT_SECONDS = 15;
+	public const int WAITING_FOR_RESULT_SECONDS = 15;
 
-	public static int $ATTEMPT_RESULT_QUEUED = 1;
-	public static int $ATTEMPT_RESULT_SOLVED = 2;
-	public static int $ATTEMPT_RESULT_FAILED = 3;
-	public static int $ATTEMPT_STATUS_TIMEOUT = 4;
-	public static int $ATTEMPT_STATUS_SKIPPED = 5;
-
-	public static function attemptStatusName(int $statusID): string
-	{
-		switch ($statusID)
-		{
-			case self::$ATTEMPT_RESULT_QUEUED: return 'queued';
-			case self::$ATTEMPT_RESULT_SOLVED: return 'solved';
-			case self::$ATTEMPT_RESULT_FAILED: return 'failed';
-			case self::$ATTEMPT_STATUS_TIMEOUT: return 'timeout';
-			case self::$ATTEMPT_STATUS_SKIPPED: return 'skipped';
-			default: return 'unknown';
-		}
-	}
-
-	public static float $POINTS_RATIO_FOR_FINISHING = 0.4;
+	public const float POINTS_RATIO_FOR_FINISHING = 0.4;
 }
