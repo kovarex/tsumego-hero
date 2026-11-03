@@ -93,10 +93,11 @@ class ChallengesController extends AppController
 		$standings = ChallengeTable::standings($challengeID);
 		$this->set('standings', $standings);
 
-		$isParticipant = Auth::isLoggedIn() && ChallengeTable::isParticipant($challengeID, Auth::getUserID());
+		$participation = Auth::isLoggedIn() ? ChallengeTable::participation($challengeID, Auth::getUserID()) : null;
+		$isParticipant = $participation !== null && $participation['declined'] === null;
 		$myRun = $isParticipant ? array_find($standings, fn(array $row) => (int) $row['user_id'] === Auth::getUserID()) : null;
 		$this->set('isParticipant', $isParticipant);
-		$this->set('hasDeclined', Auth::isLoggedIn() && !$isParticipant && ChallengeTable::participation($challengeID, Auth::getUserID()) !== null);
+		$this->set('hasDeclined', $participation !== null && !$isParticipant);
 		$this->set('myRun', $myRun);
 		$this->set('isFull', !$isParticipant && ChallengeTable::participantCount($challengeID) >= ChallengeTable::MAXIMUM_PARTICIPANTS);
 		$this->set('joinUrl', Router::url(self::challengeUrl($challengeID), true));
@@ -179,14 +180,15 @@ class ChallengesController extends AppController
 	{
 		$this->Authorization->authorize('Challenge', 'join');
 		$challengeID = (int) $challenge['id'];
-		if (ChallengeTable::isParticipant($challengeID, Auth::getUserID()))
+		$participation = ChallengeTable::participation($challengeID, Auth::getUserID());
+		if ($participation !== null && $participation['declined'] === null)
 			return true;
 		if (ChallengeTable::participantCount($challengeID) >= ChallengeTable::MAXIMUM_PARTICIPANTS)
 		{
 			CookieFlash::set('The challenge is full, ' . ChallengeTable::MAXIMUM_PARTICIPANTS . ' players are in it already.', 'error');
 			return false;
 		}
-		if (ChallengeTable::participation($challengeID, Auth::getUserID()) !== null)
+		if ($participation !== null)
 			ChallengeTable::rejoin($challengeID, Auth::getUserID());
 		else
 			ChallengeTable::addParticipant($challengeID, Auth::getUserID(), null);

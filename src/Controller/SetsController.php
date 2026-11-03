@@ -43,51 +43,8 @@ class SetsController extends AppController
 
 		$this->set('_page', 'sandbox');
 		$this->set('_title', 'Tsumego Hero - Collections');
-		$setsNew = [];
-
-		$sets = Util::query('SELECT id, title, color FROM `set` WHERE public = 0 AND user_id IS NULL AND deleted IS NULL ORDER BY `order`');
-
-		if (Auth::isLoggedIn())
-		{
-			$tsumegoStatusMap = [];
-			foreach (Util::query('SELECT tsumego_id, status FROM tsumego_status WHERE user_id = ?', [Auth::getUserID()]) as $userTsumegoStatus)
-				$tsumegoStatusMap[$userTsumegoStatus['tsumego_id']] = $userTsumegoStatus['status'];
-		}
-		$overallCounter = 0;
-
-		$setsCount = count($sets);
-		for ($i = 0; $i < $setsCount; $i++)
-		{
-			$ts = TsumegoUtil::collectTsumegosFromSet($sets[$i]['id']);
-			$counter = 0;
-			$elo = 0;
-			$tsCount3 = count($ts);
-			for ($k = 0; $k < $tsCount3; $k++)
-			{
-
-				$elo += $ts[$k]['Tsumego']['rating'];
-				if (Auth::isLoggedIn())
-					if (isset($tsumegoStatusMap[$ts[$k]['Tsumego']['id']]))
-						if ($tsumegoStatusMap[$ts[$k]['Tsumego']['id']] == 'S' || $tsumegoStatusMap[$ts[$k]['Tsumego']['id']] == 'W' || $tsumegoStatusMap[$ts[$k]['Tsumego']['id']] == 'C')
-							$counter++;
-			}
-			if (count($ts) > 0)
-				$elo = $elo / count($ts);
-			else
-				$elo = 0;
-			$percent = 0;
-			if (count($ts) > 0)
-				$percent = Util::getPercentButAvoid100UntilComplete($counter, count($ts));
-			$overallCounter += count($ts);
-			$sn = [];
-			$sn['id'] = $sets[$i]['id'];
-			$sn['name'] = $sets[$i]['title'];
-			$sn['amount'] = count($ts);
-			$sn['color'] = $sets[$i]['color'];
-			$sn['difficulty'] = Rating::getReadableRankFromRating($elo);
-			$sn['solved'] = $percent;
-			array_push($setsNew, $sn);
-		}
+		// the sandbox: the builds of the admins, not published yet and owned by nobody
+		$setsNew = SetTable::cards('s.public = 0 AND s.user_id IS NULL AND s.deleted IS NULL', [], Auth::getUserID());
 
 		$admins = $this->fetchTable('User')->find()
 			->select(['display_name'])
@@ -99,7 +56,7 @@ class SetsController extends AppController
 
 		$this->set('admins', $admins);
 		$this->set('setsNew', $setsNew);
-		$this->set('overallCounter', $overallCounter);
+		$this->set('overallCounter', array_sum(array_column($setsNew, 'amount')));
 	}
 
 	#[HttpGet]
@@ -132,40 +89,8 @@ class SetsController extends AppController
 		$this->set('canonicalPath', '/sets/user/' . $userId);
 
 		// Own sets (or an admin browsing) show all sets; others only see public ones
-		$publicFilter = ($isOwn || Auth::isAdmin()) ? '' : 'AND s.public = 1';
-
-		$rows = Util::query("
-SELECT
-	s.id,
-	s.title,
-	s.color,
-	COUNT(sc.tsumego_id) AS amount,
-	COALESCE(SUM(t.rating), 0) AS elo_sum,
-	COALESCE(SUM(CASE WHEN ts.status IN ('S','W','C') THEN 1 ELSE 0 END), 0) AS solved
-FROM `set` s
-LEFT JOIN (set_connection sc
-	JOIN tsumego t ON t.id = sc.tsumego_id AND t.deleted IS NULL) ON sc.set_id = s.id
-LEFT JOIN tsumego_status ts ON ts.tsumego_id = sc.tsumego_id AND ts.user_id = ?
-WHERE s.user_id = ? $publicFilter
-GROUP BY s.id, s.title, s.color
-ORDER BY s.order", [Auth::getUserID(), $userId]);
-
-		$setsNew = [];
-		foreach ($rows as $row)
-		{
-			$amount = (int) $row['amount'];
-			$elo = $amount > 0 ? (float) $row['elo_sum'] / $amount : 0.0;
-			$percent = $amount > 0 ? Util::getPercentButAvoid100UntilComplete((int) $row['solved'], $amount) : 0;
-
-			$setsNew[] = [
-				'id' => $row['id'],
-				'name' => $row['title'],
-				'amount' => $amount,
-				'color' => $row['color'],
-				'difficulty' => Rating::getReadableRankFromRating($elo),
-				'solved' => $percent,
-			];
-		}
+		$publicFilter = ($isOwn || Auth::isAdmin()) ? '' : ' AND s.public = 1';
+		$setsNew = SetTable::cards('s.user_id = ?' . $publicFilter, [$userId], Auth::getUserID());
 
 		$this->set('setsNew', $setsNew);
 		$this->render('user_sets');
@@ -721,72 +646,20 @@ ORDER BY sc.num ASC", [(int) $id]);
 		// which page of it the link pointed at, and the first page is the collection itself.
 		$this->set('canonicalPath', SetTable::url($id, $partition + 1));
 
-		if ($id != '1')
-			$this->set('_page', 'set');
-		else
-			$this->set('_page', 'favs');
-		$tsIds = [];
-		$refreshView = false;
-		$avgTime = 0;
-		$accuracy = 0;
-		$pdCounter = 0;
-		$bestTime = null;
-		$bestAccuracy = null;
+		$this->set('_page', $id != '1' ? 'set' : 'favs');
 		$this->set('canEdit', false);
 		$this->set('isFav', false);
-		$queryType = self::decodeQueryType($id);
-
-		if ($queryType == 'topics' && is_numeric($id))
-		{
-			$set = $this->fetchTable('Set')->find()->where(['id' => $id])->first();
-			if (!$set)
-				throw new NotFoundException("Set not found");
-			$this->Authorization->authorize($set, "view");
-		}
-
-		if ($queryType == 'tags')
-			if (!$this->fetchTable('Tag')->exists(['name' => $id]))
-				throw new NotFoundException("Tag not found");
-
+		// the collection is found and authorized before the filters, which save the query to the preferences
+		$queryType = self::decodeQueryType((string) $id);
+		$set = $this->loadViewedCollection($queryType, $id);
 		$tsumegoFilters = new TsumegoFilters($queryType);
+
 		Util::setCookie('lastSet', $id);
 		$tsumegoButtons = new TsumegoButtons($tsumegoFilters, null, $partition, $id);
 		$tsumegoButtons->loadPreviews();
 		$this->set('startingSetConnectionID', $this->getFirstUnsolvedSetConnectionId($tsumegoButtons));
 
-		if ($tsumegoFilters->query == 'difficulty')
-		{
-			// a rank is shown as a collection of its problems
-			$set = new Set(['id' => $id, 'title' => $id, 'public' => true, 'user_id' => null, 'description' => null, 'image' => null, 'deleted' => null]);
-		}
-		elseif ($tsumegoFilters->query == 'tags')
-		{
-			// a tag is shown as a collection of its problems
-			$tag = $this->fetchTable('Tag')->find()->where(['name' => $id])->first();
-			$set = new Set(['id' => $id, 'title' => $id, 'public' => true, 'user_id' => null, 'description' => $tag?->description, 'image' => '', 'deleted' => null]);
-		}
-		elseif ($tsumegoFilters->query == 'topics')
-		{
-			$set = $this->fetchTable('Set')->find()->where(['id' => $id])->first();
-			if (!$set)
-				throw new NotFoundException("Set not found");
-			$this->Authorization->authorize($set, "view");
-
-			foreach ($tsumegoButtons as $tsumegoButton)
-				$tsIds [] = $tsumegoButton->tsumegoID;
-			if ($set->public == 0 && $set->user_id === null)
-				$this->set('_page', 'sandbox');
-			// Search engines are kept out of what a player assembled.
-			$this->set('robotsNoIndex', !SetTable::isOfficial($set));
-			$this->set('canEdit', $this->Authorization->can($set, 'edit'));
-			$this->set('canShare', $this->Authorization->can($set, 'share'));
-		}
-		else
-			throw new BadRequestException('Unknown query type: ' . $tsumegoFilters->query);
-
-		$setAuthor = null;
-		if (!empty($set->user_id))
-			$setAuthor = UserTable::row($set->user_id);
+		$setAuthor = empty($set->user_id) ? null : UserTable::row($set->user_id);
 		$this->set('setAuthor', $setAuthor);
 
 		if ($tsumegoButtons->description)
@@ -795,130 +668,22 @@ ORDER BY sc.num ASC", [(int) $id]);
 		$displayTitle = $set->title . $tsumegoButtons->getPartitionTitleSuffix();
 		$this->set('_title', $displayTitle . ' on Tsumego Hero');
 		$this->set('setTitle', $displayTitle);
-
-		$ogDescription = trim(strip_tags($set->description ?? ''));
-		if ($ogDescription === '')
-			if ($tsumegoFilters->query === 'topics')
-			{
-				$ogDescription = SetTable::getProblemCount($set->id) . ' go problems';
-				if ($setAuthor !== null)
-					$ogDescription .= ' collected by ' . UserTable::displayName($setAuthor);
-			}
-			else
-				$ogDescription = 'Interactive go problems';
-
-		// A shared link names the player even when they are the one who opened it.
-		$og = [
-			'title' => $setAuthor === null
-				? $displayTitle
-				: $displayTitle . ' by ' . UserTable::displayName($setAuthor),
-			'description' => $ogDescription,
-			'type' => 'website',
-			'site_name' => 'Tsumego',
-		];
-
-		$image = $set->image ?? '';
-		if ($image !== '')
-		{
-			$og['image'] = Router::url('/img/' . $image, true);
-			$og['image_alt'] = 'Cover image of ' . $displayTitle;
-			$imagePath = WWW_ROOT . 'img' . DS . str_replace('/', DS, $image);
-			if (file_exists($imagePath))
-			{
-				$size = getimagesize($imagePath);
-				if ($size)
-				{
-					$og['image_width'] = $size[0];
-					$og['image_height'] = $size[1];
-					$og['image_type'] = $size['mime'];
-				}
-			}
-		}
-
-		$this->set('og', $og);
-
-		if (Auth::isLoggedIn() && $tsumegoFilters->query == 'topics')
-		{
-			// The attempts of the player on the problems of the page, newest first, read once and
-			// sorted out by problem: a player who trains a set has dozens of attempts on each of them.
-			$attempts = empty($tsIds) ? [] : Util::query('SELECT tsumego_id, solved, seconds, misplays FROM tsumego_attempt
-				WHERE user_id = ? AND tsumego_id IN (' . implode(',', array_fill(0, count($tsIds), '?')) . ')
-				ORDER BY created DESC, id DESC', [Auth::getUserID(), ...$tsIds]);
-			$attemptsByTsumego = [];
-			foreach ($attempts as $attempt)
-				$attemptsByTsumego[(int) $attempt['tsumego_id']][] = $attempt;
-			foreach ($tsumegoButtons as $tsumegoButton)
-			{
-				$urSum = '';
-				$tsumegoButton->seconds = 0;
-				$solvedSeconds = []; // Track all successful solve times to find minimum (best)
-				foreach ($attemptsByTsumego[$tsumegoButton->tsumegoID] ?? [] as $attempt)
-				{
-					$isSolved = (bool) $attempt['solved'];
-					$attemptSeconds = (int) $attempt['seconds'];
-					if ($isSolved && $attemptSeconds > 0)
-						$solvedSeconds[] = $attemptSeconds;
-
-					$mis = (int) $attempt['misplays'];
-					if (!$isSolved && $mis <= 0)
-						$mis = 1;
-					$urSum .= str_repeat('F', max(0, $mis));
-					if ($isSolved)
-						$urSum .= '1';
-				}
-				// Use minimum (best) solve time from all successful attempts
-				if (!empty($solvedSeconds))
-					$tsumegoButton->seconds = min($solvedSeconds);
-				$tsumegoButton->performance = $urSum;
-			}
-		}
+		$this->set('og', $this->openGraph($set, $displayTitle, $setAuthor, $tsumegoFilters->query === 'topics'));
 
 		$problemSolvedPercent = $tsumegoButtons->getProblemsSolvedPercent();
 		$setRating = $tsumegoButtons->getProblemsRating();
 		$this->set('setRating', $setRating);
-
 		$this->set('problemSolvedPercent', $problemSolvedPercent);
 
-		$scoring = true;
-		if (Auth::isLoggedIn() && $tsumegoFilters->query == 'topics')
+		// the player's own scores are kept on the collections, a rank or a tag has none
+		$scoring = Auth::isLoggedIn() && $tsumegoFilters->query == 'topics';
+		$avgTime = 0;
+		$accuracy = 0;
+		if ($scoring)
 		{
-			// the resets of this part of the set, the same count that reduces the XP of its problems
-			$pdCounter = ProgressDeletionTable::countRecent(Auth::getUserID(), (int) $id, $partition);
-			$urSecCounter = 0;
-			$urSecAvg = 0;
-			$pSsum = 0;
-			$pFsum = 0;
-			foreach ($tsumegoButtons as $tsumegoButton)
-			{
-				// The average is of the solved problems only, an unsolved one would pull it down
-				// and each new solve up (forum#149). A solve without a recorded time counts as a minute.
-				if (TsumegoUtil::isSolvedStatus($tsumegoButton->status))
-				{
-					$urSecAvg += $tsumegoButton->seconds ?: 60;
-					$urSecCounter++;
-				}
-
-				if ($tsumegoButton->performance == '')
-					if (TsumegoUtil::isSolvedStatus($tsumegoButton->status))
-						$tss2 = 'F';
-					else
-						$tss2 = '';
-				else
-					$tss2 = $tsumegoButton->performance;
-				$pS = substr_count($tss2, '1');
-				$pF = substr_count($tss2, 'F');
-				$pSsum += $pS;
-				$pFsum += $pF;
-			}
-			if ($urSecCounter == 0)
-				$avgTime = 0;
-			else
-				$avgTime = round($urSecAvg / $urSecCounter, 2);
-			if ($pSsum + $pFsum == 0)
-				$accuracy = 0;
-			else
-				$accuracy = round($pSsum / ($pSsum + $pFsum) * 100, 2);
-			$avgTime2 = $avgTime;
+			$tsumegoButtons->loadAttempts(Auth::getUserID());
+			$avgTime = $tsumegoButtons->getAverageSolveTime();
+			$accuracy = $tsumegoButtons->getAccuracy();
 			if ($problemSolvedPercent >= 100)
 			{
 				$achievementChecker = new AchievementChecker();
@@ -926,36 +691,99 @@ ORDER BY sc.num ASC", [(int) $id]);
 				// collection a player assembled, however complete it is.
 				if (SetTable::isOfficial($set))
 				{
-					$this->updateAchievementConditions($set->id, $avgTime2, $accuracy);
+					$this->updateAchievementConditions($set->id, $avgTime, $accuracy);
 					$achievementChecker->checkSetAchievements($set->id, $setRating);
 				}
 				$achievementChecker->checkCompletionAchievement($set);
 				$achievementChecker->finalize();
 				$this->set('achievementUpdates', $achievementChecker->updated);
 			}
-
-			$bestTime = AchievementConditionTable::value(Auth::getUserID(), AchievementConditionTable::CATEGORY_SET_TIME, (int) $id);
-			$bestAccuracy = AchievementConditionTable::value(Auth::getUserID(), AchievementConditionTable::CATEGORY_SET_ACCURACY, (int) $id);
 		}
-		else
-			$scoring = false;
 
 		if ($tsumegoFilters->query == 'topics')
 		{
-			$this->set('pdCounter', $pdCounter);
-			$this->set('bestTime', $bestTime);
-			$this->set('bestAccuracy', $bestAccuracy);
+			// the resets of this part of the set, the same count that reduces the XP of its problems
+			$this->set('pdCounter', $scoring ? ProgressDeletionTable::countRecent(Auth::getUserID(), (int) $id, $partition) : 0);
+			$this->set('bestTime', $scoring ? AchievementConditionTable::value(Auth::getUserID(), AchievementConditionTable::CATEGORY_SET_TIME, (int) $id) : null);
+			$this->set('bestAccuracy', $scoring ? AchievementConditionTable::value(Auth::getUserID(), AchievementConditionTable::CATEGORY_SET_ACCURACY, (int) $id) : null);
 		}
 
 		$this->set('tsumegoFilters', $tsumegoFilters);
 		$this->set('tsumegoButtons', $tsumegoButtons);
 		$this->set('set', $set);
-		$this->set('refreshView', $refreshView);
+		$this->set('refreshView', false);
 		$this->set('avgTime', $avgTime);
 		$this->set('accuracy', $accuracy);
 		$this->set('scoring', $scoring);
 		$this->set('partition', $partition);
 		return null;
+	}
+
+	//The collection the page shows: a set, or a rank or a tag shown as a collection of its problems.
+	private function loadViewedCollection(string $queryType, string|int $id): Set
+	{
+		if ($queryType == 'difficulty')
+			return new Set(['id' => $id, 'title' => $id, 'public' => true, 'user_id' => null, 'description' => null, 'image' => null, 'deleted' => null]);
+
+		if ($queryType == 'tags')
+		{
+			$tag = $this->fetchTable('Tag')->find()->where(['name' => $id])->first();
+			if (!$tag)
+				throw new NotFoundException("Tag not found");
+			return new Set(['id' => $id, 'title' => $id, 'public' => true, 'user_id' => null, 'description' => $tag->description, 'image' => '', 'deleted' => null]);
+		}
+
+		$set = $this->fetchTable('Set')->find()->where(['id' => $id])->first();
+		if (!$set)
+			throw new NotFoundException("Set not found");
+		$this->Authorization->authorize($set, "view");
+		if ($set->public == 0 && $set->user_id === null)
+			$this->set('_page', 'sandbox');
+		// Search engines are kept out of what a player assembled.
+		$this->set('robotsNoIndex', !SetTable::isOfficial($set));
+		$this->set('canEdit', $this->Authorization->can($set, 'edit'));
+		$this->set('canShare', $this->Authorization->can($set, 'share'));
+		return $set;
+	}
+
+	//The Open Graph tags of a collection page: how a shared link to it is previewed.
+	private function openGraph(Set $set, string $displayTitle, ?array $setAuthor, bool $isSet): array
+	{
+		$description = trim(strip_tags($set->description ?? ''));
+		if ($description === '')
+			if ($isSet)
+			{
+				$description = SetTable::getProblemCount($set->id) . ' go problems';
+				if ($setAuthor !== null)
+					$description .= ' collected by ' . UserTable::displayName($setAuthor);
+			}
+			else
+				$description = 'Interactive go problems';
+
+		// A shared link names the player even when they are the one who opened it.
+		$og = [
+			'title' => $setAuthor === null
+				? $displayTitle
+				: $displayTitle . ' by ' . UserTable::displayName($setAuthor),
+			'description' => $description,
+			'type' => 'website',
+			'site_name' => 'Tsumego',
+		];
+
+		$image = $set->image ?? '';
+		if ($image === '')
+			return $og;
+		$og['image'] = Router::url('/img/' . $image, true);
+		$og['image_alt'] = 'Cover image of ' . $displayTitle;
+		$imagePath = WWW_ROOT . 'img' . DS . str_replace('/', DS, $image);
+		$size = file_exists($imagePath) ? getimagesize($imagePath) : false;
+		if ($size)
+		{
+			$og['image_width'] = $size[0];
+			$og['image_height'] = $size[1];
+			$og['image_type'] = $size['mime'];
+		}
+		return $og;
 	}
 
 	//Keeps the player's records on the set: the best average time and the best accuracy.

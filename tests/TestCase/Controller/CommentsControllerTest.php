@@ -860,6 +860,54 @@ class CommentsControllerTest extends IntegrationTestCase
 		$browser->assertNoErrors();
 	}
 
+	//A comment dropped on an issue is moved by one request, also after the issues changed, when the
+	//drag and drop was set up again.
+	public function testDroppingACommentOnAnIssueMovesItOnce()
+	{
+		$context = new ContextPreparator([
+			'user' => ['admin' => true],
+			'tsumego' => [
+				'set_order' => 1,
+				'comments' => [['message' => 'the comment to move'], ['message' => 'the comment to make an issue of']],
+				'issues' => [['message' => 'the first issue']],
+				'status' => 'S']]);
+
+		$browser = Browser::instance();
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		$browser->expandComments();
+		$browser->find('.tsumego-issue', 5);
+
+		// one more issue makes the drag and drop set itself up again
+		$browser->driver->executeScript(<<<'JS'
+			const comment = [...document.querySelectorAll('.tsumego-comment--standalone')]
+				.find(element => element.textContent.includes('the comment to make an issue of'));
+			[...comment.querySelectorAll('button')].find(button => button.textContent.includes('Make Issue')).click();
+			JS);
+		$browser->waitUntil(fn() => count($browser->getElements('.tsumego-issue')) === 2, context: 'the second issue');
+
+		$browser->startRecordingRequests();
+		$browser->driver->executeScript(<<<'JS'
+			const comment = [...document.querySelectorAll('.tsumego-comment--standalone')]
+				.find(element => element.textContent.includes('the comment to move'));
+			const issue = [...document.querySelectorAll('.tsumego-issue')]
+				.find(element => element.textContent.includes('the first issue'));
+			const dataTransfer = new DataTransfer();
+			const fire = (target, type, Event) => target.dispatchEvent(new Event(type, {bubbles: true, cancelable: true, dataTransfer}));
+			fire(comment.querySelector('.tsumego-comment__drag-handle'), 'pointerdown', PointerEvent);
+			fire(comment, 'dragstart', DragEvent);
+			setTimeout(() =>
+			{
+				const overlay = issue.querySelector('.tsumego-issue__drop-overlay');
+				fire(overlay, 'dragover', DragEvent);
+				fire(overlay, 'drop', DragEvent);
+				fire(comment, 'dragend', DragEvent);
+			}, 100);
+			JS);
+		$browser->waitUntil(fn() => count($browser->requestsTo('/tsumego-issues/move-comment/')) > 0, context: 'the move');
+		usleep(500000);
+		$this->assertCount(1, $browser->requestsTo('/tsumego-issues/move-comment/'));
+	}
+
 	public function testDragHandlesDoNotAppearForNonAdmin()
 	{
 		// Create tsumego with a comment - NON-admin user

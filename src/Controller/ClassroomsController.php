@@ -94,8 +94,7 @@ class ClassroomsController extends AppController
 	#[HttpPost]
 	public function invite(string $id): mixed
 	{
-		$classroom = $this->findClassroom($id);
-		$this->Authorization->authorize(['Classroom' => $classroom], 'manage');
+		$classroom = $this->findManagedClassroom($id);
 		$url = self::classUrl($classroom->id);
 
 		$name = trim((string) ($this->input('name') ?? ''));
@@ -191,8 +190,7 @@ class ClassroomsController extends AppController
 	#[HttpPost]
 	public function createAssignment(string $id): mixed
 	{
-		$classroom = $this->findClassroom($id);
-		$this->Authorization->authorize(['Classroom' => $classroom], 'manage');
+		$classroom = $this->findManagedClassroom($id);
 
 		$assignmentTable = $this->fetchTable('ClassroomAssignment');
 		$assignment = $assignmentTable->saveOrFail($assignmentTable->newEntity([
@@ -207,9 +205,7 @@ class ClassroomsController extends AppController
 	#[HttpGet]
 	public function assignment(string $assignmentId): mixed
 	{
-		$assignment = $this->findAssignment($assignmentId);
-		$classroom = $this->findClassroom((string) $assignment['classroom_id']);
-		$this->Authorization->authorize(['Classroom' => $classroom], 'manage');
+		[$assignment, $classroom] = $this->findManagedAssignment($assignmentId);
 
 		$this->set('_page', 'classes');
 		$this->set('_title', 'Tsumego Hero - ' . $classroom->name . ' - Assignment');
@@ -249,9 +245,7 @@ class ClassroomsController extends AppController
 	#[HttpPost]
 	public function saveAssignment(string $assignmentId): Response
 	{
-		$assignment = $this->findAssignment($assignmentId);
-		$classroom = $this->findClassroom((string) $assignment['classroom_id']);
-		$this->Authorization->authorize(['Classroom' => $classroom], 'manage');
+		[$assignment, $classroom] = $this->findManagedAssignment($assignmentId);
 
 		$input = json_decode($this->requestBody(), true);
 		if (!is_array($input))
@@ -298,8 +292,7 @@ class ClassroomsController extends AppController
 	{
 		if (!Auth::isLoggedIn())
 			return $this->redirect('/users/login');
-		$assignment = $this->findAssignment($assignmentId);
-		$classroom = $this->findClassroom((string) $assignment['classroom_id']);
+		[$assignment, $classroom] = $this->findAssignment($assignmentId);
 		$isTeacher = $this->Authorization->can(['Classroom' => $classroom], 'manage');
 		if (!$isTeacher && !ClassroomMemberTable::isPupil($classroom->id, Auth::getUserID()))
 			throw new ForbiddenException();
@@ -332,9 +325,7 @@ class ClassroomsController extends AppController
 	#[HttpPost]
 	public function deleteAssignment(string $assignmentId): mixed
 	{
-		$assignment = $this->findAssignment($assignmentId);
-		$classroom = $this->findClassroom((string) $assignment['classroom_id']);
-		$this->Authorization->authorize(['Classroom' => $classroom], 'manage');
+		[$assignment, $classroom] = $this->findManagedAssignment($assignmentId);
 
 		$this->fetchTable('ClassroomAssignment')->deleteAll(['id' => (int) $assignment['id']]);
 		return $this->redirect(self::classUrl($classroom->id));
@@ -345,8 +336,7 @@ class ClassroomsController extends AppController
 	#[HttpGet]
 	public function progress(string $assignmentId): Response
 	{
-		$assignment = $this->findAssignment($assignmentId);
-		$classroom = $this->findClassroom((string) $assignment['classroom_id']);
+		[$assignment, $classroom] = $this->findAssignment($assignmentId);
 		if (!ClassroomAssignmentTable::isPublished($assignment))
 			throw new NotFoundException('Assignment not found');
 		if ($this->Authorization->can(['Classroom' => $classroom], 'manage'))
@@ -362,8 +352,7 @@ class ClassroomsController extends AppController
 	#[HttpPost]
 	public function delete(string $id): mixed
 	{
-		$classroom = $this->findClassroom($id);
-		$this->Authorization->authorize(['Classroom' => $classroom], 'manage');
+		$classroom = $this->findManagedClassroom($id);
 
 		$this->fetchTable('Classroom')->deleteAll(['id' => $classroom->id]);
 		CookieFlash::set('Deleted the class ' . $classroom->name . '.', 'success');
@@ -388,15 +377,33 @@ class ClassroomsController extends AppController
 		return $classroom;
 	}
 
-	//The assignment as the plain row the helpers of ClassroomAssignmentTable read, like the rows of ofClassroom().
-	/** @return array<string, mixed> */
+	//A class, for its teacher only.
+	private function findManagedClassroom(string $id): Classroom
+	{
+		$classroom = $this->findClassroom($id);
+		$this->Authorization->authorize(['Classroom' => $classroom], 'manage');
+		return $classroom;
+	}
+
+	//The assignment as the plain row the helpers of ClassroomAssignmentTable read, like the rows
+	//of ofClassroom(), and its class.
+	/** @return array{0: array<string, mixed>, 1: Classroom} */
 	private function findAssignment(string $id): array
 	{
 		$assignment = $this->fetchTable('ClassroomAssignment')->find()->where(['id' => (int) $id])
 			->disableHydration()->disableResultsCasting()->first();
 		if (!$assignment)
 			throw new NotFoundException('Assignment not found');
-		return $assignment;
+		return [$assignment, $this->findClassroom((string) $assignment['classroom_id'])];
+	}
+
+	//An assignment as findAssignment() finds it, for the teacher of its class only.
+	/** @return array{0: array<string, mixed>, 1: Classroom} */
+	private function findManagedAssignment(string $id): array
+	{
+		[$assignment, $classroom] = $this->findAssignment($id);
+		$this->Authorization->authorize(['Classroom' => $classroom], 'manage');
+		return [$assignment, $classroom];
 	}
 
 	/** @return array{0: ClassroomMember, 1: Classroom} The membership and its class */

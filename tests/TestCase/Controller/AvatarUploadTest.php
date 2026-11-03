@@ -146,7 +146,7 @@ class AvatarUploadTest extends IntegrationTestCase
 		$this->upload($this->picture(100, 100));
 		$this->get('/users/settings');
 
-		$this->assertStringContainsString('name="avatar" value="' . UserTable::AVATAR_UPLOADED . '" onclick="avatarPreference(this.value);" checked="checked"', $this->view);
+		$this->assertStringContainsString('name="avatar" value="' . UserTable::AVATAR_UPLOADED . '" data-save="/users/avatarPreference" data-field="avatar" data-reload checked="checked"', $this->view);
 		$this->assertStringContainsString('id="avatar-remove"', $this->view);
 	}
 

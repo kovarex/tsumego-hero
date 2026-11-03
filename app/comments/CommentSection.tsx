@@ -11,6 +11,26 @@ import { CommentsListSkeleton } from './CommentSkeleton';
 import { ErrorMessage } from '../shared/ErrorMessage';
 import { useAuth } from '../shared/AuthContext';
 
+type SectionItem =
+	| { type: 'issue'; created: string; data: IssueType }
+	| { type: 'comment'; created: string; data: CommentType };
+
+//The label of the tab of the comments and the open issues, like "3 COMMENTS 🔴 1 OPEN ISSUE".
+function openTabText(counts: CommentCounts): string
+{
+	const parts = [];
+	if (counts.comments > 0)
+		parts.push(`${counts.comments} COMMENT${counts.comments > 1 ? 'S' : ''}`);
+	if (counts.openIssues > 0)
+		parts.push(`🔴 ${counts.openIssues} OPEN ISSUE${counts.openIssues > 1 ? 'S' : ''}`);
+	return parts.length > 0 ? parts.join(' ') : 'COMMENTS';
+}
+
+function closedTabText(closedCount: number): string
+{
+	return closedCount === 0 ? 'CLOSED ISSUES' : `${closedCount} CLOSED ISSUE${closedCount > 1 ? 'S' : ''}`;
+}
+
 interface CommentSectionProps
 {
 	tsumegoId: number;
@@ -50,50 +70,17 @@ export function CommentSection({ tsumegoId, initialCounts, initialAnchoredPositi
 	// Use query data as source of truth (empty until first fetch)
 	const counts = commentsQuery.data?.counts ?? initialCounts;
 
-	// Merge and sort issues + standalone comments chronologically (oldest first)
+	// The issues and the standalone comments in one list, the oldest first; an issue is as old as its first comment
 	const allItems = useMemo(() =>
 	{
-		// Extract inside memo to avoid stale dependencies
-		const issues = commentsQuery.data?.issues ?? [];
-		const standalone = commentsQuery.data?.standalone ?? [];
-		const items: Array<{
-			type: 'issue' | 'comment';
-			created: string;
-			data: IssueType | CommentType;
-		}> = [];
-
-		// Add issues - use EARLIEST comment date for sorting (not issue creation)
-		issues.forEach(issue =>
+		const issues: SectionItem[] = (commentsQuery.data?.issues ?? []).map(issue =>
 		{
-			let sortDate = issue.created; // Fallback to issue creation
-			if (issue.comments && issue.comments.length > 0)
-			{
-				// Comments in issue are ASC, so first is earliest
-				const earliestCommentDate = issue.comments[0].created;
-				if (new Date(earliestCommentDate) < new Date(sortDate)) 
-					sortDate = earliestCommentDate;
-			}
-			items.push({
-				type: 'issue',
-				created: sortDate,
-				data: issue
-			});
+			const firstComment = issue.comments?.[0]?.created;
+			const created = firstComment && new Date(firstComment) < new Date(issue.created) ? firstComment : issue.created;
+			return { type: 'issue', created, data: issue };
 		});
-
-		// Add standalone comments
-		standalone.forEach(comment =>
-		{
-			items.push({
-				type: 'comment',
-				created: comment.created,
-				data: comment
-			});
-		});
-
-		// Sort by date (oldest first)
-		items.sort((a, b) => new Date(a.created).getTime() - new Date(b.created).getTime());
-
-		return items;
+		const comments: SectionItem[] = (commentsQuery.data?.standalone ?? []).map(comment => ({ type: 'comment', created: comment.created, data: comment }));
+		return [...issues, ...comments].sort((a, b) => new Date(a.created).getTime() - new Date(b.created).getTime());
 	}, [commentsQuery.data]);
 
 	// Resolve position-anchored comments to their game-tree nodes.
@@ -271,66 +258,36 @@ export function CommentSection({ tsumegoId, initialCounts, initialAnchoredPositi
 	const handleMakeIssue = (commentId: number) =>
 		makeIssueMutation.mutate({ commentId });
 
-	// Anchor-scope filter for a single comment
-	const matchesAnchorFilter = (comment: CommentType | null | undefined) =>
+	// The anchor filter: every comment, the ones on no position, or the ones on the current node and the moves after it
+	const matchesAnchorFilter = (comment: CommentType) =>
 	{
-		if (anchorFilter === 'all') 
+		if (anchorFilter === 'all')
 			return true;
-		if (!comment) 
-			return false;
-		if (anchorFilter === 'general') 
-			return !comment.position; // no anchor
-		// 'onboard': a comment anchored to the currently-selected tree node
+		if (anchorFilter === 'general')
+			return !comment.position;
 		return comment.position != null && activeNodeCommentIds.has(comment.id);
 	};
 
-	// Filtering (tab + anchor scope)
-	const shouldShowItem = (item: IssueType | CommentType, type: 'issue' | 'standalone') =>
+	// The open tab shows the standalone comments and the open issues, the closed tab the closed issues;
+	// an issue passes the anchor filter when one of its comments does
+	const shouldShowItem = (item: SectionItem) =>
 	{
-		if (!activeTab) 
+		if (!activeTab)
 			return false;
-
-		// Open / closed tab filter
-		if (activeTab === 'open')
-		{
-			const tabOk = type === 'standalone' || (item as IssueType).tsumego_issue_status_id === IssueStatus.OPEN;
-			if (!tabOk) 
-				return false;
-		}
-		else if (type !== 'issue' || (item as IssueType).tsumego_issue_status_id !== IssueStatus.CLOSED)
-			return false;
-
-		// Anchor-scope filter
-		if (anchorFilter === 'all') 
-			return true;
-		if (type === 'standalone')
-			return matchesAnchorFilter(item as CommentType);
-
-		// An issue is shown when at least one of its comments matches.
-		return (item as IssueType).comments?.some(c => matchesAnchorFilter(c)) ?? false;
+		if (item.type === 'comment')
+			return activeTab === 'open' && matchesAnchorFilter(item.data);
+		const status = activeTab === 'open' ? IssueStatus.OPEN : IssueStatus.CLOSED;
+		return item.data.tsumego_issue_status_id === status
+			&& (anchorFilter === 'all' || (item.data.comments?.some(matchesAnchorFilter) ?? false));
 	};
 
 	const showContent = activeTab !== null;
 	const showForm = activeTab === 'open';
 	const hasContent = counts.comments > 0 || counts.openIssues > 0;
-	const commentsPart = counts.comments > 0 ? `${counts.comments} COMMENT${counts.comments > 1 ? 'S' : ''}` : '';
-	const issuesPart = counts.openIssues > 0 ? `🔴 ${counts.openIssues} OPEN ISSUE${counts.openIssues > 1 ? 'S' : ''}` : '';
-
-	let commentsTabText = 'COMMENTS';
-	if (commentsPart && issuesPart) 
-		commentsTabText = `${commentsPart} ${issuesPart}`;
-	else if (commentsPart) 
-		commentsTabText = commentsPart;
-	else if (issuesPart) 
-		commentsTabText = issuesPart;
-
 	const closedCount = counts.issues - counts.openIssues;
-	const closedTabText = closedCount === 0 ? 'CLOSED ISSUES' : `${closedCount} CLOSED ISSUE${closedCount > 1 ? 'S' : ''}`;
 
 	// Number of items that pass the current tab + anchor filters (for empty-state)
-	const visibleItemCount = allItems.filter(item =>
-		shouldShowItem(item.data, item.type === 'issue' ? 'issue' : 'standalone')
-	).length;
+	const visibleItemCount = allItems.filter(shouldShowItem).length;
 
 	return (
 		<>
@@ -340,14 +297,14 @@ export function CommentSection({ tsumegoId, initialCounts, initialAnchoredPositi
 					data-filter="open"
 					onClick={() => toggleTab('open')}
 				>
-					{commentsTabText}
+					{openTabText(counts)}
 				</button>
 				<button
 					className={`tsumego-comments__tab ${activeTab === 'closed' ? 'active' : ''}${closedCount === 0 ? ' tsumego-comments__tab--empty' : ''}`}
 					data-filter="closed"
 					onClick={() => toggleTab('closed')}
 				>
-					{closedTabText}
+					{closedTabText(closedCount)}
 				</button>
 			</div>
 
@@ -403,12 +360,12 @@ export function CommentSection({ tsumegoId, initialCounts, initialAnchoredPositi
 						{
 							if (item.type === 'issue')
 							{
-								const issue = item.data as IssueType;
+								const issue = item.data;
 								return (
 									<div
 										key={`issue-${issue.id}`}
 										style={{
-											display: shouldShowItem(issue, 'issue') ? '' : 'none'
+											display: shouldShowItem(item) ? '' : 'none'
 										}}
 									>
 										<Issue
@@ -422,13 +379,13 @@ export function CommentSection({ tsumegoId, initialCounts, initialAnchoredPositi
 							}
 							else
 							{
-								const comment = item.data as CommentType;
+								const comment = item.data;
 								return (
 									<div
 										className="tsumego-comment--standalone"
 										key={`comment-${comment.id}`}
 										style={{
-											display: shouldShowItem(comment, 'standalone') ? '' : 'none'
+											display: shouldShowItem(item) ? '' : 'none'
 										}}
 									>
 										<Comment
