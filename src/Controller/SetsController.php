@@ -11,6 +11,7 @@ use App\Model\Entity\Set;
 use App\Model\Table\SetTable;
 use App\Model\Table\SetConnectionTable;
 use App\Model\Table\SgfTable;
+use App\Model\Table\TsumegoTable;
 use Cake\Http\Exception\ConflictException;
 use App\Model\Table\AchievementConditionTable;
 use App\Model\Table\AdminActivityTypeTable;
@@ -449,6 +450,8 @@ ORDER BY sc.num ASC", [(int) $id]);
 			'set_id' => $setID,
 			'tsumego_id' => $tsumegoId,
 			'num' => $lastSetConnection ? $lastSetConnection->num + 1 : 1]));
+		if (SetTable::isOfficial($set))
+			TsumegoTable::forgetPublicProblemCount();
 
 		$achievementChecker = new AchievementChecker();
 		$achievementChecker->checkFavoritesAchievement((int) $setID);
@@ -505,6 +508,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 			if ($sgfDataOrFile)
 				SgfTable::upload($sgfDataOrFile, $tsumego->id, Auth::getUserID(), Auth::isAdmin());
 			$database->commit();
+			TsumegoTable::forgetPublicProblemCount();
 			AdminActivityLogger::log(AdminActivityTypeTable::PROBLEM_ADD, $tsumego->id, $setID);
 		}
 		catch (Exception $e)
@@ -559,6 +563,8 @@ ORDER BY sc.num ASC", [(int) $id]);
 			'set_id' => $setID,
 			'tsumego_id' => (int) $tsumegoId,
 		]);
+		if (SetTable::isOfficial($set))
+			TsumegoTable::forgetPublicProblemCount();
 
 		if ($this->request->is('ajax'))
 			return $this->respondJson(['contains' => false]);

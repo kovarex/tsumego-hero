@@ -186,6 +186,8 @@ HAVING
 				null,
 				json_encode($oldData, JSON_UNESCAPED_UNICODE));
 			$db->commit();
+			// the slave problem is gone, from the official collections too
+			SiteGrowth::forget();
 			return ['message' => 'Tsumegos merged.', 'type' => 'success'];
 		}
 		catch (Exception $e)

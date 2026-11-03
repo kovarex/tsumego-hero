@@ -3,6 +3,7 @@
 namespace App\Model\Table;
 
 use App\Utility\Util;
+use Cake\Cache\Cache;
 
 //The problems: what the player sees and the rating of each one. A problem in the trash has its
 //deleted time set. A semeai problem has its values in tsumego_semeai.
@@ -48,18 +49,34 @@ class TsumegoTable extends AppTable
 			=> 'EXISTS (SELECT 1 FROM set_connection sc JOIN `set` ON `set`.id = sc.set_id'
 				. ' AND ' . SetTable::officialCondition() . ' WHERE sc.tsumego_id = ' . $tsumegoRef . ')';
 
-		$row = Util::query(
-			'SELECT '
-			. '(SELECT COUNT(*) FROM tsumego t WHERE t.deleted IS NULL AND ' . $inOfficialSet('t.id') . ') AS total, '
-			// The solved side only walks the statuses of that one player, which is what keeps this
-			// from joining every problem of the site.
-			. '(SELECT COUNT(DISTINCT ts.tsumego_id) FROM tsumego_status ts'
+		// The solved side only walks the statuses of that one player, which is what keeps this
+		// from joining every problem of the site.
+		$solved = Util::query(
+			'SELECT COUNT(DISTINCT ts.tsumego_id) AS solved FROM tsumego_status ts'
 			. ' JOIN tsumego t ON t.id = ts.tsumego_id AND t.deleted IS NULL'
 			. " WHERE ts.user_id = ? AND ts.status IN ('S', 'C', 'W')"
-			. ' AND ' . $inOfficialSet('ts.tsumego_id') . ') AS solved',
+			. ' AND ' . $inOfficialSet('ts.tsumego_id'),
 			[$userId]
-		)[0];
+		)[0]['solved'];
 
-		return ['total' => (int) $row['total'], 'solved' => (int) $row['solved']];
+		// the same number for every player, counted over all the problems, so it is kept until it changes
+		$total = Cache::read(self::PUBLIC_PROBLEM_COUNT_CACHE_KEY, 'long');
+		if ($total === null)
+		{
+			$total = (int) Util::query('SELECT COUNT(*) AS total FROM tsumego t WHERE t.deleted IS NULL AND ' . $inOfficialSet('t.id'))[0]['total'];
+			Cache::write(self::PUBLIC_PROBLEM_COUNT_CACHE_KEY, $total, 'long');
+		}
+
+		return ['total' => (int) $total, 'solved' => (int) $solved];
+	}
+
+	private const string PUBLIC_PROBLEM_COUNT_CACHE_KEY = 'public_problem_count';
+
+	//Drops the kept count of the problems of the official collections. It changes when a problem
+	//joins or leaves an official collection, goes to the trash or comes back, and when a collection
+	//does; SiteGrowth::forget() calls this, so the places that change both call that one.
+	public static function forgetPublicProblemCount(): void
+	{
+		Cache::delete(self::PUBLIC_PROBLEM_COUNT_CACHE_KEY, 'long');
 	}
 }
