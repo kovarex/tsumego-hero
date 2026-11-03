@@ -32,7 +32,7 @@ class ScheduleTable extends AppTable
 				COALESCE(sandbox_sc.id, target_sc.id) AS sc_id,
 				sgf.sgf,
 				tsumego.deleted AS tsumego_deleted,
-				creator.name AS created_by_name,
+				creator.display_name AS created_by_name,
 				creator.id AS created_by_id
 			FROM schedule
 			LEFT JOIN tsumego ON tsumego.id = schedule.tsumego_id

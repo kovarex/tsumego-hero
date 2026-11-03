@@ -54,6 +54,29 @@ class SgfsControllerTest extends IntegrationTestCase
 		$this->assertTrue($this->fetchTable('Sgf')->exists(['id' => $automaticID]));
 	}
 
+	//The versions are numbered among those of the problem that weren't rejected, newest the highest, and a
+	//proposal is compared with the accepted version before it.
+	public function testVersionsAreNumberedAmongTheOnesNotRejected(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'viewer', 'admin' => true],
+			'tsumego' => ['set_order' => 4, 'sgfs' => [
+				'(;GM[1]FF[4]SZ[19]C[one])',
+				['data' => '(;GM[1]FF[4]SZ[19]C[rejected])', 'sgf_status_id' => SgfTable::STATUS_REJECTED],
+				'(;GM[1]FF[4]SZ[19]C[two])',
+				['data' => '(;GM[1]FF[4]SZ[19]C[proposed])', 'sgf_status_id' => SgfTable::STATUS_PROPOSED]]]]);
+		$sgfIDs = array_map(fn($sgf) => (int) $sgf['id'], $context->tsumegos[0]['sgfs']);
+
+		$this->get('/sgfs/view/' . $context->tsumegos[0]['id']);
+
+		$versions = $this->viewVariable('versions');
+		$this->assertSame([$sgfIDs[3], $sgfIDs[2], $sgfIDs[0]], array_map(fn($version) => (int) $version['id'], $versions));
+		$this->assertSame([3, 2, 1], array_column($versions, 'version'));
+		$this->assertSame([$sgfIDs[2], $sgfIDs[0], null], array_column($versions, 'diff'));
+		$this->assertSame('test set  #4', $versions[0]['title']);
+		$this->assertSame(4, $versions[0]['num']);
+	}
+
 	//Uploads of different problems interleave in the lists, the diff has to compare
 	//with the previous version of the same problem, not with the row below.
 	public function testUploadListsDiffAgainstThePreviousVersionOfTheSameProblem()

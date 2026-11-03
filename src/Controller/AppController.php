@@ -40,11 +40,6 @@ class AppController extends Controller
 	//The helpers a controller adds to those of every page
 	protected const HELPERS = [];
 
-	//The request, read through these few methods only, so that the switch to Cake 5 changes them
-	//and not every action: there they become getData(), getQuery(), getParam(), getBody() and
-	//getHeaderLine(). A dotted name reads a nested field ('Set.title'), as in both versions.
-
-	//A field the form or the request body sent, null when it was not sent.
 	//Shows the problem of the set connection on the play page. $viewVars are what only the route has
 	//(its canonical address, its menu item, its links), they win over what the problem would show.
 	/**
@@ -60,6 +55,9 @@ class AppController extends Controller
 		$this->render('/Tsumegos/play');
 	}
 
+	//The actions read the request through these few methods. A dotted name reads a nested field ('Set.title').
+
+	//A field the form or the request body sent, null when it was not sent.
 	protected function input(string $name): mixed
 	{
 		return $this->request->getData($name);
@@ -98,7 +96,7 @@ class AppController extends Controller
 	}
 
 	//A file the form uploaded, as its entry of $_FILES (name, type, tmp_name, error, size), null
-	//when none came. The one place a controller reads $_FILES: in Cake 5 it is getUploadedFile().
+	//when none came. The one place a controller reads $_FILES.
 	/** @return array<string, mixed>|null */
 	protected function uploadedFile(string $name): ?array
 	{
@@ -130,9 +128,8 @@ class AppController extends Controller
 		return (int) env('CONTENT_LENGTH');
 	}
 
-	//The response, set through these few methods only, so that the switch to Cake 5, whose
-	//response is immutable (withType(), withStringBody(), withStatus(), withHeader()), changes
-	//them and not every action. An action returns what they return.
+	//The actions set the response through these few methods, which keep the immutable response
+	//of the controller up to date. An action returns what they return.
 
 	//Answers with the data as JSON in place of a rendered page.
 	protected function respondJson(mixed $data, int $status = 200): Response
@@ -206,9 +203,8 @@ class AppController extends Controller
 			Util::setCookie('lastVisit', $lastStatus->tsumego_id);
 	}
 
-	//Enforce HTTP-method attributes (e.g. #[HttpPost]) on the dispatched action.
-	//Mirrors CakePHP 5's Cake\Http\Attribute\* so migration is a use-swap: the
-	//attributes stay, this enforcement method is deleted.
+	//Answers 405 to a request whose method the action's attributes (App\Attribute\HttpGet,
+	//HttpPost...) don't allow. CakePHP has no such attributes of its own.
 	protected function enforceHttpMethodAttribute(): void
 	{
 		$action = $this->request->getParam('action');
@@ -262,15 +258,15 @@ class AppController extends Controller
 	}
 
 	//The pages a player who has to pick a new display name can still open: the links that arrive
-	//by e-mail and the ways out of the account must not require picking a name first.
+	//by e-mail and the ways out of the account must not require picking a name first (AccountController).
 	private const ACTIONS_ALLOWED_BEFORE_NAME_CHANGE = [
-		'users/changename',
-		'users/updatename',
-		'users/logout',
-		'users/login',
-		'users/newpassword',
-		'users/confirm_delete_account',
-		'users/delete_account',
+		'account/changename',
+		'account/updatename',
+		'account/logout',
+		'account/login',
+		'account/newpassword',
+		'account/confirm_delete_account',
+		'account/delete_account',
 	];
 
 	private function mustChangeDisplayNameFirst(): bool
@@ -365,7 +361,7 @@ class AppController extends Controller
 		{
 			$lightDark = Util::cookie('lightDark') === 'dark' ? 'dark' : 'light';
 			$levelBar = UserTable::LEVEL_BAR_LEVEL;
-			$boardsBitmask = BoardSelector::filterValidBits((int) (Util::clearCookie('boards_bitmask') ?? BoardSelector::$DEFAULT_BOARDS_BITMASK));
+			$boardsBitmask = BoardSelector::filterValidBits((int) (self::takeCookie('boards_bitmask') ?? BoardSelector::$DEFAULT_BOARDS_BITMASK));
 		}
 
 		$this->set('highscoreLink', self::highscoreLink());
@@ -373,7 +369,13 @@ class AppController extends Controller
 		$this->set('levelBar', $levelBar);
 		$this->set('boardsBitmask', $boardsBitmask);
 		$this->set('timeMode', new TimeMode());
-		$this->set('changelogTimestamps', Changelog::timestamps());
 		return null;
+	}
+
+	//Only a rendered page shows what is new, an answer of an endpoint (respond()) is no page
+	public function beforeRender(EventInterface $event): void
+	{
+		parent::beforeRender($event);
+		$this->set('changelogTimestamps', Changelog::timestamps());
 	}
 }

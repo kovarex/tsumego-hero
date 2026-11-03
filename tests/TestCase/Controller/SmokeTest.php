@@ -6,9 +6,9 @@
  * - CSS is loaded properly
  * - Core functionality works
  */
+use App\Model\Table\TimeModeAttemptStatusTable;
 use App\Model\Table\TimeModeSessionStatusTable;
 use App\Utility\Auth;
-use App\Utility\TimeModeUtil;
 use App\Utility\Util;
 
 #[RetryOnBrowserFailure]
@@ -36,10 +36,10 @@ class SmokeTest extends IntegrationTestCase
 			'time-mode-sessions' => [
 				// In-progress session for timeMode/play
 				['category' => 1, 'rank' => '15k', 'status' => TimeModeSessionStatusTable::IN_PROGRESS,
-					'attempts' => [['order' => 1, 'status' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED]]],
+					'attempts' => [['order' => 1, 'status' => TimeModeAttemptStatusTable::QUEUED]]],
 				// Finished session for timeMode/result
 				['category' => 1, 'rank' => '14k', 'status' => TimeModeSessionStatusTable::SOLVED,
-					'attempts' => [['order' => 1, 'status' => TimeModeUtil::$ATTEMPT_RESULT_SOLVED]]],
+					'attempts' => [['order' => 1, 'status' => TimeModeAttemptStatusTable::SOLVED]]],
 			]]);
 		$browser = Browser::instance();
 		$setConnectionId = $context->tsumegos[0]['set-connections'][0]['id'];

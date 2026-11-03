@@ -96,23 +96,29 @@ class Highscore
 	private static function ranked(string $scoreColumns, string $order, string $join = '', string $where = 'TRUE', array $params = [], int $topRows = 30): array
 	{
 		$selfID = Auth::isLoggedIn() ? Auth::getUserID() : -1;
-		$columns = self::PLAYER_COLUMNS . ($scoreColumns === '' ? '' : ', ' . $scoreColumns);
-		$groupBy = $join === '' ? '' : 'GROUP BY user.id';
-		$params['self'] = $selfID;
 		if (str_contains($where, ':listed_self'))
 			$params['listed_self'] = $selfID;
-		$radius = self::NEIGHBOR_RADIUS;
+		//The ranking sorts only the ids and the scores, the shown columns of the listed players are joined after it:
+		//sorting all the players with their names and avatars took ten times as long. The id breaks the ties, so the
+		//two statements rank the players the same way.
+		$ranking = "
+			SELECT user.id" . ($scoreColumns === '' ? '' : ', ' . $scoreColumns) . ", ROW_NUMBER() OVER (ORDER BY {$order}, user.id) AS position
+			FROM user {$join}
+			WHERE ({$where}) AND user.deleted IS NULL
+			" . ($join === '' ? '' : 'GROUP BY user.id');
+
+		$listed = 'ranked.position <= ' . $topRows;
+		$selfPosition = $selfID < 0 ? [] : Util::query("SELECT position FROM ({$ranking}) ranked WHERE ranked.id = :self", $params + ['self' => $selfID]);
+		if (!empty($selfPosition))
+		{
+			$params['neighbors_from'] = $selfPosition[0]['position'] - self::NEIGHBOR_RADIUS;
+			$params['neighbors_to'] = $selfPosition[0]['position'] + self::NEIGHBOR_RADIUS;
+			$listed .= ' OR ranked.position BETWEEN :neighbors_from AND :neighbors_to';
+		}
 		return Util::query("
-			WITH ranked AS (
-				SELECT {$columns}, ROW_NUMBER() OVER (ORDER BY {$order}) AS position
-				FROM user {$join}
-				WHERE ({$where}) AND user.deleted IS NULL
-				{$groupBy}),
-			self_position AS (SELECT position FROM ranked WHERE id = :self)
-			SELECT ranked.*
-			FROM ranked LEFT JOIN self_position ON TRUE
-			WHERE ranked.position <= {$topRows}
-				OR ranked.position BETWEEN self_position.position - {$radius} AND self_position.position + {$radius}
+			SELECT " . self::PLAYER_COLUMNS . ", ranked.*
+			FROM ({$ranking}) ranked JOIN user ON user.id = ranked.id
+			WHERE {$listed}
 			ORDER BY ranked.position",
 			$params);
 	}

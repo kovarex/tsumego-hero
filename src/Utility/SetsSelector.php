@@ -48,41 +48,38 @@ class SetsSelector
 			return $a['partition'] <=> $b['partition'];
 		});
 		$this->sets = [];
+		// a tag's card is addressed by its name
 		foreach ($sets as $set)
-		{
-			$opacity = $set['partition'] == -1 ? 1 : 1 + $set['partition'] * 0.15;
-			// a tag's card is addressed by its name
-			$this->sets[] = self::card(['id' => $set['name']] + $set, str_replace('[o]', (string) $opacity, self::TAG_COLORS[(int) $set['color']]), false);
-		}
+			$this->sets[] = self::card(['id' => $set['name']] + $set, self::TAG_COLORS[(int) $set['color']], false);
 	}
 
-	//The colors of the tags by tag.color, [o] is the opacity of the card
+	//The colors of the tags by tag.color
 	private const TAG_COLORS = [
-		'rgba(217, 135, 135, [o])',
-		'rgba(135, 149, 101, [o])',
-		'rgba(190, 151, 131, [o])',
-		'rgba(188, 116, 45, [o])',
-		'rgba(153, 111, 31, [o])',
-		'rgba(159, 54, 0, [o])',
-		'rgba(153, 151, 31, [o])',
-		'rgba(114, 9, 183, [o])',
-		'rgba(149, 77, 63, [o])',
-		'rgba(179, 181, 37, [o])',
-		'rgba(137, 153, 31, [o])',
-		'rgba(145, 61, 91, [o])',
-		'rgba(79, 68, 68, [o])',
-		'rgba(182, 137, 199, [o])',
-		'rgba(166, 88, 125, [o])',
-		'rgba(45, 37, 79, [o])',
-		'rgba(154, 50, 138, [o])',
-		'rgba(102, 51, 122, [o])',
-		'rgba(184, 46, 126, [o])',
-		'rgba(119, 50, 154, [o])',
-		'rgba(187, 70, 196, [o])',
-		'rgba(125, 8, 8, [o])',
-		'rgba(136, 67, 56, [o])',
-		'rgba(190, 165, 136, [o])',
-		'rgba(128, 118, 123, [o])',
+		'rgb(217, 135, 135)',
+		'rgb(135, 149, 101)',
+		'rgb(190, 151, 131)',
+		'rgb(188, 116, 45)',
+		'rgb(153, 111, 31)',
+		'rgb(159, 54, 0)',
+		'rgb(153, 151, 31)',
+		'rgb(114, 9, 183)',
+		'rgb(149, 77, 63)',
+		'rgb(179, 181, 37)',
+		'rgb(137, 153, 31)',
+		'rgb(145, 61, 91)',
+		'rgb(79, 68, 68)',
+		'rgb(182, 137, 199)',
+		'rgb(166, 88, 125)',
+		'rgb(45, 37, 79)',
+		'rgb(154, 50, 138)',
+		'rgb(102, 51, 122)',
+		'rgb(184, 46, 126)',
+		'rgb(119, 50, 154)',
+		'rgb(187, 70, 196)',
+		'rgb(125, 8, 8)',
+		'rgb(136, 67, 56)',
+		'rgb(190, 165, 136)',
+		'rgb(128, 118, 123)',
 	];
 
 	private function selectByTopics(): void

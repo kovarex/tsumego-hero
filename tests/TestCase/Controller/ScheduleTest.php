@@ -187,6 +187,25 @@ class ScheduleTest extends IntegrationTestCase
 		$this->assertResponseCode(400);
 	}
 
+	//Who scheduled a problem is shown by their display name, like everywhere else on the site.
+	public function testScheduleIndexNamesWhoScheduledByTheirDisplayName(): void
+	{
+		new ContextPreparator([
+			'user' => ['name' => 'admin', 'admin' => true],
+			'tsumegos' => [
+				['sets' => [['name' => 'sandbox set', 'num' => 1, 'public' => 0]]],
+				['sets' => [['name' => 'target set', 'num' => 1]]],
+			],
+			'schedule' => [['tsumego' => 0, 'set' => 'target set', 'date' => self::futureDate()]],
+		]);
+		$this->login('admin');
+
+		$this->get('/schedule');
+
+		$this->assertSame('DN_admin', $this->viewVariable('upcoming')[0]['created_by_name']);
+		$this->assertResponseContains('>DN_admin</a>');
+	}
+
 	public function testScheduleIndexShowsSandboxSourceWhenNotYetInTarget(): void
 	{
 		$context = new ContextPreparator([

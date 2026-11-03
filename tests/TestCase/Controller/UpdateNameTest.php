@@ -400,7 +400,7 @@ class UpdateNameTest extends IntegrationTestCase
 				'needs_display_name_change' => true,
 			],
 		]);
-		// A token is only honoured while it is fresh, see UsersController::$DELETION_LINK_VALID_HOURS.
+		// A token is only honoured while it is fresh, see AccountController::$DELETION_LINK_VALID_HOURS.
 		Util::execute('UPDATE user SET deletion_token = ?, deletion_token_created = ? WHERE id = ?', ['delete-token', date('Y-m-d H:i:s'), $context->user['id']]);
 
 		$this->post('/users/confirm_delete_account/delete-token');

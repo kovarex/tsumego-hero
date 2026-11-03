@@ -4,6 +4,7 @@ use Cake\Http\Exception\BadRequestException;
 use Cake\Http\Exception\NotFoundException;
 use App\Model\Table\AchievementConditionTable;
 use App\Model\Table\TimeModeCategoryTable;
+use App\Model\Table\TimeModeAttemptStatusTable;
 use App\Model\Table\TimeModeSessionStatusTable;
 use App\Utility\Auth;
 use App\Utility\Constants;
@@ -71,7 +72,7 @@ class TimeModeControllerTest extends IntegrationTestCase
 				'category' => TimeModeCategoryTable::BLITZ,
 				'rank' => '5k',
 				'status' => TimeModeSessionStatusTable::IN_PROGRESS,
-				'attempts' => [['order' => 1, 'status' => TimeModeUtil::$ATTEMPT_RESULT_SOLVED]]]]]);
+				'attempts' => [['order' => 1, 'status' => TimeModeAttemptStatusTable::SOLVED]]]]]);
 
 		// session in progress with just one attempt which is solved
 		$this->post('/timeMode/play');
@@ -87,7 +88,7 @@ class TimeModeControllerTest extends IntegrationTestCase
 				'category' => TimeModeCategoryTable::BLITZ,
 				'rank' => '5k',
 				'status' => TimeModeSessionStatusTable::IN_PROGRESS,
-				'attempts' => [['order' => 1, 'status' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED]]]]]);
+				'attempts' => [['order' => 1, 'status' => TimeModeAttemptStatusTable::QUEUED]]]]]);
 
 		$this->post('/timeMode/play');
 		$this->assertTrue(Auth::isInTimeMode());
@@ -103,7 +104,7 @@ class TimeModeControllerTest extends IntegrationTestCase
 			'category' => TimeModeCategoryTable::BLITZ,
 			'rank' => '5k',
 			'status' => TimeModeSessionStatusTable::IN_PROGRESS,
-			'attempts' => [['order' => 1, 'status' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED]]];
+			'attempts' => [['order' => 1, 'status' => TimeModeAttemptStatusTable::QUEUED]]];
 		$context = new ContextPreparator($contextParameters);
 
 		$this->disableErrorHandlerMiddleware();
@@ -144,8 +145,8 @@ class TimeModeControllerTest extends IntegrationTestCase
 			['category' => TimeModeCategoryTable::BLITZ, 'seconds' => 5, 'recordedSeconds' => 5],
 			['category' => TimeModeCategoryTable::BLITZ, 'seconds' => -3, 'recordedSeconds' => 0.01],
 			['category' => TimeModeCategoryTable::SLOW,
-				'seconds' => TimeModeUtil::$CATEGORY_SLOW_SPEED_SECONDS * 5,
-				'recordedSeconds' => TimeModeUtil::$CATEGORY_SLOW_SPEED_SECONDS]] as $reported)
+				'seconds' => TimeModeUtil::CATEGORY_SLOW_SPEED_SECONDS * 5,
+				'recordedSeconds' => TimeModeUtil::CATEGORY_SLOW_SPEED_SECONDS]] as $reported)
 		{
 			$context = new ContextPreparator([
 				'tsumego' => 1,
@@ -154,7 +155,7 @@ class TimeModeControllerTest extends IntegrationTestCase
 					'category' => $reported['category'],
 					'rank' => '5k',
 					'status' => TimeModeSessionStatusTable::IN_PROGRESS,
-					'attempts' => [['order' => 1, 'status' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED]]]]]);
+					'attempts' => [['order' => 1, 'status' => TimeModeAttemptStatusTable::QUEUED]]]]]);
 
 			// the player opens the play page, which is what puts the account into time mode
 			$this->post('/timeMode/play');
@@ -167,7 +168,7 @@ class TimeModeControllerTest extends IntegrationTestCase
 
 			$attempt = $this->fetchTable('TimeModeAttempt')->find()->where(['time_mode_session_id' => $context->timeModeSessions[0]->id])->first();
 			$this->assertSame(
-				TimeModeUtil::$ATTEMPT_RESULT_SOLVED,
+				TimeModeAttemptStatusTable::SOLVED,
 				(int) $attempt->time_mode_attempt_status_id);
 			$this->assertSame(
 				(float) $reported['recordedSeconds'],
@@ -186,7 +187,7 @@ class TimeModeControllerTest extends IntegrationTestCase
 				'category' => TimeModeCategoryTable::BLITZ,
 				'rank' => '5k',
 				'status' => TimeModeSessionStatusTable::IN_PROGRESS,
-				'attempts' => [['order' => 1, 'status' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED]]]]]);
+				'attempts' => [['order' => 1, 'status' => TimeModeAttemptStatusTable::QUEUED]]]]]);
 
 		// the player opens the play page, which is what puts the account into time mode
 		$this->post('/timeMode/play');
@@ -214,8 +215,8 @@ class TimeModeControllerTest extends IntegrationTestCase
 				'status' => TimeModeSessionStatusTable::IN_PROGRESS,
 				'attempts' => [
 					// given up on in one tab, solved in another one at the same time
-					['order' => 1, 'status' => TimeModeUtil::$ATTEMPT_STATUS_SKIPPED, 'started-seconds-ago' => 0],
-					['order' => 2, 'status' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED, 'tsumego_id' => 'other:1']]]]]);
+					['order' => 1, 'status' => TimeModeAttemptStatusTable::SKIPPED, 'started-seconds-ago' => 0],
+					['order' => 2, 'status' => TimeModeAttemptStatusTable::QUEUED, 'tsumego_id' => 'other:1']]]]]);
 
 		$this->post('/timeMode/play');
 
@@ -227,7 +228,7 @@ class TimeModeControllerTest extends IntegrationTestCase
 
 		$attempt = $this->fetchTable('TimeModeAttempt')->find()->where(['time_mode_session_id' => $context->timeModeSessions[0]->id, 'order' => 1])->first();
 		$this->assertSame(
-			TimeModeUtil::$ATTEMPT_STATUS_SKIPPED,
+			TimeModeAttemptStatusTable::SKIPPED,
 			(int) $attempt->time_mode_attempt_status_id);
 
 		// the problem the player is on is not disturbed by the ignored result
@@ -245,17 +246,17 @@ class TimeModeControllerTest extends IntegrationTestCase
 				'category' => TimeModeCategoryTable::SLOW,
 				'rank' => '5k',
 				'status' => TimeModeSessionStatusTable::IN_PROGRESS,
-				'attempts' => [['order' => 1, 'status' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED,
+				'attempts' => [['order' => 1, 'status' => TimeModeAttemptStatusTable::QUEUED,
 					// the problem was presented and left behind, so its time ran out
-					'started-seconds-ago' => TimeModeUtil::$CATEGORY_SLOW_SPEED_SECONDS + 1]]]]]);
+					'started-seconds-ago' => TimeModeUtil::CATEGORY_SLOW_SPEED_SECONDS + 1]]]]]);
 
 		$this->post('/timeMode/play');
 
 		$attempt = $this->fetchTable('TimeModeAttempt')->find()->where(['time_mode_session_id' => $context->timeModeSessions[0]->id])->first();
 		$this->assertSame(
-			TimeModeUtil::$ATTEMPT_STATUS_TIMEOUT,
+			TimeModeAttemptStatusTable::TIMEOUT,
 			(int) $attempt->time_mode_attempt_status_id);
-		$this->assertSame(TimeModeUtil::$CATEGORY_SLOW_SPEED_SECONDS, (int) $attempt->seconds);
+		$this->assertSame(TimeModeUtil::CATEGORY_SLOW_SPEED_SECONDS, (int) $attempt->seconds);
 		$this->assertSame(0, (int) $attempt->points);
 	}
 
@@ -270,7 +271,7 @@ class TimeModeControllerTest extends IntegrationTestCase
 				'category' => TimeModeCategoryTable::SLOW,
 				'rank' => '5k',
 				'status' => TimeModeSessionStatusTable::IN_PROGRESS,
-				'attempts' => [['order' => 1, 'status' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED]]]]]);
+				'attempts' => [['order' => 1, 'status' => TimeModeAttemptStatusTable::QUEUED]]]]]);
 
 		$this->post('/timeMode/play');
 
@@ -282,10 +283,10 @@ class TimeModeControllerTest extends IntegrationTestCase
 
 		$attempt = $this->fetchTable('TimeModeAttempt')->find()->where(['time_mode_session_id' => $context->timeModeSessions[0]->id, 'order' => 1])->first();
 		$this->assertSame(
-			TimeModeUtil::$ATTEMPT_STATUS_TIMEOUT,
+			TimeModeAttemptStatusTable::TIMEOUT,
 			(int) $attempt->time_mode_attempt_status_id);
 		$this->assertSame(
-			TimeModeUtil::$CATEGORY_SLOW_SPEED_SECONDS,
+			TimeModeUtil::CATEGORY_SLOW_SPEED_SECONDS,
 			(int) $attempt->seconds,
 			'Running out of time costs the full time of the category');
 	}
@@ -301,8 +302,8 @@ class TimeModeControllerTest extends IntegrationTestCase
 				'rank' => '5k',
 				'status' => TimeModeSessionStatusTable::IN_PROGRESS,
 				'attempts' => [
-					['order' => 1, 'status' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED],
-					['order' => 2, 'status' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED, 'tsumego_id' => 'other:1']]]]]);
+					['order' => 1, 'status' => TimeModeAttemptStatusTable::QUEUED],
+					['order' => 2, 'status' => TimeModeAttemptStatusTable::QUEUED, 'tsumego_id' => 'other:1']]]]]);
 
 		$this->post('/timeMode/play/2');
 
@@ -320,8 +321,8 @@ class TimeModeControllerTest extends IntegrationTestCase
 				'rank' => '5k',
 				'status' => TimeModeSessionStatusTable::IN_PROGRESS,
 				'attempts' => [
-					['order' => 1, 'status' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED],
-					['order' => 2, 'status' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED, 'tsumego_id' => 'other:1']]]]]);
+					['order' => 1, 'status' => TimeModeAttemptStatusTable::QUEUED],
+					['order' => 2, 'status' => TimeModeAttemptStatusTable::QUEUED, 'tsumego_id' => 'other:1']]]]]);
 
 		foreach ([1 => '/timeMode/play/2',
 			2 => '/timeMode/result/' . $context->timeModeSessions[0]->id] as $position => $expectedLink)
@@ -362,8 +363,8 @@ class TimeModeControllerTest extends IntegrationTestCase
 				'rank' => '5k',
 				'status' => TimeModeSessionStatusTable::IN_PROGRESS,
 				'attempts' => [
-					['order' => 1, 'status' => TimeModeUtil::$ATTEMPT_RESULT_SOLVED],
-					['order' => 2, 'status' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED, 'tsumego_id' => 'other:1']]]]]);
+					['order' => 1, 'status' => TimeModeAttemptStatusTable::SOLVED],
+					['order' => 2, 'status' => TimeModeAttemptStatusTable::QUEUED, 'tsumego_id' => 'other:1']]]]]);
 
 		$this->get('/timeMode/result/' . $context->timeModeSessions[0]->id);
 		$html = $this->view;
@@ -383,7 +384,7 @@ class TimeModeControllerTest extends IntegrationTestCase
 			$attempts = [];
 			for ($order = 1; $order <= $problemCount; $order++)
 			{
-				$attempts[] = ['order' => $order, 'status' => TimeModeUtil::$ATTEMPT_RESULT_SOLVED]
+				$attempts[] = ['order' => $order, 'status' => TimeModeAttemptStatusTable::SOLVED]
 					+ ($order == 1 ? [] : ['tsumego_id' => 'other:' . ($order - 1)]);
 				if ($order > 1)
 					$tsumegos[] = $order;
@@ -421,9 +422,9 @@ class TimeModeControllerTest extends IntegrationTestCase
 				'attempts' => [
 					// the first problem was solved and its result is still on its way, the second
 					// one is the one being shown
-					['order' => 1, 'status' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED, 'started-seconds-ago' => 0],
-					['order' => 2, 'status' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED, 'started-seconds-ago' => 0, 'tsumego_id' => 'other:1'],
-					['order' => 3, 'status' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED, 'tsumego_id' => 'other:2']]]]]);
+					['order' => 1, 'status' => TimeModeAttemptStatusTable::QUEUED, 'started-seconds-ago' => 0],
+					['order' => 2, 'status' => TimeModeAttemptStatusTable::QUEUED, 'started-seconds-ago' => 0, 'tsumego_id' => 'other:1'],
+					['order' => 3, 'status' => TimeModeAttemptStatusTable::QUEUED, 'tsumego_id' => 'other:2']]]]]);
 		$sessionID = $context->timeModeSessions[0]->id;
 
 		$this->post('/timeMode/play/2');
@@ -434,7 +435,7 @@ class TimeModeControllerTest extends IntegrationTestCase
 
 		$attempt = $this->fetchTable('TimeModeAttempt')->find()->where(['time_mode_session_id' => $sessionID, 'order' => 2])->first();
 		$this->assertSame(
-			TimeModeUtil::$ATTEMPT_STATUS_SKIPPED,
+			TimeModeAttemptStatusTable::SKIPPED,
 			(int) $attempt->time_mode_attempt_status_id);
 
 		$this->post('/timeMode/play/3');
@@ -456,9 +457,9 @@ class TimeModeControllerTest extends IntegrationTestCase
 					'rank' => '5k',
 					'status' => TimeModeSessionStatusTable::IN_PROGRESS,
 					'attempts' => [
-						['order' => 1, 'status' => TimeModeUtil::$ATTEMPT_RESULT_SOLVED],
+						['order' => 1, 'status' => TimeModeAttemptStatusTable::SOLVED],
 						// the second problem is the one being played, the first one is recorded already
-						['order' => 2, 'status' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED, 'started-seconds-ago' => 0, 'tsumego_id' => 'other:1']]]]]);
+						['order' => 2, 'status' => TimeModeAttemptStatusTable::QUEUED, 'started-seconds-ago' => 0, 'tsumego_id' => 'other:1']]]]]);
 			$sessionID = $context->timeModeSessions[0]->id;
 
 			$this->get('/timeMode/skip' . ($position === null ? '' : '/' . $position));
@@ -468,10 +469,10 @@ class TimeModeControllerTest extends IntegrationTestCase
 
 			$attempts = $this->fetchTable('TimeModeAttempt')->find()->where(['time_mode_session_id' => $sessionID])->orderBy('order')->toArray();
 			$this->assertSame(
-				TimeModeUtil::$ATTEMPT_RESULT_SOLVED,
+				TimeModeAttemptStatusTable::SOLVED,
 				(int) $attempts[0]->time_mode_attempt_status_id);
 			$this->assertSame(
-				TimeModeUtil::$ATTEMPT_RESULT_QUEUED,
+				TimeModeAttemptStatusTable::QUEUED,
 				(int) $attempts[1]->time_mode_attempt_status_id);
 		}
 	}
@@ -489,8 +490,8 @@ class TimeModeControllerTest extends IntegrationTestCase
 				'status' => TimeModeSessionStatusTable::IN_PROGRESS,
 				'attempts' => [
 					// the solved problem was opened long enough ago that its time would be up
-					['order' => 1, 'status' => TimeModeUtil::$ATTEMPT_RESULT_SOLVED, 'started-seconds-ago' => 3600],
-					['order' => 2, 'status' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED, 'tsumego_id' => 'other:1']]]]]);
+					['order' => 1, 'status' => TimeModeAttemptStatusTable::SOLVED, 'started-seconds-ago' => 3600],
+					['order' => 2, 'status' => TimeModeAttemptStatusTable::QUEUED, 'tsumego_id' => 'other:1']]]]]);
 		$sessionID = $context->timeModeSessions[0]->id;
 
 		$this->post('/timeMode/play/1');
@@ -499,7 +500,7 @@ class TimeModeControllerTest extends IntegrationTestCase
 
 		$attempt = $this->fetchTable('TimeModeAttempt')->find()->where(['time_mode_session_id' => $sessionID, 'order' => 1])->first();
 		$this->assertSame(
-			TimeModeUtil::$ATTEMPT_RESULT_SOLVED,
+			TimeModeAttemptStatusTable::SOLVED,
 			(int) $attempt->time_mode_attempt_status_id);
 	}
 
@@ -516,9 +517,9 @@ class TimeModeControllerTest extends IntegrationTestCase
 				'status' => TimeModeSessionStatusTable::IN_PROGRESS,
 				'attempts' => [
 					// the first problem is being played, its result has not been recorded yet
-					['order' => 1, 'status' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED, 'started-seconds-ago' => 0],
-					['order' => 2, 'status' => TimeModeUtil::$ATTEMPT_RESULT_SOLVED, 'tsumego_id' => 'other:1'],
-					['order' => 3, 'status' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED, 'tsumego_id' => 'other:2']]]]]);
+					['order' => 1, 'status' => TimeModeAttemptStatusTable::QUEUED, 'started-seconds-ago' => 0],
+					['order' => 2, 'status' => TimeModeAttemptStatusTable::SOLVED, 'tsumego_id' => 'other:1'],
+					['order' => 3, 'status' => TimeModeAttemptStatusTable::QUEUED, 'tsumego_id' => 'other:2']]]]]);
 
 		$this->post('/timeMode/play/2');
 
@@ -537,9 +538,9 @@ class TimeModeControllerTest extends IntegrationTestCase
 				'rank' => '5k',
 				'status' => TimeModeSessionStatusTable::IN_PROGRESS,
 				'attempts' => [
-					['order' => 1, 'status' => TimeModeUtil::$ATTEMPT_RESULT_SOLVED],
-					['order' => 2, 'status' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED, 'tsumego_id' => 'other:1'],
-					['order' => 3, 'status' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED, 'tsumego_id' => 'other:2']]]]]);
+					['order' => 1, 'status' => TimeModeAttemptStatusTable::SOLVED],
+					['order' => 2, 'status' => TimeModeAttemptStatusTable::QUEUED, 'tsumego_id' => 'other:1'],
+					['order' => 3, 'status' => TimeModeAttemptStatusTable::QUEUED, 'tsumego_id' => 'other:2']]]]]);
 
 		$this->post('/timeMode/play/9');
 
@@ -556,7 +557,7 @@ class TimeModeControllerTest extends IntegrationTestCase
 				'category' => TimeModeCategoryTable::BLITZ,
 				'rank' => '5k',
 				'status' => TimeModeSessionStatusTable::IN_PROGRESS,
-				'attempts' => [['order' => 1, 'status' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED,
+				'attempts' => [['order' => 1, 'status' => TimeModeAttemptStatusTable::QUEUED,
 					// the only problem was played, its result has not reached the database yet
 					'started-seconds-ago' => 0]]]]]);
 
@@ -568,11 +569,11 @@ class TimeModeControllerTest extends IntegrationTestCase
 
 	public function testTimeModeResultListsAllTheRunsOfTheRank()
 	{
-		$solved = ['order' => 1, 'status' => TimeModeUtil::$ATTEMPT_RESULT_SOLVED];
+		$solved = ['order' => 1, 'status' => TimeModeAttemptStatusTable::SOLVED];
 		$failedRun = [
-			['order' => 1, 'status' => TimeModeUtil::$ATTEMPT_RESULT_SOLVED],
-			['order' => 2, 'status' => TimeModeUtil::$ATTEMPT_RESULT_SOLVED, 'tsumego_id' => 'other:1'],
-			['order' => 3, 'status' => TimeModeUtil::$ATTEMPT_RESULT_FAILED, 'tsumego_id' => 'other:2']];
+			['order' => 1, 'status' => TimeModeAttemptStatusTable::SOLVED],
+			['order' => 2, 'status' => TimeModeAttemptStatusTable::SOLVED, 'tsumego_id' => 'other:1'],
+			['order' => 3, 'status' => TimeModeAttemptStatusTable::FAILED, 'tsumego_id' => 'other:2']];
 		$context = new ContextPreparator([
 			'tsumego' => 1,
 			'tsumegos' => [2, 3],
@@ -583,7 +584,7 @@ class TimeModeControllerTest extends IntegrationTestCase
 				['category' => TimeModeCategoryTable::BLITZ, 'rank' => '5k', 'status' => TimeModeSessionStatusTable::SOLVED, 'attempts' => [$solved]],
 				// still being played, so it is not a finished run yet
 				['category' => TimeModeCategoryTable::BLITZ, 'rank' => '5k', 'status' => TimeModeSessionStatusTable::IN_PROGRESS,
-					'attempts' => [['order' => 1, 'status' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED]]],
+					'attempts' => [['order' => 1, 'status' => TimeModeAttemptStatusTable::QUEUED]]],
 				// the only run of its rank and category, so there is no history to show for it
 				['category' => TimeModeCategoryTable::SLOW, 'rank' => '5k', 'status' => TimeModeSessionStatusTable::SOLVED, 'attempts' => [$solved]]]]);
 
@@ -617,7 +618,7 @@ class TimeModeControllerTest extends IntegrationTestCase
 					'category' => TimeModeCategoryTable::BLITZ,
 					'rank' => '5k',
 					'status' => TimeModeSessionStatusTable::SOLVED,
-					'attempts' => [['order' => 1, 'status' => TimeModeUtil::$ATTEMPT_RESULT_SOLVED]]]]]);
+					'attempts' => [['order' => 1, 'status' => TimeModeAttemptStatusTable::SOLVED]]]]]);
 
 			$this->get('/timeMode/result/' . $context->timeModeSessions[0]->id . $testCase['query']);
 			$html = $this->view;
@@ -637,7 +638,7 @@ class TimeModeControllerTest extends IntegrationTestCase
 				'category' => TimeModeCategoryTable::BLITZ,
 				'rank' => '5k',
 				'status' => TimeModeSessionStatusTable::SOLVED,
-				'attempts' => [['order' => 1, 'status' => TimeModeUtil::$ATTEMPT_RESULT_SOLVED]]]]]);
+				'attempts' => [['order' => 1, 'status' => TimeModeAttemptStatusTable::SOLVED]]]]]);
 
 		$this->get('/timeMode/result/' . $context->timeModeSessions[0]->id);
 		$html = $this->view;
@@ -658,11 +659,11 @@ class TimeModeControllerTest extends IntegrationTestCase
 			'time-mode-ranks' => ['5k'],
 			'time-mode-sessions' => [
 				['category' => TimeModeCategoryTable::BLITZ, 'rank' => '5k', 'status' => TimeModeSessionStatusTable::SOLVED,
-					'attempts' => [['order' => 1, 'status' => TimeModeUtil::$ATTEMPT_RESULT_SOLVED]]],
+					'attempts' => [['order' => 1, 'status' => TimeModeAttemptStatusTable::SOLVED]]],
 				['category' => TimeModeCategoryTable::BLITZ, 'rank' => '5k', 'status' => TimeModeSessionStatusTable::FAILED,
 					'attempts' => [
-						['order' => 1, 'status' => TimeModeUtil::$ATTEMPT_RESULT_SOLVED],
-						['order' => 2, 'status' => TimeModeUtil::$ATTEMPT_RESULT_FAILED, 'tsumego_id' => 'other:1']]]]]);
+						['order' => 1, 'status' => TimeModeAttemptStatusTable::SOLVED],
+						['order' => 2, 'status' => TimeModeAttemptStatusTable::FAILED, 'tsumego_id' => 'other:1']]]]]);
 		Util::execute('UPDATE time_mode_session SET points = 30 WHERE id = ?', [$context->timeModeSessions[0]->id]);
 		Util::execute('UPDATE time_mode_session SET points = 10 WHERE id = ?', [$context->timeModeSessions[1]->id]);
 
@@ -687,11 +688,11 @@ class TimeModeControllerTest extends IntegrationTestCase
 			'time-mode-ranks' => ['5k'],
 			'time-mode-sessions' => [
 				['category' => TimeModeCategoryTable::BLITZ, 'rank' => '5k', 'status' => TimeModeSessionStatusTable::SOLVED,
-					'attempts' => [['order' => 1, 'status' => TimeModeUtil::$ATTEMPT_RESULT_SOLVED]]],
+					'attempts' => [['order' => 1, 'status' => TimeModeAttemptStatusTable::SOLVED]]],
 				['category' => TimeModeCategoryTable::BLITZ, 'rank' => '5k', 'status' => TimeModeSessionStatusTable::IN_PROGRESS,
 					'attempts' => [
-						['order' => 1, 'status' => TimeModeUtil::$ATTEMPT_RESULT_SOLVED],
-						['order' => 2, 'status' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED, 'tsumego_id' => 'other:1']]]]]);
+						['order' => 1, 'status' => TimeModeAttemptStatusTable::SOLVED],
+						['order' => 2, 'status' => TimeModeAttemptStatusTable::QUEUED, 'tsumego_id' => 'other:1']]]]]);
 		Util::execute('UPDATE time_mode_session SET points = 10 WHERE id = ?', [$context->timeModeSessions[0]->id]);
 		Util::execute('UPDATE time_mode_session SET points = 50 WHERE id = ?', [$context->timeModeSessions[1]->id]);
 

@@ -373,6 +373,10 @@ return function (RouteBuilder $routes): void
 		'/users/avatarRemove',
 		['controller' => 'Users', 'action' => 'avatarRemove']
 	);
+	//The account (AccountController) keeps the addresses it had under /users/
+	foreach (['login', 'logout', 'googlesignin', 'add', 'changename', 'updatename', 'resetpassword', 'newpassword',
+		'delete_account', 'confirm_delete_account', 'emailPreference', 'confirmEmailChange', 'cancelEmailChange', 'passwordPreference'] as $accountAction)
+		$routes->connect('/users/' . $accountAction . '/*', ['controller' => 'Account', 'action' => $accountAction]);
 	$routes->connect(
 		'/profile',
 		['controller' => 'Users', 'action' => 'profile']

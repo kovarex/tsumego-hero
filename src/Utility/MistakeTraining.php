@@ -169,14 +169,13 @@ class MistakeTraining
 			// had climbed: one already at the bottom was missed recently and has
 			// nothing left to lose, so failing it again in another mode is that lapse.
 			$firstMissToday = $due && !self::wasMissedToday($pool);
-			if ($due ? $firstMissToday : $rung > 0)
-				self::countLapse($userId, $tsumegoId);
+			$lapse = $due ? $firstMissToday : $rung > 0;
 			if (!$due)
 			{
-				self::setRung($userId, $tsumegoId, 0, self::$LADDER[0]);
+				self::updatePoolRow($userId, $tsumegoId, self::rungColumns(0, self::$LADDER[0]), $lapse);
 				return null;
 			}
-			self::markReview($userId, $tsumegoId, self::REVIEW_MISSED, 0);
+			self::updatePoolRow($userId, $tsumegoId, ['rung' => 0, ...self::reviewColumns(self::REVIEW_MISSED)], $lapse);
 			return $firstMissToday ? self::logReview($userId, $tsumegoId, self::REVIEW_MISSED, $rung, 0, false) : null;
 		}
 
@@ -192,16 +191,16 @@ class MistakeTraining
 		$newRung = $rung;
 		$climbed = false;
 		if ($outcome === PlayOutcome::SolvedAfterMistake || ($due && self::wasMissedToday($pool)))
-			self::setRung($userId, $tsumegoId, $rung, self::$LADDER[0]);
+			$columns = self::rungColumns($rung, self::$LADDER[0]);
 		elseif ($rung < count(self::$LADDER) - 1)
 		{
 			$newRung = $rung + 1;
 			$climbed = true;
-			self::setRung($userId, $tsumegoId, $newRung, null, (int) $pool['lapses']);
+			$columns = self::rungColumns($newRung, self::wait($newRung, (int) $pool['lapses']));
 		}
 		else
 		{
-			self::graduate($userId, $tsumegoId);
+			$columns = self::GRADUATION_COLUMNS;
 			$review = self::REVIEW_GRADUATED;
 			$climbed = true;
 		}
@@ -209,8 +208,11 @@ class MistakeTraining
 		// The review of a problem that is due is today's, and keeps it in today's list
 		// as done.
 		if (!$due)
+		{
+			self::updatePoolRow($userId, $tsumegoId, $columns);
 			return null;
-		self::markReview($userId, $tsumegoId, $review);
+		}
+		self::updatePoolRow($userId, $tsumegoId, [...$columns, ...self::reviewColumns($review)]);
 		return self::logReview($userId, $tsumegoId, $review, $rung, $newRung, $climbed);
 	}
 
@@ -229,9 +231,9 @@ class MistakeTraining
 			. ' VALUES (?, ?, ?, ?, ?, ?, 0, ?)',
 			[$userId, $tsumegoId, $today, $result, $rungBefore, $rungAfter, $now]
 		);
-		$reviewId = (int) Util::query('SELECT LAST_INSERT_ID() AS id')[0]['id'];
+		$reviewId = (int) Util::connection()->lastInsertId();
 
-		$inTraining = self::countTodaysTraining($userId);
+		[$inTraining, $dueNow] = self::countTodaysTrainingAndDue($userId);
 		Util::execute(
 			'INSERT INTO mistake_training_day (user_id, day, due, reviewed)'
 			. ' VALUES (?, ?, ?, 1)'
@@ -242,7 +244,7 @@ class MistakeTraining
 
 		$cleared = false;
 		$clearBonus = false;
-		if ($result !== self::REVIEW_MISSED && self::dueCount($userId) == 0)
+		if ($result !== self::REVIEW_MISSED && $dueNow == 0)
 			$cleared = Util::execute(
 				'UPDATE mistake_training_day SET cleared = 1, cleared_at = ? WHERE user_id = ? AND day = ? AND cleared = 0',
 				[$now, $userId, $today]
@@ -327,12 +329,22 @@ class MistakeTraining
 	//it can serve, like todaysTraining() without fetching them.
 	public static function countTodaysTraining(int $userId): int
 	{
-		$rows = Util::query(
-			'SELECT COUNT(*) AS total FROM mistake_training_pool p' . self::servableSql()
+		return self::countTodaysTrainingAndDue($userId)[0];
+	}
+
+	//How many problems today's training holds, and how many of them are due now, like dueCount(), in one
+	//query: what is due now is part of today's training.
+	/** @return array{int, int} */
+	private static function countTodaysTrainingAndDue(int $userId): array
+	{
+		$now = date('Y-m-d H:i:s');
+		$row = Util::query(
+			'SELECT COUNT(*) AS total, COALESCE(SUM(p.next_due IS NOT NULL AND p.next_due <= ?), 0) AS due'
+				. ' FROM mistake_training_pool p' . self::servableSql()
 				. ' AND ' . self::todaysTrainingSql(),
-			[$userId, date('Y-m-d H:i:s'), self::today()]
-		);
-		return (int) $rows[0]['total'];
+			[$now, $userId, $now, self::today()]
+		)[0];
+		return [(int) $row['total'], (int) $row['due']];
 	}
 
 	//The condition of a pool row that is part of today's training: due now, or solved today
@@ -661,7 +673,7 @@ class MistakeTraining
 	public static function moveToRung(int $userId, int $tsumegoId, int $rung): void
 	{
 		$rung = max(0, min($rung, count(self::$LADDER) - 1));
-		self::setRung($userId, $tsumegoId, $rung, 0);
+		self::updatePoolRow($userId, $tsumegoId, self::rungColumns($rung, 0));
 	}
 
 	//Schedule a problem for right now, so a test can play it in the training without waiting for its review day.
@@ -677,8 +689,7 @@ class MistakeTraining
 	//without climbing the whole ladder. The lapses stay, like in moveToRung().
 	public static function graduateNow(int $userId, int $tsumegoId): void
 	{
-		self::setRung($userId, $tsumegoId, count(self::$LADDER) - 1, 0);
-		self::graduate($userId, $tsumegoId);
+		self::updatePoolRow($userId, $tsumegoId, [...self::rungColumns(count(self::$LADDER) - 1, 0), ...self::GRADUATION_COLUMNS]);
 	}
 
 	//Add one problem to the pool as due now, whether or not it was a mistake. For
@@ -897,57 +908,44 @@ class MistakeTraining
 		return date('Y-m-d', strtotime(self::today() . ' +' . $daysAhead . ' days')) . ' 00:00:00';
 	}
 
-	//Remember what today's review did with a problem that was due, which decides its
-	//place in today's list. A miss also takes the problem to the bottom ($rung)
-	//without moving its review, because it stays due until it is solved; a solve has
-	//moved the ladder already.
-	private static function markReview(int $userId, int $tsumegoId, int $result, ?int $rung = null): void
+	//What a result does to a pool row, in one UPDATE: the columns it sets, and whether it is a lapse,
+	//a mistake on the problem, which slows the growth of its waits for good. The count of lapses never
+	//goes down, a problem that was hard stays suspect however well it goes later.
+	/** @param array<string, mixed> $columns */
+	private static function updatePoolRow(int $userId, int $tsumegoId, array $columns, bool $lapse = false): void
 	{
+		$columns['modified'] = date('Y-m-d H:i:s');
+		$assignments = array_map(fn(string $column) => $column . ' = ?', array_keys($columns));
+		if ($lapse)
+			$assignments[] = 'lapses = lapses + 1';
 		Util::execute(
-			'UPDATE mistake_training_pool SET last_review_day = ?, last_mistake_training_result_id = ?, modified = ?, rung = COALESCE(?, rung)'
-			. ' WHERE user_id = ? AND tsumego_id = ?',
-			[self::today(), $result, date('Y-m-d H:i:s'), $rung, $userId, $tsumegoId]
+			'UPDATE mistake_training_pool SET ' . implode(', ', $assignments) . ' WHERE user_id = ? AND tsumego_id = ?',
+			[...array_values($columns), $userId, $tsumegoId]
 		);
 	}
 
-	//Count a lapse of a problem in the pool: a mistake on it, which slows the growth
-	//of its waits for good. The count never goes down, a problem that was hard stays
-	//suspect however well it goes later.
-	private static function countLapse(int $userId, int $tsumegoId): void
+	//A new rung and the next review, $daysAhead days out: the wait of the rung, which the lapses of the
+	//problem shorten (see wait()), or a wait named outright (a retry is due tomorrow whatever rung the
+	//problem sits on, and moveToRung() makes a jump due now).
+	/** @return array{rung: int, next_due: string} */
+	private static function rungColumns(int $rung, int $daysAhead): array
 	{
-		Util::execute(
-			'UPDATE mistake_training_pool SET lapses = lapses + 1 WHERE user_id = ? AND tsumego_id = ?',
-			[$userId, $tsumegoId]
-		);
+		return ['rung' => $rung, 'next_due' => self::dueDate($daysAhead)];
 	}
 
-	//Move a pool row to a new rung and set its next review. The review waits out
-	//the rung's interval, shortened by the lapses of the problem (see wait()), unless
-	//$daysAhead names the wait explicitly (a retry is due tomorrow whatever rung the
-	//problem sits on, and moveToRung() makes a jump due now). $lapses saves reading
-	//them again when the caller has the row.
-	private static function setRung(int $userId, int $tsumegoId, int $rung, ?int $daysAhead = null, ?int $lapses = null): void
+	//What today's review did with a problem that was due, which decides its place in today's list. A
+	//miss keeps the review where it was, since the problem stays due until it is solved.
+	/** @return array{last_review_day: string, last_mistake_training_result_id: int} */
+	private static function reviewColumns(int $result): array
 	{
-		$daysAhead ??= self::wait($rung, $lapses ?? (int) (self::getPoolRow($userId, $tsumegoId)['lapses'] ?? 0));
-		Util::execute(
-			'UPDATE mistake_training_pool SET rung = ?, next_due = ?, modified = ? WHERE user_id = ? AND tsumego_id = ?',
-			[$rung, self::dueDate($daysAhead), date('Y-m-d H:i:s'), $userId, $tsumegoId]
-		);
+		return ['last_review_day' => self::today(), 'last_mistake_training_result_id' => $result];
 	}
 
-	//A clean solve at the top rung ends training, wherever it was played, and so does
-	//graduateNow(); every graduation goes through here. The problem
-	//stops being scheduled and its status is left alone, it belongs to the normal
-	//modes. The row stays with no next review, because it remembers that the training
-	//already knows the problem; without it a mastered problem would come back as a
-	//past mistake to import.
-	private static function graduate(int $userId, int $tsumegoId): void
-	{
-		Util::execute(
-			'UPDATE mistake_training_pool SET next_due = NULL, modified = ? WHERE user_id = ? AND tsumego_id = ?',
-			[date('Y-m-d H:i:s'), $userId, $tsumegoId]
-		);
-	}
+	//A clean solve at the top rung ends training, wherever it was played, and so does graduateNow(). The
+	//problem stops being scheduled and its status is left alone, it belongs to the normal modes. The row
+	//stays with no next review, because it remembers that the training already knows the problem; without
+	//it a mastered problem would come back as a past mistake to import.
+	private const array GRADUATION_COLUMNS = ['next_due' => null];
 
 	//Today's training: pool rows that are due now or were solved today. Deduplicates
 	//in SQL (one row per tsumego via ROW_NUMBER), preferring the current set

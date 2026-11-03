@@ -115,7 +115,7 @@ class UserTable extends AppTable
 			// The forum cannot store a character above U+FFFF (an emoji, a rare kanji), so a
 			// name the site could not copy there would be the result. It guards the name an
 			// account is created with; an account that already carries one keeps working, and
-			// a rename is checked by UsersController::updatename().
+			// a rename is checked by AccountController::updatename().
 			->add('display_name', 'storableByForum', [
 				'rule' => fn($name) => !self::containsCharactersTheForumCannotStore((string) $name),
 				'on' => 'create',
