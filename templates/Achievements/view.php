@@ -24,15 +24,18 @@ use App\Utility\Auth;
 
 // The card is grey until the player completed the achievement, and the badge on
 // it counts the completions.
-$aColor = $currentUserStatus === null ? 'achievementColorGray' : $achievement->color;
-$earnedCount = $currentUserStatus === null ? 0 : $currentUserStatus->value;
+$unlocked = $currentUserStatus !== null;
+$aColor = $unlocked ? $achievement->color : 'achievementColorGray';
+$displayImage = $unlocked ? $achievement->image : 'ac000i';
+$earnedCount = $unlocked ? $currentUserStatus->value : 0;
 
 // The player whose page this is: the one being viewed, or the logged in one.
 $profileUserID = $viewedUser['id'] ?? (Auth::isLoggedIn() ? Auth::getUserID() : null);
 
+// A repeatable achievement earned on more collections than are marked here was earned on some that no longer count
+$markedCollections = count(array_filter($collections, fn(array $collection) => $collection['earned']));
 ?>
-	
-	<div align="center" >
+<div align="center" >
 	<div class="acHeader">
 		<div class="achievemetIndexLink">
 			<a href="/achievements<?php echo $viewedUser ? '/user/' . $viewedUser['id'] : ''; ?>">View Achievements</a>
@@ -41,17 +44,12 @@ $profileUserID = $viewedUser['id'] ?? (Auth::isLoggedIn() ? Auth::getUserID() : 
 		<p class="acOwner"><?php echo h($viewedUser['display_name']); ?>'s achievement</p>
 		<?php endif; ?>
 		<div class="achievemetProfileLink">
-			<?php if ($profileUserID) echo '<a href="/users/view/' . $profileUserID . '">Profile</a>'; ?>
+			<?php if ($profileUserID): ?><a href="/users/view/<?php echo $profileUserID; ?>">Profile</a><?php endif; ?>
 		</div>
 	</div>
-		<div align="center" id="achievementWrapper">
+	<div align="center" id="achievementWrapper">
 	<a href="/achievements" style="text-decoration:none;">
-	<div align="center" class="achievement2 <?php
-	echo $aColor;
-$displayImage = $achievement->image;
-if ($currentUserStatus === null)
-	$displayImage = 'ac000i';
-?>">
+	<div align="center" class="achievement2 <?php echo $aColor; ?>">
 		<div class="acTitle">
 			<h1><?php echo h($achievement->name); ?></h1>
 		</div>
@@ -63,22 +61,15 @@ if ($currentUserStatus === null)
 			</div>
 		</div>
 		<div class="acDesc">
-			<?php
-	echo h($achievement->description);
-if ($achievement->additional_description != null)
-	echo '*';
-?>
+			<?php echo h($achievement->description) . ($achievement->additional_description != null ? '*' : ''); ?>
 		</div>
 		<div class="acDate">
-			<?php
-			if ($currentUserStatus !== null)
-				echo '<time datetime="' . $currentUserStatus->created->format('c') . '" data-format="datetime">' . $currentUserStatus->created->format('Y-m-d H:i:s') . '</time>';
-?>
+			<?php if ($unlocked): ?><time datetime="<?php echo $currentUserStatus->created->format('c'); ?>" data-format="datetime"><?php echo $currentUserStatus->created->format('Y-m-d H:i:s'); ?></time><?php endif; ?>
 		</div>
 	</div>
 	</a>
-	<?php if ($progress !== null && $progressGoal > 0): ?>
-		<?php $progressPercent = (int) round($progress / $progressGoal * 100); ?>
+	<?php if ($progress !== null && $progressGoal > 0):
+		$progressPercent = (int) round($progress / $progressGoal * 100); ?>
 		<div class="progress" style="width:220px;margin:0 auto;">
 			<div class="progress__fill progress__fill--tonal" style="--percent:<?php echo $progressPercent; ?>;width:<?php echo $progressPercent; ?>%"></div>
 			<div class="progress__label"><?php echo $progress; ?>/<?php echo $progressGoal; ?></div>
@@ -88,19 +79,10 @@ if ($achievement->additional_description != null)
 		<span class="rarity rarity--<?php echo strtolower(str_replace(' ', '-', $rarity)); ?>" title="<?php echo $completionPercent; ?>% of all users"><?php echo h($rarity); ?></span>
 	</div>
 	<font color="gray">
-	<?php
-	if ($achievement->additional_description != null)
-		echo '*' . h($achievement->additional_description);
-?></font>
+	<?php if ($achievement->additional_description != null) echo '*' . h($achievement->additional_description); ?></font>
 	<?php if ($collections): ?>
 	<div class="acCollections">
 		<p class="acCollections__title">Collections that can earn this</p>
-		<?php
-		$markedCollections = 0;
-		foreach ($collections as $collection)
-			if ($collection['earned'])
-				$markedCollections++;
-		?>
 		<?php if ($earnedCount > $markedCollections): ?>
 		<p class="acCollections__hint"><?= (int) ($earnedCount - $markedCollections) ?> of the collections it was earned on no longer count.</p>
 		<?php endif; ?>
@@ -114,34 +96,20 @@ if ($achievement->additional_description != null)
 	<br>
 	<br>
 	<font color="gray">
-	<?php
-	if ($completerCount == 0)
-		echo 'Nobody completed this achievement.';
-	else
-	{
-		?>
+	<?php if ($completerCount == 0): ?>
+	Nobody completed this achievement.
+	<?php else: ?>
 	<div>Recently completed by</div>
 	<div>
 	<?php
-			for ($i = 0; $i < count($completers); $i++)
-			{
-				if ($completers[$i] != null)
-					echo UserTable::renderLink($completers[$i]);
-				if ($i < count($completers) - 1) echo ', ';
-
-			}
-		$moreCount = $completerCount - count($completers);
-		?>
+	// a completer the users table no longer has keeps its place in the list, without a name
+	echo implode(', ', array_map(fn(?array $completer) => $completer !== null ? UserTable::renderLink($completer) : '', $completers));
+	$moreCount = $completerCount - count($completers);
+	?>
 	</div>
 	<div>
-	<?php
-			echo $moreCount > 0 ? 'and ' . $moreCount . ' others.' : '';
-		?>
+	<?php echo $moreCount > 0 ? 'and ' . $moreCount . ' others.' : ''; ?>
 	</div>
-	<?php
-	}
-?>
+	<?php endif; ?>
 	</font>
-	</div>
-		
 	</div>
