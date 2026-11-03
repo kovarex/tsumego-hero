@@ -5,6 +5,7 @@ use App\Model\Table\TimeModeSessionStatusTable;
 use App\Model\Table\UserTable;
 use App\Utility\AchievementId;
 use App\Utility\Rating;
+use App\Utility\Util;
 
 #[RetryOnBrowserFailure]
 class UsersControllerTest extends IntegrationTestCase
@@ -375,6 +376,32 @@ class UsersControllerTest extends IntegrationTestCase
 		$browser->checkTable('#final-info-table', $this, [
 			3 => ['Achievements:', '2 of ' . AchievementId::count()],
 		]);
+	}
+
+	//The profile lists the 12 achievements the player got last, newest first.
+	public function testProfileListsTheLatestAchievementsNewestFirst(): void
+	{
+		$achievementIDs = array_slice(array_map(fn($achievement) => $achievement->value, AchievementId::cases()), 0, 13);
+		$context = new ContextPreparator([
+			'user' => [
+				'name' => 'collector',
+				'achievement-statuses' => array_map(fn($id) => ['id' => $id], $achievementIDs),
+			],
+		]);
+		foreach ($achievementIDs as $index => $achievementID)
+			Util::execute('UPDATE achievement_status SET created = ? WHERE user_id = ? AND achievement_id = ?',
+				[date('Y-m-d H:i:s', strtotime('2026-01-01 +' . $index . ' days')), $context->user['id'], $achievementID]);
+
+		$this->get('users/view/' . $context->user['id']);
+
+		$link = fn($achievementID) => 'href="/achievements/view/' . $achievementID . '/' . $context->user['id'] . '"';
+		$this->assertStringNotContainsString($link($achievementIDs[0]), $this->view, 'the oldest is the 13th');
+		$positions = array_map(fn($achievementID) => strpos($this->view, $link($achievementID)), array_reverse(array_slice($achievementIDs, 1)));
+		$this->assertNotContains(false, $positions);
+		$sorted = $positions;
+		sort($sorted);
+		$this->assertSame($sorted, $positions, 'newest first');
+		$this->assertStringContainsString(h($this->fetchTable('Achievement')->get($achievementIDs[12])->name), $this->view);
 	}
 
 	//The profile achievement card shows how often a repeatable achievement was earned.

@@ -5,7 +5,6 @@ namespace App\Controller;
 use Cake\Http\Exception\BadRequestException;
 use Cake\Http\Exception\NotFoundException;
 use Exception;
-use App\Model\Table\SetTable;
 use App\Model\Table\SetConnectionTable;
 use App\Attribute\HttpGet;
 use App\Attribute\HttpPost;
@@ -16,7 +15,6 @@ use App\Model\Table\TimeModeSessionStatusTable;
 use App\Utility\AchievementChecker;
 use App\Utility\Auth;
 use App\Utility\Constants;
-use App\Utility\Rating;
 use App\Utility\TimeMode;
 use App\Utility\TimeModeUtil;
 use App\Utility\Util;
@@ -91,63 +89,13 @@ class TimeModeController extends AppController
 		return $this->redirect('/timeMode/play/' . ((int) $position + 1));
 	}
 
-	private function getRanksWithTsumegoCount(): ?array
+	//Every rank with the number of problems a run of it can draw.
+	/** @return list<array{id: int, name: string, tsumego_count: int}> */
+	private function getRanksWithTsumegoCount(): array
 	{
 		$ranks = $this->fetchTable('TimeModeRank')->find()->orderBy('id')->toArray();
-		$rankPartOfQuery = '';
-		$count = count($ranks);
-		if ($count == 0)
-			return null;
-		if ($count == 1)
-		{
-			$result = [];
-			$rank = ['id' => $ranks[0]->id, 'name' => $ranks[0]->name];
-
-			$count = Util::query("
-SELECT
-    COUNT(DISTINCT tsumego.id) AS count
-FROM
-	tsumego
-	JOIN set_connection ON set_connection.tsumego_id=tsumego.id
-	JOIN `set` ON set_connection.set_id=`set`.id
-WHERE
-	`set`.`included_in_time_mode` = 1 AND " . SetTable::officialCondition());
-
-			$rank['tsumego_count'] = $count[0]['count'];
-			$result[] = $rank;
-			return $result;
-		}
-		foreach ($ranks as $index => $rank)
-			if ($index + 1 < $count)
-				$rankPartOfQuery .= 'WHEN rating < ' . Rating::getRankMinimalRating(Rating::getRankFromReadableRank($rank->name) + 1) . ' THEN \'' . $rank->id . '\' ';
-			else
-				$rankPartOfQuery .= 'ELSE \'' . $rank->id . '\'';
-		$counts = Util::query("
-SELECT
-    CASE " . $rankPartOfQuery . "
-    END AS bucket,
-    COUNT(DISTINCT tsumego.id) AS count
-FROM
-	tsumego
-	JOIN set_connection ON set_connection.tsumego_id=tsumego.id
-	JOIN `set` ON set_connection.set_id=`set`.id
-WHERE
-	`set`.`included_in_time_mode` = 1 AND " . SetTable::officialCondition() . "
-GROUP BY bucket
-ORDER BY MIN(rating);");
-
-		$countsByRankID = [];
-		foreach ($counts as $count)
-			$countsByRankID[$count['bucket']] = $count['count'];
-
-		$result = [];
-		foreach ($ranks as $rankEntity)
-		{
-			$rank = ['id' => $rankEntity->id, 'name' => $rankEntity->name];
-			$rank['tsumego_count'] = $countsByRankID[$rank['id']] ?? 0;
-			$result [] = $rank;
-		}
-		return $result;
+		$counts = TimeMode::countTsumegosByRank($ranks);
+		return array_map(fn(TimeModeRank $rank) => ['id' => $rank->id, 'name' => $rank->name, 'tsumego_count' => $counts[$rank->id]], $ranks);
 	}
 
 	#[HttpGet]
