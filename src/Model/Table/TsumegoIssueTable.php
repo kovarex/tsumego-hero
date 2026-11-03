@@ -82,70 +82,57 @@ class TsumegoIssueTable extends AppTable
 		return false;
 	}
 
-	//Find issues for the global issues index page.
-	//Returns issues with all their comments, in the format of Tsumego::loadCommentsData.
-	//$status: 'opened', 'closed', or 'all' (default: 'opened')
-	//$limit: Number of results per page (default: 20)
-	//$page: Page number for pagination (default: 1)
+	//The columns of the user `alias` a page of issues shows, each named with the prefix, for authorOf().
+	private static function authorColumns(string $alias, string $prefix): string
+	{
+		return implode(', ', array_map(fn(string $column) => $alias . '.' . $column . ' AS ' . $prefix . $column,
+			['id', 'display_name', 'deleted', 'rating', 'external_id', 'picture', 'avatar_setting_id', 'uploaded_avatar_hash', 'email', 'user_role_id']));
+	}
+
+	//The user row authorColumns() selected with the prefix.
+	/**
+	 * @param array<string, mixed> $row
+	 * @return array<string, mixed>
+	 */
+	private static function authorOf(array $row, string $prefix): array
+	{
+		$author = [];
+		foreach ($row as $column => $value)
+			if (str_starts_with($column, $prefix))
+				$author[substr($column, strlen($prefix))] = $value;
+		return $author;
+	}
+
+	//A page of the issues of the issues page, the newest first, each with its comments in the order
+	//they were written, its problem and its number in the whole list.
+	//$status: 'opened', 'closed' or 'all'
+	/** @return list<array<string, mixed>> */
 	public static function findForIndex(string $status = 'opened', int $limit = 20, int $page = 1): array
 	{
 		$offset = ($page - 1) * $limit;
+		$statusCondition = match ($status)
+		{
+			'opened' => 'AND tsumego_issue_status_id = ' . self::OPENED_STATUS,
+			'closed' => 'AND tsumego_issue_status_id = ' . self::CLOSED_STATUS,
+			default => '',
+		};
 
-		// Build status condition
-		$statusCondition = '';
-		if ($status === 'opened')
-			$statusCondition = 'AND tsumego_issue_status_id = ' . self::OPENED_STATUS;
-		elseif ($status === 'closed')
-			$statusCondition = 'AND tsumego_issue_status_id = ' . self::CLOSED_STATUS;
-
-		// Query 1: Get paginated issue IDs
-		$idsSql = "
-			SELECT id
+		// the page of issues first, then everything about them
+		$issueIds = array_column(Util::query('SELECT id
 			FROM tsumego_issue
-			WHERE deleted IS NULL
-				AND " . self::liveProblemSql('tsumego_issue.tsumego_id') . "
-			{$statusCondition}
+			WHERE deleted IS NULL AND ' . self::liveProblemSql('tsumego_issue.tsumego_id') . '
+			' . $statusCondition . '
 			ORDER BY created DESC, id DESC
-			LIMIT {$limit} OFFSET {$offset}
-		";
-		$issueIds = array_column(Util::query($idsSql), 'id');
-
+			LIMIT ' . $limit . ' OFFSET ' . $offset), 'id');
 		if (empty($issueIds))
 			return [];
 
-		$issueIdsStr = implode(',', array_map('intval', $issueIds));
-
-		// Query 2: Get full data for those issues only
-		$sql = "
-			SELECT
-				ti.id AS issue_id,
-				ti.tsumego_issue_status_id,
-				ti.tsumego_id,
-				ti.user_id AS issue_user_id,
-				ti.created AS issue_created,
-				u.display_name AS issue_author_name,
-				u.rating AS issue_author_rating,
-				u.external_id AS issue_author_external_id,
-				u.picture AS issue_author_picture,
-				u.avatar_setting_id AS issue_author_avatar_setting_id,
-				u.uploaded_avatar_hash AS issue_author_uploaded_avatar_hash,
-				u.email AS issue_author_email,
-				tc.id AS comment_id,
-				tc.message AS comment_text,
-				tc.created AS comment_created,
-				tc.user_id AS comment_user_id,
-				cu.id AS comment_author_id,
-				cu.display_name AS comment_author_name,
-				cu.external_id AS comment_author_external_id,
-				cu.picture AS comment_author_picture,
-				cu.avatar_setting_id AS comment_author_avatar_setting_id,
-				cu.uploaded_avatar_hash AS comment_author_uploaded_avatar_hash,
-				cu.email AS comment_author_email,
-				cu.rating AS comment_author_rating,
-				cu.user_role_id AS comment_author_user_role_id,
-				s.id AS set_id,
-				s.title AS set_title,
-				sc.num AS tsumego_num
+		$rows = Util::query('SELECT
+				ti.id AS issue_id, ti.tsumego_issue_status_id, ti.tsumego_id, ti.user_id AS issue_user_id, ti.created AS issue_created,
+				' . self::authorColumns('u', 'issue_author_') . ',
+				tc.id AS comment_id, tc.message AS comment_text, tc.created AS comment_created, tc.user_id AS comment_user_id,
+				' . self::authorColumns('cu', 'comment_author_') . ',
+				s.id AS set_id, s.title AS set_title, sc.num AS tsumego_num
 			FROM tsumego_issue ti
 			LEFT JOIN user u ON u.id = ti.user_id
 			LEFT JOIN tsumego_comment tc ON tc.tsumego_issue_id = ti.id AND tc.deleted IS NULL
@@ -154,92 +141,59 @@ class TsumegoIssueTable extends AppTable
 				SELECT sc2.id
 				FROM set_connection sc2
 				JOIN `set` s2 ON s2.id = sc2.set_id
-				WHERE sc2.tsumego_id = ti.tsumego_id AND NOT " . SetConnectionTable::privateCollectionSql('s2') . "
-				ORDER BY " . SetConnectionTable::displayOrderSql('s2', 'sc2') . "
+				WHERE sc2.tsumego_id = ti.tsumego_id AND NOT ' . SetConnectionTable::privateCollectionSql('s2') . '
+				ORDER BY ' . SetConnectionTable::displayOrderSql('s2', 'sc2') . '
 				LIMIT 1
 			)
 			LEFT JOIN `set` s ON s.id = sc.set_id
-			WHERE ti.id IN ({$issueIdsStr})
-			ORDER BY ti.created DESC, ti.id DESC, tc.created ASC
-		";
+			WHERE ti.id IN (' . implode(',', array_map('intval', $issueIds)) . ')
+			ORDER BY ti.created DESC, ti.id DESC, tc.created ASC');
 
-		$rows = Util::query($sql);
-
-		// Group results by issue, maintaining order from first query
-		$issuesMap = [];
-
+		$issues = [];
 		foreach ($rows as $row)
 		{
 			$issueId = $row['issue_id'];
-
-			if (!isset($issuesMap[$issueId]))
+			if (!isset($issues[$issueId]))
 			{
-				$statusId = $row['tsumego_issue_status_id'];
-
-				$issuesMap[$issueId] = [
+				$author = ['id' => $row['issue_user_id']] + self::authorOf($row, 'issue_author_');
+				$issues[$issueId] = [
 					'issue' => [
 						'id' => $issueId,
-						'tsumego_issue_status_id' => $statusId,
+						'tsumego_issue_status_id' => $row['tsumego_issue_status_id'],
 						'tsumego_id' => $row['tsumego_id'],
 						'user_id' => $row['issue_user_id'],
-						'user_display_name' => UserTable::displayNameOrNull(['id' => $row['issue_user_id'], 'display_name' => $row['issue_author_name']]),
-						'user_rating' => $row['issue_author_rating'] ?? null,
-						'user_avatar_url' => UserTable::avatarOrNull([
-							'id' => $row['issue_user_id'],
-							'display_name' => $row['issue_author_name'] ?? null,
-							'external_id' => $row['issue_author_external_id'] ?? null,
-							'picture' => $row['issue_author_picture'] ?? null,
-							'avatar_setting_id' => $row['issue_author_avatar_setting_id'] ?? null,
-							'uploaded_avatar_hash' => $row['issue_author_uploaded_avatar_hash'] ?? null,
-							'email' => $row['issue_author_email'] ?? null,
-						]),
+						'user_display_name' => UserTable::displayNameOrNull($author),
+						'user_rating' => $author['rating'],
+						'user_avatar_url' => UserTable::avatarOrNull($author),
 						'created' => Util::toIso8601($row['issue_created']),
 					],
 					'comments' => [],
-					'author' => ['name' => UserTable::displayName(['id' => $row['issue_user_id'], 'display_name' => $row['issue_author_name']])],
+					'author' => ['name' => UserTable::displayName($author)],
 					'tsumegoId' => $row['tsumego_id'],
-					'Set' => $row['set_id'] ? [
-						'id' => $row['set_id'],
-						'title' => $row['set_title'],
-					] : null,
-					'TsumegoNum' => $row['tsumego_num'] ?? null,
+					'Set' => $row['set_id'] ? ['id' => $row['set_id'], 'title' => $row['set_title']] : null,
+					'TsumegoNum' => $row['tsumego_num'],
 				];
 			}
 
-			// Add comment if exists
-			if (!empty($row['comment_id']))
-			{
-				$issuesMap[$issueId]['comments'][] = [
-					'id' => $row['comment_id'],
-					'text' => $row['comment_text'],
-					'created' => Util::toIso8601($row['comment_created']),
-					'user_id' => $row['comment_user_id'],
-					'user_display_name' => UserTable::displayNameOrNull(['id' => $row['comment_user_id'], 'display_name' => $row['comment_author_name'] ?? null]),
-					'user_rating' => $row['comment_author_rating'],
-					'user_avatar_url' => UserTable::avatarOrNull([
-						'id' => $row['comment_user_id'],
-						'display_name' => $row['comment_author_name'] ?? null,
-						'external_id' => $row['comment_author_external_id'] ?? null,
-						'picture' => $row['comment_author_picture'] ?? null,
-						'avatar_setting_id' => $row['comment_author_avatar_setting_id'] ?? null,
-						'uploaded_avatar_hash' => $row['comment_author_uploaded_avatar_hash'] ?? null,
-						'email' => $row['comment_author_email'] ?? null,
-					]),
-					'isAdmin' => UserTable::isAdmin(['user_role_id' => $row['comment_author_user_role_id'] ?? null]),
-				];
-			}
+			if (empty($row['comment_id']))
+				continue;
+			$author = ['id' => $row['comment_user_id']] + self::authorOf($row, 'comment_author_');
+			$issues[$issueId]['comments'][] = [
+				'id' => $row['comment_id'],
+				'text' => $row['comment_text'],
+				'created' => Util::toIso8601($row['comment_created']),
+				'user_id' => $row['comment_user_id'],
+				'user_display_name' => UserTable::displayNameOrNull($author),
+				'user_rating' => $author['rating'],
+				'user_avatar_url' => UserTable::avatarOrNull($author),
+				'isAdmin' => UserTable::isAdmin($author),
+			];
 		}
 
-		// Build result in original order (from first query)
 		$result = [];
 		foreach ($issueIds as $index => $issueId)
-			if (isset($issuesMap[$issueId]))
-			{
-				$issueData = $issuesMap[$issueId];
-				$issueData['issueNumber'] = $offset + $index + 1;
-				$result[] = $issueData;
-			}
-
+			if (isset($issues[$issueId]))
+				$result[] = $issues[$issueId] + ['issueNumber' => $offset + $index + 1];
 		return $result;
 	}
 
