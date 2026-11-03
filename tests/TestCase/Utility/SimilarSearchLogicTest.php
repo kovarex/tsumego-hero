@@ -3,6 +3,19 @@
 #[RetryOnBrowserFailure]
 class SimilarSearchLogicTest extends AppTestCase
 {
+	//Looking for similar problems tells nothing about the solution, so it is there before the problem is solved,
+	//unlike the download of the SGF
+	public function testFindSimilarProblemsIsInMoreOfAnUnsolvedProblem()
+	{
+		$browser = Browser::instance();
+		// in two collections, so More is there before the problem is solved
+		$context = new ContextPreparator(['tsumego' => ['sets' => [['name' => 'first', 'num' => 1], ['name' => 'second', 'num' => 1]]]]);
+		$browser->get('/' . $context->setConnections[0]['id']);
+		$browser->openPlayEditSection();
+		$this->assertTrue($browser->find('#findSimilarProblems')->isDisplayed());
+		$this->assertFalse($browser->find('#showx3')->isDisplayed(), 'The SGF is downloaded only once the problem is solved');
+	}
+
 	public function testSimilarSearchSameProblem()
 	{
 		$browser = Browser::instance();
