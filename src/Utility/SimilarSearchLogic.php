@@ -4,7 +4,6 @@ namespace App\Utility;
 
 use Cake\ORM\TableRegistry;
 use App\Model\Table\SgfTable;
-use App\Model\Table\TsumegoStatusTable;
 use Cake\Http\Exception\NotFoundException;
 use App\Model\Table\SetTable;
 use App\Model\Table\SetConnectionTable;
@@ -35,15 +34,73 @@ class SimilarSearchLogic
 	public function execute(): void
 	{
 		$start = microtime(true);
+		// The problems of the site's collections with the current version of each. The preview of a version
+		// keeps its parsed stones, two letters each, so the database counts them and passes on only the
+		// problems near the stone count of this one, and only those are parsed. A problem without a
+		// readable version (no preview) is passed on as it is.
 		$candidates = Util::query("
 SELECT
     tsumego.id AS tsumego_id,
-    sc_best.id AS set_connection_id,
     COALESCE(sgf.sgf, '') AS sgf,
     sgf.first_move_color AS first_move_color,
     sgf.correct_moves AS correct_moves
 FROM tsumego
-JOIN set_connection sc_best ON sc_best.id = (
+LEFT JOIN sgf ON sgf.id = " . SgfTable::currentVersionIDSql('tsumego.id') . "
+WHERE tsumego.deleted IS NULL
+    AND tsumego.id != ?
+    AND EXISTS (SELECT 1 FROM set_connection sc JOIN `set` s ON s.id = sc.set_id
+        WHERE sc.tsumego_id = tsumego.id AND " . SetTable::officialCondition('s') . ")
+    AND (sgf.preview IS NULL OR sgf.preview = ''
+        OR ABS((CHAR_LENGTH(JSON_VALUE(sgf.preview, '$.black')) + CHAR_LENGTH(JSON_VALUE(sgf.preview, '$.white'))) DIV 2 - ?) <= ?)
+ORDER BY tsumego.id",
+			[$this->sourceTsumegoID, $this->sourceStoneCount, $this->maxDifference]);
+
+		$matches = [];
+		foreach ($candidates as $candidate)
+		{
+			$comparisonResult = $this->compareCandidate($candidate);
+			if ($comparisonResult)
+				$matches[(int) $candidate['tsumego_id']] = [$candidate, $comparisonResult];
+		}
+		$this->addMatchesToResult($matches);
+
+		usort($this->result->items, [SimilarSearchResultItem::class, 'compare']);
+
+		$this->result->elapsed = microtime(true) - $start;
+	}
+
+	private function compareCandidate(array $candidate): ?BoardComparisonResult
+	{
+		$correctMoves = SgfBoard::decodePositionString($candidate['correct_moves'] ?? '');
+		if (count($this->sourceBoard->correctMoves) != count($correctMoves))
+			return null;
+		$board = SgfParser::process($candidate['sgf'], $correctMoves);
+		if (abs($board->getStoneCount() - $this->sourceStoneCount) > $this->maxDifference)
+			return null;
+
+		return BoardComparator::compare(
+			$this->sourceBoard->stones,
+			$this->sourceFirstMoveColor,
+			$this->sourceBoard->correctMoves,
+			$board->stones,
+			$candidate['first_move_color'] ?? 'N',
+			$board->correctMoves);
+	}
+
+	//The matches as result items: the collection each is shown in and the status of the player on it, read
+	//for all of them at once.
+	/** @param array<int, array{0: array, 1: BoardComparisonResult}> $matches by tsumego id */
+	private function addMatchesToResult(array $matches): void
+	{
+		if (empty($matches))
+			return;
+		$tsumegoIDs = array_keys($matches);
+		$placeholders = implode(',', array_fill(0, count($tsumegoIDs), '?'));
+		$shownIn = [];
+		foreach (Util::query("
+SELECT tsumego.id AS tsumego_id, sc.id AS set_connection_id, sc.num, s.title
+FROM tsumego
+JOIN set_connection sc ON sc.id = (
     SELECT sc2.id
     FROM set_connection sc2
     JOIN `set` s2 ON s2.id = sc2.set_id
@@ -51,63 +108,31 @@ JOIN set_connection sc_best ON sc_best.id = (
     ORDER BY " . SetConnectionTable::displayOrderSql('s2', 'sc2') . "
     LIMIT 1
 )
-LEFT JOIN sgf ON sgf.id = " . SgfTable::currentVersionIDSql('tsumego.id') . "
-WHERE tsumego.deleted IS NULL");
+JOIN `set` s ON s.id = sc.set_id
+WHERE tsumego.id IN ($placeholders)", $tsumegoIDs) as $row)
+			$shownIn[(int) $row['tsumego_id']] = $row;
+		$statuses = [];
+		if (Auth::isLoggedIn())
+			foreach (Util::query("SELECT tsumego_id, status FROM tsumego_status WHERE user_id = ? AND tsumego_id IN ($placeholders)", [Auth::getUserID(), ...$tsumegoIDs]) as $row)
+				$statuses[(int) $row['tsumego_id']] = $row['status'];
 
-		foreach ($candidates as $candidate)
-			if ($candidate['tsumego_id'] != $this->sourceTsumegoID)
-				$this->checkCandidate($candidate);
-
-		usort($this->result->items, [SimilarSearchResultItem::class, 'compare']);
-
-		$this->result->elapsed = microtime(true) - $start;
-	}
-
-	private function checkCandidate(array $candidate): void
-	{
-		$correctMoves = SgfBoard::decodePositionString($candidate['correct_moves'] ?? '');
-		if (count($this->sourceBoard->correctMoves) != count($correctMoves))
-			return;
-		$board = SgfParser::process($candidate['sgf'], $correctMoves);
-		$numStones = $board->getStoneCount();
-		$stoneNumberDiff = abs($numStones - $this->sourceStoneCount);
-		if ($stoneNumberDiff > $this->maxDifference)
-			return;
-
-		$comparisonResult = BoardComparator::compare(
-			$this->sourceBoard->stones,
-			$this->sourceFirstMoveColor,
-			$this->sourceBoard->correctMoves,
-			$board->stones,
-			$candidate['first_move_color'] ?? 'N',
-			$board->correctMoves);
-		if (!$comparisonResult)
-			return;
-		$this->addCandidateToResult($candidate, $comparisonResult);
-	}
-
-	private function addCandidateToResult(array $candidate, BoardComparisonResult $comparisonResult): void
-	{
-		$setConnection = TableRegistry::getTableLocator()->get('SetConnection')->get($candidate['set_connection_id']);
-		// not so many should match, so I get the sql additional data manually instead in the original select, which is big
-		$set = TableRegistry::getTableLocator()->get('Set')->find()->where(['id' => $setConnection->set_id])->first();
-
-		$item = new SimilarSearchResultItem();
-		$item->difference = $comparisonResult->difference;
-		$item->diff = $comparisonResult->diff;
-		$item->title = $set->title;
-		$item->moveCount = substr_count($candidate['sgf'], ';');
-
-
-		$item->tsumegoButton = new TsumegoButton(
-			$candidate['tsumego_id'],
-			$setConnection->id,
-			$setConnection->num,
-			TsumegoStatusTable::statusOf(Auth::getUserID(), (int) $candidate['tsumego_id']) ?? 'N',
-			0,
-			$candidate['sgf']);
-		$item->tsumegoButton->diff = $comparisonResult->diff;
-		$this->result->items[] = $item;
+		foreach ($matches as $tsumegoID => [$candidate, $comparisonResult])
+		{
+			$item = new SimilarSearchResultItem();
+			$item->difference = $comparisonResult->difference;
+			$item->diff = $comparisonResult->diff;
+			$item->title = $shownIn[$tsumegoID]['title'];
+			$item->moveCount = substr_count($candidate['sgf'], ';');
+			$item->tsumegoButton = new TsumegoButton(
+				$tsumegoID,
+				(int) $shownIn[$tsumegoID]['set_connection_id'],
+				(int) $shownIn[$tsumegoID]['num'],
+				$statuses[$tsumegoID] ?? 'N',
+				0,
+				$candidate['sgf']);
+			$item->tsumegoButton->diff = $comparisonResult->diff;
+			$this->result->items[] = $item;
+		}
 	}
 
 	public int|string $sourceTsumegoID;
