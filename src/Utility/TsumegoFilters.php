@@ -3,7 +3,6 @@
 namespace App\Utility;
 
 use App\Model\Entity\Set;
-use Cake\ORM\TableRegistry;
 use Exception;
 use App\Model\Table\SetTable;
 
@@ -84,7 +83,7 @@ class TsumegoFilters
 			. implode(' UNION ALL ', array_fill(0, count($names), 'SELECT ? AS position, ? AS name')) . ') names'
 			. " JOIN $table found ON found.id = (SELECT candidate.id FROM $table candidate WHERE candidate.$nameColumn = names.name AND $condition LIMIT 1)"
 			. ' ORDER BY names.position', $parameters) as $row)
-			$found[(int) $row['position']] = $row;
+				$found[(int) $row['position']] = $row;
 		return $found;
 	}
 
