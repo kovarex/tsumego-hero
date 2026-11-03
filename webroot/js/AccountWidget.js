@@ -146,9 +146,9 @@ class AccountWidget
 		if (this.show == 'time')
 		{
 			if (increase)
-				this.timeSucceeded++;
+				this.timeMode.successCount++;
 			else
-				this.timeFailed++;
+				this.timeMode.failCount++;
 			this.showTimeMode();
 			return;
 		}
