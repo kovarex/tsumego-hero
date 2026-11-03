@@ -55,11 +55,14 @@ class MistakeTrainingController extends AppController
 	{
 		$this->set('_page', 'mistake-training');
 		$this->set('_title', 'Tsumego Hero - Mistake Training');
-		$dueToday = MistakeTraining::dueCount($userId);
+		// what is due, what is in the training and what comes when, from the one list of the pool
+		$poolRows = MistakeTraining::poolRows($userId);
+		$this->set('poolRows', $poolRows);
+		$dueToday = count(array_filter($poolRows, fn(array $row) => $row['due']));
 		$this->set('dueToday', $dueToday);
-		$upcoming = MistakeTraining::upcomingByDay($userId);
-		$this->set('totalInTraining', MistakeTraining::totalInTraining($userId));
+		$this->set('totalInTraining', count($poolRows));
 		$this->set('everTrained', MistakeTraining::hasEverTrained($userId));
+		$upcoming = MistakeTraining::upcomingByDay($poolRows);
 		$this->set('upcomingDays', $upcoming['days']);
 		$this->set('furtherDays', $upcoming['furtherDays']);
 		$this->set('lastUpcomingDay', $upcoming['lastDay']);
@@ -70,7 +73,6 @@ class MistakeTrainingController extends AppController
 			? MistakeTraining::$PLAY_LINK_PREFIX . $todaysTraining[0]['set_connection_id']
 			: null);
 		$this->set('training', MistakeTraining::profile($userId, MistakeTraining::profileStart()));
-		$this->set('poolRows', MistakeTraining::poolRows($userId));
 		$this->render('/Tsumegos/mistake_training');
 		return null;
 	}

@@ -20,21 +20,11 @@ class TsumegoButton
 	{
 		$num = '<div class="problem-nav__number"' . ($this->isCurrentlyOpened ? ' id="currentNavigationButton"' : '') . '>' . $this->order . '</div>';
 
-		// Calculate accuracy (performance) as percentage
-		if (empty($this->performance))
-		{
-			$persormanceS = 0;
-			$persormanceF = 0;
-		}
-		else
-		{
-			$persormanceS = substr_count($this->performance, '1');
-			$persormanceF = substr_count($this->performance, 'F');
-		}
-		if ($persormanceS == 0 && $persormanceF == 0)
+		// the solved and failed attempts of the player
+		if ($this->solvedAttempts == 0 && $this->failedAttempts == 0)
 			$num2 = '-';
 		else
-			$num2 = $persormanceS . '/' . $persormanceF;
+			$num2 = $this->solvedAttempts . '/' . $this->failedAttempts;
 		$num2 = '<div class="problem-nav__ratio">' . $num2 . '</div>';
 
 		// Calculate time
@@ -144,7 +134,10 @@ class TsumegoButton
 	public string $status;
 	public ?float $rating;
 	public float $seconds = 0;
-	public string $performance;
+	//The attempts of the player on the problem: the solves, and the misplays (an attempt that failed
+	//without one counts as one)
+	public int $solvedAttempts = 0;
+	public int $failedAttempts = 0;
 	public bool $isCurrentlyOpened = false;
 	//The SGF the preview is made from, null for a button of a collection, which gets the stored
 	//preview instead.
