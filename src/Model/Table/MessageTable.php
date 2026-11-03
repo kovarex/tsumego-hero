@@ -200,7 +200,15 @@ You get an email for the first message you have not read yet. You can turn these
 
 	public static function unreadCount(int $userId): int
 	{
-		return (int) Util::query('SELECT COUNT(*) AS count FROM message WHERE recipient_user_id = ? AND read_at IS NULL', [$userId])[0]['count'];
+		[$sql, $params] = self::unreadCountQuery($userId);
+		return (int) Util::query($sql, $params)[0]['count'];
+	}
+
+	//The query of unreadCount(), which the menu asks together with its other counts (HeaderCounts)
+	/** @return array{string, list<mixed>} */
+	public static function unreadCountQuery(int $userId): array
+	{
+		return ['SELECT COUNT(*) AS count FROM message WHERE recipient_user_id = ? AND read_at IS NULL', [$userId]];
 	}
 
 	public static function unreadCountFrom(int $userId, int $senderUserId): int

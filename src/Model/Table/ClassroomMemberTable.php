@@ -86,7 +86,15 @@ class ClassroomMemberTable extends AppTable
 	//them, and players asking to join the classes they teach. The menu shows it.
 	public static function countAwaitingAnswer(int $userId): int
 	{
-		$rows = Util::query('SELECT
+		[$sql, $params] = self::countAwaitingAnswerQuery($userId);
+		return (int) Util::query($sql, $params)[0]['count'];
+	}
+
+	//The query of countAwaitingAnswer(), which the menu asks together with its other counts (HeaderCounts)
+	/** @return array{string, list<mixed>} */
+	public static function countAwaitingAnswerQuery(int $userId): array
+	{
+		return ['SELECT
 				(SELECT COUNT(*) FROM classroom_member m
 					JOIN classroom c ON c.id = m.classroom_id
 					JOIN user t ON t.id = c.teacher_user_id AND t.deleted IS NULL
@@ -94,8 +102,7 @@ class ClassroomMemberTable extends AppTable
 				+ (SELECT COUNT(*) FROM classroom c
 					JOIN classroom_member m ON m.classroom_id = c.id AND m.classroom_member_status_id = ?
 					JOIN user u ON u.id = m.user_id AND u.deleted IS NULL
-					WHERE c.teacher_user_id = ?) AS total',
-			[$userId, ClassroomMemberStatusTable::INVITED, ClassroomMemberStatusTable::REQUESTED, $userId]);
-		return (int) $rows[0]['total'];
+					WHERE c.teacher_user_id = ?) AS count',
+			[$userId, ClassroomMemberStatusTable::INVITED, ClassroomMemberStatusTable::REQUESTED, $userId]];
 	}
 }
