@@ -266,6 +266,74 @@ class TsumegoButtons extends ArrayObject
 		return $ratingSum / count($this);
 	}
 
+	//Loads the attempts of the player on the problems of the buttons: the solves and fails of each and
+	//its best (shortest) solve time. They are read in one query, newest first, and sorted out by
+	//problem, as a player who trains a set has dozens of attempts on each of its problems.
+	public function loadAttempts(int $userID): void
+	{
+		$tsumegoIDs = array_map(fn(TsumegoButton $tsumegoButton) => $tsumegoButton->tsumegoID, (array) $this);
+		if (empty($tsumegoIDs))
+			return;
+		$attemptsByTsumego = [];
+		foreach (Util::query('SELECT tsumego_id, solved, seconds, misplays FROM tsumego_attempt
+			WHERE user_id = ? AND tsumego_id IN (' . implode(',', array_fill(0, count($tsumegoIDs), '?')) . ')', [$userID, ...$tsumegoIDs]) as $attempt)
+			$attemptsByTsumego[(int) $attempt['tsumego_id']][] = $attempt;
+
+		foreach ($this as $tsumegoButton)
+		{
+			$tsumegoButton->seconds = 0;
+			$tsumegoButton->solvedAttempts = 0;
+			$tsumegoButton->failedAttempts = 0;
+			foreach ($attemptsByTsumego[$tsumegoButton->tsumegoID] ?? [] as $attempt)
+			{
+				$seconds = (int) $attempt['seconds'];
+				if ($attempt['solved'])
+				{
+					$tsumegoButton->solvedAttempts++;
+					if ($seconds > 0 && ($tsumegoButton->seconds == 0 || $seconds < $tsumegoButton->seconds))
+						$tsumegoButton->seconds = $seconds;
+				}
+				// the misplays of an attempt are its fails, one at least for an attempt that failed
+				$tsumegoButton->failedAttempts += max((int) $attempt['misplays'], $attempt['solved'] ? 0 : 1);
+			}
+		}
+	}
+
+	//The average solve time of the solved problems, in seconds, an unsolved one would pull it down and
+	//each new solve up (forum#149). A solve without a recorded time counts as a minute.
+	public function getAverageSolveTime(): float
+	{
+		$secondsSum = 0;
+		$solvedCount = 0;
+		foreach ($this as $tsumegoButton)
+			if (TsumegoUtil::isSolvedStatus($tsumegoButton->status))
+			{
+				$secondsSum += $tsumegoButton->seconds ?: 60;
+				$solvedCount++;
+			}
+		return $solvedCount == 0 ? 0 : round($secondsSum / $solvedCount, 2);
+	}
+
+	//The share of the attempts of the player that solved the problem, in percent. A solved problem
+	//without a recorded attempt counts as one fail.
+	public function getAccuracy(): float
+	{
+		$solvedSum = 0;
+		$failedSum = 0;
+		foreach ($this as $tsumegoButton)
+			if ($tsumegoButton->solvedAttempts == 0 && $tsumegoButton->failedAttempts == 0)
+			{
+				if (TsumegoUtil::isSolvedStatus($tsumegoButton->status))
+					$failedSum++;
+			}
+			else
+			{
+				$solvedSum += $tsumegoButton->solvedAttempts;
+				$failedSum += $tsumegoButton->failedAttempts;
+			}
+		return $solvedSum + $failedSum == 0 ? 0 : round($solvedSum / ($solvedSum + $failedSum) * 100, 2);
+	}
+
 	public int $partition = 0;
 	public bool $isPartitioned = false;
 	public string $linkPrefix = '/';

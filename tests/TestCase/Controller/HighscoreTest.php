@@ -1,6 +1,7 @@
 <?php
 
 use App\Model\Table\TimeModeCategoryTable;
+use App\Model\Table\TimeModeRankTable;
 use App\Model\Table\TimeModeSessionStatusTable;
 use App\Utility\AchievementId;
 use App\Utility\Level;
@@ -390,6 +391,58 @@ class HighscoreTest extends IntegrationTestCase
 		$this->assertTextContains('DN_Tagger', $this->view);
 		// kovarex has no tags but appears via self-view
 		$this->assertTextContains('DN_kovarex', $this->view);
+	}
+
+	//The daily table lists the players with xp of today, and the signed-in player without any.
+	public function testDailyHighscoreListsThePlayersOfToday()
+	{
+		new ContextPreparator([
+			'user' => ['name' => 'kovarex'],
+			'other-users' => [
+				['name' => 'Second', 'daily_xp' => 40, 'daily_solved' => 3],
+				['name' => 'First', 'daily_xp' => 90, 'daily_solved' => 5],
+				['name' => 'Idle'],
+			],
+		]);
+
+		$this->get('users/leaderboard');
+		$rows = $this->getStringDom()->querySelectorAll('.data-table tr');
+
+		$this->assertRowContains($rows[1], '#1', 'DN_First', '90');
+		$this->assertRowContains($rows[2], '#2', 'DN_Second', '40');
+		$this->assertRowContains($rows[3], '#3', 'DN_kovarex');
+		$this->assertTextNotContains('DN_Idle', $this->view);
+		$this->assertTextContains('2 users total', $this->view);
+	}
+
+	//Only the ranks of the category with a run are buttons to their table, besides the one shown.
+	public function testTimeModeRankButtonsLinkTheRanksWithARun()
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'kovarex'],
+			'other-users' => [['name' => 'Runner']],
+		]);
+		$sessionTable = $this->fetchTable('TimeModeSession');
+		$sessionTable->saveOrFail($sessionTable->newEntity([
+			'user_id' => $context->otherUsers[0]['id'],
+			'time_mode_category_id' => TimeModeCategoryTable::FAST,
+			'time_mode_rank_id' => TimeModeRankTable::RANK_10K,
+			'time_mode_session_status_id' => TimeModeSessionStatusTable::SOLVED,
+			'points' => 500,
+		]));
+
+		$this->get('users/time_mode?category=1&rank=15k');
+		$this->assertStringContainsString('href="/users/time_mode?category=1&rank=10k"', $this->view);
+		$this->assertStringNotContainsString('href="/users/time_mode?category=1&rank=9k"', $this->view);
+		$this->assertTextNotContains('DN_Runner', $this->view, 'the run is at 10k, not 15k');
+
+		$this->get('users/time_mode?category=1&rank=10k');
+		$this->assertStringNotContainsString('href="/users/time_mode?category=1&rank=10k"', $this->view, 'the rank shown is no link');
+		$this->assertTextContains('DN_Runner', $this->view);
+
+		$this->get('users/time_mode?category=0&rank=10k');
+		$this->assertStringNotContainsString('href="/users/time_mode?category=0&rank=10k"', $this->view, 'the run is fast, not blitz');
+		$this->assertTextNotContains('DN_Runner', $this->view);
 	}
 
 	//Helper to assert that a table row's text content contains all given strings.

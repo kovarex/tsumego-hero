@@ -537,6 +537,52 @@ class TimeModeTest extends IntegrationTestCase
 		}
 	}
 
+	//A rank opens to its runs and closes again
+	public function testTimeModeResultRankOpensAndCloses(): void
+	{
+		$browser = Browser::instance();
+		$context = new ContextPreparator([
+			'user' => ['mode' => Constants::$LEVEL_MODE],
+			'time-mode-ranks' => ['5k', '1d'],
+			'time-mode-sessions' => [
+				['category' => TimeModeCategoryTable::BLITZ, 'rank' => '5k', 'status' => TimeModeSessionStatusTable::SOLVED],
+				['category' => TimeModeCategoryTable::BLITZ, 'rank' => '1d', 'status' => TimeModeSessionStatusTable::SOLVED]]]);
+		$browser->get('timeMode/result/' . $context->timeModeSessions[0]->id);
+
+		$title = $browser->find('#title' . $context->timeModeSessions[1]->id);
+		$this->assertFalse($browser->find('#results_Blitz_1d')->isDisplayed());
+		$title->click();
+		$this->assertTrue($browser->find('#results_Blitz_1d')->isDisplayed());
+		$this->assertStringEndsWith('/img/greyArrow2.png', $title->findElement(WebDriverBy::cssSelector('.rankArrow'))->getAttribute('src'));
+		$title->click();
+		$this->assertFalse($browser->find('#results_Blitz_1d')->isDisplayed());
+		$this->assertStringEndsWith('/img/greyArrow1.png', $title->findElement(WebDriverBy::cssSelector('.rankArrow'))->getAttribute('src'));
+	}
+
+	//The account bar shows the best rank the player passed in the category picked
+	public function testTimeModeOverviewAccountBarShowsTheBestRankOfThePickedCategory(): void
+	{
+		$browser = Browser::instance();
+		new ContextPreparator([
+			'user' => ['mode' => Constants::$LEVEL_MODE],
+			'time-mode-ranks' => ['5k', '1d'],
+			'time-mode-sessions' => [
+				['category' => TimeModeCategoryTable::BLITZ, 'rank' => '5k', 'status' => TimeModeSessionStatusTable::SOLVED],
+				['category' => TimeModeCategoryTable::BLITZ, 'rank' => '1d', 'status' => TimeModeSessionStatusTable::SOLVED]]]);
+		$browser->get('timeMode/overview');
+
+		$browser->find('#timeMode' . TimeModeCategoryTable::BLITZ)->click();
+		$this->assertSame('1d', $browser->find('#account-bar-xp')->getText());
+		$this->assertTrue($browser->find('#time-mode' . TimeModeCategoryTable::BLITZ)->isDisplayed());
+		$browser->find('#timeMode' . TimeModeCategoryTable::FAST)->click();
+		$this->assertSame('no rank', $browser->find('#account-bar-xp')->getText());
+		$this->assertFalse($browser->find('#time-mode' . TimeModeCategoryTable::BLITZ)->isDisplayed());
+
+		$browser->get('timeMode/overview');
+		$this->assertTrue($browser->find('#time-mode' . TimeModeCategoryTable::FAST)->isDisplayed(), 'The category picked last is the one shown');
+		$this->assertSame('no rank', $browser->find('#account-bar-xp')->getText());
+	}
+
 	public function testTimeModeOverviewShowsUnlockedStatusesCorrectly(): void
 	{
 		$browser = Browser::instance();

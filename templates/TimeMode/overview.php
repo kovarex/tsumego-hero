@@ -1,5 +1,7 @@
 <?php
 
+use App\Utility\ViteManifest;
+
 /**
  * @var \App\View\AppView $this
  * @var bool $hasFinishedSesssion
@@ -10,6 +12,11 @@
  * @var int|null $challengeInProgressID The challenge whose run the player is in the middle of
  */
 
+//The best rank the player passed in each category, which the account bar shows
+$bestSolvedRankByCategory = [];
+foreach ($timeModeCategories as $timeModeCategory)
+	if ($bestSolvedRankID = $solvedMap[$timeModeCategory->id]['best-solved-rank'] ?? null)
+		$bestSolvedRankByCategory[$timeModeCategory->id] = $solvedMap[$timeModeCategory->id][$bestSolvedRankID];
 ?>
 <div align="center">
 	<h2>Time Mode Select</h2>
@@ -17,7 +24,7 @@
 <br>
 <div align="center">
 	<a class="btn btn--inactive" href="#">Select</a>
-	<?php echo '<a class="btn' . ($hasFinishedSesssion ? ' btn--primary' : ' btn--inactive') . '" href="' . ($hasFinishedSesssion ? '/timeMode/result' : '#') . '">Results</a>'; ?>
+	<a class="btn<?php echo $hasFinishedSesssion ? ' btn--primary' : ' btn--inactive'; ?>" href="<?php echo $hasFinishedSesssion ? '/timeMode/result' : '#'; ?>">Results</a>
 	<a class="btn btn--primary" href="/challenges">Challenge a friend</a>
 </div>
 <?php if ($challengeInProgressID): ?>
@@ -28,93 +35,41 @@
 <?php endif; ?>
 <br><br>
 <div align="center">
-	<?php
-	foreach ($timeModeCategories as $timeModeCategory)
-	{
-		$categoryID = $timeModeCategory->id;
-		echo '<img id="timeMode' . $categoryID . '"'
-			. ' src="/img/timeMode' . $categoryID . '2.png" '
-			. ' width="200"'
-			. ' onclick="setTimeModeCategory(' . $categoryID . ');"'
-			. ' onmouseover="this.src=\'/img/timeMode' . $categoryID . 'hover2.png\';"'
-			. ' onmouseout="this.src=\'/img/timeMode' . $categoryID . '\' + (timeModeCategoryID == ' . $categoryID . ' ? \'\' : \'inactive\') + \'2.png\';"/>';
-	}
-	?>
-	</div>
+	<?php foreach ($timeModeCategories as $timeModeCategory): ?>
+	<img id="timeMode<?php echo $timeModeCategory->id; ?>" src="/img/timeMode<?php echo $timeModeCategory->id; ?>2.png" width="200">
+	<?php endforeach; ?>
+</div>
 <br><br>
-
-<?php
-foreach ($timeModeCategories as $timeModeCategory)
-{
-	$categoryID = $timeModeCategory->id;
-	echo '<div id="time-mode' . $categoryID . '">';
-	$unlocked = true; // first is always unlocked
-	foreach ($timeModeRanks as $timeModeRank)
-	{
+<?php foreach ($timeModeCategories as $timeModeCategory): ?>
+<div id="time-mode<?php echo $timeModeCategory->id; ?>">
+	<?php
+	$unlocked = true; // the first rank is always unlocked, then the one after each passed one
+	foreach ($timeModeRanks as $timeModeRank):
 		$rank = $timeModeRank['name'];
 		$rankID = $timeModeRank['id'];
-
-		echo '<div class="imageContainer1" id="rank-selector-' . $categoryID . '-' . $rankID . '">';
-		if ($unlocked)
-			echo '<a style="text-decoration:none;" href="/timeMode/start?categoryID=' . $categoryID . '&rankID=' . $rankID . '">';
-		echo '<img src="/img/rankButton' . $rank . ($unlocked ? '' : 'inactive') . '.png" ' . ($unlocked ? 'onmouseover="this.src = \'/img/rankButton' . $rank . 'hover.png\';" onmouseout="this.src = \'/img/rankButton' . $rank . '.png\';"' : '') . '>';
-		echo '<div class="imageContainerText2"> <img class="timeModeIcons" src="/img/timeModeStored.png">' . $timeModeRank['tsumego_count'] . '</div>';
-		if ($unlocked)
-			echo '</a>';
-		echo '</div>';
-		$unlocked = $solvedMap[$categoryID][$rankID] ?? null; // the one after solved is unlocked
-	}
-echo '</div>';
-}?>
-<script>
-
-	var timeModeCategoryID = getCookie('lastTimeModeCategoryID') || <?php echo $lastTimeModeCategoryID; ?>;
-	function setTimeModeCategory(categoryIDToSet, shouldSetCookie = true)
-	{
-		for (const categoryID of [<?php $result = [];
-		foreach ($timeModeCategories as $timeModeCategory) $result[] = $timeModeCategory->id;
-		echo implode(',', $result); ?>])
-		{
-			var element = document.getElementById("timeMode" + categoryID);
-			element.style = "cursor: pointer;";
-			var section = document.getElementById("time-mode" + categoryID);
-			if (categoryID == categoryIDToSet)
-			{
-				element.src = '/img/timeMode' + categoryID + '2.png';
-				section.style.display = "block";
-			}
-			else
-			{
-				element.src = '/img/timeMode' + categoryID + 'inactive2.png';
-				section.style.display = "none";
-			}
-		}
-		updateRankBar();
-		timeModeCategoryID = categoryIDToSet;
-		if (shouldSetCookie)
-			setCookie('lastTimeModeCategoryID', categoryIDToSet);
-	}
-	setTimeModeCategory(timeModeCategoryID, false);
-	$("#account-bar-user2 a").css("color", "rgb(202, 102, 88)");
-	$("#xp-bar-fill").attr("class", "xp-bar-fill-c3");
-	$("#xp-bar-fill").removeClass("xp-bar-fill-c2");
-	$("#xp-bar-fill").removeClass("xp-bar-fill-c1");
-	$("#account-bar-user a").attr("class", "xp-text-fill-c3x");
-
-	function getRankForMode(timeModeCategoryID)
-	{
-	<?php
-	foreach ($timeModeCategories as $timeModeCategory)
-	{
-		$timeModeCategoryID = $timeModeCategory->id;
-		if ($bestSolvedRankID = $solvedMap[$timeModeCategoryID]['best-solved-rank'] ?? null)
-			$bestSolvedRank = $solvedMap[$timeModeCategoryID][$bestSolvedRankID];
-		else
-			$bestSolvedRank = 'no rank';
-		echo "if (timeModeCategoryID == " . $timeModeCategoryID . ") return '" . $bestSolvedRank . "';";
-	}
 	?>
-	}
-	function updateRankBar() { $("#account-bar-xp").text(getRankForMode(timeModeCategoryID)); }
-	$("#xp-bar-fill").css("width","100%");
+	<div class="imageContainer1" id="rank-selector-<?php echo $timeModeCategory->id; ?>-<?php echo $rankID; ?>">
+		<?php if ($unlocked): ?>
+		<a style="text-decoration:none;" href="/timeMode/start?categoryID=<?php echo $timeModeCategory->id; ?>&rankID=<?php echo $rankID; ?>">
+			<img src="/img/rankButton<?php echo $rank; ?>.png" data-hover-src="/img/rankButton<?php echo $rank; ?>hover.png">
+			<div class="imageContainerText2"> <img class="timeModeIcons" src="/img/timeModeStored.png"><?php echo $timeModeRank['tsumego_count']; ?></div>
+		</a>
+		<?php else: ?>
+		<img src="/img/rankButton<?php echo $rank; ?>inactive.png">
+		<div class="imageContainerText2"> <img class="timeModeIcons" src="/img/timeModeStored.png"><?php echo $timeModeRank['tsumego_count']; ?></div>
+		<?php endif; ?>
+	</div>
+	<?php
+		$unlocked = isset($solvedMap[$timeModeCategory->id][$rankID]);
+	endforeach;
+	?>
+</div>
+<?php endforeach; ?>
+<?php echo ViteManifest::legacyScript('time-mode'); ?>
+<script>
+	initTimeModeOverview(<?php echo json_encode([
+		'categoryIDs' => array_map(fn($timeModeCategory) => $timeModeCategory->id, $timeModeCategories),
+		'lastCategoryID' => (int) $lastTimeModeCategoryID,
+		'bestSolvedRankByCategory' => (object) $bestSolvedRankByCategory,
+	], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>);
 </script>

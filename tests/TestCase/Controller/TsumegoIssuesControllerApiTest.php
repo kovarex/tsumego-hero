@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\TsumegoCommentTable;
 use App\Model\Table\TsumegoIssueTable;
 
 //Controller-level tests for the TsumegoIssuesController JSON API.
@@ -36,6 +37,22 @@ class TsumegoIssuesControllerApiTest extends IntegrationTestCase
 		$body = json_decode($this->view, true);
 		$this->assertTrue($body['success']);
 		$this->assertNotEmpty($body['issue']['id']);
+	}
+
+	//A first comment the validation refuses leaves no issue behind.
+	public function testCreateWithATooLongCommentLeavesNoIssue()
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'kovarex'],
+			'tsumego' => ['set_order' => 1, 'status' => 'S'],
+		]);
+
+		$this->post('/tsumego-issues/create', json_encode([
+			'tsumego_id' => $context->tsumegos[0]['id'],
+			'text' => str_repeat('x', TsumegoCommentTable::MAX_MESSAGE_LENGTH + 1)]));
+
+		$this->assertResponseCode(422);
+		$this->assertSame(0, $this->fetchTable('TsumegoIssue')->find()->count());
 	}
 
 	//A problem left only in someone's Favorites is shown by its id rather than in their collection.

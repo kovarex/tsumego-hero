@@ -8,6 +8,7 @@ use App\Model\Table\TimeModeSessionStatusTable;
 use App\Utility\Auth;
 use App\Utility\Constants;
 use App\Utility\PlayOutcome;
+use App\Utility\Rating;
 use App\Utility\TimeModeUtil;
 use App\Utility\Util;
 
@@ -700,5 +701,20 @@ class TimeModeControllerTest extends IntegrationTestCase
 		$this->assertStringContainsString('Best: passed(1/1)', $html);
 		$this->assertStringContainsString('10.00 points', $html);
 		$this->assertStringNotContainsString('50.00 points', $html);
+	}
+
+	//The count of a rank is what a run of it can draw, so a deleted problem is not in it
+	public function testRankCountsLeaveOutDeletedProblems(): void
+	{
+		new ContextPreparator([
+			'time-mode-ranks' => ['5k', '1d'],
+			'tsumegos' => [
+				['rating' => Rating::getRankMiddleRatingFromReadableRank('5k'), 'set_order' => 1],
+				['rating' => Rating::getRankMiddleRatingFromReadableRank('5k'), 'set_order' => 2, 'deleted' => date('Y-m-d H:i:s')],
+				['rating' => Rating::getRankMiddleRatingFromReadableRank('1d'), 'set_order' => 3]]]);
+
+		$this->get('/timeMode/overview');
+
+		$this->assertSame([1, 1], array_column($this->viewVariable('timeModeRanks'), 'tsumego_count'));
 	}
 }
