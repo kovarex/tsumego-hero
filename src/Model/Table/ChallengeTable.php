@@ -5,7 +5,6 @@ namespace App\Model\Table;
 use App\Model\Entity\Challenge;
 use App\Model\Entity\TimeModeSession;
 use App\Utility\TimeMode;
-use App\Utility\TimeModeUtil;
 use App\Utility\TsumegoButton;
 use App\Utility\Util;
 use Cake\ORM\TableRegistry;
@@ -267,7 +266,7 @@ class ChallengeTable extends AppTable
 			JOIN user u ON u.id = p.user_id AND u.deleted IS NULL
 			LEFT JOIN time_mode_session s ON s.challenge_id = p.challenge_id AND s.user_id = p.user_id
 			WHERE p.challenge_id = ?',
-			[TimeModeUtil::$ATTEMPT_RESULT_SOLVED, TimeModeUtil::$ATTEMPT_RESULT_QUEUED, $challengeId]);
+			[TimeModeAttemptStatusTable::SOLVED, TimeModeAttemptStatusTable::QUEUED, $challengeId]);
 
 		foreach ($rows as &$row)
 		{
@@ -315,7 +314,7 @@ class ChallengeTable extends AppTable
 		$result = [];
 		foreach ($rows as $row)
 			$result[(int) $row['time_mode_session_id']][(int) $row['order']] = [
-				'status' => TimeModeUtil::attemptStatusName((int) $row['time_mode_attempt_status_id']),
+				'status' => TimeModeAttemptStatusTable::name((int) $row['time_mode_attempt_status_id']),
 				'seconds' => $row['seconds'] === null ? null : (float) $row['seconds'],
 				'points' => $row['points'] === null ? null : (float) $row['points'],
 			];

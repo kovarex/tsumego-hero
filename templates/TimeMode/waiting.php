@@ -23,7 +23,7 @@ use App\Utility\TimeModeUtil;
 		waitingSince = Date.now();
 		sessionStorage.setItem('timeModeWaitStarted', waitingSince);
 	}
-	if (Date.now() - waitingSince > <?php echo TimeModeUtil::$WAITING_FOR_RESULT_SECONDS; ?> * 1000)
+	if (Date.now() - waitingSince > <?php echo TimeModeUtil::WAITING_FOR_RESULT_SECONDS; ?> * 1000)
 	{
 		sessionStorage.removeItem('timeModeWaitStarted');
 		window.location.replace('/timeMode/play');

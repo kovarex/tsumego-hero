@@ -11,12 +11,12 @@ use App\Attribute\HttpPost;
 use App\Model\Entity\TimeModeCategory;
 use App\Model\Entity\TimeModeRank;
 use App\Model\Entity\TimeModeSession;
+use App\Model\Table\TimeModeAttemptStatusTable;
 use App\Model\Table\TimeModeSessionStatusTable;
 use App\Utility\AchievementChecker;
 use App\Utility\Auth;
 use App\Utility\Constants;
 use App\Utility\TimeMode;
-use App\Utility\TimeModeUtil;
 use App\Utility\Util;
 
 class TimeModeController extends AppController
@@ -170,7 +170,7 @@ class TimeModeController extends AppController
 		$solvedCount = 0;
 		foreach ($attempts as $timeModeAttempt)
 		{
-			if ($timeModeAttempt['time_mode_attempt_status_id'] == TimeModeUtil::$ATTEMPT_RESULT_SOLVED)
+			if ($timeModeAttempt['time_mode_attempt_status_id'] == TimeModeAttemptStatusTable::SOLVED)
 				$solvedCount++;
 			$attempt = [];
 			$attempt['tsumego_id'] = $timeModeAttempt['tsumego_id'];
@@ -182,7 +182,7 @@ class TimeModeController extends AppController
 			$attempt['seconds'] = $minutes . ' : ' . number_format($seconds, 2);
 			$attempt['points'] = $timeModeAttempt['points'];
 			$attempt['order'] = $timeModeAttempt['order'];
-			$attempt['status'] = TimeModeUtil::attemptStatusName($timeModeAttempt['time_mode_attempt_status_id']);
+			$attempt['status'] = TimeModeAttemptStatusTable::name($timeModeAttempt['time_mode_attempt_status_id']);
 			$result['attempts'] [] = $attempt;
 		}
 		$result['solvedCount'] = $solvedCount;
@@ -247,7 +247,7 @@ WHERE
 	time_mode_session.time_mode_session_status_id != ? AND
 	time_mode_session.challenge_id IS NULL
 ORDER BY time_mode_session.created DESC, time_mode_session.id DESC",
-			[TimeModeUtil::$ATTEMPT_RESULT_SOLVED, Auth::getUserID(), TimeModeSessionStatusTable::IN_PROGRESS]);
+			[TimeModeAttemptStatusTable::SOLVED, Auth::getUserID(), TimeModeSessionStatusTable::IN_PROGRESS]);
 
 		$result = [];
 		foreach ($sessions as $session)

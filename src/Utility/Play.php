@@ -86,7 +86,7 @@ class Play
 				'heroPowers' => Auth::isInMistakeTrainingMode() ? null : HeroPowers::clientData(),
 				'sprintSeconds' => Constants::$SPRINT_SECONDS,
 				'playerRatingCalculationModifier' => Constants::$PLAYER_RATING_CALCULATION_MODIFIER,
-				'secondsAddedPerMovePlayed' => TimeModeUtil::$SECONDS_ADDED_PER_MOVE_PLAYED,
+				'secondsAddedPerMovePlayed' => TimeModeUtil::SECONDS_ADDED_PER_MOVE_PLAYED,
 				'timeModeSecondsToSolve' => $problem['timeMode']->secondsToSolve ?? null,
 				'playOutcome' => [
 					'solvedClean' => PlayOutcome::SolvedClean->value,
