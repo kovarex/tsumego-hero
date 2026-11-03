@@ -102,8 +102,6 @@ class SetsController extends AppController
 	{
 		$this->Authorization->authorize('Set', 'create');
 
-		$redirect = false;
-
 		if ($this->inputs() !== [])
 		{
 			$isSandbox = $this->query('sandbox') !== null && $this->Authorization->can('Set', 'createSandbox');
@@ -153,7 +151,6 @@ class SetsController extends AppController
 	#[HttpPost]
 	public function edit(?string $id = null)
 	{
-		$setTable = $this->fetchTable('Set');
 		$set = $this->findSet($id);
 
 		$this->Authorization->authorize($set);
@@ -169,107 +166,21 @@ JOIN tsumego t ON t.id = sc.tsumego_id AND t.deleted IS NULL
 WHERE sc.set_id = ?
 ORDER BY sc.num ASC", [(int) $id]);
 
-		// Tsumego buttons (status colors, tooltips, board previews) for the problem list
-		$tsumegoButtons = new TsumegoButtons(new TsumegoFilters('topics'), null, null, (int) $id);
-		$tsumegoButtons->loadPreviews();
-
 		// Both forms of the page post here: the details, and for admins the re-rate and solve modes.
 		$formSent = $this->inputs() !== [];
 		if ($formSent)
 		{
-			$oldTitle = $set->title;
-			$oldDescription = $set->description;
-			$oldColor = $set->color;
-			$oldOrder = $set->order;
-			if ($this->input('title') !== null)
-				$set->title = $this->input('title');
-			if ($this->input('title2') !== null)
-				$set->title2 = $this->input('title2');
-			if ($this->input('description') !== null)
-				$set->description = HtmlSanitizer::sanitize((string) $this->input('description'));
-			if ($this->input('color') !== null && $this->input('color') !== '')
-				$set->color = $this->input('color');
-			if ($this->input('order') !== null && $this->input('order') !== '')
-				$set->order = (int) $this->input('order');
-			$setTable->saveOrFail($set);
-
-			if ($this->isElevatedSetEdit($set))
-			{
-				if ($oldTitle != $set->title)
-					AdminActivityLogger::log(AdminActivityTypeTable::SET_TITLE_EDIT, null, (int) $id, $oldTitle, $set->title);
-				if ($oldDescription != $set->description)
-					AdminActivityLogger::log(AdminActivityTypeTable::SET_DESCRIPTION_EDIT, null, (int) $id, $oldDescription, $set->description);
-				if ($oldColor != $set->color)
-					AdminActivityLogger::log(AdminActivityTypeTable::SET_COLOR_EDIT, null, (int) $id, $oldColor, $set->color);
-				if ($oldOrder != $set->order)
-					AdminActivityLogger::log(AdminActivityTypeTable::SET_ORDER_EDIT, null, (int) $id, Util::strOrNull($oldOrder), Util::strOrNull($set->order));
-			}
-
-			CookieFlash::set('Set saved', 'success');
+			$this->saveDetails($set);
+			if ($canEditSettings)
+				$this->saveProblemSettings((int) $set->id, $problems);
 		}
-
-		// Re-rate every problem in this set (admin only)
-		if ($canEditSettings && $this->input('setDifficulty') !== null)
-			if ($this->input('setDifficulty') != 1200 && $this->input('setDifficulty') >= 900 && $this->input('setDifficulty') <= 2900)
-			{
-				//The new rating of each problem is raised to its minimum, then lowered to its maximum
-				//(GREATEST and LEAST give NULL for a limit the problem doesn't have)
-				$difficulty = (float) $this->input('setDifficulty');
-				$problemIDs = array_column($problems, 'tsumego_id');
-				if ($problemIDs)
-					Util::execute('UPDATE tsumego SET rating = COALESCE(LEAST(COALESCE(GREATEST(?, minimum_rating), ?), maximum_rating), COALESCE(GREATEST(?, minimum_rating), ?))
-						WHERE id IN (' . implode(',', array_fill(0, count($problemIDs), '?')) . ')', [$difficulty, $difficulty, $difficulty, $difficulty, ...$problemIDs]);
-				AdminActivityLogger::log(AdminActivityTypeTable::SET_RATING_EDIT, null, (int) $id);
-			}
-
-		// Pass mode for all problems (admin only)
-		if ($canEditSettings && $formSent)
-		{
-			// sent only when the admin picked a choice for it
-			$passMode = $this->input('r43');
-			if ($passMode == 'yes')
-			{
-				$this->setProblemsField($problems, 'pass', true);
-				AdminActivityLogger::log(AdminActivityTypeTable::SET_PASS_MODE, null, (int) $id, null, '1');
-			}
-			if ($passMode == 'no')
-			{
-				$this->setProblemsField($problems, 'pass', false);
-				AdminActivityLogger::log(AdminActivityTypeTable::SET_PASS_MODE, null, (int) $id, null, '0');
-			}
-		}
-
-		// Handle image removal
-		if (!empty($this->input('remove_image')))
-		{
-			SetImage::remove($set->image);
-			$set->image = '';
-			$setTable->saveOrFail($set);
-			CookieFlash::set('Image removed', 'success');
-		}
-
-		// Handle image upload from the details form
-		$image = $this->uploadedFile('image');
-		if ($image !== null && $image['error'] === UPLOAD_ERR_OK)
-		{
-			$refusal = SetImage::refusalOf($image);
-			if ($refusal !== null)
-				CookieFlash::set($refusal, 'error');
-			else
-				try
-				{
-					$set->image = SetImage::replace((int) $id, $set->image, $image['tmp_name'], SetImage::extensionOf($image['name']));
-					$setTable->saveOrFail($set);
-					CookieFlash::set('Image uploaded', 'success');
-				}
-			catch (Exception $e)
-			{
-				CookieFlash::set('Image upload failed: ' . $e->getMessage(), 'error');
-			}
-		}
-
+		$this->saveCover($set);
 		if ($formSent)
 			return $this->redirect('/sets/edit/' . (int) $id);
+
+		// Tsumego buttons (status colors, tooltips, board previews) for the problem list
+		$tsumegoButtons = new TsumegoButtons(new TsumegoFilters('topics'), null, null, (int) $id);
+		$tsumegoButtons->loadPreviews();
 
 		// Solve-mode states for the admin settings panel
 		$allPassActive = true;
@@ -297,6 +208,94 @@ ORDER BY sc.num ASC", [(int) $id]);
 		$this->set('allPassActive', $allPassActive);
 		$this->set('allPassInactive', $allPassInactive);
 		$this->set('setRating', $setRating);
+	}
+
+	//The details the form sent: title, description, color and order. An admin's change of a collection that
+	//isn't theirs is noted in the admin activity.
+	private function saveDetails(Set $set): void
+	{
+		$old = ['title' => $set->title, 'description' => $set->description, 'color' => $set->color, 'order' => $set->order];
+		if ($this->input('title') !== null)
+			$set->title = $this->input('title');
+		if ($this->input('title2') !== null)
+			$set->title2 = $this->input('title2');
+		if ($this->input('description') !== null)
+			$set->description = HtmlSanitizer::sanitize((string) $this->input('description'));
+		if ($this->input('color') !== null && $this->input('color') !== '')
+			$set->color = $this->input('color');
+		if ($this->input('order') !== null && $this->input('order') !== '')
+			$set->order = (int) $this->input('order');
+		$this->fetchTable('Set')->saveOrFail($set);
+
+		if ($this->isElevatedSetEdit($set))
+			foreach ([
+				'title' => AdminActivityTypeTable::SET_TITLE_EDIT,
+				'description' => AdminActivityTypeTable::SET_DESCRIPTION_EDIT,
+				'color' => AdminActivityTypeTable::SET_COLOR_EDIT,
+				'order' => AdminActivityTypeTable::SET_ORDER_EDIT] as $field => $activityType)
+					if ($old[$field] != $set->get($field))
+						AdminActivityLogger::log($activityType, null, (int) $set->id, Util::strOrNull($old[$field]), Util::strOrNull($set->get($field)));
+
+		CookieFlash::set('Set saved', 'success');
+	}
+
+	//The settings of all the problems of the collection, for admins: a new rating for each, and the pass mode
+	//when a choice was made for it.
+	private function saveProblemSettings(int $setID, array $problems): void
+	{
+		$problemIDs = array_column($problems, 'tsumego_id');
+		$difficulty = $this->input('setDifficulty');
+		if ($difficulty !== null && $difficulty != 1200 && $difficulty >= 900 && $difficulty <= 2900)
+		{
+			//The new rating of each problem is raised to its minimum, then lowered to its maximum
+			//(GREATEST and LEAST give NULL for a limit the problem doesn't have)
+			$difficulty = (float) $difficulty;
+			if ($problemIDs)
+				Util::execute('UPDATE tsumego SET rating = COALESCE(LEAST(COALESCE(GREATEST(?, minimum_rating), ?), maximum_rating), COALESCE(GREATEST(?, minimum_rating), ?))
+					WHERE id IN (' . implode(',', array_fill(0, count($problemIDs), '?')) . ')', [$difficulty, $difficulty, $difficulty, $difficulty, ...$problemIDs]);
+			AdminActivityLogger::log(AdminActivityTypeTable::SET_RATING_EDIT, null, $setID);
+		}
+
+		// sent only when the admin picked a choice for it
+		$passMode = $this->input('r43');
+		if ($passMode != 'yes' && $passMode != 'no')
+			return;
+		if ($problemIDs)
+			$this->fetchTable('Tsumego')->updateAll(['pass' => $passMode == 'yes'], ['id IN' => $problemIDs]);
+		AdminActivityLogger::log(AdminActivityTypeTable::SET_PASS_MODE, null, $setID, null, $passMode == 'yes' ? '1' : '0');
+	}
+
+	//The cover the form removed or uploaded.
+	private function saveCover(Set $set): void
+	{
+		$setTable = $this->fetchTable('Set');
+		if (!empty($this->input('remove_image')))
+		{
+			SetImage::remove($set->image);
+			$set->image = '';
+			$setTable->saveOrFail($set);
+			CookieFlash::set('Image removed', 'success');
+		}
+
+		$image = $this->uploadedFile('image');
+		if ($image === null || $image['error'] !== UPLOAD_ERR_OK)
+			return;
+		$refusal = SetImage::refusalOf($image);
+		if ($refusal !== null)
+		{
+			CookieFlash::set($refusal, 'error');
+			return;
+		}
+		try
+		{
+			$set->image = SetImage::replace((int) $set->id, $set->image, $image['tmp_name'], SetImage::extensionOf($image['name']));
+			$setTable->saveOrFail($set);
+			CookieFlash::set('Image uploaded', 'success');
+		}
+		catch (Exception $e)
+		{
+			CookieFlash::set('Image upload failed: ' . $e->getMessage(), 'error');
+		}
 	}
 
 	//Open or close the link sharing of a collection a player assembled.
@@ -849,13 +848,5 @@ ORDER BY sc.num ASC", [(int) $id]);
 	private function isElevatedSetEdit(Set $set): bool
 	{
 		return Auth::isAdmin() && $set->user_id != Auth::getUserID();
-	}
-
-	//Turns a setting of every problem of the set on or off
-	private function setProblemsField(array $problems, string $field, bool $value): void
-	{
-		$problemIDs = array_column($problems, 'tsumego_id');
-		if ($problemIDs)
-			$this->fetchTable('Tsumego')->updateAll([$field => $value], ['id IN' => $problemIDs]);
 	}
 }
