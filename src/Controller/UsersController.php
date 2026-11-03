@@ -140,7 +140,7 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 	private function accountMail(string $to, string $subject): Mailer
 	{
 		$emailer = $this->_getEmailer();
-		$emailer->from(['me@tsumego.com' => 'https://tsumego.com']);
+		$emailer->from(Mailer::SITE_SENDER);
 		$emailer->to($to);
 		$emailer->subject($subject);
 		return $emailer;
