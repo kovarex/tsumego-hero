@@ -655,11 +655,12 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 	}
 
 	#[HttpGet]
-	public function view(?int $id = null): mixed
+	public function view(int $id): mixed
 	{
 		$this->set('_page', 'user');
 
-		$user = UserTable::row($id);
+		// the own profile is the row the request signed in with
+		$user = Auth::isLoggedIn() && Auth::getUserID() === $id ? Auth::getUser() : UserTable::row($id);
 		if (!$user)
 			return $this->redirect('/sets');
 		$this->assertUserVisible($user);

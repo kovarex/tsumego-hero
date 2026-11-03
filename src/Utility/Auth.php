@@ -119,12 +119,6 @@ class Auth
 		return Auth::isLoggedIn() ? (int) Auth::getUser()['date_format_id'] : UserTable::DATE_FORMAT_ISO;
 	}
 
-	//The avatar the logged in player picked, which is the board for a visitor who is not logged in at all.
-	public static function getAvatarSetting(): int
-	{
-		return Auth::isLoggedIn() ? UserTable::avatarChoice(Auth::getUser()) : UserTable::AVATAR_BOARD;
-	}
-
 	//Throws when $field is not an existing column on the user table, so a typo
 	//or schema mismatch fails loudly instead of being silently dropped.
 	private static function assertUserFieldExists(string $field): void
