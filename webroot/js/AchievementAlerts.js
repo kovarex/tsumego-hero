@@ -1,7 +1,7 @@
 //Achievement popup renderer - the single source of truth for "Achievement
 //Completed" popups.
-//Both the page-load path (achievementUpdates embedded as JSON in default.ctp)
-//and the AJAX solve path (play.ctp submitResult) feed this the same pure
+//Both the page-load path (achievementUpdates embedded as JSON in templates/layout/default.php)
+//and the solve path (the result of /tsumegos/result in webroot/js/PlayPage.js) feed this the same pure
 //achievement data. The markup is built with createElement/textContent, so no
 //HTML is ever injected and the /tsumegos/result endpoint stays pure data.
 //Data shape: { id, name, description, xp, image, color }
