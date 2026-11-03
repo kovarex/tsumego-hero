@@ -9,7 +9,7 @@ use Cake\Mailer\Transport\DebugTransport;
 //The controllers get it from AppController::_getEmailer().
 class Mailer
 {
-	public const SITE_SENDER = ['me@tsumego.com' => 'Tsumego Hero'];
+	public const SITE_SENDER = ['noreply@tsumego.com' => 'Tsumego Hero'];
 
 	//$buildOnly: the message is built and not sent, as on the test site
 	public function __construct(bool $buildOnly = false)

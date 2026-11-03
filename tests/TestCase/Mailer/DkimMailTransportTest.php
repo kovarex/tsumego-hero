@@ -66,7 +66,7 @@ class DkimMailTransportTest extends AppTestCase
 		$sent = $this->send(null);
 
 		$this->assertStringNotContainsString('DKIM-Signature', $sent['headers']);
-		$this->assertStringContainsString('From: Tsumego Hero <me@tsumego.com>', $sent['headers']);
+		$this->assertStringContainsString('From: Tsumego Hero <noreply@tsumego.com>', $sent['headers']);
 		$this->assertSame('player@t-online.de', $sent['to']);
 	}
 
