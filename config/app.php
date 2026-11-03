@@ -1,5 +1,6 @@
 <?php
 
+use App\Cache\Engine\OpcacheFileEngine;
 use Cake\Cache\Engine\FileEngine;
 use Cake\Database\Connection;
 use Cake\Database\Driver\Mysql;
@@ -43,11 +44,11 @@ return [
 			'serialize' => true,
 			'duration' => $modelCacheDuration,
 		],
+		//the table schemas, read by every request: from the opcache instead of the disk
 		'_cake_model_' => [
-			'className' => FileEngine::class,
+			'className' => OpcacheFileEngine::class,
 			'prefix' => 'cake5_model_',
 			'path' => CACHE . 'models' . DS,
-			'serialize' => true,
 			'duration' => $modelCacheDuration,
 		],
 	],
