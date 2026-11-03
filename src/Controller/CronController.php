@@ -30,8 +30,7 @@ class CronController extends AppController
 			return $this->respond('');
 
 		self::withReadCommitted(function () {
-			$this->dailyTsumegoStatusReset();
-			$this->dailyStalingSolvedTsumegoStatuses();
+			self::dailyTsumegoStatusReset();
 			self::createDayRecord();
 			$this->dailyUsersReset();
 			$this->dailyPotionConditionReset();
@@ -99,20 +98,12 @@ class CronController extends AppController
 		Util::execute('UPDATE achievement_condition SET value = 0 WHERE achievement_condition_category_id = ? AND value <> 0', [AchievementConditionTable::CATEGORY_POTION]);
 	}
 
-	private function dailyTsumegoStatusReset(): void
+	//A failed problem can be tried again (F → V, X → W) and one solved over a week ago gives half
+	//the XP again (S → W). No index fits, so the three are done in one pass over the table.
+	private static function dailyTsumegoStatusReset(): void
 	{
-		Util::execute("UPDATE tsumego_status SET status='V' where status='F'");
-		Util::execute("UPDATE tsumego_status SET status='W' where status='X'");
-	}
-
-	private function dailyStalingSolvedTsumegoStatuses(): void
-	{
-		Util::execute("
-UPDATE tsumego_status
-SET status='W'
-WHERE
-	status='S' AND
-	tsumego_status.updated < '" . date('Y-m-d H:i:s', strtotime('-7 days')) . "'");
+		Util::execute("UPDATE tsumego_status SET status = IF(status = 'F', 'V', 'W')
+			WHERE status IN ('F', 'X') OR (status = 'S' AND updated < ?)", [date('Y-m-d H:i:s', strtotime('-7 days'))]);
 	}
 
 	private static function deduceUserOfTheDay(): ?int
