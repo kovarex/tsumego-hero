@@ -5,6 +5,7 @@ namespace App\Controller;
 use Cake\Http\Exception\BadRequestException;
 use Cake\Http\Exception\NotFoundException;
 use Cake\Http\Response;
+use App\Model\Entity\Tsumego;
 use App\Model\Table\SetTable;
 use App\Model\Table\SetConnectionTable;
 use App\Model\Table\SgfTable;
@@ -176,40 +177,14 @@ class TsumegosController extends AppController
 
 		try
 		{
-			$rating = Rating::parseRatingOrReadableRank($this->input('rating'));
+			$rating = $this->ratingInput('rating', 'Rating');
+			$minimumRating = empty($this->input('minimum-rating')) ? null : $this->ratingInput('minimum-rating', 'Minimum rating');
+			$maximumRating = empty($this->input('maximum-rating')) ? null : $this->ratingInput('maximum-rating', 'Maximum rating');
 		}
 		catch (RatingParseException $e)
 		{
-			CookieFlash::set("Rating parse error:" . $e->getMessage(), 'error');
+			CookieFlash::set($e->getMessage(), 'error');
 			return $this->redirect($this->input('redirect'));
-		}
-
-		$minimumRating = null;
-		if (!empty($this->input('minimum-rating')))
-		{
-			try
-			{
-				$minimumRating = Rating::parseRatingOrReadableRank($this->input('minimum-rating'));
-			}
-			catch (RatingParseException $e)
-			{
-				CookieFlash::set("Minimum rating parse error:" . $e->getMessage(), 'error');
-				return $this->redirect($this->input('redirect'));
-			}
-		}
-
-		$maximumRating = null;
-		if (!empty($this->input('maximum-rating')))
-		{
-			try
-			{
-				$maximumRating = Rating::parseRatingOrReadableRank($this->input('maximum-rating'));
-			}
-			catch (RatingParseException $e)
-			{
-				CookieFlash::set("Maximum rating parse error:" . $e->getMessage(), 'error');
-				return $this->redirect($this->input('redirect'));
-			}
 		}
 
 		if (!is_null($minimumRating)
@@ -229,33 +204,11 @@ class TsumegosController extends AppController
 				$newDescription
 			);
 
-		if ($tsumego->description != $newDescription)
-		{
-			AdminActivityLogger::log(AdminActivityTypeTable::DESCRIPTION_EDIT, $tsumegoID, null, $tsumego->description, $newDescription);
-			$tsumego->description = $newDescription;
-		}
-
-		if ($tsumego->hint != $this->input('hint'))
-		{
-			AdminActivityLogger::log(AdminActivityTypeTable::HINT_EDIT, $tsumegoID, null, $tsumego->hint, $this->input('hint'));
-			$tsumego->hint = $this->input('hint');
-		}
-		if ($tsumego->author != $this->input('author'))
-		{
-			AdminActivityLogger::log(AdminActivityTypeTable::AUTHOR_EDIT, $tsumegoID, null, $tsumego->author, $this->input('author'));
-			$tsumego->author = $this->input('author');
-		}
-		if ($tsumego->minimum_rating != $minimumRating)
-		{
-			AdminActivityLogger::log(AdminActivityTypeTable::MINIMUM_RATING_EDIT, $tsumegoID, null, Util::strOrNull($tsumego->minimum_rating), Util::strOrNull($minimumRating));
-			$tsumego->minimum_rating = $minimumRating;
-		}
-
-		if ($tsumego->maximum_rating != $maximumRating)
-		{
-			AdminActivityLogger::log(AdminActivityTypeTable::MAXIMUM_RATING_EDIT, $tsumegoID, null, Util::strOrNull($tsumego->maximum_rating), Util::strOrNull($maximumRating));
-			$tsumego->maximum_rating = $maximumRating;
-		}
+		$this->changeField($tsumego, 'description', $newDescription, AdminActivityTypeTable::DESCRIPTION_EDIT);
+		$this->changeField($tsumego, 'hint', $this->input('hint'), AdminActivityTypeTable::HINT_EDIT);
+		$this->changeField($tsumego, 'author', $this->input('author'), AdminActivityTypeTable::AUTHOR_EDIT);
+		$this->changeField($tsumego, 'minimum_rating', $minimumRating, AdminActivityTypeTable::MINIMUM_RATING_EDIT);
+		$this->changeField($tsumego, 'maximum_rating', $maximumRating, AdminActivityTypeTable::MAXIMUM_RATING_EDIT);
 
 		if ($tsumego->rating != $rating)
 			AdminActivityLogger::log(AdminActivityTypeTable::RATING_EDIT, $tsumegoID, null, Util::strOrNull($tsumego->rating), Util::strOrNull($rating));
@@ -279,6 +232,28 @@ class TsumegosController extends AppController
 			return null;
 		}
 		return $this->redirect($this->input('redirect'));
+	}
+
+	//The rating the field gives as a rating or a readable rank; what is wrong with it is named after the field.
+	private function ratingInput(string $field, string $label): float
+	{
+		try
+		{
+			return Rating::parseRatingOrReadableRank($this->input($field));
+		}
+		catch (RatingParseException $e)
+		{
+			throw new RatingParseException($label . ' parse error:' . $e->getMessage(), 0, $e);
+		}
+	}
+
+	//Sets a field of the problem that the edit form changed, and notes the change in the admin activity.
+	private function changeField(Tsumego $tsumego, string $field, mixed $value, int $activityType): void
+	{
+		if ($tsumego->get($field) == $value)
+			return;
+		AdminActivityLogger::log($activityType, $tsumego->id, null, Util::strOrNull($tsumego->get($field)), Util::strOrNull($value));
+		$tsumego->set($field, $value);
 	}
 
 	//The question of a sandbox problem: its type (none or multiple choice) and the answers of a multiple
@@ -364,37 +339,33 @@ class TsumegosController extends AppController
 			CookieFlash::set('These are already merged.', 'error');
 			return $this->redirect('/tsumegos/mergeForm');
 		}
-		$masterSetConnectionBrothers = $setConnectionTable->find()
-			->innerJoin(['S' => 'set'], ['S.id = SetConnection.set_id'])
-			->where(['SetConnection.tsumego_id' => $masterSetConnection->tsumego_id, SetTable::officialCondition('S')])
-			->all()->toList();
-		$slaveSetConnectionBrothers = $setConnectionTable->find()
-			->innerJoin(['S' => 'set'], ['S.id = SetConnection.set_id'])
-			->where(['SetConnection.tsumego_id' => $slaveSetConnection->tsumego_id, SetTable::officialCondition('S')])
-			->all()->toList();
-
+		// the two problems and the current SGF of each, read once
 		$sgfs = [];
-		$ids = array_unique(array_merge(
-			array_map(fn($brother) => $brother->tsumego_id, $masterSetConnectionBrothers),
-			array_map(fn($brother) => $brother->tsumego_id, $slaveSetConnectionBrothers),
-		));
-		if ($ids)
-			foreach (Util::query('SELECT sgf.tsumego_id, sgf.sgf FROM sgf WHERE sgf.tsumego_id IN (' . implode(',', array_fill(0, count($ids), '?')) . ')'
-				. ' AND sgf.id = ' . SgfTable::currentVersionIDSql('sgf.tsumego_id'), array_values($ids)) as $row)
-					$sgfs[$row['tsumego_id']] = $row['sgf'];
+		foreach (Util::query('SELECT sgf.tsumego_id, sgf.sgf FROM sgf WHERE sgf.tsumego_id IN (?, ?)'
+			. ' AND sgf.id = ' . SgfTable::currentVersionIDSql('sgf.tsumego_id'), [$masterSetConnection->tsumego_id, $slaveSetConnection->tsumego_id]) as $row)
+				$sgfs[$row['tsumego_id']] = $row['sgf'];
 
-		$masterSetConnectionBrothersButtons = [];
-		foreach ($masterSetConnectionBrothers as $masterSetConnectionBrother)
-			$masterSetConnectionBrothersButtons [] = new TsumegoButton($masterSetConnectionBrother->tsumego_id, $masterSetConnectionBrother->id, $masterSetConnectionBrother->num, 'N', 0, $sgfs[$masterSetConnectionBrother->tsumego_id] ?? '');
-		$this->set('masterTsumegoButtons', $masterSetConnectionBrothersButtons);
+		$this->set('masterTsumegoButtons', $this->mergeButtons($masterSetConnection->tsumego_id, $sgfs));
 		$this->set('masterTsumegoID', $masterSetConnection->tsumego_id);
-
-		$slaveSetConnectionBrothersButtons = [];
-		foreach ($slaveSetConnectionBrothers as $slaveSetConnectionBrother)
-			$slaveSetConnectionBrothersButtons [] = new TsumegoButton($slaveSetConnectionBrother->tsumego_id, $slaveSetConnectionBrother->id, $slaveSetConnectionBrother->num, 'N', 0, $sgfs[$slaveSetConnectionBrother->tsumego_id] ?? '');
-		$this->set('slaveTsumegoButtons', $slaveSetConnectionBrothersButtons);
+		$this->set('slaveTsumegoButtons', $this->mergeButtons($slaveSetConnection->tsumego_id, $sgfs));
 		$this->set('slaveTsumegoID', $slaveSetConnection->tsumego_id);
 		return null;
+	}
+
+	//A button for each place the problem has in the site's collections, for the merge form.
+	/**
+	 * @param array<int, string> $sgfs the current SGF of each problem by its id
+	 * @return TsumegoButton[]
+	 */
+	private function mergeButtons(int $tsumegoID, array $sgfs): array
+	{
+		$buttons = [];
+		foreach ($this->fetchTable('SetConnection')->find()
+			->innerJoin(['S' => 'set'], ['S.id = SetConnection.set_id'])
+			->where(['SetConnection.tsumego_id' => $tsumegoID, SetTable::officialCondition('S')])
+			->all() as $setConnection)
+				$buttons[] = new TsumegoButton($tsumegoID, $setConnection->id, $setConnection->num, 'N', 0, $sgfs[$tsumegoID] ?? '');
+		return $buttons;
 	}
 
 	#[HttpPost]
