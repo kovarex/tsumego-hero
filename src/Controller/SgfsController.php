@@ -8,6 +8,7 @@ use App\Model\Table\SgfTable;
 use App\Attribute\HttpGet;
 use App\Model\Table\UserTable;
 use App\Utility\Auth;
+use App\Utility\Util;
 
 class SgfsController extends AppController
 {
@@ -69,30 +70,9 @@ class SgfsController extends AppController
 		else
 			$versions = $this->versions(['tsumego_id' => $id, 'sgf_status_id !=' => SgfTable::STATUS_REJECTED]);
 
-		//to display the correct version
-		$versionCounter = [];
-
-		$sCount = count($versions);
-		for ($i = 0; $i < $sCount; $i++)
-		{
-			// an automatic version has no user
-			$user = $versions[$i]['user_id'] === null ? null : UserTable::row((int) $versions[$i]['user_id']);
-			$ux = $user ? UserTable::displayName($user) : '';
-			$versions[$i]['user'] = $ux;
-			$displaySetConnection = SetConnectionTable::findDisplaySetConnection((int) $versions[$i]['tsumego_id']);
-			$set = $setTable->find()->select(['title', 'title2'])->where(['id' => $displaySetConnection->set_id])->first();
-			$versions[$i]['title'] = $set->title . ' ' . $set->title2 . ' #' . $displaySetConnection->num;
-			$versions[$i]['num'] = $displaySetConnection->num;
-
-			if(isset($versionCounter[$displaySetConnection->tsumego_id]))
-				$versionCounter[$displaySetConnection->tsumego_id]++;
-			else
-				$versionCounter[$displaySetConnection->tsumego_id] = 0;
-			$versions[$i]['version'] = $this->fetchTable('Sgf')->find()->where(['tsumego_id' => $displaySetConnection->tsumego_id, 'sgf_status_id !=' => SgfTable::STATUS_REJECTED])->count() - $versionCounter[$displaySetConnection->tsumego_id];
-
-			$versions[$i]['delete'] = $versions[$i]['user_id'] !== null && (int) $versions[$i]['user_id'] === Auth::getUserID();
-			$versions[$i]['diff'] = SgfTable::findPreviousVersionID((int) $versions[$i]['tsumego_id'], (int) $versions[$i]['id']);
-		}
+		$this->describeVersions($versions);
+		// the author of the page of a player's versions, as the last version names them
+		$ux = empty($versions) ? '' : end($versions)['user'];
 
 		$this->set('ux', $ux);
 		$this->set('type', $type);
@@ -101,6 +81,57 @@ class SgfsController extends AppController
 		$this->set('id', $id);
 		$this->set('dId', $dId);
 		$this->set('dTitle', $dTitle);
+	}
+
+	//Adds what the page shows of each version: its author, the problem as its collection shows it, the
+	//number of the version among those of the problem that weren't rejected (the versions come newest
+	//first) and the accepted version before it to compare with. Each is read for all the versions at once.
+	private function describeVersions(array &$versions): void
+	{
+		if (empty($versions))
+			return;
+		$tsumegoIDs = array_values(array_unique(array_map(fn($version) => (int) $version['tsumego_id'], $versions)));
+		$tsumegoPlaceholders = implode(',', array_fill(0, count($tsumegoIDs), '?'));
+
+		$userNames = [];
+		$userIDs = array_values(array_unique(array_filter(array_map(fn($version) => $version['user_id'] === null ? null : (int) $version['user_id'], $versions))));
+		if (!empty($userIDs))
+			foreach ($this->fetchTable('User')->find()->where(['id IN' => $userIDs])->all() as $user)
+				$userNames[$user->id] = UserTable::displayName(UserTable::rowOf($user));
+
+		$shownIn = [];
+		foreach (Util::query('SELECT tsumego.id AS tsumego_id, sc.num, s.title, s.title2 FROM tsumego'
+			. ' JOIN set_connection sc ON sc.id = ' . SetConnectionTable::displaySetConnectionIdSql('tsumego.id')
+			. ' JOIN `set` s ON s.id = sc.set_id'
+			. " WHERE tsumego.id IN ($tsumegoPlaceholders)", $tsumegoIDs) as $row)
+				$shownIn[(int) $row['tsumego_id']] = $row;
+
+		$versionCounts = [];
+		$acceptedIDs = [];
+		foreach (Util::query("SELECT id, tsumego_id, sgf_status_id FROM sgf WHERE tsumego_id IN ($tsumegoPlaceholders) AND sgf_status_id != ? ORDER BY id",
+			[...$tsumegoIDs, SgfTable::STATUS_REJECTED]) as $row)
+		{
+			$tsumegoID = (int) $row['tsumego_id'];
+			$versionCounts[$tsumegoID] = ($versionCounts[$tsumegoID] ?? 0) + 1;
+			if ((int) $row['sgf_status_id'] === SgfTable::STATUS_ACCEPTED)
+				$acceptedIDs[$tsumegoID][] = (int) $row['id'];
+		}
+
+		$newerVersions = [];
+		foreach ($versions as &$version)
+		{
+			$tsumegoID = (int) $version['tsumego_id'];
+			// an automatic version has no user
+			$version['user'] = $version['user_id'] === null ? '' : ($userNames[(int) $version['user_id']] ?? '');
+			$version['title'] = $shownIn[$tsumegoID]['title'] . ' ' . $shownIn[$tsumegoID]['title2'] . ' #' . $shownIn[$tsumegoID]['num'];
+			$version['num'] = (int) $shownIn[$tsumegoID]['num'];
+			$version['version'] = $versionCounts[$tsumegoID] - ($newerVersions[$tsumegoID] ?? 0);
+			$newerVersions[$tsumegoID] = ($newerVersions[$tsumegoID] ?? 0) + 1;
+			$version['delete'] = $version['user_id'] !== null && (int) $version['user_id'] === Auth::getUserID();
+			$previousIDs = array_filter($acceptedIDs[$tsumegoID] ?? [], fn($id) => $id < (int) $version['id']);
+			$version['diff'] = empty($previousIDs) ? null : max($previousIDs);
+		}
+		unset($version);
 	}
 
 	//The newest 100 versions the conditions pick, as the rows of the database: the page adds what it shows.

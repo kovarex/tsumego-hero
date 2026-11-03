@@ -882,6 +882,23 @@ class ClassroomsControllerTest extends IntegrationTestCase
 		$this->assertFalse($browser->driver->executeScript('return assignmentReplay;'), 'Once solved for the assignment, a replay sends nothing again');
 	}
 
+	//Once every problem is solved for the assignment, the route opens its first problem again.
+	public function testAnAssignmentSolvedWholeOpensAtItsFirstProblem(): void
+	{
+		$this->prepare();
+		$classroomId = $this->createClassroom();
+		$this->addMember($classroomId, 'pupil');
+		$assignmentId = $this->createAssignment($classroomId, '2026-10-01 00:00:00', '2026-10-08', [3, 1]);
+		$this->addResult($assignmentId, 'pupil', 3, '2026-10-02 10:00:00');
+		$this->addResult($assignmentId, 'pupil', 1, '2026-10-02 10:05:00');
+		$this->login('pupil');
+
+		$this->get('/classes/play/' . $assignmentId);
+
+		$this->assertSame((int) $this->context->tsumegos[3]['id'], $this->playPage()['problem']['tsumegoID']);
+		$this->assertSame(['S', 'S'], array_map(fn($button) => $button->status, (array) $this->viewVariable('tsumegoButtons')));
+	}
+
 	public function testAfterTheLastProblemComesTheClass(): void
 	{
 		$this->prepare();

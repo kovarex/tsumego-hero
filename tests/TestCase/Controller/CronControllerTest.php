@@ -98,6 +98,22 @@ class CronControllerTest extends IntegrationTestCase
 		$this->assertSame($status2->status, 'S');
 	}
 
+	//The reset of the failed and the old solved problems leaves every other status as it is
+	public function testCronKeepsTheOtherStatuses()
+	{
+		$old = date('Y-m-d H:i:s', strtotime('-8 days'));
+		$statuses = ['V', 'C', 'G', 'W'];
+		$tsumegos = [];
+		foreach ($statuses as $order => $status)
+			$tsumegos[] = ['set_order' => $order + 1, 'status' => ['name' => $status, 'updated' => $old]];
+		$context = new ContextPreparator(['user' => ['mode' => Constants::$LEVEL_MODE], 'tsumegos' => $tsumegos]);
+
+		$this->get('/cron/daily/' . CRON_SECRET);
+
+		foreach ($statuses as $order => $status)
+			$this->assertSame($status, $this->fetchTable('TsumegoStatus')->find()->where(['user_id' => Auth::getUserID(), 'tsumego_id' => $context->tsumegos[$order]['id']])->first()->status);
+	}
+
 	public function testUserOfTheDay()
 	{
 		$context = new ContextPreparator([

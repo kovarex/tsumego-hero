@@ -206,6 +206,7 @@ class ChallengesController extends AppController
 
 		$invited = [];
 		$problems = [];
+		$participantCount = ChallengeTable::participantCount($challengeID);
 		foreach ($names as $name)
 		{
 			$player = $this->fetchTable('User')->find()->select(['id'])->where(['display_name' => $name, 'deleted IS' => null])->first();
@@ -217,7 +218,7 @@ class ChallengesController extends AppController
 			$playerID = $player->id;
 			if ($playerID === Auth::getUserID())
 				continue;
-			if (ChallengeTable::participantCount($challengeID) >= ChallengeTable::MAXIMUM_PARTICIPANTS)
+			if ($participantCount >= ChallengeTable::MAXIMUM_PARTICIPANTS)
 			{
 				$problems[] = 'The challenge is full, ' . $name . ' can\'t be invited.';
 				continue;
@@ -229,6 +230,7 @@ class ChallengesController extends AppController
 					: $name . ' declined the challenge.';
 				continue;
 			}
+			$participantCount++;
 			$invited[] = $name;
 		}
 

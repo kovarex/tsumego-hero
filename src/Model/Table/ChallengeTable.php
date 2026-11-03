@@ -259,14 +259,22 @@ class ChallengeTable extends AppTable
 	{
 		$rows = Util::query('SELECT p.created AS joined, p.declined, ' . ClassroomTable::USER_COLUMNS . ',
 				s.id AS session_id, s.time_mode_session_status_id, s.points,
-				(SELECT COUNT(*) FROM time_mode_attempt a WHERE a.time_mode_session_id = s.id AND a.time_mode_attempt_status_id = ?) AS solved_count,
-				(SELECT COUNT(*) FROM time_mode_attempt a WHERE a.time_mode_session_id = s.id AND a.time_mode_attempt_status_id != ?) AS played_count,
-				(SELECT COALESCE(SUM(a.seconds), 0) FROM time_mode_attempt a WHERE a.time_mode_session_id = s.id) AS seconds
+				attempts.solved_count, attempts.played_count, attempts.seconds
 			FROM challenge_participant p
 			JOIN user u ON u.id = p.user_id AND u.deleted IS NULL
 			LEFT JOIN time_mode_session s ON s.challenge_id = p.challenge_id AND s.user_id = p.user_id
+			LEFT JOIN (
+				SELECT a.time_mode_session_id,
+					SUM(a.time_mode_attempt_status_id = ?) AS solved_count,
+					SUM(a.time_mode_attempt_status_id != ?) AS played_count,
+					SUM(a.seconds) AS seconds
+				FROM time_mode_session run
+				JOIN time_mode_attempt a ON a.time_mode_session_id = run.id
+				WHERE run.challenge_id = ?
+				GROUP BY a.time_mode_session_id
+			) attempts ON attempts.time_mode_session_id = s.id
 			WHERE p.challenge_id = ?',
-			[TimeModeAttemptStatusTable::SOLVED, TimeModeAttemptStatusTable::QUEUED, $challengeId]);
+			[TimeModeAttemptStatusTable::SOLVED, TimeModeAttemptStatusTable::QUEUED, $challengeId, $challengeId]);
 
 		foreach ($rows as &$row)
 		{

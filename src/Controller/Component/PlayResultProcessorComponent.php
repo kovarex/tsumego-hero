@@ -136,6 +136,7 @@ class PlayResultProcessorComponent extends Component
 		$this->processErrorAchievement($result, $previousStatusValue, $outcome);
 		$this->processUnsortedStuff($tsumego, $result, $previousStatusValue);
 		$this->processGoldenRun($result, $previousStatusValue);
+		$this->writeUserChanges();
 
 		// Check solve-dependent achievements right away (not only on the next page
 		// load) so the user sees the popup immediately after solving.
@@ -164,6 +165,60 @@ class PlayResultProcessorComponent extends Component
 		return $response;
 	}
 
+	//The steps of a result change the player's row one after another; each change is made on the player
+	//at once, so the next steps see it, and they are written together by writeUserChanges(). A count that
+	//only goes up (solved, damage) is written as an addition, so two results of the same play that arrive
+	//together both count.
+	/** @param array<string, mixed> $fieldValues */
+	private function setUserFields(array $fieldValues): void
+	{
+		$user = &Auth::getUser();
+		foreach ($fieldValues as $field => $value)
+		{
+			$user[$field] = $value;
+			$this->userFieldValues[$field] = $value;
+			unset($this->userFieldIncrements[$field]);
+		}
+	}
+
+	private function incrementUserField(string $field, int $delta): void
+	{
+		$user = &Auth::getUser();
+		$user[$field] += $delta;
+		if (array_key_exists($field, $this->userFieldValues))
+			$this->userFieldValues[$field] = $user[$field];
+		else
+			$this->userFieldIncrements[$field] = ($this->userFieldIncrements[$field] ?? 0) + $delta;
+	}
+
+	//One UPDATE of the player's row for the whole result, see setUserFields(). The values go as strings,
+	//as in Auth::saveUserFields(), so MySQL rounds a float into an integer column.
+	private function writeUserChanges(): void
+	{
+		if (!$this->userFieldValues && !$this->userFieldIncrements)
+			return;
+		$assignments = [];
+		$parameters = [];
+		foreach ($this->userFieldValues as $field => $value)
+		{
+			$assignments[] = '`' . $field . '` = ?';
+			$parameters[] = is_bool($value) ? (int) $value : $value;
+		}
+		foreach ($this->userFieldIncrements as $field => $delta)
+		{
+			$assignments[] = '`' . $field . '` = `' . $field . '` + ?';
+			$parameters[] = $delta;
+		}
+		Util::execute('UPDATE user SET ' . implode(', ', $assignments) . ' WHERE id = ?', [...$parameters, Auth::getUserID()]);
+		$this->userFieldValues = [];
+		$this->userFieldIncrements = [];
+	}
+
+	/** @var array<string, mixed> */
+	private array $userFieldValues = [];
+	/** @var array<string, int> */
+	private array $userFieldIncrements = [];
+
 	//The XP of a review in the training (see MistakeTraining::REVIEW_XP_SHARE). It
 	//counts like the XP of a solve, for the level and the day's XP; the bonus for
 	//clearing the day is not a solve, so it leaves the day's solved count alone.
@@ -185,7 +240,7 @@ class PlayResultProcessorComponent extends Component
 			Level::addXP($user, $xp['clear']);
 			$user['daily_xp'] += $xp['clear'];
 		}
-		Auth::saveUserFields([
+		$this->setUserFields([
 			'xp' => $user['xp'],
 			'level' => $user['level'],
 			'daily_xp' => $user['daily_xp'],
@@ -204,7 +259,7 @@ class PlayResultProcessorComponent extends Component
 	}
 
 	//Potion: triggers after a fail when damage meets or exceeds max health.
-	public function processPotion(): bool
+	private function processPotion(): bool
 	{
 		if (Auth::isInMistakeTrainingMode())
 			return false;
@@ -216,7 +271,7 @@ class PlayResultProcessorComponent extends Component
 
 		if (rand(1, 100) <= $chance)
 		{
-			Auth::saveUserFields([
+			$this->setUserFields([
 				'damage' => 0,
 				'used_potion' => 1,
 			]);
@@ -276,7 +331,7 @@ class PlayResultProcessorComponent extends Component
 		$newStatus = $this->getNewStatus($result['solved'], $previousTsumegoStatus->status, $result);
 
 		if (TsumegoUtil::isSolvedStatus($newStatus) && !TsumegoUtil::isSolvedStatus($previousTsumegoStatus->status))
-			Auth::incrementUserField('solved', 1);
+			$this->incrementUserField('solved', 1);
 		$previousTsumegoStatus->status = $newStatus;
 		$statusTable->saveOrFail($previousTsumegoStatus);
 		return $newStatus;
@@ -342,7 +397,7 @@ class PlayResultProcessorComponent extends Component
 		// Prior misplays were already processed by their own AJAX calls.
 		self::processRatingChangeStep($userRating, $tsumegoRating, $result['solved']);
 
-		Auth::saveUserFields([
+		$this->setUserFields([
 			'rating' => $userRating,
 			'highest_rating' => max((float) Auth::getUser()['highest_rating'], $userRating)]);
 
@@ -361,7 +416,7 @@ class PlayResultProcessorComponent extends Component
 			return;
 		if (TsumegoUtil::isRecentlySolved($previousStatusValue))
 			return;
-		Auth::incrementUserField('damage', 1);
+		$this->incrementUserField('damage', 1);
 	}
 
 	private function processXpChange(Tsumego $previousTsumego, array &$result, string $previousTsumegoStatus, int|float|string $originalTsumegoRating, int $progressDeletionCount): void
@@ -380,7 +435,7 @@ class PlayResultProcessorComponent extends Component
 		$user = & Auth::getUser();
 		$result['xp-gained'] = Rating::ratingToXP($originalTsumegoRating, $multiplier);
 		Level::addXPAsResultOfTsumegoSolving($user, $result['xp-gained']);
-		Auth::saveUserFields([
+		$this->setUserFields([
 			'xp' => $user['xp'],
 			'level' => $user['level'],
 			'daily_xp' => $user['daily_xp'],
