@@ -540,6 +540,34 @@ class SetsControllerTest extends IntegrationTestCase
 		$this->assertSame('1 problem', $collectionMiddleLeft[1]->textContent);
 	}
 
+	//A card of a tag or a rank is addressed by its name, and the card of a tag has no difficulty.
+	public function testTagAndRankCardsAreAddressedByTheirNames(): void
+	{
+		$contextParams = ['user' => ['query' => 'tags', 'collection_size' => 10]];
+		$contextParams['tsumegos'] = [];
+		for ($i = 0; $i < 11; $i++)
+			$contextParams['tsumegos'] [] = [
+				'rating' => Rating::getRankMiddleRatingFromReadableRank('15k'),
+				'sets' => [['name' => 'set 1', 'num' => $i + 1]],
+				'tags' => [['name' => 'atari']]];
+		new ContextPreparator($contextParams);
+
+		$this->get('sets');
+		$tagCards = $this->viewVariable('setsSelector')->sets;
+		$this->assertSame(['atari', 'atari'], array_column($tagCards, 'id'));
+		$this->assertSame([0, 1], array_column($tagCards, 'partition'));
+		$this->assertSame([], array_column($tagCards, 'difficulty'));
+		$this->assertStringContainsString('href="/sets/atari/2"', $this->view);
+
+		$_COOKIE['query'] = 'difficulty';
+		$this->get('sets');
+		$rankCards = $this->viewVariable('setsSelector')->sets;
+		$fifteenKyu = array_values(array_filter($rankCards, fn($card) => $card['name'] === '15k'));
+		$this->assertSame(['15k', '15k'], array_column($fifteenKyu, 'id'));
+		$this->assertSame(['15k', '15k'], array_column($fifteenKyu, 'difficulty'));
+		$this->assertSame(['var(--rank-15k)', 'var(--rank-15k)'], array_column($fifteenKyu, 'color'));
+	}
+
 	public function testSetViewRankBased(): void
 	{
 		$contextParams = [];

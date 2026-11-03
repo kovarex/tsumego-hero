@@ -18,7 +18,6 @@ use App\Utility\ViteManifest;
  * @var string $rankFrom
  * @var string $rankTo
  * @var array $rankFilterLabels
- * @var array $tagList
  */
 ?>
 	<div align="center" class="set-search-menu query-<?php echo h($tsumegoFilters->query); ?>">
@@ -174,7 +173,6 @@ use App\Utility\ViteManifest;
 		'topicTiles' => array_values($setTiles),
 		'ranks' => array_values($difficultyTiles),
 		'rankLabels' => array_values($rankFilterLabels),
-		'tags' => array_values(array_map(fn($tag) => ['id' => (string) $tag['id'], 'name' => $tag['name']], $tagList)),
 		'tagTiles' => array_values($tagTiles),
 		'filteredSets' => array_values($tsumegoFilters->sets),
 		'filteredTags' => array_values($tsumegoFilters->tags),

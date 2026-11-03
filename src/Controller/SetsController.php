@@ -382,54 +382,33 @@ ORDER BY sc.num ASC", [(int) $id]);
 		$this->set('_page', 'set');
 		$this->set('_title', 'Tsumego Hero - Collections');
 
-		$setTiles = [];
-		$difficultyTiles = [];
-		$sets = [];
-		$tagList = [];
-
-		$problemsCount = 0;
-
 		$tsumegoFilters = new TsumegoFilters();
-		//setTiles
 		$setTiles = array_column(Util::query('SELECT s.title FROM `set` s WHERE ' . SetTable::officialCondition('s')
 			. ' ORDER BY ' . SetConnectionTable::displayOrderForSetSql('s')), 'title');
-
-		//difficultyTiles
-		$difficultyTiles = Rating::ranks();
-
-		//tagTiles
 		$tagTiles = $this->fetchTable('Tag')->find()->select(['name'])->where(['approved' => 1])->all()->extract('name')->toList();
-
-		$setsSelector = new SetsSelector($tsumegoFilters);
 
 		[$rankFrom, $rankTo] = $tsumegoFilters->rankRange();
 		// The weakest rank is the same as leaving the lower end open.
 		if ($rankFrom === Rating::weakestRank())
 			$rankFrom = '';
 
-		if ($tsumegoFilters->query == 'topics' && empty($tsumegoFilters->sets))
-			$queryRefresh = false;
-		elseif ($tsumegoFilters->query == 'difficulty' && empty($tsumegoFilters->ranks))
-			$queryRefresh = false;
-		elseif ($tsumegoFilters->query == 'tags' && empty($tsumegoFilters->tags))
-			$queryRefresh = false;
-		else
-			$queryRefresh = true;
-
-
-
-		$this->set('setsSelector', $setsSelector);
+		$this->set('setsSelector', new SetsSelector($tsumegoFilters));
 		$this->set('rankFrom', $rankFrom);
 		$this->set('rankTo', $rankTo);
 		$this->set('rankFilterLabels', $tsumegoFilters->rankFilterLabels());
-		$this->set('tagList', $tagList);
 		$this->set('setTiles', $setTiles);
-		$this->set('difficultyTiles', $difficultyTiles);
+		$this->set('difficultyTiles', Rating::ranks());
 		$this->set('tagTiles', $tagTiles);
 		$this->set('tsumegoFilters', $tsumegoFilters);
-		$this->set('queryRefresh', $queryRefresh);
+		// whether the cards follow filters of their own kind, which the page reloads for when they change
+		$this->set('queryRefresh', match ($tsumegoFilters->query)
+		{
+			'topics' => !empty($tsumegoFilters->sets),
+			'difficulty' => !empty($tsumegoFilters->ranks),
+			'tags' => !empty($tsumegoFilters->tags),
+			default => true,
+		});
 	}
-
 
 	//Gets the first unsolved set connection ID from a collection of tsumego buttons.
 	//Falls back to the first button if all are solved.
