@@ -472,6 +472,25 @@ class HighscoreTest extends IntegrationTestCase
 		$this->assertTextNotContains('DN_Runner', $this->view);
 	}
 
+	//The Highscore item of the menu opens the table the player looked at last; the tags and
+	//achievements tables leave it where it was.
+	public function testTheMenuOpensTheHighscoreTableSeenLast()
+	{
+		new ContextPreparator(['user' => ['name' => 'kovarex']]);
+
+		$menuLinkAfter = function (string $table): string {
+			$this->get('users/' . $table);
+			$this->get('users/authors');
+			return $this->view;
+		};
+		foreach (['leaderboard', 'rating', 'time_mode', 'highscore'] as $table)
+			$this->assertStringContainsString('href="/users/' . $table . '">Highscore</a>', $menuLinkAfter($table), $table);
+
+		$menuLinkAfter('leaderboard');
+		foreach (['achievements', 'added_tags'] as $table)
+			$this->assertStringContainsString('href="/users/leaderboard">Highscore</a>', $menuLinkAfter($table), $table);
+	}
+
 	//Helper to assert that a table row's text content contains all given strings.
 	private function assertRowContains($row, string ...$expectedTexts): void
 	{
