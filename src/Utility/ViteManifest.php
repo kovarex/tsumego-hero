@@ -24,6 +24,7 @@ use RuntimeException;
 //  'sets-index'   → virtual:legacy-sets-index           (the code of the collections page)
 //  'sets-view'    → virtual:legacy-sets-view            (the code of the page of a collection)
 //  'play'         → virtual:legacy-play                 (the code of the play page)
+//  'profile'      → virtual:legacy-profile              (the code of the profile page)
 //  'schedule'     → virtual:legacy-schedule             (the code of the schedule page)
 //  'time-mode'    → virtual:legacy-time-mode            (the code of the time mode overview and results)
 //  'settings'     → virtual:legacy-settings             (the code of the settings page)
@@ -45,6 +46,7 @@ class ViteManifest
 		'legacy'      => 'virtual:legacy-app',
 		'besogo'      => 'virtual:legacy-besogo',
 		'play'        => 'virtual:legacy-play',
+		'profile'     => 'virtual:legacy-profile',
 		'sets-index'  => 'virtual:legacy-sets-index',
 		'sets-view'   => 'virtual:legacy-sets-view',
 		'time-mode'   => 'virtual:legacy-time-mode',

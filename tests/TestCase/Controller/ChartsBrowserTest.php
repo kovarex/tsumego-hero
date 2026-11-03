@@ -73,6 +73,11 @@ class ChartsBrowserTest extends IntegrationTestCase
 		$browser->clickId('userShowTimeButtonLeft');
 		$browser->waitUntilCssSelectorDisplayed('#userShowTimeLeft .bar-chart__bar');
 		$this->assertSame('2', $browser->find('#userShowTimeLeft .bar-chart__total')->getText());
+
+		// the choice is remembered for the next visit
+		$browser->get('users/view/' . $context->user['id']);
+		$browser->waitUntilCssSelectorDisplayed('#userShowTimeLeft .bar-chart__bar');
+		$this->assertFalse($browser->find('#userShowLevelLeft')->isDisplayed());
 		$browser->assertNoJsErrors();
 	}
 

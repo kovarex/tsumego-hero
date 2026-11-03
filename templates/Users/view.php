@@ -7,6 +7,7 @@ use App\Utility\HeroPowers;
 use App\Utility\Level;
 use App\Utility\Rating;
 use App\Utility\Util;
+use App\Utility\ViteManifest;
 
 /**
  * @var \App\View\AppView $this
@@ -216,18 +217,18 @@ foreach ($heroPowers as $power)
 	<tr>
 	<td width="50%">
 		<div align="center">
-			<a id="userShowLevelButtonLeft" class="btn" onclick="activateSelection('level', 'Left');">Level</a>
-			<a id="userShowRatingButtonLeft" class="btn" onclick="activateSelection('rating', 'Left');">Rating</a>
-			<a id="userShowTimeButtonLeft" class="btn" onclick="activateSelection('time', 'Left');">Time</a>
-			<a id="userShowAchievementsButtonLeft" class="btn" onclick="activateSelection('achievement', 'Left');">Achievements</a>
+			<a id="userShowLevelButtonLeft" class="btn" data-profile-show="level" data-profile-side="Left">Level</a>
+			<a id="userShowRatingButtonLeft" class="btn" data-profile-show="rating" data-profile-side="Left">Rating</a>
+			<a id="userShowTimeButtonLeft" class="btn" data-profile-show="time" data-profile-side="Left">Time</a>
+			<a id="userShowAchievementsButtonLeft" class="btn" data-profile-show="achievement" data-profile-side="Left">Achievements</a>
 		</div>
 	</td>
 	<td width="50%">
 		<div align="center">
-			<a id="userShowLevelButtonRight" class="btn" onclick="activateSelection('level', 'Right');">Level</a>
-			<a id="userShowRatingButtonRight" class="btn" onclick="activateSelection('rating', 'Right');">Rating</a>
-			<a id="userShowTimeButtonRight" class="btn" onclick="activateSelection('time', 'Right');">Time</a>
-			<a id="userShowAchievementsButtonRight" class="btn" onclick="activateSelection('achievement', 'Right');">Achievements</a>
+			<a id="userShowLevelButtonRight" class="btn" data-profile-show="level" data-profile-side="Right">Level</a>
+			<a id="userShowRatingButtonRight" class="btn" data-profile-show="rating" data-profile-side="Right">Rating</a>
+			<a id="userShowTimeButtonRight" class="btn" data-profile-show="time" data-profile-side="Right">Time</a>
+			<a id="userShowAchievementsButtonRight" class="btn" data-profile-show="achievement" data-profile-side="Right">Achievements</a>
 		</div>
 	</td>
 	</tr>
@@ -240,35 +241,4 @@ foreach ($heroPowers as $power)
 	</tr></table>
 </div>
 
-<script>
-activateSelection(getCookie('lastProfileLeft'), 'Left');
-activateSelection(getCookie('lastProfileRight'), 'Right');
-
-function updateButtonActivity(id, side, active)
-{
-	$("#" + id + 'Button' + side).toggleClass("btn--inactive", !active);
-	if (active)
-		$("#" + id + side).fadeIn(250);
-	else
-		$("#" + id + side).hide();
-}
-
-function activateSelection(selection, side)
-{
-	if (selection != 'level' &&
-		selection != 'rating' &&
-		selection != 'time' &&
-		selection != 'achievement')
-		if (side == 'Left')
-			selection = 'level';
-		else
-			selection = 'rating';
-	setCookie('lastProfile' + side, selection);
-	updateButtonActivity('userShowLevel', side, selection == 'level');
-	updateButtonActivity('userShowRating', side, selection == 'rating');
-	updateButtonActivity('userShowTime', side, selection == 'time');
-	updateButtonActivity('userShowAchievements', side, selection == 'achievement');
-}
-
-</script>
-
+<?php echo ViteManifest::legacyScript('profile'); ?>
