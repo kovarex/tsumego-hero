@@ -687,12 +687,19 @@ class MistakeTraining
 	//pool keeps its rung, its review and its lapses.
 	public static function addProblem(int $userId, int $tsumegoId, ?string $due = null): void
 	{
+		self::insertIntoPool($userId, $tsumegoId, $due ?? date('Y-m-d H:i:s'));
+	}
+
+	//Put a problem in the pool at the bottom rung, due at $due, unless it is there already: then it keeps
+	//its row. Two results of the same play can arrive together, so the row may be there already.
+	private static function insertIntoPool(int $userId, int $tsumegoId, string $due): void
+	{
 		$now = date('Y-m-d H:i:s');
 		Util::execute(
 			'INSERT INTO mistake_training_pool (user_id, tsumego_id, rung, next_due, created, modified)'
 			. ' VALUES (?, ?, 0, ?, ?, ?)'
 			. ' ON DUPLICATE KEY UPDATE user_id = user_id',
-			[$userId, $tsumegoId, $due ?? $now, $now, $now]
+			[$userId, $tsumegoId, $due, $now, $now]
 		);
 	}
 
@@ -872,14 +879,7 @@ class MistakeTraining
 	//it is reviewed, not a sign that the reviews are too far apart.
 	private static function enterPool(int $userId, int $tsumegoId): void
 	{
-		// Two results of the same play can arrive together, so the row may be there already
-		$now = date('Y-m-d H:i:s');
-		Util::execute(
-			'INSERT INTO mistake_training_pool (user_id, tsumego_id, rung, next_due, created, modified)'
-			. ' VALUES (?, ?, 0, ?, ?, ?)'
-			. ' ON DUPLICATE KEY UPDATE user_id = user_id',
-			[$userId, $tsumegoId, self::dueDate(self::$LADDER[0]), $now, $now]
-		);
+		self::insertIntoPool($userId, $tsumegoId, self::dueDate(self::$LADDER[0]));
 	}
 
 	//The current training day: the day of the daily cron (CronController::daily),
@@ -903,18 +903,11 @@ class MistakeTraining
 	//moved the ladder already.
 	private static function markReview(int $userId, int $tsumegoId, int $result, ?int $rung = null): void
 	{
-		$sql = 'UPDATE mistake_training_pool SET last_review_day = ?, last_mistake_training_result_id = ?, modified = ?';
-		$params = [self::today(), $result, date('Y-m-d H:i:s')];
-		if ($rung !== null)
-		{
-			$sql .= ', rung = ?';
-			$params[] = $rung;
-		}
-		$sql .= ' WHERE user_id = ? AND tsumego_id = ?';
-		$params[] = $userId;
-		$params[] = $tsumegoId;
-
-		Util::execute($sql, $params);
+		Util::execute(
+			'UPDATE mistake_training_pool SET last_review_day = ?, last_mistake_training_result_id = ?, modified = ?, rung = COALESCE(?, rung)'
+			. ' WHERE user_id = ? AND tsumego_id = ?',
+			[self::today(), $result, date('Y-m-d H:i:s'), $rung, $userId, $tsumegoId]
+		);
 	}
 
 	//Count a lapse of a problem in the pool: a mistake on it, which slows the growth
@@ -935,17 +928,11 @@ class MistakeTraining
 	//them again when the caller has the row.
 	private static function setRung(int $userId, int $tsumegoId, int $rung, ?int $daysAhead = null, ?int $lapses = null): void
 	{
-		$now = date('Y-m-d H:i:s');
 		$daysAhead ??= self::wait($rung, $lapses ?? (int) (self::getPoolRow($userId, $tsumegoId)['lapses'] ?? 0));
-		$nextDue = self::dueDate($daysAhead);
-
-		$sql = 'UPDATE mistake_training_pool SET rung = ?, next_due = ?, modified = ?';
-		$params = [$rung, $nextDue, $now];
-		$sql .= ' WHERE user_id = ? AND tsumego_id = ?';
-		$params[] = $userId;
-		$params[] = $tsumegoId;
-
-		Util::execute($sql, $params);
+		Util::execute(
+			'UPDATE mistake_training_pool SET rung = ?, next_due = ?, modified = ? WHERE user_id = ? AND tsumego_id = ?',
+			[$rung, self::dueDate($daysAhead), date('Y-m-d H:i:s'), $userId, $tsumegoId]
+		);
 	}
 
 	//A clean solve at the top rung ends training, wherever it was played, and so does
