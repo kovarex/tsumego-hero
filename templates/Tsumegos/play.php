@@ -46,6 +46,9 @@ use App\Utility\ViteManifest;
 
 	$this->start('css');
 	echo ViteManifest::css('besogo-css');
+	//The texture of the board, in the head so the board is drawn with it from the first paint
+	if (!empty($playPage['problem']['board']['texture']))
+		echo '<link rel="stylesheet" type="text/css" href="/besogo/css/board-' . h($playPage['problem']['board']['texture']) . '.css">';
 	$this->end();
 
 	$this->start('script');
@@ -109,7 +112,13 @@ use App\Utility\ViteManifest;
 	</div>
 
 	<!-- BOARD -->
+	<script type="text/javascript">
+		//All the page knows about the player and the problem, see Play::clientData()
+		const playPage = <?php echo json_encode($playPage, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE); ?>;
+	</script>
 	<div id="target" class="play-board"></div>
+	<?php //Drawn right away, so the first paint has the board; the rest of the page's code waits for the whole page ?>
+	<?php echo ViteManifest::legacyScript('play-board'); ?>
 	<div id="targetLockOverlay"></div>
 	<?php //A question of the problem is answered with its buttons, Reset tries again ?>
 	<?php if ($semeai !== null || ($tv != null && $tv->tsumego_variant_type_id == TsumegoVariantTable::TYPE_MULTIPLE_CHOICE)): ?>
@@ -237,8 +246,4 @@ use App\Utility\ViteManifest;
 	</div>
 	<audio><source src="/sounds/newStone.ogg"></audio>
 
-	<script type="text/javascript">
-		//All the page knows about the player and the problem, see Play::clientData()
-		const playPage = <?php echo json_encode($playPage, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE); ?>;
-	</script>
 	<?php echo ViteManifest::legacyScript('play'); ?>
