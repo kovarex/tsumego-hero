@@ -4,6 +4,7 @@
 class MalformedIdTest extends IntegrationTestCase
 {
 	private const GET_ADDRESSES = [
+		'/users/view',
 		'/users/view/abc',
 		'/users/view/1abc',
 		'/achievements/view/1abc',
