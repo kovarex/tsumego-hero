@@ -243,6 +243,29 @@ class HeroPowersTest extends IntegrationTestCase
 		$this->assertSame($context->reloadUser()['used_intuition'], 1);
 	}
 
+	//The refinement button lights up under the pointer and takes the player to the problem it makes golden
+	public function testUseRefinement()
+	{
+		$browser = Browser::instance();
+		$context = new ContextPreparator([
+			'user' => ['level' => HeroPowers::$REFINEMENT_MINIMUM_LEVEL, 'rating' => 1500],
+			'tsumegos' => [
+				['rating' => 3000, 'sets' => [['name' => 'set 1', 'num' => 1]]],
+				['rating' => 1550, 'status' => 'S', 'sets' => [['name' => 'set 1', 'num' => 2]]],
+				['rating' => 100, 'sets' => [['name' => 'set 1', 'num' => 3]]]]]);
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		$this->checkPowerIsActive($browser, 'refinement');
+		$this->assertStringEndsWith('/img/hp4.png', $browser->find('#refinement')->getAttribute('src'));
+		$browser->hover($browser->find('#refinement'));
+		$this->assertStringEndsWith('/img/hp4h.png', $browser->find('#refinement')->getAttribute('src'));
+
+		$browser->clickId('refinement');
+		$browser->waitUntilJs('location.pathname == "/' . $context->tsumegos[1]['set-connections'][0]['id'] . '"');
+		$this->assertSame(1, (int) $context->reloadUser()['used_refinement']);
+		$this->checkPowerIsInactive($browser, 'refinement');
+		$this->assertStringEndsWith('/img/hp4x.png', $browser->find('#refinement')->getAttribute('src'));
+	}
+
 	public function testIntuitionShowsCorrectSolution()
 	{
 		$browser = Browser::instance();

@@ -90,24 +90,36 @@ function updateSprint(seconds)
 	}, 250);
 }
 
+//A hero power button of the play page: its picture hp<number>.png, hp<number>h.png under the
+//pointer and hp<number>x.png while the power can't be used
+function enableHeroPower(id, number, use)
+{
+	let element = document.getElementById(id);
+	element.src = '/img/hp' + number + '.png';
+	element.onmouseover = function() { this.src = '/img/hp' + number + 'h.png'; };
+	element.onmouseout = function() { this.src = '/img/hp' + number + '.png'; };
+	element.onclick = use;
+	element.style.cursor = 'pointer';
+}
+
+function disableHeroPower(id, number)
+{
+	let element = document.getElementById(id);
+	element.src = '/img/hp' + number + 'x.png';
+	element.onmouseover = null;
+	element.onmouseout = null;
+	element.onclick = null;
+	element.style.cursor = 'auto';
+}
+
 function enableIntuition()
 {
-	let intuitionElement = document.getElementById('intuition');
-	intuitionElement.src = '/img/hp2.png';
-	intuitionElement.onmouseover = function() { this.src = '/img/hp2h.png'; };
-	intuitionElement.onmouseout = function() { this.src = '/img/hp2.png'; };
-	intuitionElement.onclick = function() { intuition(); };
-	intuitionElement.style.cursor = 'pointer';
+	enableHeroPower('intuition', 2, () => intuition());
 }
 
 function disableIntuition()
 {
-	let intuitionElement = document.getElementById('intuition');
-	intuitionElement.src = '/img/hp2x.png';
-	intuitionElement.onmouseover = null;
-	intuitionElement.onmouseout = null;
-	intuitionElement.onclick = null;
-	intuitionElement.style.cursor = 'auto';
+	disableHeroPower('intuition', 2);
 }
 
 function intuition()
@@ -126,13 +138,8 @@ function intuition()
 
 function disableRevelation()
 {
-	let revelationElement = document.getElementById("revelation");
-	revelationElement.src = "/img/hp6x.png";
-	revelationElement.onmouseover = null;
-	revelationElement.onmouseout = null;
-	revelationElement.onclick = null;
-	revelationElement.style.cursor = 'auto';
-	revelationElement.title = 'Revelation (' + revelationUseCount + '): Solves a problem, but you don\'t get any reward.';
+	disableHeroPower('revelation', 6);
+	document.getElementById('revelation').title = 'Revelation (' + revelationUseCount + '): Solves a problem, but you don\'t get any reward.';
 }
 
 function revelation()
@@ -165,42 +172,22 @@ function revelation()
 
 function enableRejuvenation()
 {
-	let rejuvenationElement = document.getElementById('rejuvenation');
-	rejuvenationElement.src = '/img/hp3.png';
-	rejuvenationElement.onmouseover = function() { this.src = '/img/hp3h.png'; };
-	rejuvenationElement.onmouseout = function() { this.src = '/img/hp3.png'; };
-	rejuvenationElement.onclick = () => rejuvenation();
-	rejuvenationElement.style.cursor = 'pointer';
+	enableHeroPower('rejuvenation', 3, () => rejuvenation());
 }
 
 function disableRejuvenation()
 {
-	let rejuvenationElement = document.getElementById('rejuvenation');
-	rejuvenationElement.src = '/img/hp3x.png';
-	rejuvenationElement.onmouseover = null;
-	rejuvenationElement.onmouseout = null;
-	rejuvenationElement.onclick = null;
-	rejuvenationElement.style.cursor = 'auto';
+	disableHeroPower('rejuvenation', 3);
 }
 
 function enableSprint()
 {
-	let sprintElement = document.getElementById('sprint');
-	sprintElement.src = '/img/hp1.png';
-	sprintElement.onmouseover = function() { this.src = '/img/hp1h.png'; };
-	sprintElement.onmouseout = function() { this.src = '/img/hp1.png'; };
-	sprintElement.onclick = () => startSprint();
-	sprintElement.style.cursor = 'pointer';
+	enableHeroPower('sprint', 1, () => startSprint());
 }
 
 function disableSprint()
 {
-	let sprintElement = document.getElementById('sprint');
-	sprintElement.src = '/img/hp1x.png';
-	sprintElement.onmouseover = null;
-	sprintElement.onmouseout = null;
-	sprintElement.onclick = null;
-	sprintElement.style.cursor = 'auto';
+	disableHeroPower('sprint', 1);
 }
 
 function startSprint()
@@ -220,22 +207,12 @@ function startSprint()
 
 function enableRefinement()
 {
-	let refinementElement = document.getElementById('refinement');
-	refinementElement.src = '/img/hp4.png';
-	refinementElement.onmouseover = function() { this.src = '/img/hp4h.png'; };
-	refinementElement.onmouseout = function() { this.src = '/img/hp4.png'; };
-	refinementElement.onclick = function() { window.location.href = '/hero/refinement'; };
-	refinementElement.style.cursor = 'pointer';
+	enableHeroPower('refinement', 4, () => { window.location.href = '/hero/refinement'; });
 }
 
 function disableRefinement()
 {
-	let refinementElement = document.getElementById('refinement');
-	refinementElement.src = '/img/hp4x.png';
-	refinementElement.onmouseover = null;
-	refinementElement.onmouseout = null;
-	refinementElement.onclick = null;
-	refinementElement.style.cursor = 'auto';
+	disableHeroPower('refinement', 4);
 }
 
 function beta(rating)
