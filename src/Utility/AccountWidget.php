@@ -4,90 +4,43 @@ namespace App\Utility;
 
 class AccountWidget
 {
-	// to avoid flickering, I need to setup the original values also directly in the html
-	// as the javascript update is too late and it would "flicker" when the page is begin loaded
-	public static function render(TimeMode $timeMode, int $unreadMessageCount): void
+	//How the bar of the account starts, before the script takes it over (templates/element/account_widget.php)
+	/** @return array{fillClass: string, ratio: float, text: string, textClass: string, switchText: string, modeSelectorClass: string} */
+	public static function bar(TimeMode $timeMode): array
 	{
-		if(!Auth::isLoggedIn())
-			return;
-		if (Auth::isInTimeMode())
+		$user = Auth::getUser();
+		return match (self::whatToShow())
 		{
-			$barClassname = 'xp-bar-fill-c3';
-			$barRatio = Util::getRatio($timeMode->currentPosition() - 1, $timeMode->overallCount);
-			$accountBarClassname = '';
-			$barText = $timeMode->getTitle();
-			$textBarInMenu = 'Level bar';
-			$modeSelectorClass = 'modeSelectorInLevelBar';
-		}
-		elseif (Util::cookie('showInAccountWidget') == 'rating')
-		{
-			$textBarInMenu = "Level Bar";
-			$barClassname = 'xp-bar-fill-c2';
-			$accountBarClassname = 'account-bar-rating';
-			$rank = Rating::getRankFromRating(Auth::getUser()['rating']);
-			$rankStart = Rating::getRankMinimalRating($rank);
-			$nextRank = Rating::getRankMinimalRating($rank + 1);
-			$rankSize = $nextRank - $rankStart;
-			$barRatio = (Auth::getUser()['rating'] - $rankStart) / $rankSize;
-			$barText = Rating::getReadableRankFromRating(Auth::getUser()['rating']);
-			$modeSelectorClass = 'modeSelectorInRatingBar';
-		}
-		else
-		{
-			$textBarInMenu = "Rating Bar";
-			$barClassname = 'xp-bar-fill-c1';
-			$accountBarClassname = 'account-bar-level';
-			$barRatio = Auth::getUser()['xp'] / Level::getXPForNext(Auth::getUser()['level']);
-			$barText = 'Level ' . Auth::getUser()['level'];
-			$modeSelectorClass = 'modeSelectorInLevelBar';
-		}
+			'time' => [
+				'fillClass' => 'xp-bar-fill-c3',
+				'ratio' => Util::getRatio($timeMode->currentPosition() - 1, $timeMode->overallCount),
+				'text' => $timeMode->getTitle(),
+				'textClass' => '',
+				'switchText' => 'Level bar',
+				'modeSelectorClass' => 'modeSelectorInLevelBar'],
+			'rating' => [
+				'fillClass' => 'xp-bar-fill-c2',
+				'ratio' => self::rankProgress($user['rating']),
+				'text' => Rating::getReadableRankFromRating($user['rating']),
+				'textClass' => 'account-bar-rating',
+				'switchText' => 'Level Bar',
+				'modeSelectorClass' => 'modeSelectorInRatingBar'],
+			default => [ //the level
+				'fillClass' => 'xp-bar-fill-c1',
+				'ratio' => $user['xp'] / Level::getXPForNext($user['level']),
+				'text' => 'Level ' . $user['level'],
+				'textClass' => 'account-bar-level',
+				'switchText' => 'Rating Bar',
+				'modeSelectorClass' => 'modeSelectorInLevelBar'],
+		};
+	}
 
-		//The bar is drawn before the script at the end of the page creates accountWidget, so a pointer
-		//already over it while the page loads must not call a widget that isn't there yet.
-		echo '<div id="account-bar-wrapper" onmouseover="window.accountWidget?.hover();" onmouseout="window.accountWidget?.noHover();">
-				  <div id="account-bar">
-						<div id="account-bar-user" class="account-bar-user-class">
-							<a href="/users/view/' . Auth::getUserID() . '">
-							' . h(Auth::getUser()['display_name']) . '
-							</a>
-						</div>
-						<a id="account-bar-messages" href="/messages">' . self::unreadMessagesBadge($unreadMessageCount) . '</a>
-						<div id="xp-bar">
-							  <div id="xp-bar-fill" class="' . $barClassname . '" style="width: ' . $barRatio * 100 . '%">
-									<div id="xp-increase-fx" style="display:none;">
-										<div id="xp-increase-fx-flicker">
-											<div class="xp-increase-glow1"></div>
-											<div class="xp-increase-glow2"></div>
-											<div class="xp-increase-glow3"></div>
-										</div>
-										<div class="xp-increase-glow2"></div>
-									</div>
-								</div>
-							</div>
-						<div id="account-bar-xp-wrapper">
-							<div id="account-bar-xp" class="' . $accountBarClassname . '">' . $barText . '</div>
-						</div>
-					</div>
-				</div>
-			<div id="heroProfile" onmouseover="window.accountWidget?.hover();" onmouseout="window.accountWidget?.noHover();">
-				<li><a href="/users/view/' . Auth::getUserID() . '">Profile</a></li>
-			</div>
-			<div id="heroBar" onmouseover="window.accountWidget?.hover();" onmouseout="window.accountWidget?.noHover();">
-					<li><a id="textBarInMenu" onclick="accountWidget.switchBarInMenu()">' . $textBarInMenu . '</a></li>
-				</div>
-			<div id="heroAchievements" onmouseover="window.accountWidget?.hover();" onmouseout="window.accountWidget?.noHover();">
-				<li><a href="/achievements">Achievements</a></li>
-			</div>
-			<div id="heroMessages" onmouseover="window.accountWidget?.hover();" onmouseout="window.accountWidget?.noHover();">
-				<li><a href="/messages">Messages ' . self::unreadMessagesBadge($unreadMessageCount) . '</a></li>
-			</div>
-			<div id="heroSettings" onmouseover="window.accountWidget?.hover();" onmouseout="window.accountWidget?.noHover();">
-				<li><a href="/users/settings">Settings</a></li>
-			</div>
-			<div id="heroLogout" onmouseover="window.accountWidget?.hover();" onmouseout="window.accountWidget?.noHover();">
-				<li><a href="/users/logout">Sign Out</a></li>
-			</div>
-			<div id="modeSelector" class="' . $modeSelectorClass . '" onclick="window.accountWidget?.switchBarInMenu();"></div>';
+	//How far the rating is from the start of its rank to the next one
+	private static function rankProgress(float $rating): float
+	{
+		$rank = Rating::getRankFromRating($rating);
+		$rankStart = Rating::getRankMinimalRating($rank);
+		return ($rating - $rankStart) / (Rating::getRankMinimalRating($rank + 1) - $rankStart);
 	}
 
 	//The number of unread messages, hidden while there are none. The messages page updates
@@ -98,6 +51,7 @@ class AccountWidget
 			. $unreadMessageCount . '</span>';
 	}
 
+	//What the bar shows: the run in time mode, otherwise the rank or the level, as the player switched it
 	private static function whatToShow(): string
 	{
 		if (Auth::isInTimeMode())

@@ -238,7 +238,9 @@ $challengesBadge = $challengesWaiting > 0
 		<div class="site-nav__signin"><a class="menuLi <?php echo $_page == 'login' ? 'nav__link--active ' : ''; ?>" id="signInMenu" href="/users/login">Sign In</a></div>
 		<?php endif; ?>
 	</div>
-	<?php AccountWidget::render($timeMode, $unreadMessageCount); ?>
+	<?php if (Auth::isLoggedIn()): ?>
+		<?php echo $this->element('account_widget', ['bar' => AccountWidget::bar($timeMode), 'unreadMessageCount' => $unreadMessageCount]); ?>
+	<?php endif; ?>
 	<div align="left" class="whitebox2">
 		<div id="content">
 			<?php
@@ -270,8 +272,14 @@ $challengesBadge = $challengesWaiting > 0
 	if (typeof showAchievementPopup === "function")
 		achievementUpdates.forEach(showAchievementPopup);
 	<?php endif; ?>
-	let light = <?php echo Util::boolString($lightDark !== 'dark'); ?>;
+	let light = <?php echo json_encode($lightDark !== 'dark'); ?>;
+	<?php if (!Auth::isLoggedIn()): ?>
+	<?php //A guest's settings live in the cookies only, kept for another year by every page ?>
 	setCookie("lightDark", <?php echo json_encode($lightDark, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>);
+	<?php if ($soundSetting !== null): ?>
+	setCookie("sound", <?php echo json_encode($soundSetting); ?>);
+	<?php endif; ?>
+	<?php endif; ?>
 	initSound(<?php echo json_encode($soundSetting); ?>);
 	boardSelector = new BoardSelector(<?php echo $boardsBitmask; ?>n);
 </script>

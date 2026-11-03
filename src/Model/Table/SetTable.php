@@ -3,6 +3,7 @@
 namespace App\Model\Table;
 
 use App\Model\Entity\Set;
+use App\Utility\Rating;
 use App\Utility\Util;
 use Cake\Routing\Router;
 
@@ -62,5 +63,44 @@ class SetTable extends AppTable
 		$condition = $includePrivate ? '' : ' AND public = 1';
 		$rows = Util::query("SELECT COUNT(*) AS total FROM `set` WHERE user_id = ?$condition", [$userId]);
 		return (int) $rows[0]['total'];
+	}
+
+	//The cards of the collections matching $condition (on the alias s), in their order: each with its
+	//problems (those not in the trash), their average difficulty and how much of them the player solved.
+	//One query, the database counts and sums the problems of all the collections at once.
+	//$userID: The player whose progress the cards show, null for none
+	/** @return list<array{id: int, name: string, amount: int, color: string, difficulty: string, solved: int}> */
+	public static function cards(string $condition, array $params, ?int $userID): array
+	{
+		$rows = Util::query("
+SELECT
+	s.id,
+	s.title,
+	s.color,
+	COUNT(sc.tsumego_id) AS amount,
+	COALESCE(SUM(t.rating), 0) AS rating_sum,
+	COALESCE(SUM(CASE WHEN ts.status IN ('S','W','C') THEN 1 ELSE 0 END), 0) AS solved
+FROM `set` s
+LEFT JOIN (set_connection sc
+	JOIN tsumego t ON t.id = sc.tsumego_id AND t.deleted IS NULL) ON sc.set_id = s.id
+LEFT JOIN tsumego_status ts ON ts.tsumego_id = sc.tsumego_id AND ts.user_id = ?
+WHERE $condition
+GROUP BY s.id, s.title, s.color
+ORDER BY s.order", [$userID, ...$params]);
+
+		$cards = [];
+		foreach ($rows as $row)
+		{
+			$amount = (int) $row['amount'];
+			$cards[] = [
+				'id' => (int) $row['id'],
+				'name' => $row['title'],
+				'amount' => $amount,
+				'color' => $row['color'],
+				'difficulty' => Rating::getReadableRankFromRating($amount > 0 ? (float) $row['rating_sum'] / $amount : 0.0),
+				'solved' => $amount > 0 ? Util::getPercentButAvoid100UntilComplete((int) $row['solved'], $amount) : 0,
+			];
+		}
+		return $cards;
 	}
 }
