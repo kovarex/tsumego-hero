@@ -88,7 +88,7 @@ class PlayResultProcessorComponent extends Component
 			return ['error' => 'Tsumego not found'];
 
 		if (Auth::isInTimeMode())
-			new TimeMode()->processPlayResult($tsumego, ['solved' => $result->solved], $seconds, $outcome === PlayOutcome::TimedOut);
+			new TimeMode()->processPlayResult($tsumego, $result->solved, $seconds, $outcome === PlayOutcome::TimedOut);
 
 		// updated isn't loaded: the database moves it when the status changes
 		$tsumegoStatus = TableRegistry::getTableLocator()->get('TsumegoStatus')->find()
