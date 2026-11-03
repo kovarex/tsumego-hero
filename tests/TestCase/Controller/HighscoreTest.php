@@ -451,8 +451,7 @@ class HighscoreTest extends IntegrationTestCase
 	{
 		new ContextPreparator(['user' => ['name' => 'kovarex']]);
 
-		$menuLinkAfter = function(string $table): string
-		{
+		$menuLinkAfter = function (string $table): string {
 			$this->get('users/' . $table);
 			$this->get('users/authors');
 			return $this->view;
