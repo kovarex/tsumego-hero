@@ -164,15 +164,42 @@ class TimeMode
 		$result = new RatingBounds();
 		$smallerRank = $timeModeRankTable->find()->where(['id <' => $timeModeRankID])->orderByDesc('id')->first();
 		if ($smallerRank)
-			$result->min = Rating::getRankMinimalRating(Rating::GetRankFromReadableRank($smallerRank->name) + 1);
+			$result->min = self::ratingAbove($smallerRank->name);
 
 		if ($timeModeRankTable->exists(['id >' => $timeModeRankID]))
-		{
-			$currentRank = $timeModeRankTable->get($timeModeRankID);
-			$result->max = Rating::getRankMinimalRating(Rating::GetRankFromReadableRank($currentRank->name) + 1);
-		}
+			$result->max = self::ratingAbove($timeModeRankTable->get($timeModeRankID)->name);
 
 		return $result;
+	}
+
+	//The rating where the problems of a time mode rank end: the minimal rating of the next rank.
+	private static function ratingAbove(string $rankName): float
+	{
+		return Rating::getRankMinimalRating(Rating::GetRankFromReadableRank($rankName) + 1);
+	}
+
+	//How many problems a run of each rank can draw, by time mode rank id, in one query: every problem
+	//counts in the rank whose rating bounds (getRatingBounds()) hold it.
+	/**
+	 * @param TimeModeRank[] $ranks every rank, ordered by id
+	 * @return array<int, int>
+	 */
+	public static function countTsumegosByRank(array $ranks): array
+	{
+		if (!$ranks)
+			return [];
+		$lastRank = array_pop($ranks);
+		$bucket = (string) $lastRank->id;
+		if ($ranks)
+			$bucket = 'CASE ' . implode(' ', array_map(
+				fn(TimeModeRank $rank) => 'WHEN tsumego.rating < ' . self::ratingAbove($rank->name) . ' THEN ' . $rank->id,
+				$ranks)) . ' ELSE ' . $lastRank->id . ' END';
+		$counts = [];
+		foreach (Util::query('SELECT ' . $bucket . ' AS rank_id, COUNT(DISTINCT tsumego.id) AS count' . self::drawablePoolSql() . ' GROUP BY rank_id') as $row)
+			$counts[(int) $row['rank_id']] = (int) $row['count'];
+		foreach ([...$ranks, $lastRank] as $rank)
+			$counts[$rank->id] ??= 0;
+		return $counts;
 	}
 
 	private function getRelevantTsumegos(int $timeModeRankID): array
@@ -192,12 +219,19 @@ class TimeMode
 	/** @return array<array{id: int}> */
 	private static function getTsumegosInRatingBounds(RatingBounds $ratingBounds): array
 	{
-		$query = "SELECT DISTINCT tsumego.id as id FROM tsumego JOIN set_connection ON set_connection.tsumego_id = tsumego.id JOIN `set` ON set.id = set_connection.set_id WHERE tsumego.deleted IS NULL AND `set`.included_in_time_mode = TRUE AND " . SetTable::officialCondition();
+		$query = 'SELECT DISTINCT tsumego.id as id' . self::drawablePoolSql();
 		if ($ratingBounds->min)
 			$query .= " AND rating >= " . $ratingBounds->min;
 		if ($ratingBounds->max)
 			$query .= " AND rating < " . $ratingBounds->max;
 		return Util::query($query);
+	}
+
+	//The FROM and WHERE of the problems a run of the time mode draws from: not deleted, in an official collection that is in the time mode.
+	private static function drawablePoolSql(): string
+	{
+		return ' FROM tsumego JOIN set_connection ON set_connection.tsumego_id = tsumego.id JOIN `set` ON set.id = set_connection.set_id'
+			. ' WHERE tsumego.deleted IS NULL AND `set`.included_in_time_mode = TRUE AND ' . SetTable::officialCondition();
 	}
 
 	/** @param array<int|string> $tsumegoIDs The problems of the run in the order they are played */
