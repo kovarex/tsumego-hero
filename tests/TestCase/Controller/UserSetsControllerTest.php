@@ -633,6 +633,28 @@ class UserSetsControllerTest extends IntegrationTestCase
 		$this->assertSame(AdminActivityTypeTable::SET_DESCRIPTION_EDIT, $activity->type);
 	}
 
+	//Each detail the admin changed is noted with its old and new value, the ones kept are not.
+	public function testAdminEditNotesEachChangedDetail(): void
+	{
+		new ContextPreparator([
+			'user' => ['name' => 'admin', 'admin' => true],
+			'other-users' => [['name' => 'bob']],
+		]);
+		$setId = $this->_createSet('Bob Set', ContextPreparator::findUserRow(['name' => 'bob'])['id'], 0);
+		$this->fetchTable('Set')->updateAll(['color' => '#111111', 'description' => 'same'], ['id' => $setId]);
+		$this->login('admin');
+
+		$this->post("/sets/edit/{$setId}", ['title' => 'Renamed', 'description' => 'same', 'color' => '#222222', 'order' => '7']);
+
+		$activities = array_map(fn($activity) => [$activity->type, $activity->old_value, $activity->new_value],
+			$this->fetchTable('AdminActivity')->find()->orderBy('id')->toArray());
+		$this->assertSame([
+			[AdminActivityTypeTable::SET_TITLE_EDIT, 'Bob Set', 'Renamed'],
+			[AdminActivityTypeTable::SET_COLOR_EDIT, '#111111', '#222222'],
+			[AdminActivityTypeTable::SET_ORDER_EDIT, (string) Constants::$DEFAULT_SET_ORDER, '7'],
+		], $activities);
+	}
+
 	public function testCreateAndAddTsumegoLogsProblemAdd(): void
 	{
 		$context = new ContextPreparator([
