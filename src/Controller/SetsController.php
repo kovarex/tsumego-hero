@@ -154,9 +154,7 @@ class SetsController extends AppController
 	public function edit(?string $id = null)
 	{
 		$setTable = $this->fetchTable('Set');
-		$set = $setTable->find()->where(['id' => (int) $id])->first();
-		if (!$set)
-			throw new NotFoundException('Set not found');
+		$set = $this->findSet($id);
 
 		$this->Authorization->authorize($set);
 		$canEditSettings = $this->Authorization->can('Set', 'editSettings');
@@ -254,34 +252,19 @@ ORDER BY sc.num ASC", [(int) $id]);
 		$image = $this->uploadedFile('image');
 		if ($image !== null && $image['error'] === UPLOAD_ERR_OK)
 		{
-			$file_ext = strtolower(pathinfo($image['name'], PATHINFO_EXTENSION));
-
-			if (!in_array($file_ext, ['png', 'jpg', 'jpeg', 'webp']))
-				CookieFlash::set('png/jpg/webp allowed.', 'error');
-			elseif ($image['size'] > 2097152)
-				CookieFlash::set('The file is too large (max 2MB).', 'error');
+			$refusal = SetImage::refusalOf($image);
+			if ($refusal !== null)
+				CookieFlash::set($refusal, 'error');
 			else
-			{
-				$oldImage = $set->image;
-
 				try
 				{
-					$processed = SetImage::process($image['tmp_name'], $file_ext);
-					$filename = SetImage::store((int) $id, $processed);
-
-					// The name of a cover carries the hash of its picture, so an upload is a
-					// new file and the cover it replaces is removed here.
-					if ($oldImage !== $filename)
-						SetImage::remove($oldImage);
-
-					$set->image = $filename;
+					$set->image = SetImage::replace((int) $id, $set->image, $image['tmp_name'], SetImage::extensionOf($image['name']));
 					$setTable->saveOrFail($set);
 					CookieFlash::set('Image uploaded', 'success');
 				}
-				catch (Exception $e)
-				{
-					CookieFlash::set('Image upload failed: ' . $e->getMessage(), 'error');
-				}
+			catch (Exception $e)
+			{
+				CookieFlash::set('Image upload failed: ' . $e->getMessage(), 'error');
 			}
 		}
 
@@ -321,9 +304,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 	public function share(?string $id = null): mixed
 	{
 		$setTable = $this->fetchTable('Set');
-		$set = $setTable->find()->where(['id' => (int) $id])->first();
-		if (!$set)
-			throw new NotFoundException('Set not found');
+		$set = $this->findSet($id);
 		$this->Authorization->authorize($set, 'share');
 
 		$shared = !empty($this->input('shared'));
@@ -348,9 +329,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 			throw new BadRequestException();
 
 		$setTable = $this->fetchTable('Set');
-		$set = $setTable->find()->where(['id' => (int) $setID])->first();
-		if (!$set)
-			throw new NotFoundException('Set not found');
+		$set = $this->findSet($setID);
 
 		$this->Authorization->authorize($set);
 
@@ -452,11 +431,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 			$setID = $set->id;
 		}
 		else
-		{
-			$set = $this->fetchTable('Set')->find()->where(['id' => (int) $setID])->first();
-			if (!$set)
-				throw new NotFoundException('Set not found');
-		}
+			$set = $this->findSet($setID);
 
 		$this->Authorization->authorize($set);
 
@@ -573,9 +548,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 	#[HttpPost]
 	public function removeTsumego(int $setID)
 	{
-		$set = $this->fetchTable('Set')->find()->where(['id' => $setID])->first();
-		if (!$set)
-			throw new NotFoundException('Set not found');
+		$set = $this->findSet($setID);
 
 		$this->Authorization->authorize($set);
 
@@ -599,9 +572,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 	#[HttpPost]
 	public function reorderTsumego(int $setID)
 	{
-		$set = $this->fetchTable('Set')->find()->where(['id' => $setID])->first();
-		if (!$set)
-			throw new NotFoundException('Set not found');
+		$set = $this->findSet($setID);
 		$this->Authorization->authorize($set);
 
 		$tsumegoId = $this->query('tsumego_id') ?? $this->input('tsumego_id');
@@ -838,9 +809,8 @@ ORDER BY sc.num ASC", [(int) $id]);
 		if ($tsumegoButtons->getProblemsSolvedPercent() < 50)
 			return $this->redirect($redirectUrl);
 
-		Util::query("
-DELETE tsumego_status FROM tsumego_status
-WHERE tsumego_status.user_id = ? AND tsumego_status.tsumego_id IN(" . implode(',', $tsumegoIDToClear) . ")", [Auth::getUserID()]);
+		Util::execute('DELETE FROM tsumego_status WHERE user_id = ? AND tsumego_id IN (' . implode(',', array_fill(0, count($tsumegoIDToClear), '?')) . ')',
+			[Auth::getUserID(), ...$tsumegoIDToClear]);
 		$progressDeletionTable = $this->fetchTable('ProgressDeletion');
 		$progressDeletionTable->saveOrFail($progressDeletionTable->newEntity([
 			'user_id' => Auth::getUserID(),
@@ -868,6 +838,15 @@ WHERE tsumego_status.user_id = ? AND tsumego_status.tsumego_id IN(" . implode(',
 		}
 		Preferences::set('collection_size', $collectionSizeInt);
 		return $this->redirect('/sets');
+	}
+
+	//The set of the address, a 404 when there is none.
+	private function findSet(int|string|null $id): Set
+	{
+		$set = $this->fetchTable('Set')->find()->where(['id' => (int) $id])->first();
+		if (!$set)
+			throw new NotFoundException('Set not found');
+		return $set;
 	}
 
 	//True when an admin edits a set they do not own (elevated privilege).
