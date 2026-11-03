@@ -26,12 +26,7 @@ class AccountWidget
 	hovered = false;
 	xpIncreaseFx;
 	modeSelector;
-	heroProfile;
-	heroBar;
-	heroAchievements;
-	heroMessages;
-	heroSettings;
-	heroLogout;
+	menuItems; // shown while the pointer is over the bar or them
 	timeMode;
 
 	constructor({rating, xp, level, show, timeMode})
@@ -47,12 +42,16 @@ class AccountWidget
 		this.xpIncreaseFx = document.getElementById('xp-increase-fx');
 		this.textBarInMenu = document.getElementById('textBarInMenu');
 		this.modeSelector = document.getElementById('modeSelector');
-		this.heroProfile = document.getElementById("heroProfile");
-		this.heroBar = document.getElementById("heroBar");
-		this.heroAchievements = document.getElementById("heroAchievements");
-		this.heroMessages = document.getElementById("heroMessages");
-		this.heroSettings = document.getElementById("heroSettings");
-		this.heroLogout = document.getElementById("heroLogout");
+		this.menuItems = ['heroProfile', 'heroBar', 'heroAchievements', 'heroMessages', 'heroSettings', 'heroLogout']
+			.map(id => document.getElementById(id))
+			.filter(item => item);
+		for (const element of [document.getElementById('account-bar-wrapper'), ...this.menuItems])
+		{
+			element.addEventListener('mouseover', () => this.hover());
+			element.addEventListener('mouseout', () => this.noHover());
+		}
+		this.modeSelector.addEventListener('click', () => this.switchBarInMenu());
+		this.textBarInMenu?.addEventListener('click', () => this.switchBarInMenu());
 
 		this.bar.style.boxShadow = "";
 		window.addEventListener('pagehide', () => AccountWidget.markUnshownResultLeft());
@@ -115,26 +114,14 @@ class AccountWidget
 	{
 		this.hovered = true;
 		this.setup();
-		this.heroProfile.style.display = "inline-block";
-		if (this.heroBar)
-			this.heroBar.style.display = "inline-block";
-		this.heroAchievements.style.display = "inline-block";
-		this.heroMessages.style.display = "inline-block";
-		this.heroSettings.style.display = "inline-block";
-		this.heroLogout.style.display = "inline-block";
+		this.menuItems.forEach(item => item.style.display = "inline-block");
 	}
 
 	noHover()
 	{
 		this.hovered = false;
 		this.setup();
-		this.heroProfile.style.display = "none";
-		if (this.heroBar)
-			this.heroBar.style.display = "none";
-		this.heroAchievements.style.display = "none";
-		this.heroMessages.style.display = "none";
-		this.heroSettings.style.display = "none";
-		this.heroLogout.style.display = "none";
+		this.menuItems.forEach(item => item.style.display = "none");
 	}
 
 	switchBarInMenu()

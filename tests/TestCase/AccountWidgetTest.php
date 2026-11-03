@@ -186,4 +186,37 @@ class AccountWidgetTest extends IntegrationTestCase
 		$browser->get('users/settings');
 		$this->assertStringStartsNotWith('Level', $browser->find('#account-bar-xp')->getText());
 	}
+
+	//The menu of the account opens while the pointer is over the bar, and the switch in it turns the bar to the rank
+	public function testTheMenuOfTheBarSwitchesItToTheRank()
+	{
+		$browser = Browser::instance();
+		new ContextPreparator(['user' => ['xp' => 13, 'level' => 5, 'rating' => 2075]]);
+		$browser->get('sites/blank');
+		$this->assertFalse($browser->find('#heroLogout')->isDisplayed());
+
+		$browser->hover($browser->find('#account-bar-xp'));
+		$this->assertTrue($browser->find('#heroLogout')->isDisplayed());
+		$this->assertSame('Rating Bar', $browser->find('#textBarInMenu')->getText());
+		$browser->find('#textBarInMenu')->click();
+
+		$this->assertSame('Level Bar', $browser->find('#textBarInMenu')->getText());
+		$browser->hover($browser->find('body'));
+		$this->assertFalse($browser->find('#heroLogout')->isDisplayed());
+		$this->assertSame('1d', $browser->find('#account-bar-xp')->getText());
+		$browser->get('sites/blank');
+		$this->assertSame('1d', $browser->find('#account-bar-xp')->getText());
+	}
+
+	public function testTheModeSelectorSwitchesTheBar()
+	{
+		$browser = Browser::instance();
+		new ContextPreparator(['user' => ['rating' => 2075]]);
+		$browser->get('sites/blank');
+
+		$browser->driver->executeScript('document.getElementById("modeSelector").click();');
+		$this->assertSame('1d', $browser->find('#account-bar-xp')->getText());
+		$browser->driver->executeScript('document.getElementById("modeSelector").click();');
+		$this->assertStringStartsWith('Level ', $browser->find('#account-bar-xp')->getText());
+	}
 }
