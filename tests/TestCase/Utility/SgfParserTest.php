@@ -105,4 +105,11 @@ class SgfParserTest extends AppTestCase
 	{
 		$this->assertNotNull(SgfParser::validateGame('(;GM[2]FF[4]SZ[19];B[aa])'));
 	}
+
+	//A comment is opaque to the check of the game, its escaped ']' included
+	public function testValidationIgnoresAGameWrittenInAComment(): void
+	{
+		$this->assertNull(SgfParser::validationProblem('(;GM[1]SZ[19]C[\[x\] GM[2\] is text]AB[aa];B[bb])'));
+		$this->assertNotNull(SgfParser::validationProblem('(;GM[1]SZ[19]C[\[text\]]GM[2]AB[aa];B[bb])'));
+	}
 }

@@ -74,86 +74,28 @@ class SgfParser
 		if (substr_count($text, '[') !== substr_count($text, ']'))
 			return 'Invalid SGF: unbalanced brackets.';
 
-		$len = strlen($text);
-		$i = 0;
 		$nodeHasSetup = false;
 		$nodeHasMove = false;
-		$inValue = false;
-
-		while ($i < $len)
-		{
-			$ch = $text[$i];
-
-			if ($ch === '[')
+		foreach (self::scan($text) as $part)
+			switch ($part[0])
 			{
-				$inValue = true;
-				$i++;
-				continue;
+				case 'node':
+				case 'end':
+					if ($nodeHasSetup && $nodeHasMove)
+						return 'Invalid SGF: a node cannot contain both setup stones (AB/AW/AE) and a move (B/W).';
+					if ($part[0] === 'node')
+						$nodeHasSetup = $nodeHasMove = false;
+					break;
+				case 'property':
+					[, $identifier, $value] = $part;
+					if ($value === null)
+						return "Invalid SGF: property '{$identifier}' must be followed by '['.";
+					$nodeHasSetup = $nodeHasSetup || in_array($identifier, ['AB', 'AW', 'AE'], true);
+					$nodeHasMove = $nodeHasMove || in_array($identifier, ['B', 'W'], true);
+					break;
+				default:
+					return "Invalid SGF: unexpected character '{$part[1]}' at position {$part[2]}.";
 			}
-
-			if ($ch === ']')
-			{
-				$inValue = false;
-				$i++;
-				continue;
-			}
-
-			// Everything inside a property value is opaque; skip it.
-			// In SGF a backslash escapes the next character (e.g. "\[" or "\]"),
-			// so skip that too, otherwise an escaped ']' would end the value.
-			if ($inValue)
-			{
-				if ($ch === '\\')
-				{
-					$i += 2;
-					continue;
-				}
-				$i++;
-				continue;
-			}
-
-			if ($ch === '(' || ctype_space($ch))
-			{
-				$i++;
-				continue;
-			}
-
-			if ($ch === ';')
-			{
-				if ($nodeHasSetup && $nodeHasMove)
-					return 'Invalid SGF: a node cannot contain both setup stones (AB/AW/AE) and a move (B/W).';
-				$nodeHasSetup = false;
-				$nodeHasMove = false;
-				$i++;
-				continue;
-			}
-
-			if ($ch === ')')
-			{
-				if ($nodeHasSetup && $nodeHasMove)
-					return 'Invalid SGF: a node cannot contain both setup stones (AB/AW/AE) and a move (B/W).';
-				$i++;
-				continue;
-			}
-
-			if (ctype_upper($ch))
-			{
-				$start = $i;
-				while ($i < $len && ctype_upper($text[$i]))
-					$i++;
-				$ident = substr($text, $start, $i - $start);
-				if ($i >= $len || $text[$i] !== '[')
-					return "Invalid SGF: property '{$ident}' must be followed by '['.";
-				if ($ident === 'AB' || $ident === 'AW' || $ident === 'AE')
-					$nodeHasSetup = true;
-				if ($ident === 'B' || $ident === 'W')
-					$nodeHasMove = true;
-				continue;
-			}
-
-			return "Invalid SGF: unexpected character '{$ch}' at position {$i}.";
-		}
-
 		return null;
 	}
 
@@ -163,65 +105,61 @@ class SgfParser
 	//Returns an error description, or null when the SGF is a Go game.
 	public static function validateGame(string $sgf): ?string
 	{
-		$text = trim($sgf);
-		$len = strlen($text);
+		foreach (self::scan(trim($sgf)) as $part)
+			if ($part[0] === 'property' && $part[1] === 'GM' && $part[2] !== null && $part[2] !== '1')
+				return 'Invalid SGF: game (GM) must be Go (1).';
+		return null;
+	}
+
+	//The parts of an SGF text in order: a node starts (';') or a variation ends (')'), a property
+	//(its identifier and its first value, null when no value follows it), or a character that has
+	//no place outside a value. The values are opaque: a backslash escapes the next character, so an
+	//escaped ']' does not end one.
+	/** @return \Generator<int, array{0: 'node'|'end'}|array{0: 'property', 1: string, 2: string|null}|array{0: 'unexpected', 1: string, 2: int}> */
+	private static function scan(string $text): \Generator
+	{
+		$length = strlen($text);
 		$i = 0;
-		$inValue = false;
-
-		while ($i < $len)
+		while ($i < $length)
 		{
-			$ch = $text[$i];
-
-			if ($ch === '[')
-			{
-				$inValue = true;
+			$character = $text[$i];
+			if ($character === '[')
+				$i = self::valueEnd($text, $i) + 1;
+			elseif ($character === ']' || $character === '(' || ctype_space($character))
 				$i++;
-				continue;
-			}
-
-			if ($ch === ']')
+			elseif ($character === ';' || $character === ')')
 			{
-				$inValue = false;
+				yield [$character === ';' ? 'node' : 'end'];
 				$i++;
-				continue;
 			}
-
-			// Everything inside a property value is opaque; skip it.
-			if ($inValue)
-			{
-				$i++;
-				continue;
-			}
-
-			if ($ch === '\\')
-			{
-				$i += 2;
-				continue;
-			}
-
-			if (ctype_upper($ch))
+			elseif (ctype_upper($character))
 			{
 				$start = $i;
-				while ($i < $len && ctype_upper($text[$i]))
+				while ($i < $length && ctype_upper($text[$i]))
 					$i++;
-				$ident = substr($text, $start, $i - $start);
-				if ($ident === 'GM' && $i < $len && $text[$i] === '[')
-				{
-					$i++; // skip '['
-					$valStart = $i;
-					while ($i < $len && $text[$i] !== ']')
-						$i++;
-					$game = substr($text, $valStart, $i - $valStart);
-					if ($game !== '1')
-						return 'Invalid SGF: game (GM) must be Go (1).';
-				}
-				continue;
+				$value = null;
+				if ($i < $length && $text[$i] === '[')
+					$value = stripslashes(substr($text, $i + 1, self::valueEnd($text, $i) - $i - 1));
+				yield ['property', substr($text, $start, $i - $start), $value];
 			}
-
-			$i++;
+			else
+			{
+				yield ['unexpected', $character, $i];
+				$i++;
+			}
 		}
+	}
 
-		return null;
+	//The position of the ']' that ends the value opened at $open, the end of the text when none does
+	private static function valueEnd(string $text, int $open): int
+	{
+		$length = strlen($text);
+		for ($i = $open + 1; $i < $length; $i++)
+			if ($text[$i] === '\\')
+				$i++;
+			elseif ($text[$i] === ']')
+				return $i;
+		return $length;
 	}
 
 	//The board size the SGF names (SZ), 19 when it names none
