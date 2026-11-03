@@ -244,7 +244,7 @@ class SgfChangesTest extends IntegrationTestCase
 		Util::execute('UPDATE sgf SET user_id = ?, created = NOW() - INTERVAL 3 DAY WHERE id = ?', [$this->proposerID($context), $proposal]);
 		Util::execute('UPDATE sgf SET accepted = NOW() - INTERVAL 1 DAY WHERE id IN (?, ?)', [$first, $change]);
 
-		$this->post('/users/acceptSGFProposal/' . $proposal);
+		$this->post('/proposals/acceptSgf/' . $proposal);
 		$accepted = $this->fetchTable('Sgf')->get($proposal);
 		$this->assertEquals(SgfTable::STATUS_ACCEPTED, $accepted->sgf_status_id);
 		$this->assertEquals($context->user['id'], $accepted->accepted_by_user_id);

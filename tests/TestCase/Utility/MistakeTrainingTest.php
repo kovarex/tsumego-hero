@@ -446,7 +446,7 @@ class MistakeTrainingTest extends IntegrationTestCase
 		}
 		$context = new ContextPreparator(['tsumegos' => $tsumegos]);
 
-		$upcoming = MistakeTraining::upcomingByDay($context->user['id'], 3);
+		$upcoming = MistakeTraining::upcomingByDay(MistakeTraining::poolRows($context->user['id']), 3);
 
 		$this->assertCount(3, $upcoming['days'], 'Only the requested number of days is shown');
 		$this->assertSame(3, $upcoming['days'][date('Y-m-d', strtotime('+1 day'))],
@@ -488,7 +488,30 @@ class MistakeTrainingTest extends IntegrationTestCase
 		$this->assertSame(1, MistakeTraining::countTodaysTraining($userId));
 		$this->assertCount(1, MistakeTraining::todaysTraining($userId), 'The problem is one entry of the queue');
 		$this->assertSame(2, MistakeTraining::totalInTraining($userId));
-		$this->assertSame([substr($dueLater, 0, 10) => 1], MistakeTraining::upcomingByDay($userId)['days']);
+		$this->assertSame([substr($dueLater, 0, 10) => 1], MistakeTraining::upcomingByDay(MistakeTraining::poolRows($userId))['days']);
+	}
+
+	//The list of the overview names a problem once, in the collection the training opens it in:
+	//the first in the display order of the collections that the player can play.
+	public function testThePoolListsAProblemInTheCollectionItOpensIn(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'testuser'],
+			'tsumegos' => [[
+				'sets' => [
+					['name' => 'trashed collection', 'num' => 1, 'order' => 1, 'deleted' => date('Y-m-d H:i:s')],
+					['name' => 'later collection', 'num' => 5, 'order' => 3],
+					['name' => 'earlier collection', 'num' => 7, 'order' => 2]],
+				'status' => ['name' => 'V', 'mistake_training_due' => date('Y-m-d H:i:s', strtotime('-1 day'))],
+			]],
+		]);
+
+		$rows = MistakeTraining::poolRows($context->user['id']);
+
+		$this->assertCount(1, $rows);
+		$this->assertSame('earlier collection', $rows[0]['set_title']);
+		$this->assertSame(7, $rows[0]['num']);
+		$this->assertTrue($rows[0]['due']);
 	}
 
 	public function testCountsOnlyWhatTheTrainingCanServe(): void
@@ -511,7 +534,7 @@ class MistakeTrainingTest extends IntegrationTestCase
 
 		$this->assertSame(0, MistakeTraining::countTodaysTraining($userId), 'A problem of a collection in the trash is not in today\'s training');
 		$this->assertSame(1, MistakeTraining::totalInTraining($userId));
-		$this->assertSame([substr($dueLater, 0, 10) => 1], MistakeTraining::upcomingByDay($userId)['days'],
+		$this->assertSame([substr($dueLater, 0, 10) => 1], MistakeTraining::upcomingByDay(MistakeTraining::poolRows($userId))['days'],
 			'Only the problem the training can open is announced');
 	}
 

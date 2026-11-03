@@ -315,7 +315,6 @@ class TsumegoButtonsTest extends IntegrationTestCase
 	public function testButtonsOutsideTheTrainingHaveNoRungBadge(): void
 	{
 		$button = new TsumegoButton(1, 2, 3, 'S', 1000.0, '');
-		$button->performance = '';
 
 		$html = $this->renderButton($button);
 

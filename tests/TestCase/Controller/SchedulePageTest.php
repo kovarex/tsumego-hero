@@ -45,6 +45,34 @@ class SchedulePageTest extends IntegrationTestCase
 		$this->assertTextContains('268', $browser->getTableCell('.data-table', 1, 2)->getText());
 	}
 
+	//The preview under the form shows the problems the form would schedule, grouped by the day each publishes.
+	public function testPreviewShowsTheProblemsByDay(): void
+	{
+		new ContextPreparator([
+			'user' => ['name' => 'admin', 'admin' => true],
+			'tsumegos' => [
+				['sets' => [['name' => 'sandbox set', 'num' => 1, 'public' => 0]]],
+				['sets' => [['name' => 'sandbox set', 'num' => 2, 'public' => 0]]],
+				['sets' => [['name' => 'target set', 'num' => 1]]],
+			],
+		]);
+		$this->login('admin');
+
+		$browser = Browser::instance();
+		$browser->get('/schedule');
+		$browser->driver->executeScript(
+			'var perDay = document.getElementById("schedule-per-day");'
+			. 'perDay.value = "1";'
+			. 'perDay.dispatchEvent(new Event("change", {bubbles: true}));');
+
+		$browser->waitUntil(fn() => count($browser->getElements('#schedule-preview .preview-day')) === 2, context: 'two days in the preview');
+		$numbers = array_map(fn($day) => $day->getText(), $browser->getElements('#schedule-preview .problem-nav__number'));
+		$this->assertSame(['1', '2'], $numbers);
+		// the target set has a problem 1 already, which publishing renumbers
+		$this->assertCount(1, $browser->getElements('#schedule-preview .problem-nav__number--collision'));
+		$browser->assertNoJsErrors();
+	}
+
 	private function submitLabel(Browser $browser): string
 	{
 		return trim($browser->driver->executeScript(
