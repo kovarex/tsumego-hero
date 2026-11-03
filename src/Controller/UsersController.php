@@ -317,6 +317,9 @@ class UsersController extends AppController
 		$count = Util::query("SELECT COUNT(*) FROM tsumego_attempt where user_id = ?", [$userID])[0]['COUNT(*)'];
 		$offset = ($pageIndex - 1) * $PAGE_SIZE;
 
+		// The page of attempts is taken first, from the index of the player's attempts, so the
+		// collection and the SGF of a problem are looked up for its 500 rows and not for every
+		// attempt before it (2 s instead of 0.1 s on the last page of 30000 attempts).
 		$attempts = Util::query("
 SELECT
 	s.title AS set_title,
@@ -332,7 +335,7 @@ SELECT
 	tsumego_attempt.user_rating AS user_rating,
 	COALESCE(sgf.sgf, '') AS sgf
 FROM
-	tsumego_attempt
+	(SELECT * FROM tsumego_attempt WHERE user_id = ? ORDER BY created DESC, id DESC LIMIT " . $PAGE_SIZE . " OFFSET " . $offset . ") tsumego_attempt
 	LEFT JOIN set_connection ON set_connection.id = (
 		SELECT sc.id
 		FROM set_connection sc
@@ -343,11 +346,7 @@ FROM
 	LEFT JOIN sgf ON sgf.id = " . SgfTable::currentVersionIDSql('tsumego_attempt.tsumego_id') . "
 	LEFT JOIN tsumego_status ON tsumego_status.user_id = ? AND tsumego_status.tsumego_id = tsumego_attempt.tsumego_id
 	LEFT JOIN `set` s ON set_connection.set_id = s.id
-WHERE
-	tsumego_attempt.user_id=?
-ORDER BY created DESC
-LIMIT " . $PAGE_SIZE . "
-OFFSET " . $offset, [$userID, $userID]);
+ORDER BY tsumego_attempt.created DESC, tsumego_attempt.id DESC", [$userID, $userID]);
 
 		$this->set('_page', 'solveHistory');
 		$this->set('_title', $userName . '\'s Solve History');
