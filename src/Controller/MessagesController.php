@@ -99,9 +99,7 @@ class MessagesController extends AppController
 	/** @return array{id: int, displayName: string|null, avatarUrl: string|null, rating: float} */
 	private function findPartner(int $userId): array
 	{
-		$rows = Util::query(
-			'SELECT id AS user_id, display_name, deleted, external_id, picture, email, avatar_setting_id, uploaded_avatar_hash, rating FROM user WHERE id = ?',
-			[$userId]);
+		$rows = Util::query('SELECT ' . MessageTable::PLAYER_COLUMNS . ' FROM user WHERE user.id = ?', [$userId]);
 		if (!$rows)
 			throw new NotFoundException('Player not found');
 		return MessageTable::playerPayload($rows[0]);

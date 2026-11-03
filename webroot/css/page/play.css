@@ -756,6 +756,34 @@ h1 {
 	color: var(--color-black);
 }
 
+/* The hearts, the title and the hero powers above the board, in three columns of the widths
+   and the spacing of the table they were in: 2px around and between the cells, cells padded as
+   the site pads table cells; the title over the description as narrow as they are, centered */
+.play-header {
+  display: grid;
+  grid-template-columns: minmax(0, 29fr) minmax(0, 42fr) minmax(0, 29fr);
+  align-items: center;
+  column-gap: 2px;
+  padding: 2px;
+  width: 100%;
+  box-sizing: border-box;
+  text-align: center;
+}
+.play-header > div,
+.play-header__cell {
+  padding: 3px;
+}
+.play-header__title {
+  display: flex;
+  justify-content: center;
+}
+.play-header__stack {
+  display: flex;
+  flex-direction: column;
+  row-gap: 2px;
+  padding: 2px;
+}
+
 /* Responsive */
 @media (width < 81.25rem) {
 	#sandboxLink {
@@ -833,11 +861,8 @@ h1 {
 	   that wastes vertical space). The hero-power cell is the crowded one,
 	   so the small side cells are allowed to shrink and the icons are made
 	   tiny enough to sit in one wrap-free row. */
-	.play-header-table {
-		table-layout: fixed;
-		width: 100%;
-	}
-	.play-header-table td {
+	.play-header > div,
+	.play-header__cell {
 		padding: 4px 2px;
 	}
 
@@ -919,4 +944,20 @@ h1 {
 }
 .play-edit__part {
   margin-bottom: 12px;
+}
+
+.toast__banner--center {
+  text-align: center;
+}
+/* The board of the play page shows no panels */
+.play-board .besogo-panels {
+  display: none;
+  flex-basis: 50%;
+}
+.play-filters {
+  display: inline-block;
+  margin: 0 4px 8px;
+}
+.play-filters-toggle {
+  margin: 8px 4px;
 }

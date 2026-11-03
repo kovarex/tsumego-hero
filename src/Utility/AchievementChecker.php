@@ -77,6 +77,22 @@ class AchievementChecker
 			$this->existingStatuses[$achievementStatus->achievement_id] = true;
 	}
 
+	//The value of the player's condition of a category that is not per set, null when the player has
+	//none or it is NULL, like AchievementConditionTable::value(). They are read together, once per
+	//check, since the checks of every page ask for several of them.
+	private function condition(int $categoryID): ?float
+	{
+		if ($this->conditions === null)
+		{
+			$this->conditions = [];
+			foreach (Util::query(
+				'SELECT achievement_condition_category_id AS category_id, value FROM achievement_condition WHERE user_id = ? AND set_id IS NULL',
+				[Auth::getUserID()]) as $row)
+					$this->conditions[(int) $row['category_id']] = $row['value'] === null ? null : (float) $row['value'];
+		}
+		return $this->conditions[$categoryID] ?? null;
+	}
+
 	public function unlocked(AchievementId $achievementID): bool
 	{
 		return isset($this->existingStatuses[$achievementID->value]);
@@ -85,22 +101,14 @@ class AchievementChecker
 	public function checkProblemNumberAchievements(): AchievementChecker
 	{
 		$this->gainedFrom(Auth::getUser()['solved'], self::PROBLEMS_SOLVED);
-		if (AchievementConditionTable::value(Auth::getUserID(), AchievementConditionTable::CATEGORY_USER_OF_THE_DAY) !== null)
+		if ($this->condition(AchievementConditionTable::CATEGORY_USER_OF_THE_DAY) !== null)
 			$this->gained(AchievementId::USER_OF_THE_DAY);
 		return $this;
 	}
 
 	public function checkDanSolveAchievements(): void
 	{
-		$conditions = AchievementConditionTable::values(Auth::getUserID(), [
-			...array_values(AchievementConditionTable::DAN_SOLVE_CATEGORIES),
-			AchievementConditionTable::CATEGORY_EMERALD,
-			AchievementConditionTable::CATEGORY_SAPPHIRE,
-			AchievementConditionTable::CATEGORY_RUBY,
-			AchievementConditionTable::CATEGORY_SPRINT,
-			AchievementConditionTable::CATEGORY_GOLDEN,
-			AchievementConditionTable::CATEGORY_POTION]);
-		$condition = fn(int $category) => $conditions[$category] ?? 0;
+		$condition = fn(int $category) => $this->condition($category) ?? 0;
 
 		foreach (AchievementConditionTable::DAN_SOLVE_CATEGORIES as $rank => $category)
 			if ($condition($category) > 0)
@@ -128,7 +136,7 @@ class AchievementChecker
 	public function checkNoErrorAchievements(): void
 	{
 		$this->gainedFrom(
-			AchievementConditionTable::value(Auth::getUserID(), AchievementConditionTable::CATEGORY_NO_ERROR_STREAK) ?? 0,
+			$this->condition(AchievementConditionTable::CATEGORY_NO_ERROR_STREAK) ?? 0,
 			self::NO_ERROR_STREAK);
 	}
 
@@ -180,7 +188,7 @@ WHERE rn = 1;", [Auth::getUserID(), TimeModeSessionStatusTable::SOLVED]);
 
 	public function checkSetCompletedAchievements(): AchievementChecker
 	{
-		$completedSets = AchievementConditionTable::value(Auth::getUserID(), AchievementConditionTable::CATEGORY_COMPLETED_SETS);
+		$completedSets = $this->condition(AchievementConditionTable::CATEGORY_COMPLETED_SETS);
 		if ($completedSets !== null)
 			$this->gainedFrom($completedSets, self::COMPLETED_SETS);
 		return $this;
@@ -443,6 +451,8 @@ WHERE rn = 1;", [Auth::getUserID(), TimeModeSessionStatusTable::SOLVED]);
 			'seconds' => [30 => AchievementId::SPEED_X, 20 => AchievementId::SPEED_XI, 10 => AchievementId::SPEED_XII]]];
 
 	private array $existingStatuses = [];
+	/** @var array<int, ?float>|null by category, see condition() */
+	private ?array $conditions = null;
 	/** @var Achievement[] the achievements unlocked by this check, for the popups */
 	public array $updated = [];
 }

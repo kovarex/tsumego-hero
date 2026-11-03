@@ -34,6 +34,7 @@ class TimeMode
 
 		// is TimeModeUtil::$PROBLEM_COUNT normally, but can be less when not enough problems found
 		$attempts = $this->fetchTable('TimeModeAttempt')->find()->where(['time_mode_session_id' => $this->currentSession->id])->toArray();
+		$recordedCount = 0;
 		foreach ($attempts as $attempt)
 		{
 			if ($attempt->time_mode_attempt_status_id == TimeModeUtil::$ATTEMPT_RESULT_SOLVED)
@@ -43,6 +44,8 @@ class TimeMode
 				|| $attempt->time_mode_attempt_status_id == TimeModeUtil::$ATTEMPT_STATUS_SKIPPED
 				|| $attempt->time_mode_attempt_status_id == TimeModeUtil::$ATTEMPT_STATUS_TIMEOUT)
 					$this->failCount++;
+			if ($attempt->time_mode_attempt_status_id != TimeModeUtil::$ATTEMPT_RESULT_QUEUED)
+				$recordedCount++;
 		}
 		$this->overallCount = count($attempts);
 
@@ -52,9 +55,7 @@ class TimeMode
 			return;
 		}
 
-		$this->currentOrder = $this->fetchTable('TimeModeAttempt')->find()->where([
-			'time_mode_session_id' => $this->currentSession->id,
-			'time_mode_attempt_status_id !=' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED])->count() + 1;
+		$this->currentOrder = $recordedCount + 1;
 
 		// the run of a challenge has the time the challenge gives, a run of the time mode the time of its category
 		if ($challengeID = $this->currentSession->challenge_id)
@@ -89,13 +90,7 @@ class TimeMode
 		if (empty($tsumegoIDs))
 			throw new InternalErrorException('The challenge has no problems.');
 		$this->leaveCurrentSession();
-
-		Auth::saveUserField('mode_id', Constants::$TIME_MODE);
-		$sessionTable = $this->fetchTable('TimeModeSession');
-		$session = $sessionTable->saveOrFail($sessionTable->newEntity([
-			'user_id' => Auth::getUserID(),
-			'time_mode_session_status_id' => TimeModeSessionStatusTable::IN_PROGRESS,
-			'challenge_id' => $challenge['id']]));
+		$session = $this->createSession(['challenge_id' => $challenge['id']]);
 		$this->createSessionAttempts($session->id, $tsumegoIDs);
 	}
 
@@ -129,12 +124,7 @@ class TimeMode
 			'time_mode_session_id' => $session->id,
 			'time_mode_attempt_status_id' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED])->toArray();
 		foreach ($queuedAttempts as $attempt)
-		{
-			$attempt->time_mode_attempt_status_id = TimeModeUtil::$ATTEMPT_STATUS_SKIPPED;
-			$attempt->seconds = '0';
-			$attempt->points = '0';
-			$attemptTable->saveOrFail($attempt);
-		}
+			self::recordAttempt($attempt, TimeModeUtil::$ATTEMPT_STATUS_SKIPPED, 0, 0);
 		self::score($session);
 	}
 
@@ -147,13 +137,19 @@ class TimeMode
 		if (!$this->fetchTable('TimeModeRank')->exists(['id' => $rankID]))
 			throw new NotFoundException("Time mode rank category with id=" . $rankID . " not found");
 
+		return $this->createSession(['time_mode_category_id' => $timeModeCategory->id, 'time_mode_rank_id' => $rankID]);
+	}
+
+	//Starts a run of the current player, of a time mode category and rank or of a challenge, and puts them in the time mode.
+	/** @param array<string, mixed> $fields */
+	private function createSession(array $fields): TimeModeSession
+	{
 		Auth::saveUserField('mode_id', Constants::$TIME_MODE);
 		$sessionTable = $this->fetchTable('TimeModeSession');
 		return $sessionTable->saveOrFail($sessionTable->newEntity([
 			'user_id' => Auth::getUserID(),
 			'time_mode_session_status_id' => TimeModeSessionStatusTable::IN_PROGRESS,
-			'time_mode_category_id' => $timeModeCategory->id,
-			'time_mode_rank_id' => $rankID]));
+			...$fields]));
 	}
 
 	public static function getRatingBounds(?int $timeModeRankID): RatingBounds
@@ -168,15 +164,42 @@ class TimeMode
 		$result = new RatingBounds();
 		$smallerRank = $timeModeRankTable->find()->where(['id <' => $timeModeRankID])->orderByDesc('id')->first();
 		if ($smallerRank)
-			$result->min = Rating::getRankMinimalRating(Rating::GetRankFromReadableRank($smallerRank->name) + 1);
+			$result->min = self::ratingAbove($smallerRank->name);
 
 		if ($timeModeRankTable->exists(['id >' => $timeModeRankID]))
-		{
-			$currentRank = $timeModeRankTable->get($timeModeRankID);
-			$result->max = Rating::getRankMinimalRating(Rating::GetRankFromReadableRank($currentRank->name) + 1);
-		}
+			$result->max = self::ratingAbove($timeModeRankTable->get($timeModeRankID)->name);
 
 		return $result;
+	}
+
+	//The rating where the problems of a time mode rank end: the minimal rating of the next rank.
+	private static function ratingAbove(string $rankName): float
+	{
+		return Rating::getRankMinimalRating(Rating::GetRankFromReadableRank($rankName) + 1);
+	}
+
+	//How many problems a run of each rank can draw, by time mode rank id, in one query: every problem
+	//counts in the rank whose rating bounds (getRatingBounds()) hold it.
+	/**
+	 * @param TimeModeRank[] $ranks every rank, ordered by id
+	 * @return array<int, int>
+	 */
+	public static function countTsumegosByRank(array $ranks): array
+	{
+		if (!$ranks)
+			return [];
+		$lastRank = array_pop($ranks);
+		$bucket = (string) $lastRank->id;
+		if ($ranks)
+			$bucket = 'CASE ' . implode(' ', array_map(
+				fn(TimeModeRank $rank) => 'WHEN tsumego.rating < ' . self::ratingAbove($rank->name) . ' THEN ' . $rank->id,
+				$ranks)) . ' ELSE ' . $lastRank->id . ' END';
+		$counts = [];
+		foreach (Util::query('SELECT ' . $bucket . ' AS rank_id, COUNT(DISTINCT tsumego.id) AS count' . self::drawablePoolSql() . ' GROUP BY rank_id') as $row)
+			$counts[(int) $row['rank_id']] = (int) $row['count'];
+		foreach ([...$ranks, $lastRank] as $rank)
+			$counts[$rank->id] ??= 0;
+		return $counts;
 	}
 
 	private function getRelevantTsumegos(int $timeModeRankID): array
@@ -196,12 +219,19 @@ class TimeMode
 	/** @return array<array{id: int}> */
 	private static function getTsumegosInRatingBounds(RatingBounds $ratingBounds): array
 	{
-		$query = "SELECT DISTINCT tsumego.id as id FROM tsumego JOIN set_connection ON set_connection.tsumego_id = tsumego.id JOIN `set` ON set.id = set_connection.set_id WHERE tsumego.deleted IS NULL AND `set`.included_in_time_mode = TRUE AND " . SetTable::officialCondition();
+		$query = 'SELECT DISTINCT tsumego.id as id' . self::drawablePoolSql();
 		if ($ratingBounds->min)
 			$query .= " AND rating >= " . $ratingBounds->min;
 		if ($ratingBounds->max)
 			$query .= " AND rating < " . $ratingBounds->max;
 		return Util::query($query);
+	}
+
+	//The FROM and WHERE of the problems a run of the time mode draws from: not deleted, in an official collection that is in the time mode.
+	private static function drawablePoolSql(): string
+	{
+		return ' FROM tsumego JOIN set_connection ON set_connection.tsumego_id = tsumego.id JOIN `set` ON set.id = set_connection.set_id'
+			. ' WHERE tsumego.deleted IS NULL AND `set`.included_in_time_mode = TRUE AND ' . SetTable::officialCondition();
 	}
 
 	/** @param array<int|string> $tsumegoIDs The problems of the run in the order they are played */
@@ -214,6 +244,15 @@ class TimeMode
 				'order' => $i + 1,
 				'tsumego_id' => $tsumegoID,
 				'time_mode_attempt_status_id' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED]));
+	}
+
+	//Records how a problem of the run ended: its status, the seconds it took and the points it got.
+	private static function recordAttempt(TimeModeAttempt $attempt, int $statusID, float|int $seconds, float|int $points): void
+	{
+		$attempt->time_mode_attempt_status_id = $statusID;
+		$attempt->seconds = (string) $seconds;
+		$attempt->points = (string) $points;
+		TableRegistry::getTableLocator()->get('TimeModeAttempt')->saveOrFail($attempt);
 	}
 
 	private static function deduceAttemptStatus(array $result, bool $timeout): int
@@ -236,15 +275,9 @@ class TimeMode
 			'time_mode_attempt_status_id' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED])->first();
 		if (!$currentAttempt)
 			return; // this tsumego is not related to our time mode session, we ignore it
-		$currentAttempt->time_mode_attempt_status_id = self::deduceAttemptStatus($result, $timeout);
-		if ($timeout)
-			$seconds = $this->overallSecondsToSolve;
-
-		$seconds = min($seconds, $this->overallSecondsToSolve);
-
-		$currentAttempt->seconds = (string) $seconds;
-		$currentAttempt->points = (string) ($result['solved'] ? self::calculatePoints($seconds, $this->overallSecondsToSolve) : 0);
-		$attemptTable->saveOrFail($currentAttempt);
+		$seconds = $timeout ? $this->overallSecondsToSolve : min($seconds, $this->overallSecondsToSolve);
+		self::recordAttempt($currentAttempt, self::deduceAttemptStatus($result, $timeout), $seconds,
+			$result['solved'] ? self::calculatePoints($seconds, $this->overallSecondsToSolve) : 0);
 		$this->currentOrder++;
 	}
 
@@ -255,10 +288,8 @@ class TimeMode
 		$attempt = $this->findAttemptToSkip($position);
 		if (!$attempt)
 			return;
-		$attempt->time_mode_attempt_status_id = TimeModeUtil::$ATTEMPT_STATUS_SKIPPED;
-		$attempt->seconds = (string) min($this->overallSecondsToSolve, time() - $attempt->started->getTimestamp());
-		$attempt->points = '0';
-		$this->fetchTable('TimeModeAttempt')->saveOrFail($attempt);
+		self::recordAttempt($attempt, TimeModeUtil::$ATTEMPT_STATUS_SKIPPED,
+			min($this->overallSecondsToSolve, time() - $attempt->started->getTimestamp()), 0);
 		$this->currentOrder++;
 	}
 
@@ -325,10 +356,7 @@ class TimeMode
 			$this->secondsToSolve = (int) max(0, floor($this->secondsToSolve - $secondsSinceStarted));
 			if ($this->secondsToSolve == 0)
 			{
-				$attempt->time_mode_attempt_status_id = TimeModeUtil::$ATTEMPT_STATUS_TIMEOUT;
-				$attempt->seconds = (string) $this->overallSecondsToSolve;
-				$attempt->points = '0';
-				$this->fetchTable('TimeModeAttempt')->saveOrFail($attempt);
+				self::recordAttempt($attempt, TimeModeUtil::$ATTEMPT_STATUS_TIMEOUT, $this->overallSecondsToSolve, 0);
 				$this->currentOrder++;
 				return $this->prepareWhateverIsLeft();
 			}

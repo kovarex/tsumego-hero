@@ -80,18 +80,17 @@ class ChallengeTable extends AppTable
 	 */
 	public static function problemButtons(int $challengeId, array $myAttempts): array
 	{
-		$rows = Util::query('SELECT p.`order`, p.tsumego_id, t.rating, sgf.sgf
+		// a problem in no collection has no page to open, so it gets no button
+		$rows = Util::query('SELECT p.`order`, p.tsumego_id, t.rating, sgf.sgf, sc.id AS set_connection_id
 			FROM challenge_problem p
 			JOIN tsumego t ON t.id = p.tsumego_id
+			JOIN set_connection sc ON sc.id = ' . SetConnectionTable::displaySetConnectionIdSql('p.tsumego_id') . '
 			LEFT JOIN sgf ON sgf.id = ' . SgfTable::currentVersionIDSql('p.tsumego_id') . '
 			WHERE p.challenge_id = ?
 			ORDER BY p.`order`', [$challengeId]);
 		$buttons = [];
 		foreach ($rows as $row)
 		{
-			$setConnection = SetConnectionTable::findDisplaySetConnection((int) $row['tsumego_id']);
-			if (!$setConnection)
-				continue;
 			$order = (int) $row['order'];
 			$attempt = $myAttempts[$order] ?? null;
 			[$status, $label, $description] = match ($attempt['status'] ?? 'skipped')
@@ -101,7 +100,7 @@ class ChallengeTable extends AppTable
 				'timeout' => ['F', 'Out of time', 'You ran out of time.'],
 				default => ['N', 'Skipped', 'You didn\'t play it.'],
 			};
-			$button = new TsumegoButton((int) $row['tsumego_id'], $setConnection->id, $order, $status, (float) $row['rating'], $row['sgf'] ?? '');
+			$button = new TsumegoButton((int) $row['tsumego_id'], (int) $row['set_connection_id'], $order, $status, (float) $row['rating'], $row['sgf'] ?? '');
 			$button->label = $label;
 			$button->description = $description;
 			$buttons[$order] = $button;
