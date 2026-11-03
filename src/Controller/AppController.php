@@ -262,15 +262,15 @@ class AppController extends Controller
 	}
 
 	//The pages a player who has to pick a new display name can still open: the links that arrive
-	//by e-mail and the ways out of the account must not require picking a name first.
+	//by e-mail and the ways out of the account must not require picking a name first (AccountController).
 	private const ACTIONS_ALLOWED_BEFORE_NAME_CHANGE = [
-		'users/changename',
-		'users/updatename',
-		'users/logout',
-		'users/login',
-		'users/newpassword',
-		'users/confirm_delete_account',
-		'users/delete_account',
+		'account/changename',
+		'account/updatename',
+		'account/logout',
+		'account/login',
+		'account/newpassword',
+		'account/confirm_delete_account',
+		'account/delete_account',
 	];
 
 	private function mustChangeDisplayNameFirst(): bool
