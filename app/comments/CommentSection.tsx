@@ -10,6 +10,7 @@ import { useSortableDnD } from './useSortableDnD';
 import { CommentsListSkeleton } from './CommentSkeleton';
 import { ErrorMessage } from '../shared/ErrorMessage';
 import { useAuth } from '../shared/AuthContext';
+import { updateMoreSummary } from './moreSummary';
 
 type SectionItem =
 	| { type: 'issue'; created: string; data: IssueType }
@@ -69,6 +70,14 @@ export function CommentSection({ tsumegoId, initialCounts, initialAnchoredPositi
 
 	// Use query data as source of truth (empty until first fetch)
 	const counts = commentsQuery.data?.counts ?? initialCounts;
+
+	// Every change of the comments (an action here, or a refetch) brings new counts for the summary on More
+	const loadedCounts = commentsQuery.data?.counts;
+	useEffect(() =>
+	{
+		if (loadedCounts)
+			updateMoreSummary(loadedCounts);
+	}, [loadedCounts]);
 
 	// The issues and the standalone comments in one list, the oldest first; an issue is as old as its first comment
 	const allItems = useMemo(() =>

@@ -908,6 +908,60 @@ class CommentsControllerTest extends IntegrationTestCase
 		$this->assertCount(1, $browser->requestsTo('/tsumego-issues/move-comment/'));
 	}
 
+	//The summary on More follows what the comment section does: an issue made of a comment, the issue
+	//closed and the last comment deleted each change it, and it goes once nothing is left.
+	public function testTheSummaryOnMoreFollowsTheComments()
+	{
+		$context = new ContextPreparator([
+			'user' => ['admin' => true],
+			'tsumego' => ['set_order' => 1, 'status' => 'S', 'comments' => [['message' => 'first comment'], ['message' => 'second comment']]]]);
+		$browser = Browser::instance();
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		$this->assertSame('2 comments', $this->moreSummary($browser));
+		$browser->expandComments();
+
+		$this->clickButtonOf($browser, '.tsumego-comment--standalone', 'first comment', 'Make Issue');
+		$browser->waitUntil(fn() => $this->moreSummary($browser) === '1 comment, 1 open issue', context: 'the summary after making an issue');
+
+		$this->clickButtonOf($browser, '.tsumego-issue', 'first comment', 'Close Issue');
+		$browser->waitUntil(fn() => $this->moreSummary($browser) === '1 comment', context: 'the summary after closing the issue');
+
+		$this->clickButtonOf($browser, '.tsumego-comment--standalone', 'second comment', 'Delete');
+		$browser->driver->switchTo()->alert()->accept();
+		$browser->waitUntil(fn() => $this->moreSummary($browser) === null, context: 'no summary once nothing is left');
+		$browser->assertNoJsErrors();
+	}
+
+	//A problem without comments has no summary on More, the first comment brings one.
+	public function testTheFirstCommentBringsTheSummaryOnMore()
+	{
+		$context = new ContextPreparator(['user' => ['name' => 'kovarex'], 'tsumego' => ['set_order' => 1, 'status' => 'S']]);
+		$browser = Browser::instance();
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		$this->assertNull($this->moreSummary($browser));
+
+		$browser->expandComments();
+		$this->submitComment($browser, 'the first comment');
+
+		$browser->waitUntil(fn() => $this->moreSummary($browser) === '1 comment', context: 'the summary after the first comment');
+		$this->assertTrue($browser->driver->executeScript('return $("#moreCommentSummary").is(":visible");'));
+	}
+
+	//The text of the summary on the More toggle, null when there is none.
+	private function moreSummary(Browser $browser): ?string
+	{
+		return $browser->driver->executeScript('const summary = document.getElementById("moreCommentSummary"); return summary ? summary.textContent : null;');
+	}
+
+	//Clicks the button with the text in the element of the selector that holds the text.
+	private function clickButtonOf(Browser $browser, string $selector, string $holding, string $button): void
+	{
+		$browser->driver->executeScript(
+			'const element = [...document.querySelectorAll(arguments[0])].find(element => element.textContent.includes(arguments[1]));'
+			. '[...element.querySelectorAll("button")].find(candidate => candidate.textContent.includes(arguments[2])).click();',
+			[$selector, $holding, $button]);
+	}
+
 	public function testDragHandlesDoNotAppearForNonAdmin()
 	{
 		// Create tsumego with a comment - NON-admin user
