@@ -2213,6 +2213,45 @@ class SetsControllerTest extends IntegrationTestCase
 		$this->assertEquals(0, $this->viewVariable('avgTime'));
 	}
 
+	//Each attempt that solved a problem counts as a solve, each misplay as a fail and an attempt that
+	//failed without one as one fail. A solved problem without an attempt counts as one fail.
+	public function testSetViewCountsTheAttemptsOfEachProblemAndTheAccuracy(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'testuser'],
+			'tsumegos' => [
+				['sets' => [['name' => 'Test Set', 'num' => 1]], 'status' => 'S', 'attempts' => [
+					['solved' => 1, 'seconds' => 30, 'misplays' => 2],
+					['solved' => 1, 'seconds' => 12],
+					['solved' => 0, 'seconds' => 5, 'misplays' => 0]]],
+				['sets' => [['name' => 'Test Set', 'num' => 2]], 'status' => 'S'],
+				['sets' => [['name' => 'Test Set', 'num' => 3]], 'status' => 'F', 'attempts' => [['solved' => 0, 'seconds' => 40, 'misplays' => 3]]],
+				['sets' => [['name' => 'Test Set', 'num' => 4]]]]]);
+
+		$this->get('sets/' . $context->tsumegos[0]['sets'][0]['id']);
+
+		$buttons = $this->viewVariable('tsumegoButtons');
+		$this->assertSame([2, 0, 0, 0], array_map(fn($button) => $button->solvedAttempts, (array) $buttons));
+		$this->assertSame([3, 0, 3, 0], array_map(fn($button) => $button->failedAttempts, (array) $buttons));
+		$this->assertEquals([12, 0, 0, 0], array_map(fn($button) => $button->seconds, (array) $buttons), 'the best solve time');
+		$this->assertEquals(22.22, $this->viewVariable('accuracy'), '2 solves against 3 + 1 + 3 fails');
+		$this->assertEquals(36, $this->viewVariable('avgTime'), '(12 + 60) / 2');
+		$this->assertTextContains('<div class="problem-nav__ratio">2/3</div>', (string) $this->_response->getBody());
+	}
+
+	public function testGuestSeesNoScoresOnASet(): void
+	{
+		$context = new ContextPreparator([
+			'user' => null,
+			'tsumegos' => [['sets' => [['name' => 'Test Set', 'num' => 1]]]]]);
+
+		$this->get('sets/' . $context->tsumegos[0]['sets'][0]['id']);
+
+		$this->assertFalse($this->viewVariable('scoring'));
+		$this->assertSame(0, $this->viewVariable('pdCounter'));
+		$this->assertNull($this->viewVariable('bestTime'));
+	}
+
 	public function testSetProgressDeletion()
 	{
 		foreach (['reset', 'hello'] as $resetInput)

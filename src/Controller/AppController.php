@@ -281,30 +281,33 @@ class AppController extends Controller
 		return !in_array($page, self::ACTIONS_ALLOWED_BEFORE_NAME_CHANGE, true);
 	}
 
-	//The pages change some settings in cookies, the player keeps them from the next request on.
-	//The theme, sound and level bar cookies stay in the browser and come with every request, so
-	//only what differs from the account is written, in one update.
+	//The pages put the settings a signed in player changes in cookies, which carry the change to the
+	//account on the next request and are dropped then: the account is what counts, so a browser
+	//with an older cookie does not set the setting back. Only what differs is written, in one update.
 	private function saveSettingsFromCookies(): void
 	{
 		$settings = [];
-		if ($lastTimeModeCategoryID = Util::clearCookie('lastTimeModeCategoryID'))
+		if ($lastTimeModeCategoryID = self::takeCookie('lastTimeModeCategoryID'))
 			$settings['last_time_mode_category_id'] = (int) $lastTimeModeCategoryID;
-		if (Util::cookie('sound') !== null && Util::cookie('sound') != '0')
-		{
-			$settings['sound'] = Util::cookie('sound') === 'on';
-			Util::forgetCookie('sound');
-		}
-		if (Util::cookie('lightDark') !== null && Util::cookie('lightDark') != '0')
-			$settings['theme_id'] = Util::cookie('lightDark') === 'dark' ? UserTable::THEME_DARK : UserTable::THEME_LIGHT;
-		if (Util::cookie('levelBar') !== null && Util::cookie('levelBar') != '0')
-			$settings['level_bar_id'] = self::levelBar((int) Util::cookie('levelBar'));
-		if (!is_null($boardsBitmask = Util::clearCookie('boards_bitmask')))
+		if (($sound = self::takeCookie('sound')) !== null && $sound != '0')
+			$settings['sound'] = $sound === 'on';
+		if (($lightDark = self::takeCookie('lightDark')) !== null && $lightDark != '0')
+			$settings['theme_id'] = $lightDark === 'dark' ? UserTable::THEME_DARK : UserTable::THEME_LIGHT;
+		if (($levelBar = self::takeCookie('levelBar')) !== null && $levelBar != '0')
+			$settings['level_bar_id'] = self::levelBar((int) $levelBar);
+		if (!is_null($boardsBitmask = self::takeCookie('boards_bitmask')))
 			$settings['boards_bitmask'] = BoardSelector::filterValidBits((int) $boardsBitmask);
 		$user = Auth::getUser();
 		$changed = array_filter($settings, fn(int|bool $value, string $field) => !isset($user[$field]) || (int) $user[$field] !== (int) $value, ARRAY_FILTER_USE_BOTH);
 		if ($changed)
 			Auth::saveUserFields($changed);
 		new TsumegoFilters(); //keeps the collection filters the pages set in cookies
+	}
+
+	//The value of a cookie the browser sent, which is dropped; null when it sent none
+	private static function takeCookie(string $name): ?string
+	{
+		return Util::cookie($name) === null ? null : Util::clearCookie($name);
 	}
 
 	private static function levelBar(int $levelBar): int

@@ -11,7 +11,6 @@ use Exception;
 use InvalidArgumentException;
 use RuntimeException;
 use App\Model\Entity\User;
-use App\Model\Table\SetTable;
 use App\Model\Table\SetConnectionTable;
 use App\Model\Table\SgfTable;
 use App\Model\Table\TsumegoStatusTable;
@@ -42,8 +41,6 @@ use App\Utility\Mailer;
 
 class UsersController extends AppController
 {
-	public $helpers = ['Highscore'];
-
 	protected ?PwnedPasswordCheckerInterface $passwordChecker = null;
 
 	protected ?GoogleTokenVerifierInterface $tokenVerifier = null;
@@ -123,10 +120,7 @@ class UsersController extends AppController
 		$hours = self::$PASSWORD_RESET_LINK_VALID_HOURS;
 		$randomString = Util::generateRandomString(20);
 
-		$emailer = $this->_getEmailer();
-		$emailer->from(['me@tsumego.com' => 'https://tsumego.com']);
-		$emailer->to($userEmail);
-		$emailer->subject('Password reset for your Tsumego Hero account');
+		$emailer = $this->accountMail($userEmail, 'Password reset for your Tsumego Hero account');
 		if (!$this->linkMailWasSent($emailer, 'Click the following button to reset your password (valid for ' . $hours . ' hours). If you have not requested the password reset,
 then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, true)))
 		{
@@ -142,40 +136,62 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 			'password_reset_token_created' => date('Y-m-d H:i:s')], ['id' => $user->id]);
 	}
 
+	//A mail to the account from the site; send it with linkMailWasSent() or sendNotification()
+	private function accountMail(string $to, string $subject): Mailer
+	{
+		$emailer = $this->_getEmailer();
+		$emailer->from(['me@tsumego.com' => 'https://tsumego.com']);
+		$emailer->to($to);
+		$emailer->subject($subject);
+		return $emailer;
+	}
+
 	//Send the mail that carries a link. The token in it is remembered only when this
 	//returns true, so a mail server that does not answer leaves nothing behind and the
 	//user can go through the flow again right away.
-	//Returns whether the mail left
-	//$emailer: The mailer from _getEmailer(), which a test replaces
 	private function linkMailWasSent(Mailer $emailer, string $body): bool
 	{
-		try
-		{
-			$emailer->send($body);
-		}
-		catch (Exception $e)
-		{
-			Log::error('A Tsumego Hero link mail could not be sent: ' . $e->getMessage());
-			return false;
-		}
-
-		return true;
+		return $this->mailWasSent($emailer, $body, 'link mail');
 	}
 
 	//Send a mail that only tells the account about a change that already happened. It is
 	//not part of the change, so a mail server that does not answer is logged instead of
 	//turned into an error page.
-	//$emailer: The mailer from _getEmailer(), which a test replaces
 	private function sendNotification(Mailer $emailer, string $body): void
+	{
+		$this->mailWasSent($emailer, $body, 'notification');
+	}
+
+	private function mailWasSent(Mailer $emailer, string $body, string $kind): bool
 	{
 		try
 		{
 			$emailer->send($body);
+			return true;
 		}
 		catch (Exception $e)
 		{
-			Log::error('A Tsumego Hero notification could not be sent: ' . $e->getMessage());
+			Log::error('A Tsumego Hero ' . $kind . ' could not be sent: ' . $e->getMessage());
+			return false;
 		}
+	}
+
+	//The account a link of a mail was sent to, while the link still works: its token is
+	//in $tokenColumn and the time it was sent in $createdColumn. Null for an unknown or
+	//old link, and for a deleted account.
+	/** @param array<string>|null $fields */
+	private function findByLinkToken(string $tokenColumn, string $createdColumn, ?string $token, int $validHours, ?array $fields = null): ?User
+	{
+		if (!$token)
+			return null;
+		$query = $this->fetchTable('User')->find();
+		if ($fields !== null)
+			$query->select($fields);
+		/** @var User|null */
+		return $query->where([
+			$tokenColumn => $token,
+			'deleted IS' => null,
+			$createdColumn . ' >' => date('Y-m-d H:i:s', strtotime('-' . $validHours . ' hours'))])->first();
 	}
 
 	// @param string|null $checksum Password reset checksum
@@ -189,10 +205,7 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 		$this->set('done', false);
 		$this->set('checksum', (string) $checksum);
 
-		$user = $checksum === null ? null : $this->fetchTable('User')->find()->where([
-			'password_reset_token' => $checksum,
-			'deleted IS' => null,
-			'password_reset_token_created >' => date('Y-m-d H:i:s', strtotime('-' . self::$PASSWORD_RESET_LINK_VALID_HOURS . ' hours'))])->first();
+		$user = $this->findByLinkToken('password_reset_token', 'password_reset_token_created', $checksum, self::$PASSWORD_RESET_LINK_VALID_HOURS);
 		if (!$user)
 			return null;
 
@@ -716,49 +729,6 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 	{
 		$this->set('_page', 'about');
 		$this->set('_title', 'Tsumego Hero - About');
-
-		$count = [];
-		$count[0]['author'] = 'Innokentiy Zabirov';
-		$count[0]['collections'] = 's: <a href="' . SetTable::url(41) . '">Life & Death - Intermediate</a> and <a href="' . SetTable::url(122) . '">Gokyo Shumyo 1-4</a>';
-		$count[0]['count'] = 0;
-		$count[1]['author'] = 'Alexandre Dinerchtein';
-		$count[1]['collections'] = ': <a href="' . SetTable::url(109) . '">Problems from Professional Games</a>';
-		$count[1]['count'] = 0;
-		$count[2]['author'] = 'David Ulbricht';
-		$count[2]['collections'] = ': <a href="' . SetTable::url(41) . '">Life & Death - Intermediate</a>';
-		$count[2]['count'] = 0;
-		$count[3]['author'] = 'Bradford Malbon';
-		$count[3]['collections'] = 's: <a href="' . SetTable::url(104) . '">Easy Life</a> and <a href="' . SetTable::url(105) . '">Easy Kill</a>';
-		$count[3]['count'] = 0;
-		$count[4]['author'] = 'Ryan Smith';
-		$count[4]['collections'] = 's: <a href="' . SetTable::url(67) . '">Korean Problem Academy 1-4</a>';
-		$count[4]['count'] = 0;
-		$count[5]['author'] = 'Fupfv';
-		$count[5]['collections'] = ': <a href="' . SetTable::url(139) . '">Gokyo Shumyo 4</a>';
-		$count[5]['count'] = 0;
-		$count[6]['author'] = 'саша черных';
-		$count[6]['collections'] = ': <a href="' . SetTable::url(137) . '">Tsumego Master</a>';
-		$count[6]['count'] = 0;
-		$count[7]['author'] = 'Timo Kreuzer';
-		$count[7]['collections'] = ': <a href="' . SetTable::url(137) . '">Tsumego Master</a>';
-		$count[7]['count'] = 0;
-		$count[8]['author'] = 'David Mitchell';
-		$count[8]['collections'] = ': <a href="' . SetTable::url(143) . '">Diabolical</a>';
-		$count[8]['count'] = 10;
-		$count[9]['author'] = 'Omicron';
-		$count[9]['collections'] = ': <a href="' . SetTable::url(145) . '">Tesujis in Real Board Positions</a>';
-		$count[9]['count'] = 0;
-		$count[10]['author'] = 'Sadaharu';
-		$count[10]['collections'] = ': <a href="' . SetTable::url(146) . '">Tsumego of Fortitude</a>, <a href="' . SetTable::url(166) . '">Secret Tsumego from Hong Dojo</a>, <a href="' . SetTable::url(158) . '">Beautiful Tsumego</a> and more.';
-		$count[10]['count'] = 0;
-		$count[11]['author'] = 'Jérôme Hubert';
-		$count[11]['collections'] = ': <a href="' . SetTable::url(150) . '">Kanzufu</a> and more.';
-		$count[11]['count'] = 0;
-		$count[12]['author'] = 'Kaan Malçok';
-		$count[12]['collections'] = ': <a href="' . SetTable::url(163) . '">Xuanxuan Qijing</a>';
-		$count[12]['count'] = 0;
-
-		$this->set('count', $count);
 	}
 
 	#[HttpGet]
@@ -918,10 +888,7 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 
 		$token = bin2hex(random_bytes(32));
 
-		$emailer = $this->_getEmailer();
-		$emailer->from(['me@tsumego.com' => 'https://tsumego.com']);
-		$emailer->to(Auth::getUser()['email']);
-		$emailer->subject('Deletion of your Tsumego Hero account');
+		$emailer = $this->accountMail(Auth::getUser()['email'], 'Deletion of your Tsumego Hero account');
 		if (!$this->linkMailWasSent($emailer, 'You asked to delete your Tsumego Hero account ' . UserTable::displayName(Auth::getUser()) . '.
 To confirm the deletion, open the following link (valid for ' . self::$DELETION_LINK_VALID_HOURS . ' hours): https://' . $this->request->host() . '/users/confirm_delete_account/' . $token . '
 If you have not asked for this, ignore this email, your account stays as it is.'))
@@ -947,13 +914,7 @@ If you have not asked for this, ignore this email, your account stays as it is.'
 	{
 		$this->set('_page', 'user');
 		$this->set('_title', 'Tsumego Hero - Delete account');
-		$user = $token ? $this->fetchTable('User')->find()
-			->select(['id', 'display_name'])
-			->where([
-				'deletion_token' => $token,
-				'deleted IS' => null,
-				'deletion_token_created >' => date('Y-m-d H:i:s', strtotime('-' . self::$DELETION_LINK_VALID_HOURS . ' hours'))])
-			->first() : null;
+		$user = $this->findByLinkToken('deletion_token', 'deletion_token_created', $token, self::$DELETION_LINK_VALID_HOURS, ['id', 'display_name']);
 		$this->set('valid', (bool) $user);
 		$this->set('token', $token);
 		if (!$user || !$this->request->is('post'))
@@ -1130,18 +1091,13 @@ OFFSET " . $offset, [$userID, $userID]);
 		$token = bin2hex(random_bytes(32));
 		$cancelToken = bin2hex(random_bytes(32));
 
-		$emailer = $this->_getEmailer();
-		$emailer->from(['me@tsumego.com' => 'https://tsumego.com']);
-		$emailer->to($email);
-		$emailer->subject('Confirm your new Tsumego Hero address');
+		$emailer = $this->accountMail($email, 'Confirm your new Tsumego Hero address');
 		$confirmationSent = $this->linkMailWasSent($emailer, 'You asked to use this address for your Tsumego Hero account.'
 			. "\nTo make it the address of the account, open this link (valid for $hours hours): "
 			. Router::url('/users/confirmEmailChange/' . $token, true)
 			. "\nIf you have not asked for this, ignore this email.");
 
-		$emailer->to($user['email']);
-		$emailer->subject('An address change was asked for on your Tsumego Hero account');
-		$warningSent = $confirmationSent && $this->linkMailWasSent($emailer, 'Somebody asked to move your Tsumego Hero account to ' . $email . '.'
+		$warningSent = $confirmationSent && $this->linkMailWasSent($this->accountMail($user['email'], 'An address change was asked for on your Tsumego Hero account'), 'Somebody asked to move your Tsumego Hero account to ' . $email . '.'
 			. "\nIf that was not you, cancel it here (valid for $hours hours): "
 			. Router::url('/users/cancelEmailChange/' . $cancelToken, true));
 		if (!$warningSent)
@@ -1170,7 +1126,7 @@ OFFSET " . $offset, [$userID, $userID]);
 	{
 		$this->set('_page', 'user');
 		$this->set('_title', 'Tsumego Hero - Confirm address');
-		$user = $this->findByEmailChangeToken('unconfirmed_email_token', $token);
+		$user = $this->findByLinkToken('unconfirmed_email_token', 'unconfirmed_email_created', $token, self::$EMAIL_CHANGE_LINK_VALID_HOURS);
 		$this->set('valid', (bool) $user);
 		$this->set('address', $user ? (string) $user->unconfirmed_email : '');
 		$this->set('token', (string) $token);
@@ -1196,10 +1152,7 @@ OFFSET " . $offset, [$userID, $userID]);
 			'unconfirmed_email_cancel_token' => null,
 			'unconfirmed_email_created' => null], ['id' => $userID]);
 
-		$emailer = $this->_getEmailer();
-		$emailer->from(['me@tsumego.com' => 'https://tsumego.com']);
-		$emailer->to($givenUp);
-		$emailer->subject('Your Tsumego Hero address was changed');
+		$emailer = $this->accountMail($givenUp, 'Your Tsumego Hero address was changed');
 		$this->sendNotification($emailer, 'The address of your Tsumego Hero account was changed to ' . $newAddress . '.'
 			. "\nIf you did not ask for this, write to me@tsumego.com.");
 
@@ -1218,7 +1171,7 @@ OFFSET " . $offset, [$userID, $userID]);
 	{
 		$this->set('_page', 'user');
 		$this->set('_title', 'Tsumego Hero - Cancel address change');
-		$user = $this->findByEmailChangeToken('unconfirmed_email_cancel_token', $token);
+		$user = $this->findByLinkToken('unconfirmed_email_cancel_token', 'unconfirmed_email_created', $token, self::$EMAIL_CHANGE_LINK_VALID_HOURS);
 		$this->set('valid', (bool) $user);
 		$this->set('address', $user ? (string) $user->unconfirmed_email : '');
 		$this->set('token', (string) $token);
@@ -1243,18 +1196,6 @@ OFFSET " . $offset, [$userID, $userID]);
 			'unconfirmed_email_token' => null,
 			'unconfirmed_email_cancel_token' => null,
 			'unconfirmed_email_created' => null], ['id' => $userID]);
-	}
-
-	//The account waiting for the given link, or null when the link is unknown or old.
-	private function findByEmailChangeToken(string $field, ?string $token): ?User
-	{
-		if (!$token)
-			return null;
-
-		return $this->fetchTable('User')->find()->where([
-			$field => $token,
-			'deleted IS' => null,
-			'unconfirmed_email_created >' => date('Y-m-d H:i:s', strtotime('-' . self::$EMAIL_CHANGE_LINK_VALID_HOURS . ' hours'))])->first();
 	}
 
 	//Change the password of a local account. The current password is asked for so
@@ -1302,10 +1243,7 @@ OFFSET " . $offset, [$userID, $userID]);
 	//somebody else is noticed. The password itself is never part of the mail.
 	private function sendPasswordChangedMail(string $email): void
 	{
-		$emailer = $this->_getEmailer();
-		$emailer->from(['me@tsumego.com' => 'https://tsumego.com']);
-		$emailer->to($email);
-		$emailer->subject('Your Tsumego Hero password was changed');
+		$emailer = $this->accountMail($email, 'Your Tsumego Hero password was changed');
 		$this->sendNotification($emailer, 'The password of your Tsumego Hero account was changed. If you did not change it, set a new one at '
 			. Router::url('/users/resetpassword', true) . ' and write to me@tsumego.com.');
 	}
@@ -1313,41 +1251,33 @@ OFFSET " . $offset, [$userID, $userID]);
 	#[HttpPost]
 	public function playerColorPreference(): Response
 	{
-		$this->Authorization->authorize('User', 'editPreferences');
-
-		$color = (int) ($this->input('color') ?? UserTable::PLAYER_COLOR_SETTING_RANDOM);
-		if ($color < 0 || $color > 1)
-			$color = UserTable::PLAYER_COLOR_SETTING_RANDOM;
-
-		Auth::saveUserField('player_color_setting', $color);
-
-		return $this->respondJson(['status' => 'ok']);
+		return $this->saveChoice('player_color_setting', 'color',
+			[UserTable::PLAYER_COLOR_SETTING_RANDOM, UserTable::PLAYER_COLOR_SETTING_ORIGINAL], UserTable::PLAYER_COLOR_SETTING_RANDOM);
 	}
 
 	#[HttpPost]
 	public function boardOrientationPreference(): Response
 	{
-		$this->Authorization->authorize('User', 'editPreferences');
-
-		$orientation = (int) ($this->input('orientation') ?? UserTable::BOARD_ORIENTATION_SETTING_RANDOM);
-		if ($orientation < 0 || $orientation > 1)
-			$orientation = UserTable::BOARD_ORIENTATION_SETTING_RANDOM;
-
-		Auth::saveUserField('board_orientation_setting', $orientation);
-
-		return $this->respondJson(['status' => 'ok']);
+		return $this->saveChoice('board_orientation_setting', 'orientation',
+			[UserTable::BOARD_ORIENTATION_SETTING_RANDOM, UserTable::BOARD_ORIENTATION_SETTING_ORIGINAL], UserTable::BOARD_ORIENTATION_SETTING_RANDOM);
 	}
 
 	#[HttpPost]
 	public function dateFormatPreference(): Response
 	{
+		return $this->saveChoice('date_format_id', 'format',
+			range(UserTable::DATE_FORMAT_ISO, UserTable::DATE_FORMAT_BROWSER), UserTable::DATE_FORMAT_ISO);
+	}
+
+	//Store the setting the player picked on the settings page; a value that is not one of the
+	//choices stores the default.
+	/** @param array<int> $choices */
+	private function saveChoice(string $column, string $inputName, array $choices, int $default): Response
+	{
 		$this->Authorization->authorize('User', 'editPreferences');
 
-		$format = (int) ($this->input('format') ?? UserTable::DATE_FORMAT_ISO);
-		if ($format < UserTable::DATE_FORMAT_ISO || $format > UserTable::DATE_FORMAT_BROWSER)
-			$format = UserTable::DATE_FORMAT_ISO;
-
-		Auth::saveUserField('date_format_id', $format);
+		$value = (int) ($this->input($inputName) ?? $default);
+		Auth::saveUserField($column, in_array($value, $choices, true) ? $value : $default);
 
 		return $this->respondJson(['status' => 'ok']);
 	}
