@@ -1,6 +1,6 @@
 <?php
 
-use App\Controller\UsersController;
+use App\Controller\AccountController;
 use App\Model\Table\UserTable;
 use Facebook\WebDriver\WebDriverBy;
 use App\Utility\Auth;
@@ -76,7 +76,7 @@ class LoginComponentTest extends IntegrationTestCase
 	{
 		$this->assertSame(
 			password_get_info(password_hash('anything', PASSWORD_DEFAULT))['options']['cost'],
-			password_get_info(UsersController::_dummyPasswordHash())['options']['cost']);
+			password_get_info(AccountController::_dummyPasswordHash())['options']['cost']);
 	}
 
 	public function testTheSignInPagePointsGoogleAccountsToTheGoogleButton(): void

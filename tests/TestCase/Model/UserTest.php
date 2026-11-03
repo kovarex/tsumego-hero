@@ -429,7 +429,7 @@ class UserTest extends AppTestCase
 	// =====================================================================
 	// NOTE: The User model's checkUnique validation does NOT work because
 	// the email column has no UNIQUE constraint in the database. Email
-	// uniqueness is enforced at the CONTROLLER level (UsersController::add).
+	// uniqueness is enforced at the CONTROLLER level (AccountController::add).
 	// See tests/TestCase/Controller/RegistrationEmailTest.php for those tests.
 
 	// =====================================================================
