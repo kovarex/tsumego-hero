@@ -464,6 +464,30 @@ class UsersControllerTest extends IntegrationTestCase
 		$this->assertStringNotContainsString('alice favorites', $this->view);
 	}
 
+	//The history lists 500 attempts per page, the newest first; the next page goes on from there.
+	public function testSolveHistoryPagesGoFromNewestToOldest(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'viewer'],
+			'tsumego' => ['sets' => [['name' => 'public set', 'public' => 1, 'num' => 10]]]]);
+		$rows = [];
+		// misplays mark the oldest attempt (77) and the newest one (66)
+		for ($minute = 0; $minute <= 500; $minute++)
+			$rows[] = '(' . $context->user['id'] . ', ' . $context->tsumegos[0]['id'] . ", 0, 1, 10, '2026-01-01' + INTERVAL $minute MINUTE, "
+				. ($minute === 0 ? 77 : ($minute === 500 ? 66 : 5)) . ', 1500)';
+		Util::execute('INSERT INTO tsumego_attempt (user_id, tsumego_id, gain, solved, seconds, created, misplays, user_rating) VALUES ' . implode(', ', $rows));
+
+		$this->get('users/solveHistory/' . $context->user['id']);
+		$this->assertSame(500, substr_count($this->view, 'data-format="datetime"'));
+		$this->assertLessThan(strpos($this->view, '<td>5</td>'), strpos($this->view, '<td>66</td>'), 'the newest first');
+		$this->assertStringNotContainsString('<td>77</td>', $this->view);
+
+		$this->get('users/solveHistory/' . $context->user['id'] . '?page=2');
+		$this->assertSame(1, substr_count($this->view, 'data-format="datetime"'));
+		$this->assertStringContainsString('<td>77</td>', $this->view);
+		$this->assertTextContains('public set', $this->view);
+	}
+
 	public function testSolveHistoryOfAnUnknownUserIsNotFound(): void
 	{
 		new ContextPreparator(['user' => ['name' => 'viewer']]);
