@@ -259,6 +259,33 @@ class HighscoreTest extends IntegrationTestCase
 		$this->assertTextContains('#111', $this->view);
 	}
 
+	//Players with the same rating are ranked by when they joined, so the player's own row and the rows around it
+	//are the ones of one ranking: each position is listed once, and the player once.
+	public function testRatingSelfViewAmongEqualRatings()
+	{
+		$otherUsers = [];
+		for ($i = 0; $i < 40; $i++)
+			$otherUsers[] = ['name' => 'leader' . $i, 'rating' => 2000];
+		for ($i = 0; $i < 40; $i++)
+			$otherUsers[] = ['name' => 'equal' . $i, 'rating' => 500];
+
+		new ContextPreparator([
+			'user' => ['name' => 'kovarex', 'rating' => 500],
+			'other-users' => $otherUsers,
+		]);
+
+		$this->get('users/rating');
+		$positions = [];
+		foreach ($this->getStringDom()->querySelectorAll('.data-table tr') as $row)
+			if (preg_match('/#(\d+)/', $row->textContent, $match))
+				$positions[] = (int) $match[1];
+		$this->assertSame($positions, array_values(array_unique($positions)));
+		$selfRows = $this->getStringDom()->querySelectorAll('.data-table__row--self');
+		$this->assertCount(1, $selfRows);
+		//kovarex joined before the other players with the same rating
+		$this->assertRowContains($selfRows[0], '#41', 'kovarex');
+	}
+
 	//The level highscore lists the top 1000 players, and a player ranked below
 	//1000 is still shown with a gap separator.
 	public function testLevelHighscoreListsTop1000()
