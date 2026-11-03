@@ -32,28 +32,26 @@ class BoardComparator
 		$aCorrectMovesShifted = SgfBoard::getShiftedPositions($aCorrectMoves, $shift);
 		$aShifted = SgfBoard::getShiftedPositions($aStones, $shift);
 
-		//A as it is and mirrored around the lowest correct move of B, each tried when it puts the
-		//correct moves of A onto those of B, with the colors as they are and switched
-		$transformations = [
-			fn(array $positions) => $positions,
-			fn(array $positions) => SgfBoard::getPositionsHorizontallyMirroredAround($positions, $bCorrectLowest),
-			fn(array $positions) => SgfBoard::getPositionsVerticallyMirroredAround($positions, $bCorrectLowest),
-			fn(array $positions) => SgfBoard::getPositionsMirroredAround($positions, $bCorrectLowest),
-		];
-		$candidates = [];
-		foreach ($transformations as $transform)
+		return self::closest(self::candidates($aShifted, $aFirstMoveColor, $aCorrectMovesShifted, $bFirstMoveColor, $bCorrectMoves, $bCorrectLowest), $bStones);
+	}
+
+	//A as it is and mirrored around the lowest correct move of B, each when it puts the correct
+	//moves of A onto those of B, with the colors as they are and switched; made as they are asked for
+	/** @return \Generator<int, array<int, int>> */
+	private static function candidates(array $aShifted, string $aFirstMoveColor, array $aCorrectMovesShifted, string $bFirstMoveColor, array $bCorrectMoves, int $pivot): \Generator
+	{
+		// a problem without a first move can be either color's, so both are tried
+		$anyColor = $aFirstMoveColor == 'N';
+		foreach ([null, 'getPositionsHorizontallyMirroredAround', 'getPositionsVerticallyMirroredAround', 'getPositionsMirroredAround'] as $mirror)
 		{
-			if (!self::positionArraysMatch($transform($aCorrectMovesShifted), $bCorrectMoves))
+			if (!self::positionArraysMatch($mirror ? SgfBoard::$mirror($aCorrectMovesShifted, $pivot) : $aCorrectMovesShifted, $bCorrectMoves))
 				continue;
-			$aTransformed = $transform($aShifted);
-			// a problem without a first move can be either color's, so both are tried
-			$anyColor = $aFirstMoveColor == 'N';
+			$aTransformed = $mirror ? SgfBoard::$mirror($aShifted, $pivot) : $aShifted;
 			if ($anyColor || $aFirstMoveColor == $bFirstMoveColor)
-				$candidates[] = $aTransformed;
+				yield $aTransformed;
 			if ($anyColor || $aFirstMoveColor != $bFirstMoveColor)
-				$candidates[] = SgfBoard::getColorSwitchedStones($aTransformed);
+				yield SgfBoard::getColorSwitchedStones($aTransformed);
 		}
-		return self::closest($candidates, $bStones);
 	}
 
 	public static function compareWithoutCorrectMoves(array $aStones, array $bStones): ?BoardComparisonResult
@@ -71,8 +69,8 @@ class BoardComparator
 
 	//The candidate with the fewest stones different from B, the first of them on a tie, null when
 	//there is none or it differs in more than MAXIMUM_DIFFERENCE stones
-	/** @param list<array<int, int>> $candidates */
-	private static function closest(array $candidates, array $bStones): ?BoardComparisonResult
+	/** @param iterable<array<int, int>> $candidates */
+	private static function closest(iterable $candidates, array $bStones): ?BoardComparisonResult
 	{
 		$closest = null;
 		$smallestDiff = null;
@@ -83,6 +81,8 @@ class BoardComparator
 			{
 				$closest = $candidate;
 				$smallestDiff = $diff;
+				if ($diff === 0) // no later candidate can be closer, nor need to be made
+					break;
 			}
 		}
 		if ($smallestDiff === null || $smallestDiff > self::MAXIMUM_DIFFERENCE)
