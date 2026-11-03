@@ -552,6 +552,7 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 	{
 		$this->set('_page', 'levelHighscore');
 		$this->set('_title', 'Tsumego Hero - Highscore');
+		$this->rememberHighscorePage(Constants::$HIGHSCORE_LEVEL);
 		$this->set('users', Highscore::level());
 		$this->set('totalUsers', Highscore::activePlayerCount());
 	}
@@ -561,8 +562,7 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 	{
 		$this->set('_page', 'ratingHighscore');
 		$this->set('_title', 'Tsumego Hero - Rating');
-		if (Auth::isLoggedIn())
-			Auth::saveUserField('highscore_page_id', Constants::$HIGHSCORE_RATING);
+		$this->rememberHighscorePage(Constants::$HIGHSCORE_RATING);
 		$this->set('users', Highscore::rating());
 		$this->set('totalUsers', Highscore::activePlayerCount());
 	}
@@ -581,8 +581,6 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 	{
 		$this->set('_page', 'achievementHighscore');
 		$this->set('_title', 'Tsumego Hero - Achievements Highscore');
-		if (Auth::isLoggedIn())
-			Auth::saveUserField('highscore_page_id', Constants::$HIGHSCORE_RATING);
 		$this->set('users', Highscore::achievements());
 		$this->set('totalUsers', null); // no count of the players under this table
 	}
@@ -594,8 +592,7 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 	{
 		$this->set('_page', 'timeHighscore');
 		$this->set('_title', 'Tsumego Hero - Time Highscore');
-		if (Auth::isLoggedIn())
-			Auth::saveUserField('highscore_page_id', Constants::$HIGHSCORE_TIME_MODE);
+		$this->rememberHighscorePage(Constants::$HIGHSCORE_TIME_MODE);
 
 		// the buttons pass the category as its id - 1, and the rank by its name
 		if ($this->query('category') !== null)
@@ -625,8 +622,17 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 	{
 		$this->set('_page', 'dailyHighscore');
 		$this->set('_title', 'Tsumego Hero - Daily Highscore');
+		$this->rememberHighscorePage(Constants::$HIGHSCORE_DAILY);
 		$this->set('users', Highscore::daily());
 		$this->set('totalUsers', Highscore::dailyPlayerCount());
+	}
+
+	//The Highscore item of the menu opens the table the signed in player looked at last
+	//(AppController::highscoreLink). The tags and achievements tables have no page of their own there.
+	private function rememberHighscorePage(int $highscorePageID): void
+	{
+		if (Auth::isLoggedIn() && (int) Auth::getUser()['highscore_page_id'] !== $highscorePageID)
+			Auth::saveUserField('highscore_page_id', $highscorePageID);
 	}
 
 	//Redirect to the logged-in user's own profile page.
