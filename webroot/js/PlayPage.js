@@ -630,10 +630,11 @@ function isSolved(outcome)
 	return outcome === playOutcome.solvedClean || outcome === playOutcome.solvedAfterMistake;
 }
 
-// xpStatus is not rendered in mistake training, the widget has nothing to animate there
+// xpStatus is not rendered in mistake training, the widget has nothing to animate there; in time
+// mode it has none either, but the widget counts the run's problems right and wrong
 function accountWidgetShowsResults()
 {
-	return typeof accountWidget !== 'undefined' && accountWidget && typeof xpStatus !== 'undefined';
+	return typeof accountWidget !== 'undefined' && accountWidget && (typeof xpStatus !== 'undefined' || accountWidget.show == 'time');
 }
 
 function submitResult(outcome)

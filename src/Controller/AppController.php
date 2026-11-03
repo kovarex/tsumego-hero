@@ -373,7 +373,13 @@ class AppController extends Controller
 		$this->set('levelBar', $levelBar);
 		$this->set('boardsBitmask', $boardsBitmask);
 		$this->set('timeMode', new TimeMode());
-		$this->set('changelogTimestamps', Changelog::timestamps());
 		return null;
+	}
+
+	//Only a rendered page shows what is new, an answer of an endpoint (respond()) is no page
+	public function beforeRender(EventInterface $event): void
+	{
+		parent::beforeRender($event);
+		$this->set('changelogTimestamps', Changelog::timestamps());
 	}
 }

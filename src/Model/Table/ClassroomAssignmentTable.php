@@ -282,17 +282,12 @@ class ClassroomAssignmentTable extends AppTable
 				[(int) $row['id'], $userId, $tsumegoId, $misplays, $solved]);
 	}
 
-	//The problems of the assignment the player solved for it, by tsumego id.
-	/**
-	 * @param array<string, mixed> $assignment
-	 * @return array<int, true>
-	 */
-	public static function solvedTsumegoIds(array $assignment, int $userId): array
+	//The join from classroom_assignment_problem `p` (with visibleProblemJoins()) to the result `r`
+	//of the player for the problem when they solved it for the assignment.
+	private static function solvedResultJoin(): string
 	{
-		$rows = Util::query('SELECT tsumego_id FROM classroom_assignment_result
-			WHERE classroom_assignment_id = ? AND user_id = ? AND solved IS NOT NULL',
-			[(int) $assignment['id'], $userId]);
-		return array_fill_keys(array_map('intval', array_column($rows, 'tsumego_id')), true);
+		return 'LEFT JOIN classroom_assignment_result r ON r.classroom_assignment_id = p.classroom_assignment_id
+			AND r.user_id = ? AND r.tsumego_id = sc.tsumego_id AND r.solved IS NOT NULL';
 	}
 
 	//The first problem of the assignment the player hasn't solved for it, or the first problem
@@ -300,14 +295,15 @@ class ClassroomAssignmentTable extends AppTable
 	/** @param array<string, mixed> $assignment */
 	public static function firstUnsolvedSetConnectionId(array $assignment, int $userId): ?int
 	{
-		$problems = self::problems($assignment);
-		if (empty($problems))
-			return null;
-		$solved = self::solvedTsumegoIds($assignment, $userId);
-		foreach ($problems as $problem)
-			if (!isset($solved[$problem['tsumegoId']]))
-				return $problem['setConnectionId'];
-		return $problems[0]['setConnectionId'];
+		$rows = Util::query('SELECT sc.id
+			FROM classroom_assignment_problem p
+			' . self::visibleProblemJoins() . '
+			' . self::solvedResultJoin() . '
+			WHERE p.classroom_assignment_id = ?
+			ORDER BY r.id IS NOT NULL, p.position, p.id
+			LIMIT 1',
+			[$userId, (int) $assignment['id']]);
+		return empty($rows) ? null : (int) $rows[0]['id'];
 	}
 
 	//The row of buttons under the board while the player plays the assignment, numbered from 1
@@ -317,19 +313,20 @@ class ClassroomAssignmentTable extends AppTable
 	/** @param array<string, mixed> $assignment */
 	public static function playButtons(array $assignment, int $userId, int $currentSetConnectionId): TsumegoButtons
 	{
-		$rows = Util::query('SELECT sc.id AS set_connection_id, sc.tsumego_id, sc.num, s.title AS set_title, t.rating, ts.status AS tsumego_status' . self::PREVIEW_COLUMN . '
+		$rows = Util::query('SELECT sc.id AS set_connection_id, sc.tsumego_id, sc.num, s.title AS set_title, t.rating, ts.status AS tsumego_status,
+				r.id IS NOT NULL AS solved_for_assignment' . self::PREVIEW_COLUMN . '
 			FROM classroom_assignment_problem p
 			' . self::visibleProblemJoins() . '
 			LEFT JOIN tsumego_status ts ON ts.tsumego_id = sc.tsumego_id AND ts.user_id = ?
+			' . self::solvedResultJoin() . '
 			' . self::previewJoin() . '
 			WHERE p.classroom_assignment_id = ?
 			ORDER BY p.position, p.id',
-			[$userId, (int) $assignment['id']]);
-		$solved = self::solvedTsumegoIds($assignment, $userId);
+			[$userId, $userId, (int) $assignment['id']]);
 		foreach ($rows as &$row)
 			$row['status'] = match (true)
 			{
-				isset($solved[(int) $row['tsumego_id']]) => self::BUTTON_SOLVED,
+				(bool) $row['solved_for_assignment'] => self::BUTTON_SOLVED,
 				TsumegoUtil::isSolvedStatus($row['tsumego_status']) => self::BUTTON_SOLVED_BEFORE,
 				default => self::BUTTON_NOT_SOLVED,
 			};

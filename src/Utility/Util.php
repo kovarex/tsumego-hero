@@ -2,7 +2,6 @@
 
 namespace App\Utility;
 
-use Exception;
 use PDO;
 use App\Database\MysqlDriver;
 use Cake\Database\Connection;
@@ -69,12 +68,6 @@ class Util
 		return $previous;
 	}
 
-	//Forgets a cookie for the rest of this request, without telling the browser.
-	public static function forgetCookie(string $name): void
-	{
-		unset($_COOKIE[$name]);
-	}
-
 	//The value and the options the cookie was last set with in this request, null when it was not.
 	/** @return array{value: string, options: array<string, mixed>}|null */
 	public static function sentCookie(string $name): ?array
@@ -88,26 +81,6 @@ class Util
 		$options = array_filter($options + self::COOKIE_DEFAULTS, fn($option) => $option !== null);
 		self::$sentCookies[$name] = ['value' => $value, 'options' => $options];
 		setcookie($name, $value, $options);
-	}
-
-	//Clears the cookie and returns its value as a number, null when it was not sent; a value that is not a number throws.
-	public static function clearNumericCookie(string $name): ?int
-	{
-		$result = Util::clearCookie($name);
-		if (!$result)
-			return null;
-		if (!is_numeric($result))
-			throw new Exception("Cookie " . $name . " should be numeric but has value '" . strval($result) . "'.");
-		return intval($result);
-	}
-
-	//As clearNumericCookie(), but a missing cookie throws too.
-	public static function clearRequiredNumericCookie(string $name): int
-	{
-		$result = Util::clearNumericCookie($name);
-		if (is_null($result))
-			throw new Exception("Cookie " . $name . " is expected to be defined, but it isn't");
-		return $result;
 	}
 
 	//Where the site runs
