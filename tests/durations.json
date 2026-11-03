@@ -152,7 +152,6 @@
     "tests/TestCase/Utility/HeroPowersTest.php": 11.3,
     "tests/TestCase/Utility/HtmlSanitizerTest.php": 0.0,
     "tests/TestCase/Utility/JwtAuthTest.php": 0.0,
-    "tests/TestCase/Utility/LegacyCommentConverterTest.php": 0.1,
     "tests/TestCase/Utility/MistakeTrainingTest.php": 11.6,
     "tests/TestCase/Utility/PreferencesTest.php": 0.7,
     "tests/TestCase/Utility/PwnedPasswordCheckerTest.php": 0.0,
