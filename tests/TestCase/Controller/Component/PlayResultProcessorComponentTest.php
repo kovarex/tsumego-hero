@@ -110,6 +110,14 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 		$this->assertSame('V', $this->statusOf($context));
 	}
 
+	public function testVisitByTheProblemIDFromEmpty(): void
+	{
+		$context = new ContextPreparator(['tsumego' => 1]);
+		$this->loginAs($context);
+		$this->get('/tsumegos/play/' . $context->tsumegos[0]['id']);
+		$this->assertSame('V', $this->statusOf($context));
+	}
+
 	public function testSolveFromEmpty(): void
 	{
 		$context = new ContextPreparator(['tsumego' => 1]);

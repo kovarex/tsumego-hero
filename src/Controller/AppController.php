@@ -42,13 +42,14 @@ class AppController extends Controller
 
 	//Shows the problem of the set connection on the play page. $viewVars are what only the route has
 	//(its canonical address, its menu item, its links), they win over what the problem would show.
+	//$markAsVisited: the problem gets the status visited when the player has none on it yet.
 	/**
 	 * @param array<string, mixed> $viewVars
 	 * @param array<string, mixed>|null $classroomAssignment With its collections, see ClassroomAssignmentTable::withCollections()
 	 */
-	protected function renderPlay(int $setConnectionID, array $viewVars = [], ?array $classroomAssignment = null): void
+	protected function renderPlay(int $setConnectionID, array $viewVars = [], ?array $classroomAssignment = null, bool $markAsVisited = false): void
 	{
-		$play = new Play($setConnectionID, $this->request, $classroomAssignment);
+		$play = new Play($setConnectionID, $this->request, $classroomAssignment, $markAsVisited);
 		$play->addRouteValues($viewVars);
 		$this->set($play->viewVars());
 		$this->set('playPage', $play->clientData((string) $this->viewBuilder()->getVar('lightDark')));
