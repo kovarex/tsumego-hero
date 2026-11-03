@@ -362,7 +362,6 @@ function displaySettings(){
 	$("#showx99").css("display", "none");
 	enableDownloads = true;
 	$("#showx3").css("display", "inline-block");
-	$("#findSimilarProblems").css("display", "inline-block");
 	$("#openSgfLink").css("display", "inline-block");
 	$(".play-edit-toggle--after-solve").css("display", "inline");
 }
