@@ -2,6 +2,7 @@
 
 use App\Utility\SgfDescription;
 use App\Utility\Util;
+use App\Utility\ViteManifest;
 
 /**
  * @var \App\View\AppView $this
@@ -78,16 +79,16 @@ else
 				echo '<a href="/tsumegos/play/' . ($versions[$i]['tsumego_id']) . '"> ' . h($versions[$i]['title']) . '</a> ';
 			else
 				echo '<a href="/sgfs/view/' . $versions[$i]['tsumego_id'] . '"> ' . h($versions[$i]['title']) . '</a> ';
-			echo '<a href="/sgfs/view/' . $versions[$i]['tsumego_id'] . '" id="dl1-' . $versions[$i]['id'] . '">v ' . $versions[$i]['version'] . '</a>';
+			echo '<a href="/sgfs/view/' . $versions[$i]['tsumego_id'] . '" id="dl1-' . $versions[$i]['id'] . '" data-download="' . h($versions[$i]['title'] . ' v' . $versions[$i]['version'] . '.sgf') . '">v ' . $versions[$i]['version'] . '</a>';
 			echo '</td>';
 			echo '<td class="timeTableMiddle versionColor proposal-description" align="left" id="description-' . $versions[$i]['id'] . '">' . SgfDescription::render($versions[$i]['description'] ?? null) . '</td>';
 			echo '<td class="timeTableRight versionColor" align="left">
-			<a id="open-' . $versions[$i]['id'] . '" class="openHistoryPointLink">open</a>&nbsp;&nbsp;&nbsp;';
+			<a id="open-' . $versions[$i]['id'] . '" class="openHistoryPointLink" href="/editor?sgfID=' . (int) $versions[$i]['id'] . '">open</a>&nbsp;&nbsp;&nbsp;';
 			if ($versions[$i]['diff'])
-				echo '<a id="compare-' . $versions[$i]['id'] . '" class="openDiff" href="/editor?sgfID=' . $versions[$i]['id'] . '&diffID=' . $versions[$i]['diff'] . '">diff</a>&nbsp;&nbsp;&nbsp;';
-			echo '<a href="#" id="dl2-' . $versions[$i]['id'] . '">download</a>';
+				echo '<a id="compare-' . $versions[$i]['id'] . '" class="openDiff" href="/editor?sgfID=' . $versions[$i]['id'] . '&diffID=' . $versions[$i]['diff'] . '" data-compared-with="' . (int) $versions[$i]['diff'] . '">diff</a>&nbsp;&nbsp;&nbsp;';
+			echo '<a href="#" id="dl2-' . $versions[$i]['id'] . '" data-download="' . h($versions[$i]['num'] . '.sgf') . '">download</a>';
 			if($versions[$i]['delete'])
-				echo '&nbsp;&nbsp;&nbsp;<a onclick="delV(' . $versions[$i]['id'] . ');" href="#">delete</a>';
+				echo '&nbsp;&nbsp;&nbsp;<a data-delete="' . (int) $versions[$i]['id'] . '" href="#">delete</a>';
 			echo '</td>
 			</tr>';
 		}
@@ -96,47 +97,14 @@ else
 	</table>
 </div>
 <br>
+<?php
+//All webroot/js/UploadHistoryPage.js needs to know about this request: the SGF of each version, once, for its downloads
+$uploadHistoryPage = [
+	'problemID' => (int) $id,
+	'sgfs' => array_column($versions, 'sgf', 'id'),
+];
+?>
 <script>
-	function delV(sgfid){
-		var confirmed = confirm("Are you sure?");
-		if(confirmed) window.location.href = "/sgfs/view/<?php echo $id; ?>?delete="+sgfid;
-	}
-
-	<?php for($i = 0; $i < count($versions); $i++)
-	{ ?>
-		$("#open-<?php echo (int) $versions[$i]['id'] ?>").attr("href", "<?php echo '/editor?sgfID=' . (int) $versions[$i]['id']; ?>");
-		$("#dl1-<?php echo (int) $versions[$i]['id']; ?>").click(function(){
-			var blob<?php echo (int) $versions[$i]['id']; ?> = new Blob([<?php echo json_encode($versions[$i]['sgf'], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>],{
-				type: "sgf",
-			});
-			saveAs(blob<?php echo (int) $versions[$i]['id']; ?>, <?php echo json_encode($versions[$i]['title'] . ' v' . $versions[$i]['version'] . '.sgf', JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>);
-		});
-		$("#dl2-<?php echo (int) $versions[$i]['id']; ?>").click(function(){
-			var blob2<?php echo (int) $versions[$i]['id']; ?> = new Blob([<?php echo json_encode($versions[$i]['sgf'], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>],{
-				type: "sgf",
-			});
-			saveAs(blob2<?php echo (int) $versions[$i]['id']; ?>, <?php echo json_encode($versions[$i]['num'] . '.sgf', JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>);
-		});
-		$("#<?php echo (int) $versions[$i]['id']; ?>").hover(
-		  function () {
-			$("#<?php echo (int) $versions[$i]['id']; ?> td").css("background","linear-gradient(#f7f7f7, #b9b9b9)");
-		  },
-		  function () {
-			$("#<?php echo (int) $versions[$i]['id']; ?> td").css("background","");
-		  }
-		);
-		<?php if($versions[$i]['diff'])
-		{ ?>
-			$("#compare-<?php echo (int) $versions[$i]['id']; ?>").hover(
-			  function () {
-				$("#<?php echo (int) $versions[$i]['id']; ?> td").css("background","linear-gradient(#fff, #c8c8c8)");
-				$("#<?php echo (int) $versions[$i]['diff']; ?> td").css("background","linear-gradient(#fff, #c8c8c8)");
-			  },
-			  function () {
-				$("#<?php echo (int) $versions[$i]['id']; ?> td").css("background","");
-				$("#<?php echo (int) $versions[$i]['diff']; ?> td").css("background","");
-			  }
-			);
-		<?php } ?>
-	<?php } ?>
+	const uploadHistoryPage = <?php echo json_encode($uploadHistoryPage, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE | JSON_FORCE_OBJECT); ?>;
 </script>
+<?php echo ViteManifest::legacyScript('problem-admin'); ?>
