@@ -1,14 +1,12 @@
 <?php
 
 use App\Model\Table\SetTable;
-use App\Model\Table\ChallengeTable;
-use App\Model\Table\ClassroomMemberTable;
-use App\Model\Table\MessageTable;
 use App\Model\Table\UserTable;
 use App\Utility\AccountWidget;
 use App\Utility\AchievementChecker;
 use App\Utility\Auth;
 use App\Utility\CookieFlash;
+use App\Utility\HeaderCounts;
 use App\Utility\TimeMode;
 use App\Utility\TsumegoUtil;
 use App\Utility\Util;
@@ -98,13 +96,14 @@ $active = fn(string ...$pages): string => in_array($_page, $pages, true) ? 'nav_
 $playUrl = TsumegoUtil::playUrl();
 if (Auth::isLoggedIn())
 {
-	$unreadMessageCount = MessageTable::unreadCount(Auth::getUserID());
+	$headerCounts = HeaderCounts::forUser(Auth::getUserID());
+	$unreadMessageCount = $headerCounts->unreadMessages;
 	//Invitations to a class and requests to join one wait for the player's answer, which
 	//the Classes item counts, and so does Collections, where the item is hidden.
-	$classesAwaitingAnswer = ClassroomMemberTable::countAwaitingAnswer(Auth::getUserID());
+	$classesAwaitingAnswer = $headerCounts->classesAwaitingAnswer;
 	//Challenges the player is in and hasn't played yet: the Challenges item counts them,
 	//and so does Play, where the item is hidden.
-	$challengesWaiting = ChallengeTable::countWaitingFor(Auth::getUserID());
+	$challengesWaiting = $headerCounts->challengesWaiting;
 	$soundSetting = UserTable::soundIsOn(Auth::getUser()) ? 'on' : 'off';
 }
 else

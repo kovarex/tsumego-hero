@@ -168,11 +168,18 @@ class ChallengeTable extends AppTable
 	//The challenges a player is in and hasn't played nor declined yet, for the badge of the menu.
 	public static function countWaitingFor(int $userId): int
 	{
-		$rows = Util::query('SELECT COUNT(*) AS count
+		[$sql, $params] = self::countWaitingForQuery($userId);
+		return (int) Util::query($sql, $params)[0]['count'];
+	}
+
+	//The query of countWaitingFor(), which the menu asks together with its other counts (HeaderCounts)
+	/** @return array{string, list<mixed>} */
+	public static function countWaitingForQuery(int $userId): array
+	{
+		return ['SELECT COUNT(*) AS count
 			FROM challenge_participant p
 			LEFT JOIN time_mode_session s ON s.challenge_id = p.challenge_id AND s.user_id = p.user_id
-			WHERE p.user_id = ? AND p.declined IS NULL AND s.id IS NULL', [$userId]);
-		return (int) $rows[0]['count'];
+			WHERE p.user_id = ? AND p.declined IS NULL AND s.id IS NULL', [$userId]];
 	}
 
 	//$extraColumns: Columns the caller joins in, each followed by a comma
