@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\TimeModeCategoryTable;
 use App\Utility\Constants;
 use App\Utility\Rating;
 
@@ -218,5 +219,26 @@ class AccountWidgetTest extends IntegrationTestCase
 		$this->assertSame('1d', $browser->find('#account-bar-xp')->getText());
 		$browser->driver->executeScript('document.getElementById("modeSelector").click();');
 		$this->assertStringStartsWith('Level ', $browser->find('#account-bar-xp')->getText());
+	}
+
+	//In a time mode run the bar counts the problems right and wrong as they are played
+	public function testTheTimeModeBarCountsASolveAtOnce()
+	{
+		$parameters = ['user' => ['mode' => Constants::$LEVEL_MODE], 'time-mode-ranks' => ['5k']];
+		for ($i = 0; $i < 3; ++$i)
+			$parameters['tsumegos'][] = ['set_order' => $i];
+		$context = new ContextPreparator($parameters);
+		$browser = Browser::instance();
+		$browser->get('timeMode/start?categoryID=' . TimeModeCategoryTable::SLOW . '&rankID=' . $context->timeModeRanks[0]['id']);
+		$browser->hover($browser->find('#account-bar-xp'));
+		$this->assertSame('0 right', $browser->find('#account-bar-xp')->getText());
+		$widthBefore = $browser->driver->executeScript('return document.getElementById("xp-bar-fill").style.width;');
+
+		$browser->playWithResult('S');
+
+		$browser->hover($browser->find('body'));
+		$browser->hover($browser->find('#account-bar-xp'));
+		$this->assertSame('1 right', $browser->find('#account-bar-xp')->getText());
+		$this->assertNotSame($widthBefore, $browser->driver->executeScript('return document.getElementById("xp-bar-fill").style.width;'));
 	}
 }
