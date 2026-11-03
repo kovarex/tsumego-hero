@@ -563,6 +563,27 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 		$this->assertSame('F', $this->statusOf($context));
 	}
 
+	//The status a result leaves the problem in, from the one it had
+	public function testTheStatusAResultLeaves(): void
+	{
+		$outOfHearts = Util::getHealthBasedOnLevel(1);
+		foreach ([
+			['W', false, 0, 'W', 'A problem in review failed with hearts left stays in review'],
+			['W', false, $outOfHearts, 'X', 'A problem in review failed with the last heart is forgotten'],
+			['G', false, 0, 'V', 'A failed golden problem is only visited'],
+			['W', true, 0, 'C', 'The second solve masters the problem'],
+			['F', true, 0, 'F', 'A failed problem stays failed until the next day'],
+		] as [$status, $solved, $damage, $expectedStatus, $message])
+		{
+			$context = new ContextPreparator(['tsumego' => ['status' => $status, 'set_order' => 1], 'user' => ['damage' => $damage]]);
+			if ($solved)
+				$this->solve($context);
+			else
+				$this->failResult($context);
+			$this->assertSame($expectedStatus, $this->statusOf($context), $message);
+		}
+	}
+
 	public function testSolvedIncreasedBySolvingNotSolved(): void
 	{
 		foreach (['N', 'S'] as $previousStatus)

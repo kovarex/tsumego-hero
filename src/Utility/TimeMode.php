@@ -256,16 +256,16 @@ class TimeMode
 		TableRegistry::getTableLocator()->get('TimeModeAttempt')->saveOrFail($attempt);
 	}
 
-	private static function deduceAttemptStatus(array $result, bool $timeout): int
+	private static function deduceAttemptStatus(bool $solved, bool $timeout): int
 	{
 		if ($timeout)
 			return TimeModeAttemptStatusTable::TIMEOUT;
-		if (!$result['solved'])
+		if (!$solved)
 			return TimeModeAttemptStatusTable::FAILED;
 		return TimeModeAttemptStatusTable::SOLVED;
 	}
 
-	public function processPlayResult(Tsumego $previousTsumego, array $result, float $seconds = 0, bool $timeout = false): void
+	public function processPlayResult(Tsumego $previousTsumego, bool $solved, float $seconds = 0, bool $timeout = false): void
 	{
 		if (!$this->currentSession)
 			return;
@@ -277,8 +277,8 @@ class TimeMode
 		if (!$currentAttempt)
 			return; // this tsumego is not related to our time mode session, we ignore it
 		$seconds = $timeout ? $this->overallSecondsToSolve : min($seconds, $this->overallSecondsToSolve);
-		self::recordAttempt($currentAttempt, self::deduceAttemptStatus($result, $timeout), $seconds,
-			$result['solved'] ? self::calculatePoints($seconds, $this->overallSecondsToSolve) : 0);
+		self::recordAttempt($currentAttempt, self::deduceAttemptStatus($solved, $timeout), $seconds,
+			$solved ? self::calculatePoints($seconds, $this->overallSecondsToSolve) : 0);
 		$this->currentOrder++;
 	}
 

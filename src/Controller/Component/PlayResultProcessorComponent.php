@@ -20,6 +20,7 @@ use App\Utility\HeroPowers;
 use App\Utility\Level;
 use App\Utility\MistakeTraining;
 use App\Utility\PlayOutcome;
+use App\Utility\PlayResult;
 use App\Utility\Rating;
 use App\Utility\SetCompletionCounter;
 use App\Utility\TimeMode;
@@ -80,23 +81,14 @@ class PlayResultProcessorComponent extends Component
 	private function processResultInPlayMode(int $tsumegoID, PlayOutcome $outcome, float $seconds, ?int $setConnectionID): array
 	{
 		$seconds = max(0.01, $seconds);
-		$solved = $outcome === PlayOutcome::SolvedClean || $outcome === PlayOutcome::SolvedAfterMistake;
+		$result = new PlayResult($outcome === PlayOutcome::SolvedClean || $outcome === PlayOutcome::SolvedAfterMistake);
 
 		$tsumego = TableRegistry::getTableLocator()->get('Tsumego')->find()->where(['id' => $tsumegoID])->first();
 		if (!$tsumego)
 			return ['error' => 'Tsumego not found'];
 
 		if (Auth::isInTimeMode())
-		{
-			$timeMode = new TimeMode();
-			$playResult = ['solved' => $solved];
-			$timeMode->processPlayResult($tsumego, $playResult, $seconds, $outcome === PlayOutcome::TimedOut);
-		}
-
-		$result = [];
-		$result['solved'] = $solved;
-		$result['xp-modifier'] = 1;
-		$result['xp-gained'] = 0;
+			new TimeMode()->processPlayResult($tsumego, $result->solved, $seconds, $outcome === PlayOutcome::TimedOut);
 
 		// updated isn't loaded: the database moves it when the status changes
 		$tsumegoStatus = TableRegistry::getTableLocator()->get('TsumegoStatus')->find()
@@ -111,7 +103,7 @@ class PlayResultProcessorComponent extends Component
 			SetCompletionCounter::updateAfterSolve((int) Auth::getUserID(), $tsumegoID);
 
 		if (HeroPowers::getSprintRemainingSeconds() > 0)
-			$result['xp-modifier'] *= Constants::$SPRINT_MULTIPLIER;
+			$result->xpMultiplier *= Constants::$SPRINT_MULTIPLIER;
 
 		$originalTsumegoRating = $tsumego->rating;
 
@@ -121,9 +113,9 @@ class PlayResultProcessorComponent extends Component
 		$lastTsumegoAttempt = TsumegoAttemptTable::findLast((int) Auth::getUserID(), $tsumegoID);
 
 		$this->processRatingChange($tsumego, $result, $previousStatusValue, $progressDeletionCount, TsumegoAttemptTable::failsInARow($lastTsumegoAttempt));
-		if (!$result['solved'])
-			$result['potion_triggered'] = $this->processPotion();
-		$this->processXpChange($tsumego, $result, $previousStatusValue, $originalTsumegoRating, $progressDeletionCount);
+		if (!$result->solved)
+			$result->potionTriggered = $this->processPotion();
+		$this->processXpChange($result, $previousStatusValue, $originalTsumegoRating, $progressDeletionCount);
 		$this->updateTsumegoAttempt($tsumego, $result, $previousStatusValue, $seconds, $lastTsumegoAttempt);
 		ClassroomAssignmentTable::recordResult((int) Auth::getUserID(), $tsumegoID, $outcome);
 		// The pool is fed from every mode: a solved problem that goes wrong enters the
@@ -133,8 +125,8 @@ class PlayResultProcessorComponent extends Component
 		$review = MistakeTraining::recordResult(Auth::getUserID(), $tsumegoID, $outcome, $previousStatusValue, Auth::isInMistakeTrainingMode(), Auth::isInTimeMode());
 		if ($review !== null && Auth::isInMistakeTrainingMode())
 			$trainingXp = $this->processTrainingXp($review, (float) $originalTsumegoRating);
-		$this->processErrorAchievement($result, $previousStatusValue, $outcome);
-		$this->processUnsortedStuff($tsumego, $result, $previousStatusValue);
+		$this->processErrorAchievement($previousStatusValue, $outcome);
+		$this->processSolveConditions($tsumego, $result, $previousStatusValue);
 		$this->processGoldenRun($result, $previousStatusValue);
 		$this->writeUserChanges();
 
@@ -144,13 +136,13 @@ class PlayResultProcessorComponent extends Component
 		$achievementChecker->checkStandardAchievements()->finalize();
 
 		$response = [
-			'xp_gained' => $trainingXp !== null ? array_sum($trainingXp) : $result['xp-gained'],
+			'xp_gained' => $trainingXp !== null ? array_sum($trainingXp) : $result->xpGained,
 			'new_rating' => Auth::getUser()['rating'],
 			'new_xp' => Auth::getUser()['xp'],
 			'new_level' => Auth::getUser()['level'],
 			'new_damage' => Auth::getUser()['damage'],
 			'status' => $newStatus,
-			'potion_triggered' => $result['potion_triggered'] ?? false,
+			'potion_triggered' => $result->potionTriggered,
 		];
 		if (!empty($achievementChecker->updated))
 			$response['achievement_updates'] = $achievementChecker->updated;
@@ -282,42 +274,40 @@ class PlayResultProcessorComponent extends Component
 		return false;
 	}
 
-	private function getNewStatus(bool $solved, string $currentStatus, array &$result): string
+	//The status a result leaves the problem in, and the XP multiplier of solving it from the one it had.
+	private function getNewStatus(string $currentStatus, PlayResult $result): string
 	{
-		if ($solved)
+		if ($result->solved)
 		{
-			if ($currentStatus == TsumegoStatusTable::$REVIEW) // half xp state
-			{$result['xp-modifier'] *= Constants::$SECOND_SOLVE_XP_MULTIPLIER;
-				return TsumegoStatusTable::$MASTERED; // double solved
+			// the second solve of a problem in review masters it, for less XP
+			if ($currentStatus == TsumegoStatusTable::$REVIEW)
+			{
+				$result->xpMultiplier *= Constants::$SECOND_SOLVE_XP_MULTIPLIER;
+				return TsumegoStatusTable::$MASTERED;
 			}
 			if ($currentStatus == TsumegoStatusTable::$GOLDEN)
 			{
-				$result['xp-modifier'] *= Constants::$GOLDEN_TSUMEGO_XP_MULTIPLIER;
+				$result->xpMultiplier *= Constants::$GOLDEN_TSUMEGO_XP_MULTIPLIER;
 				return TsumegoStatusTable::$SOLVED;
 			}
 			if ($currentStatus == TsumegoStatusTable::$VISITED || $currentStatus == TsumegoStatusTable::$NOT_VISITED)
 				return TsumegoStatusTable::$SOLVED;
-			return $currentStatus; // failed can't be unfailed by solving, user has to wait until next day or rejuvenation
+			// a failed problem stays failed until the next day or a rejuvenation
+			return $currentStatus;
 		}
 
-		// not solved from now
-		if ($currentStatus == TsumegoStatusTable::$VISITED) // if it was just visited so far (so we don't overwrite solved)
-		{if (Auth::getUser()['damage'] > Util::getHealthBasedOnLevel(Auth::getUser()['level']))
-			return TsumegoStatusTable::$LOCKED;  // only mark as failed when the user has no hearts left
-			return $currentStatus;
-		}
+		// a fail marks the problem only when it costs the last heart, and never touches a solved one
+		$outOfHearts = Auth::getUser()['damage'] > Util::getHealthBasedOnLevel(Auth::getUser()['level']);
+		if ($currentStatus == TsumegoStatusTable::$VISITED)
+			return $outOfHearts ? TsumegoStatusTable::$LOCKED : $currentStatus;
 		if ($currentStatus == TsumegoStatusTable::$REVIEW)
-		{
-			if (Auth::getUser()['damage'] > Util::getHealthBasedOnLevel(Auth::getUser()['level']))
-				return TsumegoStatusTable::$FORGOTTEN; // only mark as 'stale failed' when the user has no hearts left
-			return $currentStatus;
-		}
+			return $outOfHearts ? TsumegoStatusTable::$FORGOTTEN : $currentStatus;
 		if ($currentStatus == TsumegoStatusTable::$GOLDEN)
-			return TsumegoStatusTable::$VISITED; // failed golden tsumego
+			return TsumegoStatusTable::$VISITED;
 		return $currentStatus;
 	}
 
-	private function updateTsumegoStatus(Tsumego $previousTsumego, array &$result, ?TsumegoStatus $previousTsumegoStatus): string
+	private function updateTsumegoStatus(Tsumego $previousTsumego, PlayResult $result, ?TsumegoStatus $previousTsumegoStatus): string
 	{
 		if (Auth::isInMistakeTrainingMode())
 			return $previousTsumegoStatus->status ?? TsumegoStatusTable::$NOT_VISITED;
@@ -328,7 +318,7 @@ class PlayResultProcessorComponent extends Component
 			'tsumego_id' => $previousTsumego->id,
 			'status' => TsumegoStatusTable::$VISITED]);
 
-		$newStatus = $this->getNewStatus($result['solved'], $previousTsumegoStatus->status, $result);
+		$newStatus = $this->getNewStatus($previousTsumegoStatus->status, $result);
 
 		if (TsumegoUtil::isSolvedStatus($newStatus) && !TsumegoUtil::isSolvedStatus($previousTsumegoStatus->status))
 			$this->incrementUserField('solved', 1);
@@ -337,7 +327,7 @@ class PlayResultProcessorComponent extends Component
 		return $newStatus;
 	}
 
-	private function updateTsumegoAttempt(Tsumego $previousTsumego, array $result, string $previousTsumegoStatus, float $seconds, ?TsumegoAttempt $lastTsumegoAttempt): void
+	private function updateTsumegoAttempt(Tsumego $previousTsumego, PlayResult $result, string $previousTsumegoStatus, float $seconds, ?TsumegoAttempt $lastTsumegoAttempt): void
 	{
 		if (Auth::isInTimeMode() || Auth::isInMistakeTrainingMode())
 			return;
@@ -348,11 +338,11 @@ class PlayResultProcessorComponent extends Component
 		$continued = $lastTsumegoAttempt && !$lastTsumegoAttempt->solved ? $lastTsumegoAttempt : null;
 		$values = [
 			Auth::getUser()['rating'],
-			$result['xp-gained'],
+			$result->xpGained,
 			($continued ? $continued->seconds : 0) + $seconds,
-			$result['solved'] ? 1 : 0,
+			$result->solved ? 1 : 0,
 			$previousTsumego->rating,
-			($continued ? $continued->misplays : 0) + ($result['solved'] ? 0 : 1),
+			($continued ? $continued->misplays : 0) + ($result->solved ? 0 : 1),
 			date('Y-m-d H:i:s')];
 		// Plain SQL: the ratings and the seconds are floats that MySQL rounds into the integer columns,
 		// as it did for the Cake 2 save, where the ORM would cut off their fractions.
@@ -372,7 +362,7 @@ class PlayResultProcessorComponent extends Component
 		$tsumegoRating += $tsumegoRatingDelta;
 	}
 
-	private function processRatingChange(Tsumego $previousTsumego, array $result, string $previousTsumegoStatus, int $progressDeletionCount, int $failsInARow): void
+	private function processRatingChange(Tsumego $previousTsumego, PlayResult $result, string $previousTsumegoStatus, int $progressDeletionCount, int $failsInARow): void
 	{
 		if (!Auth::ratingisGainedInCurrentMode())
 			return;
@@ -386,7 +376,7 @@ class PlayResultProcessorComponent extends Component
 
 		// Failing the same problem again and again tells nothing new about the player or the problem,
 		// so only the first fails in a row change the ratings, until the problem is solved.
-		if (!$result['solved'] && $failsInARow >= Constants::$MAXIMUM_RATED_FAILS_IN_A_ROW)
+		if (!$result->solved && $failsInARow >= Constants::$MAXIMUM_RATED_FAILS_IN_A_ROW)
 			return;
 
 		$userRating = (float) Auth::getUser()['rating'];
@@ -395,7 +385,7 @@ class PlayResultProcessorComponent extends Component
 
 		// Each AJAX call is a single atomic event: fail or solve, never both.
 		// Prior misplays were already processed by their own AJAX calls.
-		self::processRatingChangeStep($userRating, $tsumegoRating, $result['solved']);
+		self::processRatingChangeStep($userRating, $tsumegoRating, $result->solved);
 
 		$this->setUserFields([
 			'rating' => $userRating,
@@ -408,9 +398,9 @@ class PlayResultProcessorComponent extends Component
 		TsumegoTable::addToRating($previousTsumego->id, $tsumegoRating - $originalTsumegoRating);
 	}
 
-	private function processDamage(array $result, string $previousStatusValue): void
+	private function processDamage(PlayResult $result, string $previousStatusValue): void
 	{
-		if ($result['solved'])
+		if ($result->solved)
 			return;
 		if (!Auth::isInLevelMode())
 			return;
@@ -419,22 +409,22 @@ class PlayResultProcessorComponent extends Component
 		$this->incrementUserField('damage', 1);
 	}
 
-	private function processXpChange(Tsumego $previousTsumego, array &$result, string $previousTsumegoStatus, int|float|string $originalTsumegoRating, int $progressDeletionCount): void
+	private function processXpChange(PlayResult $result, string $previousTsumegoStatus, int|float|string $originalTsumegoRating, int $progressDeletionCount): void
 	{
 		if (!Auth::XPisGainedInCurrentMode())
 			return;
 		if (!Level::XPAndRatingIsGainedInTsumegoStatus($previousTsumegoStatus))
 			return;
-		if (!$result['solved'])
+		if (!$result->solved)
 			return;
 
-		$multiplier = $result['xp-modifier'];
+		$multiplier = $result->xpMultiplier;
 		if ($previousTsumegoStatus != TsumegoStatusTable::$GOLDEN)
 			$multiplier *= TsumegoXPAndRating::getProgressDeletionMultiplier($progressDeletionCount);
 
 		$user = & Auth::getUser();
-		$result['xp-gained'] = Rating::ratingToXP($originalTsumegoRating, $multiplier);
-		Level::addXPAsResultOfTsumegoSolving($user, $result['xp-gained']);
+		$result->xpGained = Rating::ratingToXP($originalTsumegoRating, $multiplier);
+		Level::addXPAsResultOfTsumegoSolving($user, $result->xpGained);
 		$this->setUserFields([
 			'xp' => $user['xp'],
 			'level' => $user['level'],
@@ -443,7 +433,7 @@ class PlayResultProcessorComponent extends Component
 		]);
 	}
 
-	private function processErrorAchievement(array $result, string $previousTsumegoStatus, PlayOutcome $outcome): void
+	private function processErrorAchievement(string $previousTsumegoStatus, PlayOutcome $outcome): void
 	{
 		if (!Auth::XPisGainedInCurrentMode())
 			return;
@@ -458,13 +448,14 @@ class PlayResultProcessorComponent extends Component
 			AchievementConditionTable::put(Auth::getUserID(), AchievementConditionTable::CATEGORY_NO_ERROR_STREAK, 0);
 	}
 
-	private function processUnsortedStuff(Tsumego $previousTsumego, array $result, string $previousTsumegoStatus): void
+	//What a solve counts for besides the XP: the solves of a dan rank, the gem of the day and the sprint run.
+	private function processSolveConditions(Tsumego $previousTsumego, PlayResult $result, string $previousTsumegoStatus): void
 	{
 		if (Auth::isInMistakeTrainingMode())
 			return;
 		if (!Level::XPAndRatingIsGainedInTsumegoStatus($previousTsumegoStatus))
 			return;
-		if (!$result['solved'])
+		if (!$result->solved)
 			return;
 
 		$solvedTsumegoRank = Rating::getReadableRankFromRating($previousTsumego->rating);
@@ -480,13 +471,13 @@ class PlayResultProcessorComponent extends Component
 
 	//The Gold Digger run counts the golden tsumego solved in a row. A golden tsumego is a
 	//single attempt, so a solve moves the run one further and a fail starts it over.
-	private function processGoldenRun(array $result, string $previousTsumegoStatus): void
+	private function processGoldenRun(PlayResult $result, string $previousTsumegoStatus): void
 	{
 		if (Auth::isInMistakeTrainingMode())
 			return;
 		if ($previousTsumegoStatus != TsumegoStatusTable::$GOLDEN)
 			return;
-		if ($result['solved'])
+		if ($result->solved)
 			AchievementConditionTable::increment(Auth::getUserID(), AchievementConditionTable::CATEGORY_GOLDEN);
 		else
 			AchievementConditionTable::put(Auth::getUserID(), AchievementConditionTable::CATEGORY_GOLDEN, 0);
