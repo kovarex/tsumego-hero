@@ -737,6 +737,29 @@ class SetsControllerTest extends IntegrationTestCase
 		$this->assertFalse($browser->idExists('unselect-active-tiles'));
 	}
 
+	public function testRemovingOneFilterTileKeepsTheOthers(): void
+	{
+		$context = new ContextPreparator([
+			'tsumego' => [
+				'sets' => [['name' => 'tsumego set 1', 'num' => '1']],
+			],
+		]);
+		$setId = $context->tsumegos[0]['sets'][0]['id'];
+
+		$browser = Browser::instance();
+		$browser->getAnonymous('sets/' . $setId);
+		$browser->driver->manage()->deleteAllCookies();
+		$browser->driver->manage()->addCookie(['name' => 'filtered_ranks', 'value' => '15k@1d']);
+		$browser->getAnonymous('sets/' . $setId);
+
+		$browser->find('#showFilters')->click();
+		$browser->waitUntilCssSelectorDisplayed('#active-rank-element1');
+		$browser->find('#active-rank-element0')->click();
+
+		$browser->waitUntilJs('document.getElementById("active-rank-element0") !== null && document.getElementById("active-rank-element1") === null');
+		$this->assertSame('1d', $browser->driver->executeScript('return document.getElementById("active-rank-element0").textContent;'));
+	}
+
 	private function checkSetNavigationButtons($browser, int $count, $context, $indexFunction, $orderFunction): array
 	{
 		$buttons = $browser->getElements('div.set-view-main li');

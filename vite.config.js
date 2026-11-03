@@ -167,6 +167,7 @@ export default defineConfig({
 		//The play page's own script, apart from the data the page prints (see templates/Tsumegos/play.php)
 		legacyBundlePlugin('play', ['webroot/js/PlayPage.js']),
 		legacyBundlePlugin('sets-index', ['webroot/js/SetsIndexPage.js']),
+		legacyBundlePlugin('sets-view', ['webroot/js/SetsViewPage.js']),
 		legacyBundlePlugin('time-mode', ['webroot/js/TimeModePages.js']),
 		legacyBundlePlugin('schedule', ['webroot/js/SchedulePage.js']),
 		legacyBundlePlugin('settings', ['webroot/js/SettingsPage.js']),

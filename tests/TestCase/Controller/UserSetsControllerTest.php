@@ -951,6 +951,19 @@ class UserSetsControllerTest extends IntegrationTestCase
 		$this->assertStringNotContainsString('Anyone with the link can open this collection', $sitePage);
 	}
 
+	public function testSwitchingTheSharingOnTheCollectionPageSavesIt(): void
+	{
+		$context = new ContextPreparator(['user' => ['name' => 'alice']]);
+		$setId = $this->_createSet('Alice Collection', $context->user['id'], 0);
+
+		$browser = Browser::instance();
+		$browser->get("sets/{$setId}");
+		$browser->find('.set-view__share-toggle input[type=checkbox]')->click();
+		$browser->waitUntilCssSelectorDisplayed('#SetShareLink');
+
+		$this->assertEquals(1, $this->fetchTable('Set')->get($setId)->public);
+	}
+
 	public function testCollectionPageShowsTheAddressOfASharedCollection(): void
 	{
 		$context = new ContextPreparator(['user' => ['name' => 'alice']]);
