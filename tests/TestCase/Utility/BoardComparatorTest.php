@@ -179,4 +179,44 @@ class BoardComparatorTest extends AppTestCase
 		$this->assertSame(1, $result->difference);
 		$this->assertSame('af', $result->diff);
 	}
+
+	// without a first move, the problem can be either color's, so the colors switched are tried too
+	public function testMatchColorSwitchedPositionWithCorrectMoveWhenNeitherHasAFirstMove()
+	{
+		$black = SgfParser::process('(;GM[1]FF[4]SZ[19]AB[ca][cb]AW[da])');
+		$white = SgfParser::process('(;GM[1]FF[4]SZ[19]AW[ca][cb]AB[da])');
+		$result = BoardComparator::compare(
+			$black->stones,
+			'N',
+			SgfBoard::decodePositionString('cc'),
+			$white->stones,
+			'N',
+			SgfBoard::decodePositionString('cc'));
+		$this->assertSame(0, $result->difference);
+		$this->assertSame('', $result->diff);
+	}
+
+	// the same problem with the colors switched and the other color to play is the same problem
+	public function testMatchColorSwitchedPositionWhenTheOtherColorPlaysFirst()
+	{
+		$black = SgfParser::process('(;GM[1]FF[4]SZ[19]AB[ca][cb]AW[da])');
+		$white = SgfParser::process('(;GM[1]FF[4]SZ[19]AW[ca][cb]AB[da])');
+		$result = BoardComparator::compare(
+			$black->stones,
+			'B',
+			SgfBoard::decodePositionString('cc'),
+			$white->stones,
+			'W',
+			SgfBoard::decodePositionString('cc'));
+		$this->assertSame(0, $result->difference);
+	}
+
+	public function testPositionsDifferingInMoreThanFiveStonesAreNotSimilar()
+	{
+		$a = SgfParser::process('(;GM[1]FF[4]SZ[19]AB[aa])');
+		$b = SgfParser::process('(;GM[1]FF[4]SZ[19]AB[aa][ba][ca][da][ea][fa][ga])');
+		$this->assertNull(BoardComparator::compare($a->stones, 'B', SgfBoard::decodePositionString('ab'), $b->stones, 'B', SgfBoard::decodePositionString('ab')));
+		$c = SgfParser::process('(;GM[1]FF[4]SZ[19]AB[aa][ba][ca][da][ea][fa])');
+		$this->assertSame(5, BoardComparator::compare($a->stones, 'B', SgfBoard::decodePositionString('ab'), $c->stones, 'B', SgfBoard::decodePositionString('ab'))->difference);
+	}
 }
