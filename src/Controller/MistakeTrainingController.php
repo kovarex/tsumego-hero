@@ -23,7 +23,8 @@ class MistakeTrainingController extends AppController
 		if (!Auth::isLoggedIn())
 			return $this->redirect('/users/login');
 
-		Auth::saveUserField('mode_id', Constants::$MISTAKE_TRAINING_MODE);
+		if (!Auth::isInMistakeTrainingMode())
+			Auth::saveUserField('mode_id', Constants::$MISTAKE_TRAINING_MODE);
 
 		if ($setConnectionID !== null)
 			return $this->playSetConnection((int) $setConnectionID);
