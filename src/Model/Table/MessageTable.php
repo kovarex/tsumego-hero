@@ -107,7 +107,7 @@ class MessageTable extends AppTable
 
 		$sender = UserTable::row($senderUserId);
 		$senderName = UserTable::displayName($sender);
-		$emailer->from(['me@tsumego.com' => 'https://tsumego.com']);
+		$emailer->from(Mailer::SITE_SENDER);
 		$emailer->to($recipient['email']);
 		$emailer->subject('New message from ' . $senderName . ' on Tsumego Hero');
 		$body = $senderName . ' sent you a message on Tsumego Hero:

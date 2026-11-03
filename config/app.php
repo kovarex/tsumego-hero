@@ -60,8 +60,11 @@ return [
 		'ignoredDeprecationPaths' => [],
 	],
 	'Debugger' => ['editor' => 'phpstorm'],
-	'EmailTransport' => ['default' => ['className' => 'Mail']],
-	'Email' => ['default' => ['transport' => 'default', 'from' => 'me@tsumego.com']],
+	//mail() with a DKIM signature once the server's core.local.php sets EmailTransport.default.dkim
+	//(see App\Mailer\Transport\DkimMailTransport), unsigned without it.
+	'EmailTransport' => ['default' => ['className' => 'DkimMail']],
+	//Quoted-printable keeps the body 7-bit, so no relay re-encodes it and breaks the DKIM body hash.
+	'Email' => ['default' => ['transport' => 'default', 'from' => ['me@tsumego.com' => 'Tsumego Hero'], 'transferEncoding' => 'quoted-printable']],
 	'Datasources' => [
 		'default' => [
 			'className' => Connection::class,
