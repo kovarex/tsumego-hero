@@ -1,5 +1,7 @@
 <?php
 
+use App\Utility\ViteManifest;
+
 /**
  * Tag overview for admins: every tag with how many problems carry it. A count opens the
  * list of those problems, loaded when it is first opened, so a tag can be judged (and
@@ -78,4 +80,4 @@ $problemCountText = fn(int $count): string => $count . ' ' . ($count === 1 ? 'pr
 		</tbody>
 	</table>
 </div>
-<?php echo \App\Utility\ViteManifest::legacyScript('problem-admin'); ?>
+<?php echo ViteManifest::legacyScript('problem-admin'); ?>
