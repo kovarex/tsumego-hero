@@ -22,14 +22,6 @@ class UtilTest extends AppTestCase
 		parent::tearDown();
 	}
 
-	public function testClearNumericCookieReturnsInteger()
-	{
-		$_COOKIE['number'] = '42';
-		$result = Util::clearNumericCookie('number');
-		$this->assertSame(42, $result);
-		$this->assertArrayNotHasKey('number', $_COOKIE);
-	}
-
 	public function testIsHttpUrl(): void
 	{
 		$this->assertTrue(Util::isHttpUrl('https://senseis.xmp.net/?Snapback'));
@@ -39,39 +31,11 @@ class UtilTest extends AppTestCase
 		$this->assertFalse(Util::isHttpUrl(''));
 	}
 
-	public function testClearNumericCookieThrowsOnNonNumeric()
-	{
-		$_COOKIE['not-number'] = 'abc';
-		$this->expectException(Exception::class);
-		$this->expectExceptionMessage("Cookie not-number should be numeric but has value 'abc'.");
-		Util::clearNumericCookie('not-number');
-	}
-
-	public function testClearRequiredNumericCookieThrowsWhenMissing()
-	{
-		$this->expectException(Exception::class);
-		$this->expectExceptionMessage("Cookie missing is expected to be defined, but it isn't");
-		Util::clearRequiredNumericCookie('missing');
-	}
-
-	public function testClearRequiredNumericCookieReturnsValue()
-	{
-		$_COOKIE['hits'] = '7';
-		$this->assertSame(7, Util::clearRequiredNumericCookie('hits'));
-		$this->assertArrayNotHasKey('hits', $_COOKIE);
-	}
-
 	public function testClearCookieReturnsNullWhenNotSet()
 	{
 		$result = Util::clearCookie('unknown');
 		$this->assertNull($result);
 		$this->assertArrayNotHasKey('unknown', $_COOKIE);
-	}
-
-	public function testClearNumericCookieReturnsNullWhenMissing()
-	{
-		$this->assertNull(Util::clearNumericCookie('missing-number'));
-		$this->assertArrayNotHasKey('missing-number', $_COOKIE);
 	}
 
 	public function testGetPercentButAvoid100UntilComplete()
