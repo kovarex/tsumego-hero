@@ -95,20 +95,22 @@ class SettingsCookiesTest extends IntegrationTestCase
 		$this->assertSame('light', $browser->driver->executeScript('return document.documentElement.dataset.theme;'));
 	}
 
-	//A guest's choice of boards is taken from the cookie it came in, and only a cookie that came is dropped
-	public function testTheBoardsOfAGuestComeFromTheCookieTheyCameIn(): void
+	//A guest has no account to keep the choice of boards in, so it stays in the cookie of the board
+	//menu, as the theme does, and the board of a problem is one of them
+	public function testTheBoardsOfAGuestComeFromTheCookieOfTheBoardMenu(): void
 	{
-		new ContextPreparator(['user' => null]);
-		// what a request sends is kept for the tests across requests, so this one is told apart
-		Util::setCookie('boards_bitmask', 'before');
+		$context = new ContextPreparator(['user' => null, 'tsumego' => ['set_order' => 1]]);
 		unset($_COOKIE['boards_bitmask']);
 		$this->get('/sites/impressum');
-		$this->assertSame('before', Util::sentCookie('boards_bitmask')['value']);
 		$this->assertSame(BoardSelector::$DEFAULT_BOARDS_BITMASK, $this->viewVariable('boardsBitmask'));
 
-		$_COOKIE['boards_bitmask'] = '3';
-		$this->get('/sites/impressum');
-		$this->assertSame('', Util::sentCookie('boards_bitmask')['value']);
-		$this->assertSame(3, $this->viewVariable('boardsBitmask'));
+		// what a request sends is kept for the tests across requests, so this one is told apart
+		Util::setCookie('boards_bitmask', 'before');
+		$_COOKIE['boards_bitmask'] = '2';
+		$this->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		$this->assertSame('before', Util::sentCookie('boards_bitmask')['value']);
+		$this->assertSame(2, $this->viewVariable('boardsBitmask'));
+		$this->assertSame(BoardSelector::getBoardInfo(2)['texture'], $this->playPage()['problem']['board']['texture']);
+		unset($_COOKIE['boards_bitmask']);
 	}
 }

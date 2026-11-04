@@ -328,8 +328,7 @@ class Play
 			$this->problem['requestSolution'] = AdminActivityLogger::log(AdminActivityTypeTable::SOLUTION_REQUEST, $tsumegoID);
 		}
 
-		$boardsBitmask = BoardSelector::filterValidBits(Auth::isLoggedIn() ? Auth::getUser()['boards_bitmask'] : BoardSelector::$DEFAULT_BOARDS_BITMASK);
-		$this->problem['boardSelection'] = BoardSelector::selectBoard($boardsBitmask, $goldenTsumego, $set->board_theme_index);
+		$this->problem['boardSelection'] = BoardSelector::selectBoard(BoardSelector::playerBitmask(), $goldenTsumego, $set->board_theme_index);
 		$this->problem['isSandbox'] = $set->public == 0 && $set->user_id === null;
 		$this->problem['goldenTsumego'] = $goldenTsumego;
 		$this->problem['sgf'] = $sgf;

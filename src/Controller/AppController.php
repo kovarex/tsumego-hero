@@ -356,19 +356,17 @@ class AppController extends Controller
 			$this->set('user', Auth::getUser());
 			$lightDark = Auth::getUser()['theme_id'] == UserTable::THEME_DARK ? 'dark' : 'light';
 			$levelBar = self::levelBar((int) Auth::getUser()['level_bar_id']);
-			$boardsBitmask = BoardSelector::filterValidBits(Auth::getUser()['boards_bitmask']);
 		}
 		else
 		{
 			$lightDark = Util::cookie('lightDark') === 'dark' ? 'dark' : 'light';
 			$levelBar = UserTable::LEVEL_BAR_LEVEL;
-			$boardsBitmask = BoardSelector::filterValidBits((int) (self::takeCookie('boards_bitmask') ?? BoardSelector::$DEFAULT_BOARDS_BITMASK));
 		}
 
 		$this->set('highscoreLink', self::highscoreLink());
 		$this->set('lightDark', $lightDark);
 		$this->set('levelBar', $levelBar);
-		$this->set('boardsBitmask', $boardsBitmask);
+		$this->set('boardsBitmask', BoardSelector::playerBitmask());
 		$this->set('timeMode', new TimeMode());
 		return null;
 	}
