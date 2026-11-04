@@ -309,7 +309,9 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 			return null;
 		}
 
-		if (!$this->validateLogin($this->inputs(), $user))
+		// The minimum length is not asked here: an account whose password is shorter
+		// still has to sign in.
+		if (!password_verify((string) ($this->input('password') ?? ''), $user->password_hash))
 		{
 			CookieFlash::set('Wrong username or password.', 'error');
 			return null;
@@ -528,13 +530,6 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 	{
 		Auth::logout();
 		return $this->redirect('/');
-	}
-
-	private function validateLogin(array $data, User $user): bool
-	{
-		// The minimum length is not asked here: an account whose password is shorter
-		// still has to sign in.
-		return password_verify($data['password'], $user->password_hash);
 	}
 
 	/** @return Response|null */
