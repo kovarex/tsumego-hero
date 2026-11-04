@@ -55,6 +55,19 @@ class TsumegoIssuesControllerApiTest extends IntegrationTestCase
 		$this->assertSame(0, $this->fetchTable('TsumegoIssue')->find()->count());
 	}
 
+	//A page number before the first page shows the first page.
+	public function testApiShowsTheFirstPageForAPageBeforeIt()
+	{
+		new ContextPreparator(['user' => ['name' => 'kovarex'], 'tsumego' => ['set_order' => 1, 'issues' => [['message' => 'the only issue']]]]);
+
+		$this->get('/tsumego-issues/api?page=-3');
+
+		$this->assertResponseCode(200);
+		$body = json_decode($this->view, true);
+		$this->assertSame(1, $body['currentPage']);
+		$this->assertSame(['the only issue'], array_map(fn($issue) => $issue['comments'][0]['text'], $body['issues']));
+	}
+
 	//A problem left only in someone's Favorites is shown by its id rather than in their collection.
 	public function testApiLeavesOutAFavoritesSetAsTheOnlyCollection()
 	{
