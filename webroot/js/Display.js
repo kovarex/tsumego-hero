@@ -153,3 +153,7 @@ class Display
 		});
 	}
 }
+
+//A class declaration of a plain script is global, but not a property of window, which is all some
+//callers see (scripts a WebDriver runs in Firefox)
+window.Display = Display;
