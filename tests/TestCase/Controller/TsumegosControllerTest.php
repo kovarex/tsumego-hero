@@ -154,6 +154,15 @@ class TsumegosControllerTest extends IntegrationTestCase
 		$this->assertTextContains('777', $links[1]->textContent);
 	}
 
+	public function testTheDuplicateGroupShowsTheTitlesOfTheSetsAsText()
+	{
+		$context = new ContextPreparator(['tsumego' => ['sets' => [['name' => 'first', 'num' => '1'], ['name' => '<img src=x onerror=alert(1)>', 'num' => '2']]]]);
+		$this->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		$duplicateTable = $this->getStringDom()->querySelector('.duplicateTable');
+		$this->assertSame(0, $duplicateTable->getElementsByTagName('img')->length);
+		$this->assertTextContains('<img src=x onerror=alert(1)>', $duplicateTable->getElementsByTagName('a')[1]->textContent);
+	}
+
 	public function testViewingTsumegoInMoreSetsAndSpecifyingWhichOneIsTheMainOne()
 	{
 		$context = new ContextPreparator(

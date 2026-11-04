@@ -28,6 +28,8 @@ class SetsSelector
 		$query->selects[] = 'tc.tsumego_id';
 		$query->selects[] = 'tsumego.rating';
 		$query->query .= ' JOIN tsumego ON tsumego.id = tc.tsumego_id';
+		// a tag a player proposed is not on the problem until an admin accepts it
+		$query->conditions[] = 'tc.approved = 1';
 		$query->conditions[] = $this->publicMembershipCondition('tc.tsumego_id');
 		$query->conditions[] = 'tsumego.deleted IS NULL';
 		if (!empty($this->tsumegoFilters->tagIDs))
