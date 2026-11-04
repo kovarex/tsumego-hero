@@ -2,6 +2,7 @@
 
 use App\Model\Table\TimeModeCategoryTable;
 use App\Utility\Constants;
+use App\Utility\Level;
 use App\Utility\Rating;
 
 #[RetryOnBrowserFailure]
@@ -16,6 +17,18 @@ class AccountWidgetTest extends IntegrationTestCase
 		$this->assertSame('Level 5', $browser->find('#account-bar-xp')->getText());
 		$browser->hover($browser->find('#account-bar-xp'));
 		$this->assertSame('13/90', $browser->find('#account-bar-xp')->getText());
+	}
+
+	//The bar counts the XP to the next level with the server's table of levels
+	public function testTheXPToTheNextLevelIsTheServers()
+	{
+		new ContextPreparator(['user' => ['xp' => 13, 'level' => 5]]);
+		$browser = Browser::instance();
+		$browser->get('sites/blank');
+		$levels = range(1, 120);
+		$this->assertSame(
+			array_map(fn($level) => Level::getXPForNext($level), $levels),
+			$browser->driver->executeScript('return arguments[0].map(level => window.eval("accountWidget").xpForNextLevel(level));', [$levels]));
 	}
 
 	public function testUpdateXPOnSolve()

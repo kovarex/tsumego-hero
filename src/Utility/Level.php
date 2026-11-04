@@ -5,7 +5,7 @@ namespace App\Utility;
 /** @phpstan-import-type UserRow from \App\Utility\RowTypes */
 class Level
 {
-	// this needs to be up to date with level code in util.js
+	//The levels up to which each step adds its XP, also sent to the account widget (AccountWidget::renderJS())
 	public static function getSections(): array
 	{
 		static $sections = [
