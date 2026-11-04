@@ -3,6 +3,7 @@
 namespace App\Utility;
 
 use App\Model\Table\SetTable;
+use App\Model\Table\TsumegoStatusTable;
 
 class SetsSelector
 {
@@ -328,7 +329,7 @@ class SetsSelector
 	{
 		if (!Auth::isLoggedIn())
 			return [];
-		$rows = Util::query("SELECT tsumego_id FROM tsumego_status WHERE user_id = ? AND status IN ('S', 'W', 'C')", [Auth::getUserID()]);
+		$rows = Util::query('SELECT tsumego_id FROM tsumego_status WHERE user_id = ? AND ' . TsumegoStatusTable::solvedCondition('status'), [Auth::getUserID()]);
 		$solved = [];
 		foreach ($rows as $row)
 			$solved[(int) $row['tsumego_id']] = true;

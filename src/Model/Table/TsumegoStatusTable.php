@@ -95,18 +95,30 @@ class TsumegoStatusTable extends AppTable
 
 	//The statuses that hold solved progress: the same ones the progress of a set is
 	//counted from. Anything else is a marker (opened, locked), not progress.
-	/** @return array<string> */
-	private static function progressStatuses(): array
+	/** @return list<string> */
+	public static function solvedStatuses(): array
 	{
 		return [self::$SOLVED, self::$REVIEW, self::$MASTERED];
+	}
+
+	//SQL true when $column holds solved progress.
+	public static function solvedCondition(string $column): string
+	{
+		return $column . " IN ('" . implode("', '", self::solvedStatuses()) . "')";
+	}
+
+	//SQL true for the problems the solved count of an account counts: a forgotten problem was solved once.
+	public static function solvedCountCondition(string $column): string
+	{
+		return $column . " IN ('" . implode("', '", [...self::solvedStatuses(), self::$FORGOTTEN]) . "')";
 	}
 
 	//The old progress the settings page counts and offers to reset.
 	public static function countOldProgress(int $userID): int
 	{
 		return (int) Util::query('SELECT COUNT(*) AS total FROM tsumego_status
-			WHERE user_id = ? AND status IN (?, ?, ?) AND updated <= NOW() - INTERVAL ? YEAR;',
-			[$userID, ...self::progressStatuses(), self::$OLD_PROGRESS_YEARS])[0]['total'];
+			WHERE user_id = ? AND ' . self::solvedCondition('status') . ' AND updated <= NOW() - INTERVAL ? YEAR;',
+			[$userID, self::$OLD_PROGRESS_YEARS])[0]['total'];
 	}
 
 	//Throws away the progress nobody touched for OLD_PROGRESS_YEARS and keeps the solved
@@ -115,19 +127,19 @@ class TsumegoStatusTable extends AppTable
 	public static function deleteOldProgress(int $userID): int
 	{
 		$deleted = Util::execute('DELETE FROM tsumego_status
-			WHERE user_id = ? AND status IN (?, ?, ?) AND updated <= NOW() - INTERVAL ? YEAR;',
-			[$userID, ...self::progressStatuses(), self::$OLD_PROGRESS_YEARS]);
+			WHERE user_id = ? AND ' . self::solvedCondition('status') . ' AND updated <= NOW() - INTERVAL ? YEAR;',
+			[$userID, self::$OLD_PROGRESS_YEARS]);
 
 		Util::execute('UPDATE user
 			LEFT JOIN (
 				SELECT user_id, COUNT(*) AS cnt
 				FROM tsumego_status
-				WHERE status IN (?, ?, ?, ?) AND user_id = ?
+				WHERE ' . self::solvedCountCondition('status') . ' AND user_id = ?
 				GROUP BY user_id
 			) ts ON ts.user_id = user.id
 			SET user.solved = COALESCE(ts.cnt, 0)
 			WHERE user.id = ?;',
-			[self::$SOLVED, self::$REVIEW, self::$MASTERED, self::$FORGOTTEN, $userID, $userID]);
+			[$userID, $userID]);
 
 		return $deleted;
 	}

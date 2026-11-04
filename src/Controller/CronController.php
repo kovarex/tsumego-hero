@@ -6,6 +6,7 @@ use Cake\Http\Exception\ForbiddenException;
 use Exception;
 use App\Attribute\HttpGet;
 use App\Model\Table\AchievementConditionTable;
+use App\Model\Table\TsumegoStatusTable;
 use App\Utility\AchievementId;
 use App\Utility\SchedulePublisher;
 use App\Utility\Trash;
@@ -197,7 +198,7 @@ class CronController extends AppController
 			LEFT JOIN (
 				SELECT user_id, COUNT(*) AS solved
 				FROM tsumego_status
-				WHERE status IN ('S', 'W', 'C', 'X')
+				WHERE " . TsumegoStatusTable::solvedCountCondition('status') . "
 				GROUP BY user_id
 			) AS counts ON counts.user_id = user.id
 			WHERE NOT (user.solved <=> COALESCE(counts.solved, 0))");
