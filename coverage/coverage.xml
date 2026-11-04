@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1793755783">
-  <project timestamp="1793755783">
+<coverage generated="1793826208">
+  <project timestamp="1793826208">
     <package name="App">
       <file name="/home/runner/work/tsumego-hero/tsumego-hero/src/Application.php">
         <class name="App\Application" namespace="App">
@@ -3492,11 +3492,11 @@
         <line num="186" type="stmt" count="1"/>
         <line num="190" type="stmt" count="26"/>
         <line num="191" type="stmt" count="26"/>
-        <line num="192" type="stmt" count="3"/>
-        <line num="193" type="stmt" count="3"/>
-        <line num="194" type="stmt" count="3"/>
-        <line num="195" type="stmt" count="3"/>
-        <line num="196" type="stmt" count="3"/>
+        <line num="192" type="stmt" count="4"/>
+        <line num="193" type="stmt" count="4"/>
+        <line num="194" type="stmt" count="4"/>
+        <line num="195" type="stmt" count="4"/>
+        <line num="196" type="stmt" count="4"/>
         <line num="198" type="stmt" count="26"/>
         <line num="199" type="stmt" count="26"/>
         <line num="200" type="stmt" count="26"/>
@@ -3950,7 +3950,7 @@
       </file>
       <file name="/home/runner/work/tsumego-hero/tsumego-hero/src/Controller/Component/PlayResultProcessorComponent.php">
         <class name="App\Controller\Component\PlayResultProcessorComponent" namespace="App\Controller\Component">
-          <metrics complexity="99" methods="18" coveredmethods="15" conditionals="0" coveredconditionals="0" statements="243" coveredstatements="240" elements="261" coveredelements="255"/>
+          <metrics complexity="99" methods="18" coveredmethods="16" conditionals="0" coveredconditionals="0" statements="243" coveredstatements="241" elements="261" coveredelements="257"/>
         </class>
         <line num="42" type="method" name="processResult" visibility="public" complexity="1" crap="1" count="120"/>
         <line num="44" type="stmt" count="120"/>
@@ -3972,7 +3972,7 @@
         <line num="84" type="stmt" count="120"/>
         <line num="86" type="stmt" count="120"/>
         <line num="87" type="stmt" count="120"/>
-        <line num="88" type="stmt" count="0"/>
+        <line num="88" type="stmt" count="1"/>
         <line num="90" type="stmt" count="120"/>
         <line num="91" type="stmt" count="12"/>
         <line num="94" type="stmt" count="120"/>
@@ -4213,7 +4213,7 @@
         <line num="471" type="stmt" count="7"/>
         <line num="472" type="stmt" count="4"/>
         <line num="474" type="stmt" count="4"/>
-        <metrics loc="477" ncloc="416" classes="1" methods="18" coveredmethods="15" conditionals="0" coveredconditionals="0" statements="243" coveredstatements="240" elements="261" coveredelements="255"/>
+        <metrics loc="477" ncloc="416" classes="1" methods="18" coveredmethods="16" conditionals="0" coveredconditionals="0" statements="243" coveredstatements="241" elements="261" coveredelements="257"/>
       </file>
     </package>
     <package name="App\Database">
@@ -6357,9 +6357,9 @@
         <line num="48" type="stmt" count="99"/>
         <line num="49" type="stmt" count="338"/>
         <line num="50" type="stmt" count="7"/>
-        <line num="51" type="stmt" count="332"/>
+        <line num="51" type="stmt" count="333"/>
         <line num="52" type="stmt" count="63"/>
-        <line num="53" type="stmt" count="299"/>
+        <line num="53" type="stmt" count="300"/>
         <metrics loc="56" ncloc="40" classes="1" methods="4" coveredmethods="4" conditionals="0" coveredconditionals="0" statements="14" coveredstatements="14" elements="18" coveredelements="18"/>
       </file>
       <file name="/home/runner/work/tsumego-hero/tsumego-hero/src/Policy/ChallengePolicy.php">
@@ -6512,7 +6512,7 @@
         </class>
         <line num="20" type="method" name="canAdd" visibility="public" complexity="4" crap="4" count="354"/>
         <line num="22" type="stmt" count="354"/>
-        <line num="23" type="stmt" count="288"/>
+        <line num="23" type="stmt" count="289"/>
         <line num="24" type="stmt" count="111"/>
         <line num="25" type="stmt" count="77"/>
         <line num="26" type="stmt" count="56"/>
@@ -7825,7 +7825,7 @@
         <line num="65" type="stmt" count="320"/>
         <line num="68" type="method" name="canUseRejuvanation" visibility="public" complexity="2" crap="2" count="323"/>
         <line num="70" type="stmt" count="323"/>
-        <line num="71" type="stmt" count="316"/>
+        <line num="71" type="stmt" count="317"/>
         <line num="72" type="stmt" count="8"/>
         <line num="75" type="method" name="renderRejuvenation" visibility="public" complexity="1" crap="1" count="320"/>
         <line num="77" type="stmt" count="320"/>
@@ -7887,7 +7887,7 @@
         <line num="167" type="stmt" count="365"/>
         <line num="168" type="stmt" count="0"/>
         <line num="169" type="stmt" count="365"/>
-        <line num="170" type="stmt" count="347"/>
+        <line num="170" type="stmt" count="348"/>
         <line num="171" type="stmt" count="23"/>
         <line num="172" type="stmt" count="0"/>
         <line num="173" type="stmt" count="23"/>
@@ -7895,7 +7895,7 @@
         <line num="178" type="stmt" count="324"/>
         <line num="179" type="stmt" count="0"/>
         <line num="180" type="stmt" count="324"/>
-        <line num="181" type="stmt" count="305"/>
+        <line num="181" type="stmt" count="306"/>
         <line num="182" type="stmt" count="22"/>
         <line num="185" type="method" name="renderRefinement" visibility="private" complexity="1" crap="1" count="320"/>
         <line num="187" type="stmt" count="320"/>
@@ -8831,11 +8831,11 @@
         <line num="320" type="stmt" count="342"/>
         <line num="321" type="stmt" count="342"/>
         <line num="322" type="stmt" count="342"/>
-        <line num="325" type="method" name="swapColorWords" visibility="public" complexity="1" crap="1" count="56"/>
-        <line num="327" type="stmt" count="56"/>
-        <line num="328" type="stmt" count="56"/>
-        <line num="329" type="stmt" count="56"/>
-        <line num="330" type="stmt" count="56"/>
+        <line num="325" type="method" name="swapColorWords" visibility="public" complexity="1" crap="1" count="55"/>
+        <line num="327" type="stmt" count="55"/>
+        <line num="328" type="stmt" count="55"/>
+        <line num="329" type="stmt" count="55"/>
+        <line num="330" type="stmt" count="55"/>
         <line num="335" type="method" name="tsumegoStatus" visibility="private" complexity="5" crap="5" count="344"/>
         <line num="337" type="stmt" count="344"/>
         <line num="338" type="stmt" count="8"/>
@@ -9128,7 +9128,7 @@
         </class>
         <line num="7" type="method" name="getReadableRank" visibility="public" complexity="2" crap="2" count="653"/>
         <line num="9" type="stmt" count="653"/>
-        <line num="10" type="stmt" count="641"/>
+        <line num="10" type="stmt" count="642"/>
         <line num="12" type="stmt" count="29"/>
         <line num="15" type="method" name="isValidReadableRank" visibility="public" complexity="6" crap="6.02" count="37"/>
         <line num="17" type="stmt" count="37"/>
@@ -9155,7 +9155,7 @@
         <line num="42" type="stmt" count="0"/>
         <line num="45" type="method" name="getRankFromRating" visibility="public" complexity="2" crap="2" count="653"/>
         <line num="59" type="stmt" count="653"/>
-        <line num="60" type="stmt" count="652"/>
+        <line num="60" type="stmt" count="653"/>
         <line num="62" type="stmt" count="6"/>
         <line num="65" type="method" name="getReadableRankFromRating" visibility="public" complexity="1" crap="1" count="653"/>
         <line num="67" type="stmt" count="653"/>
@@ -10146,7 +10146,7 @@
         <line num="39" type="stmt" count="345"/>
         <line num="40" type="stmt" count="345"/>
         <line num="42" type="stmt" count="345"/>
-        <line num="43" type="stmt" count="268"/>
+        <line num="43" type="stmt" count="267"/>
         <line num="44" type="stmt" count="115"/>
         <line num="45" type="stmt" count="6"/>
         <line num="46" type="stmt" count="110"/>
@@ -11137,7 +11137,7 @@
         <line num="241" type="stmt" count="311"/>
         <line num="242" type="stmt" count="42"/>
         <line num="243" type="stmt" count="311"/>
-        <line num="244" type="stmt" count="64"/>
+        <line num="244" type="stmt" count="63"/>
         <line num="245" type="stmt" count="311"/>
         <line num="246" type="stmt" count="311"/>
         <line num="247" type="stmt" count="311"/>
@@ -12468,6 +12468,6 @@
         <metrics loc="70" ncloc="54" classes="1" methods="1" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="30" coveredstatements="28" elements="31" coveredelements="28"/>
       </file>
     </package>
-    <metrics files="237" loc="25573" ncloc="21620" classes="175" methods="1310" coveredmethods="1055" conditionals="0" coveredconditionals="0" statements="9717" coveredstatements="9250" elements="11027" coveredelements="10305"/>
+    <metrics files="237" loc="25573" ncloc="21620" classes="175" methods="1310" coveredmethods="1056" conditionals="0" coveredconditionals="0" statements="9717" coveredstatements="9251" elements="11027" coveredelements="10307"/>
   </project>
 </coverage>
