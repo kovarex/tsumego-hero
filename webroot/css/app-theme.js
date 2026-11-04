@@ -23,4 +23,5 @@ import './page/challenges.css';
 import './page/auth.css';
 import './page/comments.css';
 import './page/messages.css';
+import './page/daily-streak.css';
 import './page/tsumego.css';

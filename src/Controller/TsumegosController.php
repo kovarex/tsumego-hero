@@ -19,6 +19,7 @@ use App\Utility\AdminActivityLogger;
 use App\Utility\Auth;
 use App\Utility\BoardTransformation;
 use App\Utility\Constants;
+use App\Utility\DailyStreak;
 use App\Utility\CookieFlash;
 use App\Utility\PlayOutcome;
 use App\Utility\Rating;
@@ -59,6 +60,9 @@ class TsumegosController extends AppController
 		// fields it needs (see webroot/js/AchievementAlerts.js).
 		if (!empty($result['achievement_updates']))
 			$result['achievement_updates'] = array_map([AchievementChecker::class, 'toPopupData'], $result['achievement_updates']);
+		//The flame of the menu lights up at the solve that counted the day (webroot/js/DailyStreak.js)
+		if (empty($result['error']))
+			$result['daily_streak'] = DailyStreak::ofUser(Auth::getUser())->toArray();
 
 		return $this->respondJson($result);
 	}

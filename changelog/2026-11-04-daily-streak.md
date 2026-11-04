@@ -1,0 +1,1 @@
+Added: A daily streak flame now sits in the menu and counts the days in a row on which you solved a problem that gave XP; your day ends at 3 AM your time, and every 7 days earn a freeze (up to 2) that saves the streak when you miss a day.

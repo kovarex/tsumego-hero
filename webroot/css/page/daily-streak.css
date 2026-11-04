@@ -1,0 +1,127 @@
+/* Page layer: daily-streak.css - the flame of the daily streak in the menu
+   (templates/element/daily_streak.php). On the desktop it stands right after the icons of the
+   menu, next to the account bar, the number under the flame; on mobile it sits beside the
+   hamburger. Hovering it, or tapping it (it takes the focus), shows the details. */
+@layer page
+{
+.daily-streak
+{
+	position: absolute;
+	left: 1120px;
+	top: 12px;
+	z-index: 60;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	width: 32px;
+	cursor: default;
+	color: var(--color-streak-unlit);
+	font-family: var(--font-family-account);
+	font-size: 13px;
+	font-weight: 700;
+	line-height: 1;
+	outline: none;
+}
+
+.daily-streak__flame
+{
+	width: 26px;
+	height: 26px;
+	fill: currentColor;
+	opacity: 0.6;
+}
+
+.daily-streak__length
+{
+	margin-top: 2px;
+	color: var(--color-white);
+	opacity: 0.6;
+}
+
+.daily-streak--done
+{
+	color: var(--color-streak-flame);
+}
+
+.daily-streak--done .daily-streak__flame
+{
+	opacity: 1;
+	filter: drop-shadow(0 0 4px var(--color-streak-flame-glow));
+}
+
+.daily-streak--done .daily-streak__length
+{
+	opacity: 1;
+}
+
+.daily-streak__details
+{
+	display: none;
+	position: absolute;
+	top: calc(100% + 8px);
+	right: -60px;
+	width: 230px;
+	padding: 10px 12px;
+	border: 1px solid var(--color-gold);
+	border-radius: 5px;
+	background: var(--surface-near-black);
+	color: var(--color-white);
+	font-family: var(--font-family-body);
+	font-size: 14px;
+	font-weight: normal;
+	line-height: 1.4;
+	text-align: left;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.daily-streak:hover .daily-streak__details,
+.daily-streak:focus .daily-streak__details,
+.daily-streak:focus-within .daily-streak__details
+{
+	display: block;
+}
+
+.daily-streak__title
+{
+	font-weight: 700;
+	margin-bottom: 4px;
+}
+
+.daily-streak__today
+{
+	margin-top: 6px;
+	color: var(--color-streak-flame);
+}
+
+.daily-streak__rules
+{
+	margin-top: 6px;
+	color: var(--surface-muted-text);
+	font-size: 12px;
+}
+
+@media (width < 64rem)
+{
+	.daily-streak
+	{
+		position: static;
+		flex-direction: row;
+		gap: 4px;
+		width: auto;
+		margin-left: auto;
+		margin-right: 14px;
+	}
+
+	.daily-streak__length
+	{
+		margin-top: 0;
+		font-size: 16px;
+	}
+
+	.daily-streak__details
+	{
+		top: 56px;
+		right: 8px;
+	}
+}
+}

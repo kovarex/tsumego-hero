@@ -64,5 +64,10 @@ use DateTimeImmutable;
  * @property string|null $filtered_ranks
  * @property string|null $filtered_tags
  * @property bool $contribution_revelation_bonus
+ * @property int $streak_length
+ * @property int $streak_best
+ * @property int $streak_freezes
+ * @property \Cake\Chronos\ChronosDate|null $streak_last_day
+ * @property string|null $time_zone
  */
 class User extends AppEntity {}
