@@ -929,9 +929,6 @@ h1 {
   font-size: 0.85em;
   color: var(--text-softer-color);
 }
-.play-edit-toggle--after-solve {
-  display: none;
-}
 .play-edit__part {
   margin-bottom: 12px;
 }

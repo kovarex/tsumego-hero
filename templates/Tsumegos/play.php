@@ -172,17 +172,15 @@ use App\Utility\ViteManifest;
 	</div>
 	<br>
 	<?php
-	//Shown on the line of Filters, so it takes no space of its own. To anyone with something in it right
-	//away (an admin, a contributor, a problem in more collections), to the others once the downloads come.
+	//More is on the line of Filters, so it takes no space of its own.
 	$hasDuplicates = count($setConnections) > 1 && Auth::getMode() != Constants::$TIME_MODE;
-	$moreRightAway = Auth::isAdmin() || $isAllowedToContribute || $hasDuplicates;
 	//The comments are in More too; what they hold shows on the toggle, once they may be read
 	$commentCounts = Auth::isLoggedIn() ? TsumegoIssueTable::getCommentSectionCounts((int) $tsumego->id) : null;
 	$commentsVisible = Auth::isAdmin() || $solved;
 	?>
 	<?php //Filters only when the problems are filtered ?>
 	<a id="showFilters" class="play-filters-toggle selectable-text mr-5"<?php echo empty($tsumegoFilters->sets) && empty($tsumegoFilters->ranks) && empty($tsumegoFilters->tags) ? ' style="display: none;"' : ''; ?> data-toggle="msgFilters">Filters<img class="toggle-arrow" src="/img/greyArrow1.png"></a>
-	<a id="editToggle" class="selectable-text<?php echo $moreRightAway ? '' : ' play-edit-toggle--after-solve'; ?>" data-toggle="editSection">More<img class="toggle-arrow" src="/img/greyArrow1.png"><?php
+	<a id="editToggle" class="selectable-text" data-toggle="editSection">More<img class="toggle-arrow" src="/img/greyArrow1.png"><?php
 	if ($commentCounts !== null && ($summary = TsumegoIssueTable::commentSummary($commentCounts)) !== '')
 		echo '<span id="moreCommentSummary" class="play-more__summary"' . ($commentsVisible ? '' : ' style="display: none;"') . '>' . h($summary) . '</span>';
 	?></a>
