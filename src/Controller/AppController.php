@@ -33,13 +33,10 @@ class AppController extends Controller
 	{
 		parent::initialize();
 		$this->viewBuilder()->setClassName('App');
-		$this->viewBuilder()->addHelpers(array_merge(['Html', 'Form', 'Pagination'], static::HELPERS));
+		$this->viewBuilder()->addHelpers(['Html', 'Form', 'Pagination']);
 		$this->loadComponent('PlayResultProcessor');
 		$this->loadComponent('Authorization');
 	}
-
-	//The helpers a controller adds to those of every page
-	protected const HELPERS = [];
 
 	//Shows the problem of the set connection on the play page. $viewVars are what only the route has
 	//(its canonical address, its menu item, its links), they win over what the problem would show.
