@@ -31,8 +31,13 @@ class DailyStreakBrowserTest extends IntegrationTestCase
 		$this->assertStringNotContainsString('daily-streak--done', $flame->getAttribute('class'));
 		$this->assertSame('2', $browser->find('#daily-streak .daily-streak__length')->getText());
 
+		//What today still asks shows until the solve completes the day, and goes with the burst
+		$browser->hover($browser->find('#daily-streak'));
+		$this->assertTrue($browser->find('#daily-streak .daily-streak__progress-of-day')->isDisplayed());
 		$browser->playWithResult('S');
 		$browser->waitUntilCssSelectorExistsWithText('#daily-streak .daily-streak__length', '3');
+		$browser->hover($browser->find('#daily-streak'));
+		$this->assertFalse($browser->find('#daily-streak .daily-streak__progress-of-day')->isDisplayed());
 		$class = $browser->find('#daily-streak')->getAttribute('class');
 		$this->assertStringContainsString('daily-streak--done', $class);
 		$this->assertStringContainsString('daily-streak--ignite', $class);
@@ -48,8 +53,9 @@ class DailyStreakBrowserTest extends IntegrationTestCase
 		$this->assertTrue($details->isDisplayed());
 		$this->assertStringContainsString('Streak: 3 days, best 5 days', $details->getText());
 		$this->assertStringContainsString('Today is done.', $details->getText());
-		$progress = $browser->find('#daily-streak .daily-streak__progress');
-		$this->assertSame($progress->getAttribute('max'), $progress->getAttribute('value'));
+		$this->assertStringNotContainsString('XP:', $details->getText(), 'A done day shows no progress');
+		$this->assertStringNotContainsString('Mistake training reviews:', $details->getText());
+		$this->assertFalse($browser->find('#daily-streak .daily-streak__progress')->isDisplayed());
 	}
 
 	//A solve that is not enough for the day fills the bar of the XP part of the way

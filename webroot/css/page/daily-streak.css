@@ -200,6 +200,12 @@
 	color: var(--color-streak-flame);
 }
 
+/* What today did towards the day; once it is done, only that it is done shows */
+.daily-streak--done .daily-streak__progress-of-day
+{
+	display: none;
+}
+
 /* Today's XP against what the day asks */
 .daily-streak__progress
 {

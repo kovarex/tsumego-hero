@@ -5,11 +5,12 @@ use App\Utility\DailyStreak;
 
 /**
  * The flame of the daily streak in the menu of a signed in player: lit once today counted, dimmed
- * while it is still to do. Hovering or tapping it shows the streak and what today still asks, the XP
- * as a bar. It is read from the row Auth loaded, so it costs no query; webroot/js/DailyStreak.js
- * redraws it from the result of a solve, with the same data (DailyStreak::view()) and the texts of the
- * data- attributes, lights it with a burst when that solve completed the day, and hands the server the
- * browser's time zone when it differs from the stored one.
+ * while it is still to do. Hovering or tapping it shows the streak and, until the day is done, what
+ * today still asks, the XP as a bar (daily-streak--done hides it). It is read from the row Auth
+ * loaded, so it costs no query; webroot/js/DailyStreak.js redraws it from the result of a solve, with
+ * the same data (DailyStreak::view()) and the texts of the data- attributes, lights it with a burst
+ * when that solve completed the day, and hands the server the browser's time zone when it differs
+ * from the stored one.
  * @var \App\View\AppView $this
  */
 
@@ -31,9 +32,11 @@ $todoText = 'To keep the streak today:';
 		<div>Streak: <span data-streak-days="length"><?php echo $days($streak['length']); ?></span>, best <span data-streak-days="best"><?php echo $days($streak['best']); ?></span></div>
 		<div>Freezes: <span data-streak-count="freezes"><?php echo $streak['freezes']; ?></span></div>
 		<div class="daily-streak__today" data-streak-today data-done-text="<?php echo h($doneText); ?>" data-todo-text="<?php echo h($todoText); ?>"><?php echo h($streak['done_today'] ? $doneText : $todoText); ?></div>
-		<div>XP: <span data-streak-count="xp"><?php echo $streak['xp']; ?></span> of <span data-streak-count="xp_required"><?php echo $streak['xp_required']; ?></span></div>
-		<progress class="daily-streak__progress" aria-label="Today's XP" max="<?php echo $streak['xp_required']; ?>" value="<?php echo $streak['done_today'] ? $streak['xp_required'] : min($streak['xp'], $streak['xp_required']); ?>"></progress>
-		<div>Mistake training reviews: <span data-streak-count="reviews"><?php echo $streak['reviews']; ?></span> of <span data-streak-count="reviews_required"><?php echo $streak['reviews_required']; ?></span></div>
+		<div class="daily-streak__progress-of-day">
+			<div>XP: <span data-streak-count="xp"><?php echo $streak['xp']; ?></span> of <span data-streak-count="xp_required"><?php echo $streak['xp_required']; ?></span></div>
+			<progress class="daily-streak__progress" aria-label="Today's XP" max="<?php echo $streak['xp_required']; ?>" value="<?php echo $streak['done_today'] ? $streak['xp_required'] : min($streak['xp'], $streak['xp_required']); ?>"></progress>
+			<div>Mistake training reviews: <span data-streak-count="reviews"><?php echo $streak['reviews']; ?></span> of <span data-streak-count="reviews_required"><?php echo $streak['reviews_required']; ?></span></div>
+		</div>
 		<div class="daily-streak__rules">
 			A day asks the XP of <?php echo DailyStreak::PROBLEMS_A_DAY; ?> problems of your rank and <?php echo DailyStreak::REVIEWS_A_DAY; ?> mistake training reviews, or as many as are due.
 			A freeze is earned every <?php echo DailyStreak::FREEZE_EVERY_DAYS; ?> days and covers a missed day. A new day starts at <?php echo DailyStreak::DAY_START_HOUR; ?> AM.
