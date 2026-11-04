@@ -342,24 +342,12 @@ class UserTable extends AppTable
 	}
 
 	//Render a user link with avatar and rank calculated from rating.
-	//$id: User row (with display_name, external_id, picture, rating, email), a bare user id, or null for a gone account
-	//$displayName: Display name, used when $id is a bare id
+	//$user: User row (with display_name, external_id, picture, rating, email), or null for a gone account
 	//Returns HTML link (or plain text for a deleted account)
-	public static function renderLink(array|int|string|null $id, ?string $displayName = null, ?string $externalID = null, ?string $picture = null, int|float|string|null $rating = null): string
+	public static function renderLink(?array $user): string
 	{
-		// A bare id (or null for a gone account): the renderers pass whole rows, this is for the
-		// handful of callers that only have an id.
-		if (!is_array($id))
-		{
-			if ($id === null)
-				return '<span>' . h(self::DELETED_NAME) . '</span>';
-			if (self::isDeleted($id))
-				return h(self::DELETED_NAME);
-			$rank = $rating !== null ? Rating::getReadableRankFromRating((float) $rating) : '';
-			return '<a href="/users/view/' . $id . '">' . h((string) $displayName) . ($rank === '' ? '' : ' ' . $rank) . '</a>';
-		}
-
-		$user = $id;
+		if ($user === null)
+			return '<span>' . h(self::DELETED_NAME) . '</span>';
 
 		// A row without an id means the account is gone
 		if (empty($user['id']) && empty($user['user_id']))
