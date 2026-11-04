@@ -37,6 +37,20 @@ class SgfParserTest extends AppTestCase
 		$this->assertEquals(9, $result->size);
 	}
 
+	//Editors wrap long lists of points, a value naming a property isn't one
+	public function testProcessReadsTheSetupStonesAsPropertiesAreWritten()
+	{
+		$this->assertCount(5, SgfParser::process("(;GM[1]SZ[19]AB[aa]\n[bb][cc]AW[dd] [ee])")->stones);
+		$this->assertCount(2, SgfParser::process('(;GM[1]PB[AB]SZ[19]AB[aa][bb])')->stones);
+	}
+
+	public function testBoardSizeIsTheSizeProperty()
+	{
+		$this->assertSame(9, SgfParser::boardSize('(;GM[1]C[SZ is 9 here]SZ[9])'));
+		$this->assertSame(13, SgfParser::boardSize('(;GM[1]SZ[13])'));
+		$this->assertSame(19, SgfParser::boardSize('(;GM[1]AB[aa])'));
+	}
+
 	public function testFirstMoveColor()
 	{
 		$this->assertSame('B', SgfParser::firstMoveColor('(;GM[1]SZ[19];B[aa])'));
