@@ -50,7 +50,7 @@ $variantType = $tv ? (int) $tv->tsumego_variant_type_id : null;
 	</p>
 	<?php if ($hasDuplicates): ?>
 		<div class="duplicateTable">Duplicate group:
-			<?php echo implode(', ', array_map(fn($otherSetConnection) => '<a href="/' . $otherSetConnection['id'] . '">' . $otherSetConnection['title'] . '</a>', $setConnections)); ?>
+			<?php echo implode(', ', array_map(fn($otherSetConnection) => '<a href="/' . $otherSetConnection['id'] . '">' . h($otherSetConnection['title']) . '</a>', $setConnections)); ?>
 		</div>
 	<?php endif; ?>
 	<?php if (Auth::isAdmin()): ?>
