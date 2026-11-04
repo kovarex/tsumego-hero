@@ -20,6 +20,35 @@ class UserStatsTest extends IntegrationTestCase
 		$this->assertTextContains('stats set', $this->view);
 	}
 
+	//The attempts of a player come 100 per page, the newest first; the next page goes on from there,
+	//for the player and for a set alike.
+	public function testThePagesGoFromNewestToOldest()
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'statsuser', 'admin' => true],
+			'tsumego' => ['sets' => [['name' => 'stats set', 'public' => 1, 'num' => 7]]]]);
+		$rows = [];
+		// misplays mark the oldest attempt (77) and the newest one (66)
+		for ($minute = 0; $minute <= 100; $minute++)
+			$rows[] = '(' . $context->user['id'] . ', ' . $context->tsumegos[0]['id'] . ", 0, 1, 10, '2026-01-01' + INTERVAL $minute MINUTE, "
+				. ($minute === 0 ? 77 : ($minute === 100 ? 66 : 5)) . ', 1500)';
+		Util::execute('INSERT INTO tsumego_attempt (user_id, tsumego_id, gain, solved, seconds, created, misplays, user_rating) VALUES ' . implode(', ', $rows));
+		$setID = $context->tsumegos[0]['set-connections'][0]['set_id'];
+
+		foreach (['/users/userstats/' . $context->user['id'], '/users/userstats3/' . $setID] as $address)
+		{
+			$this->get($address);
+			$this->assertSame(100, substr_count($this->view, 'data-format="datetime"'), $address);
+			$this->assertLessThan(strpos($this->view, '<td>5</td>'), strpos($this->view, '<td>66</td>'), $address . ': the newest first');
+			$this->assertStringNotContainsString('<td>77</td>', $this->view, $address);
+
+			$this->get($address . '?attempts_page=2');
+			$this->assertSame(1, substr_count($this->view, 'data-format="datetime"'), $address);
+			$this->assertStringContainsString('<td>77</td>', $this->view, $address);
+			$this->assertTextContains('stats set', $this->view);
+		}
+	}
+
 	public function testUserstatsFiltersToSingleUser()
 	{
 		$context = new ContextPreparator([
