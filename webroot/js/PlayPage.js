@@ -195,7 +195,6 @@ function displaySolutionRequest(){
 function displaySettings(){
 	$("#showx99").css("display", "none");
 	$("#openSgfLink").css("display", "inline-block");
-	$(".play-edit-toggle--after-solve").css("display", "inline");
 }
 
 function rejuvenation(){

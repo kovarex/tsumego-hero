@@ -7,8 +7,7 @@ class SimilarSearchLogicTest extends AppTestCase
 	public function testFindSimilarProblemsIsInMoreOfAnUnsolvedProblem()
 	{
 		$browser = Browser::instance();
-		// in two collections, so More is there before the problem is solved
-		$context = new ContextPreparator(['tsumego' => ['sets' => [['name' => 'first', 'num' => 1], ['name' => 'second', 'num' => 1]]]]);
+		$context = new ContextPreparator(['tsumego' => 1]);
 		$browser->get('/' . $context->setConnections[0]['id']);
 		$browser->openPlayEditSection();
 		$this->assertTrue($browser->find('#findSimilarProblems')->isDisplayed());
