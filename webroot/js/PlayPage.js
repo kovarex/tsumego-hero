@@ -681,15 +681,15 @@ function displayResult(result)
 }
 
 
+//Only the banner of the message box: the potion and the achievement boxes keep their own
 function displayMessage(message='text', topic='Message', color='red')
 {
 	$('#customText').html(message);
 	$("#customAlerts").fadeIn(500);
-	if (color==='red')
-		$(".toast__banner").addClass("toast__banner--error");
-	else
-		$(".toast__banner").addClass("toast__banner--success");
-	$(".toast__banner").html(topic+"<span class=\"toast__close\">x</span>");
+	$("#customAlerts .toast__banner")
+		.toggleClass("toast__banner--error", color === 'red')
+		.toggleClass("toast__banner--success", color !== 'red')
+		.html(topic + '<span class="toast__close">x</span>');
 }
 
 function resetParameters(isAtStart)
