@@ -65,7 +65,26 @@
 /* ── Header ── */
 .profile-header
 {
+	position: relative;
 	margin-bottom: 12px;
+}
+
+/* Out of the way of the tabs: the top-right corner, above the name on a narrow screen. */
+.profile-header__corner
+{
+	position: absolute;
+	top: 0;
+	right: 0;
+	white-space: nowrap;
+}
+
+@media (width < 64rem)
+{
+	.profile-header__corner
+	{
+		position: static;
+		text-align: right;
+	}
 }
 
 .profile-username

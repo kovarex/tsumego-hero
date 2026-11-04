@@ -18,9 +18,12 @@ use App\Utility\Auth;
  *
  * On the pages of another player, a signed-in visitor gets a button to write to them.
  *
+ * $corner: optional HTML for the top-right corner, away from the tabs (the role form of an owner).
+ *
  * @var \App\View\AppView $this
  * @var array $user Row with the id, display_name, external_id, picture, email, avatar_setting_id and uploaded_avatar_hash
  * @var string $activeTab
+ * @var string|null $corner
  */
 
 $userID = (int) $user['id'];
@@ -51,6 +54,9 @@ if (Auth::getUserID() === $userID)
 }
 ?>
 <div class="profile-header">
+	<?php if (!empty($corner)): ?>
+	<div class="profile-header__corner"><?php echo $corner; ?></div>
+	<?php endif; ?>
 	<p class="profile-username"><?php
 		echo UserTable::avatarImage(UserTable::getAvatarUrl($user, UserTable::AVATAR_PIXELS_PROFILE), 'user-avatar--lg', false, UserTable::boardUrl($user));
 		echo h((string) $user['display_name']);
