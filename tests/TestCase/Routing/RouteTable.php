@@ -482,6 +482,7 @@ return [
 		'/users/avatarUpload/7' => ['Users', 'avatarUpload', ['7']],
 		'/users/boardOrientationPreference/7' => ['Users', 'boardOrientationPreference', ['7']],
 		'/users/dateFormatPreference/7' => ['Users', 'dateFormatPreference', ['7']],
+		'/users/streakModePreference/7' => ['Users', 'streakModePreference', ['7']],
 		'/users/deleteOldTsumegoStatuses' => ['Users', 'deleteOldTsumegoStatuses', []],
 		'/users/deleteOldTsumegoStatuses/7' => ['Users', 'deleteOldTsumegoStatuses', ['7']],
 		'/users/demote_admin' => ['Users', 'demote_admin', []],
