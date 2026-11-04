@@ -71,7 +71,7 @@ $("[data-toggle]").click(function(event){
 	$("#" + this.dataset.toggle)[open ? "fadeIn" : "fadeOut"](250);
 	$(this).find(".toggle-arrow").attr("src", open ? "/img/greyArrow2.png" : "/img/greyArrow1.png");
 	//More that tells of comments or open issues opens them too (CommentSection listens)
-	if (open && this.id === "editToggle" && $("#moreCommentSummary").is(":visible"))
+	if (open && this.id === "editToggle" && $("#moreCommentSummary").css("visibility") === "visible")
 		window.dispatchEvent(new Event("comments-open"));
 });
 
@@ -569,7 +569,7 @@ function displayResult(result)
 		besogo.editor.setControlButtonLock(false);
 		$("#besogo-review-button-inactive").attr("id","besogo-review-button");
 		$("#commentSpace").show();
-		$("#moreCommentSummary").show();
+		$("#moreCommentSummary").css("visibility", "visible");
 
 		if (mode == playPage.page.modes.time)
 			$("#time-mode-countdown").css("color", playGreenColor);
