@@ -33,8 +33,9 @@ class SetsSelector
 		$query->conditions[] = 'tc.approved = 1';
 		$query->conditions[] = $this->tsumegoFilters->publicMembershipCondition('tc.tsumego_id');
 		$query->conditions[] = 'tsumego.deleted IS NULL';
+		// picked tags show only their own cards, each with the problems its page opens
 		if (!empty($this->tsumegoFilters->tagIDs))
-			$query->conditions[] = $this->tsumegoFilters->tagMembershipCondition('tc.tsumego_id');
+			$query->conditions[] = 'tc.tag_id IN (' . implode(',', $this->tsumegoFilters->tagIDs) . ')';
 		if ($rankCondition = $this->tsumegoFilters->rankCondition())
 			$query->conditions[] = $rankCondition;
 		$rows = Util::query($query->str());
