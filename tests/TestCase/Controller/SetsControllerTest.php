@@ -433,6 +433,25 @@ class SetsControllerTest extends IntegrationTestCase
 		$this->assertSame('1 problem', $dom->querySelectorAll('.set-card__middle-left')[0]->textContent);
 	}
 
+	//A tag a player proposed is not on the problem until an admin accepts it, so its collection counts
+	//and shows only the problems that carry it.
+	public function testATagCollectionHasOnlyTheProblemsThatCarryIt(): void
+	{
+		$context = new ContextPreparator(['tsumegos' => [
+			['sets' => [['name' => 'set', 'num' => '1']], 'tags' => [['name' => 'atari']]],
+			['sets' => [['name' => 'set', 'num' => '2']], 'tags' => [['name' => 'atari']]],
+			['sets' => [['name' => 'set', 'num' => '3']], 'tags' => [['name' => 'atari', 'approved' => 0]]]]]);
+		$_COOKIE['query'] = 'tags';
+
+		$this->get('sets');
+		$this->assertTextContains('Problems found: 2', $this->view);
+		$this->assertSame('2 problems', $this->getStringDom()->querySelectorAll('.set-card__middle-left')[0]->textContent);
+
+		$this->get('sets/atari');
+		$shown = array_map(fn($button) => $button->tsumegoID, (array) $this->viewVariable('tsumegoButtons'));
+		$this->assertSame([$context->tsumegos[0]['id'], $context->tsumegos[1]['id']], $shown);
+	}
+
 	public function testTopicsIndexShowsSolvedPercentPerPartition(): void
 	{
 		$contextParams = ['user' => ['collection_size' => 10]];
