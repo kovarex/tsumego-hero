@@ -8,22 +8,30 @@ class DailyStreak
 		return document.getElementById('daily-streak');
 	}
 
-	//streak: {length, best, freezes, done_today}
+	//streak: App\Utility\DailyStreak::view(), as templates/element/daily_streak.php draws it
 	static update(streak)
 	{
 		let element = DailyStreak.element();
 		if (!element || !streak)
 			return;
-		let dayWord = days => days == 1 ? 'day' : 'days';
+		let days = count => count + ' ' + (count == 1 ? 'day' : 'days');
 		element.classList.toggle('daily-streak--done', !!streak.done_today);
-		element.querySelectorAll('[data-streak-length]').forEach(node => node.textContent = streak.length);
-		element.querySelectorAll('[data-streak-length-word]').forEach(node => node.textContent = dayWord(streak.length));
-		element.querySelectorAll('[data-streak-best]').forEach(node => node.textContent = streak.best);
-		element.querySelectorAll('[data-streak-best-word]').forEach(node => node.textContent = dayWord(streak.best));
-		element.querySelectorAll('[data-streak-freezes]').forEach(node => node.textContent = streak.freezes);
+		element.classList.toggle('daily-streak--golden', !!streak.golden);
+		element.querySelectorAll('[data-streak-active-length]').forEach(node => node.textContent = streak.golden ? streak.golden_length : streak.length);
+		element.querySelectorAll('[data-streak-days]').forEach(node => node.textContent = days(streak[node.dataset.streakDays]));
+		element.querySelectorAll('[data-streak-count]').forEach(node => node.textContent = streak[node.dataset.streakCount]);
+		let title = element.querySelector('[data-streak-title]');
+		if (title)
+			title.textContent = streak.golden ? title.dataset.goldenText : title.dataset.normalText;
 		let today = element.querySelector('[data-streak-today]');
-		if (today)
-			today.textContent = streak.done_today ? today.dataset.doneText : today.dataset.todoText;
+		if (!today)
+			return;
+		if (streak.done_today)
+			today.textContent = today.dataset.doneText;
+		else if (streak.golden)
+			today.textContent = today.dataset.goldenText.replace(/\{(\w+)\}/g, (match, field) => streak[field]);
+		else
+			today.textContent = today.dataset.todoText;
 	}
 
 	static browserTimeZone()

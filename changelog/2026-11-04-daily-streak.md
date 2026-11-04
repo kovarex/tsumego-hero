@@ -1,1 +1,3 @@
 Added: A daily streak flame in the menu counts the days in a row on which you solved a problem that gave XP or a mistake training review; time mode doesn't count, since it gives no XP. Your day ends at 3 AM your time, and every 7 days in a row earn a freeze that saves the streak on a day you miss.
+Added: In the [settings](/users/settings) you can switch to a golden streak with a golden flame, whose days ask the XP of 3 problems of your rank and 3 mistake training reviews (or as many as are due); it counts separately from the normal streak, and a missed day ends both.
+Removed: The mistake training no longer counts its own streak of cleared days; its calendar stays on your profile.

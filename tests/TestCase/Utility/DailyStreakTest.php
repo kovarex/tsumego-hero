@@ -1,13 +1,38 @@
 <?php
 
 use App\Utility\DailyStreak;
-use App\Utility\Util;
 
 class DailyStreakTest extends AppTestCase
 {
 	private static function at(string $time, string $timeZone = 'UTC'): DateTimeImmutable
 	{
 		return new DateTimeImmutable($time, new DateTimeZone($timeZone));
+	}
+
+	//The normal streak stored as of $lastDay, as of $today
+	private static function evaluate(int $length, int $best, int $freezes, ?string $lastDay, string $today): DailyStreak
+	{
+		return new DailyStreak($length, $best, 0, 0, $freezes, $lastDay, false)->asOf($today);
+	}
+
+	/** @return array{length: int, best: int, freezes: int, done_today: bool} */
+	private static function summary(DailyStreak $streak): array
+	{
+		return ['length' => $streak->length, 'best' => $streak->best, 'freezes' => $streak->freezes, 'done_today' => $streak->doneToday];
+	}
+
+	//A result for the player at $now, with the fields it changes applied to the row, as the component writes them
+	private static function solve(array &$user, string $now, int $xp, bool $solvedReview = false, int $reviewsDue = 0): void
+	{
+		$user = DailyStreak::afterResult($user, $xp, $solvedReview, fn() => $reviewsDue, self::at($now, 'Europe/Prague')) + $user;
+	}
+
+	//A player in Prague of rating 1500, whose problem gives 45 XP, so a golden day asks 135
+	private static function player(array $fields = []): array
+	{
+		return $fields + ['id' => 1, 'rating' => 1500, 'time_zone' => 'Europe/Prague', 'streak_mode_setting_id' => DailyStreak::MODE_NORMAL,
+			'streak_length' => 0, 'streak_best' => 0, 'golden_streak_length' => 0, 'golden_streak_best' => 0, 'streak_freezes' => 0, 'streak_last_day' => null,
+			'streak_day' => null, 'streak_day_xp' => 0, 'streak_day_reviews' => 0, 'streak_day_reviews_required' => null];
 	}
 
 	public function testTheDayEndsAtThreeInTheMorningLocalTime(): void
@@ -64,69 +89,69 @@ class DailyStreakTest extends AppTestCase
 
 	public function testANewPlayerHasNoStreak(): void
 	{
-		$streak = DailyStreak::evaluate(0, 0, 0, null, '2026-11-04');
-		$this->assertSame(['length' => 0, 'best' => 0, 'freezes' => 0, 'done_today' => false], $streak->toArray());
+		$streak = self::evaluate(0, 0, 0, null, '2026-11-04');
+		$this->assertSame(['length' => 0, 'best' => 0, 'freezes' => 0, 'done_today' => false], self::summary($streak));
 	}
 
 	public function testTheStreakHoldsWhileTodayIsStillToDo(): void
 	{
-		$this->assertSame(['length' => 5, 'best' => 9, 'freezes' => 1, 'done_today' => true], DailyStreak::evaluate(5, 9, 1, '2026-11-04', '2026-11-04')->toArray());
-		$this->assertSame(['length' => 5, 'best' => 9, 'freezes' => 1, 'done_today' => false], DailyStreak::evaluate(5, 9, 1, '2026-11-03', '2026-11-04')->toArray());
+		$this->assertSame(['length' => 5, 'best' => 9, 'freezes' => 1, 'done_today' => true], self::summary(self::evaluate(5, 9, 1, '2026-11-04', '2026-11-04')));
+		$this->assertSame(['length' => 5, 'best' => 9, 'freezes' => 1, 'done_today' => false], self::summary(self::evaluate(5, 9, 1, '2026-11-03', '2026-11-04')));
 	}
 
 	public function testAMissedDayWithoutAFreezeEndsTheStreak(): void
 	{
-		$streak = DailyStreak::evaluate(5, 9, 0, '2026-11-02', '2026-11-04');
-		$this->assertSame(['length' => 0, 'best' => 9, 'freezes' => 0, 'done_today' => false], $streak->toArray());
+		$streak = self::evaluate(5, 9, 0, '2026-11-02', '2026-11-04');
+		$this->assertSame(['length' => 0, 'best' => 9, 'freezes' => 0, 'done_today' => false], self::summary($streak));
 	}
 
 	public function testAMissedDayUsesAFreezeAndKeepsTheStreak(): void
 	{
-		$streak = DailyStreak::evaluate(8, 8, 2, '2026-11-02', '2026-11-04');
-		$this->assertSame(['length' => 8, 'best' => 8, 'freezes' => 1, 'done_today' => false], $streak->toArray());
+		$streak = self::evaluate(8, 8, 2, '2026-11-02', '2026-11-04');
+		$this->assertSame(['length' => 8, 'best' => 8, 'freezes' => 1, 'done_today' => false], self::summary($streak));
 		$this->assertSame('2026-11-03', $streak->lastDay);
 
-		$streak = DailyStreak::evaluate(8, 8, 2, '2026-11-01', '2026-11-04');
-		$this->assertSame(['length' => 8, 'best' => 8, 'freezes' => 0, 'done_today' => false], $streak->toArray());
+		$streak = self::evaluate(8, 8, 2, '2026-11-01', '2026-11-04');
+		$this->assertSame(['length' => 8, 'best' => 8, 'freezes' => 0, 'done_today' => false], self::summary($streak));
 	}
 
 	//A frozen day keeps the streak but doesn't add to it
 	public function testASolveAfterAFrozenDayAddsOnlyToday(): void
 	{
-		$streak = DailyStreak::evaluate(8, 8, 2, '2026-11-02', '2026-11-04')->afterSolve('2026-11-04');
-		$this->assertSame(['length' => 9, 'best' => 9, 'freezes' => 1, 'done_today' => true], $streak->toArray());
+		$streak = self::evaluate(8, 8, 2, '2026-11-02', '2026-11-04')->countDay(DailyStreak::MODE_NORMAL, '2026-11-04');
+		$this->assertSame(['length' => 9, 'best' => 9, 'freezes' => 1, 'done_today' => true], self::summary($streak));
 	}
 
 	public function testMoreMissedDaysThanFreezesEndTheStreakAndTakeTheFreezes(): void
 	{
-		$streak = DailyStreak::evaluate(20, 20, 2, '2026-11-01', '2026-11-05');
-		$this->assertSame(['length' => 0, 'best' => 20, 'freezes' => 0, 'done_today' => false], $streak->toArray());
-		$this->assertSame(['length' => 1, 'best' => 20, 'freezes' => 0, 'done_today' => true], $streak->afterSolve('2026-11-05')->toArray());
+		$streak = self::evaluate(20, 20, 2, '2026-11-01', '2026-11-05');
+		$this->assertSame(['length' => 0, 'best' => 20, 'freezes' => 0, 'done_today' => false], self::summary($streak));
+		$this->assertSame(['length' => 1, 'best' => 20, 'freezes' => 0, 'done_today' => true], self::summary($streak->countDay(DailyStreak::MODE_NORMAL, '2026-11-05')));
 	}
 
 	public function testReturningAfterALongBreakStartsAgain(): void
 	{
-		$streak = DailyStreak::evaluate(30, 45, 2, '2026-06-01', '2026-11-04');
-		$this->assertSame(['length' => 0, 'best' => 45, 'freezes' => 0, 'done_today' => false], $streak->toArray());
-		$this->assertSame(['length' => 1, 'best' => 45, 'freezes' => 0, 'done_today' => true], $streak->afterSolve('2026-11-04')->toArray());
+		$streak = self::evaluate(30, 45, 2, '2026-06-01', '2026-11-04');
+		$this->assertSame(['length' => 0, 'best' => 45, 'freezes' => 0, 'done_today' => false], self::summary($streak));
+		$this->assertSame(['length' => 1, 'best' => 45, 'freezes' => 0, 'done_today' => true], self::summary($streak->countDay(DailyStreak::MODE_NORMAL, '2026-11-04')));
 	}
 
 	public function testOnlyTheFirstSolveOfTheDayCounts(): void
 	{
-		$streak = DailyStreak::evaluate(3, 3, 0, '2026-11-03', '2026-11-04')->afterSolve('2026-11-04');
+		$streak = self::evaluate(3, 3, 0, '2026-11-03', '2026-11-04')->countDay(DailyStreak::MODE_NORMAL, '2026-11-04');
 		$this->assertSame(4, $streak->length);
-		$this->assertSame(4, $streak->afterSolve('2026-11-04')->length);
+		$this->assertSame(4, $streak->countDay(DailyStreak::MODE_NORMAL, '2026-11-04')->length);
 	}
 
 	public function testAFreezeIsEarnedEverySevenDaysWithoutALimit(): void
 	{
-		$streak = DailyStreak::evaluate(0, 0, 0, null, '2026-11-01');
+		$streak = self::evaluate(0, 0, 0, null, '2026-11-01');
 		$day = new DateTimeImmutable('2026-11-01');
 		$freezesByLength = [];
 		for ($i = 0; $i < 28; $i++)
 		{
 			$today = $day->modify('+' . $i . ' days')->format('Y-m-d');
-			$streak = DailyStreak::evaluate($streak->length, $streak->best, $streak->freezes, $streak->lastDay, $today)->afterSolve($today);
+			$streak = self::evaluate($streak->length, $streak->best, $streak->freezes, $streak->lastDay, $today)->countDay(DailyStreak::MODE_NORMAL, $today);
 			$freezesByLength[$streak->length] = $streak->freezes;
 		}
 		$this->assertSame(0, $freezesByLength[6]);
@@ -140,15 +165,15 @@ class DailyStreakTest extends AppTestCase
 
 	public function testEnoughFreezesCoverALongBreak(): void
 	{
-		$streak = DailyStreak::evaluate(40, 40, 5, '2026-11-01', '2026-11-06');
-		$this->assertSame(['length' => 40, 'best' => 40, 'freezes' => 1, 'done_today' => false], $streak->toArray());
-		$this->assertSame(0, DailyStreak::evaluate(40, 40, 5, '2026-11-01', '2026-11-08')->length);
+		$streak = self::evaluate(40, 40, 5, '2026-11-01', '2026-11-06');
+		$this->assertSame(['length' => 40, 'best' => 40, 'freezes' => 1, 'done_today' => false], self::summary($streak));
+		$this->assertSame(0, self::evaluate(40, 40, 5, '2026-11-01', '2026-11-08')->length);
 	}
 
 	//Moving west can make the last counted day lie ahead of today there: it is done, not missed
 	public function testADayAheadOfTodayIsDone(): void
 	{
-		$this->assertTrue(DailyStreak::evaluate(4, 4, 0, '2026-11-05', '2026-11-04')->doneToday);
+		$this->assertTrue(self::evaluate(4, 4, 0, '2026-11-05', '2026-11-04')->doneToday);
 	}
 
 	public function testTheDateColumnIsReadInAnyForm(): void
@@ -160,26 +185,111 @@ class DailyStreakTest extends AppTestCase
 		$this->assertFalse(DailyStreak::ofUser($user + ['streak_last_day' => null], $now)->doneToday);
 	}
 
-	public function testCountingASolveStoresTheStreakOnlyOncePerDay(): void
+	public function testOnlyTheFirstSolveOfTheDayCountsTheDay(): void
 	{
-		$context = new ContextPreparator(['user' => ['streak_length' => 6, 'streak_best' => 6, 'streak_last_day' => '2026-11-03', 'time_zone' => 'Europe/Prague']]);
-		$user = $context->user;
-		DailyStreak::countSolve($user, self::at('2026-11-04 10:00:00', 'Europe/Prague'));
-		$this->assertSame(['streak_length' => 7, 'streak_best' => 7, 'streak_freezes' => 1, 'streak_last_day' => '2026-11-04'], $this->stored($user['id']));
-		$this->assertSame(7, $user['streak_length']);
+		$user = self::player(['streak_length' => 6, 'streak_best' => 6, 'streak_last_day' => '2026-11-03']);
+		self::solve($user, '2026-11-04 10:00:00', 20);
+		$this->assertSame([7, 7, 1, '2026-11-04'], [$user['streak_length'], $user['streak_best'], $user['streak_freezes'], $user['streak_last_day']]);
 
-		//The second solve of the day, before 3 AM of the next one
-		DailyStreak::countSolve($user, self::at('2026-11-05 02:00:00', 'Europe/Prague'));
-		$this->assertSame(7, $this->stored($user['id'])['streak_length']);
+		//The second solve of the day, before 3 AM of the next one, only adds its XP to the day
+		$fields = DailyStreak::afterResult($user, 15, false, fn() => 0, self::at('2026-11-05 02:00:00', 'Europe/Prague'));
+		$this->assertSame(['streak_day' => '2026-11-04', 'streak_day_xp' => 35, 'streak_day_reviews' => 0, 'streak_day_reviews_required' => null], $fields);
 
-		DailyStreak::countSolve($user, self::at('2026-11-05 03:00:00', 'Europe/Prague'));
-		$this->assertSame(['streak_length' => 8, 'streak_best' => 8, 'streak_freezes' => 1, 'streak_last_day' => '2026-11-05'], $this->stored($user['id']));
+		self::solve($user, '2026-11-05 03:00:00', 20);
+		$this->assertSame([8, 8, 1, '2026-11-05', 20], [$user['streak_length'], $user['streak_best'], $user['streak_freezes'], $user['streak_last_day'], $user['streak_day_xp']]);
 	}
 
-	/** @return array<string, mixed> */
-	private function stored(int $userId): array
+	public function testAResultThatGivesNothingChangesNothing(): void
 	{
-		$row = Util::query('SELECT streak_length, streak_best, streak_freezes, streak_last_day FROM user WHERE id = ?', [$userId])[0];
-		return ['streak_length' => (int) $row['streak_length'], 'streak_best' => (int) $row['streak_best'], 'streak_freezes' => (int) $row['streak_freezes'], 'streak_last_day' => $row['streak_last_day']];
+		$this->assertSame([], DailyStreak::afterResult(self::player(), 0, false, fn() => 0, self::at('2026-11-04 10:00:00')));
+	}
+
+	public function testAGoldenDayAsksTheXpOfThreeProblemsOfTheRank(): void
+	{
+		$this->assertSame(135, DailyStreak::goldenXp(1500));
+		$user = self::player(['streak_mode_setting_id' => DailyStreak::MODE_GOLDEN]);
+		self::solve($user, '2026-11-04 10:00:00', 90);
+		$this->assertSame(0, $user['golden_streak_length'], 'Two problems are not enough');
+		$this->assertSame(0, $user['streak_length'], 'A golden day is not counted in the normal streak');
+		self::solve($user, '2026-11-04 11:00:00', 45);
+		$this->assertSame([0, 1, 1, '2026-11-04'], [$user['streak_length'], $user['golden_streak_length'], $user['golden_streak_best'], $user['streak_last_day']]);
+	}
+
+	public function testAGoldenDayAsksThreeReviewsOrAsManyAsAreDue(): void
+	{
+		$user = self::player(['streak_mode_setting_id' => DailyStreak::MODE_GOLDEN]);
+		self::solve($user, '2026-11-04 10:00:00', 200, reviewsDue: 5);
+		$this->assertSame([0, 3], [$user['golden_streak_length'], $user['streak_day_reviews_required']], 'The XP is there, the reviews are not');
+		self::solve($user, '2026-11-04 10:10:00', 0, true, 4);
+		self::solve($user, '2026-11-04 10:20:00', 0, true, 3);
+		$this->assertSame(0, $user['golden_streak_length']);
+		self::solve($user, '2026-11-04 10:30:00', 0, true, 2);
+		$this->assertSame([1, 3], [$user['golden_streak_length'], $user['streak_day_reviews']]);
+
+		$user = self::player(['streak_mode_setting_id' => DailyStreak::MODE_GOLDEN]);
+		self::solve($user, '2026-11-04 10:00:00', 0, true, 0);
+		$this->assertSame([0, 1], [$user['golden_streak_length'], $user['streak_day_reviews_required']], 'The only review that was due is done, the XP is not');
+		self::solve($user, '2026-11-04 11:00:00', 135);
+		$this->assertSame(1, $user['golden_streak_length']);
+
+		$user = self::player(['streak_mode_setting_id' => DailyStreak::MODE_GOLDEN]);
+		self::solve($user, '2026-11-04 10:00:00', 135);
+		$this->assertSame(1, $user['golden_streak_length'], 'With nothing due, the XP alone makes a golden day');
+	}
+
+	//A golden day that met only the normal requirement is missed: it ends both streaks, unless a freeze covers it
+	public function testAGoldenDayLeftShortIsMissed(): void
+	{
+		$user = self::player(['streak_mode_setting_id' => DailyStreak::MODE_GOLDEN, 'streak_length' => 4, 'streak_best' => 4, 'golden_streak_length' => 2, 'golden_streak_best' => 2, 'streak_last_day' => '2026-11-03']);
+		self::solve($user, '2026-11-04 10:00:00', 45);
+		$this->assertFalse(DailyStreak::ofUser($user, self::at('2026-11-04 22:00:00', 'Europe/Prague'))->doneToday);
+		$streak = DailyStreak::ofUser($user, self::at('2026-11-05 10:00:00', 'Europe/Prague'));
+		$this->assertSame([0, 0, 4, 2], [$streak->length, $streak->goldenLength, $streak->best, $streak->goldenBest], 'Both streaks end, both bests stay');
+
+		$streak = DailyStreak::ofUser(['streak_freezes' => 1] + $user, self::at('2026-11-05 10:00:00', 'Europe/Prague'));
+		$this->assertSame([4, 2, 0], [$streak->length, $streak->goldenLength, $streak->freezes], 'The freeze covers the day');
+	}
+
+	//Switching the mode moves the next days to the other streak; the day goes to the mode that is on when it counts
+	public function testTheTwoStreaksCountSeparately(): void
+	{
+		$user = self::player();
+		self::solve($user, '2026-11-01 10:00:00', 10);
+		self::solve($user, '2026-11-02 10:00:00', 10);
+		$user['streak_mode_setting_id'] = DailyStreak::MODE_GOLDEN;
+		self::solve($user, '2026-11-03 10:00:00', 10);
+		$this->assertSame([2, 0], [$user['streak_length'], $user['golden_streak_length']], 'Not a golden day yet');
+		$user['streak_mode_setting_id'] = DailyStreak::MODE_NORMAL;
+		self::solve($user, '2026-11-03 11:00:00', 10);
+		$this->assertSame([3, 0], [$user['streak_length'], $user['golden_streak_length']], 'Switched back, the day counts in the normal streak');
+		$user['streak_mode_setting_id'] = DailyStreak::MODE_GOLDEN;
+		self::solve($user, '2026-11-04 10:00:00', 135);
+		self::solve($user, '2026-11-04 11:00:00', 135);
+		$this->assertSame([3, 1, 3, 1], [$user['streak_length'], $user['golden_streak_length'], $user['streak_best'], $user['golden_streak_best']]);
+	}
+
+	public function testFreezesAreEarnedEverySevenDaysOfBothStreaks(): void
+	{
+		$user = self::player();
+		for ($day = 1; $day <= 7; $day++)
+		{
+			$user['streak_mode_setting_id'] = $day % 2 ? DailyStreak::MODE_NORMAL : DailyStreak::MODE_GOLDEN;
+			self::solve($user, sprintf('2026-11-%02d 10:00:00', $day), 135);
+		}
+		$this->assertSame([4, 3, 1], [$user['streak_length'], $user['golden_streak_length'], $user['streak_freezes']]);
+	}
+
+	public function testTheProgressOfADayStartsOverTheNextDay(): void
+	{
+		$user = self::player(['streak_mode_setting_id' => DailyStreak::MODE_GOLDEN]);
+		self::solve($user, '2026-11-04 10:00:00', 90, true, 2);
+		$view = DailyStreak::view($user, self::at('2026-11-04 12:00:00', 'Europe/Prague'));
+		$this->assertSame(['golden' => true, 'xp' => 90, 'xp_required' => 135, 'reviews' => 1, 'reviews_required' => 3],
+			array_intersect_key($view, array_flip(['golden', 'xp', 'xp_required', 'reviews', 'reviews_required'])));
+
+		$view = DailyStreak::view($user, self::at('2026-11-05 12:00:00', 'Europe/Prague'));
+		$this->assertSame([0, 0, DailyStreak::GOLDEN_REVIEWS], [$view['xp'], $view['reviews'], $view['reviews_required']]);
+		self::solve($user, '2026-11-05 12:00:00', 45);
+		$this->assertSame(['2026-11-05', 45, 0], [$user['streak_day'], $user['streak_day_xp'], $user['streak_day_reviews']]);
 	}
 }

@@ -54,6 +54,42 @@
 	opacity: 1;
 }
 
+/* The spark beside the flame marks the golden mode */
+.daily-streak__spark
+{
+	display: none;
+}
+
+.daily-streak--golden
+{
+	color: var(--color-streak-golden-unlit);
+}
+
+.daily-streak--golden .daily-streak__spark
+{
+	display: inline;
+}
+
+.daily-streak--golden.daily-streak--done
+{
+	color: var(--color-streak-golden);
+}
+
+.daily-streak--golden.daily-streak--done .daily-streak__flame
+{
+	filter: drop-shadow(0 0 5px var(--color-streak-golden-glow));
+}
+
+.daily-streak--golden .daily-streak__title
+{
+	color: var(--color-streak-golden);
+}
+
+.daily-streak__rules a
+{
+	color: var(--color-streak-golden);
+}
+
 .daily-streak__details
 {
 	display: none;

@@ -37,9 +37,26 @@ class DailyStreakBrowserTest extends IntegrationTestCase
 		$browser->hover($browser->find('#daily-streak'));
 		$details = $browser->find('#daily-streak-details');
 		$this->assertTrue($details->isDisplayed());
-		$this->assertStringContainsString('Daily streak: 3 days', $details->getText());
-		$this->assertStringContainsString('Best streak: 5 days', $details->getText());
+		$this->assertStringContainsString('Streak: 3 days, best 5 days', $details->getText());
+		$this->assertStringContainsString('Golden streak: 0 days, best 0 days', $details->getText());
 		$this->assertStringContainsString('Today is done.', $details->getText());
+	}
+
+	//In the golden mode the flame is golden, and a solve that is not enough for the day shows what is left
+	public function testTheGoldenFlameShowsTheProgressOfTheDay(): void
+	{
+		$context = new ContextPreparator(['user' => ['streak_mode_setting_id' => DailyStreak::MODE_GOLDEN, 'rating' => 2500], 'tsumego' => ['set_order' => 1, 'status' => 'V', 'rating' => 1000]]);
+		$browser = Browser::instance();
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		$this->assertStringContainsString('daily-streak--golden', $browser->find('#daily-streak')->getAttribute('class'));
+
+		$browser->playWithResult('S');
+		$user = $context->reloadUser();
+		$expected = 'Today: ' . (int) $user['streak_day_xp'] . ' of ' . DailyStreak::goldenXp((float) $user['rating']) . ' XP and 0 of 0 mistake training reviews.';
+		$browser->hover($browser->find('#daily-streak'));
+		$browser->waitUntilCssSelectorExistsWithText('#daily-streak [data-streak-today]', $expected);
+		$this->assertStringNotContainsString('daily-streak--done', $browser->find('#daily-streak')->getAttribute('class'));
+		$this->assertSame('Golden streak', $browser->find('#daily-streak [data-streak-title]')->getText());
 	}
 
 	public function testAGuestHasNoFlame(): void

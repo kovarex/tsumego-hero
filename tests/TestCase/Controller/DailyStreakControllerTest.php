@@ -35,7 +35,7 @@ class DailyStreakControllerTest extends IntegrationTestCase
 		$context = new ContextPreparator(['user' => ['streak_length' => 3, 'streak_best' => 3, 'streak_last_day' => self::yesterday()], 'tsumego' => ['set_order' => 1, 'status' => 'V']]);
 		$response = $this->solve($context);
 		$this->assertGreaterThan(0, $response['xp_gained']);
-		$this->assertSame(['length' => 4, 'best' => 4, 'freezes' => 0, 'done_today' => true], $response['daily_streak']);
+		$this->assertSame(['length' => 4, 'best' => 4, 'freezes' => 0, 'done_today' => true], array_intersect_key($response['daily_streak'], array_flip(['length', 'best', 'freezes', 'done_today'])));
 		$this->assertSame(4, $this->storedLength($context));
 	}
 
@@ -44,7 +44,7 @@ class DailyStreakControllerTest extends IntegrationTestCase
 		$context = new ContextPreparator(['user' => ['streak_length' => 3, 'streak_best' => 3, 'streak_last_day' => self::yesterday()], 'tsumego' => ['set_order' => 1, 'status' => 'S']]);
 		$response = $this->solve($context);
 		$this->assertSame(0, (int) $response['xp_gained']);
-		$this->assertSame(['length' => 3, 'best' => 3, 'freezes' => 0, 'done_today' => false], $response['daily_streak']);
+		$this->assertSame(['length' => 3, 'best' => 3, 'freezes' => 0, 'done_today' => false], array_intersect_key($response['daily_streak'], array_flip(['length', 'best', 'freezes', 'done_today'])));
 		$this->assertSame(3, $this->storedLength($context));
 	}
 
@@ -140,5 +140,42 @@ class DailyStreakControllerTest extends IntegrationTestCase
 		$this->get('/sites/impressum');
 		$this->assertResponseOk();
 		$this->assertSame('Europe/Prague', $context->reloadUser()['time_zone']);
+	}
+
+	//In the golden mode a solve adds its XP to the day, which counts once it reaches the XP of three problems of the player's rank
+	public function testAGoldenDayCountsOnceItHasTheXpOfThreeProblems(): void
+	{
+		$context = new ContextPreparator(['user' => ['streak_mode_setting_id' => DailyStreak::MODE_GOLDEN, 'rating' => 2500], 'tsumego' => ['set_order' => 1, 'status' => 'V', 'rating' => 1000]]);
+		$response = $this->solve($context);
+		$streak = $response['daily_streak'];
+		$this->assertTrue($streak['golden']);
+		$this->assertFalse($streak['done_today'], 'One problem is not a golden day');
+		$this->assertSame((int) $response['xp_gained'], $streak['xp']);
+		$this->assertSame(DailyStreak::goldenXp((float) $context->reloadUser()['rating']), $streak['xp_required']);
+		$this->assertSame(0, $streak['reviews_required'], 'Nothing is due in the training');
+
+		$today = DailyStreak::today(null, new DateTimeImmutable());
+		Util::execute('UPDATE user SET streak_day = ?, streak_day_xp = 1000 WHERE id = ?', [$today, $context->user['id']]);
+		Util::execute('UPDATE tsumego_status SET status = ? WHERE user_id = ?', ['V', $context->user['id']]);
+		$streak = $this->solve($context)['daily_streak'];
+		$this->assertSame([true, 0, 1], [$streak['done_today'], $streak['length'], $streak['golden_length']]);
+		$user = $context->reloadUser();
+		$this->assertSame([0, 1], [(int) $user['streak_length'], (int) $user['golden_streak_length']]);
+	}
+
+	public function testTheStreakModeIsASetting(): void
+	{
+		$context = new ContextPreparator(['user' => ['name' => 'goldenPlayer']]);
+		$this->login('goldenPlayer');
+		$this->post('/users/streakModePreference', ['mode' => (string) DailyStreak::MODE_GOLDEN]);
+		$this->assertResponseOk();
+		$this->assertSame(DailyStreak::MODE_GOLDEN, (int) $context->reloadUser()['streak_mode_setting_id']);
+
+		$this->get('/users/settings');
+		$this->assertStringContainsString('name="streakMode" value="' . DailyStreak::MODE_GOLDEN . '" data-save="/users/streakModePreference" data-field="mode" data-reload checked="checked"', $this->view);
+		$this->assertStringContainsString('daily-streak--golden', $this->view, 'The flame of the menu is golden');
+
+		$this->post('/users/streakModePreference', ['mode' => '7']);
+		$this->assertSame(DailyStreak::MODE_NORMAL, (int) $context->reloadUser()['streak_mode_setting_id'], 'A mode that does not exist is the normal one');
 	}
 }

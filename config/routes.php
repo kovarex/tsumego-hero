@@ -358,6 +358,10 @@ return function (RouteBuilder $routes): void
 		['controller' => 'Users', 'action' => 'dateFormatPreference']
 	);
 	$routes->connect(
+		'/users/streakModePreference',
+		['controller' => 'Users', 'action' => 'streakModePreference']
+	);
+	$routes->connect(
 		'/users/emailOnNewMessagePreference',
 		['controller' => 'Users', 'action' => 'emailOnNewMessagePreference']
 	);

@@ -62,7 +62,7 @@ class TsumegosController extends AppController
 			$result['achievement_updates'] = array_map([AchievementChecker::class, 'toPopupData'], $result['achievement_updates']);
 		//The flame of the menu lights up at the solve that counted the day (webroot/js/DailyStreak.js)
 		if (empty($result['error']))
-			$result['daily_streak'] = DailyStreak::ofUser(Auth::getUser())->toArray();
+			$result['daily_streak'] = DailyStreak::view(Auth::getUser());
 
 		return $this->respondJson($result);
 	}

@@ -101,6 +101,7 @@ return [
 		'/users/playerColorPreference' => ['Users', 'playerColorPreference', []],
 		'/users/boardOrientationPreference' => ['Users', 'boardOrientationPreference', []],
 		'/users/dateFormatPreference' => ['Users', 'dateFormatPreference', []],
+		'/users/streakModePreference' => ['Users', 'streakModePreference', []],
 		'/users/emailOnNewMessagePreference' => ['Users', 'emailOnNewMessagePreference', []],
 		'/users/avatarPreference' => ['Users', 'avatarPreference', []],
 		'/users/avatarUpload' => ['Users', 'avatarUpload', []],
