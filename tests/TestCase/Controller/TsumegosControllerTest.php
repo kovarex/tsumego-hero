@@ -417,6 +417,29 @@ class TsumegosControllerTest extends IntegrationTestCase
 		$this->assertFalse($browser->idExists('unselect-active-tiles'));
 	}
 
+	//A tile shows the name of its filter as text, and drops just that filter
+	public function testAFilterTileDropsItsFilter(): void
+	{
+		$context = new ContextPreparator(['tsumego' => ['set_order' => 666, 'tags' => [['name' => '<b>bold</b>'], ['name' => 'atari']]]]);
+		$tsumegoId = $context->tsumegos[0]['id'];
+
+		$browser = Browser::instance();
+		$browser->getAnonymous('/tsumegos/play/' . $tsumegoId);
+		$browser->driver->manage()->deleteAllCookies();
+		$browser->driver->manage()->addCookie(['name' => 'filtered_tags', 'value' => '<b>bold</b>@atari']);
+		$browser->getAnonymous('/tsumegos/play/' . $tsumegoId);
+
+		$browser->find('#showFilters')->click();
+		$browser->waitUntilCssSelectorDisplayed('.active-tiles-container .dropdown__tile--brown');
+		$tiles = $browser->getElements('.active-tiles-container .dropdown__tile--brown');
+		$this->assertSame(['<b>bold</b>', 'atari'], array_map(fn($tile) => $tile->getText(), $tiles));
+		$this->assertSame(0, count($browser->getElements('.active-tiles-container b')));
+
+		$tiles[0]->click();
+		$browser->waitUntilJs('document.readyState === "complete" && window.eval("typeof activeTagTiles !== \'undefined\' && activeTagTiles.length === 1")');
+		$this->assertSame(['atari'], $browser->driver->executeScript('return window.eval("activeTagTiles");'));
+	}
+
 	// testing the same things as testViewingTsumegoInMoreSets, but using the web driver to do so
 	// if this test fails, it probably means something is wrong with the web driver configuration
 	public function testViewingTsumegoInMoreSetsUsingWebDriver()

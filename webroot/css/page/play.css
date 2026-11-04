@@ -277,17 +277,9 @@ h1 {
 .eloTooltip:hover .eloTooltiptext {
   visibility: visible;
 }
-.mode1 {
-  padding-bottom: 9px;
-}
 #mode-text {
   color: var(--color-purple-ink);
   font-weight: 800;
-}
-.tsumegoNavi-middle2 {
-  position: relative;
-  left: 38px;
-  width: 200px;
 }
 .besogo-board {
   /* Do NOT force the width here: besogo's JS sets an inline width per
