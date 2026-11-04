@@ -155,29 +155,6 @@ class Play
 		return ['libertiesB' => $libertiesB, 'libertiesW' => $libertiesW, 'variance' => $problem['multipleChoiceTriangles']];
 	}
 
-	//The coordinates of the property values [xx][yy]... that start at $position
-	/** @return list<string> */
-	private static function getFollowingSgfCoordinates(string $string, int $position): array
-	{
-		$result = [];
-		do
-		{
-			$next = substr($string, $position, 4);
-			if ($next[0] != '[')
-				break;
-			if ($next[3] != ']')
-				break;
-			if ($next[1] < 'a' || $next[1] > 't')
-				break;
-			if ($next[2] < 'a' || $next[2] > 't')
-				break;
-			$result [] = substr($string, $position + 1, 2);
-			$position += 4;
-		}
-		while (true);
-		return $result;
-	}
-
 	//The liberties to take from Black and from White in a semeai question, at random within its limits
 	/** @return array{int, int} */
 	private static function calculateLibertyStatus(
@@ -282,8 +259,9 @@ class Play
 		$this->problem['og'] = self::openGraph($setConnection, $set, $tsumego, $sgf, $amountOfOtherCollection);
 		if ($semeai !== null)
 		{
-			$this->problem['multipleChoiceTriangles'] = count(self::getFollowingSgfCoordinates($sgf->sgf, strpos($sgf->sgf, 'TR') + 2));
-			$this->problem['multipleChoiceSquares'] = count(self::getFollowingSgfCoordinates($sgf->sgf, strpos($sgf->sgf, 'SQ') + 2));
+			$marks = SgfParser::firstValues($sgf->sgf, ['TR', 'SQ']);
+			$this->problem['multipleChoiceTriangles'] = count(SgfParser::points($marks['TR']));
+			$this->problem['multipleChoiceSquares'] = count(SgfParser::points($marks['SQ']));
 		}
 		$this->buildNavigation($setConnection, $set, $tsumegoFilters);
 
