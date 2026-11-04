@@ -184,7 +184,9 @@ class CronController extends AppController
 			'ruby_solves' => 0,
 		]));
 
-		AchievementConditionTable::put($userOfTheDay, AchievementConditionTable::CATEGORY_USER_OF_THE_DAY, 1);
+		//nobody, when all the leaders of the day were user of the day within the last week
+		if ($userOfTheDay !== null)
+			AchievementConditionTable::put($userOfTheDay, AchievementConditionTable::CATEGORY_USER_OF_THE_DAY, 1);
 	}
 
 	//The solved count on the user row goes up as the player solves, the recount repairs it where it
