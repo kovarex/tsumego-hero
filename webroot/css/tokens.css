@@ -63,14 +63,11 @@
 		--color-green-btn-gradient: linear-gradient(#6bac4a, #457128);
 		--color-purple-btn-gradient: linear-gradient(#bd73d9, #9d31be);
 		--color-gold: #9a7b00;
-		/* The flame of the daily streak in the menu: lit once today counted, unlit before */
-		--color-streak-flame: #ff9600;
-		--color-streak-flame-glow: rgba(255, 150, 0, 0.55);
-		--color-streak-unlit: #707070;
-		/* The golden streak: a gold flame, a dim gold one before today counted */
-		--color-streak-golden: #ffd23f;
-		--color-streak-golden-glow: rgba(255, 210, 63, 0.7);
-		--color-streak-golden-unlit: #8a7a3a;
+		/* The flame of the daily streak in the menu: gold once today counted, a dim gold before */
+		--color-streak-flame: #ffd23f;
+		--color-streak-flame-glow: rgba(255, 210, 63, 0.7);
+		--color-streak-unlit: #8a7a3a;
+		--color-streak-track: rgba(255, 255, 255, 0.15);
 
 		/* Rank colors: difficulty filter bands, weakest (30k) to strongest (9d).
 		   The scale is a linear HSL hue ramp of 7 degrees per rank: 30k = 72.8deg,

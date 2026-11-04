@@ -1,6 +1,7 @@
 //The flame of the daily streak in the menu (templates/element/daily_streak.php). It redraws from what
-//the server says about the streak (App\Utility\DailyStreak::toArray(), in the result of a solve), and
-//hands the server the browser's time zone when it differs from the stored one.
+//the server says about the streak (App\Utility\DailyStreak::view(), in the result of a solve), lights
+//up with a burst when that solve completed the day, and hands the server the browser's time zone when
+//it differs from the stored one.
 class DailyStreak
 {
 	static element()
@@ -15,23 +16,21 @@ class DailyStreak
 		if (!element || !streak)
 			return;
 		let days = count => count + ' ' + (count == 1 ? 'day' : 'days');
+		//The burst plays once, when the day gets done on this page; daily-streak.css has it, and drops it for reduced motion
+		if (streak.done_today && !element.classList.contains('daily-streak--done'))
+			element.classList.add('daily-streak--ignite');
 		element.classList.toggle('daily-streak--done', !!streak.done_today);
-		element.classList.toggle('daily-streak--golden', !!streak.golden);
-		element.querySelectorAll('[data-streak-active-length]').forEach(node => node.textContent = streak.golden ? streak.golden_length : streak.length);
 		element.querySelectorAll('[data-streak-days]').forEach(node => node.textContent = days(streak[node.dataset.streakDays]));
 		element.querySelectorAll('[data-streak-count]').forEach(node => node.textContent = streak[node.dataset.streakCount]);
-		let title = element.querySelector('[data-streak-title]');
-		if (title)
-			title.textContent = streak.golden ? title.dataset.goldenText : title.dataset.normalText;
+		let progress = element.querySelector('.daily-streak__progress');
+		if (progress)
+		{
+			progress.max = streak.xp_required;
+			progress.value = streak.done_today ? streak.xp_required : Math.min(streak.xp, streak.xp_required);
+		}
 		let today = element.querySelector('[data-streak-today]');
-		if (!today)
-			return;
-		if (streak.done_today)
-			today.textContent = today.dataset.doneText;
-		else if (streak.golden)
-			today.textContent = today.dataset.goldenText.replace(/\{(\w+)\}/g, (match, field) => streak[field]);
-		else
-			today.textContent = today.dataset.todoText;
+		if (today)
+			today.textContent = streak.done_today ? today.dataset.doneText : today.dataset.todoText;
 	}
 
 	static browserTimeZone()

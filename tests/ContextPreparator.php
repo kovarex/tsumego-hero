@@ -10,7 +10,6 @@ use App\Model\Table\TimeModeRankTable;
 use App\Model\Table\TsumegoIssueTable;
 use App\Model\Table\UserTable;
 use App\Utility\AchievementChecker;
-use App\Utility\DailyStreak;
 use App\Utility\AdminActivityLogger;
 use App\Utility\Auth;
 use App\Utility\BoardSelector;
@@ -199,11 +198,10 @@ class ContextPreparator
 			if ($filter = Util::extract($name, $userInput))
 				$user[$name] = implode('@', $filter);
 		$user['contribution_revelation_bonus'] = Util::extract('contribution_revelation_bonus', $userInput) ?: 0;
-		foreach (['streak_length', 'streak_best', 'streak_freezes', 'golden_streak_length', 'golden_streak_best', 'streak_day_xp', 'streak_day_reviews'] as $name)
+		foreach (['streak_length', 'streak_best', 'streak_freezes', 'streak_day_xp', 'streak_day_reviews'] as $name)
 			$user[$name] = Util::extract($name, $userInput) ?: 0;
 		foreach (['streak_last_day', 'streak_day', 'streak_day_reviews_required'] as $name)
 			$user[$name] = Util::extract($name, $userInput) ?? null;
-		$user['streak_mode_setting_id'] = Util::extract('streak_mode_setting_id', $userInput) ?: DailyStreak::MODE_NORMAL;
 		$user['time_zone'] = Util::extract('time_zone', $userInput) ?: null;
 
 		// Save user

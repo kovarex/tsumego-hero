@@ -19,7 +19,6 @@ use App\Utility\AdminActivityLogger;
 use App\Utility\Auth;
 use App\Utility\Constants;
 use App\Utility\CookieFlash;
-use App\Utility\DailyStreak;
 use App\Utility\Highscore;
 use App\Utility\MistakeTraining;
 use App\Utility\UploadedAvatar;
@@ -406,13 +405,6 @@ ORDER BY tsumego_attempt.created DESC, tsumego_attempt.id DESC", [$userID, $user
 	{
 		return $this->saveChoice('date_format_id', 'format',
 			range(UserTable::DATE_FORMAT_ISO, UserTable::DATE_FORMAT_BROWSER), UserTable::DATE_FORMAT_ISO);
-	}
-
-	//The mode of the daily streak, normal or golden (DailyStreak)
-	#[HttpPost]
-	public function streakModePreference(): Response
-	{
-		return $this->saveChoice('streak_mode_setting_id', 'mode', [DailyStreak::MODE_NORMAL, DailyStreak::MODE_GOLDEN], DailyStreak::MODE_NORMAL);
 	}
 
 	//Store the setting the player picked on the settings page; a value that is not one of the

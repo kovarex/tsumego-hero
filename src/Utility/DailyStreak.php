@@ -7,37 +7,30 @@ use DateTimeInterface;
 use DateTimeZone;
 use Exception;
 
-//The daily streak: the days in a row on which the player did what the day asks. It has two modes,
-//picked in the settings (user.streak_mode_setting_id), each with its own length and best:
-//- normal: a solve that gives XP, or a review the mistake training counts as solved;
-//- golden: the XP of GOLDEN_PROBLEMS problems of the player's rating, and GOLDEN_REVIEWS reviews of
-//  the mistake training, or as many as there are.
-//A day counts in the mode that is on when its requirement is met. A missed day takes a freeze, and
-//without one it ends both streaks; the freezes and the last day are shared.
+//The daily streak: the days in a row on which the player did what the day asks, which is the XP of
+//PROBLEMS_A_DAY problems of the player's rating (solves and the mistake training's XP together) and
+//REVIEWS_A_DAY reviews the mistake training counts as solved, or as many as were due.
+//A missed day takes a freeze, and without one it ends the streak.
 //A player's day ends at DAY_START_HOUR in their own time zone (user.time_zone, from the browser,
 //UTC until it is known). The row keeps the streak as it was at the last day that counted
-//(streak_last_day); what happened since is worked out from today whenever it is read, so missed
-//days use up freezes or end the streaks without any cron, however long the player was away.
+//(streak_last_day), and what today did so far (streak_day_); what happened since is worked out from
+//today whenever it is read, so missed days use up freezes or end the streak without any cron,
+//however long the player was away.
 //Every rule of the streak is here, so the numbers below are the only place to change them.
 /** @phpstan-import-type UserRow from \App\Utility\RowTypes */
 class DailyStreak
 {
-	//A freeze is earned each time the two streaks together reach a multiple of this many days; they add up without a limit
+	//A freeze is earned every this many days of the streak; they add up without a limit
 	public const int FREEZE_EVERY_DAYS = 7;
 	//The hour of the player's local time at which their day turns
 	public const int DAY_START_HOUR = 3;
-	//The ids of the streak_mode_setting table
-	public const int MODE_NORMAL = 1;
-	public const int MODE_GOLDEN = 2;
-	//What a golden day asks: the XP of this many problems of the player's rating, and this many reviews
-	public const int GOLDEN_PROBLEMS = 3;
-	public const int GOLDEN_REVIEWS = 3;
+	//What a day asks: the XP of this many problems of the player's rating, and this many reviews
+	public const int PROBLEMS_A_DAY = 3;
+	public const int REVIEWS_A_DAY = 3;
 
 	public function __construct(
 		public readonly int $length,
 		public readonly int $best,
-		public readonly int $goldenLength,
-		public readonly int $goldenBest,
 		public readonly int $freezes,
 		public readonly ?string $lastDay,
 		public readonly bool $doneToday) {}
@@ -56,59 +49,50 @@ class DailyStreak
 		return new self(
 			(int) ($user['streak_length'] ?? 0),
 			(int) ($user['streak_best'] ?? 0),
-			(int) ($user['golden_streak_length'] ?? 0),
-			(int) ($user['golden_streak_best'] ?? 0),
 			(int) ($user['streak_freezes'] ?? 0),
 			self::dayOf($user['streak_last_day'] ?? null),
 			false);
 	}
 
 	//The streak as of $today, from what was stored at the last day that counted. Each missed day takes
-	//a freeze, which keeps the streaks without making them longer; more missed days than freezes end
-	//both, and the freezes are gone with them.
+	//a freeze, which keeps the streak without making it longer; more missed days than freezes end it,
+	//and the freezes are gone with it.
 	public function asOf(string $today): self
 	{
-		if ($this->lastDay === null || $this->length + $this->goldenLength <= 0)
-			return new self(0, $this->best, 0, $this->goldenBest, $this->freezes, null, false);
+		if ($this->lastDay === null || $this->length <= 0)
+			return new self(0, $this->best, $this->freezes, null, false);
 		$gap = self::daysBetween($this->lastDay, $today);
 		//A day ahead of today happens when the player moved west; it was done
 		if ($gap <= 0)
-			return $this->with(lastDay: $this->lastDay, doneToday: true);
+			return new self($this->length, $this->best, $this->freezes, $this->lastDay, true);
 		$missed = $gap - 1;
 		if ($missed == 0)
-			return $this->with(lastDay: $this->lastDay, doneToday: false);
+			return new self($this->length, $this->best, $this->freezes, $this->lastDay, false);
 		if ($missed <= $this->freezes)
-			return $this->with(freezes: $this->freezes - $missed, lastDay: self::addDays($today, -1), doneToday: false);
-		return new self(0, $this->best, 0, $this->goldenBest, 0, null, false);
+			return new self($this->length, $this->best, $this->freezes - $missed, self::addDays($today, -1), false);
+		return new self(0, $this->best, 0, null, false);
 	}
 
-	//The streak once $today counted in $mode; a day counts once, in the mode it counted in first
-	public function countDay(int $mode, string $today): self
+	//The streak once $today counted; a day counts once
+	public function countDay(string $today): self
 	{
 		if ($this->doneToday)
 			return $this;
-		$golden = $mode === self::MODE_GOLDEN;
-		$length = $this->length + ($golden ? 0 : 1);
-		$goldenLength = $this->goldenLength + ($golden ? 1 : 0);
-		$freezes = $this->freezes + (($length + $goldenLength) % self::FREEZE_EVERY_DAYS == 0 ? 1 : 0);
-		return new self($length, max($this->best, $length), $goldenLength, max($this->goldenBest, $goldenLength), $freezes, $today, true);
+		$length = $this->length + 1;
+		$freezes = $this->freezes + ($length % self::FREEZE_EVERY_DAYS == 0 ? 1 : 0);
+		return new self($length, max($this->best, $length), $freezes, $today, true);
 	}
 
-	private function with(?int $freezes = null, ?string $lastDay = null, bool $doneToday = false): self
+	//The XP a day asks of a player of $rating
+	public static function xpRequired(float $rating): int
 	{
-		return new self($this->length, $this->best, $this->goldenLength, $this->goldenBest, $freezes ?? $this->freezes, $lastDay, $doneToday);
-	}
-
-	//The XP a golden day asks of a player of $rating
-	public static function goldenXp(float $rating): int
-	{
-		return self::GOLDEN_PROBLEMS * Rating::ratingToXP($rating, 1);
+		return self::PROBLEMS_A_DAY * Rating::ratingToXP($rating, 1);
 	}
 
 	//What a result changes of the streak (PlayResultProcessorComponent::processDailyStreak), as fields of
 	//the user row: the solve gave $xp XP, and $solvedReview says the mistake training counted it as a
-	//solved review. $reviewsDue gives how many reviews are due now; it is asked only in the golden mode,
-	//until the day counts. Nothing changes for a result that gives neither.
+	//solved review. $reviewsDue gives how many reviews are due now; it is asked once a day, by the first
+	//result that adds to it, which fixes the reviews the day asks. Nothing changes for a result that gives neither.
 	/**
 	 * @param UserRow $user
 	 * @param callable(): int $reviewsDue
@@ -120,42 +104,28 @@ class DailyStreak
 			return [];
 		$today = self::today($user['time_zone'] ?? null, $now ?? new DateTimeImmutable());
 		$progress = self::progressOf($user, $today);
+		$reviews = $progress['reviews'] + ($solvedReview ? 1 : 0);
 		$fields = [
 			'streak_day' => $today,
 			'streak_day_xp' => $progress['xp'] + max(0, $xp),
-			'streak_day_reviews' => $progress['reviews'] + ($solvedReview ? 1 : 0),
-			'streak_day_reviews_required' => $progress['reviews_required'],
+			'streak_day_reviews' => $reviews,
+			'streak_day_reviews_required' => $progress['reviews_required'] ?? min(self::REVIEWS_A_DAY, $reviews + $reviewsDue()),
 		];
 		$streak = self::stored($user)->asOf($today);
-		if ($streak->doneToday)
+		$met = $fields['streak_day_xp'] >= self::xpRequired((float) ($user['rating'] ?? 0)) && $fields['streak_day_reviews'] >= $fields['streak_day_reviews_required'];
+		if ($streak->doneToday || !$met)
 			return $fields;
-
-		$mode = self::modeOf($user);
-		if ($mode === self::MODE_GOLDEN)
-		{
-			$fields['streak_day_reviews_required'] = min(self::GOLDEN_REVIEWS, $fields['streak_day_reviews'] + $reviewsDue());
-			if ($fields['streak_day_xp'] < self::goldenXp((float) ($user['rating'] ?? 0)) || $fields['streak_day_reviews'] < $fields['streak_day_reviews_required'])
-				return $fields;
-		}
-		$streak = $streak->countDay($mode, $today);
+		$streak = $streak->countDay($today);
 		return $fields + [
 			'streak_length' => $streak->length,
 			'streak_best' => $streak->best,
-			'golden_streak_length' => $streak->goldenLength,
-			'golden_streak_best' => $streak->goldenBest,
 			'streak_freezes' => $streak->freezes,
 			'streak_last_day' => $streak->lastDay,
 		];
 	}
 
-	/** @param UserRow $user */
-	public static function modeOf(array $user): int
-	{
-		return (int) ($user['streak_mode_setting_id'] ?? self::MODE_NORMAL) === self::MODE_GOLDEN ? self::MODE_GOLDEN : self::MODE_NORMAL;
-	}
-
-	//What $today did so far: the XP of its solves and the reviews solved, and the reviews the golden mode
-	//asks of it, null until a golden solve worked it out. Counters of an earlier day are today's zero.
+	//What $today did so far: the XP of its solves and the reviews solved, and the reviews it asks, null
+	//until its first result worked it out. Counters of an earlier day are today's zero.
 	/**
 	 * @param UserRow $user
 	 * @return array{xp: int, reviews: int, reviews_required: int|null}
@@ -168,11 +138,12 @@ class DailyStreak
 		return ['xp' => (int) ($user['streak_day_xp'] ?? 0), 'reviews' => (int) ($user['streak_day_reviews'] ?? 0), 'reviews_required' => $required === null ? null : (int) $required];
 	}
 
-	//What the page shows and the result of a solve returns (webroot/js/DailyStreak.js): both streaks,
-	//the freezes, whether today is done, the mode, and what today did towards a golden day
+	//What the page shows and the result of a solve returns (webroot/js/DailyStreak.js): the streak, the
+	//freezes, whether today is done, and what today did towards it. Until the first result of the day
+	//the reviews asked are the most a day can ask.
 	/**
 	 * @param UserRow $user
-	 * @return array{length: int, best: int, golden_length: int, golden_best: int, freezes: int, done_today: bool, golden: bool, xp: int, xp_required: int, reviews: int, reviews_required: int}
+	 * @return array{length: int, best: int, freezes: int, done_today: bool, xp: int, xp_required: int, reviews: int, reviews_required: int}
 	 */
 	public static function view(array $user, ?DateTimeImmutable $now = null): array
 	{
@@ -182,15 +153,12 @@ class DailyStreak
 		return [
 			'length' => $streak->length,
 			'best' => $streak->best,
-			'golden_length' => $streak->goldenLength,
-			'golden_best' => $streak->goldenBest,
 			'freezes' => $streak->freezes,
 			'done_today' => $streak->doneToday,
-			'golden' => self::modeOf($user) === self::MODE_GOLDEN,
 			'xp' => $progress['xp'],
-			'xp_required' => self::goldenXp((float) ($user['rating'] ?? 0)),
+			'xp_required' => self::xpRequired((float) ($user['rating'] ?? 0)),
 			'reviews' => $progress['reviews'],
-			'reviews_required' => $progress['reviews_required'] ?? self::GOLDEN_REVIEWS,
+			'reviews_required' => $progress['reviews_required'] ?? self::REVIEWS_A_DAY,
 		];
 	}
 

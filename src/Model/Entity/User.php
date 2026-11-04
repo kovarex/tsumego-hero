@@ -69,9 +69,6 @@ use DateTimeImmutable;
  * @property int $streak_freezes
  * @property \Cake\Chronos\ChronosDate|null $streak_last_day
  * @property string|null $time_zone
- * @property int $streak_mode_setting_id
- * @property int $golden_streak_length
- * @property int $golden_streak_best
  * @property \Cake\Chronos\ChronosDate|null $streak_day
  * @property int $streak_day_xp
  * @property int $streak_day_reviews

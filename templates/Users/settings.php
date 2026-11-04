@@ -3,7 +3,6 @@
 use App\Model\Table\UserTable;
 use App\Utility\Auth;
 use App\Utility\Constants;
-use App\Utility\DailyStreak;
 use App\Utility\UploadedAvatar;
 use App\Utility\ViteManifest;
 
@@ -160,20 +159,6 @@ use App\Utility\ViteManifest;
 				{
 					$dateFormatChecked = $dateFormat === $dateFormatValue ? 'checked="checked"' : '';
 					echo '<label class="field__option"><input type="radio" name="dateFormat" value="' . $dateFormatValue . '" data-save="/users/dateFormatPreference" data-field="format" data-reload ' . $dateFormatChecked . '> ' . $dateFormatLabel . '</label>';
-				}
-				?>
-			</div>
-			<?php //The mode of the daily streak, see DailyStreak; the flame in the menu shows it ?>
-			<div class="field">
-				<span class="field__label">Daily streak</span>
-				<?php
-				$streakMode = DailyStreak::modeOf($user);
-				foreach ([
-					DailyStreak::MODE_NORMAL => 'Normal: a solve that gives XP a day',
-					DailyStreak::MODE_GOLDEN => 'Golden: the XP of ' . DailyStreak::GOLDEN_PROBLEMS . ' problems of your rank and ' . DailyStreak::GOLDEN_REVIEWS . ' mistake training reviews a day'] as $streakModeValue => $streakModeLabel)
-				{
-					$streakModeChecked = $streakMode === $streakModeValue ? 'checked="checked"' : '';
-					echo '<label class="field__option"><input type="radio" name="streakMode" value="' . $streakModeValue . '" data-save="/users/streakModePreference" data-field="mode" data-reload ' . $streakModeChecked . '> ' . h($streakModeLabel) . '</label>';
 				}
 				?>
 			</div>
