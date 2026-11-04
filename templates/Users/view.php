@@ -27,10 +27,11 @@ use App\Utility\ViteManifest;
 ?>
 
 <div>
-	<?php echo $this->element('user_header', ['user' => $user, 'activeTab' => 'profile']); ?>
-	<?php if (Auth::isOwner() && !UserTable::isDeleted($user)): ?>
-	<div class="profile-role"><?php echo $this->element('role_form', ['user' => $user]); ?></div>
-	<?php endif; ?>
+	<?php echo $this->element('user_header', [
+		'user' => $user,
+		'activeTab' => 'profile',
+		'corner' => Auth::isOwner() && !UserTable::isDeleted($user) ? $this->element('role_form', ['user' => $user]) : null,
+	]); ?>
 
 <div class="cluster cluster--stretch">
 	<div class="card card--purple">
