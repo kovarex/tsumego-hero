@@ -59,8 +59,6 @@ function semeaiNoEyesFewInsideLiberties(black, white)
 function semeaiNoEyesInsideLiberties(black, white, inside)
 {
 	let text = "Semeai Type 2: No eyes, 2 or more inside liberties.<br>The favorite's task is to kill.<br>The favorite counts his outside liberties plus 1 inside liberty.<br>The underdog's task is Seki.<br>The underdog counts his outside liberties plus all inside liberties.<br>";
-	if (tsumegoID == 29813)
-		return {text: text + "Seki.<br>", correct: SEMEAI_ANSWER.seki};
 	if (black == white)
 		return {text: text + "Seki - same amount of liberties.<br>", correct: SEMEAI_ANSWER.seki};
 	const favorite = black > white ? {name: "Black", outside: black} : {name: "White", outside: white};
