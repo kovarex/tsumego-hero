@@ -11,6 +11,12 @@ return [
 			'new_damage' => 0,
 			'status' => 'S',
 			'potion_triggered' => false,
+			'daily_streak' => [
+				'length' => 1,
+				'best' => 1,
+				'freezes' => 0,
+				'done_today' => true,
+			],
 		],
 	],
 	'failed' => [
@@ -23,6 +29,12 @@ return [
 			'new_damage' => 1,
 			'status' => 'V',
 			'potion_triggered' => false,
+			'daily_streak' => [
+				'length' => 0,
+				'best' => 0,
+				'freezes' => 0,
+				'done_today' => false,
+			],
 		],
 	],
 	'solved after a mistake' => [
@@ -35,6 +47,12 @@ return [
 			'new_damage' => 0,
 			'status' => 'F',
 			'potion_triggered' => false,
+			'daily_streak' => [
+				'length' => 1,
+				'best' => 1,
+				'freezes' => 0,
+				'done_today' => true,
+			],
 		],
 	],
 	'solved unlocking an achievement' => [
@@ -56,6 +74,12 @@ return [
 					'image' => 'ac001',
 					'color' => 'achievementColorBlack',
 				],
+			],
+			'daily_streak' => [
+				'length' => 1,
+				'best' => 1,
+				'freezes' => 0,
+				'done_today' => true,
 			],
 		],
 	],

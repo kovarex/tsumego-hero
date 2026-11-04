@@ -36,7 +36,7 @@ class DailyStreakBrowserTest extends IntegrationTestCase
 		$details = $browser->find('#daily-streak-details');
 		$this->assertTrue($details->isDisplayed());
 		$this->assertStringContainsString('Daily streak: 3 days', $details->getText());
-		$this->assertStringContainsString('Best: 5 days', $details->getText());
+		$this->assertStringContainsString('Best streak: 5 days', $details->getText());
 		$this->assertStringContainsString('Today is done.', $details->getText());
 	}
 
