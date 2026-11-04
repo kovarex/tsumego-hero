@@ -30,11 +30,11 @@ class SetsSelector
 		$query->query .= ' JOIN tsumego ON tsumego.id = tc.tsumego_id';
 		// a tag a player proposed is not on the problem until an admin accepts it
 		$query->conditions[] = 'tc.approved = 1';
-		$query->conditions[] = $this->publicMembershipCondition('tc.tsumego_id');
+		$query->conditions[] = $this->tsumegoFilters->publicMembershipCondition('tc.tsumego_id');
 		$query->conditions[] = 'tsumego.deleted IS NULL';
 		if (!empty($this->tsumegoFilters->tagIDs))
-			$query->conditions[] = $this->tagMembershipCondition('tc.tsumego_id');
-		if ($rankCondition = $this->rankCondition())
+			$query->conditions[] = $this->tsumegoFilters->tagMembershipCondition('tc.tsumego_id');
+		if ($rankCondition = $this->tsumegoFilters->rankCondition())
 			$query->conditions[] = $rankCondition;
 		$rows = Util::query($query->str());
 
@@ -99,8 +99,8 @@ class SetsSelector
 		if (!empty($this->tsumegoFilters->setIDs))
 			$query->conditions[] = 's.id IN (' . implode(',', $this->tsumegoFilters->setIDs) . ')';
 		if (!empty($this->tsumegoFilters->tagIDs))
-			$query->conditions[] = $this->tagMembershipCondition('sc.tsumego_id');
-		if ($rankCondition = $this->rankCondition())
+			$query->conditions[] = $this->tsumegoFilters->tagMembershipCondition('sc.tsumego_id');
+		if ($rankCondition = $this->tsumegoFilters->rankCondition())
 			$query->conditions[] = $rankCondition;
 		$rows = Util::query($query->str());
 		$this->problemsFound = count(array_unique(array_column($rows, 'tsumego_id')));
@@ -149,9 +149,9 @@ class SetsSelector
 		$query->selects[] = 'tsumego.id AS tsumego_id';
 		$query->selects[] = 'tsumego.rating';
 		$query->conditions[] = 'tsumego.deleted IS NULL';
-		$query->conditions[] = $this->publicMembershipCondition('tsumego.id');
+		$query->conditions[] = $this->tsumegoFilters->publicMembershipCondition('tsumego.id');
 		if (!empty($this->tsumegoFilters->tagIDs))
-			$query->conditions[] = $this->tagMembershipCondition('tsumego.id');
+			$query->conditions[] = $this->tsumegoFilters->tagMembershipCondition('tsumego.id');
 		// restrict to the rating range covered by the bands, so rows that would
 		// never match a band are not transferred; rows falling into a gap between
 		// two bands are dropped by the assignment loop below.
@@ -333,34 +333,6 @@ class SetsSelector
 		foreach ($rows as $row)
 			$solved[(int) $row['tsumego_id']] = true;
 		return $solved;
-	}
-
-	//EXISTS condition for a tsumego belonging to at least one public set (optionally limited to filtered sets).
-	private function publicMembershipCondition(string $tsumegoRef): string
-	{
-		$setCondition = SetTable::officialCondition();
-		if (!empty($this->tsumegoFilters->setIDs))
-			$setCondition .= ' AND `set`.id IN (' . implode(',', $this->tsumegoFilters->setIDs) . ')';
-		return 'EXISTS (SELECT 1 FROM set_connection sc JOIN `set` ON `set`.id = sc.set_id AND ' . $setCondition . ' WHERE sc.tsumego_id = ' . $tsumegoRef . ')';
-	}
-
-	//EXISTS condition for a tsumego carrying any of the filtered tags.
-	private function tagMembershipCondition(string $tsumegoRef): string
-	{
-		return 'EXISTS (SELECT 1 FROM tag_connection tc2 WHERE tc2.tsumego_id = ' . $tsumegoRef . ' AND tc2.approved = 1 AND tc2.tag_id IN (' . implode(',', $this->tsumegoFilters->tagIDs) . '))';
-	}
-
-	//Rating bound conditions for the filtered ranks, referencing the unaliased tsumego table.
-	private function rankCondition(): string
-	{
-		$rankConditions = '';
-		foreach ($this->tsumegoFilters->rankSpecs as $rankFilter)
-		{
-			$rankCondition = '';
-			RatingBounds::coverRankSpec($rankFilter, Rating::weakestRank())->addSqlConditions($rankCondition);
-			Util::addSqlOrCondition($rankConditions, $rankCondition);
-		}
-		return $rankConditions;
 	}
 
 	public TsumegoFilters $tsumegoFilters;
