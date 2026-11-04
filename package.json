@@ -14,6 +14,7 @@
     "changelog:gen": "node scripts/changelog-generate.mjs",
     "lint": "eslint app --ext .ts,.tsx",
     "lint:fix": "eslint app --ext .ts,.tsx --fix",
+    "lint:legacy": "eslint webroot/js webroot/besogo/js",
     "format": "prettier --write \"app/**/*.{ts,tsx}\" && eslint app --ext .ts,.tsx --fix",
     "type-check": "tsc --noEmit",
     "test:scripts": "node --test 'scripts/*.test.mjs'"

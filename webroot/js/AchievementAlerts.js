@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-globals -- still uses jQuery until it is converted */
 //Achievement popup renderer - the single source of truth for "Achievement
 //Completed" popups.
 //Both the page-load path (achievementUpdates embedded as JSON in templates/layout/default.php)

@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-globals -- still uses jQuery until it is converted */
 //The upload history of a problem or a player (Sgfs/view.php): the downloads, the deletion and the
 //highlight of a version and the one its diff compares with. The template gives the SGFs of the versions in
 //uploadHistoryPage, the code is the same for everyone and is cached.

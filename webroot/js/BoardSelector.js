@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-globals -- still uses jQuery until it is converted */
 class BoardSelector
 {
 	// Note: this data is duplicated in BoardSelector.php

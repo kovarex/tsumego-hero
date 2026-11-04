@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-globals -- still uses jQuery until it is converted */
 //The play page's script: the hearts, the clock, the modes and the panels around the board. The board
 //and the state of the page it reads are set up by PlayBoard.js, which runs as soon as the board's
 //<div> is parsed; this runs at the end of the page (Tsumegos/play.php). Both are classic scripts,

@@ -124,16 +124,13 @@ function disableIntuition()
 
 function intuition()
 {
-	$.ajax(
-		{
-			url: '/hero/intuition',
-			type: 'POST',
-			success: function(response)
-			{
-				disableIntuition();
-				besogo.editor.intuitionHeroPower();
-			}
-		});
+	postAjax('/hero/intuition').then(response =>
+	{
+		if (!response.ok)
+			return;
+		disableIntuition();
+		besogo.editor.intuitionHeroPower();
+	});
 }
 
 function disableRevelation()
@@ -154,15 +151,17 @@ function revelation()
 			locked = false;
 			document.getElementById("status").style.color = playGreenColor;
 			document.getElementById("status").innerHTML = "<h2>Correct!</h2>";
-			if (light)
-				$(".besogo-board").css("box-shadow","0 2px 14px 0 rgba(67, 255, 40, 0.7), 0 6px 20px 0 rgba(0, 0, 0, 0.2)");
-			else
-				$(".besogo-board").css("box-shadow","0 2px 14px 0 rgba(67, 255, 40, 0.7), 0 6px 20px 0 rgba(80, 255, 0, 0.2)");
+			let boxShadow = light
+				? "0 2px 14px 0 rgba(67, 255, 40, 0.7), 0 6px 20px 0 rgba(0, 0, 0, 0.2)"
+				: "0 2px 14px 0 rgba(67, 255, 40, 0.7), 0 6px 20px 0 rgba(80, 255, 0, 0.2)";
+			document.querySelectorAll(".besogo-board").forEach(board => board.style.boxShadow = boxShadow);
 			besogo.editor.setReviewEnabled(true);
 			besogo.editor.setControlButtonLock(false);
 			toggleBoardLock(true);
-			$("#besogo-review-button-inactive").attr("id","besogo-review-button");
-			$("#commentSpace").show();
+			let reviewButton = document.getElementById("besogo-review-button-inactive");
+			if (reviewButton)
+				reviewButton.id = "besogo-review-button";
+			Display.show("#commentSpace");
 			updateCurrentNavigationButton('S');
 			displaySettings();
 			revelationUseCount--;
@@ -192,17 +191,14 @@ function disableSprint()
 
 function startSprint()
 {
-	$.ajax(
-		{
-			url: '/hero/sprint',
-			type: 'POST',
-			success: function(response)
-			{
-				xpStatus.set('sprintRemainingSeconds', sprintSeconds);
-				updateSprint(sprintSeconds);
-				disableSprint();
-			}
-		});
+	postAjax('/hero/sprint').then(response =>
+	{
+		if (!response.ok)
+			return;
+		xpStatus.set('sprintRemainingSeconds', sprintSeconds);
+		updateSprint(sprintSeconds);
+		disableSprint();
+	});
 }
 
 function enableRefinement()
@@ -248,17 +244,22 @@ function ratingToXPFloat(rating)
 	return (Math.pow((rating - 500)/ 100, 2) - 10) / 2;
 }
 
+//A POST the server knows for an ajax call (Cake's is('ajax')): it skips the achievement check of a
+//page, and errors come as JSON. A failed request ends in a response of status 0, like jQuery's.
+function postAjax(url)
+{
+	return fetch(url, {method: 'POST', headers: {'X-Requested-With': 'XMLHttpRequest'}, credentials: 'same-origin'})
+		.catch(() => ({ok: false, status: 0, text: () => Promise.resolve('')}));
+}
+
+//Calls method with the text of the response, or alerts the error the server gave
 function makeAjaxCall(urlToCall, method)
 {
-	$.ajax({
-		url: urlToCall,
-		type: 'POST',
-		complete: (xhr) =>
-		{
-			if (xhr.status >= 200 && xhr.status < 300)
-				method(xhr.responseText);
-			else
-				alert(xhr.responseText || "Unknown ajax call error!");
-		}
-	});
+	postAjax(urlToCall).then(response => response.text().then(text =>
+	{
+		if (response.ok)
+			method(text);
+		else
+			alert(text || "Unknown ajax call error!");
+	}));
 }

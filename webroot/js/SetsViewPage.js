@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-globals -- still uses jQuery until it is converted */
 //The page of a collection (Sets/view.php): the filters of its problems, the views of the player's scores,
 //the reset of the progress and the link sharing. The template gives the data of the request in
 //setsViewPage, the code is the same for everyone and is cached.

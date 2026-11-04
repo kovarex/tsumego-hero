@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-globals -- still uses jQuery until it is converted */
 //The answer to the question of a semeai problem (the play page asks who wins the capturing race):
 //the four choices are coloured right and wrong and the explanation of the race is shown.
 //num: the choice of the player, as the SEMEAI_ANSWER below

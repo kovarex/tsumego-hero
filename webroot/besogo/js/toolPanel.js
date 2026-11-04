@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-globals -- still uses jQuery until it is converted */
 besogo.makeToolPanel = function (container, editor) {
   "use strict";
   var element, // Scratch for building SVG images
