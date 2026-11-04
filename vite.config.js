@@ -21,6 +21,7 @@ const LEGACY_APP_FILES = [
 	'webroot/js/BoardSelector.js',
 	'webroot/js/RatingModeDifficultySelector.js',
 	'webroot/js/AccountWidget.js',
+	'webroot/js/DailyStreak.js',
 	'webroot/js/dark.js',
 	'webroot/js/previewBoard.js',
 	'webroot/js/previewZoom.js',

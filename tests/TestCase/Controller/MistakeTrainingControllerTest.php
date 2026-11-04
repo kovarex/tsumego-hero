@@ -597,7 +597,7 @@ class MistakeTrainingControllerTest extends IntegrationTestCase
 
 		$this->assertStringContainsString('id="mistake-training-due">2 problems to review today</p>', $html);
 		$this->assertStringContainsString('id="mistake-training-start" href="' . MistakeTraining::$QUEUE_LINK . '">Start training</a>', $html);
-		$this->assertStringContainsString('id="mistake-training-overview-title">Your progress</h2>', $html, 'With the calendar and streak of the profile');
+		$this->assertStringContainsString('id="mistake-training-overview-title">Your progress</h2>', $html, 'With the calendar of the profile');
 		$this->assertStringNotContainsString('All caught up', $html);
 		$this->assertStringNotContainsString('id="board"', $html, 'The overview opens no problem');
 	}

@@ -7,15 +7,14 @@ use App\Utility\RungInsignia;
  * The mistake training of a player on the profile: a calendar of the training days
  * of the last half a year, a column a week like the contribution calendar of
  * GitHub (cleared days in green, days trained but not cleared in light green, days
- * missed with a red edge), the problems in the training now by rung, and the
- * streaks of cleared days.
+ * missed with a red edge) and the problems in the training now by rung.
  *
  * Usage: $this->element('mistake_training_profile', ['training' => MistakeTraining::profile(...)])
  * and 'title' for a heading other than "Mistake Training".
  *
  * @var \App\View\AppView $this
  * @var string|null $title
- * @var array{days: array<string, array{reviewed: int, cleared: bool, missed: bool}>, rungs: list<int>, graduated: int, streak: int, best_streak: int} $training
+ * @var array{days: array<string, array{reviewed: int, cleared: bool, missed: bool}>, rungs: list<int>, graduated: int} $training
  */
 
 $today = MistakeTraining::today();
@@ -23,7 +22,6 @@ $start = MistakeTraining::profileStart();
 $rungCount = count($training['rungs']);
 $inTraining = array_sum($training['rungs']);
 $weeks = intdiv((int) round((strtotime($today) - strtotime($start)) / 86400), 7) + 1;
-$describeStreak = fn(int $days): string => $days . ' ' . ($days == 1 ? 'day' : 'days');
 
 // The name of a month goes over the week of its first day, like GitHub's, and the
 // month the calendar starts in only when it has room before the next one.
@@ -48,14 +46,6 @@ if (!isset($months[0]) && (empty($months) || min(array_keys($months)) >= 3))
 		<div class="training-overview__stat">
 			<span class="training-overview__value" id="mistake-training-graduated"><?php echo $training['graduated']; ?></span>
 			<span class="training-overview__label">Graduated</span>
-		</div>
-		<div class="training-overview__stat">
-			<span class="training-overview__value" id="mistake-training-streak"><?php echo $describeStreak($training['streak']); ?></span>
-			<span class="training-overview__label" title="Cleared days in a row. A day with nothing to review keeps the streak.">Current streak</span>
-		</div>
-		<div class="training-overview__stat">
-			<span class="training-overview__value" id="mistake-training-best-streak"><?php echo $describeStreak($training['best_streak']); ?></span>
-			<span class="training-overview__label">Best streak</span>
 		</div>
 	</div>
 	<ul class="training-overview__rungs" aria-label="Problems in training by rung">

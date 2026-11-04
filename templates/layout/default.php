@@ -127,6 +127,7 @@ $challengesBadge = $challengesWaiting > 0
 				<img id="logo1" alt="Tsumego Hero" title="Tsumego Hero" src="/img/tsumegoHero1.png" onmouseover="this.src='/img/tsumegoHero2.png'" onmouseout="this.src='/img/tsumegoHero1.png'" height="55px">
 			</a>
 		</div>
+		<?php if (Auth::isLoggedIn()) echo $this->element('daily_streak'); ?>
 		<input type="checkbox" id="nav-toggle" class="nav-toggle" aria-hidden="true">
 		<label for="nav-toggle" class="nav-toggle-btn" aria-label="Menu">
 			<span></span><span></span><span></span>

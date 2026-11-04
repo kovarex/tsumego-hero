@@ -51,7 +51,7 @@ class MistakeTrainingController extends AppController
 
 	//Today's training (what is due, with the way in, or that it is all done), what
 	//comes up in the next days, the past mistakes to add when nothing is due, and the
-	//calendar and streak the profile shows.
+	//calendar the profile shows.
 	private function renderOverview(int $userId): null
 	{
 		$this->set('_page', 'mistake-training');

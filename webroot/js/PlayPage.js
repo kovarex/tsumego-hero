@@ -493,6 +493,8 @@ function showResultResponse(outcome, response)
 			accountWidget.level = result.new_level;
 			try { accountWidget.setup(); } catch(e) { console.error('accountWidget.setup failed:', e); }
 		}
+		if (typeof DailyStreak !== 'undefined')
+			DailyStreak.update(result.daily_streak);
 		if (result.xp_gained && typeof xpStatus !== 'undefined' && xpStatus)
 		{
 			xpStatus.set('solved', true);

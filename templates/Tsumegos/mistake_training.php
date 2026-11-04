@@ -7,7 +7,7 @@ use App\Utility\RungInsignia;
  * Mistake Training - the overview
  * What is due today and the way into it, "All caught up!" once nothing is, and
  * "Nothing to review yet" to a player who never had a problem in the training;
- * below that what comes up next, and the calendar and streak of the profile.
+ * below that what comes up next, and the calendar of the profile.
  *
  * @var \App\View\AppView $this
  * @var int $dueToday

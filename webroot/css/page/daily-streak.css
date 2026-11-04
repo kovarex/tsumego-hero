@@ -1,0 +1,270 @@
+/* Page layer: daily-streak.css - the flame of the daily streak in the menu
+   (templates/element/daily_streak.php). On the desktop it stands right after the icons of the
+   menu, next to the account bar, the number under the flame; on mobile it sits beside the
+   hamburger. Hovering it, or tapping it (it takes the focus), shows the details. When a solve
+   completes the day, webroot/js/DailyStreak.js adds daily-streak--ignite, which flares the flame up
+   with a burst of light; with reduced motion it just lights. */
+@layer page
+{
+.daily-streak
+{
+	position: absolute;
+	left: 1120px;
+	top: 12px;
+	z-index: 60;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	width: 32px;
+	cursor: default;
+	color: var(--color-streak-unlit);
+	font-family: var(--font-family-account);
+	font-size: 13px;
+	font-weight: 700;
+	line-height: 1;
+	outline: none;
+}
+
+.daily-streak__flame
+{
+	width: 26px;
+	height: 26px;
+	fill: currentColor;
+	opacity: 0.6;
+	overflow: visible;
+	transform-origin: 50% 85%;
+}
+
+.daily-streak__length
+{
+	margin-top: 2px;
+	color: var(--color-white);
+	opacity: 0.6;
+}
+
+.daily-streak--done
+{
+	color: var(--color-streak-flame);
+}
+
+.daily-streak--done .daily-streak__flame
+{
+	opacity: 1;
+	filter: drop-shadow(0 0 5px var(--color-streak-flame-glow));
+}
+
+.daily-streak--done .daily-streak__length
+{
+	opacity: 1;
+}
+
+/* The ring of light the burst sends out from the flame */
+.daily-streak__burst
+{
+	fill: none;
+	stroke: var(--color-streak-flame);
+	stroke-width: 1.5;
+	opacity: 0;
+	transform-box: fill-box;
+	transform-origin: center;
+}
+
+.daily-streak--ignite .daily-streak__burst
+{
+	animation: daily-streak-burst 0.9s ease-out 0.15s both;
+}
+
+.daily-streak--ignite .daily-streak__flame
+{
+	animation: daily-streak-ignite 1.1s ease-out both;
+}
+
+.daily-streak--ignite .daily-streak__length
+{
+	animation: daily-streak-count 0.5s ease-out 0.35s both;
+}
+
+@keyframes daily-streak-ignite
+{
+	0%
+	{
+		opacity: 0.6;
+		transform: scale(0.7);
+		filter: none;
+	}
+	35%
+	{
+		opacity: 1;
+		transform: scale(1.6) rotate(-6deg);
+		filter: brightness(1.5) drop-shadow(0 0 12px var(--color-streak-flame-glow));
+	}
+	55%
+	{
+		transform: scale(0.95) rotate(4deg);
+	}
+	75%
+	{
+		transform: scale(1.12) rotate(-2deg);
+	}
+	100%
+	{
+		opacity: 1;
+		transform: none;
+		filter: drop-shadow(0 0 5px var(--color-streak-flame-glow));
+	}
+}
+
+@keyframes daily-streak-burst
+{
+	from
+	{
+		opacity: 1;
+		transform: scale(0.4);
+	}
+	to
+	{
+		opacity: 0;
+		transform: scale(2.6);
+	}
+}
+
+@keyframes daily-streak-count
+{
+	0%
+	{
+		transform: scale(1);
+	}
+	50%
+	{
+		transform: scale(1.5);
+		color: var(--color-streak-flame);
+	}
+	100%
+	{
+		transform: scale(1);
+	}
+}
+
+@media (prefers-reduced-motion: reduce)
+{
+	.daily-streak--ignite .daily-streak__burst,
+	.daily-streak--ignite .daily-streak__flame,
+	.daily-streak--ignite .daily-streak__length
+	{
+		animation: none;
+	}
+}
+
+.daily-streak__spark
+{
+	opacity: 0.9;
+}
+
+.daily-streak__details
+{
+	display: none;
+	position: absolute;
+	top: calc(100% + 8px);
+	right: -60px;
+	width: 240px;
+	padding: 10px 12px;
+	border: 1px solid var(--color-gold);
+	border-radius: 5px;
+	background: var(--surface-near-black);
+	color: var(--color-white);
+	font-family: var(--font-family-body);
+	font-size: 14px;
+	font-weight: normal;
+	line-height: 1.4;
+	text-align: left;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.daily-streak:hover .daily-streak__details,
+.daily-streak:focus .daily-streak__details,
+.daily-streak:focus-within .daily-streak__details
+{
+	display: block;
+}
+
+.daily-streak__title
+{
+	font-weight: 700;
+	margin-bottom: 4px;
+	color: var(--color-streak-flame);
+}
+
+.daily-streak__today
+{
+	margin-top: 6px;
+	color: var(--color-streak-flame);
+}
+
+/* What today did towards the day; once it is done, only that it is done shows */
+.daily-streak--done .daily-streak__progress-of-day
+{
+	display: none;
+}
+
+/* Today's XP against what the day asks */
+.daily-streak__progress
+{
+	display: block;
+	width: 100%;
+	height: 6px;
+	margin: 3px 0 5px;
+	border: none;
+	border-radius: 3px;
+	background: var(--color-streak-track);
+	overflow: hidden;
+	appearance: none;
+}
+
+.daily-streak__progress::-webkit-progress-bar
+{
+	background: var(--color-streak-track);
+}
+
+.daily-streak__progress::-webkit-progress-value
+{
+	background: var(--color-streak-flame);
+	transition: inline-size 0.4s ease-out;
+}
+
+.daily-streak__progress::-moz-progress-bar
+{
+	background: var(--color-streak-flame);
+}
+
+.daily-streak__rules
+{
+	margin-top: 6px;
+	color: var(--surface-muted-text);
+	font-size: 12px;
+}
+
+@media (width < 64rem)
+{
+	.daily-streak
+	{
+		position: static;
+		flex-direction: row;
+		gap: 4px;
+		width: auto;
+		margin-left: auto;
+		margin-right: 14px;
+	}
+
+	.daily-streak__length
+	{
+		margin-top: 0;
+		font-size: 16px;
+	}
+
+	.daily-streak__details
+	{
+		top: 56px;
+		right: 8px;
+	}
+}
+}
