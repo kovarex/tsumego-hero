@@ -16,6 +16,7 @@ use App\Utility\Changelog;
 use App\Utility\Constants;
 use App\Utility\Mailer;
 use App\Utility\Play;
+use App\Utility\Preferences;
 use App\Utility\TimeMode;
 use App\Utility\TsumegoFilters;
 use App\Utility\Util;
@@ -298,7 +299,9 @@ class AppController extends Controller
 		$changed = array_filter($settings, fn(int|bool $value, string $field) => !isset($user[$field]) || (int) $user[$field] !== (int) $value, ARRAY_FILTER_USE_BOTH);
 		if ($changed)
 			Auth::saveUserFields($changed);
-		new TsumegoFilters(); //keeps the collection filters the pages set in cookies
+		//keeps the collection filters the pages set in cookies; without one, the stored ones stay as they are
+		if (Preferences::anyCookie())
+			new TsumegoFilters();
 	}
 
 	//The value of a cookie the browser sent, which is dropped; null when it sent none
