@@ -154,6 +154,15 @@ class TsumegosControllerTest extends IntegrationTestCase
 		$this->assertTextContains('777', $links[1]->textContent);
 	}
 
+	public function testTheDuplicateGroupShowsTheTitlesOfTheSetsAsText()
+	{
+		$context = new ContextPreparator(['tsumego' => ['sets' => [['name' => 'first', 'num' => '1'], ['name' => '<img src=x onerror=alert(1)>', 'num' => '2']]]]);
+		$this->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		$duplicateTable = $this->getStringDom()->querySelector('.duplicateTable');
+		$this->assertSame(0, $duplicateTable->getElementsByTagName('img')->length);
+		$this->assertTextContains('<img src=x onerror=alert(1)>', $duplicateTable->getElementsByTagName('a')[1]->textContent);
+	}
+
 	public function testViewingTsumegoInMoreSetsAndSpecifyingWhichOneIsTheMainOne()
 	{
 		$context = new ContextPreparator(
@@ -406,6 +415,29 @@ class TsumegosControllerTest extends IntegrationTestCase
 
 		$this->assertSame(Util::getMyAddress() . '/tsumegos/play/' . $tsumegoId, $browser->driver->getCurrentURL());
 		$this->assertFalse($browser->idExists('unselect-active-tiles'));
+	}
+
+	//A tile shows the name of its filter as text, and drops just that filter
+	public function testAFilterTileDropsItsFilter(): void
+	{
+		$context = new ContextPreparator(['tsumego' => ['set_order' => 666, 'tags' => [['name' => '<b>bold</b>'], ['name' => 'atari']]]]);
+		$tsumegoId = $context->tsumegos[0]['id'];
+
+		$browser = Browser::instance();
+		$browser->getAnonymous('/tsumegos/play/' . $tsumegoId);
+		$browser->driver->manage()->deleteAllCookies();
+		$browser->driver->manage()->addCookie(['name' => 'filtered_tags', 'value' => '<b>bold</b>@atari']);
+		$browser->getAnonymous('/tsumegos/play/' . $tsumegoId);
+
+		$browser->find('#showFilters')->click();
+		$browser->waitUntilCssSelectorDisplayed('.active-tiles-container .dropdown__tile--brown');
+		$tiles = $browser->getElements('.active-tiles-container .dropdown__tile--brown');
+		$this->assertSame(['<b>bold</b>', 'atari'], array_map(fn($tile) => $tile->getText(), $tiles));
+		$this->assertSame(0, count($browser->getElements('.active-tiles-container b')));
+
+		$tiles[0]->click();
+		$browser->waitUntilJs('document.readyState === "complete" && window.eval("typeof activeTagTiles !== \'undefined\' && activeTagTiles.length === 1")');
+		$this->assertSame(['atari'], $browser->driver->executeScript('return window.eval("activeTagTiles");'));
 	}
 
 	// testing the same things as testViewingTsumegoInMoreSets, but using the web driver to do so

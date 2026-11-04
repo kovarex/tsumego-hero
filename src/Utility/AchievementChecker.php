@@ -9,6 +9,7 @@ use App\Model\Table\AchievementTable;
 use App\Model\Table\TimeModeCategoryTable;
 use App\Model\Table\TimeModeRankTable;
 use App\Model\Table\TimeModeSessionStatusTable;
+use App\Model\Table\TsumegoStatusTable;
 use Cake\ORM\Locator\LocatorAwareTrait;
 use App\Model\Table\SetConnectionTable;
 
@@ -219,7 +220,7 @@ WHERE rn = 1;", [Auth::getUserID(), TimeModeSessionStatusTable::SOLVED]);
 			. ' JOIN set_connection sc ON sc.set_id = `set`.id'
 			. ' JOIN tsumego ON tsumego.id = sc.tsumego_id AND tsumego.deleted IS NULL'
 			. ' LEFT JOIN tsumego_status ON tsumego_status.user_id = ? AND tsumego_status.tsumego_id = sc.tsumego_id'
-			. " AND tsumego_status.status IN ('S', 'W', 'C')"
+			. ' AND ' . TsumegoStatusTable::solvedCondition('tsumego_status.status')
 			. ' WHERE `set`.completion_achievement_id = ? AND `set`.deleted IS NULL AND tsumego_status.id IS NULL',
 			[Auth::getUserID(), $achievementID->value])[0]['unsolved'];
 		if ((int) $unsolved === 0)

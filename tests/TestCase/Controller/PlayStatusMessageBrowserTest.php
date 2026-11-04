@@ -48,4 +48,12 @@ class PlayStatusMessageBrowserTest extends IntegrationTestCase
 		$this->assertSame('This line ends without a status, which is an error in the problem. Please report it in the comments.', $this->shownMessage($browser));
 		$browser->assertNoJsErrors();
 	}
+
+	//The message is told in its own box, the potion found later still says it is a hero power
+	public function testTheMessageLeavesThePotionBoxAsItIs(): void
+	{
+		$browser = $this->playLine([[4, 1]]);
+		$this->assertSame(['Error in the problem', true], $browser->driver->executeScript('const banner = document.querySelector("#customAlerts .toast__banner"); return [banner.firstChild.textContent.trim(), banner.classList.contains("toast__banner--error")];'));
+		$this->assertSame(['Hero Power', false], $browser->driver->executeScript('const banner = document.querySelector("#potionAlerts .toast__banner"); return [banner.firstChild.textContent.trim(), banner.classList.contains("toast__banner--error")];'));
+	}
 }

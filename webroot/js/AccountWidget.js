@@ -28,9 +28,11 @@ class AccountWidget
 	modeSelector;
 	menuItems; // shown while the pointer is over the bar or them
 	timeMode;
+	levelSections; // the levels and the XP they add, as Level::getSections()
 
-	constructor({rating, xp, level, show, timeMode})
+	constructor({rating, xp, level, show, timeMode, levelSections})
 	{
+		this.levelSections = levelSections;
 		this.rating = rating;
 		this.xp = xp;
 		this.level = level;
@@ -74,8 +76,8 @@ class AccountWidget
 		this.bar.className = 'xp-bar-fill-c1';
 		this.accountBar.className = 'account-bar-level';
 		this.modeSelector.className = 'modeSelectorInLevelBar';
-		this.setBarRatio(this.xp / getXPForNextLevel(this.level));
-		this.barCaption.innerHTML = this.hovered ? (this.xp + '/' + getXPForNextLevel(this.level)) : 'Level ' + this.level;
+		this.setBarRatio(this.xp / this.xpForNextLevel(this.level));
+		this.barCaption.innerHTML = this.hovered ? (this.xp + '/' + this.xpForNextLevel(this.level)) : 'Level ' + this.level;
 	}
 
 	showRating()
@@ -195,6 +197,21 @@ class AccountWidget
 		this.level = values.level;
 	}
 
+	// The XP from the level to the next, as Level::getXPForNext()
+	xpForNextLevel(level)
+	{
+		let from = 1;
+		let result = 50;
+		for (const [to, jump] of this.levelSections)
+		{
+			result += (Math.min(to, level) - from) * jump;
+			from = to;
+			if (level <= to)
+				break;
+		}
+		return result;
+	}
+
 	// What the bar is expected to show after the result, before the server answers
 	valuesAfter(increase)
 	{
@@ -203,9 +220,9 @@ class AccountWidget
 		if (increase)
 		{
 			values.xp += xpStatus.getXP();
-			while (values.xp >= getXPForNextLevel(values.level))
+			while (values.xp >= this.xpForNextLevel(values.level))
 			{
-				values.xp -= getXPForNextLevel(values.level);
+				values.xp -= this.xpForNextLevel(values.level);
 				values.level++;
 			}
 		}

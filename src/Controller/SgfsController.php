@@ -19,8 +19,6 @@ class SgfsController extends AppController
 		$this->set('_page', 'play');
 		$ux = '';
 		$type = 'tsumego';
-		$dId = [];
-		$dTitle = [];
 
 		if ($this->query('delete') !== null)
 		{
@@ -33,24 +31,6 @@ class SgfsController extends AppController
 
 		$tsumegoTable = $this->fetchTable('Tsumego');
 		$setTable = $this->fetchTable('Set');
-		if ($this->query('duplicates') !== null)
-		{
-			$newDuplicates = array_map('intval', explode('-', $this->query('duplicates')));
-			foreach ($newDuplicates as $duplicateId)
-			{
-				if (!$tsumegoTable->exists(['id' => $duplicateId]))
-					continue;
-				$displaySetConnection = SetConnectionTable::findDisplaySetConnection($duplicateId);
-				if (!$displaySetConnection)
-					continue;
-				$duplicateSet = $setTable->find()->select(['title'])->where(['id' => $displaySetConnection->set_id])->first();
-				if (!$duplicateSet)
-					continue;
-				$dId[] = $duplicateId;
-				$dTitle[] = $duplicateSet->title . ' - ';
-			}
-		}
-
 		if (!$tsumegoTable->exists(['id' => $id]))
 			throw new NotFoundException('Tsumego not found');
 		$displaySetConnection = SetConnectionTable::findDisplaySetConnection($id);
@@ -79,8 +59,6 @@ class SgfsController extends AppController
 		$this->set('name', $name);
 		$this->set('versions', $versions);
 		$this->set('id', $id);
-		$this->set('dId', $dId);
-		$this->set('dTitle', $dTitle);
 	}
 
 	//Adds what the page shows of each version: its author, the problem as its collection shows it, the

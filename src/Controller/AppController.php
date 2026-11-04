@@ -17,6 +17,7 @@ use App\Utility\Constants;
 use App\Utility\DailyStreak;
 use App\Utility\Mailer;
 use App\Utility\Play;
+use App\Utility\Preferences;
 use App\Utility\TimeMode;
 use App\Utility\TsumegoFilters;
 use App\Utility\Util;
@@ -33,13 +34,10 @@ class AppController extends Controller
 	{
 		parent::initialize();
 		$this->viewBuilder()->setClassName('App');
-		$this->viewBuilder()->addHelpers(array_merge(['Html', 'Form', 'Pagination'], static::HELPERS));
+		$this->viewBuilder()->addHelpers(['Html', 'Form', 'Pagination']);
 		$this->loadComponent('PlayResultProcessor');
 		$this->loadComponent('Authorization');
 	}
-
-	//The helpers a controller adds to those of every page
-	protected const HELPERS = [];
 
 	//Shows the problem of the set connection on the play page. $viewVars are what only the route has
 	//(its canonical address, its menu item, its links), they win over what the problem would show.
@@ -300,7 +298,9 @@ class AppController extends Controller
 		$changed += DailyStreak::timeZoneChange(self::takeCookie('time_zone'), $user);
 		if ($changed)
 			Auth::saveUserFields($changed);
-		new TsumegoFilters(); //keeps the collection filters the pages set in cookies
+		//keeps the collection filters the pages set in cookies; without one, the stored ones stay as they are
+		if (Preferences::anyCookie())
+			new TsumegoFilters();
 	}
 
 	//The value of a cookie the browser sent, which is dropped; null when it sent none
@@ -358,19 +358,17 @@ class AppController extends Controller
 			$this->set('user', Auth::getUser());
 			$lightDark = Auth::getUser()['theme_id'] == UserTable::THEME_DARK ? 'dark' : 'light';
 			$levelBar = self::levelBar((int) Auth::getUser()['level_bar_id']);
-			$boardsBitmask = BoardSelector::filterValidBits(Auth::getUser()['boards_bitmask']);
 		}
 		else
 		{
 			$lightDark = Util::cookie('lightDark') === 'dark' ? 'dark' : 'light';
 			$levelBar = UserTable::LEVEL_BAR_LEVEL;
-			$boardsBitmask = BoardSelector::filterValidBits((int) (self::takeCookie('boards_bitmask') ?? BoardSelector::$DEFAULT_BOARDS_BITMASK));
 		}
 
 		$this->set('highscoreLink', self::highscoreLink());
 		$this->set('lightDark', $lightDark);
 		$this->set('levelBar', $levelBar);
-		$this->set('boardsBitmask', $boardsBitmask);
+		$this->set('boardsBitmask', BoardSelector::playerBitmask());
 		$this->set('timeMode', new TimeMode());
 		return null;
 	}

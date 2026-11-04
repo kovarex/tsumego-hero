@@ -21,6 +21,12 @@ class TsumegoImageTest extends AppTestCase
 		$this->assertSame(md5($landscape), md5($portrait));
 	}
 
+	//Editors wrap long lists of points, the picture is the same
+	public function testWrappedSetupStonesAreDrawn(): void
+	{
+		$this->assertSame(md5(TsumegoImage::png('(;SZ[19]AB[dd][ed]AW[dc][ec])')), md5(TsumegoImage::png("(;SZ[19]AB[dd]\n[ed]AW[dc] [ec])")));
+	}
+
 	public function testAProblemWithoutStonesHasNoPicture(): void
 	{
 		$this->expectException(InternalErrorException::class);

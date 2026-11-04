@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use Cake\Http\Response;
+use Cake\Http\Exception\BadRequestException;
 use Cake\Http\Exception\NotFoundException;
 use DateTimeImmutable;
 use App\Attribute\HttpGet;
@@ -25,12 +26,20 @@ class TsumegoCommentsController extends AppController
 		$this->Authorization->authorize('TsumegoComment', 'add');
 
 		$input = json_decode($this->requestBody(), true);
+		$tsumegoId = (int) ($input['tsumego_id'] ?? 0);
+		if ($tsumegoId <= 0 || !is_string($input['text'] ?? null))
+			throw new BadRequestException('Tsumego ID and text are required');
+		if (!$this->fetchTable('Tsumego')->exists(['id' => $tsumegoId]))
+			throw new NotFoundException('Problem not found');
+		$issueId = isset($input['issue_id']) ? (int) $input['issue_id'] : null;
+		if ($issueId !== null && !TsumegoIssueTable::isOfProblem($issueId, $tsumegoId))
+			throw new UnprocessableContentException('The issue is not one of this problem.');
 
 		$tsumegoCommentTable = $this->fetchTable('TsumegoComment');
 		$comment = $tsumegoCommentTable->newEntity([
-			'tsumego_id' => $input['tsumego_id'],
+			'tsumego_id' => $tsumegoId,
 			'message' => $input['text'],
-			'tsumego_issue_id' => $input['issue_id'] ?? null,
+			'tsumego_issue_id' => $issueId,
 			'position' => $input['position'] ?? null,
 			'user_id' => Auth::getUserID(),
 		]);

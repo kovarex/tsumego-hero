@@ -58,72 +58,43 @@ class ViteManifest
 		'problem-admin' => 'virtual:legacy-problem-admin',
 	];
 
-	// ---------------------------------------------------------------------------
-	// Public API
-	// ---------------------------------------------------------------------------
-
-	//Returns <link rel="stylesheet"> tags for a CSS bundle entry.
-	//$entry: Logical entry name (e.g. 'app-theme')
-	//$attrs: Additional HTML attributes for the <link> tag
-	public static function css(string $entry, array $attrs = []): string
+	//The <link> of a CSS bundle entry (e.g. 'app-theme')
+	public static function css(string $entry): string
 	{
-		$url = self::cssUrl($entry);
-		if ($url === null)
-			return '';
-
-		return self::linkTag($url, $attrs);
+		$built = self::built($entry);
+		//A JS proxy entry keeps its CSS under 'css'
+		return '<link rel="stylesheet" href="' . self::url($built['css'][0] ?? $built['file']) . '" />';
 	}
 
-	//Returns the hashed CSS URL for a bundle entry, or null if not found in manifest.
-	public static function cssUrl(string $entry): ?string
+	//A plain <script> (no type="module") of a legacy global-scope bundle (e.g. 'legacy'), whose functions stay global
+	public static function legacyScript(string $entry): string
 	{
-		$manifest = self::load();
-		$key = self::ENTRY_MAP[$entry] ?? $entry;
-
-		// CSS proxy JS entries store the CSS files under the 'css' key
-		if (isset($manifest[$key]['css'][0]))
-			return '/dist/' . $manifest[$key]['css'][0];
-
-		// Direct CSS asset (if entry is a .css file itself)
-		if (isset($manifest[$key]['file']))
-			return '/dist/' . $manifest[$key]['file'];
-
-		return null;
+		return '<script src="' . self::url(self::built($entry)['file']) . '"></script>';
 	}
 
-	//Returns a plain <script> tag (no type="module") for a legacy global-scope JS bundle.
-	//Use this for the legacy app.js bundle whose functions must remain globally accessible.
-	//Loaded with a plain <script> tag so functions are in window scope.
-	//$entry: Logical entry name (e.g. 'legacy')
-	//$attrs: Additional HTML attributes for the <script> tag
-	public static function legacyScript(string $entry, array $attrs = []): string
+	//A <script type="module"> of a JS entry (e.g. 'app')
+	public static function script(string $entry): string
 	{
-		$manifest = self::load();
-		$key = self::ENTRY_MAP[$entry] ?? $entry;
-
-		if (!isset($manifest[$key]['file']))
-			return '';
-
-		return self::plainScriptTag('/dist/' . $manifest[$key]['file'], $attrs);
+		return '<script type="module" src="' . self::url(self::built($entry)['file']) . '"></script>';
 	}
 
-	//Returns a <script type="module"> tag for a JS entry.
-	//$entry: Logical entry name (e.g. 'app')
-	//$attrs: Additional HTML attributes for the <script> tag
-	public static function script(string $entry, array $attrs = []): string
+	//What the build made of an entry; a name that isn't one, or an entry the build is missing, is an error,
+	//as the page would otherwise go without its script
+	/** @return array{file: string, css?: list<string>} */
+	private static function built(string $entry): array
 	{
-		$manifest = self::load();
-		$key = self::ENTRY_MAP[$entry] ?? $entry;
-
-		if (!isset($manifest[$key]['file']))
-			return '';
-
-		return self::scriptTag('/dist/' . $manifest[$key]['file'], $attrs);
+		if (!isset(self::ENTRY_MAP[$entry]))
+			throw new RuntimeException("Unknown Vite entry '$entry', see ViteManifest::ENTRY_MAP.");
+		$built = self::load()[self::ENTRY_MAP[$entry]] ?? null;
+		if (!isset($built['file']))
+			throw new RuntimeException("The Vite manifest has no '" . self::ENTRY_MAP[$entry] . "'. Run `pnpm build`.");
+		return $built;
 	}
 
-	// ---------------------------------------------------------------------------
-	// Internals
-	// ---------------------------------------------------------------------------
+	private static function url(string $file): string
+	{
+		return htmlspecialchars('/dist/' . $file, ENT_QUOTES, 'UTF-8');
+	}
 
 	//Load and cache the Vite manifest. Throws if manifest is not found.
 	private static function load(): array
@@ -142,36 +113,5 @@ class ViteManifest
 
 		self::$manifest = json_decode($json, true) ?? [];
 		return self::$manifest;
-	}
-
-	private static function linkTag(string $url, array $attrs = []): string
-	{
-		$extra = self::buildAttrs($attrs);
-		return '<link rel="stylesheet" href="' . htmlspecialchars($url, ENT_QUOTES, 'UTF-8') . '"' . $extra . ' />';
-	}
-
-	private static function scriptTag(string $url, array $attrs = []): string
-	{
-		$extra = self::buildAttrs($attrs);
-		return '<script type="module" src="' . htmlspecialchars($url, ENT_QUOTES, 'UTF-8') . '"' . $extra . '></script>';
-	}
-
-	private static function plainScriptTag(string $url, array $attrs = []): string
-	{
-		$extra = self::buildAttrs($attrs);
-		return '<script src="' . htmlspecialchars($url, ENT_QUOTES, 'UTF-8') . '"' . $extra . '></script>';
-	}
-
-	private static function buildAttrs(array $attrs): string
-	{
-		$parts = [];
-		foreach ($attrs as $name => $value)
-		{
-			if ($value === true)
-				$parts[] = htmlspecialchars($name, ENT_QUOTES, 'UTF-8');
-			elseif ($value !== false && $value !== null)
-				$parts[] = htmlspecialchars($name, ENT_QUOTES, 'UTF-8') . '="' . htmlspecialchars($value, ENT_QUOTES, 'UTF-8') . '"';
-		}
-		return $parts ? ' ' . implode(' ', $parts) : '';
 	}
 }

@@ -67,6 +67,15 @@ class Preferences
 		}
 	}
 
+	//Whether the request came with a cookie of a preference, which changes it
+	public static function anyCookie(): bool
+	{
+		foreach (array_keys(self::$userColumns) as $key)
+			if ((Util::cookie($key) ?? '') !== '')
+				return true;
+		return false;
+	}
+
 	//Set a preference value
 	//$key: The preference key
 	public static function set(string $key, mixed $value): void

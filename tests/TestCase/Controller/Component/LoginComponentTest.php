@@ -48,6 +48,17 @@ class LoginComponentTest extends IntegrationTestCase
 		$this->assertStringContainsString('Wrong username or password.', $page);
 	}
 
+	//A form sent without its password field is a wrong password, not a warning of PHP
+	public function testLoginWithoutAPasswordIsAWrongPassword(): void
+	{
+		new ContextPreparator(['other-users' => [['name' => 'kovarex']]]);
+
+		$this->post('users/login/', ['username' => 'kovarex']);
+
+		$this->assertFalse(Auth::isLoggedIn());
+		$this->assertStringContainsString('Wrong username or password.', $this->view);
+	}
+
 	public function testAShortPasswordStillSignsIn(): void
 	{
 		$context = new ContextPreparator(['user' => null, 'other-users' => [['name' => 'oldAccount']]]);

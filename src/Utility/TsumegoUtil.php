@@ -83,7 +83,7 @@ LIMIT 1', [$set['id']]);
 
 	public static function isSolvedStatus(?string $status): bool
 	{
-		return $status == TsumegoStatusTable::$SOLVED || $status == TsumegoStatusTable::$MASTERED || $status == TsumegoStatusTable::$REVIEW;
+		return in_array($status, TsumegoStatusTable::solvedStatuses(), true);
 	}
 
 	/** @param TsumegoRow $tsumego */

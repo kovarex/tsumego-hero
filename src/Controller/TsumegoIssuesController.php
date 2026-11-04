@@ -28,7 +28,7 @@ class TsumegoIssuesController extends AppController
 	public function api(): Response
 	{
 		$statusFilter = $this->query('status') ?: 'opened';
-		$page = (int) ($this->query('page') ?: 1);
+		$page = $this->pageNumber();
 
 		$counts = TsumegoIssueTable::getIndexCounts();
 		$totalCount = match ($statusFilter)
@@ -53,7 +53,13 @@ class TsumegoIssuesController extends AppController
 		$this->set('_title', 'Tsumego Hero - Issues');
 		$this->set('_page', 'issues');
 		$this->set('statusFilter', $this->query('status') ?: 'opened');
-		$this->set('currentPage', (int) ($this->query('page') ?: 1));
+		$this->set('currentPage', $this->pageNumber());
+	}
+
+	//The page of the issues the query string asks for, the first one for none or one before it.
+	private function pageNumber(): int
+	{
+		return max(1, (int) $this->query('page'));
 	}
 
 	//Opens an issue with its first comment, from {"tsumego_id", "text", "position"}.
@@ -140,6 +146,8 @@ class TsumegoIssuesController extends AppController
 		$targetIssueId = $target === 'standalone' ? null : (int) $target;
 		if ($sourceIssueId === $targetIssueId)
 			return $this->respondJson(['success' => true]);
+		if ($targetIssueId !== null && !TsumegoIssueTable::isOfProblem($targetIssueId, $comment->tsumego_id))
+			throw new UnprocessableContentException('The issue is not one of the problem of the comment.');
 		$comment->tsumego_issue_id = $targetIssueId;
 		$tsumegoCommentTable->saveOrFail($comment);
 		if ($sourceIssueId !== null)

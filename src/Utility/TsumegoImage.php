@@ -44,13 +44,10 @@ class TsumegoImage
 	//The PNG of the problem's setup stones
 	public static function png(string $sgf): string
 	{
-		$boardSize = 19;
-		if (preg_match('/SZ\[(\d+)\]/', $sgf, $sizeMatch))
-			$boardSize = (int) $sizeMatch[1];
 		$stones = self::setupStones($sgf);
 		if (empty($stones))
 			throw new InternalErrorException('No stones found in SGF');
-		return new self($stones, $boardSize)->draw($stones);
+		return new self($stones, SgfParser::boardSize($sgf))->draw($stones);
 	}
 
 	/** @param list<array{x: int, y: int, color: string}> $stones */
@@ -285,18 +282,14 @@ class TsumegoImage
 		};
 	}
 
-	//The stones of the first AB and the first AW property, as AB[aa][bb]...
+	//The stones of the first AB and the first AW property
 	/** @return list<array{x: int, y: int, color: string}> */
 	private static function setupStones(string $sgf): array
 	{
 		$stones = [];
-		foreach (['B', 'W'] as $color)
-			if (preg_match('/A' . $color . '((?:\[[a-s]{2}\])+)/', $sgf, $match))
-			{
-				preg_match_all('/\[([a-s])([a-s])\]/', $match[1], $coordinates, PREG_SET_ORDER);
-				foreach ($coordinates as [, $x, $y])
-					$stones[] = ['x' => ord($x) - ord('a'), 'y' => ord($y) - ord('a'), 'color' => $color];
-			}
+		foreach (SgfParser::firstValues($sgf, ['AB', 'AW']) as $identifier => $values)
+			foreach (SgfParser::points($values) as [$x, $y])
+				$stones[] = ['x' => ord($x) - ord('a'), 'y' => ord($y) - ord('a'), 'color' => $identifier[1]];
 		return $stones;
 	}
 }

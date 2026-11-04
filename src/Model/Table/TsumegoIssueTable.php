@@ -66,6 +66,12 @@ class TsumegoIssueTable extends AppTable
 		}) ?: null;
 	}
 
+	//Whether the issue exists and is one of the problem, so a comment of the problem can go in it.
+	public static function isOfProblem(int $issueId, int $tsumegoId): bool
+	{
+		return TableRegistry::getTableLocator()->get('TsumegoIssue')->exists(['id' => $issueId, 'tsumego_id' => $tsumegoId]);
+	}
+
 	//Delete an issue if it has no non-deleted comments.
 	//Should be called after a comment is deleted or removed from an issue to clean up empty issues automatically.
 	//$issueId: The issue ID to check and potentially delete

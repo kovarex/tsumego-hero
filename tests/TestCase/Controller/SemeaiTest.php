@@ -33,6 +33,25 @@ class SemeaiTest extends IntegrationTestCase
 		$this->assertSame('black', $problem['playerColor']);
 	}
 
+	//The marks are counted as written, also when the editor wrapped their list
+	public function testTheQuestionCountsTheMarksOfTheProblem(): void
+	{
+		$context = new ContextPreparator(['tsumego' => [
+			'set_order' => 1,
+			'sgf' => "(;GM[1]FF[4]SZ[19]TR[aa]\n[ab][ac]SQ[ba][bb][bc];B[cc])",
+			'semeai' => [
+				'semeai_type_id' => SemeaiTypeTable::TYPE_BIG_EYE_VS_SMALLER_EYE,
+				'liberty_count' => 6,
+				'minimum_liberties' => 1,
+				'maximum_liberties' => 6,
+				'variance' => 2,
+				'inside_liberties' => 0]]]);
+
+		$this->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+
+		$this->assertSame(3, $this->playPage()['problem']['semeai']['question']['variance']);
+	}
+
 	public function testPlayPageShowsNoSemeaiQuestionForAnyOtherProblem(): void
 	{
 		$context = new ContextPreparator(['tsumego' => ['set_order' => 1, 'sgf' => '(;GM[1]FF[4]SZ[19];B[cc])']]);

@@ -6,6 +6,7 @@ use Cake\Http\Exception\ForbiddenException;
 use Exception;
 use App\Attribute\HttpGet;
 use App\Model\Table\AchievementConditionTable;
+use App\Model\Table\TsumegoStatusTable;
 use App\Utility\AchievementId;
 use App\Utility\SchedulePublisher;
 use App\Utility\Trash;
@@ -183,7 +184,9 @@ class CronController extends AppController
 			'ruby_solves' => 0,
 		]));
 
-		AchievementConditionTable::put($userOfTheDay, AchievementConditionTable::CATEGORY_USER_OF_THE_DAY, 1);
+		//nobody, when all the leaders of the day were user of the day within the last week
+		if ($userOfTheDay !== null)
+			AchievementConditionTable::put($userOfTheDay, AchievementConditionTable::CATEGORY_USER_OF_THE_DAY, 1);
 	}
 
 	//The solved count on the user row goes up as the player solves, the recount repairs it where it
@@ -197,7 +200,7 @@ class CronController extends AppController
 			LEFT JOIN (
 				SELECT user_id, COUNT(*) AS solved
 				FROM tsumego_status
-				WHERE status IN ('S', 'W', 'C', 'X')
+				WHERE " . TsumegoStatusTable::solvedCountCondition('status') . "
 				GROUP BY user_id
 			) AS counts ON counts.user_id = user.id
 			WHERE NOT (user.solved <=> COALESCE(counts.solved, 0))");

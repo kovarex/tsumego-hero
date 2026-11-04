@@ -433,6 +433,76 @@ class SetsControllerTest extends IntegrationTestCase
 		$this->assertSame('1 problem', $dom->querySelectorAll('.set-card__middle-left')[0]->textContent);
 	}
 
+	//A tag a player proposed is not on the problem until an admin accepts it, so its collection counts
+	//and shows only the problems that carry it.
+	public function testATagCollectionHasOnlyTheProblemsThatCarryIt(): void
+	{
+		$context = new ContextPreparator(['tsumegos' => [
+			['sets' => [['name' => 'set', 'num' => '1']], 'tags' => [['name' => 'atari']]],
+			['sets' => [['name' => 'set', 'num' => '2']], 'tags' => [['name' => 'atari']]],
+			['sets' => [['name' => 'set', 'num' => '3']], 'tags' => [['name' => 'atari', 'approved' => 0]]]]]);
+		$_COOKIE['query'] = 'tags';
+
+		$this->get('sets');
+		$this->assertTextContains('Problems found: 2', $this->view);
+		$this->assertSame('2 problems', $this->getStringDom()->querySelectorAll('.set-card__middle-left')[0]->textContent);
+
+		$this->get('sets/atari');
+		$shown = array_map(fn($button) => $button->tsumegoID, (array) $this->viewVariable('tsumegoButtons'));
+		$this->assertSame([$context->tsumegos[0]['id'], $context->tsumegos[1]['id']], $shown);
+	}
+
+	//What the tag view shows when tags are filtered: a card for each picked tag only, with the problems its page
+	//opens, and the problems found are the problems the cards hold.
+	public function testTagFilterShowsTheCardsOfThePickedTagsWithTheProblemsTheirPagesOpen(): void
+	{
+		$tsumego = fn(string $rank, array $tags) => [
+			'rating' => Rating::getRankMiddleRatingFromReadableRank($rank),
+			'sets' => [['name' => 'set', 'num' => '1']],
+			'tags' => array_map(fn($tag) => ['name' => $tag], $tags)];
+		new ContextPreparator(['tsumegos' => [
+			$tsumego('15k', ['bent four', 'nakade']),
+			$tsumego('15k', ['bent four']),
+			$tsumego('5k', ['bent four', 'ko']),
+			$tsumego('15k', ['nakade']),
+			$tsumego('15k', ['ko'])]]);
+		$_COOKIE['query'] = 'tags';
+
+		$cardsAndPages = function (): array {
+			$this->get('sets');
+			preg_match('/Problems found: (\d+)/', $this->view, $found);
+			$cards = [];
+			foreach ($this->viewVariable('setsSelector')->sets as $card)
+				$cards[$card['name']] = $card['amount'];
+			$pages = [];
+			foreach (array_keys($cards) as $tag)
+			{
+				$this->get('sets/' . rawurlencode($tag));
+				$pages[$tag] = count($this->viewVariable('tsumegoButtons'));
+			}
+			return [(int) $found[1], $cards, $pages];
+		};
+
+		$_COOKIE['filtered_tags'] = 'bent four';
+		[$found, $cards, $pages] = $cardsAndPages();
+		$this->assertSame(['bent four' => 3], $cards, 'only the card of the picked tag');
+		$this->assertSame($cards, $pages);
+		$this->assertSame(3, $found);
+
+		$_COOKIE['filtered_tags'] = 'bent four@nakade';
+		[$found, $cards, $pages] = $cardsAndPages();
+		$this->assertSame(['bent four' => 3, 'nakade' => 2], $cards);
+		$this->assertSame($cards, $pages);
+		$this->assertSame(4, $found, 'a problem with both tags is found once');
+
+		$_COOKIE['filtered_tags'] = 'bent four';
+		$_COOKIE['filtered_ranks'] = '15k';
+		[$found, $cards, $pages] = $cardsAndPages();
+		$this->assertSame(['bent four' => 2], $cards);
+		$this->assertSame($cards, $pages);
+		$this->assertSame(2, $found);
+	}
+
 	public function testTopicsIndexShowsSolvedPercentPerPartition(): void
 	{
 		$contextParams = ['user' => ['collection_size' => 10]];

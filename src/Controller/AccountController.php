@@ -309,7 +309,9 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 			return null;
 		}
 
-		if (!$this->validateLogin($this->inputs(), $user))
+		// The minimum length is not asked here: an account whose password is shorter
+		// still has to sign in.
+		if (!password_verify((string) ($this->input('password') ?? ''), $user->password_hash))
 		{
 			CookieFlash::set('Wrong username or password.', 'error');
 			return null;
@@ -528,13 +530,6 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 	{
 		Auth::logout();
 		return $this->redirect('/');
-	}
-
-	private function validateLogin(array $data, User $user): bool
-	{
-		// The minimum length is not asked here: an account whose password is shorter
-		// still has to sign in.
-		return password_verify($data['password'], $user->password_hash);
 	}
 
 	/** @return Response|null */
@@ -810,12 +805,7 @@ If you have not asked for this, ignore this email, your account stays as it is.'
 		}
 
 		$givenUp = $user->email;
-		$this->fetchTable('User')->updateAll([
-			'email' => $newAddress,
-			'unconfirmed_email' => null,
-			'unconfirmed_email_token' => null,
-			'unconfirmed_email_cancel_token' => null,
-			'unconfirmed_email_created' => null], ['id' => $userID]);
+		$this->fetchTable('User')->updateAll(['email' => $newAddress] + self::NO_ADDRESS_CHANGE, ['id' => $userID]);
 
 		$emailer = $this->accountMail($givenUp, 'Your Tsumego Hero address was changed');
 		$this->sendNotification($emailer, 'The address of your Tsumego Hero account was changed to ' . $newAddress . '.'
@@ -853,14 +843,18 @@ If you have not asked for this, ignore this email, your account stays as it is.'
 		return $this->redirect(Auth::isLoggedIn() ? '/users/settings' : '/users/login');
 	}
 
+	//An account with no address change pending: the links it was sent with stop working.
+	//CronController::dropExpiredAddressChanges() clears the same columns of the old ones.
+	private const array NO_ADDRESS_CHANGE = [
+		'unconfirmed_email' => null,
+		'unconfirmed_email_token' => null,
+		'unconfirmed_email_cancel_token' => null,
+		'unconfirmed_email_created' => null];
+
 	//Drop a pending address change, so the links it was sent with stop working.
 	private function forgetAddressChange(int $userID): void
 	{
-		$this->fetchTable('User')->updateAll([
-			'unconfirmed_email' => null,
-			'unconfirmed_email_token' => null,
-			'unconfirmed_email_cancel_token' => null,
-			'unconfirmed_email_created' => null], ['id' => $userID]);
+		$this->fetchTable('User')->updateAll(self::NO_ADDRESS_CHANGE, ['id' => $userID]);
 	}
 
 	//Change the password of a local account. The current password is asked for so

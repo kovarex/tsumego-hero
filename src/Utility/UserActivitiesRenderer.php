@@ -19,7 +19,7 @@ class UserActivitiesRenderer extends DataTableRenderer
 		{
 			$condition = 'WHERE tsumego_attempt.user_id = ?';
 			$parameters = [$userID];
-			$order = 'tsumego_attempt.created DESC';
+			$order = 'tsumego_attempt.created DESC, tsumego_attempt.id DESC';
 			$user = Util::query('SELECT display_name, deleted FROM user WHERE id = ?', [$userID])[0] ?? null;
 			$caption = 'Attempts of ' . h($user && !$user['deleted'] ? $user['display_name'] : UserTable::DELETED_NAME);
 		}
@@ -27,7 +27,7 @@ class UserActivitiesRenderer extends DataTableRenderer
 		{
 			$condition = 'WHERE tsumego_attempt.tsumego_id IN (SELECT tsumego_id FROM set_connection WHERE set_id = ?)';
 			$parameters = [$setID];
-			$order = 'tsumego_attempt.created DESC';
+			$order = 'tsumego_attempt.created DESC, tsumego_attempt.id DESC';
 			$set = Util::query("SELECT CONCAT_WS(' ', title, title2) AS title FROM `set` WHERE id = ?", [$setID])[0] ?? null;
 			$caption = 'Attempts on ' . h($set['title'] ?? 'a set that is gone');
 		}
@@ -44,7 +44,10 @@ class UserActivitiesRenderer extends DataTableRenderer
 			: (int) Util::query('SELECT COUNT(*) AS total FROM tsumego_attempt ' . $condition, $parameters)[0]['total'];
 		parent::__construct($urlParams, 'attempts_page', $caption);
 
-		// a problem is shown in the set it was filtered by, otherwise in the set it is displayed in
+		// The page of attempts is taken first, so the player and the set of a problem are looked up
+		// for its rows and not for every attempt before it (the last page of a player with 30000
+		// attempts took 650 ms instead of 27).
+		// A problem is shown in the set it was filtered by, otherwise in the set it is displayed in.
 		$setConnection = $setID !== null
 			? 'set_connection.tsumego_id = tsumego_attempt.tsumego_id AND set_connection.set_id = ?'
 			: 'set_connection.id = (
@@ -76,14 +79,11 @@ SELECT
 	set_connection.num AS num,
 	CONCAT_WS(\' \', `set`.title, `set`.title2) AS set_title
 FROM
-	tsumego_attempt
+	(SELECT * FROM tsumego_attempt ' . $condition . ' ORDER BY ' . $order . ' LIMIT ' . self::$PAGE_SIZE . ' OFFSET ' . $this->offset . ') tsumego_attempt
 	JOIN user ON user.id = tsumego_attempt.user_id
 	LEFT JOIN set_connection ON ' . $setConnection . '
 	LEFT JOIN `set` ON `set`.id = set_connection.set_id
-' . $condition . '
-ORDER BY ' . $order . '
-LIMIT ' . self::$PAGE_SIZE . '
-OFFSET ' . $this->offset, $setID !== null ? [$setID, ...$parameters] : $parameters);
+ORDER BY ' . $order, $setID !== null ? [...$parameters, $setID] : $parameters);
 	}
 
 	protected function renderHeader(): void

@@ -79,7 +79,7 @@ SELECT
 	s.color,
 	COUNT(sc.tsumego_id) AS amount,
 	COALESCE(SUM(t.rating), 0) AS rating_sum,
-	COALESCE(SUM(CASE WHEN ts.status IN ('S','W','C') THEN 1 ELSE 0 END), 0) AS solved
+	COALESCE(SUM(CASE WHEN " . TsumegoStatusTable::solvedCondition('ts.status') . " THEN 1 ELSE 0 END), 0) AS solved
 FROM `set` s
 LEFT JOIN (set_connection sc
 	JOIN tsumego t ON t.id = sc.tsumego_id AND t.deleted IS NULL) ON sc.set_id = s.id

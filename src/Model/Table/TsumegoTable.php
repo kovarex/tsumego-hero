@@ -54,7 +54,7 @@ class TsumegoTable extends AppTable
 		$solved = Util::query(
 			'SELECT COUNT(DISTINCT ts.tsumego_id) AS solved FROM tsumego_status ts'
 			. ' JOIN tsumego t ON t.id = ts.tsumego_id AND t.deleted IS NULL'
-			. " WHERE ts.user_id = ? AND ts.status IN ('S', 'C', 'W')"
+			. ' WHERE ts.user_id = ? AND ' . TsumegoStatusTable::solvedCondition('ts.status')
 			. ' AND ' . $inOfficialSet('ts.tsumego_id'),
 			[$userId]
 		)[0]['solved'];

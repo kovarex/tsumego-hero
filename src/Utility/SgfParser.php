@@ -15,17 +15,13 @@ class SgfParser
 	//Parse SGF and return board, stones and info array.
 	public static function process(string $sgf, array $correctMoves = []): SgfBoard
 	{
-		$boardSize = self::boardSize($sgf);
-		$sgfArr = str_split($sgf);
-
-		$blackStones = self::getInitialPosition(strpos($sgf, 'AB'), $sgfArr);
-		$whiteStones = self::getInitialPosition(strpos($sgf, 'AW'), $sgfArr);
+		$values = self::firstValues($sgf, ['SZ', 'AB', 'AW']);
+		$boardSize = self::sizeOf($values['SZ']);
 
 		$stones = [];
-		foreach ($blackStones as $blackStone)
-			$stones[$blackStone] = SgfBoard::BLACK;
-		foreach ($whiteStones as $whiteStone)
-			$stones[$whiteStone] = SgfBoard::WHITE;
+		foreach (['AB' => SgfBoard::BLACK, 'AW' => SgfBoard::WHITE] as $identifier => $color)
+			foreach (self::points($values[$identifier]) as [$x, $y])
+				$stones[BoardPosition::fromLetters($x, $y)] = $color;
 
 		$boardBounds = new BoardBounds();
 		foreach ($stones as $position => $color)
@@ -111,11 +107,52 @@ class SgfParser
 		return null;
 	}
 
+	//The values of the first occurrence of each of the properties, an empty list for one the SGF doesn't have
+	/**
+	 * @param list<string> $identifiers
+	 * @return array<string, list<string>>
+	 */
+	public static function firstValues(string $sgf, array $identifiers): array
+	{
+		$result = array_fill_keys($identifiers, []);
+		$missing = array_fill_keys($identifiers, true);
+		foreach (self::scan($sgf) as $part)
+			if ($part[0] === 'property' && isset($missing[$part[1]]))
+			{
+				$result[$part[1]] = $part[3];
+				unset($missing[$part[1]]);
+				if (empty($missing))
+					break;
+			}
+		return $result;
+	}
+
+	//The points of point values ("aa" to "ss"), as letter pairs; anything else is left out
+	/**
+	 * @param list<string> $values
+	 * @return list<array{string, string}>
+	 */
+	public static function points(array $values): array
+	{
+		$points = [];
+		foreach ($values as $value)
+			if (preg_match('/^[a-s]{2}$/', $value))
+				$points[] = [$value[0], $value[1]];
+		return $points;
+	}
+
+	//The board size of the values of SZ, 19 when there are none
+	/** @param list<string> $values */
+	private static function sizeOf(array $values): int
+	{
+		return empty($values) ? 19 : (int) $values[0];
+	}
+
 	//The parts of an SGF text in order: a node starts (';') or a variation ends (')'), a property
-	//(its identifier and its first value, null when no value follows it), or a character that has
-	//no place outside a value. The values are opaque: a backslash escapes the next character, so an
-	//escaped ']' does not end one.
-	/** @return \Generator<int, array{0: 'node'|'end'}|array{0: 'property', 1: string, 2: string|null}|array{0: 'unexpected', 1: string, 2: int}> */
+	//(its identifier, its first value, null when no value follows it, and all its values), or a
+	//character that has no place outside a value. The values are opaque: a backslash escapes the next
+	//character, so an escaped ']' does not end one.
+	/** @return \Generator<int, array{0: 'node'|'end'}|array{0: 'property', 1: string, 2: string|null, 3: list<string>}|array{0: 'unexpected', 1: string, 2: int}> */
 	private static function scan(string $text): \Generator
 	{
 		$length = strlen($text);
@@ -137,10 +174,18 @@ class SgfParser
 				$start = $i;
 				while ($i < $length && ctype_upper($text[$i]))
 					$i++;
-				$value = null;
-				if ($i < $length && $text[$i] === '[')
-					$value = stripslashes(substr($text, $i + 1, self::valueEnd($text, $i) - $i - 1));
-				yield ['property', substr($text, $start, $i - $start), $value];
+				$identifier = substr($text, $start, $i - $start);
+				//Values may be apart, as editors wrap long lists of points
+				$values = [];
+				while ($i < $length && $text[$i] === '[')
+				{
+					$end = self::valueEnd($text, $i);
+					$values[] = stripslashes(substr($text, $i + 1, $end - $i - 1));
+					$i = $end + 1;
+					while ($i < $length && ctype_space($text[$i]))
+						$i++;
+				}
+				yield ['property', $identifier, $values[0] ?? null, $values];
 			}
 			else
 			{
@@ -154,10 +199,9 @@ class SgfParser
 	private static function valueEnd(string $text, int $open): int
 	{
 		$length = strlen($text);
-		for ($i = $open + 1; $i < $length; $i++)
-			if ($text[$i] === '\\')
-				$i++;
-			elseif ($text[$i] === ']')
+		//Jumps from one '\' or ']' to the next, as comments are long
+		for ($i = $open + 1 + strcspn($text, '\\]', $open + 1); $i < $length; $i += 2 + strcspn($text, '\\]', $i + 2))
+			if ($text[$i] === ']')
 				return $i;
 		return $length;
 	}
@@ -165,16 +209,7 @@ class SgfParser
 	//The board size the SGF names (SZ), 19 when it names none
 	public static function boardSize(string $sgf): int
 	{
-		$boardSizePos = strpos($sgf, 'SZ');
-		if ($boardSizePos === false)
-			return 19;
-
-		$sgfArr = str_split($sgf);
-		$size = $sgfArr[$boardSizePos + 3] . $sgfArr[$boardSizePos + 4];
-		if (substr($size, 1) == ']')
-			$size = substr($size, 0, 1);
-
-		return (int) $size;
+		return self::sizeOf(self::firstValues($sgf, ['SZ'])['SZ']);
 	}
 
 	private static function normalizeOrientation(array &$stones, array&$correctMoves, BoardBounds $boardBounds, int $boardSize): void
@@ -191,36 +226,5 @@ class SgfParser
 			$correctMoves = SgfBoard::getStonesFlipedY($correctMoves, $boardSize);
 			$boardBounds->y->flip($boardSize);
 		}
-	}
-
-	private static function getInitialPosition(int|bool $pos, array $sgfArr): array
-	{
-		if ($pos === false)
-			return [];
-
-		$coords = [];
-		$end = self::getInitialPositionEnd($pos, $sgfArr);
-		for ($i = $pos + 2; $i < $end; $i++)
-			if ($sgfArr[$i] == '[')
-			{
-				$coords[] = BoardPosition::fromLetters($sgfArr[$i + 1], $sgfArr[$i + 2]);
-				$i += 3;
-			}
-		return $coords;
-	}
-
-	private static function getInitialPositionEnd(int $pos, array $sgfArr): int
-	{
-		$endCondition = $pos;
-		$currentPos1 = $pos + 2;
-		$currentPos2 = $pos + 5;
-		while (isset($sgfArr[$currentPos1], $sgfArr[$currentPos2]) && $sgfArr[$currentPos1] == '[' && $sgfArr[$currentPos2] == ']')
-		{
-			$endCondition = $currentPos2;
-			$currentPos1 += 4;
-			$currentPos2 += 4;
-		}
-
-		return $endCondition;
 	}
 }

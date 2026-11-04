@@ -6,7 +6,6 @@ use App\Utility\ViteManifest;
 
 /**
  * @var \App\View\AppView $this
- * @var array $dTitle
  * @var int $id
  * @var string $name
  * @var array $versions
@@ -29,19 +28,6 @@ else
 		<?php } ?>
 		<br><br>
 	</p>
-	<?php if(!empty($dId))
-	{ ?>
-		<div>
-			Duplicate with: <?php
-			for($i = 0; $i < count($dId); $i++)
-			{
-				echo '<a href="/tsumegos/play/' . $dId[$i] . '">' . h($dTitle[$i]) . '</a>';
-				if($i != count($dId) - 1)
-					echo ', ';
-			}
-			?>
-		</div>
-	<?php } ?>
 	<div align="left">
 		<?php if($type == 'tsumego')
 		{ ?>

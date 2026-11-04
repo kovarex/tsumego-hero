@@ -163,9 +163,13 @@ class TsumegoFilters
 
 	public function filterRanks(Query $query): void
 	{
-		if (empty($this->rankSpecs))
-			return;
+		if ($rankCondition = $this->rankCondition())
+			$query->conditions[] = $rankCondition;
+	}
 
+	//Rating bound conditions for the filtered ranks on the tsumego table, '' when no rank is filtered.
+	public function rankCondition(): string
+	{
 		$rankConditions = '';
 		foreach ($this->rankSpecs as $rankFilter)
 		{
@@ -173,7 +177,7 @@ class TsumegoFilters
 			RatingBounds::coverRankSpec($rankFilter, Rating::weakestRank())->addSqlConditions($rankCondition);
 			Util::addSqlOrCondition($rankConditions, $rankCondition);
 		}
-		$query->conditions[] = $rankConditions;
+		return $rankConditions;
 	}
 
 	//The ranks the From/To selects should show: the picked range, or the one
@@ -205,12 +209,15 @@ class TsumegoFilters
 
 	public function filterTags(Query $query): void
 	{
-		if (empty($this->tagIDs))
-			return;
-		$query->conditions[] = 'EXISTS (SELECT 1 FROM tag_connection tc
-			WHERE tc.tsumego_id = tsumego.id
-			AND tc.approved = 1
-			AND tc.tag_id IN (' . implode(',', $this->tagIDs) . '))';
+		if (!empty($this->tagIDs))
+			$query->conditions[] = $this->tagMembershipCondition('tsumego.id');
+	}
+
+	//EXISTS condition for a tsumego carrying any of the filtered tags; only call it when a tag is filtered.
+	public function tagMembershipCondition(string $tsumegoRef): string
+	{
+		return 'EXISTS (SELECT 1 FROM tag_connection tc2 WHERE tc2.tsumego_id = ' . $tsumegoRef
+			. ' AND tc2.approved = 1 AND tc2.tag_id IN (' . implode(',', $this->tagIDs) . '))';
 	}
 
 	public function filterSets(Query $query): void
@@ -225,12 +232,12 @@ class TsumegoFilters
 	}
 
 	//EXISTS condition for a tsumego belonging to at least one public set (optionally limited to filtered sets).
-	private function publicMembershipCondition(): string
+	public function publicMembershipCondition(string $tsumegoRef = 'tsumego.id'): string
 	{
 		$setCondition = SetTable::officialCondition();
 		if (!empty($this->setIDs))
 			$setCondition .= ' AND `set`.id IN (' . implode(',', $this->setIDs) . ')';
-		return 'EXISTS (SELECT 1 FROM set_connection sc JOIN `set` ON `set`.id = sc.set_id AND ' . $setCondition . ' WHERE sc.tsumego_id = tsumego.id)';
+		return 'EXISTS (SELECT 1 FROM set_connection sc JOIN `set` ON `set`.id = sc.set_id AND ' . $setCondition . ' WHERE sc.tsumego_id = ' . $tsumegoRef . ')';
 	}
 
 	public function calculateCount(): int

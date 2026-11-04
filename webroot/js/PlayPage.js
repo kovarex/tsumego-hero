@@ -75,49 +75,29 @@ $("[data-toggle]").click(function(event){
 		window.dispatchEvent(new Event("comments-open"));
 });
 
-drawActiveTiles();
-
-function drawActiveTiles(){
-	$(".active-tiles-container").html("");
-	for(let i=0;i<activeTopicTiles.length;i++)
-		$(".active-tiles-container").append('<div class="dropdown__tile dropdown__tile--green dropdown__tile--context" id="active-tiles-element'+i+'" onclick="removeActiveTopic('+i+')">'+activeTopicTiles[i]+'</div>');
-	for(let i=0;i<activeDifficultyTiles.length;i++)
-		$(".active-tiles-container").append('<div class="dropdown__tile dropdown__tile--purple dropdown__tile--context" id="active-tiles-element'+i+'" onclick="removeActiveDifficulty('+i+')">'+activeDifficultyTiles[i]+'</div>');
-	for(let i=0;i<activeTagTiles.length;i++)
-		$(".active-tiles-container").append('<div class="dropdown__tile dropdown__tile--brown dropdown__tile--context" id="active-tiles-element'+i+'" onclick="removeActiveTag('+i+')">'+activeTagTiles[i]+'</div>');
-	if(activeTopicTiles.length>0 || activeDifficultyTiles.length>0 || activeTagTiles.length>0)
-		$(".active-tiles-container").append('<a class="dropdown__tile dropdown__tile--muted" id="unselect-active-tiles" href="">clear</a><div class="clearfix"></div>');
-}
-
-$(".active-tiles-container").on("click", "#unselect-active-tiles", function(e){
-	e.preventDefault();
-	$(".active-tiles-container").html("");
-	setCookie("filtered_sets", "clear");
-	setCookie("filtered_ranks", "clear");
-	setCookie("filtered_tags", "clear");
-	window.location.reload();
-});
-
-function removeActiveTopic(index){
-	activeTopicTiles.splice(index, 1);
-	setCookie("filtered_sets", activeTopicTiles.length == 0 ? "clear" : activeTopicTiles.join("@"));
-	window.location.reload();
-}
-
-function removeActiveDifficulty(index){
-	activeDifficultyTiles.splice(index, 1);
-	setCookie("filtered_ranks", activeDifficultyTiles.length == 0 ? "clear" : activeDifficultyTiles.join("@"));
-	window.location.reload();
-}
-
-function removeActiveTag(index){
-	activeTagTiles.splice(index, 1);
-	setCookie("filtered_tags", activeTagTiles.length == 0 ? "clear" : activeTagTiles.join("@"));
-	window.location.reload();
-}
-
-
-
+//The filters of the problems as tiles: a tile drops its filter, clear drops them all
+(function() {
+	const filters = [
+		{tiles: activeTopicTiles, color: "green", cookie: "filtered_sets"},
+		{tiles: activeDifficultyTiles, color: "purple", cookie: "filtered_ranks"},
+		{tiles: activeTagTiles, color: "brown", cookie: "filtered_tags"}];
+	const container = $(".active-tiles-container").empty();
+	for (const filter of filters)
+		filter.tiles.forEach((name, index) => container.append($('<div class="dropdown__tile dropdown__tile--context">')
+			.addClass("dropdown__tile--" + filter.color)
+			.text(name)
+			.click(() => {
+				filter.tiles.splice(index, 1);
+				setCookie(filter.cookie, filter.tiles.length == 0 ? "clear" : filter.tiles.join("@"));
+				window.location.reload();
+			})));
+	if (filters.some(filter => filter.tiles.length > 0))
+		container.append($('<a class="dropdown__tile dropdown__tile--muted" id="unselect-active-tiles" href="">clear</a>').click(event => {
+			event.preventDefault();
+			filters.forEach(filter => setCookie(filter.cookie, "clear"));
+			window.location.reload();
+		}), '<div class="clearfix"></div>');
+})();
 
 function elapsedSeconds()
 {
@@ -142,13 +122,6 @@ function takeSecondsOfTry()
 	timeToFirstClick = null;
 	return seconds;
 }
-$(".adminCommentPanel").hide();
-$(".tsumegoNavi-middle2").hide();
-$(".tsumegoNavi-middle2").hide();
-$(".reviewNavi").hide();
-$("#reviewButton").hide();
-$("#reviewButton2").hide();
-
 if (mode == playPage.page.modes.rating)
 	var ratingModeDifficultySelector = new RatingModeDifficultySelector();
 
@@ -160,13 +133,8 @@ $("#alertCheckbox").change(function(){
 if (mode == playPage.page.modes.rating)
 {
 	$(".problem-nav").hide();
-	$(".tsumegoNavi-middle").hide();
-	$(".tsumegoNavi-middle2").show();
-	$(".mode1").css({"padding-top":"8px"});
 	$(".selectable-text").hide();
 	$("#commentSpace").hide();
-	$("#reviewButton").hide();
-	$("#reviewButton2").hide();
 }
 else if (mode == playPage.page.modes.time)
 	$("#account-bar-user > a").css({color:"#ca6658"});
@@ -605,11 +573,7 @@ function displayResult(result)
 		$("#moreCommentSummary").show();
 
 		if (mode == playPage.page.modes.time)
-		{
 			$("#time-mode-countdown").css("color", playGreenColor);
-			$("#reviewButton").show();
-			$("#reviewButton-inactive").hide();
-		}
 		noXP = true;
 		toggleBoardLock(true);
 		displaySettings();
@@ -683,15 +647,15 @@ function displayResult(result)
 }
 
 
+//Only the banner of the message box: the potion and the achievement boxes keep their own
 function displayMessage(message='text', topic='Message', color='red')
 {
 	$('#customText').html(message);
 	$("#customAlerts").fadeIn(500);
-	if (color==='red')
-		$(".toast__banner").addClass("toast__banner--error");
-	else
-		$(".toast__banner").addClass("toast__banner--success");
-	$(".toast__banner").html(topic+"<span class=\"toast__close\">x</span>");
+	$("#customAlerts .toast__banner")
+		.toggleClass("toast__banner--error", color === 'red')
+		.toggleClass("toast__banner--success", color !== 'red')
+		.html(topic + '<span class="toast__close">x</span>');
 }
 
 function resetParameters(isAtStart)

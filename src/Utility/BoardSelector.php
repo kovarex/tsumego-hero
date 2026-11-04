@@ -102,4 +102,10 @@ class BoardSelector
 	}
 
 	public static int $DEFAULT_BOARDS_BITMASK = 0b11111111;
+
+	//The boards the player picked: an account keeps them in its settings, a guest in the cookie of the board menu
+	public static function playerBitmask(): int
+	{
+		return self::filterValidBits(Auth::isLoggedIn() ? (int) Auth::getUser()['boards_bitmask'] : (int) Util::cookie('boards_bitmask', self::$DEFAULT_BOARDS_BITMASK));
+	}
 }

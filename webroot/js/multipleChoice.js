@@ -11,14 +11,12 @@ function displayMultipleChoiceResult(num)
 	if (num == correct)
 	{
 		displayResult("S");
-		$(".toast__banner").addClass("toast__banner--success");
-		$(".toast__banner").html('Correct!<span class="toast__close">x</span>');
+		$("#multipleChoiceAlerts .toast__banner").addClass("toast__banner--success").html('Correct!<span class="toast__close">x</span>');
 	}
 	else
 	{
 		displayResult("F");
-		$(".toast__banner").addClass("toast__banner--error");
-		$(".toast__banner").html('Incorrect!<span class="toast__close">x</span>');
+		$("#multipleChoiceAlerts .toast__banner").addClass("toast__banner--error").html('Incorrect!<span class="toast__close">x</span>');
 	}
 	$("#multipleChoiceText").html(text);
 	$("#multipleChoiceAlerts").fadeIn(500);

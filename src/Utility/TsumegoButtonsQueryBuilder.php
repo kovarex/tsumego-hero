@@ -137,6 +137,8 @@ class TsumegoButtonsQueryBuilder
 			return;
 		$this->query->query .= ' LEFT JOIN tag_connection ON tag_connection.tsumego_id=tsumego.id';
 		$this->query->conditions[] = 'tag_connection.tag_id=' . $this->tag->id;
+		// a tag a player proposed is not on the problem until an admin accepts it
+		$this->query->conditions[] = 'tag_connection.approved = 1';
 	}
 
 	private function querySet(string|int|null $id): void
