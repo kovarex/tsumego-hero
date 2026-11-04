@@ -718,4 +718,16 @@ class TimeModeControllerTest extends IntegrationTestCase
 
 		$this->assertSame([1, 1], array_column($this->viewVariable('timeModeRanks'), 'tsumego_count'));
 	}
+
+	//The overview opens on the category the player picked last, and on the last one for a player who never picked one
+	public function testTheOverviewOpensOnTheCategoryPickedLast(): void
+	{
+		new ContextPreparator(['tsumego' => 1, 'time-mode-ranks' => ['5k']]);
+		$this->get('/timeMode/overview');
+		$this->assertSame(TimeModeCategoryTable::SLOW, $this->viewVariable('lastTimeModeCategoryID'));
+
+		new ContextPreparator(['user' => ['last-time-mode-category-id' => TimeModeCategoryTable::FAST], 'tsumego' => 1, 'time-mode-ranks' => ['5k']]);
+		$this->get('/timeMode/overview');
+		$this->assertSame(TimeModeCategoryTable::FAST, (int) $this->viewVariable('lastTimeModeCategoryID'));
+	}
 }

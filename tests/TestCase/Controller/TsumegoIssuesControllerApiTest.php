@@ -55,6 +55,19 @@ class TsumegoIssuesControllerApiTest extends IntegrationTestCase
 		$this->assertSame(0, $this->fetchTable('TsumegoIssue')->find()->count());
 	}
 
+	//A page number before the first page shows the first page.
+	public function testApiShowsTheFirstPageForAPageBeforeIt()
+	{
+		new ContextPreparator(['user' => ['name' => 'kovarex'], 'tsumego' => ['set_order' => 1, 'issues' => [['message' => 'the only issue']]]]);
+
+		$this->get('/tsumego-issues/api?page=-3');
+
+		$this->assertResponseCode(200);
+		$body = json_decode($this->view, true);
+		$this->assertSame(1, $body['currentPage']);
+		$this->assertSame(['the only issue'], array_map(fn($issue) => $issue['comments'][0]['text'], $body['issues']));
+	}
+
 	//A problem left only in someone's Favorites is shown by its id rather than in their collection.
 	public function testApiLeavesOutAFavoritesSetAsTheOnlyCollection()
 	{
@@ -149,6 +162,27 @@ class TsumegoIssuesControllerApiTest extends IntegrationTestCase
 		$this->post('/tsumego-issues/move-comment/1');
 
 		$this->assertResponseCode(403);
+	}
+
+	//An admin moves a comment only into an issue of its own problem.
+	public function testMoveCommentOnlyIntoAnIssueOfItsProblem()
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'kovarex', 'admin' => true],
+			'tsumegos' => [
+				['set_order' => 1, 'comments' => [['message' => 'the comment to move']], 'issues' => [['message' => 'issue of the same problem']]],
+				['set_order' => 2, 'issues' => [['message' => 'issue of another problem']]]]]);
+		$commentId = $this->fetchTable('TsumegoComment')->find()->where(['message' => 'the comment to move'])->firstOrFail()->id;
+
+		$this->post('/tsumego-issues/move-comment/' . $commentId, ['tsumego_issue_id' => (string) $context->issues[1]['id']]);
+		$this->assertResponseCode(422);
+		$this->post('/tsumego-issues/move-comment/' . $commentId, ['tsumego_issue_id' => (string) ($context->issues[1]['id'] + 1000)]);
+		$this->assertResponseCode(422);
+		$this->assertNull($this->fetchTable('TsumegoComment')->get($commentId)->tsumego_issue_id);
+
+		$this->post('/tsumego-issues/move-comment/' . $commentId, ['tsumego_issue_id' => (string) $context->issues[0]['id']]);
+		$this->assertResponseCode(200);
+		$this->assertSame($context->issues[0]['id'], $this->fetchTable('TsumegoComment')->get($commentId)->tsumego_issue_id);
 	}
 
 	private function giveFavoritesToTheOtherUser(ContextPreparator $context): void
