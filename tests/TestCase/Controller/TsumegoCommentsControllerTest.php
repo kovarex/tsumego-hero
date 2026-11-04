@@ -28,6 +28,39 @@ class TsumegoCommentsControllerTest extends IntegrationTestCase
 		$this->assertSame('my comment', $body['text']);
 	}
 
+	//A reply goes only into an issue of its own problem; one into an issue of another problem
+	//would show there under the wrong problem.
+	public function testAReplyGoesOnlyIntoAnIssueOfItsProblem()
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'kovarex'],
+			'tsumegos' => [['set_order' => 1, 'issues' => [['message' => 'issue of the first problem']]], ['set_order' => 2]]]);
+		$issueId = $context->issues[0]['id'];
+
+		$this->post('/tsumego-comments/add', json_encode(['tsumego_id' => $context->tsumegos[1]['id'], 'text' => 'misplaced reply', 'issue_id' => $issueId]));
+		$this->assertResponseCode(422);
+		$this->post('/tsumego-comments/add', json_encode(['tsumego_id' => $context->tsumegos[0]['id'], 'text' => 'reply to no issue', 'issue_id' => $issueId + 1000]));
+		$this->assertResponseCode(422);
+		$this->assertSame(0, $this->fetchTable('TsumegoComment')->find()->where(['message LIKE' => '%reply%'])->count());
+
+		$this->post('/tsumego-comments/add', json_encode(['tsumego_id' => $context->tsumegos[0]['id'], 'text' => 'right reply', 'issue_id' => $issueId]));
+		$this->assertResponseCode(200);
+		$this->assertSame($issueId, $this->fetchTable('TsumegoComment')->find()->where(['message' => 'right reply'])->firstOrFail()->tsumego_issue_id);
+	}
+
+	public function testAddNeedsAProblemAndAText()
+	{
+		$context = new ContextPreparator(['user' => ['name' => 'kovarex'], 'tsumego' => ['set_order' => 1]]);
+
+		$this->post('/tsumego-comments/add', json_encode(['text' => 'which problem?']));
+		$this->assertResponseCode(400);
+		$this->post('/tsumego-comments/add', json_encode(['tsumego_id' => $context->tsumegos[0]['id']]));
+		$this->assertResponseCode(400);
+		$this->post('/tsumego-comments/add', json_encode(['tsumego_id' => $context->tsumegos[0]['id'] + 1000, 'text' => 'a problem that is not there']));
+		$this->assertResponseCode(404);
+		$this->assertSame(0, $this->fetchTable('TsumegoComment')->find()->count());
+	}
+
 	public function testCommentByGoogleUserShowsDisplayName()
 	{
 		$context = new ContextPreparator([
