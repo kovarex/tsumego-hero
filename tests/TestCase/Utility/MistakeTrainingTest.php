@@ -1264,13 +1264,7 @@ class MistakeTrainingTest extends IntegrationTestCase
 			);
 	}
 
-	private function streaks(int $userId): array
-	{
-		$profile = MistakeTraining::profile($userId, MistakeTraining::profileStart());
-		return [$profile['streak'], $profile['best_streak']];
-	}
-
-	public function testTheStreaksCountClearedDays(): void
+	public function testTheCalendarHoldsTheLastHalfAYear(): void
 	{
 		$context = new ContextPreparator(['tsumego' => 1]);
 		$userId = $context->user['id'];
@@ -1280,47 +1274,10 @@ class MistakeTrainingTest extends IntegrationTestCase
 
 		$profile = MistakeTraining::profile($userId, MistakeTraining::profileStart());
 
-		$this->assertSame(2, $profile['streak'], 'Today is still to do, so the streak holds');
-		$this->assertSame(4, $profile['best_streak'], 'The best streak looks back further than the calendar');
 		$this->assertCount(6, $profile['days'], 'The calendar holds the last half a year');
-		$this->assertTrue($profile['days'][date('Y-m-d', strtotime(MistakeTraining::today() . ' -10 days'))]['missed']);
+		$this->assertTrue($profile['days'][$this->day(10)]['missed']);
 		$this->assertSame([1, 0, 0, 0, 0, 0, 0, 0], $profile['rungs']);
 		$this->assertSame(0, $profile['graduated']);
-	}
-
-	public function testADayWithNothingDueKeepsTheStreakWithoutAddingToIt(): void
-	{
-		$context = new ContextPreparator(['tsumego' => 1]);
-		$userId = $context->user['id'];
-		$this->enterTraining($userId, (int) $context->tsumegos[0]['id']);
-		$this->clearedDays($userId, [9, 8, 2]);
-
-		$this->assertSame([3, 3], $this->streaks($userId), 'Nothing was due in between, so the three days are one streak');
-	}
-
-	public function testAStreakEndsWithADayTriedAndNotCleared(): void
-	{
-		$context = new ContextPreparator(['tsumego' => 1]);
-		$userId = $context->user['id'];
-		$this->enterTraining($userId, (int) $context->tsumegos[0]['id']);
-		$this->clearedDays($userId, [3, 2]);
-		$this->missedDays($userId, [1]);
-
-		$this->assertSame([0, 2], $this->streaks($userId));
-
-		$this->clearedDays($userId, [0]);
-		$this->assertSame([1, 2], $this->streaks($userId));
-	}
-
-	public function testTodayTriedAndNotClearedYetKeepsTheStreak(): void
-	{
-		$context = new ContextPreparator(['tsumego' => 1]);
-		$userId = $context->user['id'];
-		$this->enterTraining($userId, (int) $context->tsumegos[0]['id']);
-		$this->clearedDays($userId, [2, 1]);
-		$this->missedDays($userId, [0]);
-
-		$this->assertSame([2, 2], $this->streaks($userId));
 	}
 
 	private function day(int $daysAgo): string
@@ -1341,7 +1298,7 @@ class MistakeTrainingTest extends IntegrationTestCase
 		);
 	}
 
-	public function testAProblemLeftDueEndsTheStreakAndItsReviewWritesTheMissedDaysDown(): void
+	public function testAProblemLeftDueMissesItsDaysAndItsReviewWritesThemDown(): void
 	{
 		$context = new ContextPreparator(['tsumego' => 1]);
 		$userId = $context->user['id'];
@@ -1351,7 +1308,6 @@ class MistakeTrainingTest extends IntegrationTestCase
 		$this->makeDueSince($userId, $tsumegoId, 2);
 
 		$profile = MistakeTraining::profile($userId, MistakeTraining::profileStart());
-		$this->assertSame(0, $profile['streak'], 'The problem waited two days for its review');
 		$this->assertTrue($profile['days'][$this->day(2)]['missed']);
 		$this->assertTrue($profile['days'][$this->day(1)]['missed']);
 		$this->assertSame(0, $profile['days'][$this->day(2)]['reviewed']);
@@ -1363,7 +1319,6 @@ class MistakeTrainingTest extends IntegrationTestCase
 			'The review moved the date of the problem, so the run of days it waited for is written down, as one row');
 		$profile = MistakeTraining::profile($userId, MistakeTraining::profileStart());
 		$this->assertTrue($profile['days'][$this->day(1)]['missed'], 'The calendar still shows each day of the run');
-		$this->assertSame([1, 1], [$profile['streak'], $profile['best_streak']], 'Clearing today starts a new streak');
 	}
 
 	public function testALongAbsenceIsOneRow(): void
@@ -1413,7 +1368,6 @@ class MistakeTrainingTest extends IntegrationTestCase
 		MistakeTraining::makeDueNow($userId, $tsumegoId);
 		$this->clearedDays($userId, [1]);
 		MistakeTraining::recordResult($userId, $tsumegoId, PlayOutcome::SolvedClean, 'V', true);
-		$this->assertSame([2, 2], $this->streaks($userId));
 
 		MistakeTraining::shiftReviews($userId, -1);
 
@@ -1426,7 +1380,6 @@ class MistakeTrainingTest extends IntegrationTestCase
 			[date('Y-m-d', strtotime(MistakeTraining::today() . ' -1 day'))],
 			array_column(Util::query('SELECT day FROM mistake_training_review WHERE user_id = ?', [$userId]), 'day')
 		);
-		$this->assertSame([2, 2], $this->streaks($userId), 'Today has nothing due yet, so the streak holds');
 	}
 
 	public function testNoProfileForAPlayerWhoNeverTrained(): void

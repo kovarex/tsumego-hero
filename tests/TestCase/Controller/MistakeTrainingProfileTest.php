@@ -58,8 +58,6 @@ class MistakeTrainingProfileTest extends IntegrationTestCase
 		$this->assertStringContainsString('id="mistake-training-overview"', $html);
 		$this->assertMatchesRegularExpression('/id="mistake-training-in-training">2</', $html);
 		$this->assertMatchesRegularExpression('/id="mistake-training-graduated">1</', $html);
-		$this->assertMatchesRegularExpression('/id="mistake-training-streak">2 days</', $html);
-		$this->assertMatchesRegularExpression('/id="mistake-training-best-streak">2 days</', $html);
 		$this->assertStringContainsString('aria-label="' . MistakeTraining::rungName(3) . '"', $html, 'The rungs wear their insignia');
 		$this->assertStringContainsString('title="' . MistakeTraining::rungName(3) . ': 1"', $html);
 

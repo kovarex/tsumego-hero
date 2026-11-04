@@ -84,7 +84,7 @@ class MistakeTraining
 	public static string $QUEUE_LINK = '/mistake-training';
 
 	//The overview of the training: what is due today, what comes next, and the
-	//player's calendar and streak. The way in from the homepage and the title of
+	//player's calendar. The way in from the homepage and the title of
 	//a training problem.
 	public static string $OVERVIEW_LINK = '/mistake-training/overview';
 
@@ -268,7 +268,7 @@ class MistakeTraining
 
 	//Write down the days a review waited for since it was due at $dueSince, up to
 	//yesterday: one row of mistake_training_day on the first of them, whose
-	//missed_days says how long the run lasted, which ends a streak (see profile()).
+	//missed_days says how long the run lasted, which the calendar shows as missed (see profile()).
 	//A run that an earlier one covers already is not written again. A day of the run
 	//that has its own row keeps it, so a day that was cleared before an import made
 	//more problems due stays cleared.
@@ -499,14 +499,10 @@ class MistakeTraining
 	//What the profile shows of the training of a player, or null when there is
 	//nothing to show: the training days since $since (reviewed problems, whether the
 	//day was cleared, and whether it was missed), the problems in the training now by
-	//rung, the graduated ones, and the streaks of cleared days.
-	//A cleared day adds to a streak, and a missed day ends it: one that had problems
-	//due and was not cleared, whether they were tried or not. A day with nothing due
-	//neither ends a streak nor adds to it, so a player who has nothing to review does
-	//not lose the streak, and does not grow it either. Today is missed only once it
-	//is over, so the current streak holds while today's training is still to do.
+	//rung and the graduated ones. A missed day is one that had problems due and was
+	//not cleared, whether they were tried or not; today is missed only once it is over.
 	/**
-	 * @return array{days: array<string, array{reviewed: int, cleared: bool, missed: bool}>, rungs: list<int>, graduated: int, streak: int, best_streak: int}|null
+	 * @return array{days: array<string, array{reviewed: int, cleared: bool, missed: bool}>, rungs: list<int>, graduated: int}|null
 	 */
 	public static function profile(int $userId, string $since): ?array
 	{
@@ -558,15 +554,7 @@ class MistakeTraining
 		if (empty($days) && !self::hasEverTrained($userId))
 			return null;
 
-		$streak = 0;
-		$bestStreak = 0;
-		foreach ($history as $day)
-			if ($day['cleared'])
-				$bestStreak = max($bestStreak, ++$streak);
-			elseif ($day['missed'])
-				$streak = 0;
-
-		return ['days' => $days, 'rungs' => $rungs, 'graduated' => $graduated, 'streak' => $streak, 'best_streak' => $bestStreak];
+		return ['days' => $days, 'rungs' => $rungs, 'graduated' => $graduated];
 	}
 
 	//Bring the player's past mistakes into the training, newest first. They are due
