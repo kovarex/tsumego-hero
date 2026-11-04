@@ -23,9 +23,9 @@ $dayWord = fn(int $days): string => $days == 1 ? 'day' : 'days';
 	<div id="daily-streak-details" class="daily-streak__details" role="tooltip">
 		<div class="daily-streak__title">Daily streak: <span data-streak-length><?php echo $streak->length; ?></span> <span data-streak-length-word><?php echo $dayWord($streak->length); ?></span></div>
 		<div>Best: <span data-streak-best><?php echo $streak->best; ?></span> <span data-streak-best-word><?php echo $dayWord($streak->best); ?></span></div>
-		<div>Freezes: <span data-streak-freezes><?php echo $streak->freezes; ?></span> of <?php echo DailyStreak::MAXIMUM_FREEZES; ?></div>
-		<div class="daily-streak__today" data-streak-today data-done-text="Today is done." data-todo-text="Solve a problem that gives XP to keep it going today.">
-			<?php echo $streak->doneToday ? 'Today is done.' : 'Solve a problem that gives XP to keep it going today.'; ?>
+		<div>Freezes: <span data-streak-freezes><?php echo $streak->freezes; ?></span></div>
+		<div class="daily-streak__today" data-streak-today data-done-text="Today is done." data-todo-text="Solve a problem that gives XP, or a mistake training review, to keep it going today.">
+			<?php echo $streak->doneToday ? 'Today is done.' : 'Solve a problem that gives XP, or a mistake training review, to keep it going today.'; ?>
 		</div>
 		<div class="daily-streak__rules">A freeze is earned every <?php echo DailyStreak::FREEZE_EVERY_DAYS; ?> days and covers a missed day. A new day starts at <?php echo DailyStreak::DAY_START_HOUR; ?> AM.</div>
 	</div>

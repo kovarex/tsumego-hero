@@ -16,6 +16,7 @@ use App\Model\Table\TsumegoStatusTable;
 use App\Utility\AchievementChecker;
 use App\Utility\Auth;
 use App\Utility\Constants;
+use App\Utility\DailyStreak;
 use App\Utility\HeroPowers;
 use App\Utility\Level;
 use App\Utility\MistakeTraining;
@@ -128,6 +129,7 @@ class PlayResultProcessorComponent extends Component
 		$this->processErrorAchievement($previousStatusValue, $outcome);
 		$this->processSolveConditions($tsumego, $result, $previousStatusValue);
 		$this->processGoldenRun($result, $previousStatusValue);
+		$this->processDailyStreak($result, $review);
 		$this->writeUserChanges();
 
 		// Check solve-dependent achievements right away (not only on the next page
@@ -458,6 +460,19 @@ class PlayResultProcessorComponent extends Component
 			AchievementConditionTable::increment(Auth::getUserID(), AchievementConditionTable::CATEGORY_SPRINT);
 		else
 			AchievementConditionTable::put(Auth::getUserID(), AchievementConditionTable::CATEGORY_SPRINT, 0);
+	}
+
+	//The day counts for the daily streak (DailyStreak) with a solve that gives XP, and in the mistake
+	//training with every review the training counts as solved, even a retry that earns nothing.
+	//A replay of a problem solved today is no review, and the time mode gives no XP, so neither counts.
+	/** @param array{id: int, result: int, climbed: bool, clear_bonus: bool}|null $review */
+	private function processDailyStreak(PlayResult $result, ?array $review): void
+	{
+		$trainingSolve = Auth::isInMistakeTrainingMode() && $review !== null && $review['result'] !== MistakeTraining::REVIEW_MISSED;
+		if ($result->xpGained <= 0 && !$trainingSolve)
+			return;
+		$user = &Auth::getUser();
+		DailyStreak::countSolve($user);
 	}
 
 	//The Gold Digger run counts the golden tsumego solved in a row. A golden tsumego is a

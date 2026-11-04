@@ -108,7 +108,7 @@ class DailyStreakTest extends AppTestCase
 		$this->assertSame(4, $streak->afterSolve('2026-11-04')->length);
 	}
 
-	public function testAFreezeIsEarnedEverySevenDaysUpToTwo(): void
+	public function testAFreezeIsEarnedEverySevenDaysWithoutALimit(): void
 	{
 		$streak = DailyStreak::evaluate(0, 0, 0, null, '2026-11-01');
 		$day = new DateTimeImmutable('2026-11-01');
@@ -123,9 +123,16 @@ class DailyStreakTest extends AppTestCase
 		$this->assertSame(1, $freezesByLength[7]);
 		$this->assertSame(1, $freezesByLength[13]);
 		$this->assertSame(2, $freezesByLength[14]);
-		$this->assertSame(2, $freezesByLength[21], 'Two freezes at most');
-		$this->assertSame(2, $freezesByLength[28]);
+		$this->assertSame(3, $freezesByLength[21], 'Freezes add up past two');
+		$this->assertSame(4, $freezesByLength[28]);
 		$this->assertSame(28, $streak->best);
+	}
+
+	public function testEnoughFreezesCoverALongBreak(): void
+	{
+		$streak = DailyStreak::evaluate(40, 40, 5, '2026-11-01', '2026-11-06');
+		$this->assertSame(['length' => 40, 'best' => 40, 'freezes' => 1, 'done_today' => false], $streak->toArray());
+		$this->assertSame(0, DailyStreak::evaluate(40, 40, 5, '2026-11-01', '2026-11-08')->length);
 	}
 
 	//Moving west can make the last counted day lie ahead of today there: it is done, not missed

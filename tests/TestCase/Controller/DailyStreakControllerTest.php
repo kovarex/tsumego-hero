@@ -75,6 +75,33 @@ class DailyStreakControllerTest extends IntegrationTestCase
 		$this->assertSame(1, $this->storedLength($context));
 	}
 
+	//A retry after a mistake earns nothing, but the training counts it as solved, so it keeps the streak
+	public function testAReviewInTheMistakeTrainingWithoutXpCounts(): void
+	{
+		$context = new ContextPreparator(['tsumego' => [
+			'rating' => 1500,
+			'set_order' => 1,
+			'status' => ['name' => 'V', 'mistake_training_due' => date('Y-m-d H:i:s', strtotime('-1 day')), 'mistake_training_rung' => 3]]]);
+		$response = $this->solve($context, ['mode' => Constants::$MISTAKE_TRAINING_MODE, 'outcome' => PlayOutcome::SolvedAfterMistake->value]);
+		$this->assertSame(0, array_sum($response['mistake_training_xp']));
+		$this->assertTrue($response['daily_streak']['done_today']);
+		$this->assertSame(1, $this->storedLength($context));
+	}
+
+	//Played again after today's review solved it, a problem is no review, so it doesn't count
+	public function testAReplayInTheMistakeTrainingDoesNotCount(): void
+	{
+		$context = new ContextPreparator(['tsumego' => [
+			'rating' => 1500,
+			'set_order' => 1,
+			'status' => ['name' => 'V', 'mistake_training_due' => date('Y-m-d H:i:s', strtotime('-1 day')), 'mistake_training_rung' => 3]]]);
+		$this->solve($context, ['mode' => Constants::$MISTAKE_TRAINING_MODE]);
+		Util::execute('UPDATE user SET streak_length = 0, streak_best = 0, streak_last_day = NULL WHERE id = ?', [$context->user['id']]);
+		$response = $this->solve($context, ['mode' => Constants::$MISTAKE_TRAINING_MODE]);
+		$this->assertFalse($response['daily_streak']['done_today']);
+		$this->assertSame(0, $this->storedLength($context));
+	}
+
 	//The time mode gives no XP, so it doesn't keep the streak
 	public function testATimeModeSolveDoesNotCount(): void
 	{

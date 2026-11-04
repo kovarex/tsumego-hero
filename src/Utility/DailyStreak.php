@@ -16,9 +16,8 @@ use Exception;
 /** @phpstan-import-type UserRow from \App\Utility\RowTypes */
 class DailyStreak
 {
-	//A freeze is earned each time the streak reaches a multiple of this many days
+	//A freeze is earned each time the streak reaches a multiple of this many days; they add up without a limit
 	public const int FREEZE_EVERY_DAYS = 7;
-	public const int MAXIMUM_FREEZES = 2;
 	//The hour of the player's local time at which their day turns
 	public const int DAY_START_HOUR = 3;
 
@@ -66,7 +65,7 @@ class DailyStreak
 		if ($this->doneToday)
 			return $this;
 		$length = $this->length + 1;
-		$freezes = $length % self::FREEZE_EVERY_DAYS == 0 ? min(self::MAXIMUM_FREEZES, $this->freezes + 1) : $this->freezes;
+		$freezes = $this->freezes + ($length % self::FREEZE_EVERY_DAYS == 0 ? 1 : 0);
 		return new self($length, max($this->best, $length), $freezes, $today, true);
 	}
 

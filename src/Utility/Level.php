@@ -70,9 +70,6 @@ class Level
 		Level::addXP($user, $value);
 		$user['daily_xp'] += $value;
 		$user['daily_solved']++;
-		//Every solve that gives XP passes here, in every mode, so this is where the day counts for the streak
-		if ($value > 0)
-			DailyStreak::countSolve($user);
 	}
 
 	public static function oldXPSumCode(int $level): int
