@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use Cake\Datasource\Exception\RecordNotFoundException;
 use Cake\Http\Exception\BadRequestException;
 use Cake\Http\Exception\NotFoundException;
 use Exception;
@@ -89,11 +90,13 @@ class TimeModeController extends AppController
 		return $this->redirect('/timeMode/play/' . ((int) $position + 1));
 	}
 
-	//Every rank with the number of problems a run of it can draw.
-	/** @return list<array{id: int, name: string, tsumego_count: int}> */
-	private function getRanksWithTsumegoCount(): array
+	//Every rank, ordered by id, with the number of problems a run of it can draw.
+	/**
+	 * @param TimeModeRank[] $ranks
+	 * @return list<array{id: int, name: string, tsumego_count: int}>
+	 */
+	private static function withTsumegoCounts(array $ranks): array
 	{
-		$ranks = $this->fetchTable('TimeModeRank')->find()->orderBy('id')->toArray();
 		$counts = TimeMode::countTsumegosByRank($ranks);
 		return array_map(fn(TimeModeRank $rank) => ['id' => $rank->id, 'name' => $rank->name, 'tsumego_count' => $counts[$rank->id]], $ranks);
 	}
@@ -106,12 +109,17 @@ class TimeModeController extends AppController
 		$this->set('_title', 'Time Mode - Select');
 		$this->set('_page', 'time mode');
 
-		$lastTimeModeCategoryID = Auth::getUser()['last_time_mode_category_id'];
-		if (!$lastTimeModeCategoryID)
-			$lastTimeModeCategoryID = $this->fetchTable('TimeModeCategory')->find()->orderByDesc('id')->firstOrFail()->id;
-		assert((bool) $lastTimeModeCategoryID);
+		$timeModeCategories = $this->fetchTable('TimeModeCategory')->find()->orderBy('id')->toArray();
+		$timeModeRanks = $this->fetchTable('TimeModeRank')->find()->orderBy('id')->toArray();
+		if (!$timeModeCategories)
+			throw new RecordNotFoundException('No time mode category.');
 
-		$timeModeRankMap = $this->fetchTable('TimeModeRank')->find('list', keyField: 'id', valueField: 'name')->toArray();
+		// a player who never picked a category starts on the last one
+		$lastTimeModeCategoryID = Auth::getUser()['last_time_mode_category_id'] ?: end($timeModeCategories)->id;
+
+		$timeModeRankMap = [];
+		foreach ($timeModeRanks as $timeModeRank)
+			$timeModeRankMap[$timeModeRank->id] = $timeModeRank->name;
 
 		$solvedSessions = $this->fetchTable('TimeModeSession')->find()->where([
 			'user_id' => Auth::getUserID(),
@@ -130,8 +138,8 @@ class TimeModeController extends AppController
 		}
 
 		$this->set('lastTimeModeCategoryID', $lastTimeModeCategoryID);
-		$this->set('timeModeCategories', $this->fetchTable('TimeModeCategory')->find()->orderBy('id')->toArray());
-		$this->set('timeModeRanks', $this->getRanksWithTsumegoCount());
+		$this->set('timeModeCategories', $timeModeCategories);
+		$this->set('timeModeRanks', self::withTsumegoCounts($timeModeRanks));
 		$this->set('solvedMap', $solvedMap);
 		$this->set('hasFinishedSesssion', $this->fetchTable('TimeModeSession')->exists([
 			'user_id' => Auth::getUserID(),
