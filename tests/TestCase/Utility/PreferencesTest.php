@@ -189,4 +189,15 @@ class PreferencesTest extends AppTestCase
 
 		$this->assertSame('difficulty', UserTable::row(Auth::getUserID())['collection_grouping']);
 	}
+
+	//Only a cookie of a preference makes the pages store the filters again
+	public function testAnyCookieTellsWhetherAPreferenceCameInACookie()
+	{
+		unset($_COOKIE['query'], $_COOKIE['collection_size'], $_COOKIE['filtered_sets'], $_COOKIE['filtered_ranks'], $_COOKIE['filtered_tags']);
+		$_COOKIE['lightDark'] = 'dark';
+		$this->assertFalse(Preferences::anyCookie());
+		$_COOKIE['filtered_ranks'] = '15k';
+		$this->assertTrue(Preferences::anyCookie());
+		unset($_COOKIE['filtered_ranks'], $_COOKIE['lightDark']);
+	}
 }
