@@ -120,29 +120,25 @@ class DailyStreakControllerTest extends IntegrationTestCase
 		$this->assertSame(0, $this->storedLength($context));
 	}
 
-	public function testTheTimeZoneIsStored(): void
+	//The browser hands its zone over in a cookie, which the next page stores with the other settings
+	public function testTheTimeZoneOfTheCookieIsStored(): void
 	{
-		$context = new ContextPreparator([]);
-		$this->login($context->user['name']);
-		$this->post('/daily-streak/time-zone', ['time_zone' => 'Asia/Tokyo']);
+		$context = new ContextPreparator(['user' => ['name' => 'traveller']]);
+		$this->login('traveller');
+		$_COOKIE['time_zone'] = 'Asia/Tokyo';
+		$this->get('/sites/impressum');
 		$this->assertResponseOk();
-		$this->assertSame('Asia/Tokyo', Util::query('SELECT time_zone FROM user WHERE id = ?', [$context->user['id']])[0]['time_zone']);
-		$this->assertSame(['length' => 0, 'best' => 0, 'freezes' => 0, 'done_today' => false], json_decode((string) $this->_response->getBody(), true));
+		$this->assertSame('Asia/Tokyo', $context->reloadUser()['time_zone']);
+		$this->assertStringContainsString('data-time-zone="Asia/Tokyo"', (string) $this->_response->getBody());
 	}
 
-	public function testAnInvalidTimeZoneIsRefused(): void
+	public function testAnInvalidTimeZoneIsIgnored(): void
 	{
-		$context = new ContextPreparator(['user' => ['time_zone' => 'Europe/Prague']]);
-		$this->login($context->user['name']);
-		$this->post('/daily-streak/time-zone', ['time_zone' => 'Nowhere/Land']);
-		$this->assertResponseCode(400);
-		$this->assertSame('Europe/Prague', Util::query('SELECT time_zone FROM user WHERE id = ?', [$context->user['id']])[0]['time_zone']);
-	}
-
-	public function testAGuestHasNoTimeZoneToStore(): void
-	{
-		new ContextPreparator(['user' => null]);
-		$this->post('/daily-streak/time-zone', ['time_zone' => 'Asia/Tokyo']);
-		$this->assertResponseCode(401);
+		$context = new ContextPreparator(['user' => ['name' => 'traveller', 'time_zone' => 'Europe/Prague']]);
+		$this->login('traveller');
+		$_COOKIE['time_zone'] = 'Nowhere/Land';
+		$this->get('/sites/impressum');
+		$this->assertResponseOk();
+		$this->assertSame('Europe/Prague', $context->reloadUser()['time_zone']);
 	}
 }

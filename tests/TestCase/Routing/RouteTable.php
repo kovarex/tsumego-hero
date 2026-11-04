@@ -101,8 +101,6 @@ return [
 		'/users/playerColorPreference' => ['Users', 'playerColorPreference', []],
 		'/users/boardOrientationPreference' => ['Users', 'boardOrientationPreference', []],
 		'/users/dateFormatPreference' => ['Users', 'dateFormatPreference', []],
-		'/daily-streak/time-zone' => ['DailyStreak', 'timeZone', []],
-		'/dailyStreak/timeZone' => ['DailyStreak', 'timeZone', []],
 		'/users/emailOnNewMessagePreference' => ['Users', 'emailOnNewMessagePreference', []],
 		'/users/avatarPreference' => ['Users', 'avatarPreference', []],
 		'/users/avatarUpload' => ['Users', 'avatarUpload', []],

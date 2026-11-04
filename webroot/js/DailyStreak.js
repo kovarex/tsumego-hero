@@ -1,6 +1,6 @@
 //The flame of the daily streak in the menu (templates/element/daily_streak.php). It redraws from what
-//the server says about the streak (App\Utility\DailyStreak::toArray(): the result of a solve, or
-//the answer to the time zone), and tells the server the browser's time zone when it differs.
+//the server says about the streak (App\Utility\DailyStreak::toArray(), in the result of a solve), and
+//hands the server the browser's time zone when it differs from the stored one.
 class DailyStreak
 {
 	static element()
@@ -38,24 +38,14 @@ class DailyStreak
 		}
 	}
 
-	//Sent only when the zone changed, so a page normally makes no request for it
+	//Like the other settings, the zone goes in a cookie that the next request stores and drops
+	//(AppController::saveSettingsFromCookies), so it costs no request of its own.
 	static syncTimeZone()
 	{
 		let element = DailyStreak.element();
 		let timeZone = DailyStreak.browserTimeZone();
-		if (!element || !timeZone || timeZone === element.dataset.timeZone)
-			return;
-		fetch('/daily-streak/time-zone', {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest' },
-			body: 'time_zone=' + encodeURIComponent(timeZone)
-		}).then(response => response.ok ? response.json() : null).then(streak =>
-		{
-			if (!streak)
-				return;
-			element.dataset.timeZone = timeZone;
-			DailyStreak.update(streak);
-		}).catch(error => console.error('DailyStreak.syncTimeZone failed:', error));
+		if (element && timeZone && timeZone !== element.dataset.timeZone)
+			setCookie('time_zone', timeZone);
 	}
 }
 

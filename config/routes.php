@@ -346,10 +346,6 @@ return function (RouteBuilder $routes): void
 		);
 
 	$routes->connect(
-		'/daily-streak/time-zone',
-		['controller' => 'DailyStreak', 'action' => 'timeZone']
-	);
-	$routes->connect(
 		'/users/playerColorPreference',
 		['controller' => 'Users', 'action' => 'playerColorPreference']
 	);

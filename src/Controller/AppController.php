@@ -14,6 +14,7 @@ use App\Utility\Auth;
 use App\Utility\BoardSelector;
 use App\Utility\Changelog;
 use App\Utility\Constants;
+use App\Utility\DailyStreak;
 use App\Utility\Mailer;
 use App\Utility\Play;
 use App\Utility\TimeMode;
@@ -296,6 +297,7 @@ class AppController extends Controller
 			$settings['boards_bitmask'] = BoardSelector::filterValidBits((int) $boardsBitmask);
 		$user = Auth::getUser();
 		$changed = array_filter($settings, fn(int|bool $value, string $field) => !isset($user[$field]) || (int) $user[$field] !== (int) $value, ARRAY_FILTER_USE_BOTH);
+		$changed += DailyStreak::timeZoneChange(self::takeCookie('time_zone'), $user);
 		if ($changed)
 			Auth::saveUserFields($changed);
 		new TsumegoFilters(); //keeps the collection filters the pages set in cookies

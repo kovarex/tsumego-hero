@@ -12,10 +12,12 @@ class DailyStreakBrowserTest extends IntegrationTestCase
 		$context = new ContextPreparator(['tsumego' => ['set_order' => 1, 'status' => 'V']]);
 		$browser = Browser::instance();
 		$browser->get('sites/blank');
+		$browser->get('sites/blank');
 
-		//The streak counts in the zone of the browser, which its first page sent; yesterday there counted
+		//The streak counts in the zone of the browser: the first page put it in a cookie, the second stored it.
+		//Yesterday there counted.
 		$timeZone = $browser->driver->executeScript('return Intl.DateTimeFormat().resolvedOptions().timeZone;');
-		$browser->waitUntil(fn() => Util::query('SELECT time_zone FROM user WHERE id = ?', [$context->user['id']])[0]['time_zone'] === $timeZone, 10, 'the time zone to be stored');
+		$this->assertSame($timeZone, $context->reloadUser()['time_zone']);
 		$yesterday = new DateTimeImmutable(DailyStreak::today($timeZone, new DateTimeImmutable()))->modify('-1 day')->format('Y-m-d');
 		Util::execute('UPDATE user SET streak_length = 2, streak_best = 5, streak_last_day = ? WHERE id = ?', [$yesterday, $context->user['id']]);
 

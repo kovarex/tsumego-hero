@@ -118,6 +118,20 @@ class DailyStreak
 		}
 	}
 
+	//The browser puts its zone in the time_zone cookie when it differs from the one the page has
+	//(webroot/js/DailyStreak.js); the next request stores it with the other settings of the cookies
+	//(AppController::saveSettingsFromCookies). An invalid or unchanged zone changes nothing.
+	/**
+	 * @param UserRow $user
+	 * @return array{time_zone?: string}
+	 */
+	public static function timeZoneChange(?string $cookie, array $user): array
+	{
+		if (!self::isValidTimeZone($cookie) || $cookie === ($user['time_zone'] ?? null))
+			return [];
+		return ['time_zone' => (string) $cookie];
+	}
+
 	//What the page shows and the result of a solve returns (webroot/js/DailyStreak.js)
 	/** @return array{length: int, best: int, freezes: int, done_today: bool} */
 	public function toArray(): array

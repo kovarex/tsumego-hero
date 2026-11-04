@@ -40,6 +40,16 @@ class DailyStreakTest extends AppTestCase
 		$this->assertFalse(DailyStreak::isValidTimeZone(''));
 	}
 
+	public function testOnlyAValidNewTimeZoneIsAChange(): void
+	{
+		$user = ['time_zone' => 'Europe/Prague'];
+		$this->assertSame(['time_zone' => 'Asia/Tokyo'], DailyStreak::timeZoneChange('Asia/Tokyo', $user));
+		$this->assertSame([], DailyStreak::timeZoneChange('Europe/Prague', $user));
+		$this->assertSame([], DailyStreak::timeZoneChange('Nowhere/Land', $user));
+		$this->assertSame([], DailyStreak::timeZoneChange(null, $user));
+		$this->assertSame(['time_zone' => 'UTC'], DailyStreak::timeZoneChange('UTC', ['time_zone' => null]));
+	}
+
 	//On the night the clocks move, the day still turns at 3:00 on the wall clock
 	public function testTheDayTurnsAtThreeOnTheWallClockAcrossDaylightSavingChanges(): void
 	{
