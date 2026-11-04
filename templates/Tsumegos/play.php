@@ -174,7 +174,8 @@ use App\Utility\ViteManifest;
 	<?php
 	//More is on the line of Filters, so it takes no space of its own.
 	$hasDuplicates = count($setConnections) > 1 && Auth::getMode() != Constants::$TIME_MODE;
-	//The comments are in More too; what they hold shows on the toggle, once they may be read
+	//The comments are in More too; what they hold shows on the toggle once they may be read, its place
+	//kept until then so More doesn't move at the solve
 	$commentCounts = Auth::isLoggedIn() ? TsumegoIssueTable::getCommentSectionCounts((int) $tsumego->id) : null;
 	$commentsVisible = Auth::isAdmin() || $solved;
 	?>
@@ -182,7 +183,7 @@ use App\Utility\ViteManifest;
 	<a id="showFilters" class="play-filters-toggle selectable-text mr-5"<?php echo empty($tsumegoFilters->sets) && empty($tsumegoFilters->ranks) && empty($tsumegoFilters->tags) ? ' style="display: none;"' : ''; ?> data-toggle="msgFilters">Filters<img class="toggle-arrow" src="/img/greyArrow1.png"></a>
 	<a id="editToggle" class="selectable-text" data-toggle="editSection">More<img class="toggle-arrow" src="/img/greyArrow1.png"><?php
 	if ($commentCounts !== null && ($summary = TsumegoIssueTable::commentSummary($commentCounts)) !== '')
-		echo '<span id="moreCommentSummary" class="play-more__summary"' . ($commentsVisible ? '' : ' style="display: none;"') . '>' . h($summary) . '</span>';
+		echo '<span id="moreCommentSummary" class="play-more__summary"' . ($commentsVisible ? '' : ' style="visibility: hidden;"') . '>' . h($summary) . '</span>';
 	?></a>
 	<br><br>
 	<div class="filters-outer">
