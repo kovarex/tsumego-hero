@@ -38,7 +38,7 @@ class SitesController extends AppController
 		if ($dayRecord)
 		{
 			$currentQuote = $dayRecord->quote;
-			$this->set('userOfTheDay', UserTable::row($dayRecord->user_id));
+			$this->set('userOfTheDay', $dayRecord->user_id === null ? null : UserTable::row($dayRecord->user_id));
 		}
 		else
 			$this->set('userOfTheDay', null);

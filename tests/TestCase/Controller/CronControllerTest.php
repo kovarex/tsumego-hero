@@ -131,6 +131,29 @@ class CronControllerTest extends IntegrationTestCase
 		$this->assertSame($dayRecords[0]->user_id, $context->otherUsers[0]['id']);
 	}
 
+	//A player isn't user of the day twice within a week, so on a site of few players a day can have none
+	public function testADayWithoutAUserOfTheDay()
+	{
+		$context = new ContextPreparator(['user' => ['daily_xp' => 5, 'daily_solved' => 1]]);
+		$dayRecordTable = $this->fetchTable('DayRecord');
+		$dayRecordTable->saveOrFail($dayRecordTable->newEntity([
+			'user_id' => $context->user['id'],
+			'date' => date('Y-m-d', strtotime('-1 day')),
+			'quote' => 'q01',
+			'gems' => '0-0-0',
+			'emerald_solves' => 0,
+			'sapphire_solves' => 0,
+			'ruby_solves' => 0]));
+
+		$this->get('/cron/daily/' . CRON_SECRET);
+		$this->assertResponseOk();
+		$this->assertNull($dayRecordTable->find()->where(['date' => date('Y-m-d')])->firstOrFail()->user_id);
+		$this->assertSame(0, $context->reloadUser()['daily_xp']);
+
+		$this->get('/');
+		$this->assertResponseOk();
+	}
+
 	public function testDailyCronCreatesSingleDayRecord()
 	{
 		new ContextPreparator([
