@@ -140,6 +140,8 @@ class TsumegoIssuesController extends AppController
 		$targetIssueId = $target === 'standalone' ? null : (int) $target;
 		if ($sourceIssueId === $targetIssueId)
 			return $this->respondJson(['success' => true]);
+		if ($targetIssueId !== null && !TsumegoIssueTable::isOfProblem($targetIssueId, $comment->tsumego_id))
+			throw new UnprocessableContentException('The issue is not one of the problem of the comment.');
 		$comment->tsumego_issue_id = $targetIssueId;
 		$tsumegoCommentTable->saveOrFail($comment);
 		if ($sourceIssueId !== null)
