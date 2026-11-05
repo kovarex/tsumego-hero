@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">81.08% </span>
+                <span class="strong">82.97% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>30/37</span>
-            </div>
-        
-            
-            <div class='fl pad1y space-right2'>
-                <span class="strong">68.75% </span>
-                <span class="quiet">Branches</span>
-                <span class='fraction'>11/16</span>
+                <span class='fraction'>39/47</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">66.66% </span>
-                <span class="quiet">Functions</span>
-                <span class='fraction'>8/12</span>
+                <span class="quiet">Branches</span>
+                <span class='fraction'>16/24</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">84.84% </span>
+                <span class="strong">69.23% </span>
+                <span class="quiet">Functions</span>
+                <span class='fraction'>9/13</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">87.5% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>28/33</span>
+                <span class='fraction'>35/40</span>
             </div>
         
             
@@ -133,13 +133,29 @@
 <a name='L68'></a><a href='#L68'>68</a>
 <a name='L69'></a><a href='#L69'>69</a>
 <a name='L70'></a><a href='#L70'>70</a>
-<a name='L71'></a><a href='#L71'>71</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L71'></a><a href='#L71'>71</a>
+<a name='L72'></a><a href='#L72'>72</a>
+<a name='L73'></a><a href='#L73'>73</a>
+<a name='L74'></a><a href='#L74'>74</a>
+<a name='L75'></a><a href='#L75'>75</a>
+<a name='L76'></a><a href='#L76'>76</a>
+<a name='L77'></a><a href='#L77'>77</a>
+<a name='L78'></a><a href='#L78'>78</a>
+<a name='L79'></a><a href='#L79'>79</a>
+<a name='L80'></a><a href='#L80'>80</a>
+<a name='L81'></a><a href='#L81'>81</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">11x</span>
+<span class="cline-any cline-yes">11x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">11x</span>
+<span class="cline-any cline-yes">11x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">11x</span>
 <span class="cline-any cline-yes">11x</span>
 <span class="cline-any cline-yes">11x</span>
 <span class="cline-any cline-yes">11x</span>
@@ -194,25 +210,35 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">/* eslint-disable no-restricted-globals -- still uses jQuery until it is converted */
-//The pages of the time mode around its runs: the overview, where the player picks a category and a
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">//The pages of the time mode around its runs: the overview, where the player picks a category and a
 //rank, and the results. Each page prints its data (timeModeOverviewPage, timeModeResultPage).
 &nbsp;
 //On the overview the account bar is the bar of the time mode, full, with the given text
 function showTimeModeAccountBar(text)
 {
-	$('#xp-bar-fill').attr('class', 'xp-bar-fill-c3').css('width', '100%');
-	$('#account-bar-user a').attr('class', 'xp-text-fill-c3x');
-	$('#account-bar-xp').text(text);
+	const fill = document.getElementById('xp-bar-fill');
+	if (fill)
+	{
+		fill.className = 'xp-bar-fill-c3';
+		fill.style.width = '100%';
+	}
+	document.querySelectorAll('#account-bar-user a').forEach(link =&gt; link.className = 'xp-text-fill-c3x');
+	const xp = document.getElementById('account-bar-xp');
+	if (xp)
+		xp.textContent = text;
 }
 &nbsp;
 //The overview shows the ranks of one category at a time, the one picked last, which a cookie remembers
@@ -264,14 +290,18 @@ function initTimeModeResult(page)
 <span class="cstat-no" title="statement not covered" >			title.querySelector('.rankArrow').setAttribute('src', opening ? page.rankArrowOpened : page.rankArrowClosed);</span>
 		});
 &nbsp;
+	//The toasts fade in once the page is loaded, like jQuery's ready: at DOMContentLoaded, or now when it was
 	if (page.unlock)
-		$(document).ready(function() {
-			$('.toast').fadeIn(500);
-		});
+	{
+		if (document.readyState === 'loading')
+			document.addEventListener('DOMContentLoaded', () =&gt; Display.fadeIn('.toast', 500));
+		else
+<span class="cstat-no" title="statement not covered" >			<span class="missing-if-branch" title="else path not taken" >E</span>Display.fadeIn('.toast', 500);</span>
+	}
 &nbsp;
-	$('#alertCheckbox').change(<span class="fstat-no" title="function not covered" >fu</span>nction() {
-<span class="cstat-no" title="statement not covered" >		$('.toast').fadeOut(500);</span>
-	});
+	const alertCheckbox = document.getElementById('alertCheckbox');
+	if (alertCheckbox)
+		alertCheckbox.addEventListener('change', <span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >Display.fadeOut('.toast', 500))</span>;
 }
 &nbsp;</pre></td></tr></table></pre>
 
@@ -280,7 +310,7 @@ function initTimeModeResult(page)
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-11-05T10:40:49.647Z
+                at 2026-11-05T10:46:47.815Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

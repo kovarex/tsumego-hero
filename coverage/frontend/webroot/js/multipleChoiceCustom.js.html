@@ -25,7 +25,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/20</span>
+                <span class='fraction'>0/12</span>
             </div>
         
             
@@ -46,7 +46,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/20</span>
+                <span class='fraction'>0/11</span>
             </div>
         
             
@@ -82,35 +82,13 @@
 <a name='L17'></a><a href='#L17'>17</a>
 <a name='L18'></a><a href='#L18'>18</a>
 <a name='L19'></a><a href='#L19'>19</a>
-<a name='L20'></a><a href='#L20'>20</a>
-<a name='L21'></a><a href='#L21'>21</a>
-<a name='L22'></a><a href='#L22'>22</a>
-<a name='L23'></a><a href='#L23'>23</a>
-<a name='L24'></a><a href='#L24'>24</a>
-<a name='L25'></a><a href='#L25'>25</a>
-<a name='L26'></a><a href='#L26'>26</a>
-<a name='L27'></a><a href='#L27'>27</a>
-<a name='L28'></a><a href='#L28'>28</a>
-<a name='L29'></a><a href='#L29'>29</a>
-<a name='L30'></a><a href='#L30'>30</a>
-<a name='L31'></a><a href='#L31'>31</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L20'></a><a href='#L20'>20</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -123,29 +101,18 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">/* eslint-disable no-restricted-globals -- still uses jQuery until it is converted */
-&nbsp;
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">&nbsp;
 function <span class="fstat-no" title="function not covered" >displayMultipleChoiceCustomResult(</span>num){
 <span class="cstat-no" title="statement not covered" >	if(!hasChosen){</span>
-<span class="cstat-no" title="statement not covered" >		$("#besogo-multipleChoice1").css("background-color", "#e0747f");</span>
-<span class="cstat-no" title="statement not covered" >		$("#besogo-multipleChoice2").css("background-color", "#e0747f");</span>
-<span class="cstat-no" title="statement not covered" >		$("#besogo-multipleChoice3").css("background-color", "#e0747f");</span>
-<span class="cstat-no" title="statement not covered" >		$("#besogo-multipleChoice4").css("background-color", "#e0747f");</span>
-		
+<span class="cstat-no" title="statement not covered" >		for (let answer = <span class="cstat-no" title="statement not covered" >1;</span> answer &lt;= 4; answer++)</span>
+<span class="cstat-no" title="statement not covered" >			colorMultipleChoice(answer, "#e0747f");</span>
+&nbsp;
 <span class="cstat-no" title="statement not covered" >		if(num==customMultipleChoiceAnswer){</span>
 <span class="cstat-no" title="statement not covered" >			displayResult("S");</span>
-<span class="cstat-no" title="statement not covered" >			if(customMultipleChoiceAnswer==1)</span>
-<span class="cstat-no" title="statement not covered" >				$("#besogo-multipleChoice1").css("background-color", "#3ecf78");</span>
-			else <span class="cstat-no" title="statement not covered" >if(customMultipleChoiceAnswer==2)</span>
-<span class="cstat-no" title="statement not covered" >				$("#besogo-multipleChoice2").css("background-color", "#3ecf78");</span>
-			else <span class="cstat-no" title="statement not covered" >if(customMultipleChoiceAnswer==3)</span>
-<span class="cstat-no" title="statement not covered" >				$("#besogo-multipleChoice3").css("background-color", "#3ecf78");</span>
-			else
-<span class="cstat-no" title="statement not covered" >				$("#besogo-multipleChoice4").css("background-color", "#3ecf78");</span>
+<span class="cstat-no" title="statement not covered" >			colorMultipleChoice(customMultipleChoiceAnswer==1 ? 1 : customMultipleChoiceAnswer==2 ? 2 : customMultipleChoiceAnswer==3 ? 3 : 4, "#3ecf78");</span>
 <span class="cstat-no" title="statement not covered" >			if(mText!=""){</span>
-<span class="cstat-no" title="statement not covered" >				$("#multipleChoiceAlerts .toast__banner").addClass("toast__banner--success").html('Correct!&lt;span class="toast__close"&gt;x&lt;/span&gt;');</span>
-<span class="cstat-no" title="statement not covered" >				$('#multipleChoiceText').html(mText);</span>
-<span class="cstat-no" title="statement not covered" >				$("#multipleChoiceAlerts").fadeIn(500);</span>
+<span class="cstat-no" title="statement not covered" >				showMultipleChoiceBanner("toast__banner--success", 'Correct!&lt;span class="toast__close"&gt;x&lt;/span&gt;');</span>
+<span class="cstat-no" title="statement not covered" >				showMultipleChoiceText(mText);</span>
 			}
 		}else{
 <span class="cstat-no" title="statement not covered" >			displayResult("F");</span>
@@ -153,14 +120,14 @@ function <span class="fstat-no" title="function not covered" >displayMultipleCho
 <span class="cstat-no" title="statement not covered" >		hasChosen = true;</span>
 	}
 }
-	</pre></td></tr></table></pre>
+&nbsp;</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
             </div><!-- /wrapper -->
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-11-05T10:40:49.647Z
+                at 2026-11-05T10:46:47.815Z
             </div>
         <script src="../../prettify.js"></script>
         <script>
