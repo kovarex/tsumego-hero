@@ -1,26 +1,15 @@
-/* eslint-disable no-restricted-globals -- still uses jQuery until it is converted */
 
 function displayMultipleChoiceCustomResult(num){
 	if(!hasChosen){
-		$("#besogo-multipleChoice1").css("background-color", "#e0747f");
-		$("#besogo-multipleChoice2").css("background-color", "#e0747f");
-		$("#besogo-multipleChoice3").css("background-color", "#e0747f");
-		$("#besogo-multipleChoice4").css("background-color", "#e0747f");
-		
+		for (let answer = 1; answer <= 4; answer++)
+			colorMultipleChoice(answer, "#e0747f");
+
 		if(num==customMultipleChoiceAnswer){
 			displayResult("S");
-			if(customMultipleChoiceAnswer==1)
-				$("#besogo-multipleChoice1").css("background-color", "#3ecf78");
-			else if(customMultipleChoiceAnswer==2)
-				$("#besogo-multipleChoice2").css("background-color", "#3ecf78");
-			else if(customMultipleChoiceAnswer==3)
-				$("#besogo-multipleChoice3").css("background-color", "#3ecf78");
-			else
-				$("#besogo-multipleChoice4").css("background-color", "#3ecf78");
+			colorMultipleChoice(customMultipleChoiceAnswer==1 ? 1 : customMultipleChoiceAnswer==2 ? 2 : customMultipleChoiceAnswer==3 ? 3 : 4, "#3ecf78");
 			if(mText!=""){
-				$("#multipleChoiceAlerts .toast__banner").addClass("toast__banner--success").html('Correct!<span class="toast__close">x</span>');
-				$('#multipleChoiceText').html(mText);
-				$("#multipleChoiceAlerts").fadeIn(500);
+				showMultipleChoiceBanner("toast__banner--success", 'Correct!<span class="toast__close">x</span>');
+				showMultipleChoiceText(mText);
 			}
 		}else{
 			displayResult("F");
@@ -28,4 +17,3 @@ function displayMultipleChoiceCustomResult(num){
 		hasChosen = true;
 	}
 }
-	

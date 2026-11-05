@@ -1,4 +1,3 @@
-/* eslint-disable no-restricted-globals -- still uses jQuery until it is converted */
 //Achievement popup renderer - the single source of truth for "Achievement
 //Completed" popups.
 //Both the page-load path (achievementUpdates embedded as JSON in templates/layout/default.php)
@@ -25,9 +24,9 @@ function showAchievementPopup(achievement)
 	close.textContent = 'x';
 	// The popup is blocking and important, so only the close button dismisses
 	// it; clicking the body does not (to avoid accidental dismissal).
-	$(close).on('click', function ()
+	close.addEventListener('click', function ()
 	{
-		$(popup).fadeOut(500);
+		Display.fadeOut(popup, 500);
 	});
 	banner.appendChild(close);
 	popup.appendChild(banner);
@@ -50,5 +49,5 @@ function showAchievementPopup(achievement)
 	popup.appendChild(text);
 
 	document.body.appendChild(popup);
-	$(popup).fadeIn(600);
+	Display.fadeIn(popup, 600);
 }
