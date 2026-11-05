@@ -31,7 +31,10 @@ class TsumegoButtonsQueryBuilder
 			if ($tsumegoFilters->query == 'published')
 				$this->query->prefix .= ", set_id, set_title";
 			$this->query->prefix .= " FROM (";
-			$this->query->suffix = ") x WHERE rn = 1 ORDER BY tsumego_id";
+			// the problems published together are shown by set, each set's in its order as the buttons number
+			// them; the other collections are numbered by their position, so they go by tsumego id
+			$this->query->suffix = ") x WHERE rn = 1 ORDER BY "
+				. ($tsumegoFilters->query == 'published' ? 'set_id, num, set_connection_id' : 'tsumego_id');
 			$this->query->orderBy[] = 'tsumego.id';
 		}
 		else

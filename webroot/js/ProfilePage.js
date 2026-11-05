@@ -1,4 +1,3 @@
-/* eslint-disable no-restricted-globals -- still uses jQuery until it is converted */
 //The profile (Users/view.php): each of the two columns of statistics under it shows the chart its
 //buttons pick (data-profile-side and data-profile-show), remembered in the cookie lastProfile<side>.
 (function()
@@ -15,11 +14,14 @@
 		for (const [name, id] of Object.entries(sections))
 		{
 			const active = name === selection;
-			$('#' + id + 'Button' + side).toggleClass('btn--inactive', !active);
+			const button = document.getElementById(id + 'Button' + side);
+			if (button)
+				button.classList.toggle('btn--inactive', !active);
+			const section = document.getElementById(id + side);
 			if (active)
-				$('#' + id + side).fadeIn(250);
+				Display.fadeIn(section, 250);
 			else
-				$('#' + id + side).hide();
+				Display.hide(section);
 		}
 	}
 

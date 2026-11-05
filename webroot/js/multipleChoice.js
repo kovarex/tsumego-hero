@@ -1,4 +1,3 @@
-/* eslint-disable no-restricted-globals -- still uses jQuery until it is converted */
 //The answer to the question of a semeai problem (the play page asks who wins the capturing race):
 //the four choices are coloured right and wrong and the explanation of the race is shown.
 //num: the choice of the player, as the SEMEAI_ANSWER below
@@ -8,20 +7,46 @@ function displayMultipleChoiceResult(num)
 		return;
 	const {text, correct} = semeaiExplanation();
 	for (let answer = 1; answer <= 4; answer++)
-		$("#besogo-multipleChoice" + answer).css("background-color", answer == correct ? "#3ecf78" : "#e0747f");
+		colorMultipleChoice(answer, answer == correct ? "#3ecf78" : "#e0747f");
 	if (num == correct)
 	{
 		displayResult("S");
-		$("#multipleChoiceAlerts .toast__banner").addClass("toast__banner--success").html('Correct!<span class="toast__close">x</span>');
+		showMultipleChoiceBanner("toast__banner--success", 'Correct!<span class="toast__close">x</span>');
 	}
 	else
 	{
 		displayResult("F");
-		$("#multipleChoiceAlerts .toast__banner").addClass("toast__banner--error").html('Incorrect!<span class="toast__close">x</span>');
+		showMultipleChoiceBanner("toast__banner--error", 'Incorrect!<span class="toast__close">x</span>');
 	}
-	$("#multipleChoiceText").html(text);
-	$("#multipleChoiceAlerts").fadeIn(500);
+	showMultipleChoiceText(text);
 	hasChosen = true;
+}
+
+//The button of a choice (1 to 4) gets the colour of a right or wrong answer
+function colorMultipleChoice(answer, color)
+{
+	let button = document.getElementById("besogo-multipleChoice" + answer);
+	if (button)
+		button.style.backgroundColor = color;
+}
+
+//The banner of the alert of the answer says whether it was right
+function showMultipleChoiceBanner(className, html)
+{
+	document.querySelectorAll("#multipleChoiceAlerts .toast__banner").forEach(banner =>
+	{
+		banner.classList.add(className);
+		banner.innerHTML = html;
+	});
+}
+
+//The alert of the answer fades in with its explanation
+function showMultipleChoiceText(html)
+{
+	let text = document.getElementById("multipleChoiceText");
+	if (text)
+		text.innerHTML = html;
+	Display.fadeIn("#multipleChoiceAlerts", 500);
 }
 
 const SEMEAI_ANSWER = {blackDead: 1, whiteDead: 2, unsettled: 3, seki: 4};
