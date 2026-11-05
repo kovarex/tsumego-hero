@@ -38,7 +38,7 @@ $this->end();
 	besogo.create(document.getElementById('something'), options);
 	function submitSgf(root)
 	{
-		let correctMoves = root.exportCorrectMoves();
+		let correctMoves = besogo.editor.exportCorrectMoves();
 		let firstColor = 'N';
 		if (root.nextMove())
 			firstColor = root.nextMove() == BLACK ? 'B' : 'W';

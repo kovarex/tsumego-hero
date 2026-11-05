@@ -104,6 +104,7 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
     viewLabelToSgf: viewLabelToSgf,
     isColorInverted: isColorInverted,
     getTransformationFromSgf: getTransformationFromSgf,
+    exportCorrectMoves: exportCorrectMoves,
     getAnchoredCommentCount: getAnchoredCommentCount,
     setAnchoredComments: setAnchoredComments,
     setFullEditor: setFullEditor,
@@ -925,6 +926,12 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
     for (var i = appliedTransformations.length - 1; i >= 0; i--)
       result = appliedTransformations[i].applyInverse(result, size);
     return { x: result.x, y: result.y };
+  }
+
+  // The correct first moves in the coordinates of the stored SGF (sgf.correct_moves), whatever corner,
+  // rotation or orientation the board is shown in.
+  function exportCorrectMoves() {
+    return root.exportCorrectMoves(viewPointToSgf);
   }
 
   // Whether black and white are swapped compared to the stored SGF.

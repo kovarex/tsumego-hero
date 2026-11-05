@@ -31,6 +31,19 @@ class SecondarySgfDataFillingTest extends AppTestCase
 		$this->assertSame('gghh', $sgfs[0]->correct_moves);
 	}
 
+	//The board turns a problem to the top-left corner to show it; the correct moves are stored as the SGF has them
+	public function testTheCorrectMovesOfAProblemInAnotherCornerAreInSgfCoordinates()
+	{
+		$browser = Browser::instance();
+		new ContextPreparator([
+			'user' => ['admin' => true],
+			'tsumego' => ['set_order' => 1, 'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[rr][sr][qr]AW[pr][pq][qq][rq](;B[sq]C[+])(;B[rs]C[+])(;B[pp]))']]);
+		$browser->get('tsumegos/setupSgf');
+		$sgfs = TableRegistry::getTableLocator()->get('Sgf')->find()->toArray();
+		$this->assertSame('B', $sgfs[0]->first_move_color);
+		$this->assertSame('sqrs', $sgfs[0]->correct_moves);
+	}
+
 	public function testSearchSgfsToFillSecondaryDataInto()
 	{
 		$browser = Browser::instance();

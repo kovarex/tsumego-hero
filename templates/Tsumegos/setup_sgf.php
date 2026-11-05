@@ -20,7 +20,7 @@ $this->end();
 	options.rootPath = '/besogo/';
 	besogo.create(document.getElementById('something'), options);
 	let root = besogo.editor.getRoot();
-	let correctMoves = root.exportCorrectMoves();
+	let correctMoves = besogo.editor.exportCorrectMoves();
 	let firstColor = 'N';
 	if (root.nextMove())
 		firstColor = root.nextMove() == BLACK ? 'B' : 'W';

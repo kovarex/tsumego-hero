@@ -202,3 +202,42 @@ besogo.addTest("Editor", "ResetCancelsTheWaitForTheNextRequiredAnswer", function
 		CHECK(editor.getCurrent() == answers[0]);
 	});
 });
+
+// sgf.correct_moves is in the coordinates of the stored SGF, whatever corner, rotation, orientation or colours the
+// board is shown in: the tree is turned in place, so the export maps its moves back through what was applied.
+besogo.addTest("Editor", "CorrectMovesAreExportedInSgfCoordinatesInEveryOrientation", function()
+{
+	// stones in the bottom-right corner; the correct first moves are sq and rs, the wrong one is pp
+	let sgf = "(;SZ[19]AB[rr][sr][qr]AW[pr][pq][qq][rq](;B[sq]C[+])(;B[rs]C[+])(;B[pp]))";
+	let count = 0;
+	for (let hFlip of [false, true])
+		for (let vFlip of [false, true])
+			for (let rotate of [false, true])
+				for (let invertColors of [false, true])
+				{
+					let editor = loadEditor(sgf);
+					let transformation = besogo.makeTransformation();
+					transformation.hFlip = hFlip;
+					transformation.vFlip = vFlip;
+					transformation.rotateClockwise = rotate;
+					transformation.invertColors = invertColors;
+					editor.applyTransformation(transformation);
+					// a second one, as the corner of the play page comes after the turn to the top-left
+					let corner = besogo.makeTransformation();
+					corner.hFlip = true;
+					editor.applyTransformation(corner);
+
+					CHECK_EQUALS(editor.exportCorrectMoves(), "sqrs");
+					++count;
+				}
+	CHECK_EQUALS(count, 16);
+
+	// the root alone gives the moves as the tree has them now, turned
+	let editor = loadEditor(sgf);
+	let transformation = besogo.makeTransformation();
+	transformation.hFlip = true;
+	transformation.vFlip = true;
+	editor.applyTransformation(transformation);
+	CHECK_EQUALS(editor.getRoot().exportCorrectMoves(), "acba");
+	CHECK_EQUALS(editor.exportCorrectMoves(), "sqrs");
+});

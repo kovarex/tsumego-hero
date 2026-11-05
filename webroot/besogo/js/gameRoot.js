@@ -1007,22 +1007,24 @@ besogo.makeGameRoot = function(sizeX = 19, sizeY = 19)
     }
   }
 
-	root.exportCorrectMoves = function()
+	//The first moves marked correct, as pairs of SGF letters. toSgf maps a point of the tree to the point of the
+	//stored SGF; the editor passes the inverse of the transformations it showed the board with
+	//(editor.exportCorrectMoves), since the tree is turned in place to the corner it is displayed in.
+	root.exportCorrectMoves = function(toSgf = point => point)
 	{
 		let result = '';
+		let add = function(move)
+		{
+			let point = toSgf({x: move.x, y: move.y});
+			result += String.fromCharCode(96 + point.x) + String.fromCharCode(96 + point.y);
+		};
 		for (let i = 0; i < this.children.length; ++i)
 			if (this.children[i].correct == CORRECT_GOOD)
-			{
-				result += String.fromCharCode(96 + this.children[i].move.x);
-				result += String.fromCharCode(96 + this.children[i].move.y);
-			}
+				add(this.children[i].move);
 
 		for (let i = 0; i < this.virtualChildren.length; ++i)
 			if (this.virtualChildren[i].target.correct == CORRECT_GOOD)
-			{
-				result += String.fromCharCode(96 + this.virtualChildren[i].move.x);
-				result += String.fromCharCode(96 + this.virtualChildren[i].move.y);
-			}
+				add(this.virtualChildren[i].move);
 		return result;
 	}
 
