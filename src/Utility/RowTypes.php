@@ -33,7 +33,7 @@ namespace App\Utility;
  * @phpstan-type TsumegoAttemptRow array{id?: int, user_id?: int, tsumego_id?: int, gain?: int, solved?: int, seconds?: int, misplays?: int, user_rating?: int|null, tsumego_rating?: int, created?: string, ...}
  * @phpstan-type TsumegoIssueStatusRow array{id?: int, name?: string, ...}
  * @phpstan-type TsumegoRow array{id?: int, description?: string|null, hint?: string|null, author?: string, author_user_id?: int|null, rating?: float, minimum_rating?: float|null, maximum_rating?: float|null, created?: string|null, pass?: int, deleted?: string|null, played_as_black?: int, ...}
- * @phpstan-type TsumegoSemeaiRow array{tsumego_id?: int, semeai_type_id?: int, liberty_count?: int|null, minimum_liberties?: int|null, maximum_liberties?: int|null, variance?: int|null, inside_liberties?: int|null, ...}
+ * @phpstan-type TsumegoSemeaiRow array{tsumego_id?: int, semeai_type_id?: int, liberty_count?: int|null, minimum_liberties?: int|null, maximum_liberties?: int|null, variance?: int|null, inside_liberties?: int|null, explanation?: string|null, ...}
  * @phpstan-type TsumegoVariantTypeRow array{id?: int, name?: string, ...}
  * @phpstan-type UserAvatarRow array{user_id?: int, picture?: string, ...}
  * @phpstan-type UserRoleRow array{id?: int, name?: string, ...}

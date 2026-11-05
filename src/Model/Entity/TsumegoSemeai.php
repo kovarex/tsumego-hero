@@ -10,5 +10,6 @@ namespace App\Model\Entity;
  * @property int|null $maximum_liberties
  * @property int|null $variance
  * @property int|null $inside_liberties
+ * @property string|null $explanation
  */
 class TsumegoSemeai extends AppEntity {}

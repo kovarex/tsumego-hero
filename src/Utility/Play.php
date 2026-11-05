@@ -128,6 +128,7 @@ class Play
 					'libertyCount' => $semeai->liberty_count,
 					'semeaiTypeID' => $semeai->semeai_type_id,
 					'insideLiberties' => $semeai->inside_liberties,
+					'explanation' => $semeai->explanation,
 					//The liberties the question is about, without a liberty count no question can be made
 					'question' => $semeai->liberty_count === null ? null : self::semeaiQuestion($semeai, $problem)],
 				'variant' => $variant === null ? null : [

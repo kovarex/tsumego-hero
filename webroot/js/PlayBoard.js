@@ -51,6 +51,8 @@ let multipleChoiceLibertiesW = 0;
 let multipleChoiceLibertyCount = 0;
 let multipleChoiceSemeaiType = 0;
 let multipleChoiceInsideLiberties = 0;
+//What the problem adds to the computed explanation of its race, plain text, or null
+let multipleChoiceSemeaiExplanation = null;
 let customMultipleChoiceAnswer = 0;
 //The explanation a multiple choice question shows after the answer
 let mText = "";
@@ -89,6 +91,7 @@ function setUpQuestion(problem, options)
 		multipleChoiceLibertyCount = problem.semeai.libertyCount ?? 0;
 		multipleChoiceSemeaiType = problem.semeai.semeaiTypeID;
 		multipleChoiceInsideLiberties = problem.semeai.insideLiberties ?? 0;
+		multipleChoiceSemeaiExplanation = problem.semeai.explanation ?? null;
 	}
 	let semeaiQuestion = problem.semeai?.question;
 	if (semeaiQuestion)
