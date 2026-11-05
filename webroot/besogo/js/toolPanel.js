@@ -73,12 +73,12 @@ besogo.makeToolPanel = function (container, editor) {
                 " " +
                 besogo.boardParameters["boardHeight"]
             );
-          $("#boardOrientationTL").css("opacity", "1");
-          $("#boardOrientationTR").css("opacity", ".62");
-          $("#boardOrientationBL").css("opacity", ".62");
-          $("#boardOrientationBR").css("opacity", ".62");
-          $("#boardSpinCounterClockwise").css("opacity", ".62");
-          $("#boardSpinClockwise").css("opacity", ".62");
+          besogo.setStyle("#boardOrientationTL","opacity", "1");
+          besogo.setStyle("#boardOrientationTR","opacity", ".62");
+          besogo.setStyle("#boardOrientationBL","opacity", ".62");
+          besogo.setStyle("#boardOrientationBR","opacity", ".62");
+          besogo.setStyle("#boardSpinCounterClockwise","opacity", ".62");
+          besogo.setStyle("#boardSpinClockwise","opacity", ".62");
           besogo.boardParameters["corner"] = "top-left";
         }
       );
@@ -130,12 +130,12 @@ besogo.makeToolPanel = function (container, editor) {
                   " " +
                   besogo.boardParameters["boardHeight3"]
               );
-            $("#boardOrientationTL").css("opacity", ".62");
-            $("#boardOrientationTR").css("opacity", "1");
-            $("#boardOrientationBL").css("opacity", ".62");
-            $("#boardOrientationBR").css("opacity", ".62");
-            $("#boardSpinCounterClockwise").css("opacity", ".62");
-            $("#boardSpinClockwise").css("opacity", ".62");
+            besogo.setStyle("#boardOrientationTL","opacity", ".62");
+            besogo.setStyle("#boardOrientationTR","opacity", "1");
+            besogo.setStyle("#boardOrientationBL","opacity", ".62");
+            besogo.setStyle("#boardOrientationBR","opacity", ".62");
+            besogo.setStyle("#boardSpinCounterClockwise","opacity", ".62");
+            besogo.setStyle("#boardSpinClockwise","opacity", ".62");
             besogo.boardParameters["corner"] = "top-right";
           }
         );
@@ -187,12 +187,12 @@ besogo.makeToolPanel = function (container, editor) {
                   " " +
                   besogo.boardParameters["boardHeight3"]
               );
-            $("#boardOrientationTL").css("opacity", ".62");
-            $("#boardOrientationTR").css("opacity", ".62");
-            $("#boardOrientationBL").css("opacity", "1");
-            $("#boardOrientationBR").css("opacity", ".62");
-            $("#boardSpinCounterClockwise").css("opacity", ".62");
-            $("#boardSpinClockwise").css("opacity", ".62");
+            besogo.setStyle("#boardOrientationTL","opacity", ".62");
+            besogo.setStyle("#boardOrientationTR","opacity", ".62");
+            besogo.setStyle("#boardOrientationBL","opacity", "1");
+            besogo.setStyle("#boardOrientationBR","opacity", ".62");
+            besogo.setStyle("#boardSpinCounterClockwise","opacity", ".62");
+            besogo.setStyle("#boardSpinClockwise","opacity", ".62");
             besogo.boardParameters["corner"] = "bottom-left";
           }
         );
@@ -242,12 +242,12 @@ besogo.makeToolPanel = function (container, editor) {
                   " " +
                   besogo.boardParameters["boardHeight3"]
               );
-            $("#boardOrientationTL").css("opacity", ".62");
-            $("#boardOrientationTR").css("opacity", ".62");
-            $("#boardOrientationBL").css("opacity", ".62");
-            $("#boardOrientationBR").css("opacity", "1");
-            $("#boardSpinCounterClockwise").css("opacity", ".62");
-            $("#boardSpinClockwise").css("opacity", ".62");
+            besogo.setStyle("#boardOrientationTL","opacity", ".62");
+            besogo.setStyle("#boardOrientationTR","opacity", ".62");
+            besogo.setStyle("#boardOrientationBL","opacity", ".62");
+            besogo.setStyle("#boardOrientationBR","opacity", "1");
+            besogo.setStyle("#boardSpinCounterClockwise","opacity", ".62");
+            besogo.setStyle("#boardSpinClockwise","opacity", ".62");
             besogo.boardParameters["corner"] = "bottom-right";
           }
         );
@@ -261,12 +261,12 @@ besogo.makeToolPanel = function (container, editor) {
       spinIcon,
       function () {
         besogo.editor.rotateBoard(false);
-        $("#boardSpinCounterClockwise").css("opacity", "1");
-        $("#boardSpinClockwise").css("opacity", ".62");
-        $("#boardOrientationTL").css("opacity", ".62");
-        $("#boardOrientationTR").css("opacity", ".62");
-        $("#boardOrientationBL").css("opacity", ".62");
-        $("#boardOrientationBR").css("opacity", ".62");
+        besogo.setStyle("#boardSpinCounterClockwise","opacity", "1");
+        besogo.setStyle("#boardSpinClockwise","opacity", ".62");
+        besogo.setStyle("#boardOrientationTL","opacity", ".62");
+        besogo.setStyle("#boardOrientationTR","opacity", ".62");
+        besogo.setStyle("#boardOrientationBL","opacity", ".62");
+        besogo.setStyle("#boardOrientationBR","opacity", ".62");
       }
     );
 
@@ -277,12 +277,12 @@ besogo.makeToolPanel = function (container, editor) {
       spinIcon,
       function () {
         besogo.editor.rotateBoard(true);
-        $("#boardSpinClockwise").css("opacity", "1");
-        $("#boardSpinCounterClockwise").css("opacity", ".62");
-        $("#boardOrientationTL").css("opacity", ".62");
-        $("#boardOrientationTR").css("opacity", ".62");
-        $("#boardOrientationBL").css("opacity", ".62");
-        $("#boardOrientationBR").css("opacity", ".62");
+        besogo.setStyle("#boardSpinClockwise","opacity", "1");
+        besogo.setStyle("#boardSpinCounterClockwise","opacity", ".62");
+        besogo.setStyle("#boardOrientationTL","opacity", ".62");
+        besogo.setStyle("#boardOrientationTR","opacity", ".62");
+        besogo.setStyle("#boardOrientationBL","opacity", ".62");
+        besogo.setStyle("#boardOrientationBR","opacity", ".62");
       }
     );
 
@@ -341,32 +341,34 @@ besogo.makeToolPanel = function (container, editor) {
 				besogo.editor.setReviewMode(false);
 				document.getElementById("status").innerHTML = "";
 				document.getElementById("theComment").style.cssText = "display:none;";
-				$("#customAlerts").fadeOut(500);
-				$(".besogo-board").removeClass("besogo-board-red-glow");
-				$(".besogo-panels").css("display", "none");
+				let customAlerts = document.getElementById("customAlerts");
+				if (customAlerts && getComputedStyle(customAlerts).display !== "none")
+					customAlerts.animate([{ opacity: getComputedStyle(customAlerts).opacity }, { opacity: 0 }], 500).onfinish = function () { customAlerts.style.display = "none"; };
+				document.querySelectorAll(".besogo-board").forEach(function (board) { board.classList.remove("besogo-board-red-glow"); });
+				besogo.setStyle(".besogo-panels","display", "none");
 				if (besogo.scaleParameters["boardCanvasSize"] === "full board")
 				{
-				  $(".besogo-board").css("width", "60%");
-				  $(".besogo-board").css("margin", "0 auto");
+				  besogo.setStyle(".besogo-board","width", "60%");
+				  besogo.setStyle(".besogo-board","margin", "0 auto");
 				}
 				else if (besogo.scaleParameters["boardCanvasSize"] === "horizontal half board")
 				{
-				  $(".besogo-board").css("width", "78%");
-				  $(".besogo-board").css("margin", "0 auto");
-				  $(".besogo-board").css("height", trueBoardHeight);
+				  besogo.setStyle(".besogo-board","width", "78%");
+				  besogo.setStyle(".besogo-board","margin", "0 auto");
+				  besogo.setStyle(".besogo-board","height", trueBoardHeight);
 				}
 				else if (besogo.scaleParameters["boardCanvasSize"] === "vertical half board")
 				{
-				  $(".besogo-board").css("width", "30%");
-				  $(".besogo-board").css("margin", "0 auto");
+				  besogo.setStyle(".besogo-board","width", "30%");
+				  besogo.setStyle(".besogo-board","margin", "0 auto");
 				}
 				else
 				{
-				  $(".besogo-board").css("width", "50%");
-				  $(".besogo-board").css("margin", "0 auto");
+				  besogo.setStyle(".besogo-board","width", "50%");
+				  besogo.setStyle(".besogo-board","margin", "0 auto");
 				}
 
-				$(".besogo-board").css(
+				besogo.setStyle(".besogo-board",
 				  "box-shadow",
 				  "0 8px 14px 0 rgba(0, 0, 0, 0.3), 0 6px 20px 0 rgba(0, 0, 0, 0.2)"
 				);
@@ -413,12 +415,12 @@ besogo.makeToolPanel = function (container, editor) {
         "review mode",
         function () {
           if (trueBoardHeight === null) {
-            trueBoardWidth = $(".besogo-board").width();
-            trueBoardHeight = $(".besogo-board").height();
+            trueBoardWidth = document.querySelector(".besogo-board").offsetWidth;
+            trueBoardHeight = document.querySelector(".besogo-board").offsetHeight;
           }
           if (editor.getReviewEnabled()) {
             if (!editor.getReviewMode()) {
-              $(".besogo-panels").css("display", "flex");
+              besogo.setStyle(".besogo-panels","display", "flex");
               if (
                 besogo.scaleParameters["boardCanvasSize"] ===
                 "vertical half board"
@@ -428,45 +430,45 @@ besogo.makeToolPanel = function (container, editor) {
                     besogo.scaleParameters["rotation"] === 1 ||
                     besogo.scaleParameters["rotation"] === 3
                   )
-                    $(".besogo-board").css("width", "50%");
+                    besogo.setStyle(".besogo-board","width", "50%");
                 } else if (besogo.boardParameters["corner"] === "top-right") {
                   if (
                     besogo.scaleParameters["rotation"] === 0 ||
                     besogo.scaleParameters["rotation"] === 2
                   )
-                    $(".besogo-board").css("width", "50%");
+                    besogo.setStyle(".besogo-board","width", "50%");
                 }
               } else if (
                 besogo.scaleParameters["boardCanvasSize"] ===
                 "horizontal half board"
               ) {
                 if (besogo.scaleParameters["rotation"] === -1) {
-                  $(".besogo-board").css("width", "50%");
+                  besogo.setStyle(".besogo-board","width", "50%");
                 } else if (besogo.boardParameters["corner"] === "top-left") {
                   if (
                     besogo.scaleParameters["rotation"] === 0 ||
                     besogo.scaleParameters["rotation"] === 2
                   )
-                    $(".besogo-board").css("width", "50%");
+                    besogo.setStyle(".besogo-board","width", "50%");
                 } else if (besogo.boardParameters["corner"] === "bottom-left") {
                   if (
                     besogo.scaleParameters["rotation"] === 1 ||
                     besogo.scaleParameters["rotation"] === 3
                   )
-                    $(".besogo-board").css("width", "50%");
+                    besogo.setStyle(".besogo-board","width", "50%");
                 }
               } else {
-                $(".besogo-board").css("width", "50%");
+                besogo.setStyle(".besogo-board","width", "50%");
               }
-              $(".besogo-board").css("margin", "0");
-              $(".besogo-board").css(
+              besogo.setStyle(".besogo-board","margin", "0");
+              besogo.setStyle(".besogo-board",
                 "box-shadow",
                 "0 8px 14px 0 rgba(0, 0, 0, 0.3), 0 6px 20px 0 rgba(0, 0, 0, 0.2)"
               );
 
               if (reviewBoardHeight === null) {
-                reviewBoardWidth = $(".besogo-board").width();
-                reviewBoardHeight = $(".besogo-board").height();
+                reviewBoardWidth = document.querySelector(".besogo-board").offsetWidth;
+                reviewBoardHeight = document.querySelector(".besogo-board").offsetHeight;
                 trueRatio = trueBoardWidth / trueBoardHeight;
                 reviewBoardHeight = reviewBoardWidth / trueRatio;
               }
@@ -478,38 +480,38 @@ besogo.makeToolPanel = function (container, editor) {
                 stoneChange: true,
               }); //fixes tree showing after solve
             } else {
-              $(".besogo-panels").css("display", "none");
+              besogo.setStyle(".besogo-panels","display", "none");
               if (besogo.scaleParameters["boardCanvasSize"] === "full board") {
-                $(".besogo-board").css("width", "60%");
-                $(".besogo-board").css("margin", "0 auto");
+                besogo.setStyle(".besogo-board","width", "60%");
+                besogo.setStyle(".besogo-board","margin", "0 auto");
               } else if (
                 besogo.scaleParameters["boardCanvasSize"] ===
                 "vertical half board"
               ) {
                 if (besogo.scaleParameters["rotation"] === -1) {
-                  $(".besogo-board").css("width", "30%");
-                  $(".besogo-board").css("margin", "0 auto");
+                  besogo.setStyle(".besogo-board","width", "30%");
+                  besogo.setStyle(".besogo-board","margin", "0 auto");
                 } else if (besogo.boardParameters["corner"] === "top-left") {
                   if (
                     besogo.scaleParameters["rotation"] === 0 ||
                     besogo.scaleParameters["rotation"] === 2
                   ) {
-                    $(".besogo-board").css("width", "30%");
-                    $(".besogo-board").css("margin", "0 auto");
+                    besogo.setStyle(".besogo-board","width", "30%");
+                    besogo.setStyle(".besogo-board","margin", "0 auto");
                   } else {
-                    $(".besogo-board").css("width", "78%");
-                    $(".besogo-board").css("margin", "0 auto");
+                    besogo.setStyle(".besogo-board","width", "78%");
+                    besogo.setStyle(".besogo-board","margin", "0 auto");
                   }
                 } else if (besogo.boardParameters["corner"] === "top-right") {
                   if (
                     besogo.scaleParameters["rotation"] === 1 ||
                     besogo.scaleParameters["rotation"] === 3
                   ) {
-                    $(".besogo-board").css("width", "30%");
-                    $(".besogo-board").css("margin", "0 auto");
+                    besogo.setStyle(".besogo-board","width", "30%");
+                    besogo.setStyle(".besogo-board","margin", "0 auto");
                   } else {
-                    $(".besogo-board").css("width", "78%");
-                    $(".besogo-board").css("margin", "0 auto");
+                    besogo.setStyle(".besogo-board","width", "78%");
+                    besogo.setStyle(".besogo-board","margin", "0 auto");
                   }
                 }
               } else if (
@@ -517,34 +519,34 @@ besogo.makeToolPanel = function (container, editor) {
                 "horizontal half board"
               ) {
                 if (besogo.scaleParameters["rotation"] === -1) {
-                  $(".besogo-board").css("width", "78%");
-                  $(".besogo-board").css("margin", "0 auto");
+                  besogo.setStyle(".besogo-board","width", "78%");
+                  besogo.setStyle(".besogo-board","margin", "0 auto");
                 } else if (besogo.boardParameters["corner"] === "top-left") {
                   if (
                     besogo.scaleParameters["rotation"] === 0 ||
                     besogo.scaleParameters["rotation"] === 2
                   ) {
-                    $(".besogo-board").css("width", "78%");
-                    $(".besogo-board").css("margin", "0 auto");
+                    besogo.setStyle(".besogo-board","width", "78%");
+                    besogo.setStyle(".besogo-board","margin", "0 auto");
                   } else {
-                    $(".besogo-board").css("width", "30%");
-                    $(".besogo-board").css("margin", "0 auto");
+                    besogo.setStyle(".besogo-board","width", "30%");
+                    besogo.setStyle(".besogo-board","margin", "0 auto");
                   }
                 } else if (besogo.boardParameters["corner"] === "bottom-left") {
                   if (
                     besogo.scaleParameters["rotation"] === 1 ||
                     besogo.scaleParameters["rotation"] === 3
                   ) {
-                    $(".besogo-board").css("width", "78%");
-                    $(".besogo-board").css("margin", "0 auto");
+                    besogo.setStyle(".besogo-board","width", "78%");
+                    besogo.setStyle(".besogo-board","margin", "0 auto");
                   } else {
-                    $(".besogo-board").css("width", "30%");
-                    $(".besogo-board").css("margin", "0 auto");
+                    besogo.setStyle(".besogo-board","width", "30%");
+                    besogo.setStyle(".besogo-board","margin", "0 auto");
                   }
                 }
               } else {
-                $(".besogo-board").css("width", "50%");
-                $(".besogo-board").css("margin", "0 auto");
+                besogo.setStyle(".besogo-board","width", "50%");
+                besogo.setStyle(".besogo-board","margin", "0 auto");
               }
               editor.setReviewMode(false);
             }
@@ -663,14 +665,14 @@ besogo.makeToolPanel = function (container, editor) {
         let transformation = besogo.makeTransformation();
         transformation.invertColors = true;
         // Any true-color text shown to the player must follow the board's colors.
-        let desc = $("#descriptionText");
-        if (desc.length) desc.text(swapColorWords(desc.text()));
-        let theComment = $("#theComment");
-        if (theComment.length) theComment.text(swapColorWords(theComment.text()));
+        ["descriptionText", "theComment"].forEach(function (id) {
+          let el = document.getElementById(id);
+          if (el) el.textContent = swapColorWords(el.textContent);
+        });
         // Multiple-choice answers (custom multiple-choice and semeai share these ids).
         ["besogo-multipleChoice1", "besogo-multipleChoice2", "besogo-multipleChoice3", "besogo-multipleChoice4"].forEach(function (id) {
-          let el = $("#" + id);
-          if (el.length) el.val(swapColorWords(el.val()));
+          let el = document.getElementById(id);
+          if (el) el.value = swapColorWords(el.value);
         });
         besogo.editor.applyTransformation(transformation);
       }
@@ -678,8 +680,13 @@ besogo.makeToolPanel = function (container, editor) {
 
     if (!besogoNoLogin) {
       favButtonLit = window.userSets && window.userSets.some(s => s.contains);
-      let heart = $('<span id="favButton" class="fav-heart" style="cursor:pointer;font-size:18px;margin:12px 0 0 1px;user-select:none" title="mark as favorite">' + (favButtonLit ? '❤️' : '🤍') + '</span>');
-      heart.on("click", function () {
+      let heart = document.createElement("span");
+      heart.id = "favButton";
+      heart.className = "fav-heart";
+      heart.style.cssText = "cursor:pointer;font-size:18px;margin:12px 0 0 1px;user-select:none";
+      heart.title = "mark as favorite";
+      heart.textContent = favButtonLit ? '❤️' : '🤍';
+      heart.addEventListener("click", function () {
         let anyContain = window.userSets && window.userSets.some(s => s.contains);
         if (anyContain) {
           // Remove from ALL sets
@@ -755,13 +762,17 @@ besogo.makeToolPanel = function (container, editor) {
           });
         }
       });
-      container.appendChild(heart[0]);
+      container.appendChild(heart);
 
       // Dropdown arrow, only if user has more than one set to choose from
       if (userSets && userSets.length > 1) {
-        let arrow = $('<span id="favDropdownArrow" style="cursor:pointer;font-size:18px;margin:15px 5px 0 0;vertical-align:middle;user-select:none" title="save to set">▼</span>');
-        arrow.on("click", function () { showFavDropdown(); });
-        container.appendChild(arrow[0]);
+        let arrow = document.createElement("span");
+        arrow.id = "favDropdownArrow";
+        arrow.style.cssText = "cursor:pointer;font-size:18px;margin:15px 5px 0 0;vertical-align:middle;user-select:none";
+        arrow.title = "save to set";
+        arrow.textContent = "▼";
+        arrow.addEventListener("click", function () { showFavDropdown(); });
+        container.appendChild(arrow);
       }
     }
     if (besogo.scaleParameters["orientation"] !== "full-board")
@@ -900,13 +911,13 @@ besogo.makeToolPanel = function (container, editor) {
   function revertRotations(corner, rotation = 0) {
     if (rotation === -1) return null;
     if (besogo.scaleParameters["boardCanvasSize"] === "vertical half board") {
-      $(".besogo-board").css("width", "30%");
-      $(".besogo-board").css("margin", "0 auto");
+      besogo.setStyle(".besogo-board","width", "30%");
+      besogo.setStyle(".besogo-board","margin", "0 auto");
     } else if (
       besogo.scaleParameters["boardCanvasSize"] === "horizontal half board"
     ) {
-      $(".besogo-board").css("width", "78%");
-      $(".besogo-board").css("margin", "0 auto");
+      besogo.setStyle(".besogo-board","width", "78%");
+      besogo.setStyle(".besogo-board","margin", "0 auto");
     }
     if (corner === "top-right") rotation++;
     else if (corner === "bottom-left") rotation--;
@@ -1039,8 +1050,7 @@ besogo.makeToolPanel = function (container, editor) {
     var div = document.createElement("div");
     div.id = id;
     container.appendChild(div);
-    if (author != "") $("#author-notice").text("File by " + author);
-    else $("#author-notice").text("");
+    besogo.setText("#author-notice", author != "" ? "File by " + author : "");
     return div;
   }
 
@@ -1143,20 +1153,26 @@ besogo.makeToolPanel = function (container, editor) {
     let existing = document.getElementById("fav-dropdown");
     if (existing) { existing.remove(); return; }
 
-    let arrow = $("#favDropdownArrow");
-    let offset = arrow.offset();
-    let div = $('<div id="fav-dropdown" class="dropdown"></div>');
-    div.css({top: offset.top + 22, left: offset.left - 150});
-    $("body").append(div);
+    // where the arrow is on the page, not in the window
+    let arrowBox = document.getElementById("favDropdownArrow").getBoundingClientRect();
+    let div = document.createElement("div");
+    div.id = "fav-dropdown";
+    div.className = "dropdown";
+    div.style.top = (arrowBox.top + window.pageYOffset - document.documentElement.clientTop + 22) + "px";
+    div.style.left = (arrowBox.left + window.pageXOffset - document.documentElement.clientLeft - 150) + "px";
+    document.body.append(div);
 
     if (!window.userSets || window.userSets.length === 0) {
-      div.append('<div class="dropdown__empty">No sets yet.</div>');
+      div.insertAdjacentHTML("beforeend", '<div class="dropdown__empty">No sets yet.</div>');
     } else {
       window.userSets.forEach(function (s) {
-        let row = $('<label class="dropdown__row"></label>');
-        let cb = $('<input type="checkbox" style="margin-right:4px">');
-        cb.prop("checked", s.contains);
-        cb.on("change", function () {
+        let row = document.createElement("label");
+        row.className = "dropdown__row";
+        let cb = document.createElement("input");
+        cb.type = "checkbox";
+        cb.style.marginRight = "4px";
+        cb.checked = s.contains;
+        cb.addEventListener("change", function () {
           let url = this.checked
             ? "/sets/addTsumego/" + s.id
             : "/sets/removeTsumego/" + s.id;
@@ -1173,30 +1189,31 @@ besogo.makeToolPanel = function (container, editor) {
             }
           });
         });
-        row.append(cb).append(s.title);
+        row.append(cb, s.title);
         div.append(row);
       });
     }
 
-    $(document).on("click.favDropdown", function (e) {
-      if (!$(e.target).closest("#fav-dropdown, #favDropdownArrow").length) {
-        $("#fav-dropdown").remove();
-        $(document).off("click.favDropdown");
+    document.addEventListener("click", function closeOnClickOutside(e) {
+      if (!(e.target instanceof Element && e.target.closest("#fav-dropdown, #favDropdownArrow"))) {
+        let dropdown = document.getElementById("fav-dropdown");
+        if (dropdown) dropdown.remove();
+        document.removeEventListener("click", closeOnClickOutside);
       }
     });
   }
 
   // Update the heart button state and fire the like-burst on a fresh like
   function updateFavButton(liked) {
-    var btn = $("#favButton");
-    if (!btn.length)
+    var btn = document.getElementById("favButton");
+    if (!btn)
       return;
-    btn.text(liked ? '❤️' : '🤍');
+    btn.textContent = liked ? '❤️' : '🤍';
     if (liked && !favButtonLit) {
-      btn.removeClass('pop');
-      void btn[0].offsetWidth; // restart the pop animation
-      btn.addClass('pop');
-      burstLikeAnimation(btn[0]);
+      btn.classList.remove('pop');
+      void btn.offsetWidth; // restart the pop animation
+      btn.classList.add('pop');
+      burstLikeAnimation(btn);
     }
     favButtonLit = liked;
   }

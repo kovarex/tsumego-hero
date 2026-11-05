@@ -1167,10 +1167,10 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
   }
 
   function displayError(e) {
-    $("#theComment").text(e);
-    $("#theComment").css("display", "block");
-    $("#theComment").css("color", "rgb(166, 27, 27)");
-    $("#theComment").css("border", "thick double rgb(166, 27, 27)");
+    besogo.setText("#theComment", e);
+    besogo.setStyle("#theComment", "display", "block");
+    besogo.setStyle("#theComment", "color", "rgb(166, 27, 27)");
+    besogo.setStyle("#theComment", "border", "thick double rgb(166, 27, 27)");
   }
 
   // Rotate the board 90° in the given direction.
@@ -1293,7 +1293,7 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
     }
 
     var style = isNarrow ? NARROW : WIDE;
-    $(".besogo-board").css("width", style.width);
-    $(".besogo-board").css("margin", style.margin);
+    besogo.setStyle(".besogo-board", "width", style.width);
+    besogo.setStyle(".besogo-board", "margin", style.margin);
   }
 };

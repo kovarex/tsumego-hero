@@ -21,6 +21,19 @@
       return { Black: "White", black: "white", White: "Black", white: "black" }[m];
     });
   };
+  // A style of every element the selector finds; a number is in px and a null changes nothing.
+  besogo.setStyle = function (selector, name, value) {
+    if (value === null || value === undefined) return;
+    document.querySelectorAll(selector).forEach(function (element) {
+      element.style.setProperty(name, typeof value === "number" ? value + "px" : value);
+    });
+  };
+  // The text of every element the selector finds.
+  besogo.setText = function (selector, text) {
+    document.querySelectorAll(selector).forEach(function (element) {
+      element.textContent = text;
+    });
+  };
   // Whether the board is currently color-inverted (true-color = stored values).
   // Initialised from the server's swapColors and toggled by the orientation button.
   besogo.boardInverted = false;
@@ -250,36 +263,36 @@
     }
     if (besogo.isEmbedded) {
       if (besogo.scaleParameters["boardCanvasSize"] === "full board") {
-        $(".besogo-board").css("width", "60%");
-        $(".besogo-board").css("margin", "0 auto");
+        besogo.setStyle(".besogo-board","width", "60%");
+        besogo.setStyle(".besogo-board","margin", "0 auto");
       } else if (
         besogo.scaleParameters["boardCanvasSize"] === "horizontal half board"
       ) {
-        $(".besogo-board").css("width", "78%");
-        $(".besogo-board").css("margin", "0 auto");
+        besogo.setStyle(".besogo-board","width", "78%");
+        besogo.setStyle(".besogo-board","margin", "0 auto");
       } else if (
         besogo.scaleParameters["boardCanvasSize"] === "vertical half board"
       ) {
         if(!besogo.verticalHalfBoardRotationWidthToken){
-          $(".besogo-board").css("width", "30%");
-          $(".besogo-board").css("margin", "0 auto");
+          besogo.setStyle(".besogo-board","width", "30%");
+          besogo.setStyle(".besogo-board","margin", "0 auto");
         }else{
-          $(".besogo-board").css("width", "78%");
-          $(".besogo-board").css("margin", "0 auto");
+          besogo.setStyle(".besogo-board","width", "78%");
+          besogo.setStyle(".besogo-board","margin", "0 auto");
         }
        
       } else {
-        $(".besogo-board").css("width", "50%");
-        $(".besogo-board").css("margin", "0 auto");
+        besogo.setStyle(".besogo-board","width", "50%");
+        besogo.setStyle(".besogo-board","margin", "0 auto");
       }
       if (besogo.boardParameters["corner"] == "top-left")
-        $("#boardOrientationTL").css("opacity", "1");
+        besogo.setStyle("#boardOrientationTL", "opacity", "1");
       else if (besogo.boardParameters["corner"] == "top-right")
-        $("#boardOrientationTR").css("opacity", "1");
+        besogo.setStyle("#boardOrientationTR", "opacity", "1");
       else if (besogo.boardParameters["corner"] == "bottom-left")
-        $("#boardOrientationBL").css("opacity", "1");
+        besogo.setStyle("#boardOrientationBL", "opacity", "1");
       else if (besogo.boardParameters["corner"] == "bottom-right")
-        $("#boardOrientationBR").css("opacity", "1");
+        besogo.setStyle("#boardOrientationBR", "opacity", "1");
       keepBoardInWindowHeight(boardDiv);
     }
     besogo.boardDisplay = boardDisplay;
