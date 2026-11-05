@@ -55,4 +55,15 @@ class SgfSaveAnalysisTest extends IntegrationTestCase
 		$this->assertSame($before, $this->newest($context)->id);
 		$this->assertStringContainsString('The SGF was not saved: Last solver move not marked correct', (string) CookieFlash::get());
 	}
+
+	//A problem added to a collection with its SGF (SgfTable::upload) gets them too
+	public function testAnAddedProblemGetsThemToo(): void
+	{
+		$context = new ContextPreparator(['user' => ['admin' => true], 'tsumego' => ['set_order' => 1, 'sgf' => '(;SZ[19];B[aa]C[+])']]);
+		$saved = SgfTable::upload(self::CORNER, (int) $context->tsumegos[0]['id'], (int) $context->user['id'], true);
+		$this->assertSame(['B', 'sq'], [$saved->first_move_color, $saved->correct_moves]);
+
+		$unreadable = SgfTable::upload('(;SZ[19];B[', (int) $context->tsumegos[0]['id'], (int) $context->user['id'], true);
+		$this->assertSame([null, null], [$unreadable->first_move_color, $unreadable->correct_moves]);
+	}
 }
