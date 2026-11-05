@@ -8,7 +8,7 @@
 //With "normalise": true it also gives the SGF as the site stores it (normalise below), and the values are of that SGF.
 //Input on stdin: JSON lines, each {"id": any, "sgf": "(;...)", "normalise"?: bool}. Output on stdout: a JSON line for
 //each, in order, {"id", "first_move_color", "correct_moves", "problem"} (and with normalise "sgf", "transformation",
-//"changed"), or {"id", "error"} when the SGF can't be read.
+//"changed", "same_play"), or {"id", "error"} when the SGF can't be read.
 import { readFileSync } from 'node:fs';
 import { createInterface } from 'node:readline';
 import { dirname, join } from 'node:path';
@@ -63,8 +63,46 @@ export function analyse({ besogo, BLACK }, sgf, normalise = false)
 		first_move_color: next ? (next == BLACK ? 'B' : 'W') : 'N',
 		correct_moves: root.exportCorrectMoves(),
 		problem: problem ? problem.message + ' (move ' + problem.node.moveNumber + ')' : null,
-		...(normalise ? { sgf: result.changed ? besogo.composeSgf(editor) : sgf, ...result } : {})
+		...(normalise ? normalisedText(besogo, editor, sgf, result) : {})
 	};
+}
+
+//The text of the normalised problem, and whether it plays the same: loaded again, its tree must have the same lines,
+//moves, transpositions and correct or wrong ends as the turned tree it was composed from (the text leaves out what
+//besogo merges, a transposition or a ko coming round, and markup or comments the board editor doesn't write)
+function normalisedText(besogo, editor, sgf, result)
+{
+	if (!result.changed)
+		return { sgf, ...result, same_play: true };
+	const text = besogo.composeSgf(editor);
+	const reloaded = besogo.makeEditor(19, 19, {});
+	besogo.loadSgf(besogo.parseSgf(text), reloaded);
+	return { sgf: text, ...result, same_play: signature(editor.getRoot()) === signature(reloaded.getRoot()) };
+}
+
+//What a tree plays as: every move from every position, real or merged by a transposition, the order left aside, with
+//whether each position is correct, wrong or neither. A position met again on its own line (a ko) counts as reached.
+function signature(root)
+{
+	const known = new Map();
+	const onLine = new Set();
+	const of = node =>
+	{
+		if (known.has(node))
+			return known.get(node);
+		if (onLine.has(node))
+			return 'again';
+		onLine.add(node);
+		//a turned virtual move keeps only its point (gameRoot's applyTransformation), its color is the target's
+		const moves = node.children.map(child => [child.move, child]).concat(node.virtualChildren.map(virtual => [virtual.move, virtual.target]))
+			.map(([move, child]) => (move ? ((move.color ?? child.move?.color) == -1 ? 'B' : 'W') + move.x + ',' + move.y : 'pass') + '(' + of(child) + ')')
+			.sort();
+		onLine.delete(node);
+		const result = node.correct + ':' + moves.join(';');
+		known.set(node, result);
+		return result;
+	};
+	return of(root);
 }
 
 //The problem as the site stores it: turned to the top-left corner the way besogo turns it to show it

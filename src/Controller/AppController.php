@@ -133,7 +133,7 @@ class AppController extends Controller
 		}
 
 		$version = [
-			'sgf' => $analysis->sgf,
+			'sgf' => $analysis->sgf ?? $sgf,
 			'user_id' => Auth::getUserId(),
 			'tsumego_id' => $tsumegoID,
 			'first_move_color' => $analysis->firstMoveColor,

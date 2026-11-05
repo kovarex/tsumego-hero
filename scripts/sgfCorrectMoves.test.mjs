@@ -104,6 +104,7 @@ test('normalising turns a problem in any corner to the top-left', () =>
 		const result = normalised(sgf);
 		assert.deepEqual(result.transformation, { transpose: false, flipX, flipY, invertColors: false }, sgf);
 		assert.equal(result.changed, true);
+		assert.equal(result.same_play, true, sgf);
 		assert.equal(result.correct_moves, 'aa', sgf);
 		assert.match(result.sgf, /AB\[ba\]\[bb\]|AB\[ab\]\[bb\]/, sgf);
 	}
@@ -121,7 +122,7 @@ test('normalising puts the correct variations first at every level, the others i
 test('a problem already normalised keeps its text, and normalising twice changes nothing', () =>
 {
 	const done = '(;SZ[19]AB[bb](;B[aa]C[+])(;B[dd];W[aa]))';
-	assert.deepEqual(normalised(done), { first_move_color: 'B', correct_moves: 'aa', problem: null, sgf: done, changed: false,
+	assert.deepEqual(normalised(done), { first_move_color: 'B', correct_moves: 'aa', problem: null, sgf: done, changed: false, same_play: true,
 		transformation: { transpose: false, flipX: false, flipY: false, invertColors: false } });
 	for (const sgf of [PROBLEM_979, PROBLEM_27583, '(;SZ[19]AB[rr][rs](;B[sr];W[ss])(;B[ss]C[+]))'])
 	{
@@ -141,4 +142,18 @@ test('the two problems of the report end in the top-left corner with their corre
 	assert.deepEqual([b.correct_moves, b.transformation.flipX, b.transformation.flipY], ['ac', true, true]);
 	//the correct line, fourth in 979, comes first
 	assert.match(a.sgf, /^\(;[^(]*\n\(;B\[ac\]/);
+});
+
+//The text leaves out what besogo merges: a line that transposes into another and the moves after a ko comes round.
+//Loaded again it plays the same, which normalising checks (sgf 17040 and 16783 of the site)
+test('a rewrite that leaves out merged moves still plays the same', () =>
+{
+	for (const sgf of [
+		'(;SZ[13]AW[di][ei][fi][dj][gj][ck][fk][gk][cl][dl][fl][cm]AB[cg][dh][eh][fh][gh][ci][hi][cj][ej][hj][bk][dk][ek][hk][bl][gl][hl](;B[gi];W[fj];B[fm];W[el](;B[em];W[ek])(;B[ek];W[em]))(;B[fm](;W[em];B[gi];W[gm];B[fj]C[+])(;W[el](;B[gi];W[fj]LB[ek:A][em:B])(;B[em]C[+])))(;B[em];W[fm];B[el];W[fj]))',
+		'(;PL[W]SZ[9]AB[ad][ae][ag][bb][be][bf][bg][bi][ch][fc][gb][gd][ge][gf][gi][hf][hg][hh][hi]AW[ai][bc][bd][cc][ce][cf][cg][dd][dh][eb][ec][eh][fd][fe][ff][fi][gg][gh][if][ii](;W[fb];B[ac](;W[gc];B[hc];W[hb];B[ga];W[hd];B[fc];W[ci];B[bh];W[gc];B[ic])(;W[hb];B[ga];W[gc];B[hc];W[fa];B[fc];W[bh];B[ah];W[gc];B[fg];W[ha];B[fh]))(;W[ga];B[fa];W[fb];B[ha];W[gc];B[hc];W[ac];B[ea];W[da];B[ga];W[db];B[fc];W[di]C[+]))'])
+	{
+		const result = normalised(sgf);
+		assert.equal(result.changed, true);
+		assert.equal(result.same_play, true);
+	}
 });

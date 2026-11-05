@@ -23,6 +23,9 @@ use Cake\Console\ConsoleOptionParser;
 //- the comments of a problem, kept in the coordinates of its current version, move with that version's turn;
 //- transformation_from_source, from the source version to this one, takes in both turns (source^-1, then the old
 //  transformation, then this one), each when that row is rewritten, so the result doesn't depend on the order.
+//A rewrite leaves out what besogo merges anyway (a line transposing into another, the moves after a ko comes round)
+//and what the board editor doesn't write (AP, CA, game info, + of a status problem); a row whose rewrite besogo would
+//not play the same, every move, transposition and correct or wrong end, is kept as it is and named.
 //Everything changed is kept first in sgf_before_normalisation and tsumego_comment_before_normalisation.
 //A problem is done in one transaction; a row already normalised comes back unchanged, so a run that stopped is
 //simply run again, and a second run changes nothing. Without --write nothing is written and it reports what would
@@ -61,6 +64,8 @@ class NormaliseSgfsCommand extends Command
 	private array $examples = [];
 	/** @var list<int> */
 	private array $unreadable = [];
+	/** @var list<int> rows whose rewrite besogo would play differently, kept as they are */
+	private array $playingDifferently = [];
 	private int $listed = 0;
 	/** @var list<int> */
 	private array $printed = [];
@@ -146,6 +151,11 @@ class NormaliseSgfsCommand extends Command
 				continue;
 			}
 
+			if (!$analysis->samePlay)
+			{
+				$this->playingDifferently[] = $id;
+				continue;
+			}
 			$transformation = $analysis->transformation ?? BoardTransformation::identity();
 			$turned = $transformation->movesPoints();
 			$this->counts[$turned ? 'turned' : 'reordered only']++;
@@ -245,7 +255,9 @@ class NormaliseSgfsCommand extends Command
 	{
 		$this->console->out(implode(', ', array_map(fn($name, $count) => "$count $name", array_keys($this->counts), $this->counts))
 			. ', ' . count($this->unreadable) . ' unreadable (kept as they are)'
-			. ($this->unreadable ? ': ' . implode(', ', array_slice($this->unreadable, 0, $this->show)) . (count($this->unreadable) > $this->show ? ', ...' : '') : ''));
+			. ($this->unreadable ? ': ' . implode(', ', array_slice($this->unreadable, 0, $this->show)) . (count($this->unreadable) > $this->show ? ', ...' : '') : '')
+			. ', ' . count($this->playingDifferently) . ' that would play differently (kept as they are)'
+			. ($this->playingDifferently ? ': ' . implode(', ', array_slice($this->playingDifferently, 0, $this->show)) . (count($this->playingDifferently) > $this->show ? ', ...' : '') : ''));
 		arsort($this->droppedProperties);
 		$this->console->out('Properties the rewritten rows lose: ' . ($this->droppedProperties
 			? implode(', ', array_map(fn($property, $count) => "$property $count", array_keys($this->droppedProperties), $this->droppedProperties)) : 'none'));

@@ -16,18 +16,23 @@ class SgfAnalysis
 
 	//With normalise: $sgf is the SGF as the site stores it (top-left, correct variations first, see
 	//scripts/sgfCorrectMoves.mjs), the values are of it, $transformation goes from the given SGF to it and $changed
-	//tells whether it differs from the given one (an SGF already like that comes back as it was)
+	//tells whether it differs from the given one (an SGF already like that comes back as it was); $samePlay tells
+	//whether besogo plays the normalised text the same (every move, transposition and correct or wrong end)
 	public function __construct(
 		public readonly string $firstMoveColor,
 		public readonly string $correctMoves,
 		public readonly ?string $problem,
 		public readonly ?string $sgf = null,
 		public readonly ?BoardTransformation $transformation = null,
-		public readonly bool $changed = false) {}
+		public readonly bool $changed = false,
+		public readonly bool $samePlay = true) {}
 
 	public static function of(string $sgf, bool $normalise = false): self
 	{
 		$result = self::ofMany([$sgf], self::TIMEOUT, $normalise)[0];
+		// a text that wouldn't play the same is kept as it came
+		if ($result instanceof self && !$result->samePlay)
+			$result = self::ofMany([$sgf])[0];
 		if (is_string($result))
 			throw new RuntimeException('The SGF could not be read: ' . $result);
 		return $result;
@@ -63,7 +68,8 @@ class SgfAnalysis
 					$output['problem'] ?? null,
 					isset($output['sgf']) ? (string) $output['sgf'] : null,
 					isset($output['transformation']) ? BoardTransformation::fromArray($output['transformation']) : null,
-					!empty($output['changed']));
+					!empty($output['changed']),
+					($output['same_play'] ?? true) !== false);
 		}
 		if (count($results) !== count($sgfs))
 			throw new RuntimeException('sgfCorrectMoves.mjs answered ' . count($results) . ' of ' . count($sgfs) . ' SGFs');
