@@ -42,27 +42,23 @@ class BoardPosition
 		return self::pack(self::unpackX($packed), $size - 1 - self::unpackY($packed));
 	}
 
-	public static function mirrorAround(int $packed, int $pivot): int
-	{
-		$pivotX = self::unpackX($pivot);
-		$pivotY = self::unpackY($pivot);
-		$x = BoardPosition::unpackX($packed) - $pivotX + $pivotY;
-		$y = BoardPosition::unpackY($packed) - $pivotY + $pivotX;
-		return BoardPosition::pack($y, $x);
-	}
+	//The flags of transformed, which together make the 8 symmetries of the board
+	public const MIRROR_X = 1;
+	public const MIRROR_Y = 2;
+	public const TRANSPOSE = 4;
 
-	public static function horizontallyMirroredAround(int $packed, int $pivot): int
+	//The position mirrored left to right and/or top to bottom on a board of the largest size, then with x
+	//and y swapped, as the flags of $symmetry say. Where on the board it ends doesn't matter, as the
+	//comparison shifts it after.
+	public static function transformed(int $packed, int $symmetry): int
 	{
-		$pivotX = self::unpackX($pivot);
-		$x = $pivotX + $pivotX - BoardPosition::unpackX($packed);
-		return BoardPosition::pack($x, BoardPosition::unpackY($packed));
-	}
-
-	public static function verticallyMirroredAround(int $packed, int $pivot): int
-	{
-		$pivotY = self::unpackY($pivot);
-		$y = $pivotY + $pivotY - BoardPosition::unpackY($packed);
-		return BoardPosition::pack(BoardPosition::unpackX($packed), $y);
+		$x = self::unpackX($packed);
+		$y = self::unpackY($packed);
+		if ($symmetry & self::MIRROR_X)
+			$x = 18 - $x;
+		if ($symmetry & self::MIRROR_Y)
+			$y = 18 - $y;
+		return $symmetry & self::TRANSPOSE ? self::pack($y, $x) : self::pack($x, $y);
 	}
 
 	public static function shift(int $packed, int $shift): int
