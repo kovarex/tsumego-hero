@@ -1,6 +1,6 @@
 <?php
 
-
+use App\Utility\SgfAnalysis;
 class SandboxSgfUploadTest extends IntegrationTestCase
 {
 	public function testAddTsumegoWithSgfFileUpload()
@@ -36,7 +36,9 @@ class SandboxSgfUploadTest extends IntegrationTestCase
 		// Verify SGF was uploaded
 		$sgf = $this->fetchTable('Sgf')->find()->where(['tsumego_id' => $tsumego->id])->orderByDesc('id')->first();
 		$this->assertNotEmpty($sgf, 'SGF should be uploaded when file is provided');
-		$this->assertEquals($sgfContent, $sgf->sgf);
+		//kept as every SGF is, turned to the top-left (App\Utility\SgfAnalysis)
+		$this->assertEquals(SgfAnalysis::of($sgfContent, true)->sgf, $sgf->sgf);
+		$this->assertStringContainsString('AW[dp][dq][pc]', $sgf->sgf);
 
 		unlink($tmpFile);
 	}
@@ -62,6 +64,8 @@ class SandboxSgfUploadTest extends IntegrationTestCase
 		// Verify SGF was uploaded
 		$sgf = $this->fetchTable('Sgf')->find()->where(['tsumego_id' => $tsumego->id])->orderByDesc('id')->first();
 		$this->assertNotEmpty($sgf, 'SGF should be uploaded when SGF text is provided');
-		$this->assertEquals($sgfContent, $sgf->sgf);
+		//kept as every SGF is, turned to the top-left (App\Utility\SgfAnalysis)
+		$this->assertEquals(SgfAnalysis::of($sgfContent, true)->sgf, $sgf->sgf);
+		$this->assertStringContainsString('AW[dp][dq][pc]', $sgf->sgf);
 	}
 }
