@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-globals -- still uses jQuery until it is converted */
 
 function displayMultipleChoiceCustomResult(num){
 	if(!hasChosen){

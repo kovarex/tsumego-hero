@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-globals -- still uses jQuery until it is converted */
 //The pages of the time mode around its runs: the overview, where the player picks a category and a
 //rank, and the results. Each page prints its data (timeModeOverviewPage, timeModeResultPage).
 

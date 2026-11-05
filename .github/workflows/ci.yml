@@ -111,6 +111,10 @@ jobs:
       - name: Test build and deploy scripts
         run: pnpm run test:scripts
 
+      # The legacy scripts of webroot that are off jQuery stay off it (eslint.config.js)
+      - name: Lint the legacy scripts
+        run: pnpm run lint:legacy
+
       - name: Build React app
         run: ${{ github.ref == 'refs/heads/master' && 'pnpm run build:coverage' || 'pnpm run build' }}
 

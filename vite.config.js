@@ -14,6 +14,7 @@ const isCoverageBuild = process.env.VITE_COVERAGE === 'true';
 //Legacy JS files (global-scope scripts, must remain non-module to stay in global scope).
 const LEGACY_APP_FILES = [
 	'webroot/js/util.js',
+	'webroot/js/Display.js',
 	'webroot/js/AchievementAlerts.js',
 	'webroot/js/Rating.js',
 	'webroot/js/TimeModeTimer.js',

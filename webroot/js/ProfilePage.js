@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-globals -- still uses jQuery until it is converted */
 //The profile (Users/view.php): each of the two columns of statistics under it shows the chart its
 //buttons pick (data-profile-side and data-profile-show), remembered in the cookie lastProfile<side>.
 (function()

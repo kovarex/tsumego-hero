@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-globals -- still uses jQuery until it is converted */
 //The collections page (Sets/index.php): its filter tiles and the active filters above the cards.
 //The template gives the data of the request in setsIndexPage, the code is the same for everyone and is cached.
 const query = setsIndexPage.query;

@@ -6,7 +6,27 @@ import tseslint from 'typescript-eslint';
 import stylistic from '@stylistic/eslint-plugin';
 
 export default tseslint.config(
-	{ ignores: ['webroot', 'vendor', 'tmp', 'node_modules', 'build'] },
+	//Of webroot, only the legacy scripts are linted
+	{ ignores: ['webroot/*', '!webroot/js', 'webroot/besogo/*', '!webroot/besogo', '!webroot/besogo/js', 'vendor', 'tmp', 'node_modules', 'build'] },
+	//The legacy global scripts of webroot (vite.config.js bundles them) are on their way off jQuery:
+	//a converted file can't use it again. A file still using it disables the rule at its top until
+	//it is converted.
+	{
+		files: ['webroot/js/**/*.js', 'webroot/besogo/js/**/*.js'],
+		languageOptions: {
+			ecmaVersion: 'latest',
+			sourceType: 'script',
+			globals: globals.browser,
+		},
+		linterOptions: {
+			reportUnusedDisableDirectives: 'error',
+		},
+		rules: {
+			'no-restricted-globals': ['error',
+				{ name: '$', message: 'jQuery is being removed; use the DOM, fetch, or Display (webroot/js/Display.js).' },
+				{ name: 'jQuery', message: 'jQuery is being removed; use the DOM, fetch, or Display (webroot/js/Display.js).' }],
+		},
+	},
 	{
 		extends: [js.configs.recommended, ...tseslint.configs.recommended],
 		files: ['app/**/*.{ts,tsx}'],
