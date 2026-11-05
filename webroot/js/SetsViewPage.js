@@ -1,4 +1,3 @@
-/* eslint-disable no-restricted-globals -- still uses jQuery until it is converted */
 //The page of a collection (Sets/view.php): the filters of its problems, the views of the player's scores,
 //the reset of the progress and the link sharing. The template gives the data of the request in
 //setsViewPage, the code is the same for everyone and is cached.
@@ -13,40 +12,44 @@ function removeActiveFilter(filters, cookie, index) {
 	window.location.reload();
 }
 
-$(".active-tiles-container").on("click", "[data-filter]", function() {
-	const index = Number(this.dataset.index);
-	if (this.dataset.filter === "set")
-		removeActiveFilter(activeSets, "filtered_sets", index);
-	else if (this.dataset.filter === "rank")
-		removeActiveFilter(activeRanks, "filtered_ranks", index);
-	else
-		removeActiveFilter(activeTags, "filtered_tags", index);
-});
-
-$(".active-tiles-container").on("click", "#unselect-active-tiles", function(e) {
-	e.preventDefault();
-	setCookie("filtered_sets", "clear");
-	setCookie("filtered_ranks", "clear");
-	setCookie("filtered_tags", "clear");
-	window.location.reload();
-});
+//The tiles of the active filters: a click on one (or on clear) inside the container
+document.querySelectorAll(".active-tiles-container").forEach(container => container.addEventListener("click", function(e) {
+	const tile = e.target.closest("[data-filter]");
+	if (tile && container.contains(tile)) {
+		const index = Number(tile.dataset.index);
+		if (tile.dataset.filter === "set")
+			removeActiveFilter(activeSets, "filtered_sets", index);
+		else if (tile.dataset.filter === "rank")
+			removeActiveFilter(activeRanks, "filtered_ranks", index);
+		else
+			removeActiveFilter(activeTags, "filtered_tags", index);
+	}
+	const clear = e.target.closest("#unselect-active-tiles");
+	if (clear && container.contains(clear)) {
+		e.preventDefault();
+		setCookie("filtered_sets", "clear");
+		setCookie("filtered_ranks", "clear");
+		setCookie("filtered_tags", "clear");
+		window.location.reload();
+	}
+}));
 
 //A link that folds a panel in and out, with the arrow beside it pointing the way it goes.
 function foldingPanel(link, panel, arrow) {
 	let open = false;
-	$(link).click(function() {
+	document.querySelectorAll(link).forEach(element => element.addEventListener("click", function() {
 		if (open)
-			$(panel).fadeOut(250);
+			Display.fadeOut(panel, 250);
 		else
-			$(panel).fadeIn(250);
+			Display.fadeIn(panel, 250);
 		open = !open;
 		const arrowImage = document.getElementById(arrow);
 		if (arrowImage)
 			arrowImage.src = open ? "/img/greyArrow2.png" : "/img/greyArrow1.png";
-	});
+	}));
 }
 
-$("#msg2x").hide();
+Display.hide("#msg2x");
 foldingPanel("#showx", "#msg2x", "greyArrow1");
 foldingPanel("#showFilters", "#msgFilters", "greyArrowFilter");
 
@@ -61,30 +64,30 @@ const scoreViews = {
 function showScoreView(name) {
 	for (const [viewName, view] of Object.entries(scoreViews)) {
 		const shown = viewName === name;
-		$(view.button).toggleClass("btn--inactive", shown);
+		document.querySelectorAll(view.button).forEach(button => button.classList.toggle("btn--inactive", shown));
 		if (shown) {
-			$(view.info).fadeIn(250);
-			$(view.detail).fadeIn(200);
+			Display.fadeIn(view.info, 250);
+			Display.fadeIn(view.detail, 200);
 		} else {
-			$(view.info).hide();
-			$(view.detail).hide();
+			Display.hide(view.info);
+			Display.hide(view.detail);
 		}
-		$(view.score).css("border", shown ? "1px solid var(" + view.accent + ")" : "none");
+		document.querySelectorAll(view.score).forEach(score => score.style.border = shown ? "1px solid var(" + view.accent + ")" : "none");
 	}
 }
 
-$("[data-score-view]").click(function() {
+document.querySelectorAll("[data-score-view]").forEach(button => button.addEventListener("click", function() {
 	showScoreView(this.dataset.scoreView);
-});
+}));
 // the numbers are shown at first, by the markup itself
-$("#ratioInfo").hide();
-$("#timeInfo").hide();
-$("#numbersButton").addClass("btn--inactive");
+Display.hide("#ratioInfo");
+Display.hide("#timeInfo");
+document.querySelectorAll("#numbersButton").forEach(button => button.classList.add("btn--inactive"));
 
 // the sharing is saved as soon as it is switched
-$(".set-view__share-toggle input[type=checkbox]").change(function() {
+document.querySelectorAll(".set-view__share-toggle input[type=checkbox]").forEach(checkbox => checkbox.addEventListener("change", function() {
 	this.form.submit();
-});
+}));
 
 (function() {
 	const button = document.getElementById("SetShareCopy");
