@@ -32,27 +32,11 @@ class SgfBoard
 		return count($this->stones);
 	}
 
-	public static function getPositionsMirroredAround(array $positions, int $pivot): array
+	public static function getPositionsTransformed(array $positions, int $symmetry): array
 	{
 		$result = [];
 		foreach ($positions as $position => $color)
-			$result[BoardPosition::mirrorAround($position, $pivot)] = $color;
-		return $result;
-	}
-
-	public static function getPositionsHorizontallyMirroredAround(array $positions, int $pivot): array
-	{
-		$result = [];
-		foreach ($positions as $position => $color)
-			$result[BoardPosition::horizontallyMirroredAround($position, $pivot)] = $color;
-		return $result;
-	}
-
-	public static function getPositionsVerticallyMirroredAround(array $positions, int $pivot): array
-	{
-		$result = [];
-		foreach ($positions as $position => $color)
-			$result[BoardPosition::verticallyMirroredAround($position, $pivot)] = $color;
+			$result[BoardPosition::transformed($position, $symmetry)] = $color;
 		return $result;
 	}
 

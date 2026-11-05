@@ -54,34 +54,18 @@ class BoardPositionTest extends AppTestCase
 		$this->assertSame(BoardPosition::pack(1, 1), BoardPosition::diff(BoardPosition::pack(7, 8), BoardPosition::pack(6, 7)));
 	}
 
-	public function testShiftAround()
+	//Each symmetry of the board takes a position to its own place, on the board of the largest size
+	public function testTransformed()
 	{
-		// . . . .
-		// . . X .
-		// . . X .
-		// . . X .
-		// with shape like this, we want to mirror around the left top corner, so we get a shape like this
-		// . . . . .
-		// . . X X X
-		// . . . . .
-		// . . . . .
-		$position1 = BoardPosition::pack(3, 2);
-		$position2 = BoardPosition::pack(3, 3);
-		$position3 = BoardPosition::pack(3, 4);
-
-		// we simulate searching left top corner of the shape to mirror around
-		$min = $position3;
-		$min = BoardPosition::min($min, $position2);
-		$min = BoardPosition::min($min, $position1);
-		$this->assertSame($min, $position1);
-
-
-		$position1Mirrored = BoardPosition::mirrorAround($position1, $min);
-		$position2Mirrored = BoardPosition::mirrorAround($position2, $min);
-		$position3Mirrored = BoardPosition::mirrorAround($position3, $min);
-		$this->assertSame($position1, $position1Mirrored); // first should be the same
-		$this->assertSame(BoardPosition::pack(4, 2), $position2Mirrored);
-		$this->assertSame(BoardPosition::pack(5, 2), $position3Mirrored);
+		$position = BoardPosition::pack(3, 2);
+		$this->assertSame($position, BoardPosition::transformed($position, 0));
+		$this->assertSame(BoardPosition::pack(15, 2), BoardPosition::transformed($position, BoardPosition::MIRROR_X));
+		$this->assertSame(BoardPosition::pack(3, 16), BoardPosition::transformed($position, BoardPosition::MIRROR_Y));
+		$this->assertSame(BoardPosition::pack(2, 3), BoardPosition::transformed($position, BoardPosition::TRANSPOSE));
+		$this->assertSame(BoardPosition::pack(15, 16), BoardPosition::transformed($position, BoardPosition::MIRROR_X | BoardPosition::MIRROR_Y));
+		$this->assertSame(BoardPosition::pack(2, 15), BoardPosition::transformed($position, BoardPosition::MIRROR_X | BoardPosition::TRANSPOSE));
+		$this->assertSame(BoardPosition::pack(16, 3), BoardPosition::transformed($position, BoardPosition::MIRROR_Y | BoardPosition::TRANSPOSE));
+		$this->assertSame(BoardPosition::pack(16, 15), BoardPosition::transformed($position, BoardPosition::MIRROR_X | BoardPosition::MIRROR_Y | BoardPosition::TRANSPOSE));
 	}
 
 	// in some of the transformations, it is useful to support negative positions, as shifted and mirrored/transformed positions for comparisons can get out of the board
