@@ -3,12 +3,15 @@
 use App\Model\Table\SgfTable;
 use App\Utility\CookieFlash;
 
-//A new version of a problem's SGF gets its color to move first and its correct first moves from the server
-//(SgfAnalysis), in the coordinates of the SGF, whatever the client sends along
+//A new version of a problem's SGF is stored as the site keeps every SGF, turned to the top-left with the correct
+//variations first, and gets its color to move first and its correct first moves from the server (SgfAnalysis), in
+//the coordinates of the stored SGF, whatever the client sends along
 class SgfSaveAnalysisTest extends IntegrationTestCase
 {
-	//Stones in the bottom-right corner, the correct first move sq
-	private const string CORNER = '(;GM[1]FF[4]SZ[19]AB[rr][sr][qr]AW[pr][pq][qq][rq](;B[sq]C[+])(;B[pp];W[sq]))';
+	//Stones in the bottom-right corner, the correct first move sq, after a wrong one
+	private const string CORNER = '(;GM[1]FF[4]SZ[19]AB[rr][sr][qr]AW[pr][pq][qq][rq](;B[pp];W[sq])(;B[sq]C[+]))';
+	//It turned to the top-left, the correct variation first
+	private const string CORNER_STORED = "(;FF[4]GM[1]SZ[19]ST[0]\nAB[ab][bb][cb]AW[bc][cc][db][dc]\n(;B[ac]\nC[+])\n(;B[dd]\n;W[ac]))";
 
 	private function newest(ContextPreparator $context): object
 	{
@@ -27,8 +30,8 @@ class SgfSaveAnalysisTest extends IntegrationTestCase
 
 		$this->assertRedirect('/' . $context->setConnections[0]['id']);
 		$saved = $this->newest($context);
-		$this->assertSame(self::CORNER, $saved->sgf);
-		$this->assertSame(['B', 'sq'], [$saved->first_move_color, $saved->correct_moves]);
+		$this->assertSame(self::CORNER_STORED, $saved->sgf);
+		$this->assertSame(['B', 'ac'], [$saved->first_move_color, $saved->correct_moves]);
 		$this->assertEquals(SgfTable::STATUS_ACCEPTED, $saved->sgf_status_id);
 	}
 
@@ -61,9 +64,33 @@ class SgfSaveAnalysisTest extends IntegrationTestCase
 	{
 		$context = new ContextPreparator(['user' => ['admin' => true], 'tsumego' => ['set_order' => 1, 'sgf' => '(;SZ[19];B[aa]C[+])']]);
 		$saved = SgfTable::upload(self::CORNER, (int) $context->tsumegos[0]['id'], (int) $context->user['id'], true);
-		$this->assertSame(['B', 'sq'], [$saved->first_move_color, $saved->correct_moves]);
+		$this->assertSame([self::CORNER_STORED, 'B', 'ac'], [$saved->sgf, $saved->first_move_color, $saved->correct_moves]);
 
 		$unreadable = SgfTable::upload('(;SZ[19];B[', (int) $context->tsumegos[0]['id'], (int) $context->user['id'], true);
-		$this->assertSame([null, null], [$unreadable->first_move_color, $unreadable->correct_moves]);
+		$this->assertSame(['(;SZ[19];B[', null, null], [$unreadable->sgf, $unreadable->first_move_color, $unreadable->correct_moves]);
+	}
+
+	//An SGF already as the site keeps it is stored as it came
+	public function testAnSgfAlreadyNormalisedIsStoredAsItCame(): void
+	{
+		$context = new ContextPreparator(['user' => ['admin' => true], 'tsumego' => ['set_order' => 1, 'sgf' => '(;SZ[19];B[aa]C[+])']]);
+		$sgf = '(;GM[1]FF[4]CA[UTF-8]SZ[19]AB[bb](;B[aa]C[+])(;B[dd];W[aa]))';
+		$this->post('/sgf/upload/' . $context->setConnections[0]['id'], ['sgfForBesogo' => $sgf]);
+		$this->assertSame($sgf, $this->newest($context)->sgf);
+	}
+
+	//What the board editor did to the version it was opened with, and then the turn of the server, is what the
+	//comments follow from that version
+	public function testTheTransformationFromTheSourceTakesInTheTurn(): void
+	{
+		$context = new ContextPreparator(['user' => ['admin' => true], 'tsumego' => ['set_order' => 1, 'sgf' => '(;SZ[19];B[aa]C[+])']]);
+		$source = $this->newest($context);
+		$this->post('/sgf/upload/' . $context->setConnections[0]['id'], [
+			'sgfForBesogo' => self::CORNER,
+			'sourceSgfID' => (string) $source->id,
+			'transformationFromSource' => '{"transpose":true,"flipX":false,"flipY":false,"invertColors":false}']);
+		$saved = $this->newest($context);
+		$this->assertSame($source->id, $saved->source_sgf_id);
+		$this->assertSame('{"transpose":true,"flipX":true,"flipY":true,"invertColors":false}', $saved->transformation_from_source);
 	}
 }

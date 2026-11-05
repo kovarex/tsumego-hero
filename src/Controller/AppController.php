@@ -111,10 +111,11 @@ class AppController extends Controller
 	}
 
 	//Saves a new version of the problem's SGF, from an upload of a file or a save of the board editor: proposed,
-	//or accepted at once when an admin saves it. The color to move first and the correct first moves are worked out
-	//here by besogo's own rules (SgfAnalysis), never taken from the client. An SGF the board editor would refuse to
-	//save is not saved, with the reason. The board editor sends the version it was opened with and what it did to
-	//it, so the comments can follow (SgfCommentReorientation).
+	//or accepted at once when an admin saves it. It is stored as the site keeps every SGF, turned to the top-left
+	//with the correct variations first, and the color to move first and the correct first moves are worked out here
+	//by besogo's own rules (SgfAnalysis), never taken from the client. An SGF the board editor would refuse to save
+	//is not saved, with the reason. The board editor sends the version it was opened with and what it did to it,
+	//which with the turn here is what the comments follow (SgfCommentReorientation).
 	protected function saveNewSgf(int $setConnectionID, string $sgf, ?string $description, ?string $sourceSgfID = null, ?string $transformationFromSource = null): ?Response
 	{
 		$setConnection = $this->fetchTable('SetConnection')->find()->select(['tsumego_id'])->where(['id' => $setConnectionID])->first();
@@ -124,7 +125,7 @@ class AppController extends Controller
 
 		if ($problem = SgfParser::validationProblem($sgf))
 			throw new BadRequestException('Invalid SGF format: ' . $problem);
-		$analysis = SgfAnalysis::of($sgf);
+		$analysis = SgfAnalysis::of($sgf, true);
 		if ($analysis->problem !== null)
 		{
 			CookieFlash::set('The SGF was not saved: ' . $analysis->problem, 'error');
@@ -132,7 +133,7 @@ class AppController extends Controller
 		}
 
 		$version = [
-			'sgf' => $sgf,
+			'sgf' => $analysis->sgf,
 			'user_id' => Auth::getUserId(),
 			'tsumego_id' => $tsumegoID,
 			'first_move_color' => $analysis->firstMoveColor,
@@ -145,7 +146,7 @@ class AppController extends Controller
 		if ($source && $source->tsumego_id == $tsumegoID)
 		{
 			$version['source_sgf_id'] = $source->id;
-			$version['transformation_from_source'] = BoardTransformation::fromJson($transformationFromSource)->toJson();
+			$version['transformation_from_source'] = BoardTransformation::fromJson($transformationFromSource)->then($analysis->transformation ?? BoardTransformation::identity())->toJson();
 		}
 		$saved = $sgfTable->saveOrFail($sgfTable->newEntity($version));
 		SgfCommentReorientation::afterAccepted($saved->id);

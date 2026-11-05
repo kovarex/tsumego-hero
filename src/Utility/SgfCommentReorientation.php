@@ -103,7 +103,8 @@ class SgfCommentReorientation
 		return count($matches) == 1 ? $matches[0] : null;
 	}
 
-	private static function transformComments(int $tsumegoID, BoardTransformation $transformation, int $size): void
+	//Moves the comments of the problem, kept in the coordinates of its current version, by $transformation
+	public static function transformComments(int $tsumegoID, BoardTransformation $transformation, int $size): void
 	{
 		$tsumegoCommentTable = TableRegistry::getTableLocator()->get('TsumegoComment');
 		foreach ($tsumegoCommentTable->find()->where(['tsumego_id' => $tsumegoID])->orderBy('id')->all() as $comment)

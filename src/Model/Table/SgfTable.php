@@ -88,12 +88,13 @@ class SgfTable extends AppTable
 		else
 			$sgfData = $sgfDataOrFile;
 
-		// the color to move first and the correct first moves, by besogo's own rules; what besogo can't read is
-		// saved without them, as before, for bin/cake recompute_correct_moves to retry
-		$analysis = SgfAnalysis::ofMany([(string) $sgfData])[0];
-		$moves = is_string($analysis) ? [] : ['first_move_color' => $analysis->firstMoveColor, 'correct_moves' => $analysis->correctMoves];
+		// stored as the site keeps every SGF (top-left, correct variations first), with the color to move first and
+		// the correct first moves by besogo's own rules; what besogo can't read is saved as it came, without them, for
+		// bin/cake normalise_sgfs to retry
+		$analysis = SgfAnalysis::ofMany([(string) $sgfData], SgfAnalysis::TIMEOUT, true)[0];
+		$normalised = is_string($analysis) ? [] : ['sgf' => $analysis->sgf, 'first_move_color' => $analysis->firstMoveColor, 'correct_moves' => $analysis->correctMoves];
 		$sgfTable = TableRegistry::getTableLocator()->get('Sgf');
-		$sgf = $sgfTable->newEntity(['sgf' => $sgfData, 'user_id' => $userID, 'tsumego_id' => $tsumegoID] + $moves
+		$sgf = $sgfTable->newEntity($normalised + ['sgf' => $sgfData, 'user_id' => $userID, 'tsumego_id' => $tsumegoID]
 			+ ($accepted ? self::acceptedBy($userID) : ['sgf_status_id' => self::STATUS_PROPOSED]));
 		if ($sgf->hasErrors() || !$sgfTable->save($sgf))
 		{
