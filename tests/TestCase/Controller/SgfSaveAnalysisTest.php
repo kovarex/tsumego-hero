@@ -93,4 +93,20 @@ class SgfSaveAnalysisTest extends IntegrationTestCase
 		$this->assertSame($source->id, $saved->source_sgf_id);
 		$this->assertSame('{"transpose":true,"flipX":true,"flipY":true,"invertColors":false}', $saved->transformation_from_source);
 	}
+
+	//G, the goal of a status problem, and any other G stay as they were written, in whichever corner the problem was
+	public function testGSurvivesTheSave(): void
+	{
+		$context = new ContextPreparator(['user' => ['admin' => true], 'tsumego' => ['set_order' => 1, 'sgf' => '(;SZ[19];B[aa]C[+])']]);
+		foreach ([
+			'(;SZ[19]G[KILL]AB[rb][sb](;B[sa];W[ra]S[DEAD])(;B[ra];W[sa]S[ALIVE]))' => 'G[KILL]',
+			'(;SZ[19]G[LIVE]AW[br][bs](;B[as];W[ar]S[ALIVE])(;B[ar];W[as]S[DEAD]))' => 'G[LIVE]',
+			'(;SZ[19]G[tt]AB[rr][rs](;B[ss]C[+])(;B[sr];W[qs]))' => 'G[tt]'] as $sgf => $goal)
+		{
+			$this->post('/sgf/upload/' . $context->setConnections[0]['id'], ['sgfForBesogo' => $sgf]);
+			$saved = $this->newest($context)->sgf;
+			$this->assertStringContainsString($goal, $saved);
+			$this->assertStringNotContainsString('AB[rb]', $saved, 'turned to the top-left');
+		}
+	}
 }

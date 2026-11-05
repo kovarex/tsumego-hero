@@ -80,7 +80,16 @@ function normalisedText(besogo, editor, sgf, result)
 	return { sgf: text, ...result, same_play: signature(editor.getRoot()) === signature(reloaded.getRoot()) };
 }
 
-//What a tree plays as: every move from every position, real or merged by a transposition, the order left aside, with
+//The G of a node as a save writes it (saveSgf.js): the text it was loaded with, or the goal the editor set on the root
+function goalOf(node)
+{
+	if (node.goalText !== undefined && node.goalText !== null)
+		return 'G' + node.goalText;
+	//besogo.goalStr of status.js, which writes the goal the editor set
+	return node.parent == null && node.goal ? 'G' + ({ 1: 'KILL', 2: 'LIVE' }[node.goal] ?? '') : '';
+}
+
+//What a tree plays as, with its G: every move from every position, real or merged by a transposition, the order left aside, with
 //whether each position is correct, wrong or neither. A position met again on its own line (a ko) counts as reached.
 function signature(root)
 {
@@ -98,7 +107,7 @@ function signature(root)
 			.map(([move, child]) => (move ? ((move.color ?? child.move?.color) == -1 ? 'B' : 'W') + move.x + ',' + move.y : 'pass') + '(' + of(child) + ')')
 			.sort();
 		onLine.delete(node);
-		const result = node.correct + ':' + moves.join(';');
+		const result = node.correct + ':' + goalOf(node) + ':' + moves.join(';');
 		known.set(node, result);
 		return result;
 	};

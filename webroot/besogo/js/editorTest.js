@@ -202,3 +202,29 @@ besogo.addTest("Editor", "ResetCancelsTheWaitForTheNextRequiredAnswer", function
 		CHECK(editor.getCurrent() == answers[0]);
 	});
 });
+
+// G is written back as it was loaded, whatever its value, on the node it was on; a goal set in the editor replaces it
+besogo.addTest("Editor", "SaveKeepsG", function()
+{
+	for (let goal of ["KILL", "LIVE", "tt"])
+	{
+		let editor = loadEditor("(;SZ[19]G[" + goal + "]AB[bb];B[aa]S[DEAD])");
+		CHECK(besogo.composeSgf(editor).includes("G[" + goal + "]"));
+	}
+	let editor = loadEditor("(;SZ[19]AB[bb];B[aa]G[custom]C[+])");
+	CHECK(besogo.composeSgf(editor).includes("G[custom]"));
+
+	editor = loadEditor("(;SZ[19]G[tt]AB[bb];B[aa]S[DEAD])");
+	editor.getRoot().setGoal(GOAL_LIVE);
+	let sgf = besogo.composeSgf(editor);
+	CHECK(sgf.includes("G[LIVE]"));
+	CHECK(!sgf.includes("G[tt]"));
+});
+
+// SKD (superko means dead) doesn't touch the goal of the root
+besogo.addTest("Editor", "SuperkoMeansDeadKeepsTheGoal", function()
+{
+	let editor = loadEditor("(;SZ[19]G[KILL]SKD[]AB[bb];B[aa]S[DEAD])");
+	CHECK_EQUALS(editor.getRoot().goal, GOAL_KILL);
+	CHECK(besogo.composeSgf(editor).includes("G[KILL]"));
+});

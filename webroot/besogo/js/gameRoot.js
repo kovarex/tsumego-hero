@@ -827,6 +827,7 @@ besogo.makeGameRoot = function(sizeX = 19, sizeY = 19)
   {
     console.assert(this.parent == null);
     this.goal = goal;
+    this.goalText = undefined; // the goal chosen in the editor is written, not the one loaded
     besogo.updateCorrectValues(this);
   }
 

@@ -157,3 +157,29 @@ test('a rewrite that leaves out merged moves still plays the same', () =>
 		assert.equal(result.same_play, true);
 	}
 });
+
+//G is the goal of a status problem, and any other G is kept as it is too, on any node
+test('G survives the rewrite in every corner, as it was written', () =>
+{
+	for (const [sgf, goal] of [
+		['(;SZ[19]G[KILL]AB[rb][sb](;B[sa];W[ra]S[DEAD])(;B[ra];W[sa]S[ALIVE]))', 'G[KILL]'],
+		['(;SZ[19]G[LIVE]AW[br][bs](;B[as];W[ar]S[ALIVE])(;B[ar];W[as]S[DEAD]))', 'G[LIVE]'],
+		['(;SZ[19]G[tt]AB[rr][rs](;B[ss]C[+])(;B[sr];W[qs]))', 'G[tt]'],
+		['(;SZ[19]AB[rb][sb](;B[sa]G[custom]C[+])(;B[ra];W[qa]))', 'G[custom]']])
+	{
+		const result = normalised(sgf);
+		assert.equal(result.changed, true, sgf);
+		assert.equal(result.same_play, true, sgf);
+		assert.ok(result.sgf.includes(goal), result.sgf);
+		assert.equal(normalised(result.sgf).changed, false);
+	}
+});
+
+//With a goal besogo judges by the statuses, the + of a status problem changes nothing
+test('a status problem is judged the same without its C[+]', () =>
+{
+	const withPlus = analyse(besogo, '(;SZ[19]G[KILL]AB[ad][ba][bd][ca][cc][dc][ec][fa][fb]AW[ac][bb][bc][cb][db][ea](;B[eb];W[aa]S[ALIVE])(;B[aa]C[+]S[BENT4])(;B[ab];W[aa]S[ALIVE]))');
+	const without = analyse(besogo, '(;SZ[19]G[KILL]AB[ad][ba][bd][ca][cc][dc][ec][fa][fb]AW[ac][bb][bc][cb][db][ea](;B[eb];W[aa]S[ALIVE])(;B[aa]S[BENT4])(;B[ab];W[aa]S[ALIVE]))');
+	assert.equal(withPlus.correct_moves, 'aa');
+	assert.equal(without.correct_moves, withPlus.correct_moves);
+});

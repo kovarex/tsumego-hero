@@ -127,7 +127,13 @@ besogo.composeSgf = function(editor, expand = false)
       string += 'SKD[]';
     }
 
-    if (node.parent == null && node.goal != GOAL_NONE)
+    // G as it was loaded, on any node, or the goal the editor set on the root
+    if (node.goalText !== undefined && node.goalText !== null)
+    {
+      string += (string ? '\n' : '');
+      string += 'G[' + escapeText(node.goalText) + ']';
+    }
+    else if (node.parent == null && node.goal != GOAL_NONE)
     {
       string += (string ? '\n' : '');
       string += 'G[' + besogo.goalStr(node.goal) + ']';
