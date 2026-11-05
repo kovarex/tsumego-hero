@@ -1,4 +1,3 @@
-/* eslint-disable no-restricted-globals -- still uses jQuery until it is converted */
 //The play page's script: the hearts, the clock, the modes and the panels around the board. The board
 //and the state of the page it reads are set up by PlayBoard.js, which runs as soon as the board's
 //<div> is parsed; this runs at the end of the page (Tsumegos/play.php). Both are classic scripts,
@@ -65,16 +64,17 @@ function updateMistakeTrainingButton(button, xp)
 }
 
 //A link with data-toggle shows and hides the element it names, its arrow points down while it is open
-$("[data-toggle]").click(function(event){
+document.querySelectorAll("[data-toggle]").forEach(toggle => toggle.addEventListener("click", event => {
 	event.preventDefault();
-	let open = this.dataset.open !== "1";
-	this.dataset.open = open ? "1" : "";
-	$("#" + this.dataset.toggle)[open ? "fadeIn" : "fadeOut"](250);
-	$(this).find(".toggle-arrow").attr("src", open ? "/img/greyArrow2.png" : "/img/greyArrow1.png");
+	let open = toggle.dataset.open !== "1";
+	toggle.dataset.open = open ? "1" : "";
+	Display[open ? "fadeIn" : "fadeOut"](document.getElementById(toggle.dataset.toggle), 250);
+	toggle.querySelectorAll(".toggle-arrow").forEach(arrow => arrow.setAttribute("src", open ? "/img/greyArrow2.png" : "/img/greyArrow1.png"));
 	//More that tells of comments or open issues opens them too (CommentSection listens)
-	if (open && this.id === "editToggle" && $("#moreCommentSummary").css("visibility") === "visible")
+	let summary = document.getElementById("moreCommentSummary");
+	if (open && toggle.id === "editToggle" && summary && getComputedStyle(summary).visibility === "visible")
 		window.dispatchEvent(new Event("comments-open"));
-});
+}));
 
 //The filters of the problems as tiles: a tile drops its filter, clear drops them all
 (function() {
@@ -82,22 +82,38 @@ $("[data-toggle]").click(function(event){
 		{tiles: activeTopicTiles, color: "green", cookie: "filtered_sets"},
 		{tiles: activeDifficultyTiles, color: "purple", cookie: "filtered_ranks"},
 		{tiles: activeTagTiles, color: "brown", cookie: "filtered_tags"}];
-	const container = $(".active-tiles-container").empty();
+	const container = document.querySelector(".active-tiles-container");
+	if (!container)
+		return;
+	container.replaceChildren();
 	for (const filter of filters)
-		filter.tiles.forEach((name, index) => container.append($('<div class="dropdown__tile dropdown__tile--context">')
-			.addClass("dropdown__tile--" + filter.color)
-			.text(name)
-			.click(() => {
+		filter.tiles.forEach((name, index) => {
+			let tile = document.createElement("div");
+			tile.className = "dropdown__tile dropdown__tile--context dropdown__tile--" + filter.color;
+			tile.textContent = name;
+			tile.addEventListener("click", () => {
 				filter.tiles.splice(index, 1);
 				setCookie(filter.cookie, filter.tiles.length == 0 ? "clear" : filter.tiles.join("@"));
 				window.location.reload();
-			})));
+			});
+			container.append(tile);
+		});
 	if (filters.some(filter => filter.tiles.length > 0))
-		container.append($('<a class="dropdown__tile dropdown__tile--muted" id="unselect-active-tiles" href="">clear</a>').click(event => {
+	{
+		let clear = document.createElement("a");
+		clear.className = "dropdown__tile dropdown__tile--muted";
+		clear.id = "unselect-active-tiles";
+		clear.href = "";
+		clear.textContent = "clear";
+		clear.addEventListener("click", event => {
 			event.preventDefault();
 			filters.forEach(filter => setCookie(filter.cookie, "clear"));
 			window.location.reload();
-		}), '<div class="clearfix"></div>');
+		});
+		let clearfix = document.createElement("div");
+		clearfix.className = "clearfix";
+		container.append(clear, clearfix);
+	}
 })();
 
 function elapsedSeconds()
@@ -127,37 +143,36 @@ if (mode == playPage.page.modes.rating)
 	var ratingModeDifficultySelector = new RatingModeDifficultySelector();
 
 //The explanation of a semeai or a multiple choice is closed by its box
-$("#alertCheckbox").change(function(){
-	$("#multipleChoiceAlerts").fadeOut(500);
-});
+document.getElementById("alertCheckbox")?.addEventListener("change", () => Display.fadeOut("#multipleChoiceAlerts", 500));
 
 if (mode == playPage.page.modes.rating)
 {
-	$(".problem-nav").hide();
-	$(".selectable-text").hide();
-	$("#commentSpace").hide();
+	Display.hide(".problem-nav");
+	Display.hide(".selectable-text");
+	Display.hide("#commentSpace");
 }
 else if (mode == playPage.page.modes.time)
-	$("#account-bar-user > a").css({color:"#ca6658"});
+	document.querySelectorAll("#account-bar-user > a").forEach(link => link.style.color = "#ca6658");
 
-
-$(document).ready(function(){
+//The parts of the page after its script, as the page is still being read when it runs
+function setUpPageEnd()
+{
 	if (lockedUntilTomorrow && mode != playPage.page.modes.time)
 	{
 		document.getElementById("status").innerHTML = '<b class="message--locked">This problem is locked until ' + heartResetTime + '</b>';
 		tryAgainTomorrow = true;
 		document.getElementById("status").style.color = "var(--feedback-error)";
-		$(".besogo-board").addClass("besogo-board-red-glow");
+		document.querySelectorAll(".besogo-board").forEach(board => board.classList.add("besogo-board-red-glow"));
 		var resetBtn = document.getElementById("besogo-reset-button");
 		if (resetBtn) { resetBtn.id = "besogo-reset-button-inactive"; }
 	}
 	if (playPage.problem.solved)
 		reviewEnabled = true;
 
-	$('.besogo-board').click(function(e){
-		if(locked && nextButtonLink)
+	document.querySelectorAll(".besogo-board").forEach(board => board.addEventListener("click", () => {
+		if (locked && nextButtonLink)
 			window.location = nextButtonLink;
-});
+	}));
 
 	let solutionRequest = true;
 	if (playPage.problem.solved || playPage.problem.isSandbox)
@@ -171,54 +186,57 @@ $(document).ready(function(){
 	{
 		if(solutionRequest)
 			displaySolutionRequest();
-		$("#showx99").click(function(){
+		document.getElementById("showx99")?.addEventListener("click", () => {
 			window.location.href = "/tsumegos/play/" + tsumegoID + "?requestSolution=" + playPage.page.userID;
-			});
+		});
 	}
 
-	$("#customAlertCheckbox").change(function(){
-		$("#customAlerts").fadeOut(500);
-	});
-	$("#potionAlertCheckbox").change(function(){
-		$("#potionAlerts").fadeOut(500);
-	});
-	$("#findSimilarProblems").click(function(){
-		$('.loader-container').css({"display": "flex"});
+	document.getElementById("customAlertCheckbox")?.addEventListener("change", () => Display.fadeOut("#customAlerts", 500));
+	document.getElementById("potionAlertCheckbox")?.addEventListener("change", () => Display.fadeOut("#potionAlerts", 500));
+	document.getElementById("findSimilarProblems")?.addEventListener("click", () => {
+		document.querySelectorAll(".loader-container").forEach(loader => loader.style.display = "flex");
 		window.location.href = "/tsumegos/duplicatesearch/" + playPage.problem.setConnectionID;
 	});
-});
+}
+if (document.readyState === "loading")
+	document.addEventListener("DOMContentLoaded", setUpPageEnd);
+else
+	setTimeout(setUpPageEnd);
 
 function displaySolutionRequest(){
-	if(!authorProblem)
-		$("#showx99").css("display", "inline-block");
+	let request = document.getElementById("showx99");
+	if (!authorProblem && request)
+		request.style.display = "inline-block";
 }
 
 function displaySettings(){
-	$("#showx99").css("display", "none");
-	$("#openSgfLink").css("display", "inline-block");
+	let request = document.getElementById("showx99");
+	if (request)
+		request.style.display = "none";
+	let open = document.getElementById("openSgfLink");
+	if (open)
+		open.style.display = "inline-block";
 }
 
 function rejuvenation(){
-	$.ajax({
-			url: '/hero/rejuvenation',
-			type: 'POST',
-		success: function(response) {
-				currentHealth = maxHealth;
-				redrawHearts();
-				disableRejuvenation();
-				enableIntuition();
-				tryAgainTomorrow = false;
-				locked = false;
-				toggleBoardLock(false);
-				document.getElementById("status").innerHTML = '';
-				$(".besogo-board").removeClass("besogo-board-red-glow");
-				var resetBtn = document.getElementById("besogo-reset-button-inactive");
-				if (resetBtn) { resetBtn.id = "besogo-reset-button"; resetBtn.onclick = function() { window.location.reload(); }; }
-		}
+	postAjax('/hero/rejuvenation').then(response => {
+		if (!response.ok)
+			return;
+		currentHealth = maxHealth;
+		redrawHearts();
+		disableRejuvenation();
+		enableIntuition();
+		tryAgainTomorrow = false;
+		locked = false;
+		toggleBoardLock(false);
+		document.getElementById("status").innerHTML = '';
+		document.querySelectorAll(".besogo-board").forEach(board => board.classList.remove("besogo-board-red-glow"));
+		var resetBtn = document.getElementById("besogo-reset-button-inactive");
+		if (resetBtn) { resetBtn.id = "besogo-reset-button"; resetBtn.onclick = function() { window.location.reload(); }; }
 	});
 }
 
-$(document).keydown(function(event){
+document.addEventListener("keydown", function(event){
 	var keycode = (event.keyCode ? event.keyCode : event.which);
 	if(mode!=2){
 		if(document.getElementById("editToggle")?.dataset.open !== "1" && !besogo.editor.getReviewMode()){
@@ -504,7 +522,7 @@ function showResultResponse(outcome, response)
 		{
 			currentHealth = maxHealth;
 			redrawHearts();
-			$("#potionAlerts").fadeIn(500);
+			Display.fadeIn("#potionAlerts", 500);
 		}
 		if (result.achievement_updates && result.achievement_updates.length
 			&& typeof showAchievementPopup === 'function')
@@ -562,18 +580,20 @@ function displayResult(result)
 		}
 		updateCurrentNavigationButton('S');
 		document.getElementById("status").innerHTML = "<h2>Correct!</h2>";
-		if(light)
-			$(".besogo-board").css("box-shadow","0 2px 14px 0 rgba(67, 255, 40, 0.7), 0 6px 20px 0 rgba(0, 0, 0, 0.2)");
-		else
-			$(".besogo-board").css("box-shadow","0 2px 14px 0 rgba(67, 255, 40, 0.7), 0 6px 20px 0 rgba(80, 255, 0, 0.2)");
+		let glow = light ? "0 2px 14px 0 rgba(67, 255, 40, 0.7), 0 6px 20px 0 rgba(0, 0, 0, 0.2)" : "0 2px 14px 0 rgba(67, 255, 40, 0.7), 0 6px 20px 0 rgba(80, 255, 0, 0.2)";
+		document.querySelectorAll(".besogo-board").forEach(board => board.style.boxShadow = glow);
 		besogo.editor.setReviewEnabled(true);
 		besogo.editor.setControlButtonLock(false);
-		$("#besogo-review-button-inactive").attr("id","besogo-review-button");
-		$("#commentSpace").show();
-		$("#moreCommentSummary").css("visibility", "visible");
+		let review = document.getElementById("besogo-review-button-inactive");
+		if (review)
+			review.id = "besogo-review-button";
+		Display.show("#commentSpace");
+		let summary = document.getElementById("moreCommentSummary");
+		if (summary)
+			summary.style.visibility = "visible";
 
 		if (mode == playPage.page.modes.time)
-			$("#time-mode-countdown").css("color", playGreenColor);
+			setCountdownColor(playGreenColor);
 		noXP = true;
 		toggleBoardLock(true);
 		displaySettings();
@@ -596,10 +616,10 @@ function displayResult(result)
 		{
 			document.getElementById("status").style.color = "var(--feedback-error)";
 			document.getElementById("status").innerHTML = "<h2>Incorrect!</h2>";
-			$(".besogo-board").addClass("besogo-board-red-glow");
+			document.querySelectorAll(".besogo-board").forEach(board => board.classList.add("besogo-board-red-glow"));
 			if (mode==3)
 			{
-				$("#time-mode-countdown").css("color","var(--feedback-error)");
+				setCountdownColor("var(--feedback-error)");
 				toggleBoardLock(true);
 			}
 			if (mode == playPage.page.modes.mistakeTraining)
@@ -639,7 +659,7 @@ function displayResult(result)
 		{//mode 2 incorrect
 			document.getElementById("status").style.color = "var(--feedback-error)";
 			document.getElementById("status").innerHTML = "<h2>Incorrect!</h2>";
-			$(".besogo-board").addClass("besogo-board-red-glow");
+			document.querySelectorAll(".besogo-board").forEach(board => board.classList.add("besogo-board-red-glow"));
 			if (!noXP)
 				freePlayMode = true;
 		}
@@ -650,12 +670,23 @@ function displayResult(result)
 //Only the banner of the message box: the potion and the achievement boxes keep their own
 function displayMessage(message='text', topic='Message', color='red')
 {
-	$('#customText').html(message);
-	$("#customAlerts").fadeIn(500);
-	$("#customAlerts .toast__banner")
-		.toggleClass("toast__banner--error", color === 'red')
-		.toggleClass("toast__banner--success", color !== 'red')
-		.html(topic + '<span class="toast__close">x</span>');
+	let text = document.getElementById("customText");
+	if (text)
+		text.innerHTML = message;
+	Display.fadeIn("#customAlerts", 500);
+	document.querySelectorAll("#customAlerts .toast__banner").forEach(banner => {
+		banner.classList.toggle("toast__banner--error", color === 'red');
+		banner.classList.toggle("toast__banner--success", color !== 'red');
+		banner.innerHTML = topic + '<span class="toast__close">x</span>';
+	});
+}
+
+//The clock of the time mode, in the colour of the result
+function setCountdownColor(color)
+{
+	let countdown = document.getElementById("time-mode-countdown");
+	if (countdown)
+		countdown.style.color = color;
 }
 
 function resetParameters(isAtStart)
@@ -709,11 +740,18 @@ besogo.editor.addListener(function (changes)
 startClock();
 var showComment = function(commentText)
 	{
-		$("#theComment").css("display", commentText.length == 0 ? "none" : "block");
-		$("#theComment").text(besogo.boardInverted ? besogo.swapColorWords(commentText) : commentText);
+		let comment = document.getElementById("theComment");
+		if (!comment)
+			return;
+		comment.style.display = commentText.length == 0 ? "none" : "block";
+		comment.textContent = besogo.boardInverted ? besogo.swapColorWords(commentText) : commentText;
 	};
 besogo.editor.registerShowComment(showComment);
 showComment(besogo.editor.getCurrent().comment || '');
 })();
 if (mode == 2)
-	$("#targetLockOverlay").css('top', '235px');
+{
+	let overlay = document.getElementById("targetLockOverlay");
+	if (overlay)
+		overlay.style.top = '235px';
+}
