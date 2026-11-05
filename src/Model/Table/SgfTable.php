@@ -92,8 +92,8 @@ class SgfTable extends AppTable
 		// the correct first moves by besogo's own rules; what besogo can't read is saved as it came, without them, for
 		// bin/cake normalise_sgfs to retry
 		$analysis = SgfAnalysis::ofMany([(string) $sgfData], SgfAnalysis::TIMEOUT, true)[0];
-		// a text that wouldn't play the same is kept as it came, with its own values
-		if (!is_string($analysis) && !$analysis->samePlay)
+		// a text that wouldn't play the same, or would lose something unexpected, is kept as it came, with its own values
+		if (!is_string($analysis) && !$analysis->rewriteIsFaithful())
 			$analysis = SgfAnalysis::ofMany([(string) $sgfData])[0];
 		$normalised = is_string($analysis) ? [] : ['sgf' => $analysis->sgf ?? $sgfData, 'first_move_color' => $analysis->firstMoveColor, 'correct_moves' => $analysis->correctMoves];
 		$sgfTable = TableRegistry::getTableLocator()->get('Sgf');

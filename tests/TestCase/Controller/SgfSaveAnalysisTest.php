@@ -99,7 +99,7 @@ class SgfSaveAnalysisTest extends IntegrationTestCase
 	{
 		$context = new ContextPreparator(['user' => ['admin' => true], 'tsumego' => ['set_order' => 1, 'sgf' => '(;SZ[19];B[aa]C[+])']]);
 		foreach ([
-			'(;SZ[19]G[KILL]AB[rb][sb](;B[sa];W[ra]S[DEAD])(;B[ra];W[sa]S[ALIVE]))' => 'G[KILL]',
+			'(;SZ[19]G[KILL]AB[rb][sb](;B[sa];W[ra]S[DEAD])(;B[ra];W[qa]S[ALIVE]))' => 'G[KILL]',
 			'(;SZ[19]G[LIVE]AW[br][bs](;B[as];W[ar]S[ALIVE])(;B[ar];W[as]S[DEAD]))' => 'G[LIVE]',
 			'(;SZ[19]G[tt]AB[rr][rs](;B[ss]C[+])(;B[sr];W[qs]))' => 'G[tt]'] as $sgf => $goal)
 		{

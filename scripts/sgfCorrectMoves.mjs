@@ -8,7 +8,8 @@
 //With "normalise": true it also gives the SGF as the site stores it (normalise below), and the values are of that SGF.
 //Input on stdin: JSON lines, each {"id": any, "sgf": "(;...)", "normalise"?: bool}. Output on stdout: a JSON line for
 //each, in order, {"id", "first_move_color", "correct_moves", "problem"} (and with normalise "sgf", "transformation",
-//"changed", "same_play"), or {"id", "error"} when the SGF can't be read.
+//"changed", "same_play", and when changed "property_changes", "unexpected_changes"), or {"id", "error"} when the SGF
+//can't be read.
 import { readFileSync } from 'node:fs';
 import { createInterface } from 'node:readline';
 import { dirname, join } from 'node:path';
@@ -77,7 +78,102 @@ function normalisedText(besogo, editor, sgf, result)
 	const text = besogo.composeSgf(editor);
 	const reloaded = besogo.makeEditor(19, 19, {});
 	besogo.loadSgf(besogo.parseSgf(text), reloaded);
-	return { sgf: text, ...result, same_play: signature(editor.getRoot()) === signature(reloaded.getRoot()) };
+	const changes = propertyChanges(besogo, sgf, text, mergesMoves(editor.getRoot()));
+	return { sgf: text, ...result, same_play: signature(editor.getRoot()) === signature(reloaded.getRoot()),
+		property_changes: changes.counts, unexpected_changes: changes.unexpected };
+}
+
+//What a save may change in the properties of an SGF, besides the coordinates. Any other change of the count of a property
+//(G written on every node, a stone or a comment lost) is unexpected, and a rewrite with one is not stored.
+//Properties besogo doesn't keep, the board editor drops them on every save: fewer of them is expected
+const NOT_KEPT = new Set(['AP', 'CA', 'FG', 'PM', 'WV', 'TE', 'BM', 'DO', 'IT', 'OB', 'OW', 'BL', 'WL', 'PL', 'MN', 'V', 'DM',
+	'GB', 'GW', 'HO', 'UC', 'N', 'VW', 'AR', 'LN', 'DD', 'KO', 'TB', 'TW', 'GOGGPAP', 'GOGGPFF', 'SBKV']);
+//Game info (loadRootProps of loadSgf.js) is kept on the root when it isn't empty: fewer is expected
+const GAME_INFO = new Set(['PB', 'BR', 'BT', 'PW', 'WR', 'WT', 'HA', 'KM', 'RU', 'TM', 'OT', 'DT', 'EV', 'GN', 'PC', 'RO', 'GC', 'ON',
+	'RE', 'AN', 'CP', 'SO', 'US']);
+//AE that empties an empty point does nothing and isn't written
+const FEWER_EXPECTED = new Set(['AE']);
+//Moves besogo merged into a transposition are written once, in the line they merged into; the play check sees that the
+//tree plays the same. In a tree without one, every move must be written.
+const MOVES = new Set(['B', 'W']);
+//The header every save writes once on the root
+const HEADER = new Set(['FF', 'GM', 'SZ', 'ST']);
+//Old names besogo reads as the new ones
+const ALIASES = { L: 'LB', M: 'MA' };
+const POINT_LISTS = new Set(['AB', 'AW', 'AE', 'CR', 'SQ', 'TR', 'MA', 'SL', 'M']);
+
+//The count of each property of the two texts that differ, {id: [before, after]}, and those of the changes that aren't
+//expected, as "id before→after". Comments are compared by their text: every comment (but a + that marks a move correct)
+//must still be there, joined with the others of its node at most.
+export function propertyChanges(besogo, before, after, mergedMoves = false)
+{
+	const old = propertyCounts(besogo.parseSgf(before));
+	const now = propertyCounts(besogo.parseSgf(after));
+	const counts = {};
+	const unexpected = [];
+	for (const id of new Set([...old.counts.keys(), ...now.counts.keys()]))
+	{
+		const [was, is] = [old.counts.get(id) ?? 0, now.counts.get(id) ?? 0];
+		if (was === is)
+			continue;
+		counts[id] = [was, is];
+		const expected = id === 'C' ? is <= was
+			: HEADER.has(id) ? is === 1
+			: is < was && (NOT_KEPT.has(id) || GAME_INFO.has(id) || FEWER_EXPECTED.has(id) || (mergedMoves && MOVES.has(id)));
+		if (!expected)
+			unexpected.push(id + ' ' + was + '→' + is);
+	}
+	const lost = old.comments.filter(comment => !now.comments.some(kept => kept.includes(comment)));
+	if (lost.length)
+		unexpected.push('C lost: ' + lost.map(comment => JSON.stringify(comment.slice(0, 40))).join(', '));
+	return { counts, unexpected };
+}
+
+//Whether besogo merged a move of the tree into a transposition (a virtual child)
+function mergesMoves(root, seen = new Set())
+{
+	if (seen.has(root))
+		return false;
+	seen.add(root);
+	return root.virtualChildren.length > 0 || root.children.some(child => mergesMoves(child, seen));
+}
+
+//The count of the values of each property of a parsed SGF (a point range of a point list as its points), and its comments
+function propertyCounts(tree)
+{
+	const counts = new Map();
+	const comments = [];
+	const visit = node =>
+	{
+		for (const prop of node.props)
+		{
+			const id = ALIASES[prop.id] ?? prop.id;
+			let count = prop.values.length;
+			if (POINT_LISTS.has(prop.id))
+				count = prop.values.reduce((sum, value) => sum + pointsIn(value), 0);
+			counts.set(id, (counts.get(id) ?? 0) + count);
+			if (id === 'C')
+				for (const value of prop.values)
+				{
+					const text = value.trim().replace(/^\+/, '').trim();
+					if (text)
+						comments.push(text);
+				}
+		}
+		node.children.forEach(visit);
+	};
+	visit(tree);
+	return { counts, comments };
+}
+
+//The points of a point list value: "aa", or the rectangle "aa:cc"
+function pointsIn(value)
+{
+	const range = value.match(/^([a-zA-Z])([a-zA-Z]):([a-zA-Z])([a-zA-Z])$/);
+	if (!range)
+		return 1;
+	const at = letter => letter.charCodeAt(0);
+	return (Math.abs(at(range[3]) - at(range[1])) + 1) * (Math.abs(at(range[4]) - at(range[2])) + 1);
 }
 
 //The G of a node as a save writes it (saveSgf.js): the text it was loaded with, or the goal the editor set on the root

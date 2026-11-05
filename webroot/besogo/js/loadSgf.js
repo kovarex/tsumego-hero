@@ -126,7 +126,10 @@ besogo.loadSgf = function(sgf, editor, mode = NORMAL_LOAD)
       case 'SL': // Add 'selected' (small filled square) markup
         applyPointList(prop.values, node, markupFunc, 5);
         break;
-      case 'L': // Intentional fallthrough treats 'L' as 'LB'
+      case 'L': // L of FF[3] labels its points A, B, C... in order, LB[point:text] of FF[4] says the text
+        applyPointList(prop.values.map((value, index) => value.includes(':') ? value : value + ':' + String.fromCharCode(65 + index % 26)),
+          node, markupFunc, 'label');
+        break;
       case 'LB': // Add label markup
         applyPointList(prop.values, node, markupFunc, 'label');
         break;

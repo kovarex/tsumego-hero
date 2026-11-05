@@ -24,8 +24,10 @@ use Cake\Console\ConsoleOptionParser;
 //- transformation_from_source, from the source version to this one, takes in both turns (source^-1, then the old
 //  transformation, then this one), each when that row is rewritten, so the result doesn't depend on the order.
 //A rewrite leaves out what besogo merges anyway (a line transposing into another, the moves after a ko comes round)
-//and what the board editor doesn't write (AP, CA, game info, + of a status problem); a row whose rewrite besogo would
-//not play the same, every move, transposition and correct or wrong end, is kept as it is and named.
+//and what the board editor doesn't write (AP, CA, game info, + of a status problem). A row is kept as it is and named
+//when besogo would not play its rewrite the same (every move, transposition and correct or wrong end), or when the count
+//of a property changes in a way a save isn't expected to change it (propertyChanges of scripts/sgfCorrectMoves.mjs:
+//a G written on every node, a stone, label or comment lost). The report sums the change of every property.
 //Everything changed is kept first in sgf_before_normalisation and tsumego_comment_before_normalisation.
 //A problem is done in one transaction; a row already normalised comes back unchanged, so a run that stopped is
 //simply run again, and a second run changes nothing. Without --write nothing is written and it reports what would
@@ -56,10 +58,12 @@ class NormaliseSgfsCommand extends Command
 	private array $transformationsFromSource = [];
 	/** @var array<string, int> */
 	private array $counts = [];
-	/** @var array<string, int> property => rewritten rows that lost it */
-	private array $droppedProperties = [];
-	/** @var array<string, list<int>> property => the first sgf ids that lost it */
-	private array $droppedPropertyRows = [];
+	//property => its count in the rows rewritten, before and after, and the first of those rows
+	/** @var array<string, array{rows: int, before: int, after: int, ids: list<int>}> */
+	private array $propertyChanges = [];
+	//sgf id => what changes unexpectedly in its rewrite, which keeps it as it is
+	/** @var array<int, list<string>> */
+	private array $changingUnexpectedly = [];
 	/** @var array<string, list<int>> kind of turn => tsumego ids, for looking at them after a run */
 	private array $examples = [];
 	/** @var list<int> */
@@ -158,6 +162,11 @@ class NormaliseSgfsCommand extends Command
 				$this->playingDifferently[] = $id;
 				continue;
 			}
+			if (!$analysis->rewriteIsFaithful())
+			{
+				$this->changingUnexpectedly[$id] = $analysis->unexpectedChanges;
+				continue;
+			}
 			$transformation = $analysis->transformation ?? BoardTransformation::identity();
 			$turned = $transformation->movesPoints();
 			$this->counts[$turned ? 'turned' : 'reordered only']++;
@@ -165,7 +174,7 @@ class NormaliseSgfsCommand extends Command
 			if ($id === $currentID && count($this->examples[$kind] ?? []) < 5)
 				$this->examples[$kind][] = $tsumegoID;
 			$this->listChange($id, $tsumegoID, $kind, $row, $analysis);
-			$this->countDroppedProperties($id, (string) $row['sgf'], (string) $analysis->sgf);
+			$this->countPropertyChanges($id, $analysis);
 
 			if ($this->write)
 			{
@@ -217,23 +226,19 @@ class NormaliseSgfsCommand extends Command
 		}
 	}
 
-	//The properties the rewritten SGF no longer has, which the board editor doesn't write either
-	private function countDroppedProperties(int $id, string $old, string $new): void
+	//The change of the count of each property in the rows rewritten
+	private function countPropertyChanges(int $id, SgfAnalysis $analysis): void
 	{
-		foreach (array_diff(self::properties($old), self::properties($new)) as $property)
+		foreach ($analysis->propertyChanges as $property => [$before, $after])
 		{
-			$this->droppedProperties[$property] = ($this->droppedProperties[$property] ?? 0) + 1;
-			if (count($this->droppedPropertyRows[$property] ?? []) < 10)
-				$this->droppedPropertyRows[$property][] = $id;
+			$change = $this->propertyChanges[$property] ?? ['rows' => 0, 'before' => 0, 'after' => 0, 'ids' => []];
+			$change['rows']++;
+			$change['before'] += $before;
+			$change['after'] += $after;
+			if (count($change['ids']) < 10)
+				$change['ids'][] = $id;
+			$this->propertyChanges[$property] = $change;
 		}
-	}
-
-	/** @return list<string> */
-	private static function properties(string $sgf): array
-	{
-		$withoutValues = (string) preg_replace('/\[(?:\\\\.|[^\]\\\\])*\]/s', '[]', $sgf);
-		preg_match_all('/([A-Z]+)\s*\[\]/', $withoutValues, $matches);
-		return array_values(array_unique($matches[1]));
 	}
 
 	private static function kind(BoardTransformation $transformation): string
@@ -262,12 +267,17 @@ class NormaliseSgfsCommand extends Command
 	{
 		$this->console->out(implode(', ', array_map(fn($name, $count) => "$count $name", array_keys($this->counts), $this->counts))
 			. ', ' . count($this->unreadable) . ' unreadable (kept as they are)' . self::ids($this->unreadable)
-			. ', ' . count($this->playingDifferently) . ' that would play differently (kept as they are)' . self::ids($this->playingDifferently));
-		arsort($this->droppedProperties);
-		$this->console->out('Properties the rewritten rows lose: ' . ($this->droppedProperties
-			? implode(', ', array_map(fn($property, $count) => "$property $count", array_keys($this->droppedProperties), $this->droppedProperties)) : 'none'));
-		foreach ($this->droppedProperties as $property => $count)
-			$this->console->out("Rows that lose $property: " . implode(', ', $this->droppedPropertyRows[$property]) . ($count > 10 ? ', ...' : ''));
+			. ', ' . count($this->playingDifferently) . ' that would play differently (kept as they are)' . self::ids($this->playingDifferently)
+			. ', ' . count($this->changingUnexpectedly) . ' whose properties would change unexpectedly (kept as they are)' . self::ids(array_keys($this->changingUnexpectedly)));
+		foreach (array_slice($this->changingUnexpectedly, 0, 50, true) as $id => $changes)
+			$this->console->out("sgf $id would change: " . implode(', ', $changes));
+		// every change left in the rows rewritten is one a save is expected to make
+		uasort($this->propertyChanges, fn($a, $b) => $b['rows'] <=> $a['rows']);
+		$this->console->out('Property counts of the rewritten rows, before -> after: ' . ($this->propertyChanges
+			? implode(', ', array_map(fn($property, $change) => "$property {$change['before']} -> {$change['after']} in {$change['rows']} rows",
+				array_keys($this->propertyChanges), $this->propertyChanges)) : 'no change'));
+		foreach ($this->propertyChanges as $property => $change)
+			$this->console->out("Rows that change $property: " . implode(', ', $change['ids']) . ($change['rows'] > 10 ? ', ...' : ''));
 		ksort($this->examples);
 		foreach ($this->examples as $kind => $tsumegoIDs)
 			$this->console->out("Problems turned $kind (current version): " . implode(', ', $tsumegoIDs));

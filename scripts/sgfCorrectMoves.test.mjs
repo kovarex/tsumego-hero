@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { analyse, makeBesogo } from './sgfCorrectMoves.mjs';
+import { analyse, makeBesogo, propertyChanges } from './sgfCorrectMoves.mjs';
 
 const besogo = makeBesogo();
 const of = sgf => analyse(besogo, sgf);
@@ -97,9 +97,9 @@ const normalised = sgf => analyse(besogo, sgf, true);
 test('normalising turns a problem in any corner to the top-left', () =>
 {
 	for (const [sgf, flipX, flipY] of [
-		['(;SZ[19]AB[rb][sb](;B[sa]C[+])(;B[ra];W[sa]))', true, false],
-		['(;SZ[19]AB[br][bs](;B[as]C[+])(;B[ar];W[as]))', false, true],
-		['(;SZ[19]AB[rr][rs](;B[ss]C[+])(;B[sr];W[ss]))', true, true]])
+		['(;SZ[19]AB[rb][sb](;B[sa]C[+])(;B[ra];W[qa]))', true, false],
+		['(;SZ[19]AB[br][bs](;B[as]C[+])(;B[ar];W[aq]))', false, true],
+		['(;SZ[19]AB[rr][rs](;B[ss]C[+])(;B[sr];W[qs]))', true, true]])
 	{
 		const result = normalised(sgf);
 		assert.deepEqual(result.transformation, { transpose: false, flipX, flipY, invertColors: false }, sgf);
@@ -124,7 +124,7 @@ test('a problem already normalised keeps its text, and normalising twice changes
 	const done = '(;SZ[19]AB[bb](;B[aa]C[+])(;B[dd];W[aa]))';
 	assert.deepEqual(normalised(done), { first_move_color: 'B', correct_moves: 'aa', problem: null, sgf: done, changed: false, same_play: true,
 		transformation: { transpose: false, flipX: false, flipY: false, invertColors: false } });
-	for (const sgf of [PROBLEM_979, PROBLEM_27583, '(;SZ[19]AB[rr][rs](;B[sr];W[ss])(;B[ss]C[+]))'])
+	for (const sgf of [PROBLEM_979, PROBLEM_27583, '(;SZ[19]AB[rr][rs](;B[sr];W[qs])(;B[ss]C[+]))'])
 	{
 		const once = normalised(sgf);
 		const twice = normalised(once.sgf);
@@ -145,16 +145,18 @@ test('the two problems of the report end in the top-left corner with their corre
 });
 
 //The text leaves out what besogo merges: a line that transposes into another and the moves after a ko comes round.
-//Loaded again it plays the same, which normalising checks (sgf 17040 and 16783 of the site)
+//Loaded again it plays the same, which normalising checks (sgf 17040 and 16783 of the site). The labels on the merged
+//line of 17040 are lost though, so its rewrite isn't stored.
 test('a rewrite that leaves out merged moves still plays the same', () =>
 {
-	for (const sgf of [
-		'(;SZ[13]AW[di][ei][fi][dj][gj][ck][fk][gk][cl][dl][fl][cm]AB[cg][dh][eh][fh][gh][ci][hi][cj][ej][hj][bk][dk][ek][hk][bl][gl][hl](;B[gi];W[fj];B[fm];W[el](;B[em];W[ek])(;B[ek];W[em]))(;B[fm](;W[em];B[gi];W[gm];B[fj]C[+])(;W[el](;B[gi];W[fj]LB[ek:A][em:B])(;B[em]C[+])))(;B[em];W[fm];B[el];W[fj]))',
-		'(;PL[W]SZ[9]AB[ad][ae][ag][bb][be][bf][bg][bi][ch][fc][gb][gd][ge][gf][gi][hf][hg][hh][hi]AW[ai][bc][bd][cc][ce][cf][cg][dd][dh][eb][ec][eh][fd][fe][ff][fi][gg][gh][if][ii](;W[fb];B[ac](;W[gc];B[hc];W[hb];B[ga];W[hd];B[fc];W[ci];B[bh];W[gc];B[ic])(;W[hb];B[ga];W[gc];B[hc];W[fa];B[fc];W[bh];B[ah];W[gc];B[fg];W[ha];B[fh]))(;W[ga];B[fa];W[fb];B[ha];W[gc];B[hc];W[ac];B[ea];W[da];B[ga];W[db];B[fc];W[di]C[+]))'])
+	for (const [sgf, unexpected] of [
+		['(;SZ[13]AW[di][ei][fi][dj][gj][ck][fk][gk][cl][dl][fl][cm]AB[cg][dh][eh][fh][gh][ci][hi][cj][ej][hj][bk][dk][ek][hk][bl][gl][hl](;B[gi];W[fj];B[fm];W[el](;B[em];W[ek])(;B[ek];W[em]))(;B[fm](;W[em];B[gi];W[gm];B[fj]C[+])(;W[el](;B[gi];W[fj]LB[ek:A][em:B])(;B[em]C[+])))(;B[em];W[fm];B[el];W[fj]))', ['LB 2→0']],
+		['(;PL[W]SZ[9]AB[ad][ae][ag][bb][be][bf][bg][bi][ch][fc][gb][gd][ge][gf][gi][hf][hg][hh][hi]AW[ai][bc][bd][cc][ce][cf][cg][dd][dh][eb][ec][eh][fd][fe][ff][fi][gg][gh][if][ii](;W[fb];B[ac](;W[gc];B[hc];W[hb];B[ga];W[hd];B[fc];W[ci];B[bh];W[gc];B[ic])(;W[hb];B[ga];W[gc];B[hc];W[fa];B[fc];W[bh];B[ah];W[gc];B[fg];W[ha];B[fh]))(;W[ga];B[fa];W[fb];B[ha];W[gc];B[hc];W[ac];B[ea];W[da];B[ga];W[db];B[fc];W[di]C[+]))', []]])
 	{
 		const result = normalised(sgf);
 		assert.equal(result.changed, true);
 		assert.equal(result.same_play, true);
+		assert.deepEqual(result.unexpected_changes, unexpected);
 	}
 });
 
@@ -162,7 +164,7 @@ test('a rewrite that leaves out merged moves still plays the same', () =>
 test('G survives the rewrite in every corner, as it was written', () =>
 {
 	for (const [sgf, goal] of [
-		['(;SZ[19]G[KILL]AB[rb][sb](;B[sa];W[ra]S[DEAD])(;B[ra];W[sa]S[ALIVE]))', 'G[KILL]'],
+		['(;SZ[19]G[KILL]AB[rb][sb](;B[sa];W[ra]S[DEAD])(;B[ra];W[qa]S[ALIVE]))', 'G[KILL]'],
 		['(;SZ[19]G[LIVE]AW[br][bs](;B[as];W[ar]S[ALIVE])(;B[ar];W[as]S[DEAD]))', 'G[LIVE]'],
 		['(;SZ[19]G[tt]AB[rr][rs](;B[ss]C[+])(;B[sr];W[qs]))', 'G[tt]'],
 		['(;SZ[19]AB[rb][sb](;B[sa]G[custom];W[ra];B[qa]C[+])(;B[ra];W[qa]))', 'G[custom]']])
@@ -173,6 +175,7 @@ test('G survives the rewrite in every corner, as it was written', () =>
 		//once, where it was: the nodes after it inherit it in besogo, but don't write it
 		assert.equal(result.sgf.split('G[').length - 1, 1, result.sgf);
 		assert.ok(result.sgf.includes(goal), result.sgf);
+		assert.deepEqual(result.unexpected_changes, []);
 		assert.equal(normalised(result.sgf).changed, false);
 	}
 });
@@ -184,4 +187,40 @@ test('a status problem is judged the same without its C[+]', () =>
 	const without = analyse(besogo, '(;SZ[19]G[KILL]AB[ad][ba][bd][ca][cc][dc][ec][fa][fb]AW[ac][bb][bc][cb][db][ea](;B[eb];W[aa]S[ALIVE])(;B[aa]S[BENT4])(;B[ab];W[aa]S[ALIVE]))');
 	assert.equal(withPlus.correct_moves, 'aa');
 	assert.equal(without.correct_moves, withPlus.correct_moves);
+});
+
+//A rewrite may leave out what besogo doesn't keep and add the header of every save; any other change of the count of a
+//property is unexpected, and so is a comment that is gone
+test('the property check tells the expected changes from the others', () =>
+{
+	const check = (before, after, merged = false) => propertyChanges(besogo.besogo, before, after, merged).unexpected;
+	const was = '(;GM[1]FF[4]CA[UTF-8]AP[x]PW[]SZ[19]G[KILL]AB[aa:bb]L[cc]C[hi]C[there];B[dd]C[+];W[ee]S[ALIVE])';
+	assert.deepEqual(check(was, '(;FF[4]GM[1]SZ[19]ST[0]G[KILL]AB[aa][ab][ba][bb]LB[cc:A]C[hi\nthere];B[dd];W[ee]S[ALIVE])'), []);
+	for (const [after, unexpected] of [
+		['(;FF[4]GM[1]SZ[19]G[KILL]AB[aa][ab][ba][bb]LB[cc:A]C[hi\nthere];B[dd]G[KILL];W[ee]S[ALIVE]G[KILL])', ['G 1→3']],
+		['(;FF[4]GM[1]SZ[19]AB[aa][ab][ba][bb]LB[cc:A]C[hi\nthere];B[dd];W[ee]S[ALIVE])', ['G 1→0']],
+		['(;FF[4]GM[1]SZ[19]G[KILL]AB[aa][ab][ba]LB[cc:A]C[hi\nthere];B[dd];W[ee]S[ALIVE])', ['AB 4→3']],
+		['(;FF[4]GM[1]SZ[19]G[KILL]AB[aa][ab][ba][bb]C[hi\nthere];B[dd];W[ee]S[ALIVE])', ['LB 1→0']],
+		['(;FF[4]GM[1]SZ[19]G[KILL]AB[aa][ab][ba][bb]LB[cc:A]C[hi];B[dd];W[ee]S[ALIVE])', ['C lost: "there"']],
+		['(;FF[4]GM[1]SZ[19]G[KILL]AB[aa][ab][ba][bb]LB[cc:A]C[hi\nthere];B[dd];W[ee])', ['S 1→0']],
+		['(;FF[4]GM[1]SZ[19]G[KILL]AB[aa][ab][ba][bb]LB[cc:A]C[hi\nthere];B[dd]S[ALIVE])', ['W 1→0']]])
+		assert.deepEqual(check(was, after), unexpected, after);
+	//moves merged into a transposition are written once, and a property besogo doesn't know is never dropped unseen
+	assert.deepEqual(check('(;SZ[19](;B[aa];W[bb])(;B[cc]))', '(;FF[4]GM[1]SZ[19]ST[0](;B[aa])(;B[cc]))', true), []);
+	assert.deepEqual(check('(;SZ[19]XY[1];B[aa])', '(;FF[4]GM[1]SZ[19]ST[0];B[aa])'), ['XY 1→0']);
+});
+
+//The board editor saves with the same composeSgf, without the turn: what it doesn't keep is all it leaves out
+test('an editor save changes no property but those besogo does not keep', () =>
+{
+	for (const sgf of [PROBLEM_979, PROBLEM_27583,
+		'(;GM[1]FF[4]CA[UTF-8]AP[x]PW[]PB[Black]GN[name]SZ[19]G[KILL]AB[rb][sb]L[pa](;B[sa]C[a comment];W[ra]S[DEAD])(;B[ra];W[qa]S[ALIVE]))',
+		'(;SZ[19]G[tt]AB[rr][rs]AE[aa]TR[qq]MA[pp]CR[oo]SQ[nn](;B[ss]C[+])(;B[sr];W[qs]))',
+		'(;SZ[19]AB[rb][sb](;B[sa]G[custom];W[ra];B[qa]C[+])(;B[ra];W[qa]))',
+		'(;SZ[13]AB[aa:bc]AW[da:db](;B[ca]C[+])(;B[cb];W[ca]))'])
+	{
+		const editor = besogo.besogo.makeEditor(19, 19, {});
+		besogo.besogo.loadSgf(besogo.besogo.parseSgf(sgf), editor);
+		assert.deepEqual(propertyChanges(besogo.besogo, sgf, besogo.besogo.composeSgf(editor)).unexpected, [], sgf);
+	}
 });

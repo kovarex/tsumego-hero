@@ -50,7 +50,9 @@ class NormaliseSgfsCommandTest extends AppTestCase
 		$this->assertOutputContains('Dry run: nothing is written');
 		$this->assertOutputContains('5 problems, 5 rows, 3 turned, 1 reordered only, 0 values only, 1 comments moved');
 		$this->assertOutputContains('Problems turned flipX+flipY (current version): ' . $context->tsumegos[0]['id']);
-		$this->assertOutputContains('Properties the rewritten rows lose: CA 1');
+		$this->assertOutputContains('0 whose properties would change unexpectedly (kept as they are)');
+		$this->assertOutputContains('Property counts of the rewritten rows, before -> after: ');
+		$this->assertOutputContains('CA 1 -> 0 in 1 rows');
 		$this->assertSame($before, Util::query('SELECT * FROM sgf ORDER BY id'));
 		$this->assertSame(self::BOTTOM_RIGHT_COMMENT['message'], Util::query('SELECT message FROM tsumego_comment')[0]['message']);
 	}
@@ -161,5 +163,21 @@ class NormaliseSgfsCommandTest extends AppTestCase
 		$this->assertOutputContains("1 that would play differently (kept as they are): $id");
 		$this->assertOutputContains("sgf $id before:");
 		$this->assertSame($sgf, $this->sgfRow($context->tsumegos[0]['id'])['sgf']);
+	}
+
+	//A row whose rewrite would change a property in a way a save isn't expected to, here losing labels on a line besogo
+	//merges into a transposition (sgf 17040 of the site), is kept and named with what would change
+	public function testARowWhosePropertiesWouldChangeUnexpectedlyIsKept(): void
+	{
+		$sgf = '(;SZ[13]AW[di][ei][fi][dj][gj][ck][fk][gk][cl][dl][fl][cm]AB[cg][dh][eh][fh][gh][ci][hi][cj][ej][hj][bk][dk][ek][hk][bl][gl][hl](;B[gi];W[fj];B[fm];W[el](;B[em];W[ek])(;B[ek];W[em]))(;B[fm](;W[em];B[gi];W[gm];B[fj]C[+])(;W[el](;B[gi];W[fj]LB[ek:A][em:B])(;B[em]C[+])))(;B[em];W[fm];B[el];W[fj]))';
+		$context = new ContextPreparator(['tsumego' => ['sgf' => ['data' => $sgf]]]);
+		$id = $this->sgfRow($context->tsumegos[0]['id'])['id'];
+		$this->exec('normalise_sgfs --write');
+
+		$this->assertOutputContains("1 whose properties would change unexpectedly (kept as they are): $id");
+		$this->assertOutputContains("sgf $id would change: LB 2→0");
+		$this->assertOutputContains('Property counts of the rewritten rows, before -> after: no change');
+		$this->assertSame($sgf, $this->sgfRow($context->tsumegos[0]['id'])['sgf']);
+		$this->assertSame([], Util::query('SELECT * FROM sgf_before_normalisation'));
 	}
 }
