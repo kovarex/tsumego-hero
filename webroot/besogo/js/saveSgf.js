@@ -127,8 +127,8 @@ besogo.composeSgf = function(editor, expand = false)
       string += 'SKD[]';
     }
 
-    // G as it was loaded, on any node, or the goal the editor set on the root
-    if (node.goalText !== undefined && node.goalText !== null)
+    // G as it was loaded, on the node it was on (children inherit it through makeChild), or the goal the editor set on the root
+    if (Object.hasOwn(node, 'goalText') && node.goalText !== undefined && node.goalText !== null)
     {
       string += (string ? '\n' : '');
       string += 'G[' + escapeText(node.goalText) + ']';

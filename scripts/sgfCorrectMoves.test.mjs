@@ -158,18 +158,20 @@ test('a rewrite that leaves out merged moves still plays the same', () =>
 	}
 });
 
-//G is the goal of a status problem, and any other G is kept as it is too, on any node
+//G is the goal of a status problem, and any other G is kept as it is too, once, on the node it was on
 test('G survives the rewrite in every corner, as it was written', () =>
 {
 	for (const [sgf, goal] of [
 		['(;SZ[19]G[KILL]AB[rb][sb](;B[sa];W[ra]S[DEAD])(;B[ra];W[sa]S[ALIVE]))', 'G[KILL]'],
 		['(;SZ[19]G[LIVE]AW[br][bs](;B[as];W[ar]S[ALIVE])(;B[ar];W[as]S[DEAD]))', 'G[LIVE]'],
 		['(;SZ[19]G[tt]AB[rr][rs](;B[ss]C[+])(;B[sr];W[qs]))', 'G[tt]'],
-		['(;SZ[19]AB[rb][sb](;B[sa]G[custom]C[+])(;B[ra];W[qa]))', 'G[custom]']])
+		['(;SZ[19]AB[rb][sb](;B[sa]G[custom];W[ra];B[qa]C[+])(;B[ra];W[qa]))', 'G[custom]']])
 	{
 		const result = normalised(sgf);
 		assert.equal(result.changed, true, sgf);
 		assert.equal(result.same_play, true, sgf);
+		//once, where it was: the nodes after it inherit it in besogo, but don't write it
+		assert.equal(result.sgf.split('G[').length - 1, 1, result.sgf);
 		assert.ok(result.sgf.includes(goal), result.sgf);
 		assert.equal(normalised(result.sgf).changed, false);
 	}

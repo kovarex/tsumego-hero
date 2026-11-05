@@ -208,16 +208,20 @@ besogo.addTest("Editor", "SaveKeepsG", function()
 {
 	for (let goal of ["KILL", "LIVE", "tt"])
 	{
-		let editor = loadEditor("(;SZ[19]G[" + goal + "]AB[bb];B[aa]S[DEAD])");
-		CHECK(besogo.composeSgf(editor).includes("G[" + goal + "]"));
+		let editor = loadEditor("(;SZ[19]G[" + goal + "]AB[bb](;B[aa];W[ba];B[ca]S[DEAD])(;B[ba]S[DEAD]))");
+		let sgf = besogo.composeSgf(editor);
+		CHECK(sgf.includes("G[" + goal + "]"));
+		CHECK_EQUALS(sgf.split("G[").length - 1, 1); // the children inherit the goal, but don't write it
 	}
-	let editor = loadEditor("(;SZ[19]AB[bb];B[aa]G[custom]C[+])");
+	let editor = loadEditor("(;SZ[19]AB[bb];B[aa]G[custom];W[ba];B[ca]C[+])");
 	CHECK(besogo.composeSgf(editor).includes("G[custom]"));
+	CHECK_EQUALS(besogo.composeSgf(editor).split("G[").length - 1, 1);
 
 	editor = loadEditor("(;SZ[19]G[tt]AB[bb];B[aa]S[DEAD])");
 	editor.getRoot().setGoal(GOAL_LIVE);
 	let sgf = besogo.composeSgf(editor);
 	CHECK(sgf.includes("G[LIVE]"));
+	CHECK_EQUALS(sgf.split("G[").length - 1, 1);
 	CHECK(!sgf.includes("G[tt]"));
 });
 

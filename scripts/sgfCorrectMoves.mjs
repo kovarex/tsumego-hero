@@ -83,7 +83,8 @@ function normalisedText(besogo, editor, sgf, result)
 //The G of a node as a save writes it (saveSgf.js): the text it was loaded with, or the goal the editor set on the root
 function goalOf(node)
 {
-	if (node.goalText !== undefined && node.goalText !== null)
+	//only the node G was on; its children inherit goalText through makeChild
+	if (Object.hasOwn(node, 'goalText') && node.goalText !== undefined && node.goalText !== null)
 		return 'G' + node.goalText;
 	//besogo.goalStr of status.js, which writes the goal the editor set
 	return node.parent == null && node.goal ? 'G' + ({ 1: 'KILL', 2: 'LIVE' }[node.goal] ?? '') : '';

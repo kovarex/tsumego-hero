@@ -106,6 +106,7 @@ class SgfSaveAnalysisTest extends IntegrationTestCase
 			$this->post('/sgf/upload/' . $context->setConnections[0]['id'], ['sgfForBesogo' => $sgf]);
 			$saved = $this->newest($context)->sgf;
 			$this->assertStringContainsString($goal, $saved);
+			$this->assertSame(1, substr_count($saved, 'G['), 'once, on the root');
 			$this->assertStringNotContainsString('AB[rb]', $saved, 'turned to the top-left');
 		}
 	}
