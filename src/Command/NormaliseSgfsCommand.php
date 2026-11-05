@@ -41,7 +41,8 @@ class NormaliseSgfsCommand extends Command
 			->addOption('write', ['boolean' => true, 'help' => 'Write the changes; without it nothing is written'])
 			->addOption('batch', ['default' => '200', 'help' => 'Problems analysed per run of node'])
 			->addOption('limit', ['default' => '0', 'help' => 'Stop after this many problems (0: all); run again to go on'])
-			->addOption('show', ['default' => '20', 'help' => 'How many of the changes to list']);
+			->addOption('show', ['default' => '20', 'help' => 'How many of the changes to list'])
+			->addOption('sgf', ['default' => '', 'help' => 'Comma separated sgf ids whose old and new text to print, for checking them']);
 	}
 
 	private bool $write;
@@ -54,11 +55,15 @@ class NormaliseSgfsCommand extends Command
 	private array $counts = [];
 	/** @var array<string, int> property => rewritten rows that lost it */
 	private array $droppedProperties = [];
+	/** @var array<string, list<int>> property => the first sgf ids that lost it */
+	private array $droppedPropertyRows = [];
 	/** @var array<string, list<int>> kind of turn => tsumego ids, for looking at them after a run */
 	private array $examples = [];
 	/** @var list<int> */
 	private array $unreadable = [];
 	private int $listed = 0;
+	/** @var list<int> */
+	private array $printed = [];
 
 	public function execute(Arguments $args, ConsoleIo $io): int
 	{
@@ -68,6 +73,7 @@ class NormaliseSgfsCommand extends Command
 		$this->show = max(0, (int) $args->getOption('show'));
 		$batch = max(1, (int) $args->getOption('batch'));
 		$limit = max(0, (int) $args->getOption('limit'));
+		$this->printed = array_map('intval', array_filter(explode(',', (string) $args->getOption('sgf'))));
 		$this->counts = array_fill_keys(['problems', 'rows', 'turned', 'reordered only', 'values only', 'comments moved', 'transformations from source fixed'], 0);
 		$io->out($this->write ? 'Writing the normalised SGFs.' : 'Dry run: nothing is written (--write writes it).');
 
@@ -147,7 +153,9 @@ class NormaliseSgfsCommand extends Command
 			if ($id === $currentID && count($this->examples[$kind] ?? []) < 5)
 				$this->examples[$kind][] = $tsumegoID;
 			$this->listChange($id, $tsumegoID, $kind, $row, $analysis);
-			$this->countDroppedProperties((string) $row['sgf'], (string) $analysis->sgf);
+			$this->countDroppedProperties($id, (string) $row['sgf'], (string) $analysis->sgf);
+			if (in_array($id, $this->printed, true))
+				$this->console->out("sgf $id before:\n" . $row['sgf'] . "\nsgf $id after:\n" . $analysis->sgf);
 
 			if ($this->write)
 			{
@@ -200,10 +208,14 @@ class NormaliseSgfsCommand extends Command
 	}
 
 	//The properties the rewritten SGF no longer has, which the board editor doesn't write either
-	private function countDroppedProperties(string $old, string $new): void
+	private function countDroppedProperties(int $id, string $old, string $new): void
 	{
 		foreach (array_diff(self::properties($old), self::properties($new)) as $property)
+		{
 			$this->droppedProperties[$property] = ($this->droppedProperties[$property] ?? 0) + 1;
+			if (count($this->droppedPropertyRows[$property] ?? []) < 10)
+				$this->droppedPropertyRows[$property][] = $id;
+		}
 	}
 
 	/** @return list<string> */
@@ -237,6 +249,8 @@ class NormaliseSgfsCommand extends Command
 		arsort($this->droppedProperties);
 		$this->console->out('Properties the rewritten rows lose: ' . ($this->droppedProperties
 			? implode(', ', array_map(fn($property, $count) => "$property $count", array_keys($this->droppedProperties), $this->droppedProperties)) : 'none'));
+		foreach ($this->droppedProperties as $property => $count)
+			$this->console->out("Rows that lose $property: " . implode(', ', $this->droppedPropertyRows[$property]) . ($count > 10 ? ', ...' : ''));
 		ksort($this->examples);
 		foreach ($this->examples as $kind => $tsumegoIDs)
 			$this->console->out("Problems turned $kind (current version): " . implode(', ', $tsumegoIDs));
