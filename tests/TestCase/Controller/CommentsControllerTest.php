@@ -944,7 +944,7 @@ class CommentsControllerTest extends IntegrationTestCase
 		$this->submitComment($browser, 'the first comment');
 
 		$browser->waitUntil(fn() => $this->moreSummary($browser) === '1 comment', context: 'the summary after the first comment');
-		$this->assertTrue($browser->driver->executeScript('return $("#moreCommentSummary").is(":visible");'));
+		$this->assertTrue($browser->driver->executeScript('return document.getElementById("moreCommentSummary").checkVisibility();'));
 	}
 
 	//The text of the summary on the More toggle, null when there is none.

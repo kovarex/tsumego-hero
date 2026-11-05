@@ -79,7 +79,6 @@ echo $this->fetch('css');
 echo $this->fetch('script');
 ?>
 <?php
-echo ViteManifest::legacyScript('jquery');
 //Global-scope scripts, served as a plain <script>, not type="module"
 echo ViteManifest::legacyScript('legacy');
 ?>
