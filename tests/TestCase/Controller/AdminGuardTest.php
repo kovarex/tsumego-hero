@@ -359,13 +359,4 @@ class AdminGuardTest extends IntegrationTestCase
 
 		$this->assertResponseCode(403);
 	}
-
-	public function testSetupNewSgfStep2RequiresContribution()
-	{
-		new ContextPreparator(['user' => ['name' => 'lowrating', 'rating' => 100]]);
-
-		$this->post('/tsumegos/setupNewSgfStep2', ['setConnectionID' => 1]);
-
-		$this->assertResponseCode(403);
-	}
 }

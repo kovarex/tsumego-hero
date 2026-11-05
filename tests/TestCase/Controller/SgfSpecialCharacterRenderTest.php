@@ -94,8 +94,7 @@ class SgfSpecialCharacterRenderTest extends IntegrationTestCase
 	}
 
 	//Upload SGF with special chars and verify it's preserved exactly in the database.
-	//The upload flow goes through templates/Tsumegos/setup_new_sgf.php, which uses json_encode to embed
-	//the SGF in JavaScript for besogo parsing, then auto-submits to setupNewSgfStep2.
+	//The server reads the uploaded SGF for its correct moves (SgfAnalysis) and stores the text as it came.
 	public function testUploadPreservesEvilSgfInDatabase()
 	{
 		$browser = Browser::instance();
@@ -122,7 +121,7 @@ class SgfSpecialCharacterRenderTest extends IntegrationTestCase
 		", [self::tortureSgf()]);
 		$browser->clickId('tsumego-edit-submit');
 
-		// Wait for setup_new_sgf.php to process and redirect back
+		// Wait for the save to redirect back
 		$browser->waitUntilJs('!location.href.includes("/tsumegos/edit/")');
 
 		// Verify the uploaded SGF was saved to the database

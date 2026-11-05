@@ -258,7 +258,7 @@ class SgfControllerUploadTest extends IntegrationTestCase
 		$browser->get('/' . $context->setConnections[0]['id']);
 		$this->uploadSgfFile($browser, '(;GM[1]FF[4]ST[2]SZ[19]G[KILL](;B[aa];W[ab];B[ba]S[DEAD])(;B[da];W[aa]))');
 
-		$browser->waitUntilCssSelectorExistsWithText('#uploadProblem', 'The SGF was not saved: End position without status. (move 2)');
+		$browser->waitUntilCssSelectorExistsWithText('.alert-error', 'The SGF was not saved: End position without status. (move 2)');
 		$this->assertEquals($context->tsumegos[0]['sgfs'][0]['id'], $this->newestSgf($context)->id, 'Nothing was saved');
 		$browser->assertNoJsErrors();
 	}

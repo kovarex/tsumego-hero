@@ -1,0 +1,11 @@
+#!/usr/bin/env php
+<?php
+
+//The command line of the application: bin/cake <command>, the commands of src/Command and of Cake
+require dirname(__DIR__) . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php';
+
+use App\Application;
+use Cake\Console\CommandRunner;
+
+$runner = new CommandRunner(new Application(dirname(__DIR__) . '/config'), 'cake');
+exit($runner->run($argv));

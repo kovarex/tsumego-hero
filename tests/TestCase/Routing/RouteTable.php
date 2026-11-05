@@ -458,12 +458,6 @@ return [
 		'/tsumegos/result/7' => ['Tsumegos', 'result', ['7']],
 		'/tsumegos/settings' => ['Tsumegos', 'settings', []],
 		'/tsumegos/settings/7' => ['Tsumegos', 'settings', ['7']],
-		'/tsumegos/setupNewSgfStep2' => ['Tsumegos', 'setupNewSgfStep2', []],
-		'/tsumegos/setupNewSgfStep2/7' => ['Tsumegos', 'setupNewSgfStep2', ['7']],
-		'/tsumegos/setupSgf' => ['Tsumegos', 'setupSgf', []],
-		'/tsumegos/setupSgf/7' => ['Tsumegos', 'setupSgf', ['7']],
-		'/tsumegos/setupSgfStep2' => ['Tsumegos', 'setupSgfStep2', []],
-		'/tsumegos/setupSgfStep2/7' => ['Tsumegos', 'setupSgfStep2', ['7']],
 		'/tsumegos/variant' => ['Tsumegos', 'variant', []],
 		'/tsumegos/variant/7' => ['Tsumegos', 'variant', ['7']],
 
