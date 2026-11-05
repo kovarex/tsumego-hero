@@ -103,8 +103,9 @@ const ALIASES = { L: 'LB', M: 'MA' };
 const POINT_LISTS = new Set(['AB', 'AW', 'AE', 'CR', 'SQ', 'TR', 'MA', 'SL', 'M']);
 
 //The count of each property of the two texts that differ, {id: [before, after]}, and those of the changes that aren't
-//expected, as "id before→after". Comments are compared by their text: every comment (but a + that marks a move correct)
-//must still be there, joined with the others of its node at most.
+//expected, as "id before→after". Comments are compared whole, as besogo reads them (the C of a node joined, one leading +
+//that marks the move correct left aside): every one must still be the comment of a node; a merged line may leave out a
+//comment written the same on the line it merged into.
 export function propertyChanges(besogo, before, after, mergedMoves = false)
 {
 	const old = propertyCounts(besogo.parseSgf(before));
@@ -123,7 +124,8 @@ export function propertyChanges(besogo, before, after, mergedMoves = false)
 		if (!expected)
 			unexpected.push(id + ' ' + was + '→' + is);
 	}
-	const lost = old.comments.filter(comment => !now.comments.some(kept => kept.includes(comment)));
+	const kept = new Set(now.comments.keys());
+	const lost = [...old.comments].filter(([text]) => !kept.has(text)).map(([, written]) => written);
 	if (lost.length)
 		unexpected.push('C lost: ' + lost.map(comment => JSON.stringify(comment.slice(0, 40))).join(', '));
 	return { counts, unexpected };
@@ -138,13 +140,19 @@ function mergesMoves(root, seen = new Set())
 	return root.virtualChildren.length > 0 || root.children.some(child => mergesMoves(child, seen));
 }
 
-//The count of the values of each property of a parsed SGF (a point range of a point list as its points), and its comments
+//The count of the values of each property of a parsed SGF (a point range of a point list as its points), and its comments:
+//the comment of each node as besogo reads it (loadSgf.js joins the C of a node, treeProblemUpdater.js takes one leading
+//+ as the mark of a correct move) => the comment as it was written
 function propertyCounts(tree)
 {
 	const counts = new Map();
-	const comments = [];
+	const comments = new Map();
 	const visit = node =>
 	{
+		const written = node.props.filter(prop => prop.id === 'C').map(prop => prop.values.join().trim()).join('\n');
+		const text = (written.startsWith('+') ? written.slice(1) : written).trim();
+		if (text && !comments.has(text))
+			comments.set(text, written);
 		for (const prop of node.props)
 		{
 			const id = ALIASES[prop.id] ?? prop.id;
@@ -152,13 +160,6 @@ function propertyCounts(tree)
 			if (POINT_LISTS.has(prop.id))
 				count = prop.values.reduce((sum, value) => sum + pointsIn(value), 0);
 			counts.set(id, (counts.get(id) ?? 0) + count);
-			if (id === 'C')
-				for (const value of prop.values)
-				{
-					const text = value.trim().replace(/^\+/, '').trim();
-					if (text)
-						comments.push(text);
-				}
 		}
 		node.children.forEach(visit);
 	};

@@ -201,10 +201,15 @@ test('the property check tells the expected changes from the others', () =>
 		['(;FF[4]GM[1]SZ[19]AB[aa][ab][ba][bb]LB[cc:A]C[hi\nthere];B[dd];W[ee]S[ALIVE])', ['G 1→0']],
 		['(;FF[4]GM[1]SZ[19]G[KILL]AB[aa][ab][ba]LB[cc:A]C[hi\nthere];B[dd];W[ee]S[ALIVE])', ['AB 4→3']],
 		['(;FF[4]GM[1]SZ[19]G[KILL]AB[aa][ab][ba][bb]C[hi\nthere];B[dd];W[ee]S[ALIVE])', ['LB 1→0']],
-		['(;FF[4]GM[1]SZ[19]G[KILL]AB[aa][ab][ba][bb]LB[cc:A]C[hi];B[dd];W[ee]S[ALIVE])', ['C lost: "there"']],
+		['(;FF[4]GM[1]SZ[19]G[KILL]AB[aa][ab][ba][bb]LB[cc:A]C[hi];B[dd];W[ee]S[ALIVE])', ['C lost: "hi\\nthere"']],
 		['(;FF[4]GM[1]SZ[19]G[KILL]AB[aa][ab][ba][bb]LB[cc:A]C[hi\nthere];B[dd];W[ee])', ['S 1→0']],
 		['(;FF[4]GM[1]SZ[19]G[KILL]AB[aa][ab][ba][bb]LB[cc:A]C[hi\nthere];B[dd]S[ALIVE])', ['W 1→0']]])
 		assert.deepEqual(check(was, after), unexpected, after);
+	//a comment is compared whole: one inside another comment is still lost (sgf 16088 of the site), and a ++ shows as it was
+	assert.deepEqual(check('(;SZ[19]C[Wrong\nEye shape];B[aa]C[Eye shape])', '(;FF[4]GM[1]SZ[19]ST[0]C[Wrong\nEye shape];B[aa])'), ['C lost: "Eye shape"']);
+	assert.deepEqual(check('(;SZ[19];B[aa]C[++])', '(;FF[4]GM[1]SZ[19]ST[0];B[aa])'), ['C lost: "++"']);
+	//the same comment twice, on a line and the line merged into it, may be written once
+	assert.deepEqual(check('(;SZ[19](;B[aa]C[Same])(;B[bb]C[Same]))', '(;FF[4]GM[1]SZ[19]ST[0](;B[aa]C[Same])(;B[bb]))'), []);
 	//moves merged into a transposition are written once, and a property besogo doesn't know is never dropped unseen
 	assert.deepEqual(check('(;SZ[19](;B[aa];W[bb])(;B[cc]))', '(;FF[4]GM[1]SZ[19]ST[0](;B[aa])(;B[cc]))', true), []);
 	assert.deepEqual(check('(;SZ[19]XY[1];B[aa])', '(;FF[4]GM[1]SZ[19]ST[0];B[aa])'), ['XY 1→0']);
