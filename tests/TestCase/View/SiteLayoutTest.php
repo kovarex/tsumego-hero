@@ -15,7 +15,6 @@ class SiteLayoutTest extends IntegrationTestCase
 		$scriptHosts = $browser->driver->executeScript('return Array.from(document.scripts).filter(script => script.src).map(script => new URL(script.src).host);');
 		$this->assertNotEmpty($scriptHosts);
 		$this->assertSame([parse_url(Util::getMyAddress(), PHP_URL_HOST) . ':' . parse_url(Util::getMyAddress(), PHP_URL_PORT)], array_values(array_unique($scriptHosts)));
-		$this->assertSame('2.1.3', $browser->driver->executeScript('return jQuery.fn.jquery;'));
 	}
 
 	public function testGuestHearsSoundUntilTurningItOff()

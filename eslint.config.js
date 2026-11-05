@@ -8,9 +8,8 @@ import stylistic from '@stylistic/eslint-plugin';
 export default tseslint.config(
 	//Of webroot, only the legacy scripts are linted
 	{ ignores: ['webroot/*', '!webroot/js', 'webroot/besogo/*', '!webroot/besogo', '!webroot/besogo/js', 'vendor', 'tmp', 'node_modules', 'build'] },
-	//The legacy global scripts of webroot (vite.config.js bundles them) are on their way off jQuery:
-	//a converted file can't use it again. A file still using it disables the rule at its top until
-	//it is converted.
+	//The legacy global scripts of webroot (vite.config.js bundles them): the site doesn't load jQuery,
+	//so they can't use it.
 	{
 		files: ['webroot/js/**/*.js', 'webroot/besogo/js/**/*.js'],
 		languageOptions: {
@@ -23,8 +22,8 @@ export default tseslint.config(
 		},
 		rules: {
 			'no-restricted-globals': ['error',
-				{ name: '$', message: 'jQuery is being removed; use the DOM, fetch, or Display (webroot/js/Display.js).' },
-				{ name: 'jQuery', message: 'jQuery is being removed; use the DOM, fetch, or Display (webroot/js/Display.js).' }],
+				{ name: '$', message: 'The site doesn\'t load jQuery; use the DOM, fetch, or Display (webroot/js/Display.js).' },
+				{ name: 'jQuery', message: 'The site doesn\'t load jQuery; use the DOM, fetch, or Display (webroot/js/Display.js).' }],
 		},
 	},
 	{

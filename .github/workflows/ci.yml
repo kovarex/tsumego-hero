@@ -111,7 +111,7 @@ jobs:
       - name: Test build and deploy scripts
         run: pnpm run test:scripts
 
-      # The legacy scripts of webroot that are off jQuery stay off it (eslint.config.js)
+      # The legacy scripts of webroot stay off jQuery, which the site no longer loads (eslint.config.js)
       - name: Lint the legacy scripts
         run: pnpm run lint:legacy
 
