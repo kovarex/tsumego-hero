@@ -2,31 +2,12 @@
 
 namespace App\Utility;
 
+//Compares problem A with other problems, in every symmetry of the board. A is transformed once, so
+//comparing it with many problems (the similar search) costs only the comparisons.
 class BoardComparator
 {
 	//The most stones two problems can differ in and still be similar
 	private const MAXIMUM_DIFFERENCE = 5;
-
-	public static function compare(
-		array $aStones,
-		string $aFirstMoveColor,
-		array $aCorrectMoves,
-		array $bStones,
-		string $bFirstMoveColor,
-		array $bCorrectMoves): ?BoardComparisonResult
-	{
-		if (empty($aStones) || empty($bStones))
-			return null;
-
-		if (($aFirstMoveColor == 'N') != ($bFirstMoveColor == 'N'))
-			return null;
-
-		// correct moves length was supposed to be checked long before this step as optimisation
-		if (empty($aCorrectMoves))
-			return self::compareWithoutCorrectMoves($aStones, $bStones);
-
-		return self::closest(self::candidates($aStones, $aFirstMoveColor, $aCorrectMoves, $bFirstMoveColor, $bCorrectMoves), $bStones);
-	}
 
 	//The 8 symmetries of the board as the flags of BoardPosition::transformed: the identity and the
 	//mirrors first, so that on a tie the simplest one is shown, then the rotations and the diagonals
@@ -40,89 +21,114 @@ class BoardComparator
 		BoardPosition::MIRROR_Y | BoardPosition::TRANSPOSE,
 		BoardPosition::MIRROR_X | BoardPosition::MIRROR_Y | BoardPosition::TRANSPOSE];
 
-	//A in each symmetry of the board that puts its correct moves onto those of B, pivoting on their
-	//lowest corner, with the colors as they are and switched; made as they are asked for
-	/** @return \Generator<int, array<int, int>> */
-	private static function candidates(array $aStones, string $aFirstMoveColor, array $aCorrectMoves, string $bFirstMoveColor, array $bCorrectMoves): \Generator
-	{
-		$bCorrectLowest = SgfBoard::getLowestPosition($bCorrectMoves);
-		// a problem without a first move can be either color's, so both are tried
-		$anyColor = $aFirstMoveColor == 'N';
-		foreach (self::SYMMETRIES as $symmetry)
-		{
-			$aCorrectMovesTransformed = SgfBoard::getPositionsTransformed($aCorrectMoves, $symmetry);
-			// we always shift A to B, so we can later show diff positions relative to original B
-			$shift = BoardPosition::diff(SgfBoard::getLowestPosition($aCorrectMovesTransformed), $bCorrectLowest);
-			if (!self::positionArraysMatch(SgfBoard::getShiftedPositions($aCorrectMovesTransformed, $shift), $bCorrectMoves))
-				continue;
-			$aTransformed = SgfBoard::getShiftedPositions(SgfBoard::getPositionsTransformed($aStones, $symmetry), $shift);
-			if ($anyColor || $aFirstMoveColor == $bFirstMoveColor)
-				yield $aTransformed;
-			if ($anyColor || $aFirstMoveColor != $bFirstMoveColor)
-				yield SgfBoard::getColorSwitchedStones($aTransformed);
-		}
-	}
+	//A in each symmetry of the board: its stones, its correct moves, and the lowest corner of those
+	//(of the stones when it has no correct moves) that is put onto the same corner of B
+	/** @var list<array{stones: array<int, int>, correctMoves: array<int, mixed>, lowest: int}> */
+	private array $symmetries = [];
 
-	public static function compareWithoutCorrectMoves(array $aStones, array $bStones): ?BoardComparisonResult
-	{
-		return self::closest(self::candidatesWithoutCorrectMoves($aStones, SgfBoard::getLowestPosition($bStones)), $bStones);
-	}
-
-	//A in each symmetry of the board, pivoting on the lowest corner of the stones, with the colors as
-	//they are and switched; made as they are asked for
-	/** @return \Generator<int, array<int, int>> */
-	private static function candidatesWithoutCorrectMoves(array $aStones, int $bLowest): \Generator
+	public function __construct(private array $aStones, private string $aFirstMoveColor, private array $aCorrectMoves)
 	{
 		foreach (self::SYMMETRIES as $symmetry)
 		{
-			$aTransformed = SgfBoard::getPositionsTransformed($aStones, $symmetry);
-			$aShifted = SgfBoard::getShiftedPositions($aTransformed, BoardPosition::diff(SgfBoard::getLowestPosition($aTransformed), $bLowest));
-			yield $aShifted;
-			yield SgfBoard::getColorSwitchedStones($aShifted);
+			$stones = SgfBoard::getPositionsTransformed($aStones, $symmetry);
+			$correctMoves = SgfBoard::getPositionsTransformed($aCorrectMoves, $symmetry);
+			$this->symmetries[] = [
+				'stones' => $stones,
+				'correctMoves' => $correctMoves,
+				'lowest' => SgfBoard::getLowestPosition(empty($aCorrectMoves) ? $stones : $correctMoves)];
 		}
 	}
 
-	//The candidate with the fewest stones different from B, the first of them on a tie, null when
-	//there is none or it differs in more than MAXIMUM_DIFFERENCE stones
-	/** @param iterable<array<int, int>> $candidates */
-	private static function closest(iterable $candidates, array $bStones): ?BoardComparisonResult
+	public static function compare(
+		array $aStones,
+		string $aFirstMoveColor,
+		array $aCorrectMoves,
+		array $bStones,
+		string $bFirstMoveColor,
+		array $bCorrectMoves): ?BoardComparisonResult
 	{
+		return new self($aStones, $aFirstMoveColor, $aCorrectMoves)->compareWith($bStones, $bFirstMoveColor, $bCorrectMoves);
+	}
+
+	//The closest of A's symmetries, with the colors as they are and switched, that puts the correct
+	//moves of A onto those of B; null when there is none or it differs in more than MAXIMUM_DIFFERENCE
+	//stones. On a tie the first is taken, and a symmetry with no difference ends the search.
+	public function compareWith(array $bStones, string $bFirstMoveColor, array $bCorrectMoves): ?BoardComparisonResult
+	{
+		if (empty($this->aStones) || empty($bStones))
+			return null;
+
+		if (($this->aFirstMoveColor == 'N') != ($bFirstMoveColor == 'N'))
+			return null;
+
+		// correct moves length was supposed to be checked long before this step as optimisation
+		$withCorrectMoves = !empty($this->aCorrectMoves);
+		$bLowest = SgfBoard::getLowestPosition($withCorrectMoves ? $bCorrectMoves : $bStones);
+		// without correct moves, or without a first move, the problem can be either color's, so both are tried
+		$anyColor = !$withCorrectMoves || $this->aFirstMoveColor == 'N';
+		$colorSwitches = [];
+		if ($anyColor || $this->aFirstMoveColor == $bFirstMoveColor)
+			$colorSwitches[] = false;
+		if ($anyColor || $this->aFirstMoveColor != $bFirstMoveColor)
+			$colorSwitches[] = true;
+
 		$closest = null;
 		$smallestDiff = null;
-		foreach ($candidates as $candidate)
+		foreach ($this->symmetries as $symmetry)
 		{
-			$diff = self::compareSingle($candidate, $bStones);
-			if ($smallestDiff === null || $diff < $smallestDiff)
+			// we always shift A to B, so we can later show diff positions relative to original B
+			$shift = BoardPosition::diff($symmetry['lowest'], $bLowest);
+			if ($withCorrectMoves && !self::allShiftedAreIn($symmetry['correctMoves'], $shift, $bCorrectMoves))
+				continue;
+			foreach ($colorSwitches as $colorsSwitched)
 			{
-				$closest = $candidate;
-				$smallestDiff = $diff;
-				if ($diff === 0) // no later candidate can be closer, nor need to be made
-					break;
+				$diff = self::difference($symmetry['stones'], $shift, $colorsSwitched, $bStones);
+				if ($smallestDiff === null || $diff < $smallestDiff)
+				{
+					$closest = [$symmetry['stones'], $shift, $colorsSwitched];
+					$smallestDiff = $diff;
+					if ($diff === 0) // no later candidate can be closer
+						break 2;
+				}
 			}
 		}
 		if ($smallestDiff === null || $smallestDiff > self::MAXIMUM_DIFFERENCE)
 			return null;
-		return new BoardComparisonResult($smallestDiff, SgfBoard::getDifferentStones($closest, $bStones));
+
+		[$stones, $shift, $colorsSwitched] = $closest;
+		$aOnB = SgfBoard::getShiftedPositions($stones, $shift);
+		if ($colorsSwitched)
+			$aOnB = SgfBoard::getColorSwitchedStones($aOnB);
+		return new BoardComparisonResult($smallestDiff, SgfBoard::getDifferentStones($aOnB, $bStones));
 	}
 
-	public static function compareSingle(array $stonesA, array $stonesB): int
+	//The number of stones A shifted (its colors switched when asked) and B differ in: those of A that B
+	//doesn't have or has in the other color, and those of B that A doesn't have. Counted without making
+	//the shifted A, as this runs for every symmetry of every compared problem.
+	private static function difference(array $aStones, int $shift, bool $colorsSwitched, array $bStones): int
 	{
 		$diff = 0;
-		foreach ($stonesA as $position => $color)
-			if (!isset($stonesB[$position]) || $stonesB[$position] != $color)
+		$inBoth = 0;
+		foreach ($aStones as $position => $color)
+		{
+			$bPosition = BoardPosition::shift($position, $shift);
+			if (!isset($bStones[$bPosition]))
 				$diff++;
-		foreach ($stonesB as $position => $color)
-			if (!isset($stonesA[$position]))
-				$diff++;
-		return $diff;
+			else
+			{
+				$inBoth++;
+				if ($bStones[$bPosition] != ($colorsSwitched ? 1 - $color : $color))
+					$diff++;
+			}
+		}
+		return $diff + count($bStones) - $inBoth;
 	}
 
-	// I'm assuming $a and $b are arrays of packed positions, and they have
-	// already been checked to have the same size and are unique
-	private static function positionArraysMatch(array $a, array $b): bool
+	//Whether each of the positions, shifted, is one of B's; the correct moves were checked to be as many
+	private static function allShiftedAreIn(array $positions, int $shift, array $bPositions): bool
 	{
-		foreach ($a as $position => $x)
-			if (!isset($b[$position]))
+		foreach ($positions as $position => $x)
+			if (!isset($bPositions[BoardPosition::shift($position, $shift)]))
 				return false;
 		return true;
 	}
