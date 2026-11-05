@@ -1,4 +1,3 @@
-/* eslint-disable no-restricted-globals -- still uses jQuery until it is converted */
 besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
   // Creates an associated game state tree
   var root = besogo.makeGameRoot(sizeX, sizeY),

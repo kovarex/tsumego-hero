@@ -1,4 +1,3 @@
-/* eslint-disable no-restricted-globals -- still uses jQuery until it is converted */
 class TimeModeTimer
 {
 	constructor(secondsToSolve)
@@ -16,7 +15,9 @@ class TimeModeTimer
 
 	updateTimeModeCaption()
 	{
-		$("#time-mode-countdown").html(`${Math.floor(this.remaining/60)}:${(this.remaining%60).toFixed(1).padStart(4,"0")}`);
+		let countdown = document.getElementById("time-mode-countdown");
+		if (countdown)
+			countdown.innerHTML = `${Math.floor(this.remaining/60)}:${(this.remaining%60).toFixed(1).padStart(4,"0")}`;
 	}
 
 	timeModeUpdate()
@@ -34,7 +35,9 @@ class TimeModeTimer
 			else
 				submitResult(playOutcome.timedOut);
 
-			$("#time-mode-countdown").css("color","var(--feedback-error)");
+			let countdown = document.getElementById("time-mode-countdown");
+			if (countdown)
+				countdown.style.color = "var(--feedback-error)";
 			document.getElementById("status").style.color = "var(--feedback-error)";
 			document.getElementById("status").innerHTML = "<h2>Time's up!</h2>";
 			this.stop();

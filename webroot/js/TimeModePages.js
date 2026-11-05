@@ -1,13 +1,19 @@
-/* eslint-disable no-restricted-globals -- still uses jQuery until it is converted */
 //The pages of the time mode around its runs: the overview, where the player picks a category and a
 //rank, and the results. Each page prints its data (timeModeOverviewPage, timeModeResultPage).
 
 //On the overview the account bar is the bar of the time mode, full, with the given text
 function showTimeModeAccountBar(text)
 {
-	$('#xp-bar-fill').attr('class', 'xp-bar-fill-c3').css('width', '100%');
-	$('#account-bar-user a').attr('class', 'xp-text-fill-c3x');
-	$('#account-bar-xp').text(text);
+	const fill = document.getElementById('xp-bar-fill');
+	if (fill)
+	{
+		fill.className = 'xp-bar-fill-c3';
+		fill.style.width = '100%';
+	}
+	document.querySelectorAll('#account-bar-user a').forEach(link => link.className = 'xp-text-fill-c3x');
+	const xp = document.getElementById('account-bar-xp');
+	if (xp)
+		xp.textContent = text;
 }
 
 //The overview shows the ranks of one category at a time, the one picked last, which a cookie remembers
@@ -59,12 +65,16 @@ function initTimeModeResult(page)
 			title.querySelector('.rankArrow').setAttribute('src', opening ? page.rankArrowOpened : page.rankArrowClosed);
 		});
 
+	//The toasts fade in once the page is loaded, like jQuery's ready: at DOMContentLoaded, or now when it was
 	if (page.unlock)
-		$(document).ready(function() {
-			$('.toast').fadeIn(500);
-		});
+	{
+		if (document.readyState === 'loading')
+			document.addEventListener('DOMContentLoaded', () => Display.fadeIn('.toast', 500));
+		else
+			Display.fadeIn('.toast', 500);
+	}
 
-	$('#alertCheckbox').change(function() {
-		$('.toast').fadeOut(500);
-	});
+	const alertCheckbox = document.getElementById('alertCheckbox');
+	if (alertCheckbox)
+		alertCheckbox.addEventListener('change', () => Display.fadeOut('.toast', 500));
 }

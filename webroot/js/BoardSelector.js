@@ -1,4 +1,3 @@
-/* eslint-disable no-restricted-globals -- still uses jQuery until it is converted */
 class BoardSelector
 {
 	// Note: this data is duplicated in BoardSelector.php
@@ -122,7 +121,9 @@ class BoardSelector
 				this.select(board.index, true)
 		});
 
-		$("#boards-unselect-all").html(newValue ? "Unselect all" : "Select all");
+		let unselectAll = document.getElementById("boards-unselect-all");
+		if (unselectAll)
+			unselectAll.innerHTML = newValue ? "Unselect all" : "Select all";
 		this.saveCookie();
 	}
 
