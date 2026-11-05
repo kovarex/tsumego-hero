@@ -181,6 +181,35 @@ class SitesControllerTest extends IntegrationTestCase
 		$this->assertCount(2, $browser->getElements('.problem-nav__number'));
 	}
 
+	//The problems of a set published together are shown in the order of their numbers, whatever order
+	//they were created in.
+	public function testLatestAdditionsShowEachSetInTheOrderOfItsNumbers(): void
+	{
+		$context = new ContextPreparator(['tsumegos' => [
+			['sets' => [['name' => 'Evaluation', 'num' => '3']]],
+			['sets' => [['name' => 'Other', 'num' => '2']]],
+			['sets' => [['name' => 'Evaluation', 'num' => '1']]],
+			['sets' => [['name' => 'Other', 'num' => '1']]],
+			['sets' => [['name' => 'Evaluation', 'num' => '2']]],
+		]]);
+		$today = date('Y-m-d');
+		foreach ($context->tsumegos as $tsumego)
+			$this->addScheduleEntry([
+				'tsumego_id' => $tsumego['id'],
+				'set_id' => $tsumego['set-connections'][0]['set_id'],
+				'date' => $today,
+				'published' => 1,
+			]);
+
+		$this->get('/');
+
+		$numbersBySet = [];
+		foreach ($this->viewVariable('tsumegoButtonsOfPublishedTsumegos') as $button)
+			$numbersBySet[$button->setTitle][] = $button->order;
+		$this->assertSame([1, 2, 3], $numbersBySet['Evaluation']);
+		$this->assertSame([1, 2], $numbersBySet['Other']);
+	}
+
 	//Test that the index page loads successfully with day_record data
 	public function testIndexPageLoadsWithDayRecord()
 	{
