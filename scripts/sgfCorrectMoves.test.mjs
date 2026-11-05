@@ -90,3 +90,55 @@ test('the script reads JSON lines and answers each, a broken SGF with its error'
 	assert.deepEqual(lines[3], { id: 9, error: 'no sgf text' });
 	assert.equal(lines.length, 4);
 });
+
+const normalised = sgf => analyse(besogo, sgf, true);
+
+//A problem in any corner ends in the top-left one, with its correct moves turned along
+test('normalising turns a problem in any corner to the top-left', () =>
+{
+	for (const [sgf, flipX, flipY] of [
+		['(;SZ[19]AB[rb][sb](;B[sa]C[+])(;B[ra];W[sa]))', true, false],
+		['(;SZ[19]AB[br][bs](;B[as]C[+])(;B[ar];W[as]))', false, true],
+		['(;SZ[19]AB[rr][rs](;B[ss]C[+])(;B[sr];W[ss]))', true, true]])
+	{
+		const result = normalised(sgf);
+		assert.deepEqual(result.transformation, { transpose: false, flipX, flipY, invertColors: false }, sgf);
+		assert.equal(result.changed, true);
+		assert.equal(result.correct_moves, 'aa', sgf);
+		assert.match(result.sgf, /AB\[ba\]\[bb\]|AB\[ab\]\[bb\]/, sgf);
+	}
+});
+
+test('normalising puts the correct variations first at every level, the others in their order', () =>
+{
+	//the correct first move is third, and after it the correct answer to white second
+	const result = normalised('(;SZ[19]AB[cc](;B[ba];W[ab])(;B[ca];W[ab])(;B[aa];W[ab](;B[ca];W[ba])(;B[bb]C[+])))');
+	assert.equal(result.changed, true);
+	assert.equal(result.sgf.replace(/\s/g, ''), '(;FF[4]GM[1]SZ[19]ST[0]AB[cc](;B[aa];W[ab](;B[bb]C[+])(;B[ca];W[ba]))(;B[ba];W[ab])(;B[ca];W[ab]))');
+	assert.equal(result.correct_moves, 'aa');
+});
+
+test('a problem already normalised keeps its text, and normalising twice changes nothing', () =>
+{
+	const done = '(;SZ[19]AB[bb](;B[aa]C[+])(;B[dd];W[aa]))';
+	assert.deepEqual(normalised(done), { first_move_color: 'B', correct_moves: 'aa', problem: null, sgf: done, changed: false,
+		transformation: { transpose: false, flipX: false, flipY: false, invertColors: false } });
+	for (const sgf of [PROBLEM_979, PROBLEM_27583, '(;SZ[19]AB[rr][rs](;B[sr];W[ss])(;B[ss]C[+]))'])
+	{
+		const once = normalised(sgf);
+		const twice = normalised(once.sgf);
+		assert.equal(twice.changed, false);
+		assert.equal(twice.sgf, once.sgf);
+		assert.equal(twice.correct_moves, once.correct_moves);
+	}
+});
+
+test('the two problems of the report end in the top-left corner with their correct move ac', () =>
+{
+	const a = normalised(PROBLEM_979);
+	const b = normalised(PROBLEM_27583);
+	assert.deepEqual([a.correct_moves, a.transformation.flipX, a.transformation.flipY], ['ac', false, true]);
+	assert.deepEqual([b.correct_moves, b.transformation.flipX, b.transformation.flipY], ['ac', true, true]);
+	//the correct line, fourth in 979, comes first
+	assert.match(a.sgf, /^\(;[^(]*\n\(;B\[ac\]/);
+});

@@ -5,8 +5,10 @@
 //and the problem that keeps the board editor from saving it, if any.
 //It runs the very files of webroot/besogo/js the site serves, in a context of their own with the few browser
 //globals they touch stubbed, so the rules of correct and wrong (statuses, goals, transpositions) are not forked.
-//Input on stdin: JSON lines, each {"id": any, "sgf": "(;...)"}. Output on stdout: a JSON line for each, in order,
-//{"id", "first_move_color", "correct_moves", "problem"} or {"id", "error"} when the SGF can't be read.
+//With "normalise": true it also gives the SGF as the site stores it (normalise below), and the values are of that SGF.
+//Input on stdin: JSON lines, each {"id": any, "sgf": "(;...)", "normalise"?: bool}. Output on stdout: a JSON line for
+//each, in order, {"id", "first_move_color", "correct_moves", "problem"} (and with normalise "sgf", "transformation",
+//"changed"), or {"id", "error"} when the SGF can't be read.
 import { readFileSync } from 'node:fs';
 import { createInterface } from 'node:readline';
 import { dirname, join } from 'node:path';
@@ -22,10 +24,12 @@ const FILES = [
 	'transformation.js',
 	'treeProblemUpdater.js',
 	'nodeHashTable.js',
+	'editor.js',
 	'gameRoot.js',
 	'status.js',
 	'parseSgf.js',
 	'loadSgf.js',
+	'saveSgf.js',
 	'scaleParameters.js'];
 
 export function makeBesogo()
@@ -45,20 +49,54 @@ export function makeBesogo()
 	return vm.runInContext('({ besogo, BLACK })', context);
 }
 
-//The analysis of one SGF text, as the setup pages of the site did it on the loaded board
-export function analyse({ besogo, BLACK }, sgf)
+//The analysis of one SGF text, as the setup pages of the site did it on the loaded board. With normalise, the SGF
+//the site stores for it comes along (normalise below) and the values are those of that SGF.
+export function analyse({ besogo, BLACK }, sgf, normalise = false)
 {
-	let root = null;
-	//loadSgf hands the editor what it read; only the tree is kept
-	const editor = { setGameInfo() {}, setVariantStyle() {}, loadRoot(loaded) { root = loaded; } };
+	const editor = besogo.makeEditor(19, 19, {});
 	besogo.loadSgf(besogo.parseSgf(sgf), editor);
+	const result = normalise ? normaliseLoaded(besogo, editor) : {};
+	const root = editor.getRoot();
 	const next = root.nextMove();
 	const problem = root.checkTsumegoHeroCompatibility(root);
 	return {
 		first_move_color: next ? (next == BLACK ? 'B' : 'W') : 'N',
 		correct_moves: root.exportCorrectMoves(),
-		problem: problem ? problem.message + ' (move ' + problem.node.moveNumber + ')' : null
+		problem: problem ? problem.message + ' (move ' + problem.node.moveNumber + ')' : null,
+		...(normalise ? { sgf: result.changed ? besogo.composeSgf(editor) : sgf, ...result } : {})
 	};
+}
+
+//The problem as the site stores it: turned to the top-left corner the way besogo turns it to show it
+//(scaleParameters.prepareTransformation in parseAndLoad), and the correct variations first at every level of the
+//tree, the others in the order they were. A problem already like that keeps its text (changed is false); otherwise
+//the text is composed as the board editor saves it. transformation goes from the old coordinates to the new ones,
+//as App\Utility\BoardTransformation reads it.
+function normaliseLoaded(besogo, editor)
+{
+	const turn = besogo.makeTransformation();
+	besogo.scaleParameters.prepareTransformation(turn);
+	if (turn.hFlip || turn.vFlip)
+		editor.applyTransformation(turn);
+	const reordered = correctFirst(editor.getRoot());
+	//a plain object, the one of besogo comes from its own context
+	const transformation = JSON.parse(JSON.stringify(editor.getTransformationFromSgf()));
+	return { transformation, changed: reordered || transformation.transpose || transformation.flipX || transformation.flipY };
+}
+
+//Puts the correct children of every node of the tree before the others, keeping the order within each; whether it moved any
+function correctFirst(node, seen = new Set())
+{
+	if (seen.has(node))
+		return false;
+	seen.add(node);
+	const CORRECT_GOOD = 1;
+	const sorted = node.children.filter(child => child.correct == CORRECT_GOOD).concat(node.children.filter(child => child.correct != CORRECT_GOOD));
+	let moved = sorted.some((child, index) => child !== node.children[index]);
+	node.children.splice(0, node.children.length, ...sorted);
+	for (const child of node.children)
+		moved = correctFirst(child, seen) || moved;
+	return moved;
 }
 
 async function main()
@@ -77,7 +115,7 @@ async function main()
 			id = input.id ?? null;
 			if (typeof input.sgf !== 'string')
 				throw new Error('no sgf text');
-			result = { id, ...analyse(loaded, input.sgf) };
+			result = { id, ...analyse(loaded, input.sgf, input.normalise === true) };
 		}
 		catch (error)
 		{
