@@ -10,8 +10,8 @@ use Cake\Mailer\Transport\MailTransport;
 //signature lets DMARC align with the From domain, which strict receivers (T-Online, ...) require.
 //The server's config/core.local.php turns it on, the key stays outside the repository:
 //Configure::write('EmailTransport.default.dkim', ['domain' => 'tsumego.com', 'selector' => 'nfsn', 'privateKey' => '/home/protected/dkim/nfsn.pem']);
-//The key goes to /home/protected, which the site's PHP can read and the web never serves; NFSN's
-///home/private is out of the web server's reach, so a key there can't be read.
+//The key goes to /home/protected, which the site's PHP can read and the web never serves; a key in
+//NFSN's /home/private is out of the web server's reach and can't be read.
 //privateKey is a path to the PEM file or the PEM itself. Without it (local, CI) the mail goes out unsigned.
 class DkimMailTransport extends MailTransport
 {
