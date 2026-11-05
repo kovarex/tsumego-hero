@@ -1,6 +1,7 @@
 <?php
 
 use App\Utility\SgfAnalysis;
+
 class SandboxSgfUploadTest extends IntegrationTestCase
 {
 	public function testAddTsumegoWithSgfFileUpload()
