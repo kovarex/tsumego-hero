@@ -148,4 +148,18 @@ class NormaliseSgfsCommandTest extends AppTestCase
 		$this->assertSame([$context->tsumegos[1]['id']], $found(0));
 		$this->assertSame([$context->tsumegos[0]['id']], $found(1));
 	}
+
+	//A row whose rewrite besogo wouldn't play the same, here because it plays on an occupied point, is kept and named
+	public function testARowThatWouldPlayDifferentlyIsKept(): void
+	{
+		//sgf 16731 of the site: B[ld] is played a second time where it already stands
+		$sgf = '(;GM[1]FF[4]SZ[19]AW[mc][pc][jd][pd][qd][me][ne][oe][pf][qf][rf][og]AB[nd][od][pe][qe][re][kf][lf][mf][nf][of](;B[md];W[le](;B[kd];W[se](;B[ke];W[rd](;B[ld]C[+])(;B[pe]C[+]))(;B[ld];W[rd](;B[ld]C[+])(;B[pe]C[+])))(;B[ld];W[ke])(;B[ke];W[ld];B[kd];W[lc]))(;B[le];W[md]))';
+		$context = new ContextPreparator(['tsumego' => ['sgf' => ['data' => $sgf]]]);
+		$id = $this->sgfRow($context->tsumegos[0]['id'])['id'];
+		$this->exec('normalise_sgfs --write --show 0 --sgf ' . $id);
+
+		$this->assertOutputContains("1 that would play differently (kept as they are): $id");
+		$this->assertOutputContains("sgf $id before:");
+		$this->assertSame($sgf, $this->sgfRow($context->tsumegos[0]['id'])['sgf']);
+	}
 }

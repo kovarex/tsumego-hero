@@ -151,6 +151,8 @@ class NormaliseSgfsCommand extends Command
 				continue;
 			}
 
+			if (in_array($id, $this->printed, true))
+				$this->console->out("sgf $id before:\n" . $row['sgf'] . "\nsgf $id after:\n" . $analysis->sgf);
 			if (!$analysis->samePlay)
 			{
 				$this->playingDifferently[] = $id;
@@ -164,8 +166,6 @@ class NormaliseSgfsCommand extends Command
 				$this->examples[$kind][] = $tsumegoID;
 			$this->listChange($id, $tsumegoID, $kind, $row, $analysis);
 			$this->countDroppedProperties($id, (string) $row['sgf'], (string) $analysis->sgf);
-			if (in_array($id, $this->printed, true))
-				$this->console->out("sgf $id before:\n" . $row['sgf'] . "\nsgf $id after:\n" . $analysis->sgf);
 
 			if ($this->write)
 			{
@@ -251,13 +251,18 @@ class NormaliseSgfsCommand extends Command
 			$row['first_move_color'] ?? 'NULL', $analysis->firstMoveColor, $row['correct_moves'] === null ? 'NULL' : "'" . $row['correct_moves'] . "'", "'" . $analysis->correctMoves . "'"));
 	}
 
+	//The first ids of a list of rows, all of them that are kept are worth looking at, whatever --show says
+	/** @param list<int> $ids */
+	private static function ids(array $ids): string
+	{
+		return $ids ? ': ' . implode(', ', array_slice($ids, 0, 50)) . (count($ids) > 50 ? ', ...' : '') : '';
+	}
+
 	private function report(float $seconds): void
 	{
 		$this->console->out(implode(', ', array_map(fn($name, $count) => "$count $name", array_keys($this->counts), $this->counts))
-			. ', ' . count($this->unreadable) . ' unreadable (kept as they are)'
-			. ($this->unreadable ? ': ' . implode(', ', array_slice($this->unreadable, 0, $this->show)) . (count($this->unreadable) > $this->show ? ', ...' : '') : '')
-			. ', ' . count($this->playingDifferently) . ' that would play differently (kept as they are)'
-			. ($this->playingDifferently ? ': ' . implode(', ', array_slice($this->playingDifferently, 0, $this->show)) . (count($this->playingDifferently) > $this->show ? ', ...' : '') : ''));
+			. ', ' . count($this->unreadable) . ' unreadable (kept as they are)' . self::ids($this->unreadable)
+			. ', ' . count($this->playingDifferently) . ' that would play differently (kept as they are)' . self::ids($this->playingDifferently));
 		arsort($this->droppedProperties);
 		$this->console->out('Properties the rewritten rows lose: ' . ($this->droppedProperties
 			? implode(', ', array_map(fn($property, $count) => "$property $count", array_keys($this->droppedProperties), $this->droppedProperties)) : 'none'));
