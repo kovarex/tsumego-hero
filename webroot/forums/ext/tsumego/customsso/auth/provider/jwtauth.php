@@ -79,22 +79,24 @@ class jwtauth implements provider_interface
 		if (empty($jwtToken))
 			return false;
 
-		// Validate JWT token and get user ID
-		$userId = $this->validateJwtToken($jwtToken);
-		if (!$userId)
+		// Validate JWT token and get its user ID and password claim
+		$claims = $this->validateJwtToken($jwtToken);
+		if (!$claims)
 			return false;
 
 		// Load user from main app database
-		$sql = 'SELECT id, display_name as name, email
+		$sql = 'SELECT id, display_name as name, email, password_hash
         FROM user
-        WHERE id = ' . (int) $userId;
+        WHERE id = ' . (int) $claims['sub'];
 		$result = $this->db->sql_query($sql);
 		$row = $this->db->sql_fetchrow($result);
 		$this->db->sql_freeresult($result);
 
-		if (!$row)
+		// a token of an older password doesn't sign in, as on the site (App\Utility\Auth)
+		if (!$row || !hash_equals($this->passwordClaim($row['password_hash']), $claims['pwd']))
 			return false;
 
+		unset($row['password_hash']);
 		return $this->get_or_create_bb_user($row);
 	}
 
@@ -153,15 +155,15 @@ class jwtauth implements provider_interface
 	}
 
 	/**
-	 * Validate JWT token and extract user ID.
+	 * Validate JWT token and extract the user ID and the password claim.
 	 *
 	 * This duplicates logic from src/Utility/JwtAuth.php
 	 * because we can't easily include CakePHP classes in phpBB context.
 	 *
 	 * @param string $token JWT token
-	 * @return int|null User ID if valid, null otherwise
+	 * @return array{sub: int, pwd: string}|null The claims if valid, null otherwise
 	 */
-	protected function validateJwtToken(string $token): ?int
+	protected function validateJwtToken(string $token): ?array
 	{
 		// Split JWT into parts
 		$parts = explode('.', $token);
@@ -188,35 +190,33 @@ class jwtauth implements provider_interface
 		if (isset($payload['exp']) && $payload['exp'] < time())
 			return null;
 
-		// Extract user ID
-		return isset($payload['sub']) ? (int) $payload['sub'] : null;
+		// Every token of the site carries the user ID and the claim of the password
+		if (!isset($payload['sub'], $payload['pwd']) || !is_string($payload['pwd']))
+			return null;
+		return ['sub' => (int) $payload['sub'], 'pwd' => $payload['pwd']];
 	}
 
 	/**
-	 * Get JWT secret from configuration.
-	 * Parses CakePHP config file to extract Security.salt value.
+	 * The claim a token gets from the password it is issued with, as JwtAuth::claimOf() makes it.
+	 */
+	protected function passwordClaim(string $passwordHash): string
+	{
+		return substr(hash('sha256', $passwordHash), 0, 16);
+	}
+
+	/**
+	 * The secret the site signs the token with: config/jwt_secret.php at the project root, outside
+	 * git, which the site reads too (see config/jwt_secret.example.php). Without it nobody is signed
+	 * in, and the error says why, rather than check with anything weaker.
 	 */
 	protected function getJwtSecret(): string
 	{
-		// Load CakePHP config file
-		// phpbb_root_path points to webroot/forums/, we need config/core.php at project root
-		$configPath = $this->phpbb_root_path . '../../config/core.php';
-
-		if (!file_exists($configPath))
-			throw new \Exception('Config file not found: ' . $configPath);
-
-		$configContent = file_get_contents($configPath);
-
-		// Extract Security.salt value using regex
-		// Matches: Configure::write('Security.salt', 'VALUE');
-		if (preg_match("/Configure::write\\('Security\\.salt',\\s*'([^']+)'/", $configContent, $matches))
-			return $matches[1];
-
-		// Also try Security.jwtSecret if it exists
-		if (preg_match("/Configure::write\\('Security\\.jwtSecret',\\s*'([^']+)'/", $configContent, $matches))
-			return $matches[1];
-
-		throw new \Exception('No JWT secret configured in core.php');
+		// phpbb_root_path points to webroot/forums/, the file is in config/ at the project root
+		$secretPath = $this->phpbb_root_path . '../../config/jwt_secret.php';
+		$secret = file_exists($secretPath) ? require $secretPath : null;
+		if (!is_string($secret) || strlen($secret) < 32)
+			throw new \RuntimeException('The JWT secret is not set (32 characters or more): create config/jwt_secret.php, see config/jwt_secret.example.php.');
+		return $secret;
 	}
 
 	/**

@@ -94,6 +94,7 @@ ddev launch
 	./deploy.sh
 
 This when ran for the first time, it will ask for db credentials and generate the proper config files for cake and forums.
+It also makes the secrets that are not in git when they are missing, random and never printed: `config/jwt_secret.php` (the session cookie, read by the site and the forum) and the `Security.salt` of `config/core.local.php`.
 
 Other than that pulls git, installs composer stuff, sets required folders and their access rights, update minification, runs migrations (also for test db in local environment with ddev).
 So running ./deploy.sh is the way to always update server or dev enrironment to the up to date state.
