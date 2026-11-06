@@ -23,16 +23,16 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">1.68% </span>
+                <span class="strong">1.75% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>2/119</span>
+                <span class='fraction'>2/114</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/70</span>
+                <span class='fraction'>0/65</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">1.69% </span>
+                <span class="strong">1.76% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>2/118</span>
+                <span class='fraction'>2/113</span>
             </div>
         
             
@@ -308,15 +308,7 @@
 <a name='L243'></a><a href='#L243'>243</a>
 <a name='L244'></a><a href='#L244'>244</a>
 <a name='L245'></a><a href='#L245'>245</a>
-<a name='L246'></a><a href='#L246'>246</a>
-<a name='L247'></a><a href='#L247'>247</a>
-<a name='L248'></a><a href='#L248'>248</a>
-<a name='L249'></a><a href='#L249'>249</a>
-<a name='L250'></a><a href='#L250'>250</a>
-<a name='L251'></a><a href='#L251'>251</a>
-<a name='L252'></a><a href='#L252'>252</a>
-<a name='L253'></a><a href='#L253'>253</a>
-<a name='L254'></a><a href='#L254'>254</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L246'></a><a href='#L246'>246</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -437,16 +429,8 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -687,22 +671,14 @@ function <span class="fstat-no" title="function not covered" >semeaiNoEyesInside
 <span class="cstat-no" title="statement not covered" >	return {text: text + underdog.name + " is dead. (" + lead + " move(s) behind)&lt;br&gt;", correct: semeaiDeadAnswer(underdog.name)};</span>
 }
 &nbsp;
-//All inside liberties count for the group with the eye. A few problems show the liberties as the
-//tesujis that gain some leave them.
+//All inside liberties count for the group with the eye
 function <span class="fstat-no" title="function not covered" >semeaiEyeAgainstNoEye(</span>count)
 {
-	let takenFromBlack = <span class="cstat-no" title="statement not covered" >multipleChoiceLibertiesB;</span>
-	let takenFromWhite = <span class="cstat-no" title="statement not covered" >multipleChoiceLibertiesW;</span>
-	let shownBlack = <span class="cstat-no" title="statement not covered" >count - takenFromWhite;</span>
-	let shownWhite = <span class="cstat-no" title="statement not covered" >count - takenFromBlack;</span>
-<span class="cstat-no" title="statement not covered" >	if (tsumegoID == 29827 &amp;&amp; takenFromBlack == 1 &amp;&amp; takenFromWhite == 2)</span>
-	{
-<span class="cstat-no" title="statement not covered" >		takenFromWhite = 1;</span>
-<span class="cstat-no" title="statement not covered" >		shownBlack = shownWhite = 15;</span>
-	}
-	const result = <span class="cstat-no" title="statement not covered" >semeaiPlainRace(count - takenFromWhite, count - takenFromBlack, "The position is unsettled. (Whoever plays first wins.)");</span>
+	const black = <span class="cstat-no" title="statement not covered" >count - multipleChoiceLibertiesW;</span>
+	const white = <span class="cstat-no" title="statement not covered" >count - multipleChoiceLibertiesB;</span>
+	const result = <span class="cstat-no" title="statement not covered" >semeaiPlainRace(black, white, "The position is unsettled. (Whoever plays first wins.)");</span>
 <span class="cstat-no" title="statement not covered" >	result.text = "Semeai Type 3: Eye vs no eye.&lt;br&gt;No Seki possible.&lt;br&gt; All inside liberties count for the group with the eye.&lt;br&gt;Black has "</span>
-		+ semeaiLiberties(shownBlack) + ".&lt;br&gt; White has " + semeaiLiberties(shownWhite) + ".&lt;br&gt;" + result.text;
+		+ semeaiLiberties(black) + ".&lt;br&gt; White has " + semeaiLiberties(white) + ".&lt;br&gt;" + result.text;
 <span class="cstat-no" title="statement not covered" >	return result;</span>
 }
 &nbsp;
@@ -829,7 +805,7 @@ function <span class="fstat-no" title="function not covered" >semeaiLiberties(</
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-11-06T00:30:45.546Z
+                at 2026-11-06T00:37:53.115Z
             </div>
         <script src="../../prettify.js"></script>
         <script>
