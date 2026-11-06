@@ -88,10 +88,18 @@ deploy_steps() {
 	export GIT_CONFIG_KEY_2=pack.windowMemory GIT_CONFIG_VALUE_2=64m
 	export GIT_CONFIG_KEY_3=pack.threads GIT_CONFIG_VALUE_3=1
 	cd "$REPO_DIR"
+	# The checkout must be readable by PHP, which runs as another user, whatever umask the CGI
+	# process got (as deploy.sh does for its pull)
+	umask 022
 	if [ "$1" = 0 ]; then
 		git fetch origin master
 	else
 		git fetch origin "pull/$1/head"
+	fi
+	# The secrets that are not in git before the checkout, so the new code never starts without
+	# them. A checkout from before the script has none; deploy.sh runs it after the checkout too.
+	if [ -f scripts/ensure-secrets.sh ]; then
+		bash scripts/ensure-secrets.sh "$REPO_DIR"
 	fi
 	git checkout --force --detach FETCH_HEAD
 	git log -1 --format='%h %s' > "$STATE_DIR/commit"
