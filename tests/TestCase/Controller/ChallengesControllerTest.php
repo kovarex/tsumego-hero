@@ -924,4 +924,32 @@ class ChallengesControllerTest extends IntegrationTestCase
 		$this->assertCount(3, $browser->getElements('.challenges__standing .challenges__cell--solved'));
 		$browser->assertNoJsErrors();
 	}
+
+	//A problem of the run is reviewed once it is answered, a failed one too, and not before, also when the player
+	//solved it before outside the challenge
+	public function testAProblemOfTheRunCanBeReviewedOnceItIsAnswered(): void
+	{
+		$this->prepare(2);
+		$challengeId = ChallengeTable::start($this->userId('challenger'), $this->rankId('5k'), $this->rankId('5k'), 60, 5);
+		$problemIDs = ChallengeTable::problemIDs($challengeId);
+		Util::execute('INSERT INTO tsumego_status (user_id, tsumego_id, status) VALUES (?, ?, ?)', [$this->userId('challenger'), $problemIDs[0], 'S']);
+		$reviewButton = 'return document.getElementById("besogo-review-button") ? "active" : (document.getElementById("besogo-review-button-inactive") ? "inactive" : "none");';
+
+		$browser = Browser::instance();
+		$browser->get('challenges/' . $challengeId);
+		$playButton = $browser->find('#challenge-play');
+		$playButton->click();
+		$browser->waitUntilStale($playButton);
+		foreach (['F', 'S'] as $answer)
+		{
+			$browser->waitForBoard();
+			$this->assertSame('inactive', $browser->driver->executeScript($reviewButton), "before answering $answer");
+			$browser->playWithResult($answer);
+			$this->assertSame('active', $browser->driver->executeScript($reviewButton), "after answering $answer");
+			$nextButton = $browser->find('#besogo-next-button');
+			$nextButton->click();
+			$browser->waitUntilStale($nextButton);
+		}
+		$browser->assertNoJsErrors();
+	}
 }
