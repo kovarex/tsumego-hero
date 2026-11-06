@@ -1078,6 +1078,9 @@ class ChallengesControllerTest extends IntegrationTestCase
 		$browser->waitUntilJs('document.querySelector(".challenges__line-board svg") !== null');
 		$this->assertSame(['1', '2', '3'], $browser->driver->executeScript('return Array.from(document.querySelectorAll(".challenges__line-board svg text")).map(number => number.textContent);'));
 		$this->assertSame('1', $browser->driver->executeScript('return getComputedStyle(document.querySelector(".challenges__line-board")).opacity;'));
+		//The board sits right under the cell, as a problem button's preview sits under its button
+		$gap = $browser->driver->executeScript('const cell = document.querySelector(".challenges__cell--line").getBoundingClientRect(), board = document.querySelector(".challenges__line-board").getBoundingClientRect(); return [Math.round(board.left - cell.left), Math.round(board.top - cell.bottom)];');
+		$this->assertSame([0, 4], $gap);
 		$browser->assertNoJsErrors();
 	}
 }

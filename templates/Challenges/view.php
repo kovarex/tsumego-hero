@@ -182,7 +182,17 @@ $cellSymbols = ['failed' => '✗', 'timeout' => '⏱', 'skipped' => '–', 'queu
 		});
 
 		// A failed or timed out problem shows the moves played until then, numbered, on its board, when its
-		// cell is pointed at, tapped or focused; the board is drawn the first time and put under the cell.
+		// cell is pointed at, tapped or focused; the board is drawn the first time and put under the cell,
+		// or above it when it doesn't fit below, and follows the cell when the page scrolls.
+		let shownLineCell = null;
+		function placeFailedLine(cell)
+		{
+			const box = cell.querySelector('.challenges__line-board');
+			const rect = cell.getBoundingClientRect();
+			const above = rect.top - 4 - box.offsetHeight;
+			box.style.top = (rect.bottom + 4 + box.offsetHeight > window.innerHeight && above >= 0 ? above : rect.bottom + 4) + 'px';
+			box.style.left = Math.max(4, Math.min(rect.left, window.innerWidth - box.offsetWidth - 4)) + 'px';
+		}
 		function showFailedLine(event)
 		{
 			const cell = event.target.closest('.challenges__cell--line');
@@ -193,20 +203,21 @@ $cellSymbols = ['failed' => '✗', 'timeout' => '⏱', 'skipped' => '–', 'queu
 			{
 				const data = JSON.parse(cell.dataset.failedLine);
 				const svg = createBoard(cell, data.black, data.white, data.xMax, data.yMax, data.boardSize, '', {moves: data.line, firstColor: data.firstColor});
-				// twice the size of a button's preview, so the numbers can be read
+				// half again the size of a button's preview, so the numbers can be read
 				const width = parseFloat(svg.style.width), height = parseFloat(svg.style.height);
 				svg.setAttribute('viewBox', '0 0 ' + width + ' ' + height);
-				svg.style.width = (width * 2) + 'px';
-				svg.style.height = (height * 2) + 'px';
+				svg.style.width = (width * 1.5) + 'px';
+				svg.style.height = (height * 1.5) + 'px';
 			}
-			const rect = cell.getBoundingClientRect();
-			box.style.top = (rect.bottom + 4) + 'px';
-			box.style.left = Math.max(4, Math.min(rect.left, window.innerWidth - box.offsetWidth - 4)) + 'px';
+			shownLineCell = cell;
+			placeFailedLine(cell);
 		}
 		const standings = document.getElementById('challenge-standings');
 		standings.addEventListener('mouseover', showFailedLine);
 		standings.addEventListener('focusin', showFailedLine);
 		standings.addEventListener('click', showFailedLine);
+		// the page, or the table sideways
+		document.addEventListener('scroll', () => shownLineCell && placeFailedLine(shownLineCell), {capture: true, passive: true});
 	</script>
 	<?php endif; ?>
 

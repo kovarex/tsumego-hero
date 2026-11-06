@@ -356,7 +356,9 @@
 	cursor: pointer;
 }
 
-.challenges__line-board
+/* As specific as .challenges__problem .tooltip-box, so the absolute position of .tooltip-box, whose
+   sheet comes later, doesn't win */
+.challenges__cell--line .challenges__line-board
 {
 	position: fixed;
 	border-radius: var(--radius-sm);
