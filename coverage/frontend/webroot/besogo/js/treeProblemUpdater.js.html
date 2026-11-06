@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">70.93% </span>
+                <span class="strong">69.85% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>144/203</span>
+                <span class='fraction'>146/209</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">57.02% </span>
+                <span class="strong">56.69% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>69/121</span>
+                <span class='fraction'>72/127</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">91.66% </span>
+                <span class="strong">84.61% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>11/12</span>
+                <span class='fraction'>11/13</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">68.98% </span>
+                <span class="strong">68.22% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>129/187</span>
+                <span class='fraction'>131/192</span>
             </div>
         
             
@@ -367,7 +367,18 @@
 <a name='L302'></a><a href='#L302'>302</a>
 <a name='L303'></a><a href='#L303'>303</a>
 <a name='L304'></a><a href='#L304'>304</a>
-<a name='L305'></a><a href='#L305'>305</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">88x</span>
+<a name='L305'></a><a href='#L305'>305</a>
+<a name='L306'></a><a href='#L306'>306</a>
+<a name='L307'></a><a href='#L307'>307</a>
+<a name='L308'></a><a href='#L308'>308</a>
+<a name='L309'></a><a href='#L309'>309</a>
+<a name='L310'></a><a href='#L310'>310</a>
+<a name='L311'></a><a href='#L311'>311</a>
+<a name='L312'></a><a href='#L312'>312</a>
+<a name='L313'></a><a href='#L313'>313</a>
+<a name='L314'></a><a href='#L314'>314</a>
+<a name='L315'></a><a href='#L315'>315</a>
+<a name='L316'></a><a href='#L316'>316</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">88x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">89x</span>
 <span class="cline-any cline-yes">89x</span>
@@ -418,8 +429,8 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1219x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">380228x</span>
-<span class="cline-any cline-yes">313132x</span>
+<span class="cline-any cline-yes">379942x</span>
+<span class="cline-any cline-yes">312846x</span>
 <span class="cline-any cline-yes">67096x</span>
 <span class="cline-any cline-yes">67096x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -478,8 +489,19 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1233x</span>
 <span class="cline-any cline-yes">1233x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1233x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1100x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1100x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">133x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1233x</span>
 <span class="cline-any cline-yes">1140x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -782,8 +804,19 @@ besogo.clearCorrectValues = function(node)
 {
   node.correct = CORRECT_EMPTY;
   node.status = null;
+  // A node whose position goes on has no status of its own. The one written on a node that goes on only by a
+  // transposition is set aside, so a save writes it back as it was, and it is the node's status again when it is an end.
   if (node.hasNonLocalChildIncludingVirtual())
+  {
+    <span class="missing-if-branch" title="if path not taken" >I</span>if (node.statusSource &amp;&amp; <span class="branch-1 cbranch-no" title="branch not covered" >!node.children.some(<span class="fstat-no" title="function not covered" >ch</span>ild =&gt; <span class="cstat-no" title="statement not covered" >!child.localEdit)</span>)</span>
+<span class="cstat-no" title="statement not covered" >      node.statusSetAside = node.statusSource;</span>
     node.statusSource = null;
+  }
+  else <span class="missing-if-branch" title="if path not taken" >I</span>if (node.statusSetAside)
+  {
+<span class="cstat-no" title="statement not covered" >    node.statusSource = node.statusSetAside;</span>
+<span class="cstat-no" title="statement not covered" >    node.statusSetAside = null;</span>
+  }
   for (let i = 0; i &lt; node.children.length; ++i)
     besogo.clearCorrectValues(node.children[i]);
 }
@@ -982,7 +1015,7 @@ besogo.updateCorrectValuesBasedOnStatus = <span class="fstat-no" title="function
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-11-06T01:13:31.797Z
+                at 2026-11-06T02:14:04.026Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>

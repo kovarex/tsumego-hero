@@ -23,16 +23,16 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">1.11% </span>
+                <span class="strong">1.06% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>1/90</span>
+                <span class='fraction'>1/94</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/78</span>
+                <span class='fraction'>0/87</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">1.11% </span>
+                <span class="strong">1.06% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>1/90</span>
+                <span class='fraction'>1/94</span>
             </div>
         
             
@@ -251,7 +251,15 @@
 <a name='L186'></a><a href='#L186'>186</a>
 <a name='L187'></a><a href='#L187'>187</a>
 <a name='L188'></a><a href='#L188'>188</a>
-<a name='L189'></a><a href='#L189'>189</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L189'></a><a href='#L189'>189</a>
+<a name='L190'></a><a href='#L190'>190</a>
+<a name='L191'></a><a href='#L191'>191</a>
+<a name='L192'></a><a href='#L192'>192</a>
+<a name='L193'></a><a href='#L193'>193</a>
+<a name='L194'></a><a href='#L194'>194</a>
+<a name='L195'></a><a href='#L195'>195</a>
+<a name='L196'></a><a href='#L196'>196</a>
+<a name='L197'></a><a href='#L197'>197</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">88x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -368,17 +376,25 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -556,10 +572,12 @@ besogo.composeSgf = <span class="fstat-no" title="function not covered" >fu</spa
 <span class="cstat-no" title="statement not covered" >      string += 'C[' + escapeText((correctToSave ? '+' : '') + node.comment) + ']';</span>
     }
 &nbsp;
-<span class="cstat-no" title="statement not covered" >    if (node.statusSource)</span>
+    // the status the node shows, or the one written on it that besogo sets aside while a transposition goes on from it
+    let statusToSave = <span class="cstat-no" title="statement not covered" >node.statusSource || node.statusSetAside;</span>
+<span class="cstat-no" title="statement not covered" >    if (statusToSave)</span>
     {
 <span class="cstat-no" title="statement not covered" >      string += (string ? '\n' : '');</span>
-<span class="cstat-no" title="statement not covered" >      string += 'S[' + node.statusSource.str() + ']';</span>
+<span class="cstat-no" title="statement not covered" >      string += 'S[' + statusToSave.str() + ']';</span>
     }
 &nbsp;
 <span class="cstat-no" title="statement not covered" >    if (node.superkoMeansDead)</span>
@@ -568,7 +586,13 @@ besogo.composeSgf = <span class="fstat-no" title="function not covered" >fu</spa
 <span class="cstat-no" title="statement not covered" >      string += 'SKD[]';</span>
     }
 &nbsp;
-<span class="cstat-no" title="statement not covered" >    if (node.parent == null &amp;&amp; node.goal != GOAL_NONE)</span>
+    // G as it was loaded, on the node it was on (children inherit it through makeChild), or the goal the editor set on the root
+<span class="cstat-no" title="statement not covered" >    if (Object.hasOwn(node, 'goalText') &amp;&amp; node.goalText !== undefined &amp;&amp; node.goalText !== null)</span>
+    {
+<span class="cstat-no" title="statement not covered" >      string += (string ? '\n' : '');</span>
+<span class="cstat-no" title="statement not covered" >      string += 'G[' + escapeText(node.goalText) + ']';</span>
+    }
+    else <span class="cstat-no" title="statement not covered" >if (node.parent == null &amp;&amp; node.goal != GOAL_NONE)</span>
     {
 <span class="cstat-no" title="statement not covered" >      string += (string ? '\n' : '');</span>
 <span class="cstat-no" title="statement not covered" >      string += 'G[' + besogo.goalStr(node.goal) + ']';</span>
@@ -634,7 +658,7 @@ besogo.composeSgf = <span class="fstat-no" title="function not covered" >fu</spa
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-11-06T01:13:31.797Z
+                at 2026-11-06T02:14:04.026Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>

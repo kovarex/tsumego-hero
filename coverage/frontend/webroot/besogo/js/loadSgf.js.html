@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">52.56% </span>
+                <span class="strong">50.93% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>82/156</span>
+                <span class='fraction'>82/161</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">32.63% </span>
+                <span class="strong">31.95% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>31/95</span>
+                <span class='fraction'>31/97</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">87.5% </span>
+                <span class="strong">77.77% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>7/8</span>
+                <span class='fraction'>7/9</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">52.9% </span>
+                <span class="strong">51.57% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>82/155</span>
+                <span class='fraction'>82/159</span>
             </div>
         
             
@@ -353,7 +353,13 @@
 <a name='L288'></a><a href='#L288'>288</a>
 <a name='L289'></a><a href='#L289'>289</a>
 <a name='L290'></a><a href='#L290'>290</a>
-<a name='L291'></a><a href='#L291'>291</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L291'></a><a href='#L291'>291</a>
+<a name='L292'></a><a href='#L292'>292</a>
+<a name='L293'></a><a href='#L293'>293</a>
+<a name='L294'></a><a href='#L294'>294</a>
+<a name='L295'></a><a href='#L295'>295</a>
+<a name='L296'></a><a href='#L296'>296</a>
+<a name='L297'></a><a href='#L297'>297</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">88x</span>
 <span class="cline-any cline-yes">88x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -482,6 +488,9 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -496,7 +505,10 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -771,7 +783,10 @@ besogo.loadSgf = function(sgf, editor, mode = NORMAL_LOAD)
 <span class="branch-10 cbranch-no" title="branch not covered" >      case 'SL': // Add 'selected' (small filled square) markup</span>
 <span class="cstat-no" title="statement not covered" >        applyPointList(prop.values, node, markupFunc, 5);</span>
 <span class="cstat-no" title="statement not covered" >        break;</span>
-<span class="branch-11 cbranch-no" title="branch not covered" >      case 'L': </span>// Intentional fallthrough treats 'L' as 'LB'
+<span class="branch-11 cbranch-no" title="branch not covered" >      case 'L': // L of FF[3] labels its points A, B, C... in order, LB[point:text] of FF[4] says the text</span>
+<span class="cstat-no" title="statement not covered" >        applyPointList(prop.values.map(<span class="fstat-no" title="function not covered" >(v</span>alue, index) =&gt; <span class="cstat-no" title="statement not covered" >value.includes(':') ? value : value + ':' + String.fromCharCode(65 + index % 26))</span>,</span>
+          node, markupFunc, 'label');
+<span class="cstat-no" title="statement not covered" >        break;</span>
 <span class="branch-12 cbranch-no" title="branch not covered" >      case 'LB': // Add label markup</span>
 <span class="cstat-no" title="statement not covered" >        applyPointList(prop.values, node, markupFunc, 'label');</span>
 <span class="cstat-no" title="statement not covered" >        break;</span>
@@ -786,8 +801,11 @@ besogo.loadSgf = function(sgf, editor, mode = NORMAL_LOAD)
 <span class="cstat-no" title="statement not covered" >        break;</span>
 <span class="branch-15 cbranch-no" title="branch not covered" >      case 'SKD':</span>
 <span class="cstat-no" title="statement not covered" >        node.superkoMeansDead = true;</span>
+<span class="cstat-no" title="statement not covered" >        break;</span>
 <span class="branch-16 cbranch-no" title="branch not covered" >      case 'G':</span>
-<span class="cstat-no" title="statement not covered" >        node.goal = besogo.loadGoalFromString(prop.values.join().trim());</span>
+        // the text is kept as it is, so a save writes G back unchanged, whatever its value
+<span class="cstat-no" title="statement not covered" >        node.goalText = prop.values.join();</span>
+<span class="cstat-no" title="statement not covered" >        node.goal = besogo.loadGoalFromString(node.goalText.trim());</span>
 <span class="cstat-no" title="statement not covered" >        break;</span>
     }
   }
@@ -940,7 +958,7 @@ besogo.loadSgf = function(sgf, editor, mode = NORMAL_LOAD)
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-11-06T01:13:31.797Z
+                at 2026-11-06T02:14:04.026Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>
