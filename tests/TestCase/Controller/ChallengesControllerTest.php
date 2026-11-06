@@ -397,6 +397,53 @@ class ChallengesControllerTest extends IntegrationTestCase
 			fn(array $row) => (int) $row['user_id'] === $this->userId('friend')), 'run')));
 	}
 
+	//The table of the players as JSON, for the page that keeps it up to date while the challenge is in progress.
+	public function testTheStandingsAsJson(): void
+	{
+		$this->prepare();
+		$challengeId = $this->create(['problem_count' => 5, 'players' => 'DN_friend']);
+		$this->playRun($challengeId, array_fill(0, 5, [PlayOutcome::SolvedClean, 10]));
+
+		$this->get('/challenges/standings/' . $challengeId);
+		$body = json_decode((string) $this->_response->getBody(), true);
+		$this->assertFalse($body['finished']);
+		$this->assertStringContainsString('not played yet', $body['html']);
+		$this->assertStringNotContainsString('challenge-place', $body['html']);
+
+		$this->login('friend');
+		$this->playRun($challengeId, array_fill(0, 5, [PlayOutcome::SolvedClean, 20]));
+		$this->logout();
+		$this->get('/challenges/standings/' . $challengeId);
+		$body = json_decode((string) $this->_response->getBody(), true);
+		$this->assertTrue($body['finished'], 'anyone with the link sees the table');
+		$this->assertStringContainsString('aria-label="2nd place"', $body['html']);
+	}
+
+	//The page of a challenge in progress takes the new runs into its table by itself, and reloads
+	//with the places once the last player finished.
+	public function testThePageOfAChallengeInProgressFollowsTheRuns(): void
+	{
+		$this->prepare();
+		$challengeId = $this->create(['problem_count' => 5, 'players' => 'DN_friend, DN_stranger']);
+		$this->playRun($challengeId, array_fill(0, 5, [PlayOutcome::SolvedClean, 10]));
+		$browser = Browser::instance();
+		$browser->get('/challenges/' . $challengeId);
+		$browser->driver->executeScript('window.notReloaded = true;');
+		$friendRow = '#challenge-standings tr[data-user-id="' . $this->userId('friend') . '"]';
+		$this->assertStringContainsString('not played yet', $browser->find($friendRow)->getText());
+
+		$this->login('friend');
+		$this->playRun($challengeId, array_fill(0, 5, [PlayOutcome::SolvedClean, 20]));
+		$browser->waitUntil(fn() => !str_contains($browser->find($friendRow)->getText(), 'not played yet'), 25, 'the run of the friend in the table');
+		$this->assertTrue($browser->driver->executeScript('return window.notReloaded === true;'), 'the table changed without a reload');
+		$this->assertCount(0, $browser->getElements('#challenge-standings .challenge-place'));
+
+		$this->login('stranger');
+		$this->playRun($challengeId, array_fill(0, 5, [PlayOutcome::Failed, 10]));
+		$browser->waitUntil(fn() => count($browser->getElements('#challenge-standings .challenge-place')) === 3, 25, 'the places after the last run');
+		$browser->assertNoJsErrors();
+	}
+
 	public function testOnlyTheCreatorRemovesPlayers(): void
 	{
 		$this->prepare();

@@ -26,10 +26,10 @@ use App\Model\Table\ChallengeTable;
 use App\Model\Table\UserTable;
 use App\Utility\Auth;
 use App\Utility\Util;
+use App\Utility\ViteManifest;
 
 $challengeId = (int) $challenge['id'];
 $finishedCount = count(array_filter($standings, fn(array $row) => $row['run'] === ChallengeTable::RUN_FINISHED));
-$cellSymbols = ['failed' => '✗', 'timeout' => '⏱', 'skipped' => '–', 'queued' => ''];
 ?>
 <div class="challenges">
 	<div class="challenges__header">
@@ -84,92 +84,12 @@ $cellSymbols = ['failed' => '✗', 'timeout' => '⏱', 'skipped' => '–', 'queu
 		<?php endif; ?>
 	</section>
 
-	<section class="challenges__section challenges__section--wide" id="challenge-standings">
-		<h2 class="challenges__heading">Players</h2>
-		<div class="challenges__table-wrapper">
-			<table class="challenges__table">
-				<thead>
-					<tr>
-						<?php if ($isFinished): ?>
-						<th>#</th>
-						<?php endif; ?>
-						<th class="challenges__player">Player</th>
-						<th>Points</th>
-						<th>Solved</th>
-						<th>Time</th>
-						<?php foreach ($problemButtons as $button): ?>
-						<th class="challenges__problem"><ul class="setViewButtons"><?php $button->render(); ?></ul></th>
-						<?php endforeach; ?>
-					</tr>
-				</thead>
-				<tbody>
-					<?php foreach ($standings as $row): ?>
-					<tr class="challenges__standing<?= Auth::isLoggedIn() && (int) $row['user_id'] === Auth::getUserID() ? ' challenges__standing--me' : '' ?>" data-user-id="<?= (int) $row['user_id'] ?>">
-						<?php if ($isFinished): ?>
-						<td class="challenges__place"><?= $row['place'] !== null ? $this->element('Challenges/placement', ['place' => (int) $row['place']]) : '' ?></td>
-						<?php endif; ?>
-						<td class="challenges__player"><?= UserTable::renderLink($row) ?>
-							<?php if (in_array((int) $row['user_id'], $removableUserIDs, true)): ?>
-							<form class="challenges__inline-form" method="post" action="/challenges/remove/<?= $challengeId ?>"
-								onsubmit="return confirm('Remove the player from the challenge? It then finishes without them.');">
-								<input type="hidden" name="user_id" value="<?= (int) $row['user_id'] ?>">
-								<button class="btn btn--small btn--neutral challenges__remove" type="submit"
-									title="Their run waits too long: not started for <?= ChallengeTable::REMOVABLE_NOT_STARTED_AFTER_HOURS ?> hours, or no answer for <?= ChallengeTable::REMOVABLE_IDLE_AFTER_MINUTES ?> minutes">Remove</button>
-							</form>
-							<?php endif; ?>
-						</td>
-						<?php if ($row['run'] === ChallengeTable::RUN_FINISHED): ?>
-						<td class="challenges__points"><?= ChallengeTable::formatPoints($row['points']) ?></td>
-						<td><?= $row['solved_count'] ?>/<?= (int) $challenge['problem_count'] ?></td>
-						<td><?= ChallengeTable::formatSeconds($row['seconds']) ?></td>
-						<?php else: ?>
-						<td colspan="3" class="hint challenges__run"><?= match ($row['run'])
-						{
-							ChallengeTable::RUN_PLAYING => 'playing, ' . $row['played_count'] . '/' . (int) $challenge['problem_count'],
-							ChallengeTable::RUN_DECLINED => 'declined',
-							ChallengeTable::RUN_REMOVED => 'removed by the creator',
-							default => 'not played yet',
-						} ?></td>
-						<?php endif; ?>
-						<?php foreach (array_keys($problemButtons) as $order): ?>
-						<?php
-							$attempt = $row['session_id'] === null ? null : ($attemptsByRun[(int) $row['session_id']][$order] ?? null);
-							$status = $attempt['status'] ?? 'queued';
-						?>
-						<td class="challenges__cell challenges__cell--<?= h($status) ?>"<?= $attempt !== null && $attempt['seconds'] !== null ? ' title="' . ChallengeTable::formatSeconds($attempt['seconds']) . '"' : '' ?>>
-							<?= $status === 'solved' ? ChallengeTable::formatPoints((float) $attempt['points']) : $cellSymbols[$status] ?? '' ?>
-						</td>
-						<?php endforeach; ?>
-					</tr>
-					<?php endforeach; ?>
-				</tbody>
-			</table>
-		</div>
-		<?php if ($showResults): ?>
-		<p class="hint challenges__legend">A problem button opens the problem and shows its board when you point at it, its colour is how you did with it. A solved problem shows its points, the time is in its tooltip.
-			<span class="challenges__cell challenges__cell--failed">✗</span> failed
-			<span class="challenges__cell challenges__cell--timeout">⏱</span> out of time
-			<span class="challenges__cell challenges__cell--skipped">–</span> skipped</p>
-		<?php elseif ($finishedCount > 0): ?>
-		<p class="hint">How everyone did with each problem shows once you finish your run.</p>
-		<?php endif; ?>
+	<?php //While the challenge is in progress the page keeps the table up to date (webroot/js/ChallengePage.js) ?>
+	<section class="challenges__section challenges__section--wide" id="challenge-standings"
+		data-standings-url="/challenges/standings/<?= $challengeId ?>" data-finished="<?= $isFinished ? '1' : '0' ?>">
+		<?= $this->element('Challenges/standings') ?>
 	</section>
-	<?php if (!empty($problemButtons)): ?>
-	<script>
-		// The table scrolls sideways when it is wider than the white box, which would cut off the board
-		// previews of its problem buttons, so a preview is put under its button on the screen instead.
-		document.getElementById('challenge-standings').addEventListener('mouseover', function(event)
-		{
-			const link = event.target.closest('.challenges__problem a[data-tsumego-id]');
-			if (!link)
-				return;
-			const box = link.querySelector('.tooltip-box');
-			const rect = link.getBoundingClientRect();
-			box.style.top = (rect.bottom + 4) + 'px';
-			box.style.left = (rect.left - 1) + 'px';
-		});
-	</script>
-	<?php endif; ?>
+	<?php echo ViteManifest::legacyScript('challenge'); ?>
 
 	<?php if ($isParticipant): ?>
 	<section class="card card--purple challenges__section" id="challenge-invite">
