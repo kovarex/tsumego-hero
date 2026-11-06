@@ -88,6 +88,8 @@ class Play
 				'playerRatingCalculationModifier' => Constants::$PLAYER_RATING_CALCULATION_MODIFIER,
 				'secondsAddedPerMovePlayed' => TimeModeUtil::SECONDS_ADDED_PER_MOVE_PLAYED,
 				'timeModeSecondsToSolve' => $problem['timeMode']->secondsToSolve ?? null,
+				//a run of a challenge, which keeps the lines of its fails (ChallengeFailedLine), unlike plain time mode
+				'challengeRun' => ($problem['timeMode']->currentSession->challenge_id ?? null) !== null,
 				'playOutcome' => [
 					'solvedClean' => PlayOutcome::SolvedClean->value,
 					'solvedAfterMistake' => PlayOutcome::SolvedAfterMistake->value,
@@ -119,7 +121,7 @@ class Play
 				'userSets' => $problem['userSets'],
 				'pass' => (bool) $tsumego->pass,
 				'sgf' => $problem['sgf']->sgf,
-				//the version played, which the line of a failed problem of time mode is in (FailedLine)
+				//the version played, which the line of a failed problem of a challenge is in (ChallengeFailedLine)
 				'sgfID' => (int) $problem['sgf']->id,
 				'corner' => $problem['corner'],
 				'playerColor' => $problem['playerColor'],

@@ -2,14 +2,22 @@
 
 namespace App\Utility;
 
-//The line a player played on a problem until they failed it or ran out of time, as the play page sends
-//it: the moves from the root in the coordinates of the SGF version played, two letters a–s each, tt for
-//a pass. It is only shown, so a line that isn't one is left out rather than the result refused.
-final class FailedLine
+//The line a player played on a problem of a challenge until they failed it or ran out of time, as the play page
+//sends it: the moves from the root in the coordinates of the SGF version played, two letters a–s each, tt for a
+//pass. It is only shown on the challenge page, so a line that isn't one is left out rather than the result
+//refused, and plain time mode keeps none (challenge_failed_line).
+final class ChallengeFailedLine
 {
 	public const MAXIMUM_MOVES = 200;
 
 	public function __construct(public readonly string $moves, public readonly int $sgfID) {}
+
+	//Kept for the attempt, as the line of its fail or time-out
+	public function store(int $timeModeAttemptID): void
+	{
+		Util::execute('INSERT INTO challenge_failed_line (time_mode_attempt_id, moves, sgf_id) VALUES (?, ?, ?)
+			ON DUPLICATE KEY UPDATE moves = VALUES(moves), sgf_id = VALUES(sgf_id)', [$timeModeAttemptID, $this->moves, $this->sgfID]);
+	}
 
 	//The line the request sent, null when it sent none, or one that isn't a line on a version of the problem
 	public static function fromRequest(mixed $moves, mixed $sgfID, int $tsumegoID): ?self

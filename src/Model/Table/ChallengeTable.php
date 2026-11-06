@@ -4,7 +4,7 @@ namespace App\Model\Table;
 
 use App\Model\Entity\Challenge;
 use App\Model\Entity\TimeModeSession;
-use App\Utility\FailedLine;
+use App\Utility\ChallengeFailedLine;
 use App\Utility\TimeMode;
 use App\Utility\TsumegoButton;
 use App\Utility\Util;
@@ -503,14 +503,15 @@ class ChallengeTable extends AppTable
 	}
 
 	//How every run of a challenge did with each problem, and the line of a problem failed or run out of
-	//time on, as FailedLine::previewData() gives it (null without one).
+	//time on, as ChallengeFailedLine::previewData() gives it (null without one).
 	/** @return array<int, array<int, array{status: string, seconds: float|null, points: float|null, failedLine: array<string, mixed>|null}>> By session id and problem order */
 	public static function attemptsByRun(int $challengeId): array
 	{
-		$rows = Util::query('SELECT a.time_mode_session_id, a.`order`, a.time_mode_attempt_status_id, a.seconds, a.points, a.failed_line, sgf.sgf
+		$rows = Util::query('SELECT a.time_mode_session_id, a.`order`, a.time_mode_attempt_status_id, a.seconds, a.points, line.moves, sgf.sgf
 			FROM time_mode_attempt a
 			JOIN time_mode_session s ON s.id = a.time_mode_session_id
-			LEFT JOIN sgf ON sgf.id = a.sgf_id AND a.failed_line IS NOT NULL
+			LEFT JOIN challenge_failed_line line ON line.time_mode_attempt_id = a.id
+			LEFT JOIN sgf ON sgf.id = line.sgf_id
 			WHERE s.challenge_id = ?', [$challengeId]);
 		$result = [];
 		foreach ($rows as $row)
@@ -518,7 +519,7 @@ class ChallengeTable extends AppTable
 				'status' => TimeModeAttemptStatusTable::name((int) $row['time_mode_attempt_status_id']),
 				'seconds' => $row['seconds'] === null ? null : (float) $row['seconds'],
 				'points' => $row['points'] === null ? null : (float) $row['points'],
-				'failedLine' => $row['sgf'] === null ? null : FailedLine::previewData($row['sgf'], $row['failed_line']),
+				'failedLine' => $row['sgf'] === null || $row['moves'] === null ? null : ChallengeFailedLine::previewData($row['sgf'], $row['moves']),
 			];
 		return $result;
 	}
