@@ -15,7 +15,33 @@
 		}
 	}
 
-	function createBoard(target, black, white, xMax=0, yMax=0, boardSize=19, diff='')
+	//A line of moves over the stones, numbered from 1: the colours take turns from the first one, and a
+	//pass (tt) is counted without a stone
+	function drawNumberedLine(line, size, increment, border, svg, w3)
+	{
+		let black = line.firstColor !== 'W';
+		for (let i = 0; i < line.moves.length; i += 2, black = !black)
+		{
+			if (line.moves.substr(i, 2) === 'tt')
+				continue;
+			let x = decodeLetter(line.moves[i]) * increment + size + border;
+			let y = decodeLetter(line.moves[i + 1]) * increment + size + border;
+			placePreviewStone(x, y, size, black ? "black" : "white", svg, w3);
+			let number = document.createElementNS(w3, "text");
+			number.setAttribute("x", x);
+			number.setAttribute("y", y);
+			number.setAttribute("text-anchor", "middle");
+			number.setAttribute("dominant-baseline", "central");
+			number.setAttribute("font-size", size * (i < 18 ? 1.2 : 0.9));
+			number.setAttribute("font-family", "Helvetica, Arial, sans-serif");
+			number.setAttribute("fill", black ? "white" : "black");
+			number.textContent = String(i / 2 + 1);
+			svg.appendChild(number);
+		}
+	}
+
+	//line: the moves to draw numbered over the stones ({moves, firstColor}), null for none
+	function createBoard(target, black, white, xMax=0, yMax=0, boardSize=19, diff='', line=null)
 	{
 		const w3 = "http://www.w3.org/2000/svg";
 		const w32 = "http://www.w3.org/1999/xlink";
@@ -54,10 +80,13 @@
 		drawStoneString(black, "black", size, size, increment, border, svg, w3);
 		drawStoneString(white, "white", size, size, increment, border, svg, w3);
 		drawStoneString(diff, "red", size, size / 2, increment, border, svg, w3);
+		if (line)
+			drawNumberedLine(line, size, increment, border, svg, w3);
 		svg.style.width = xMax + "px";
 		svg.style.height = yMax + "px";
 		let targetContainer = target.querySelector('span');
 		targetContainer.insertBefore(svg, targetContainer.firstChild);
+		return svg;
 	}
 
 	function createPreviewBoard(target, black, white, xMax=0, yMax=0, boardSize=19, diff = '')

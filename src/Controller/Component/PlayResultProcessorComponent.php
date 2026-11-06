@@ -17,6 +17,7 @@ use App\Utility\AchievementChecker;
 use App\Utility\Auth;
 use App\Utility\Constants;
 use App\Utility\DailyStreak;
+use App\Utility\FailedLine;
 use App\Utility\HeroPowers;
 use App\Utility\Level;
 use App\Utility\MistakeTraining;
@@ -40,12 +41,13 @@ class PlayResultProcessorComponent extends Component
 	//Returns result with xp_gained, new_rating, new_xp, new_level, new_damage, status,
 	//potion_triggered and achievement_updates, and in the mistake training
 	//mistake_training_button.
-	public function processResult(int $tsumegoID, PlayOutcome $outcome, float $seconds, ?int $setConnectionID = null, ?int $pageMode = null): array
+	//$failedLine: What the player played until a fail or a time-out, kept by time mode and the challenges.
+	public function processResult(int $tsumegoID, PlayOutcome $outcome, float $seconds, ?int $setConnectionID = null, ?int $pageMode = null, ?FailedLine $failedLine = null): array
 	{
 		Auth::overrideMode($this->playMode($tsumegoID, $pageMode));
 		try
 		{
-			return $this->processResultInPlayMode($tsumegoID, $outcome, $seconds, $setConnectionID);
+			return $this->processResultInPlayMode($tsumegoID, $outcome, $seconds, $setConnectionID, $failedLine);
 		}
 		finally
 		{
@@ -79,7 +81,7 @@ class PlayResultProcessorComponent extends Component
 		return null;
 	}
 
-	private function processResultInPlayMode(int $tsumegoID, PlayOutcome $outcome, float $seconds, ?int $setConnectionID): array
+	private function processResultInPlayMode(int $tsumegoID, PlayOutcome $outcome, float $seconds, ?int $setConnectionID, ?FailedLine $failedLine): array
 	{
 		$seconds = max(0.01, $seconds);
 		$result = new PlayResult($outcome === PlayOutcome::SolvedClean || $outcome === PlayOutcome::SolvedAfterMistake);
@@ -89,7 +91,7 @@ class PlayResultProcessorComponent extends Component
 			return ['error' => 'Tsumego not found'];
 
 		if (Auth::isInTimeMode())
-			new TimeMode()->processPlayResult($tsumego, $result->solved, $seconds, $outcome === PlayOutcome::TimedOut);
+			new TimeMode()->processPlayResult($tsumego, $result->solved, $seconds, $outcome === PlayOutcome::TimedOut, $failedLine);
 
 		// updated isn't loaded: the database moves it when the status changes
 		$tsumegoStatus = TableRegistry::getTableLocator()->get('TsumegoStatus')->find()

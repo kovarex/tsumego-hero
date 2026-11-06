@@ -119,6 +119,8 @@ class Play
 				'userSets' => $problem['userSets'],
 				'pass' => (bool) $tsumego->pass,
 				'sgf' => $problem['sgf']->sgf,
+				//the version played, which the line of a failed problem of time mode is in (FailedLine)
+				'sgfID' => (int) $problem['sgf']->id,
 				'corner' => $problem['corner'],
 				'playerColor' => $problem['playerColor'],
 				'swapColors' => $problem['swapColors'],

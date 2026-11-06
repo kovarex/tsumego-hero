@@ -107,8 +107,11 @@ $cellSymbols = ['failed' => '✗', 'timeout' => '⏱', 'skipped' => '–', 'queu
 							$attempt = $row['session_id'] === null ? null : ($attemptsByRun[(int) $row['session_id']][$order] ?? null);
 							$status = $attempt['status'] ?? 'queued';
 						?>
-						<td class="challenges__cell challenges__cell--<?= h($status) ?>"<?= $attempt !== null && $attempt['seconds'] !== null ? ' title="' . ChallengeTable::formatSeconds($attempt['seconds']) . '"' : '' ?>>
+						<?php $failedLine = $attempt['failedLine'] ?? null; ?>
+						<td class="challenges__cell challenges__cell--<?= h($status) ?><?= $failedLine ? ' challenges__cell--line' : '' ?>"<?= $attempt !== null && $attempt['seconds'] !== null ? ' title="' . ChallengeTable::formatSeconds($attempt['seconds']) . '"' : '' ?>
+							<?= $failedLine ? ' tabindex="0" data-failed-line="' . h(json_encode($failedLine)) . '"' : '' ?>>
 							<?= $status === 'solved' ? ChallengeTable::formatPoints((float) $attempt['points']) : $cellSymbols[$status] ?? '' ?>
+							<?php if ($failedLine): ?><span class="tooltip-box challenges__line-board"></span><?php endif; ?>
 						</td>
 						<?php endforeach; ?>
 					</tr>
@@ -120,7 +123,8 @@ $cellSymbols = ['failed' => '✗', 'timeout' => '⏱', 'skipped' => '–', 'queu
 		<p class="hint challenges__legend">A problem button opens the problem and shows its board when you point at it, its colour is how you did with it. A solved problem shows its points, the time is in its tooltip.
 			<span class="challenges__cell challenges__cell--failed">✗</span> failed
 			<span class="challenges__cell challenges__cell--timeout">⏱</span> out of time
-			<span class="challenges__cell challenges__cell--skipped">–</span> skipped</p>
+			<span class="challenges__cell challenges__cell--skipped">–</span> skipped.
+			Point at or tap a ✗ or ⏱ to see the moves played until then.</p>
 		<?php elseif ($finishedCount > 0): ?>
 		<p class="hint">How everyone did with each problem shows once you finish your run.</p>
 		<?php endif; ?>
@@ -139,6 +143,33 @@ $cellSymbols = ['failed' => '✗', 'timeout' => '⏱', 'skipped' => '–', 'queu
 			box.style.top = (rect.bottom + 4) + 'px';
 			box.style.left = (rect.left - 1) + 'px';
 		});
+
+		// A failed or timed out problem shows the moves played until then, numbered, on its board, when its
+		// cell is pointed at, tapped or focused; the board is drawn the first time and put under the cell.
+		function showFailedLine(event)
+		{
+			const cell = event.target.closest('.challenges__cell--line');
+			if (!cell)
+				return;
+			const box = cell.querySelector('.challenges__line-board');
+			if (!box.querySelector('svg'))
+			{
+				const data = JSON.parse(cell.dataset.failedLine);
+				const svg = createBoard(cell, data.black, data.white, data.xMax, data.yMax, data.boardSize, '', {moves: data.line, firstColor: data.firstColor});
+				// twice the size of a button's preview, so the numbers can be read
+				const width = parseFloat(svg.style.width), height = parseFloat(svg.style.height);
+				svg.setAttribute('viewBox', '0 0 ' + width + ' ' + height);
+				svg.style.width = (width * 2) + 'px';
+				svg.style.height = (height * 2) + 'px';
+			}
+			const rect = cell.getBoundingClientRect();
+			box.style.top = (rect.bottom + 4) + 'px';
+			box.style.left = Math.max(4, Math.min(rect.left, window.innerWidth - box.offsetWidth - 4)) + 'px';
+		}
+		const standings = document.getElementById('challenge-standings');
+		standings.addEventListener('mouseover', showFailedLine);
+		standings.addEventListener('focusin', showFailedLine);
+		standings.addEventListener('click', showFailedLine);
 	</script>
 	<?php endif; ?>
 
