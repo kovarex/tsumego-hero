@@ -124,7 +124,7 @@ function semeaiEyeAgainstNoEye(count)
 	let takenFromWhite = multipleChoiceLibertiesW;
 	let shownBlack = count - takenFromWhite;
 	let shownWhite = count - takenFromBlack;
-	if ([29825, 29826, 29827].some(id => id == tsumegoID) && takenFromBlack == 1 && takenFromWhite == 2)
+	if ([29826, 29827].some(id => id == tsumegoID) && takenFromBlack == 1 && takenFromWhite == 2)
 	{
 		takenFromWhite = 1;
 		shownBlack = shownWhite = {29827: 15}[tsumegoID] ?? 5;
