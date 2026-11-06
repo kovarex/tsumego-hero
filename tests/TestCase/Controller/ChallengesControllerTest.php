@@ -418,6 +418,60 @@ class ChallengesControllerTest extends IntegrationTestCase
 		$this->assertSame([ChallengeTable::RUN_PLAYING], array_column(ChallengeTable::standings($secondId), 'run'));
 	}
 
+	//A player who finished their run starts a rematch: a new challenge with the same settings and
+	//new problems, the other players invited, the one who declined left out.
+	public function testARematchRepeatsTheChallengeWithNewProblems(): void
+	{
+		$this->prepare(12);
+		$challengeId = $this->create(['problem_count' => 5, 'seconds_per_problem' => 30, 'players' => 'DN_friend, DN_stranger']);
+		$this->login('stranger');
+		$this->post('/challenges/decline/' . $challengeId);
+		$this->login('challenger');
+		$this->playRun($challengeId, array_fill(0, 5, [PlayOutcome::SolvedClean, 10]));
+		$this->get('/challenges/' . $challengeId);
+		$this->assertTextContains('action="/challenges/rematch/' . $challengeId . '"', $this->view);
+
+		$this->login('friend');
+		$this->post('/challenges/rematch/' . $challengeId);
+
+		$rematchId = $this->fetchTable('Challenge')->find()->orderByDesc('id')->firstOrFail()->id;
+		$this->assertNotSame($challengeId, $rematchId);
+		$this->assertSame(Util::getInternalAddress() . '/challenges/' . $rematchId, $this->headerValue('Location'));
+		$original = ChallengeTable::withDetails($challengeId);
+		$rematch = ChallengeTable::withDetails($rematchId);
+		foreach (['minimum_time_mode_rank_id', 'maximum_time_mode_rank_id', 'seconds_per_problem', 'problem_count'] as $setting)
+			$this->assertEquals($original[$setting], $rematch[$setting], $setting);
+		$this->assertSame((int) $this->userId('friend'), (int) $rematch['created_by_user_id']);
+		$this->assertSame([], array_intersect(ChallengeTable::problemIDs($challengeId), ChallengeTable::problemIDs($rematchId)), 'twelve problems leave room for five new ones');
+		$this->assertSame([$this->userId('friend'), $this->userId('challenger')], $this->participants($rematchId));
+		$this->assertSame(1, ChallengeTable::countWaitingFor($this->userId('challenger')));
+	}
+
+	//With too few problems of the ranks for new ones, the rematch takes some of the old ones too.
+	public function testARematchOfFewProblemsTakesOldOnesToo(): void
+	{
+		$this->prepare(5);
+		$challengeId = $this->create(['problem_count' => 5]);
+
+		$this->post('/challenges/rematch/' . $challengeId);
+
+		$rematchId = $this->fetchTable('Challenge')->find()->orderByDesc('id')->firstOrFail()->id;
+		$this->assertCount(5, ChallengeTable::problemIDs($rematchId));
+		$this->assertSame([$this->userId('challenger')], $this->participants($rematchId));
+	}
+
+	public function testOnlyThePlayersOfAChallengeStartARematch(): void
+	{
+		$this->prepare();
+		$challengeId = $this->create();
+		$this->login('stranger');
+
+		$this->post('/challenges/rematch/' . $challengeId);
+
+		$this->assertResponseCode(403);
+		$this->assertSame(1, $this->fetchTable('Challenge')->find()->count());
+	}
+
 	public function testAnInvitedPlayerDeclinesAndCanStillChangeTheirMind(): void
 	{
 		$this->prepare();

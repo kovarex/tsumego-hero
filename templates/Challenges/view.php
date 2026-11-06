@@ -67,6 +67,9 @@ $cellSymbols = ['failed' => '✗', 'timeout' => '⏱', 'skipped' => '–', 'queu
 		<p id="challenge-my-result">You are <strong><?= Util::ordinal((int) $myRun['place']) ?></strong> of <?= $finishedCount ?>
 			with <strong><?= ChallengeTable::formatPoints($myRun['points']) ?></strong> points,
 			<?= $myRun['solved_count'] ?> of <?= (int) $challenge['problem_count'] ?> problems solved.</p>
+		<form method="post" action="/challenges/rematch/<?= $challengeId ?>">
+			<button class="btn btn--success" type="submit" id="challenge-rematch" title="A new challenge with these settings and new problems, its players invited">Rematch</button>
+		</form>
 		<?php endif; ?>
 	</section>
 

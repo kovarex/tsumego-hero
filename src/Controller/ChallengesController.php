@@ -153,6 +153,28 @@ class ChallengesController extends AppController
 		return $this->redirect(self::challengeUrl((int) $challenge['id']));
 	}
 
+	//A player of the challenge starts a new one with its settings and its players invited, where
+	//they can play again; the problems are new ones.
+	#[HttpPost]
+	public function rematch(string $id): mixed
+	{
+		$challenge = $this->findChallenge($id);
+		if (!Auth::isLoggedIn() || !ChallengeTable::isParticipant((int) $challenge['id'], Auth::getUserID()))
+			throw new ForbiddenException('Only the players of the challenge can start a rematch.');
+		$this->Authorization->authorize('Challenge', 'create');
+
+		$rematch = ChallengeTable::rematch($challenge, Auth::getUserID());
+		if ($rematch === null)
+		{
+			CookieFlash::set('There are no problems of these ranks anymore, start a challenge of other ones.', 'error');
+			return $this->redirect(self::challengeUrl((int) $challenge['id']));
+		}
+		[$rematchID, $invited] = $rematch;
+		CookieFlash::set('A rematch of ' . ChallengeTable::title($challenge) . ' with new problems'
+			. (empty($invited) ? '.' : ', ' . count($invited) . (count($invited) === 1 ? ' player is' : ' players are') . ' invited.'), 'success');
+		return $this->redirect(self::challengeUrl($rematchID));
+	}
+
 	//Starts the run of the player, joining the challenge first when they aren't in yet, or gets
 	//them back to a run they left in the middle.
 	#[HttpPost]
