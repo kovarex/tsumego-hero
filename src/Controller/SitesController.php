@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Model\Table\AchievementStatusTable;
 use App\Model\Table\UserTable;
 use App\Utility\Auth;
+use App\Utility\FriendActivity;
 use App\Utility\MistakeTraining;
 use App\Utility\SiteGrowth;
 use App\Utility\TsumegoButtons;
@@ -57,6 +58,7 @@ class SitesController extends AppController
 		{
 			$userId = (int) Auth::getUserID();
 			$this->set('mistakeTrainingDue', MistakeTraining::dueCount($userId));
+			$this->set('friendActivity', FriendActivity::forUser($userId));
 		}
 	}
 

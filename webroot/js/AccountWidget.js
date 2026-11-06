@@ -44,7 +44,7 @@ class AccountWidget
 		this.xpIncreaseFx = document.getElementById('xp-increase-fx');
 		this.textBarInMenu = document.getElementById('textBarInMenu');
 		this.modeSelector = document.getElementById('modeSelector');
-		this.menuItems = ['heroProfile', 'heroBar', 'heroAchievements', 'heroMessages', 'heroSettings', 'heroLogout']
+		this.menuItems = ['heroProfile', 'heroBar', 'heroAchievements', 'heroMessages', 'heroFriends', 'heroSettings', 'heroLogout']
 			.map(id => document.getElementById(id))
 			.filter(item => item);
 		for (const element of [document.getElementById('account-bar-wrapper'), ...this.menuItems])

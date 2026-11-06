@@ -103,6 +103,8 @@ if (Auth::isLoggedIn())
 	//Challenges the player is in and hasn't played yet: the Challenges item counts them,
 	//and so does Play, where the item is hidden.
 	$challengesWaiting = $headerCounts->challengesWaiting;
+	//Players asking to be friends: the Friends item of the account menu counts them.
+	$friendRequests = $headerCounts->friendRequests;
 	$soundSetting = UserTable::soundIsOn(Auth::getUser()) ? 'on' : 'off';
 }
 else
@@ -110,6 +112,7 @@ else
 	$unreadMessageCount = 0;
 	$classesAwaitingAnswer = 0;
 	$challengesWaiting = 0;
+	$friendRequests = 0;
 	$soundSetting = in_array(Util::cookie('sound'), ['on', 'off'], true) ? Util::cookie('sound') : null;
 }
 $classesBadge = $classesAwaitingAnswer > 0
@@ -117,6 +120,9 @@ $classesBadge = $classesAwaitingAnswer > 0
 	: '';
 $challengesBadge = $challengesWaiting > 0
 	? '<span class="nav__new-badge nav__new-badge--visible" title="Challenges waiting for you to play them">' . $challengesWaiting . '</span>'
+	: '';
+$friendsBadge = $friendRequests > 0
+	? ' <span class="messages-unread-count" title="Players asking to be your friend">' . $friendRequests . '</span>'
 	: '';
 ?>
 <div id="container" align="center">
@@ -141,6 +147,7 @@ $challengesBadge = $challengesWaiting > 0
 				<nav class="site-nav__account-links">
 					<ul>
 						<li><a href="/messages">Messages <?php echo AccountWidget::unreadMessagesBadge($unreadMessageCount); ?></a></li>
+						<li><a href="/friends">Friends<?php echo $friendsBadge; ?></a></li>
 						<li><a href="/users/settings">Settings</a></li>
 						<li><a href="/users/logout">Sign Out</a></li>
 					</ul>
@@ -238,7 +245,7 @@ $challengesBadge = $challengesWaiting > 0
 		<?php endif; ?>
 	</div>
 	<?php if (Auth::isLoggedIn()): ?>
-		<?php echo $this->element('account_widget', ['bar' => AccountWidget::bar($timeMode), 'unreadMessageCount' => $unreadMessageCount]); ?>
+		<?php echo $this->element('account_widget', ['bar' => AccountWidget::bar($timeMode), 'unreadMessageCount' => $unreadMessageCount, 'friendsBadge' => $friendsBadge]); ?>
 	<?php endif; ?>
 	<div align="left" class="whitebox2">
 		<div id="content">

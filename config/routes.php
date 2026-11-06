@@ -292,6 +292,17 @@ return function (RouteBuilder $routes): void
 			['controller' => 'Challenges', 'action' => $challengeAction],
 			['pass' => ['id'], 'id' => '[0-9]+'] // Id of a challenge
 		);
+	//Friends, see FriendsController
+	$routes->connect(
+		'/friends',
+		['controller' => 'Friends', 'action' => 'index']
+	);
+	foreach (['add', 'accept', 'remove'] as $friendAction)
+		$routes->connect(
+			'/friends/' . $friendAction . '/{id}',
+			['controller' => 'Friends', 'action' => $friendAction],
+			['pass' => ['id'], 'id' => '[0-9]+'] // Id of the other player
+		);
 	//Classes of a teacher, see ClassroomsController. The address of a class is the link the teacher
 	//sends to the players who should ask to join.
 	$routes->connect(

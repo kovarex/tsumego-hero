@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\FriendshipTable;
 use App\Model\Table\SetTable;
 use App\Model\Table\UserTable;
 use App\Utility\Auth;
@@ -11,12 +12,13 @@ use App\Utility\Auth;
  *
  * Usage: $this->element('user_header', ['user' => $userRow, 'activeTab' => 'profile'])
  *
- * Tabs: profile, solveHistory, contributions, achievements, sets, and messages and
+ * Tabs: profile, solveHistory, contributions, achievements, sets, and messages, friends and
  * settings while the player looks at their own pages. A tab with nothing behind it
  * is left out, so nobody opens an empty page; the tab of the page you are on always
  * stays, so the navigation never hides where you are.
  *
- * On the pages of another player, a signed-in visitor gets a button to write to them.
+ * On the pages of another player, a signed-in visitor gets buttons to write to them, to challenge
+ * them and to ask them to be friends (or to answer their request, or to end the friendship).
  *
  * $corner: optional HTML for the top-right corner, away from the tabs (the role form of an owner).
  *
@@ -50,6 +52,7 @@ $tabs = [
 if (Auth::getUserID() === $userID)
 {
 	$tabs['messages'] = ['url' => '/messages', 'label' => 'Messages'];
+	$tabs['friends'] = ['url' => '/friends', 'label' => 'Friends'];
 	$tabs['settings'] = ['url' => '/users/settings', 'label' => 'Settings'];
 }
 ?>
@@ -66,6 +69,21 @@ if (Auth::getUserID() === $userID)
 	<?php if (Auth::isLoggedIn() && Auth::getUserID() !== $userID && !UserTable::isDeleted($user)): ?>
 	<a class="btn btn--small profile-header__message" href="/messages/<?php echo $userID; ?>">Send message</a>
 	<a class="btn btn--small profile-header__message" href="/challenges?opponent=<?php echo $userID; ?>" id="profile-challenge">Challenge</a>
+	<?php $friendship = FriendshipTable::stateBetween(Auth::getUserID(), $userID); ?>
+	<form method="post" class="profile-header__friend" id="profile-friend" data-friendship="<?php echo $friendship; ?>">
+		<?php if ($friendship === FriendshipTable::NONE): ?>
+		<button type="submit" class="btn btn--small" formaction="/friends/add/<?php echo $userID; ?>">Add friend</button>
+		<?php elseif ($friendship === FriendshipTable::ASKED_BY_OTHER): ?>
+		<button type="submit" class="btn btn--small" formaction="/friends/accept/<?php echo $userID; ?>">Accept friend request</button>
+		<button type="submit" class="btn btn--small" formaction="/friends/remove/<?php echo $userID; ?>">Decline</button>
+		<?php elseif ($friendship === FriendshipTable::ASKED_BY_VIEWER): ?>
+		<span class="profile-header__friend-state">Friend request sent</span>
+		<button type="submit" class="btn btn--small" formaction="/friends/remove/<?php echo $userID; ?>">Take back</button>
+		<?php else: ?>
+		<span class="profile-header__friend-state">Friends</span>
+		<button type="submit" class="btn btn--small" formaction="/friends/remove/<?php echo $userID; ?>" onclick="return confirm(<?php echo h(json_encode('Remove ' . $user['display_name'] . ' from your friends?')); ?>);">Remove friend</button>
+		<?php endif; ?>
+	</form>
 	<?php endif; ?>
 	<div class="subnav">
 <?php foreach ($tabs as $key => $tab): ?>
