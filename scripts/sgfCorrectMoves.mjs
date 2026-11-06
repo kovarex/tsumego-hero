@@ -8,7 +8,8 @@
 //With "normalise": true it also gives the SGF as the site stores it (normalise below), and the values are of that SGF.
 //Input on stdin: JSON lines, each {"id": any, "sgf": "(;...)", "normalise"?: bool}. Output on stdout: a JSON line for
 //each, in order, {"id", "first_move_color", "correct_moves", "problem"} (and with normalise "sgf", "transformation",
-//"changed", "same_play", and when changed "property_changes", "unexpected_changes", "merged_away"), or {"id", "error"}
+//"changed", "same_play", and when changed "property_changes", "unexpected_changes", "merged_away", "setup_rewritten"),
+//or {"id", "error"}
 //when the SGF can't be read.
 import { readFileSync } from 'node:fs';
 import { createInterface } from 'node:readline';
@@ -143,7 +144,8 @@ function normalisedText(besogo, editor, sgf, result, mergedAway)
 	besogo.loadSgf(besogo.parseSgf(text), reloaded);
 	const changes = propertyChanges(besogo, sgf, text, mergedAway);
 	return { sgf: text, ...result, same_play: signature(editor.getRoot()) === signature(reloaded.getRoot()),
-		property_changes: changes.counts, unexpected_changes: changes.unexpected, merged_away: changes.mergedAway };
+		property_changes: changes.counts, unexpected_changes: changes.unexpected, merged_away: changes.mergedAway,
+		setup_rewritten: changes.setup };
 }
 
 //What a save may change in the properties of an SGF, besides the coordinates. Any other change of the count of a property
@@ -154,8 +156,11 @@ const NOT_KEPT = new Set(['AP', 'CA', 'FG', 'PM', 'WV', 'TE', 'BM', 'DO', 'IT', 
 //Game info (loadRootProps of loadSgf.js) is kept on the root when it isn't empty: fewer is expected
 const GAME_INFO = new Set(['PB', 'BR', 'BT', 'PW', 'WR', 'WT', 'HA', 'KM', 'RU', 'TM', 'OT', 'DT', 'EV', 'GN', 'PC', 'RO', 'GC', 'ON',
 	'RE', 'AN', 'CP', 'SO', 'US']);
-//AE that empties an empty point does nothing and isn't written
-const FEWER_EXPECTED = new Set(['AE']);
+//Setup stones are written where besogo shows them (getSetup of gameRoot.js: where a node's stone differs from its
+//parent's), once: a point listed twice, in both AB and AW, or set to the stone it already has, or AE on an empty point,
+//shows nothing more. Their count may change; the play check compares the stones shown at the root and every node with
+//setup, so a stone that would be gone or change colour keeps the row as it is.
+const SETUP = new Set(['AB', 'AW', 'AE']);
 //The header every save writes once on the root
 const HEADER = new Set(['FF', 'GM', 'SZ', 'ST']);
 //Old names besogo reads as the new ones
@@ -175,6 +180,7 @@ export function propertyChanges(besogo, before, after, mergedAway = new Set())
 	const counts = {};
 	const unexpected = [];
 	const merged = {};
+	const setup = {};
 	for (const id of new Set([...old.counts.keys(), ...now.counts.keys()]))
 	{
 		const [was, is] = [old.counts.get(id) ?? 0, now.counts.get(id) ?? 0];
@@ -188,37 +194,32 @@ export function propertyChanges(besogo, before, after, mergedAway = new Set())
 			merged[id] = was - is;
 			continue;
 		}
+		if (SETUP.has(id))
+		{
+			setup[id] = is - was;
+			continue;
+		}
 		const expected = id === 'C' ? is <= was
 			: HEADER.has(id) ? is === 1
-			: is < was && (NOT_KEPT.has(id) || GAME_INFO.has(id) || FEWER_EXPECTED.has(id));
+			: is < was && (NOT_KEPT.has(id) || GAME_INFO.has(id));
 		if (!expected)
-			unexpected.push(id + ' ' + was + '→' + is + setupCause(old.setTwice.get(id) ?? 0, was - is));
+			unexpected.push(id + ' ' + was + '→' + is);
 	}
 	const kept = new Set(now.comments.keys());
 	const lost = [...old.comments].filter(([text]) => !kept.has(text));
 	const lostOnKeptNodes = lost.filter(([, comment]) => comment.onKeptNode).map(([, comment]) => comment.written);
 	if (lostOnKeptNodes.length)
 		unexpected.push('C lost: ' + lostOnKeptNodes.map(comment => JSON.stringify(comment.slice(0, 40))).join(', '));
-	return { counts, unexpected, mergedAway: merged };
-}
-
-//Why setup stones are fewer, when the text set the same point twice on a node (besogo keeps a point once)
-function setupCause(setTwice, fewer)
-{
-	if (!setTwice || fewer <= 0)
-		return '';
-	return setTwice === fewer ? ' (each a point set twice on its node)' : ' (' + setTwice + ' of them a point set twice on its node)';
+	return { counts, unexpected, mergedAway: merged, setup };
 }
 
 //The count of the values of each property of a parsed SGF (a point range of a point list as its points), the part of
-//them on the nodes besogo merged away (by their place, depth first), the setup points set again on the same node, and
-//its comments: the comment of each node as besogo reads it (loadSgf.js joins the C of a node, treeProblemUpdater.js
+//them on the nodes besogo merged away (by their place, depth first), and its comments: the comment of each node as besogo reads it (loadSgf.js joins the C of a node, treeProblemUpdater.js
 //takes one leading + as the mark of a correct move) => the comment as it was written and whether a node that stays has it
 function propertyCounts(tree, mergedAway = new Set())
 {
 	const counts = new Map();
 	const merged = new Map();
-	const setTwice = new Map();
 	const comments = new Map();
 	textNodes(tree).forEach((node, index) =>
 	{
@@ -231,7 +232,6 @@ function propertyCounts(tree, mergedAway = new Set())
 			comment.onKeptNode ||= !away;
 			comments.set(text, comment);
 		}
-		const setup = new Set();
 		for (const prop of node.props)
 		{
 			const id = ALIASES[prop.id] ?? prop.id;
@@ -241,32 +241,9 @@ function propertyCounts(tree, mergedAway = new Set())
 			counts.set(id, (counts.get(id) ?? 0) + count);
 			if (away)
 				merged.set(id, (merged.get(id) ?? 0) + count);
-			if (SETUP.has(id))
-				for (const value of prop.values)
-					for (const point of pointsOf(value))
-						if (setup.has(point))
-							setTwice.set(id, (setTwice.get(id) ?? 0) + 1);
-						else
-							setup.add(point);
 		}
 	});
-	return { counts, merged, setTwice, comments };
-}
-
-const SETUP = new Set(['AB', 'AW', 'AE']);
-
-//The points of a point list value, "aa" or the rectangle "aa:cc", as letter pairs
-function pointsOf(value)
-{
-	const range = value.match(/^([a-zA-Z])([a-zA-Z]):([a-zA-Z])([a-zA-Z])$/);
-	if (!range)
-		return [value];
-	const points = [];
-	const [from, to] = [[range[1], range[2]], [range[3], range[4]]].map(pair => pair.map(letter => letter.charCodeAt(0)));
-	for (let x = Math.min(from[0], to[0]); x <= Math.max(from[0], to[0]); ++x)
-		for (let y = Math.min(from[1], to[1]); y <= Math.max(from[1], to[1]); ++y)
-			points.push(String.fromCharCode(x) + String.fromCharCode(y));
-	return points;
+	return { counts, merged, comments };
 }
 
 //The points of a point list value: "aa", or the rectangle "aa:cc"
@@ -279,6 +256,20 @@ function pointsIn(value)
 	return (Math.abs(at(range[3]) - at(range[1])) + 1) * (Math.abs(at(range[4]) - at(range[2])) + 1);
 }
 
+//The stones of the root and of a node with setup stones, as besogo shows them: setup listed twice, or a stone set where
+//it already is, shows nothing more and isn't written again, but every stone shown must still be there
+function boardOf(node)
+{
+	if (node.parent != null && node.getType() !== 'setup')
+		return '';
+	const size = node.getSize();
+	let board = '';
+	for (let y = 1; y <= size.y; ++y)
+		for (let x = 1; x <= size.x; ++x)
+			board += { [-1]: 'b', 1: 'w' }[node.getStone(x, y)] ?? '.';
+	return board;
+}
+
 //The G of a node as a save writes it (saveSgf.js): the text it was loaded with, or the goal the editor set on the root
 function goalOf(node)
 {
@@ -289,7 +280,7 @@ function goalOf(node)
 	return node.parent == null && node.goal ? 'G' + ({ 1: 'KILL', 2: 'LIVE' }[node.goal] ?? '') : '';
 }
 
-//What a tree plays as, with its G: every move from every position, real or merged by a transposition, the order left aside, with
+//What a tree plays as, with its G and the stones its setup shows: every move from every position, real or merged by a transposition, the order left aside, with
 //whether each position is correct, wrong or neither. A position met again on its own line (a ko) counts as reached.
 function signature(root)
 {
@@ -307,7 +298,7 @@ function signature(root)
 			.map(([move, child]) => (move ? ((move.color ?? child.move?.color) == -1 ? 'B' : 'W') + move.x + ',' + move.y : 'pass') + '(' + of(child) + ')')
 			.sort();
 		onLine.delete(node);
-		const result = node.correct + ':' + goalOf(node) + ':' + moves.join(';');
+		const result = node.correct + ':' + goalOf(node) + ':' + boardOf(node) + ':' + moves.join(';');
 		known.set(node, result);
 		return result;
 	};

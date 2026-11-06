@@ -29,7 +29,8 @@ use Cake\Console\ConsoleOptionParser;
 //of a property changes in a way a save isn't expected to change it (propertyChanges of scripts/sgfCorrectMoves.mjs:
 //a G written on every node, a stone, label or comment lost on a node that stays). What was on a node besogo merges
 //into a transposition goes with it (its move, status, markup, comment); the report counts the rows stored with such a
-//loss and what went. The report sums the change of every property.
+//loss and what went. Setup is written as besogo shows it, a point listed twice once: the play check compares the
+//stones shown, and the report counts the rows whose setup is written so. The report sums the change of every property.
 //Everything changed is kept first in sgf_before_normalisation and tsumego_comment_before_normalisation.
 //A problem is done in one transaction; a row already normalised comes back unchanged, so a run that stopped is
 //simply run again, and a second run changes nothing. Without --write nothing is written and it reports what would
@@ -68,6 +69,8 @@ class NormaliseSgfsCommand extends Command
 	private array $mergedAway = [];
 	/** @var list<int> rows rewritten that lose something with their merged away nodes */
 	private array $losingMergedLines = [];
+	/** @var array<int, array<string, int>> sgf id => the change of its setup properties, written as besogo shows them */
+	private array $setupRewritten = [];
 	//sgf id => what changes unexpectedly in its rewrite, which keeps it as it is
 	/** @var array<int, list<string>> */
 	private array $changingUnexpectedly = [];
@@ -238,6 +241,8 @@ class NormaliseSgfsCommand extends Command
 	{
 		if ($analysis->mergedAway)
 			$this->losingMergedLines[] = $id;
+		if ($analysis->setupRewritten)
+			$this->setupRewritten[$id] = $analysis->setupRewritten;
 		foreach ($analysis->mergedAway as $property => $count)
 		{
 			$this->mergedAway[$property]['rows'] = ($this->mergedAway[$property]['rows'] ?? 0) + 1;
@@ -296,6 +301,10 @@ class NormaliseSgfsCommand extends Command
 		$this->console->out(count($this->losingMergedLines) . ' rows rewritten lose what was on lines besogo merges into a transposition'
 			. self::ids($this->losingMergedLines) . ($this->mergedAway ? '; what went: ' . implode(', ', array_map(
 				fn($property, $lost) => "$property {$lost['count']} in {$lost['rows']} rows", array_keys($this->mergedAway), $this->mergedAway)) : ''));
+		$this->console->out(count($this->setupRewritten) . ' rows rewritten have their setup written as besogo shows it (a point listed twice, or set to the stone it has, written once; the stones shown are the same)'
+			. self::ids(array_keys($this->setupRewritten)));
+		foreach (array_slice($this->setupRewritten, 0, 50, true) as $id => $changes)
+			$this->console->out("sgf $id setup: " . implode(', ', array_map(fn($property, $change) => "$property " . sprintf('%+d', $change), array_keys($changes), $changes)));
 		ksort($this->examples);
 		foreach ($this->examples as $kind => $tsumegoIDs)
 			$this->console->out("Problems turned $kind (current version): " . implode(', ', $tsumegoIDs));

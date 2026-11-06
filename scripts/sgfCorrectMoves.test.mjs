@@ -172,9 +172,17 @@ test('only what was on the merged away nodes may go', () =>
 	//W[sa] is a suicide, besogo keeps its node without the move
 	const illegal = normalised('(;SZ[19]G[KILL]AB[rb][sb](;B[sa];W[ra]S[DEAD])(;B[ra];W[sa]C[on a kept node]S[ALIVE]))');
 	assert.deepEqual(illegal.unexpected_changes, ['W 2→1']);
-	//sgf 19415 and 19416 of the site lose setup stones; a point set twice on a node is written once
-	const setTwice = normalised('(;SZ[19]AB[rr][rs][rr]AW[qq](;B[ss]C[+])(;B[sr];W[qs]))');
-	assert.deepEqual(setTwice.unexpected_changes, ['AB 3→2 (each a point set twice on its node)']);
+	//setup listed twice (sgf 19415 and 19416 of the site) or in both AB and AW shows one stone, written once: the stones
+	//shown are the same, which the play check compares
+	for (const sgf of ['(;SZ[19]AB[rr][rs][rr]AW[qq](;B[ss]C[+])(;B[sr];W[qs]))', '(;SZ[19]AB[rr][rs][qq]AW[qq](;B[ss]C[+])(;B[sr];W[qs]))'])
+	{
+		const listedTwice = normalised(sgf);
+		assert.equal(listedTwice.same_play, true, sgf);
+		assert.deepEqual(listedTwice.unexpected_changes, []);
+		assert.deepEqual(listedTwice.setup_rewritten, { AB: -1 });
+	}
+	//a stone shown that the rewrite loses keeps the row as it is: the turn leaves out the setup of a node after a move
+	assert.equal(normalised('(;SZ[19]AB[rr][rs](;B[ss]C[+])(;B[sr];W[qs];AB[qs]))').same_play, false);
 });
 
 //G is the goal of a status problem, and any other G is kept as it is too, once, on the node it was on
@@ -216,7 +224,6 @@ test('the property check tells the expected changes from the others', () =>
 	for (const [after, unexpected] of [
 		['(;FF[4]GM[1]SZ[19]G[KILL]AB[aa][ab][ba][bb]LB[cc:A]C[hi\nthere];B[dd]G[KILL];W[ee]S[ALIVE]G[KILL])', ['G 1→3']],
 		['(;FF[4]GM[1]SZ[19]AB[aa][ab][ba][bb]LB[cc:A]C[hi\nthere];B[dd];W[ee]S[ALIVE])', ['G 1→0']],
-		['(;FF[4]GM[1]SZ[19]G[KILL]AB[aa][ab][ba]LB[cc:A]C[hi\nthere];B[dd];W[ee]S[ALIVE])', ['AB 4→3']],
 		['(;FF[4]GM[1]SZ[19]G[KILL]AB[aa][ab][ba][bb]C[hi\nthere];B[dd];W[ee]S[ALIVE])', ['LB 1→0']],
 		['(;FF[4]GM[1]SZ[19]G[KILL]AB[aa][ab][ba][bb]LB[cc:A]C[hi];B[dd];W[ee]S[ALIVE])', ['C lost: "hi\\nthere"']],
 		['(;FF[4]GM[1]SZ[19]G[KILL]AB[aa][ab][ba][bb]LB[cc:A]C[hi\nthere];B[dd];W[ee])', ['S 1→0']],

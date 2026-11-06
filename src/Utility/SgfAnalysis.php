@@ -20,11 +20,14 @@ class SgfAnalysis
 	//whether besogo plays the normalised text the same (every move, transposition and correct or wrong end);
 	//$propertyChanges has the count of each property that differs in the normalised text, [before, after], and
 	//$unexpectedChanges those changes that aren't what a save of the board editor is expected to leave out, and
-	//$mergedAway what went with the nodes besogo merged into a transposition, property => count
+	//$mergedAway what went with the nodes besogo merged into a transposition, property => count, and $setupRewritten
+	//the change of the count of setup properties written as besogo shows them (a point listed twice written once),
+	//property => change
 	/**
 	 * @param array<string, array{int, int}> $propertyChanges
 	 * @param list<string> $unexpectedChanges
 	 * @param array<string, int> $mergedAway
+	 * @param array<string, int> $setupRewritten
 	 */
 	public function __construct(
 		public readonly string $firstMoveColor,
@@ -36,7 +39,8 @@ class SgfAnalysis
 		public readonly bool $samePlay = true,
 		public readonly array $propertyChanges = [],
 		public readonly array $unexpectedChanges = [],
-		public readonly array $mergedAway = []) {}
+		public readonly array $mergedAway = [],
+		public readonly array $setupRewritten = []) {}
 
 	//Whether the normalised text may be stored in place of the given one: it plays the same and loses nothing unexpected
 	public function rewriteIsFaithful(): bool
@@ -89,7 +93,8 @@ class SgfAnalysis
 					($output['same_play'] ?? true) !== false,
 					array_map(fn($counts) => [(int) $counts[0], (int) $counts[1]], (array) ($output['property_changes'] ?? [])),
 					array_values(array_map('strval', (array) ($output['unexpected_changes'] ?? []))),
-					array_map('intval', (array) ($output['merged_away'] ?? [])));
+					array_map('intval', (array) ($output['merged_away'] ?? [])),
+					array_map('intval', (array) ($output['setup_rewritten'] ?? [])));
 		}
 		if (count($results) !== count($sgfs))
 			throw new RuntimeException('sgfCorrectMoves.mjs answered ' . count($results) . ' of ' . count($sgfs) . ' SGFs');

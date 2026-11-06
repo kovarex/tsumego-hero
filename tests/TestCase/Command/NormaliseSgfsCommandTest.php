@@ -180,18 +180,31 @@ class NormaliseSgfsCommandTest extends AppTestCase
 		$this->assertSame($sgf, Util::query('SELECT sgf FROM sgf_before_normalisation WHERE sgf_id = ?', [$id])[0]['sgf']);
 	}
 
-	//A row whose rewrite would change a property in a way a save isn't expected to, here setup stones lost because the
-	//same point is set twice on a node (as sgf 19415 and 19416 of the site), is kept and named with what would change
-	public function testARowWhosePropertiesWouldChangeUnexpectedlyIsKept(): void
+	//Setup listed twice (as sgf 19415 and 19416 of the site) shows one stone and is written once; the row is rewritten
+	public function testARowWithSetupListedTwiceIsRewritten(): void
 	{
 		$sgf = '(;SZ[19]AB[rr][rs][rr]AW[qq](;B[ss]C[+])(;B[sr];W[qs]))';
 		$context = new ContextPreparator(['tsumego' => ['sgf' => ['data' => $sgf]]]);
 		$id = $this->sgfRow($context->tsumegos[0]['id'])['id'];
 		$this->exec('normalise_sgfs --write');
 
+		$this->assertOutputContains('0 whose properties would change unexpectedly (kept as they are)');
+		$this->assertOutputContains("1 rows rewritten have their setup written as besogo shows it");
+		$this->assertOutputContains("sgf $id setup: AB -1");
+		$this->assertStringContainsString('AB[ba][bb]', $this->sgfRow($context->tsumegos[0]['id'])['sgf']);
+	}
+
+	//A row whose rewrite would change a property in a way a save isn't expected to, here one besogo doesn't know, is
+	//kept and named with what would change
+	public function testARowWhosePropertiesWouldChangeUnexpectedlyIsKept(): void
+	{
+		$sgf = '(;SZ[19]XY[1]AB[rr][rs](;B[ss]C[+])(;B[sr];W[qs]))';
+		$context = new ContextPreparator(['tsumego' => ['sgf' => ['data' => $sgf]]]);
+		$id = $this->sgfRow($context->tsumegos[0]['id'])['id'];
+		$this->exec('normalise_sgfs --write');
+
 		$this->assertOutputContains("1 whose properties would change unexpectedly (kept as they are): $id");
-		$this->assertOutputContains("sgf $id would change: AB 3→2 (each a point set twice on its node)");
-		$this->assertOutputContains('Property counts of the rewritten rows, before -> after: no change');
+		$this->assertOutputContains("sgf $id would change: XY 1→0");
 		$this->assertSame($sgf, $this->sgfRow($context->tsumegos[0]['id'])['sgf']);
 		$this->assertSame([], Util::query('SELECT * FROM sgf_before_normalisation'));
 	}
