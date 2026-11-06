@@ -222,4 +222,34 @@ class NormaliseSgfsCommandTest extends AppTestCase
 
 		$this->assertOutputContains("sgf $old (tsumego {$context->tsumegos[0]['id']}, old version, not current) would change: XY 1→0");
 	}
+
+	//--restore puts rows back as they were before --write: text, values, the transformations that took their turn in,
+	//the comments of the version shown; a later run rewrites them again
+	public function testRestorePutsTheRowsBackAsTheyWere(): void
+	{
+		$context = new ContextPreparator(['tsumegos' => [
+			['sgf' => ['data' => self::BOTTOM_RIGHT], 'comments' => [self::BOTTOM_RIGHT_COMMENT]],
+			['sgfs' => [['data' => self::BOTTOM_RIGHT], ['data' => self::TOP_RIGHT, 'sgf_status_id' => SgfTable::STATUS_PROPOSED]]]]]);
+		$ids = array_column(Util::query('SELECT id FROM sgf WHERE tsumego_id = ? ORDER BY id', [$context->tsumegos[1]['id']]), 'id');
+		Util::execute('UPDATE sgf SET source_sgf_id = ?, transformation_from_source = ? WHERE id = ?',
+			[$ids[0], '{"transpose":false,"flipX":false,"flipY":true,"invertColors":false}', $ids[1]]);
+		$columns = 'id, sgf, first_move_color, correct_moves, transformation_from_source';
+		$before = Util::query("SELECT $columns FROM sgf ORDER BY id");
+		$comments = Util::query('SELECT id, message, position FROM tsumego_comment ORDER BY id');
+
+		$this->exec('normalise_sgfs --write');
+		$this->assertNotSame($before, Util::query("SELECT $columns FROM sgf ORDER BY id"));
+		$this->exec('normalise_sgfs --restore ' . implode(',', array_column($before, 'id')));
+
+		$this->assertExitSuccess();
+		$this->assertOutputContains("sgf {$context->tsumegos[0]['sgfs'][0]['id']}: put back as it was, with the comments of its problem");
+		$this->assertSame($before, Util::query("SELECT $columns FROM sgf ORDER BY id"));
+		$this->assertSame($comments, Util::query('SELECT id, message, position FROM tsumego_comment ORDER BY id'));
+		$this->assertSame([], Util::query('SELECT * FROM sgf_before_normalisation'));
+		$this->assertSame([], Util::query('SELECT * FROM tsumego_comment_before_normalisation'));
+
+		$this->exec('normalise_sgfs');
+		$this->assertOutputContains('turned');
+		$this->assertOutputNotContains('0 turned');
+	}
 }
