@@ -202,3 +202,58 @@ besogo.addTest("Editor", "ResetCancelsTheWaitForTheNextRequiredAnswer", function
 		CHECK(editor.getCurrent() == answers[0]);
 	});
 });
+
+// G is written back as it was loaded, whatever its value, on the node it was on; a goal set in the editor replaces it
+besogo.addTest("Editor", "SaveKeepsG", function()
+{
+	for (let goal of ["KILL", "LIVE", "tt"])
+	{
+		let editor = loadEditor("(;SZ[19]G[" + goal + "]AB[bb](;B[aa];W[ba];B[ca]S[DEAD])(;B[ba]S[DEAD]))");
+		let sgf = besogo.composeSgf(editor);
+		CHECK(sgf.includes("G[" + goal + "]"));
+		CHECK_EQUALS(sgf.split("G[").length - 1, 1); // the children inherit the goal, but don't write it
+	}
+	let editor = loadEditor("(;SZ[19]AB[bb];B[aa]G[custom];W[ba];B[ca]C[+])");
+	CHECK(besogo.composeSgf(editor).includes("G[custom]"));
+	CHECK_EQUALS(besogo.composeSgf(editor).split("G[").length - 1, 1);
+
+	editor = loadEditor("(;SZ[19]G[tt]AB[bb];B[aa]S[DEAD])");
+	editor.getRoot().setGoal(GOAL_LIVE);
+	let sgf = besogo.composeSgf(editor);
+	CHECK(sgf.includes("G[LIVE]"));
+	CHECK_EQUALS(sgf.split("G[").length - 1, 1);
+	CHECK(!sgf.includes("G[tt]"));
+});
+
+// SKD (superko means dead) doesn't touch the goal of the root
+besogo.addTest("Editor", "SuperkoMeansDeadKeepsTheGoal", function()
+{
+	let editor = loadEditor("(;SZ[19]G[KILL]SKD[]AB[bb];B[aa]S[DEAD])");
+	CHECK_EQUALS(editor.getRoot().goal, GOAL_KILL);
+	CHECK(besogo.composeSgf(editor).includes("G[KILL]"));
+});
+
+// A status on a node whose position goes on only by a transposition is set aside by besogo, which shows the status of
+// the position it transposes into, but a save writes it back as it was (sgf 22630 and 22656 of the site lost it)
+besogo.addTest("Editor", "SaveKeepsAStatusSetAsideByATransposition", function()
+{
+	let editor = loadEditor("(;SZ[19]G[KILL]AB[jj](;B[qq];W[rr]S[ALIVE])(;B[ss];W[rr];B[qq]S[DEAD]))");
+	let sgf = besogo.composeSgf(editor);
+	CHECK(sgf.includes("W[rr]\nS[ALIVE]"));
+	CHECK(sgf.includes("S[DEAD]"));
+});
+
+// A status is saved as it was written while it reads the same, a text besogo reads otherwise too (old saves wrote
+// "KO " for "KO+"); one besogo can't read ("A 2KO " for "A+2KO+", S[undefined]) is left out, never written as
+// "undefined"; one set in the editor is written as besogo writes it
+besogo.addTest("Editor", "SaveKeepsTheStatusAsWritten", function()
+{
+	let editor = loadEditor("(;SZ[19]G[KILL]AB[bb](;B[aa];W[ba]S[KO ])(;B[ba];W[aa]S[A 2KO ])(;B[ca];W[aa]S[undefined]))");
+	let sgf = besogo.composeSgf(editor);
+	CHECK(sgf.includes("S[KO ]"));
+	CHECK(!sgf.includes("A 2KO"));
+	CHECK(!sgf.includes("undefined"));
+	let end = editor.getRoot().children[0].children[0];
+	end.setStatusSource(besogo.loadStatusFromString("DEAD"));
+	CHECK(besogo.composeSgf(editor).includes("S[DEAD]"));
+});

@@ -260,12 +260,13 @@ class ProposalFeedbackTest extends IntegrationTestCase
 			'user' => ['name' => 'proposer', 'rating' => App\Utility\Constants::$MINIMUM_RATING_TO_CONTRIBUTE],
 			'tsumego' => ['set_order' => 1, 'status' => 'S', 'sgf' => self::SGF_VERSION_1]]);
 		$this->login('proposer');
-		$data = ['sgf' => self::SGF_VERSION_2, 'firstMoveColor' => 'B', 'correctMoves' => 'aa', 'setConnectionID' => $context->setConnections[0]['id']];
+		$address = '/sgf/upload/' . $context->setConnections[0]['id'];
+		$data = ['sgfForBesogo' => self::SGF_VERSION_2];
 
 		$this->disableErrorHandlerMiddleware();
 		try
 		{
-			$this->post('/tsumegos/setupNewSgfStep2', $data + ['description' => ' ']);
+			$this->post($address, $data + ['description' => ' ']);
 			$this->fail('A proposal without a description was saved');
 		}
 		catch (BadRequestException $e)
@@ -273,7 +274,7 @@ class ProposalFeedbackTest extends IntegrationTestCase
 			$this->assertSame('Describe what you changed and why.', $e->getMessage());
 		}
 
-		$this->post('/tsumegos/setupNewSgfStep2', $data + ['description' => "Added D16\r\nbecause it is needed"]);
+		$this->post($address, $data + ['description' => "Added D16\r\nbecause it is needed"]);
 		$proposal = $this->fetchTable('Sgf')->find()->where(['tsumego_id' => $context->tsumegos[0]['id']])->orderByDesc('id')->first();
 		$this->assertEquals(SgfTable::STATUS_PROPOSED, $proposal->sgf_status_id);
 		$this->assertNull($proposal['accepted_by_user_id'], 'an admin accepts it later');

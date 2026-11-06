@@ -4,20 +4,27 @@ namespace App\Controller;
 
 use Cake\Http\Response;
 use Cake\Controller\Controller;
+use Cake\Http\Exception\BadRequestException;
 use Cake\Http\Exception\MethodNotAllowedException;
 use Cake\Http\Exception\NotFoundException;
 use Cake\Event\EventInterface;
 use ReflectionMethod;
+use App\Model\Table\SgfTable;
 use App\Model\Table\UserTable;
 use App\Utility\AchievementChecker;
 use App\Utility\Auth;
 use App\Utility\BoardSelector;
+use App\Utility\BoardTransformation;
 use App\Utility\Changelog;
 use App\Utility\Constants;
+use App\Utility\CookieFlash;
 use App\Utility\DailyStreak;
 use App\Utility\Mailer;
 use App\Utility\Play;
 use App\Utility\Preferences;
+use App\Utility\SgfAnalysis;
+use App\Utility\SgfCommentReorientation;
+use App\Utility\SgfParser;
 use App\Utility\TimeMode;
 use App\Utility\TsumegoFilters;
 use App\Utility\Util;
@@ -103,17 +110,47 @@ class AppController extends Controller
 		return $_FILES[$name] ?? null;
 	}
 
-	//Hands a new version of the problem's SGF to the page that sets it up in the browser
-	//(Tsumegos/setup_new_sgf), for an upload of a file or a save of the board editor
-	protected function renderNewSgfSetup(int $setConnectionID, string $sgf, string $description, ?string $sourceSgfID = null, ?string $transformationFromSource = null): void
+	//Saves a new version of the problem's SGF, from an upload of a file or a save of the board editor: proposed,
+	//or accepted at once when an admin saves it. It is stored as the site keeps every SGF, turned to the top-left
+	//with the correct variations first, and the color to move first and the correct first moves are worked out here
+	//by besogo's own rules (SgfAnalysis), never taken from the client. An SGF the board editor would refuse to save
+	//is not saved, with the reason. The board editor sends the version it was opened with and what it did to it,
+	//which with the turn here is what the comments follow (SgfCommentReorientation).
+	protected function saveNewSgf(int $setConnectionID, string $sgf, ?string $description, ?string $sourceSgfID = null, ?string $transformationFromSource = null): ?Response
 	{
-		$this->set('sgf', $sgf);
-		$this->set('setConnectionID', (string) $setConnectionID);
-		// sent by the board editor, see SgfCommentReorientation
-		$this->set('sourceSgfID', $sourceSgfID);
-		$this->set('transformationFromSource', $transformationFromSource);
-		$this->set('description', $description);
-		$this->render('/Tsumegos/setup_new_sgf');
+		$setConnection = $this->fetchTable('SetConnection')->find()->select(['tsumego_id'])->where(['id' => $setConnectionID])->first();
+		if (!$setConnection || !$this->fetchTable('Tsumego')->exists(['id' => $setConnection->tsumego_id]))
+			return null;
+		$tsumegoID = $setConnection->tsumego_id;
+
+		if ($problem = SgfParser::validationProblem($sgf))
+			throw new BadRequestException('Invalid SGF format: ' . $problem);
+		$analysis = SgfAnalysis::of($sgf, true);
+		if ($analysis->problem !== null)
+		{
+			CookieFlash::set('The SGF was not saved: ' . $analysis->problem, 'error');
+			return $this->redirect('/' . $setConnectionID);
+		}
+
+		$version = [
+			'sgf' => $analysis->sgf ?? $sgf,
+			'user_id' => Auth::getUserId(),
+			'tsumego_id' => $tsumegoID,
+			'first_move_color' => $analysis->firstMoveColor,
+			'correct_moves' => $analysis->correctMoves,
+			// the admin reviewing a proposal needs to know what it is about, an admin's own edit may go without
+			'description' => SgfTable::descriptionFromRequest($description, !Auth::isAdmin())];
+		$version += Auth::isAdmin() ? SgfTable::acceptedBy(Auth::getUserID()) : ['sgf_status_id' => SgfTable::STATUS_PROPOSED];
+		$sgfTable = $this->fetchTable('Sgf');
+		$source = $sgfTable->find()->select(['id', 'tsumego_id'])->where(['id' => (int) ($sourceSgfID ?? 0)])->first();
+		if ($source && $source->tsumego_id == $tsumegoID)
+		{
+			$version['source_sgf_id'] = $source->id;
+			$version['transformation_from_source'] = BoardTransformation::fromJson($transformationFromSource)->then($analysis->transformation ?? BoardTransformation::identity())->toJson();
+		}
+		$saved = $sgfTable->saveOrFail($sgfTable->newEntity($version));
+		SgfCommentReorientation::afterAccepted($saved->id);
+		return $this->redirect('/' . $setConnectionID);
 	}
 
 	//GET, POST and so on.

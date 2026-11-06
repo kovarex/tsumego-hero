@@ -185,6 +185,7 @@ jobs:
           }
           EOF
           cp .github/ci/core.local.php config/core.local.php
+          cp .github/ci/jwt_secret.php config/jwt_secret.php
 
       - name: Import database schema
         run: |

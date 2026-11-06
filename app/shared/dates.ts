@@ -1,4 +1,5 @@
 import dayjs, { type Dayjs } from 'dayjs';
+import { relativeTime } from './relativeTime';
 
 //The dates of the whole site are written here, in the format the player picked in the settings, ISO by default.
 //The server prints dates as <time datetime="..." data-format="...">, see localizeTimeElements, and the React
@@ -53,12 +54,19 @@ function isDateFormat(format: string): format is DateFormat
 	return (DATE_FORMATS as readonly string[]).includes(format);
 }
 
-//Replaces the text of every <time datetime="..."> rendered by the server with its formatted date.
+//Replaces the text of every <time datetime="..."> rendered by the server with its formatted date. The format
+//'relative' writes how long ago it was ("3 days ago") and puts the date and time in the tooltip.
 export function localizeTimeElements(): void
 {
 	document.querySelectorAll<HTMLTimeElement>('time[datetime]').forEach(element =>
 	{
 		const format = element.getAttribute('data-format') ?? 'datetime';
+		if (format === 'relative' && dayjs(element.dateTime).isValid())
+		{
+			element.textContent = relativeTime(dayjs(element.dateTime).toDate(), new Date());
+			element.title = formatDate(element.dateTime);
+			return;
+		}
 		element.textContent = formatDate(element.dateTime, isDateFormat(format) ? format : 'datetime');
 	});
 }

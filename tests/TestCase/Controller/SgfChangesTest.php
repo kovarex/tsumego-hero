@@ -263,7 +263,7 @@ class SgfChangesTest extends IntegrationTestCase
 		$context = $this->prepare(1);
 		$tsumegoID = (int) $context->tsumegos[0]['id'];
 
-		$this->post('/tsumegos/setupNewSgfStep2', ['sgf' => self::SGF, 'firstMoveColor' => 'B', 'correctMoves' => 'aa', 'setConnectionID' => $context->setConnections[0]['id']]);
+		$this->post('/sgf/upload/' . $context->setConnections[0]['id'], ['sgfForBesogo' => self::SGF]);
 		$saved = $this->fetchTable('Sgf')->find()->where(['tsumego_id' => $tsumegoID])->orderByDesc('id')->first();
 		$this->assertEquals(SgfTable::STATUS_ACCEPTED, $saved->sgf_status_id);
 		$this->assertEquals($context->user['id'], $saved->accepted_by_user_id);

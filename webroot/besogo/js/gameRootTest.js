@@ -138,6 +138,24 @@ besogo.addTest("GameRoot", "TransformationAfterASetupStoneFindsTheNodes", functi
 	CHECK_EQUALS(root.children[0].children[0].getStone(19, 1), BLACK);
 });
 
+// Setup below the root holds the change from the parent's stone; turned, the stone it leaves is placed again: a black
+// stone removed stays removed and a white one turned black stays black (sgf 19415 and 19416 of the site turned an AE
+// into an AW)
+besogo.addTest("GameRoot", "TransformationKeepsTheSetupBelowTheRoot", function()
+{
+	let editor = besogo.makeEditor(19, 19, {});
+	besogo.loadSgf(besogo.parseSgf("(;SZ[19]AB[cc];W[dd];AE[cc]AB[dd])"), editor);
+	let root = editor.getRoot();
+	let transformation = besogo.makeTransformation();
+	transformation.hFlip = true;
+	root.applyTransformationOnRoot(transformation);
+	let setup = root.children[0].children[0];
+	CHECK_EQUALS(setup.getStone(17, 3), EMPTY);
+	CHECK_EQUALS(setup.getStone(16, 4), BLACK);
+	CHECK_EQUALS(setup.getSetup(17, 3), "AE");
+	CHECK_EQUALS(setup.getSetup(16, 4), "AB");
+});
+
 besogo.addTest("GameRoot", "LocalEditDoesntBreakValidVariation", function()
 {
 	let root = besogo.makeGameRoot();

@@ -15,7 +15,6 @@ class MalformedIdTest extends IntegrationTestCase
 		'/avatars/picture/abc',
 		'/avatars/boardOfUser/abc',
 		'/time_mode/result/abc',
-		'/tsumegos/setupSgfStep2/abc/b',
 	];
 
 	private const POST_ADDRESSES = [

@@ -12,6 +12,7 @@ use App\Utility\PlayOutcome;
 use App\Utility\Rating;
 use App\Utility\TimeModeUtil;
 use App\Utility\Util;
+use Facebook\WebDriver\WebDriverKeys;
 
 //Challenges between players: everyone in a challenge plays the same problems like a time mode
 //run, and the page of the challenge ranks them by their points.
@@ -307,6 +308,131 @@ class ChallengesControllerTest extends IntegrationTestCase
 		$this->assertSame(Util::getInternalAddress() . '/challenges/' . $challengeId, $this->headerValue('Location'));
 	}
 
+	//Until every player still in it finished, a challenge is in progress: its table and the list show
+	//the points of the finished runs and how many finished, no places and no medals. The last run brings them.
+	public function testAChallengeInProgressHasNoPlaces(): void
+	{
+		$this->prepare();
+		$challengeId = $this->create(['problem_count' => 5, 'players' => 'DN_friend, DN_stranger']);
+		$this->playRun($challengeId, array_fill(0, 5, [PlayOutcome::SolvedClean, 10]));
+		$this->login('friend');
+		$this->playRun($challengeId, array_fill(0, 5, [PlayOutcome::SolvedClean, 20]));
+
+		$this->assertSame([null, null, null], array_column(ChallengeTable::standings($challengeId), 'place'));
+		$this->get('/challenges/' . $challengeId);
+		$this->assertTextNotContains('challenge-place', $this->view);
+		$this->assertTextNotContains('<th>#</th>', $this->view);
+		$this->assertTextContains('The challenge is in progress, 2 of 3 players finished.', $this->view);
+		$this->get('/challenges');
+		$row = $this->listRow($challengeId);
+		$this->assertStringNotContainsString('challenge-place', $row);
+		$this->assertMatchesRegularExpression('/>2<\/button>.*<\/span>\s*of 3 finished/s', $row);
+		$this->assertStringContainsString('challenge-standings-popup--unranked', $row, 'the standings without places');
+		$this->assertMatchesRegularExpression('/points<\/strong> \(\d+%\) in <a href="\/challenges\/' . $challengeId . '">/', $row);
+		$created = (string) Util::query('SELECT created FROM challenge WHERE id = ?', [$challengeId])[0]['created'];
+		$this->assertStringContainsString('started <time datetime="' . Util::toIso8601($created) . '"', $row);
+
+		$this->login('stranger');
+		$this->playRun($challengeId, array_fill(0, 5, [PlayOutcome::Failed, 10]));
+		$this->assertSame([1, 2, 3], array_column(ChallengeTable::standings($challengeId), 'place'));
+		$this->get('/challenges/' . $challengeId);
+		$this->assertTextContains('aria-label="3rd place"', $this->view);
+		$this->get('/challenges');
+		$row = $this->listRow($challengeId);
+		$this->assertStringContainsString('aria-label="1st place"', $row);
+		$this->assertStringNotContainsString('started', $row);
+	}
+
+	//The creator removes a player who hasn't started, right away: the challenge finishes without
+	//them, the table says they were removed, and they can't play it, join it again or be invited.
+	public function testTheCreatorRemovesAPlayerWhoHasNotStarted(): void
+	{
+		$this->prepare();
+		$challengeId = $this->create(['problem_count' => 5, 'players' => 'DN_friend, DN_stranger']);
+		$this->playRun($challengeId, array_fill(0, 5, [PlayOutcome::SolvedClean, 10]));
+		$this->login('friend');
+		$this->playRun($challengeId, array_fill(0, 5, [PlayOutcome::SolvedClean, 20]));
+		$this->get('/challenges/' . $challengeId);
+		$this->assertTextNotContains('action="/challenges/remove/', $this->view, 'only the creator removes');
+		$this->login('challenger');
+		$this->get('/challenges/' . $challengeId);
+		$this->assertTextContains('action="/challenges/remove/' . $challengeId . '"', $this->view, 'right away, though invited just now');
+		$this->post('/challenges/remove/' . $challengeId, ['user_id' => $this->userId('stranger')]);
+
+		$this->assertFalse(ChallengeTable::isParticipant($challengeId, $this->userId('stranger')));
+		$this->assertSame([1, 2, null], array_column(ChallengeTable::standings($challengeId), 'place'));
+		$this->get('/challenges/' . $challengeId);
+		$this->assertTextContains('removed by the creator', $this->view);
+		$this->assertTextContains('aria-label="1st place"', $this->view);
+		$this->post('/challenges/invite/' . $challengeId, ['players' => 'DN_stranger']);
+		$this->assertSame('DN_stranger was removed from the challenge.', \App\Utility\CookieFlash::get());
+
+		$this->login('stranger');
+		$this->assertSame(0, ChallengeTable::countWaitingFor($this->userId('stranger')));
+		$this->get('/challenges/' . $challengeId);
+		$this->assertTextContains('id="challenge-removed"', $this->view);
+		$this->post('/challenges/play/' . $challengeId);
+		$this->assertNull(ChallengeTable::runOf($challengeId, $this->userId('stranger')));
+	}
+
+	//A started run can be removed once it stays on a problem for twice the time for a problem, counted from the start of that problem.
+	public function testTheCreatorRemovesARunStuckOnAProblem(): void
+	{
+		$this->prepare();
+		$challengeId = $this->create(['problem_count' => 5, 'players' => 'DN_friend', 'seconds_per_problem' => 60]);
+		$this->login('friend');
+		$this->post('/challenges/play/' . $challengeId);
+		$this->post('/timeMode/play/1');
+		$this->login('challenger');
+		$this->get('/challenges/' . $challengeId);
+		$this->assertTextNotContains('action="/challenges/remove/', $this->view);
+
+		$runId = ChallengeTable::runOf($challengeId, $this->userId('friend'))->id;
+		$problemStarted = fn(int $secondsAgo) => Util::execute('UPDATE time_mode_attempt SET started = NOW() - INTERVAL ? SECOND
+			WHERE time_mode_session_id = ? AND started IS NOT NULL', [$secondsAgo, $runId]);
+		$problemStarted(110);
+		$this->get('/challenges/' . $challengeId);
+		$this->assertTextNotContains('action="/challenges/remove/', $this->view, 'not yet twice the minute');
+		$this->post('/challenges/remove/' . $challengeId, ['user_id' => $this->userId('friend')]);
+		$this->assertResponseCode(422);
+
+		$problemStarted(ChallengeTable::REMOVABLE_AFTER_TIMES_FOR_A_PROBLEM * 60 + 1);
+		$this->get('/challenges/' . $challengeId);
+		$this->assertTextContains('action="/challenges/remove/' . $challengeId . '"', $this->view);
+		$this->assertTextContains('title="No new problem for 2 minutes, twice the time for a problem"', $this->view);
+		$this->post('/challenges/remove/' . $challengeId, ['user_id' => $this->userId('friend')]);
+		$this->assertSame([ChallengeTable::RUN_REMOVED], array_values(array_column(array_filter(ChallengeTable::standings($challengeId),
+			fn(array $row) => (int) $row['user_id'] === $this->userId('friend')), 'run')));
+	}
+
+	public function testOnlyTheCreatorRemovesPlayers(): void
+	{
+		$this->prepare();
+		$challengeId = $this->create(['players' => 'DN_friend, DN_stranger']);
+		$this->login('friend');
+
+		$this->post('/challenges/remove/' . $challengeId, ['user_id' => $this->userId('stranger')]);
+
+		$this->assertResponseCode(403);
+		$this->assertTrue(ChallengeTable::isParticipant($challengeId, $this->userId('stranger')));
+	}
+
+	//A player can be removed at any time before they start, and once started when the start of their current problem
+	//is twice the time for a problem ago; a finished or declined run never.
+	public function testWhenAPlayerCanBeRemoved(): void
+	{
+		$now = strtotime('2026-11-06 12:00:00');
+		$secondsAgo = fn(float $seconds) => date('Y-m-d H:i:s', (int) ($now - $seconds));
+		$this->assertSame(2, ChallengeTable::REMOVABLE_AFTER_TIMES_FOR_A_PROBLEM);
+		$this->assertTrue(ChallengeTable::canRemove(['run' => ChallengeTable::RUN_NOT_STARTED, 'joined' => $secondsAgo(0)], 60, $now));
+		$this->assertFalse(ChallengeTable::canRemove(['run' => ChallengeTable::RUN_PLAYING, 'last_activity' => $secondsAgo(119)], 60, $now));
+		$this->assertTrue(ChallengeTable::canRemove(['run' => ChallengeTable::RUN_PLAYING, 'last_activity' => $secondsAgo(120)], 60, $now));
+		$this->assertFalse(ChallengeTable::canRemove(['run' => ChallengeTable::RUN_PLAYING, 'last_activity' => $secondsAgo(120)], 90, $now));
+		$this->assertTrue(ChallengeTable::canRemove(['run' => ChallengeTable::RUN_PLAYING, 'last_activity' => $secondsAgo(180)], 90, $now));
+		$this->assertFalse(ChallengeTable::canRemove(['run' => ChallengeTable::RUN_FINISHED, 'last_activity' => $secondsAgo(100000)], 60, $now));
+		$this->assertFalse(ChallengeTable::canRemove(['run' => ChallengeTable::RUN_DECLINED, 'joined' => $secondsAgo(100000)], 60, $now));
+	}
+
 	public function testTheTableRanksThePlayersByTheirPoints(): void
 	{
 		$this->prepare();
@@ -314,7 +440,10 @@ class ChallengesControllerTest extends IntegrationTestCase
 			'problem_count' => 5,
 			'players' => 'DN_friend, DN_stranger']);
 
-		// the challenger solves three problems, the friend all five, the stranger hasn't played yet
+		// the challenger solves three problems, the friend all five, the stranger declines, which finishes the challenge
+		$this->login('stranger');
+		$this->post('/challenges/decline/' . $challengeId);
+		$this->login('challenger');
 		$this->playRun($challengeId, [
 			[PlayOutcome::SolvedClean, 10],
 			[PlayOutcome::Failed, 10],
@@ -328,13 +457,13 @@ class ChallengesControllerTest extends IntegrationTestCase
 		$this->assertSame(['DN_friend', 'DN_challenger', 'DN_stranger'], array_column($standings, 'user_display_name'));
 		$this->assertSame([1, 2, null], array_column($standings, 'place'));
 		$this->assertSame([5, 3, 0], array_column($standings, 'solved_count'));
-		$this->assertSame([ChallengeTable::RUN_FINISHED, ChallengeTable::RUN_FINISHED, ChallengeTable::RUN_NOT_STARTED], array_column($standings, 'run'));
+		$this->assertSame([ChallengeTable::RUN_FINISHED, ChallengeTable::RUN_FINISHED, ChallengeTable::RUN_DECLINED], array_column($standings, 'run'));
 
 		$this->get('/challenges/' . $challengeId);
 		$page = $this->view;
 		$this->assertTextContains('You are <strong>1st</strong> of 2', $page);
 		$this->assertTextContains('challenges__cell--failed', $page);
-		$this->assertTextContains('not played yet', $page);
+		$this->assertTextContains('declined', $page);
 
 		// the problem buttons are coloured by how the player looking did in their run, not by their status of the problem
 		preg_match_all('/class="problem-nav__item problem-nav__item--(\w)/', $page, $matches);
@@ -345,6 +474,149 @@ class ChallengesControllerTest extends IntegrationTestCase
 		preg_match_all('/class="problem-nav__item problem-nav__item--(\w)/', $page, $matches);
 		$this->assertSame(['S', 'F', 'S', 'F', 'S'], $matches[1]);
 		$this->assertTextContains('You got it wrong.', $page);
+	}
+
+	//Runs with the same points in the same time share their place and its medal, the next run skips the shared places.
+	public function testTiedRunsShareTheirPlaceAndMedal(): void
+	{
+		$this->prepare();
+		$challengeId = $this->create(['problem_count' => 5, 'players' => 'DN_friend, DN_stranger']);
+		$this->playRun($challengeId, array_fill(0, 5, [PlayOutcome::SolvedClean, 10]));
+		$this->login('friend');
+		$this->playRun($challengeId, array_fill(0, 5, [PlayOutcome::SolvedClean, 10]));
+		$this->login('stranger');
+		$this->playRun($challengeId, array_fill(0, 5, [PlayOutcome::Failed, 10]));
+
+		$this->assertSame([1, 1, 3], array_column(ChallengeTable::standings($challengeId), 'place'));
+		$this->get('/challenges/' . $challengeId);
+		$standings = substr($this->view, strpos($this->view, 'id="challenge-standings"'));
+		$this->assertSame(2, substr_count($standings, 'class="challenge-place challenge-place--gold" role="img" aria-label="1st place"'));
+		$this->assertSame(1, substr_count($standings, 'aria-label="3rd place"'));
+		$this->assertStringNotContainsString('challenge-place--silver', $standings);
+	}
+
+	//The list of the player's challenges says "2nd of 2 with X points (Y%) in Challenge #N", the 2 opening the
+	//standings of everyone who finished, and when the last of them finished.
+	public function testTheListShowsThePlaceOfThePlayerAndTheStandingsOfTheChallenge(): void
+	{
+		$this->prepare();
+		$wonByFriend = $this->create(['problem_count' => 5, 'players' => 'DN_friend, DN_stranger']);
+		$this->playRun($wonByFriend, array_fill(0, 5, [PlayOutcome::Failed, 10]));
+		$this->login('friend');
+		$this->playRun($wonByFriend, array_fill(0, 5, [PlayOutcome::SolvedClean, 10]));
+		$this->login('challenger');
+		// the stranger never starts, so the challenge finishes without them
+		$this->post('/challenges/remove/' . $wonByFriend, ['user_id' => $this->userId('stranger')]);
+
+		$this->get('/challenges');
+		$row = $this->listRow($wonByFriend);
+		$phrase = ['aria-label="2nd place"', '2nd</span>', 'of <span class="challenge-standings-popup">', 'with <strong>0.0 points</strong> (0%) in',
+			'<a href="/challenges/' . $wonByFriend . '">', 'data-format="relative"', 'class="hint challenges__row-details"'];
+		$positions = array_map(fn(string $part) => strpos($row, $part), $phrase);
+		$this->assertNotContains(false, $positions, 'the row has all the parts of the phrase');
+		$sorted = $positions;
+		sort($sorted);
+		$this->assertSame($sorted, $positions, 'in the order of the phrase');
+		$this->assertStringNotContainsString('played', $row);
+
+		// the standings, the best first, each with its place, player and points
+		$this->assertStringContainsString('aria-controls="challenge-standings-' . $wonByFriend . '" aria-describedby="challenge-standings-' . $wonByFriend . '">2</button>', $row);
+		$popup = substr($row, strpos($row, 'class="challenge-standings-popup__panel"'));
+		$friendPoints = (float) ChallengeTable::runOf($wonByFriend, $this->userId('friend'))->points;
+		$this->assertMatchesRegularExpression('/aria-label="1st place".*DN_friend.*' . preg_quote(ChallengeTable::formatPoints($friendPoints)) . ' points'
+			. '.*aria-label="2nd place".*DN_challenger.*0\.0 points/s', $popup);
+		$this->assertStringNotContainsString('DN_stranger', $popup, 'who has not finished');
+
+		// the time of the last run, the friend's
+		$friendFinished = array_find(ChallengeTable::placesOfPlayer($this->userId('challenger'))[$wonByFriend]['standings'],
+			fn(array $run) => (int) $run['user_id'] === $this->userId('friend'))['finished'];
+		$this->assertStringContainsString('<span class="hint challenges__when"><time datetime="' . Util::toIso8601($friendFinished) . '"', $row);
+
+		$this->login('friend');
+		$this->get('/challenges');
+		$row = $this->listRow($wonByFriend);
+		$this->assertStringContainsString('aria-label="1st place"', $row);
+		$this->assertStringContainsString('<strong>' . ChallengeTable::formatPoints($friendPoints) . ' points</strong> ('
+			. (int) round($friendPoints / 500 * 100) . '%)', $row, 'of the most five problems give');
+
+		// the removed player sees how many finished
+		$this->login('stranger');
+		$this->get('/challenges');
+		$row = $this->listRow($wonByFriend);
+		$this->assertStringContainsString('Removed by the creator: <a href="/challenges/' . $wonByFriend . '">', $row);
+		$this->assertMatchesRegularExpression('/· <span class="challenge-standings-popup">.*>2<\/button>.*<\/span>\s*finished/s', $row);
+	}
+
+	public function testTheStandingsOpenFromTheListOfChallengesInTheBrowser(): void
+	{
+		$this->prepare();
+		$challengeId = $this->create(['problem_count' => 5, 'players' => 'DN_friend']);
+		$this->playRun($challengeId, array_fill(0, 5, [PlayOutcome::SolvedClean, 10]));
+		$this->login('friend');
+		$this->playRun($challengeId, array_fill(0, 5, [PlayOutcome::Failed, 10]));
+		$this->login('challenger');
+
+		$browser = Browser::instance();
+		$browser->get('challenges');
+		$time = $browser->find('.challenges__when time');
+		$this->assertContains($time->getText(), ['just now', 'a minute ago']);
+		$this->assertMatchesRegularExpression('/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/', $time->getAttribute('title'));
+
+		$toggle = $browser->find('.challenge-standings-popup__toggle');
+		$panel = $browser->find('#challenge-standings-' . $challengeId);
+		$this->assertFalse($panel->isDisplayed());
+		$toggle->click();
+		$this->assertTrue($panel->isDisplayed());
+		$this->assertSame('true', $toggle->getAttribute('aria-expanded'));
+		$this->assertStringContainsString('DN_friend', $panel->getText());
+
+		$browser->driver->getKeyboard()->sendKeys(WebDriverKeys::ESCAPE);
+		$this->assertFalse($panel->isDisplayed());
+		$this->assertSame('false', $toggle->getAttribute('aria-expanded'));
+
+		$toggle->click();
+		$this->assertTrue($panel->isDisplayed());
+		$browser->find('.challenges__title')->click();
+		$this->assertFalse($panel->isDisplayed());
+		$browser->assertNoJsErrors();
+	}
+
+	//The places and the standings of every challenge of the list come from one query, whatever their number.
+	public function testTheListTakesAsManyQueriesForManyChallengesAsForOne(): void
+	{
+		$this->prepare();
+		$queriesOfTheList = function (): int {
+			$questions = fn() => (int) Util::query("SHOW SESSION STATUS LIKE 'Questions'")[0]['Value'];
+			$before = $questions();
+			$this->get('/challenges');
+			return $questions() - $before;
+		};
+		$playOne = function (): void {
+			$challengeId = $this->create(['problem_count' => 5, 'players' => 'DN_friend']);
+			$this->playRun($challengeId, array_fill(0, 5, [PlayOutcome::SolvedClean, 10]));
+			$this->login('friend');
+			$this->playRun($challengeId, array_fill(0, 5, [PlayOutcome::Failed, 10]));
+			$this->login('challenger');
+		};
+
+		$playOne();
+		// the first request fills the caches of the request, like UserTable's list of deleted accounts
+		$queriesOfTheList();
+		$queriesOfOne = $queriesOfTheList();
+		$playOne();
+		$playOne();
+		$this->assertSame($queriesOfOne, $queriesOfTheList());
+		$this->assertSame(3, substr_count($this->view, 'class="challenge-standings-popup__panel"'));
+		$this->assertSame(6, substr_count($this->view, 'class="challenge-standings-popup__run"'), 'two players in each');
+	}
+
+	//The row of the list of challenges of the challenge.
+	private function listRow(int $challengeId): string
+	{
+		$link = strpos($this->view, '<a href="/challenges/' . $challengeId . '">');
+		$start = strrpos(substr($this->view, 0, $link), 'class="challenges__row"');
+		$end = strpos($this->view, 'class="challenges__row"', $link);
+		return substr($this->view, $start, $end === false ? null : $end - $start);
 	}
 
 	public function testTheProblemsShowOnlyToThePlayersWhoFinishedTheirRun(): void
@@ -416,6 +688,132 @@ class ChallengesControllerTest extends IntegrationTestCase
 
 		$this->assertSame([ChallengeTable::RUN_FINISHED], array_column(ChallengeTable::standings($firstId), 'run'));
 		$this->assertSame([ChallengeTable::RUN_PLAYING], array_column(ChallengeTable::standings($secondId), 'run'));
+	}
+
+	//A player who finished their run starts a rematch: a new challenge with the same settings and
+	//new problems, the other players invited, the one who declined left out.
+	public function testARematchRepeatsTheChallengeWithNewProblems(): void
+	{
+		$this->prepare(12);
+		$challengeId = $this->create(['problem_count' => 5, 'seconds_per_problem' => 30, 'players' => 'DN_friend, DN_stranger']);
+		$this->login('stranger');
+		$this->post('/challenges/decline/' . $challengeId);
+		$this->login('challenger');
+		$this->playRun($challengeId, array_fill(0, 5, [PlayOutcome::SolvedClean, 10]));
+		$this->get('/challenges/' . $challengeId);
+		$this->assertTextNotContains('action="/challenges/rematch/', $this->view, 'not while the friend still plays');
+		$this->login('friend');
+		$this->playRun($challengeId, array_fill(0, 5, [PlayOutcome::SolvedClean, 20]));
+		$this->get('/challenges/' . $challengeId);
+		$this->assertTextContains('action="/challenges/rematch/' . $challengeId . '"', $this->view);
+
+		$this->post('/challenges/rematch/' . $challengeId);
+
+		$rematchId = $this->fetchTable('Challenge')->find()->orderByDesc('id')->firstOrFail()->id;
+		$this->assertNotSame($challengeId, $rematchId);
+		$this->assertSame(Util::getInternalAddress() . '/challenges/' . $rematchId, $this->headerValue('Location'));
+		$original = ChallengeTable::withDetails($challengeId);
+		$rematch = ChallengeTable::withDetails($rematchId);
+		foreach (['minimum_time_mode_rank_id', 'maximum_time_mode_rank_id', 'seconds_per_problem', 'problem_count'] as $setting)
+			$this->assertEquals($original[$setting], $rematch[$setting], $setting);
+		$this->assertSame((int) $this->userId('friend'), (int) $rematch['created_by_user_id']);
+		$this->assertSame([], array_intersect(ChallengeTable::problemIDs($challengeId), ChallengeTable::problemIDs($rematchId)), 'twelve problems leave room for five new ones');
+		$this->assertSame([$this->userId('friend'), $this->userId('challenger')], $this->participants($rematchId));
+		$this->assertSame(1, ChallengeTable::countWaitingFor($this->userId('challenger')));
+	}
+
+	//When both players click Rematch, the second click starts nothing: it takes them to the rematch of the first,
+	//which they are in already, and the page of the challenge links the rematch instead of the button.
+	public function testTwoPlayersClickingRematchStartOneRematch(): void
+	{
+		$this->prepare();
+		$challengeId = $this->create(['problem_count' => 5, 'players' => 'DN_friend']);
+		$this->playRun($challengeId, array_fill(0, 5, [PlayOutcome::SolvedClean, 10]));
+		$this->login('friend');
+		$this->playRun($challengeId, array_fill(0, 5, [PlayOutcome::SolvedClean, 20]));
+		$this->login('challenger');
+		$this->post('/challenges/rematch/' . $challengeId);
+		$rematchId = (int) ChallengeTable::rematchOf($challengeId)['id'];
+
+		$this->login('friend');
+		$this->get('/challenges/' . $challengeId);
+		$this->assertTextNotContains('action="/challenges/rematch/', $this->view);
+		$this->assertMatchesRegularExpression('/id="challenge-rematch-started">Rematch started by <a href="\/users\/view\/' . $this->userId('challenger') . '">.*DN_challenger/s', $this->view);
+		$this->assertTextContains('href="/challenges/' . $rematchId . '" id="challenge-rematch-open">Open</a>', $this->view);
+
+		$this->post('/challenges/rematch/' . $challengeId);
+		$this->assertSame(Util::getInternalAddress() . '/challenges/' . $rematchId, $this->headerValue('Location'));
+		$this->assertSame('DN_challenger started the rematch already, here it is.', CookieFlash::get());
+		$this->assertSame(1, $this->rematchCount($challengeId));
+		$this->assertSame([$this->userId('challenger'), $this->userId('friend')], $this->participants($rematchId));
+	}
+
+	//Two clicks at the same moment: the second one gets past the check for a rematch before the first one saved
+	//it, and the unique key turns its insert down, so it gets the rematch of the first.
+	public function testARematchStartedAtTheSameMomentStaysOne(): void
+	{
+		$this->prepare();
+		$challengeId = $this->create(['problem_count' => 5, 'players' => 'DN_friend']);
+		$firstClick = ChallengeTable::start($this->userId('challenger'), $this->rankId('5k'), $this->rankId('5k'), 60, 5, [], $challengeId);
+
+		$secondClick = ChallengeTable::rematch(ChallengeTable::withDetails($challengeId), $this->userId('friend'));
+
+		$this->assertSame(['id' => $firstClick, 'invited' => [], 'started' => false], $secondClick);
+		$this->assertSame(1, $this->rematchCount($challengeId));
+		$this->assertSame(0, (int) Util::query('SELECT COUNT(*) AS count FROM challenge_problem WHERE challenge_id NOT IN (SELECT id FROM challenge)')[0]['count']);
+	}
+
+	//A player of the challenge who isn't in its rematch (here they joined after it started) goes to the rematch,
+	//where they can join it like anyone with the link.
+	public function testAPlayerLeftOutOfTheRematchGoesToItsPage(): void
+	{
+		$this->prepare();
+		$challengeId = $this->create(['problem_count' => 5]);
+		$this->playRun($challengeId, array_fill(0, 5, [PlayOutcome::SolvedClean, 10]));
+		$this->post('/challenges/rematch/' . $challengeId);
+		$rematchId = (int) ChallengeTable::rematchOf($challengeId)['id'];
+		$this->login('stranger');
+		$this->post('/challenges/join/' . $challengeId);
+		$this->playRun($challengeId, array_fill(0, 5, [PlayOutcome::SolvedClean, 10]));
+
+		$this->get('/challenges/' . $challengeId);
+		$this->assertTextContains('href="/challenges/' . $rematchId . '" id="challenge-rematch-open">Join</a>', $this->view);
+		$this->post('/challenges/rematch/' . $challengeId);
+		$this->assertSame(Util::getInternalAddress() . '/challenges/' . $rematchId, $this->headerValue('Location'));
+		$this->assertSame(1, $this->rematchCount($challengeId));
+		$this->assertFalse(ChallengeTable::isParticipant($rematchId, $this->userId('stranger')));
+		$this->get('/challenges/' . $rematchId);
+		$this->assertTextContains('id="challenge-join"', $this->view);
+	}
+
+	private function rematchCount(int $challengeId): int
+	{
+		return (int) Util::query('SELECT COUNT(*) AS count FROM challenge WHERE rematch_of_challenge_id = ?', [$challengeId])[0]['count'];
+	}
+
+	//With too few problems of the ranks for new ones, the rematch takes some of the old ones too.
+	public function testARematchOfFewProblemsTakesOldOnesToo(): void
+	{
+		$this->prepare(5);
+		$challengeId = $this->create(['problem_count' => 5]);
+
+		$this->post('/challenges/rematch/' . $challengeId);
+
+		$rematchId = $this->fetchTable('Challenge')->find()->orderByDesc('id')->firstOrFail()->id;
+		$this->assertCount(5, ChallengeTable::problemIDs($rematchId));
+		$this->assertSame([$this->userId('challenger')], $this->participants($rematchId));
+	}
+
+	public function testOnlyThePlayersOfAChallengeStartARematch(): void
+	{
+		$this->prepare();
+		$challengeId = $this->create();
+		$this->login('stranger');
+
+		$this->post('/challenges/rematch/' . $challengeId);
+
+		$this->assertResponseCode(403);
+		$this->assertSame(1, $this->fetchTable('Challenge')->find()->count());
 	}
 
 	public function testAnInvitedPlayerDeclinesAndCanStillChangeTheirMind(): void

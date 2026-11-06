@@ -18,6 +18,8 @@
 #	GET		the state of the last deploy, then "---" and its log
 
 REPO_DIR=/home/public
+# While it exists, the site shows its maintenance page (webroot/.htaccess)
+MAINTENANCE_FLAG=$REPO_DIR/tmp/maintenance.flag
 STATE_DIR=/home/private/deploy-test
 TOKEN_FILE=/home/private/deploy-token
 # Optional; restored whenever the test DB has a migration the deployed commit doesn't know.
@@ -88,10 +90,22 @@ deploy_steps() {
 	export GIT_CONFIG_KEY_2=pack.windowMemory GIT_CONFIG_VALUE_2=64m
 	export GIT_CONFIG_KEY_3=pack.threads GIT_CONFIG_VALUE_3=1
 	cd "$REPO_DIR"
+	# The checkout must be readable by PHP, which runs as another user, whatever umask the CGI
+	# process got (as deploy.sh does for its pull)
+	umask 022
 	if [ "$1" = 0 ]; then
 		git fetch origin master
 	else
 		git fetch origin "pull/$1/head"
+	fi
+	# The maintenance page from the checkout to the end of the deploy (webroot/.htaccess, deploy.sh);
+	# the deploy's subshell takes the flag away when it ends, however it ends
+	mkdir -p "$REPO_DIR/tmp"
+	date > "$MAINTENANCE_FLAG"
+	# The secrets that are not in git before the checkout, so the new code never starts without
+	# them. A checkout from before the script has none; deploy.sh runs it after the checkout too.
+	if [ -f scripts/ensure-secrets.sh ]; then
+		bash scripts/ensure-secrets.sh "$REPO_DIR"
 	fi
 	git checkout --force --detach FETCH_HEAD
 	git log -1 --format='%h %s' > "$STATE_DIR/commit"
@@ -130,7 +144,7 @@ run_deploy() {
 	# outlive a long deploy and the state stayed "running" after a finished deploy.
 	# It also takes over the lock, so a second deploy can't start while it still runs.
 	(
-		trap 'finish_deploy $?; rm -rf "$LOCK_DIR"' EXIT
+		trap 'finish_deploy $?; rm -f "$MAINTENANCE_FLAG"; rm -rf "$LOCK_DIR"' EXIT
 		sh -c 'echo $PPID' > "$LOCK_DIR/pid"
 		deploy_steps "$DEPLOY_PR"
 	) > "$LOG_FILE" 2>&1
