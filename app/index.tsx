@@ -29,6 +29,9 @@ function initializeApp()
 
 	syncMenuNewBadge();
 
+	// For the plain scripts (webroot/js) to format the dates they put on the page, with the same formatter
+	(window as unknown as { localizeTimeElements?: typeof localizeTimeElements }).localizeTimeElements = localizeTimeElements;
+
 	// Expose React Query invalidation for Selenium testing
 	(window as unknown as { __invalidateComments?: () => void }).__invalidateComments = () =>
 		queryClient.invalidateQueries({ queryKey: ['comments'] });

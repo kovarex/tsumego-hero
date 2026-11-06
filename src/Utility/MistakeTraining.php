@@ -742,8 +742,8 @@ class MistakeTraining
 		];
 	}
 
-	//How a review day is named for the player: "today", "tomorrow", a weekday
-	//within the coming week, a date beyond that.
+	//How a review day is named for the player, as HTML: "today", "tomorrow", a weekday
+	//within the coming week, the date beyond that (dayHtml()).
 	public static function describeDay(string $day, ?string $today = null): string
 	{
 		$today = $today ?: self::today();
@@ -754,7 +754,23 @@ class MistakeTraining
 			return 'tomorrow';
 		if ($daysAhead <= 6)
 			return date('l', strtotime($day));
-		return date('M j', strtotime($day));
+		return self::dayHtml($day);
+	}
+
+	//describeDay() with the date after a name, "Monday (Nov 10)", as HTML.
+	public static function describeDayWithDate(string $day): string
+	{
+		$name = self::describeDay($day);
+		$date = self::dayHtml($day);
+		return $name === $date ? $date : $name . ' (' . $date . ')';
+	}
+
+	//A day of the training as the player's date format shows a day of the month (app/shared/dates.ts),
+	//with the ISO day in the element; the text is what shows before the script formats it.
+	public static function dayHtml(string $day): string
+	{
+		$day = date('Y-m-d', strtotime($day));
+		return '<time datetime="' . $day . '" data-format="month-day">' . date('M j', strtotime($day)) . '</time>';
 	}
 
 	//Build the navigation buttons for today's training. One button per tsumego,
@@ -800,6 +816,7 @@ class MistakeTraining
 	//What the training button of a problem shows now, for the play page to redraw the
 	//button of the open problem once its result is stored, instead of keeping what
 	//the page was loaded with. Null when the problem is not in today's training.
+	//The description is HTML (descriptionHtml of the button).
 	/** @return array{status: string, label: string, description: string, badge: string}|null */
 	public static function describeTodaysReview(int $userId, int $tsumegoId): ?array
 	{
@@ -812,7 +829,7 @@ class MistakeTraining
 		return [
 			'status' => $button->status,
 			'label' => (string) $button->label,
-			'description' => (string) $button->description,
+			'description' => (string) $button->descriptionHtml,
 			'badge' => $button->renderRungBadge(),
 		];
 	}
@@ -837,12 +854,12 @@ class MistakeTraining
 			{
 				$button->missedToday = true;
 				$button->label = 'Missed today, try again';
-				$button->description = $rungText . '. Solve it today and it comes back tomorrow.';
+				$button->descriptionHtml = h($rungText . '. Solve it today and it comes back tomorrow.');
 			}
 			else
 			{
 				$button->label = 'Due today';
-				$button->description = $rungText . '. ' . self::cleanSolveOutlook($rung, (int) $row['lapses']);
+				$button->descriptionHtml = h($rungText . '. ' . self::cleanSolveOutlook($rung, (int) $row['lapses']));
 			}
 			return;
 		}
@@ -855,11 +872,11 @@ class MistakeTraining
 		{
 			$button->graduated = true;
 			$button->label = 'Graduated today';
-			$button->description = 'Solved cleanly on every rung, it has no more reviews.';
+			$button->descriptionHtml = h('Solved cleanly on every rung, it has no more reviews.');
 			return;
 		}
 		$button->label = 'Solved today';
-		$button->description = $rungText . ', next review ' . self::describeDay(date('Y-m-d', strtotime($row['next_due']))) . '.';
+		$button->descriptionHtml = h($rungText . ', next review ') . self::describeDay(date('Y-m-d', strtotime($row['next_due']))) . '.';
 	}
 
 	//What a clean solve of a due problem would do, for its tooltip: graduate it at

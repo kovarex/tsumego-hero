@@ -463,7 +463,9 @@ class MistakeTrainingTest extends IntegrationTestCase
 		$this->assertSame('today', MistakeTraining::describeDay($today, $today));
 		$this->assertSame('tomorrow', MistakeTraining::describeDay(date('Y-m-d', strtotime('+1 day')), $today));
 		$this->assertSame(date('l', strtotime('+3 day')), MistakeTraining::describeDay(date('Y-m-d', strtotime('+3 day')), $today));
-		$this->assertSame(date('M j', strtotime('+30 days')), MistakeTraining::describeDay(date('Y-m-d', strtotime('+30 days')), $today));
+		$day = date('Y-m-d', strtotime('+30 days'));
+		$this->assertSame('<time datetime="' . $day . '" data-format="month-day">' . date('M j', strtotime($day)) . '</time>',
+			MistakeTraining::describeDay($day, $today), 'A date for the page to write in the format of the player');
 	}
 
 	public function testAProblemInTwoCollectionsCountsOnce(): void
@@ -738,7 +740,7 @@ class MistakeTrainingTest extends IntegrationTestCase
 		$this->assertSame('N', $button->status, 'A problem missed today is grey until it is solved');
 		$this->assertSame(0, $button->rung);
 		$this->assertSame('Missed today, try again', $button->label);
-		$this->assertSame('Rung 1 of 8. Solve it today and it comes back tomorrow.', $button->description,
+		$this->assertSame('Rung 1 of 8. Solve it today and it comes back tomorrow.', $button->descriptionHtml,
 			'The tooltip of a miss must not read as if it was solved');
 		$this->assertStringContainsString('problem-nav__rung--missed', $button->renderRungBadge(),
 			'A red ring tells it from a problem not tried yet');
@@ -1079,10 +1081,10 @@ class MistakeTrainingTest extends IntegrationTestCase
 
 		$buttons = $this->trainingButtons($context);
 
-		$this->assertSame('Rung 4 of 8. A clean solve brings it back in 15 days.', $buttons[$this->tsumegoId($context, 0)]->description);
-		$this->assertSame('Rung 4 of 8. A clean solve brings it back in 11 days.', $buttons[$this->tsumegoId($context, 1)]->description,
+		$this->assertSame('Rung 4 of 8. A clean solve brings it back in 15 days.', $buttons[$this->tsumegoId($context, 0)]->descriptionHtml);
+		$this->assertSame('Rung 4 of 8. A clean solve brings it back in 11 days.', $buttons[$this->tsumegoId($context, 1)]->descriptionHtml,
 			'The tooltip promises the wait the problem will get, not the one of the ladder');
-		$this->assertSame('Rung 1 of 8. A clean solve brings it back tomorrow.', $buttons[$this->tsumegoId($context, 2)]->description,
+		$this->assertSame('Rung 1 of 8. A clean solve brings it back tomorrow.', $buttons[$this->tsumegoId($context, 2)]->descriptionHtml,
 			'A wait of one day is tomorrow');
 	}
 
