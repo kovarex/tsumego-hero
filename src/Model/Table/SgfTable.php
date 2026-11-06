@@ -89,7 +89,7 @@ class SgfTable extends AppTable
 			$sgfData = $sgfDataOrFile;
 
 		// the color to move first and the correct first moves, by besogo's own rules; what besogo can't read is
-		// saved without them, as before, for bin/cake recompute_correct_moves to retry
+		// saved without them, as before
 		$analysis = SgfAnalysis::ofMany([(string) $sgfData])[0];
 		$moves = is_string($analysis) ? [] : ['first_move_color' => $analysis->firstMoveColor, 'correct_moves' => $analysis->correctMoves];
 		$sgfTable = TableRegistry::getTableLocator()->get('Sgf');
