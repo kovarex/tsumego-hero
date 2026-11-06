@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1793933779">
-  <project timestamp="1793933779">
+<coverage generated="1793967802">
+  <project timestamp="1793967802">
     <package name="App">
       <file name="/home/runner/work/tsumego-hero/tsumego-hero/src/Application.php">
         <class name="App\Application" namespace="App">
@@ -1064,7 +1064,7 @@
         <line num="279" type="stmt" count="2"/>
         <line num="289" type="method" name="resetStaleBrowserCache" visibility="private" complexity="2" crap="2" count="1733"/>
         <line num="291" type="stmt" count="1733"/>
-        <line num="292" type="stmt" count="849"/>
+        <line num="292" type="stmt" count="848"/>
         <line num="293" type="stmt" count="1368"/>
         <line num="294" type="stmt" count="1368"/>
         <line num="309" type="method" name="mustChangeDisplayNameFirst" visibility="private" complexity="2" crap="2" count="1526"/>
@@ -6515,9 +6515,9 @@
         <line num="48" type="stmt" count="103"/>
         <line num="49" type="stmt" count="341"/>
         <line num="50" type="stmt" count="9"/>
-        <line num="51" type="stmt" count="333"/>
+        <line num="51" type="stmt" count="334"/>
         <line num="52" type="stmt" count="63"/>
-        <line num="53" type="stmt" count="300"/>
+        <line num="53" type="stmt" count="301"/>
         <metrics loc="56" ncloc="40" classes="1" methods="4" coveredmethods="4" conditionals="0" coveredconditionals="0" statements="14" coveredstatements="14" elements="18" coveredelements="18"/>
       </file>
       <file name="/home/runner/work/tsumego-hero/tsumego-hero/src/Policy/ChallengePolicy.php">
@@ -6670,7 +6670,7 @@
         </class>
         <line num="20" type="method" name="canAdd" visibility="public" complexity="4" crap="4" count="358"/>
         <line num="22" type="stmt" count="358"/>
-        <line num="23" type="stmt" count="290"/>
+        <line num="23" type="stmt" count="291"/>
         <line num="24" type="stmt" count="113"/>
         <line num="25" type="stmt" count="77"/>
         <line num="26" type="stmt" count="58"/>
@@ -6922,7 +6922,7 @@
         <line num="89" type="stmt" count="1449"/>
         <line num="90" type="stmt" count="1449"/>
         <line num="91" type="stmt" count="1449"/>
-        <line num="92" type="stmt" count="192"/>
+        <line num="92" type="stmt" count="191"/>
         <line num="94" type="stmt" count="1449"/>
         <line num="97" type="method" name="unlocked" visibility="public" complexity="1" crap="1" count="1472"/>
         <line num="99" type="stmt" count="1472"/>
@@ -7047,7 +7047,7 @@
         <line num="306" type="stmt" count="8"/>
         <line num="309" type="method" name="finalize" visibility="public" complexity="4" crap="4.01" count="1439"/>
         <line num="311" type="stmt" count="1439"/>
-        <line num="312" type="stmt" count="1381"/>
+        <line num="312" type="stmt" count="1380"/>
         <line num="314" type="stmt" count="144"/>
         <line num="315" type="stmt" count="144"/>
         <line num="316" type="stmt" count="144"/>
@@ -7912,8 +7912,8 @@
         <line num="177" type="stmt" count="988"/>
         <line num="181" type="method" name="isValidTimeZone" visibility="public" complexity="5" crap="5" count="1537"/>
         <line num="183" type="stmt" count="1537"/>
-        <line num="184" type="stmt" count="1414"/>
-        <line num="187" type="stmt" count="357"/>
+        <line num="184" type="stmt" count="1415"/>
+        <line num="187" type="stmt" count="355"/>
         <line num="189" type="stmt" count="3"/>
         <line num="191" type="stmt" count="3"/>
         <line num="202" type="method" name="timeZoneChange" visibility="public" complexity="3" crap="3" count="1526"/>
@@ -7929,8 +7929,8 @@
         <line num="219" type="method" name="daysBetween" visibility="private" complexity="1" crap="1" count="86"/>
         <line num="221" type="stmt" count="86"/>
         <line num="222" type="stmt" count="86"/>
-        <line num="225" type="method" name="addDays" visibility="private" complexity="2" crap="2" count="877"/>
-        <line num="227" type="stmt" count="877"/>
+        <line num="225" type="method" name="addDays" visibility="private" complexity="2" crap="2" count="9"/>
+        <line num="227" type="stmt" count="9"/>
         <metrics loc="230" ncloc="172" classes="1" methods="16" coveredmethods="16" conditionals="0" coveredconditionals="0" statements="84" coveredstatements="84" elements="100" coveredelements="100"/>
       </file>
       <file name="/home/runner/work/tsumego-hero/tsumego-hero/src/Utility/DataTableRenderer.php">
@@ -8081,7 +8081,7 @@
         <line num="65" type="stmt" count="324"/>
         <line num="68" type="method" name="canUseRejuvanation" visibility="public" complexity="2" crap="2" count="327"/>
         <line num="70" type="stmt" count="327"/>
-        <line num="71" type="stmt" count="318"/>
+        <line num="71" type="stmt" count="319"/>
         <line num="72" type="stmt" count="10"/>
         <line num="75" type="method" name="renderRejuvenation" visibility="public" complexity="1" crap="1" count="324"/>
         <line num="77" type="stmt" count="324"/>
@@ -9080,11 +9080,11 @@
         <line num="321" type="stmt" count="346"/>
         <line num="322" type="stmt" count="346"/>
         <line num="323" type="stmt" count="346"/>
-        <line num="326" type="method" name="swapColorWords" visibility="public" complexity="1" crap="1" count="51"/>
-        <line num="328" type="stmt" count="51"/>
-        <line num="329" type="stmt" count="51"/>
-        <line num="330" type="stmt" count="51"/>
-        <line num="331" type="stmt" count="51"/>
+        <line num="326" type="method" name="swapColorWords" visibility="public" complexity="1" crap="1" count="61"/>
+        <line num="328" type="stmt" count="61"/>
+        <line num="329" type="stmt" count="61"/>
+        <line num="330" type="stmt" count="61"/>
+        <line num="331" type="stmt" count="61"/>
         <line num="336" type="method" name="tsumegoStatus" visibility="private" complexity="5" crap="5" count="348"/>
         <line num="338" type="stmt" count="348"/>
         <line num="339" type="stmt" count="8"/>
@@ -11463,7 +11463,7 @@
         <line num="238" type="stmt" count="314"/>
         <line num="239" type="stmt" count="289"/>
         <line num="241" type="stmt" count="314"/>
-        <line num="242" type="stmt" count="41"/>
+        <line num="242" type="stmt" count="42"/>
         <line num="243" type="stmt" count="314"/>
         <line num="244" type="stmt" count="64"/>
         <line num="245" type="stmt" count="314"/>
@@ -12346,19 +12346,19 @@
         <line num="51" type="method" name="setCookie" visibility="public" complexity="1" crap="1" count="1467"/>
         <line num="53" type="stmt" count="1467"/>
         <line num="55" type="stmt" count="1467"/>
-        <line num="61" type="method" name="clearCookie" visibility="public" complexity="2" crap="2.02" count="2949"/>
-        <line num="63" type="stmt" count="2949"/>
-        <line num="64" type="stmt" count="2949"/>
-        <line num="65" type="stmt" count="2949"/>
-        <line num="66" type="stmt" count="2949"/>
+        <line num="61" type="method" name="clearCookie" visibility="public" complexity="2" crap="2.02" count="2948"/>
+        <line num="63" type="stmt" count="2948"/>
+        <line num="64" type="stmt" count="2948"/>
+        <line num="65" type="stmt" count="2948"/>
+        <line num="66" type="stmt" count="2948"/>
         <line num="67" type="stmt" count="0"/>
-        <line num="68" type="stmt" count="2949"/>
+        <line num="68" type="stmt" count="2948"/>
         <line num="73" type="method" name="sentCookie" visibility="public" complexity="1" crap="1" count="4"/>
         <line num="75" type="stmt" count="4"/>
-        <line num="79" type="method" name="sendCookie" visibility="private" complexity="1" crap="1" count="3226"/>
-        <line num="81" type="stmt" count="3226"/>
-        <line num="82" type="stmt" count="3226"/>
-        <line num="83" type="stmt" count="3226"/>
+        <line num="79" type="method" name="sendCookie" visibility="private" complexity="1" crap="1" count="3225"/>
+        <line num="81" type="stmt" count="3225"/>
+        <line num="82" type="stmt" count="3225"/>
+        <line num="83" type="stmt" count="3225"/>
         <line num="88" type="method" name="isInGithubCI" visibility="public" complexity="3" crap="3" count="2550"/>
         <line num="90" type="stmt" count="2550"/>
         <line num="91" type="stmt" count="1901"/>
