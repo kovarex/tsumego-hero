@@ -5,6 +5,7 @@ namespace App\Controller;
 use Cake\Http\Exception\BadRequestException;
 use Cake\Http\Exception\ForbiddenException;
 use Cake\Http\Exception\NotFoundException;
+use Cake\Http\Exception\UnprocessableContentException;
 use Cake\Routing\Router;
 use App\Attribute\HttpGet;
 use App\Attribute\HttpPost;
@@ -95,10 +96,16 @@ class ChallengesController extends AppController
 		$this->set('standings', $standings);
 
 		$participation = Auth::isLoggedIn() ? ChallengeTable::participation($challengeID, Auth::getUserID()) : null;
-		$isParticipant = $participation !== null && $participation['declined'] === null;
+		$wasRemoved = $participation !== null && $participation['removed'] !== null;
+		$isParticipant = $participation !== null && $participation['declined'] === null && !$wasRemoved;
 		$myRun = $isParticipant ? array_find($standings, fn(array $row) => (int) $row['user_id'] === Auth::getUserID()) : null;
 		$this->set('isParticipant', $isParticipant);
-		$this->set('hasDeclined', $participation !== null && !$isParticipant);
+		$this->set('wasRemoved', $wasRemoved);
+		$this->set('hasDeclined', $participation !== null && !$isParticipant && !$wasRemoved);
+		$this->set('isFinished', ChallengeTable::everyoneFinished($standings));
+		$isCreator = Auth::isLoggedIn() && (int) $challenge['created_by_user_id'] === Auth::getUserID();
+		$this->set('removableUserIDs', $isCreator ? array_map(fn(array $row) => (int) $row['user_id'],
+			array_values(array_filter($standings, fn(array $row) => ChallengeTable::canRemove($row, time())))) : []);
 		$this->set('myRun', $myRun);
 		$this->set('isFull', !$isParticipant && ChallengeTable::participantCount($challengeID) >= ChallengeTable::MAXIMUM_PARTICIPANTS);
 		$this->set('joinUrl', Router::url(self::challengeUrl($challengeID), true));
@@ -154,6 +161,26 @@ class ChallengesController extends AppController
 		return $this->redirect(self::challengeUrl((int) $challenge['id']));
 	}
 
+	//The creator removes a player whose run waits too long (ChallengeTable::canRemove()), so the
+	//challenge can finish without them.
+	//user_id: The player to remove
+	#[HttpPost]
+	public function remove(string $id): mixed
+	{
+		$challenge = $this->findChallenge($id);
+		$challengeID = (int) $challenge['id'];
+		if (!Auth::isLoggedIn() || (int) $challenge['created_by_user_id'] !== Auth::getUserID())
+			throw new ForbiddenException('Only the creator of the challenge can remove its players.');
+		$userID = (int) ($this->input('user_id') ?? 0);
+		$standing = array_find(ChallengeTable::standings($challengeID), fn(array $row) => (int) $row['user_id'] === $userID);
+		if ($standing === null || $userID === Auth::getUserID() || !ChallengeTable::canRemove($standing, time()))
+			throw new UnprocessableContentException('Only a player whose run waits too long can be removed.');
+
+		ChallengeTable::remove($challengeID, $userID);
+		CookieFlash::set('Removed ' . $standing['user_display_name'] . ' from the challenge.', 'success');
+		return $this->redirect(self::challengeUrl($challengeID));
+	}
+
 	//A player of the challenge starts a new one with its settings and its players invited, where
 	//they can play again; the problems are new ones.
 	#[HttpPost]
@@ -204,6 +231,11 @@ class ChallengesController extends AppController
 		$this->Authorization->authorize('Challenge', 'join');
 		$challengeID = (int) $challenge['id'];
 		$participation = ChallengeTable::participation($challengeID, Auth::getUserID());
+		if ($participation !== null && $participation['removed'] !== null)
+		{
+			CookieFlash::set('The creator removed you from this challenge.', 'error');
+			return false;
+		}
 		if ($participation !== null && $participation['declined'] === null)
 			return true;
 		if (ChallengeTable::participantCount($challengeID) >= ChallengeTable::MAXIMUM_PARTICIPANTS)
@@ -248,9 +280,13 @@ class ChallengesController extends AppController
 			}
 			if (!ChallengeTable::addParticipant($challengeID, $playerID, Auth::getUserID()))
 			{
-				$problems[] = ChallengeTable::isParticipant($challengeID, $playerID)
-					? $name . ' is in the challenge already.'
-					: $name . ' declined the challenge.';
+				$participation = ChallengeTable::participation($challengeID, $playerID);
+				$problems[] = match (true)
+				{
+					$participation['removed'] !== null => $name . ' was removed from the challenge.',
+					$participation['declined'] !== null => $name . ' declined the challenge.',
+					default => $name . ' is in the challenge already.',
+				};
 				continue;
 			}
 			$participantCount++;

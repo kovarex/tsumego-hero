@@ -18,6 +18,9 @@ use App\Model\Table\ChallengeTable;
  * @var array<int, App\Utility\TsumegoButton> $problemButtons What ChallengeTable::problemButtons() returned, when $showResults
  * @var array $attemptsByRun What ChallengeTable::attemptsByRun() returned, when $showResults
  * @var int|null $otherChallengeInProgressID Another challenge whose run the viewer is in the middle of
+ * @var bool $wasRemoved The creator removed the viewer from the challenge
+ * @var bool $isFinished Every player still in the challenge finished their run, so it has places
+ * @var list<int> $removableUserIDs The players the viewer, its creator, can remove now
  */
 
 use App\Model\Table\UserTable;
@@ -40,6 +43,8 @@ $cellSymbols = ['failed' => '✗', 'timeout' => '⏱', 'skipped' => '–', 'queu
 	<section class="card card--green challenges__section challenges__action" id="challenge-action">
 		<?php if (!Auth::isLoggedIn()): ?>
 		<p><a href="/users/login">Sign in</a> to join the challenge.</p>
+		<?php elseif ($wasRemoved): ?>
+		<p id="challenge-removed">The creator removed you from this challenge.</p>
 		<?php elseif ($isFull): ?>
 		<p>The challenge is full, <?= ChallengeTable::MAXIMUM_PARTICIPANTS ?> players are in it already.</p>
 		<?php elseif ($myRun === null || $myRun['run'] === ChallengeTable::RUN_NOT_STARTED): ?>
@@ -63,6 +68,12 @@ $cellSymbols = ['failed' => '✗', 'timeout' => '⏱', 'skipped' => '–', 'queu
 		<?php elseif ($myRun['run'] === ChallengeTable::RUN_PLAYING): ?>
 		<p>You are in the middle of your run, <?= (int) $myRun['played_count'] ?> of <?= (int) $challenge['problem_count'] ?> problems played.</p>
 		<a class="btn btn--success" href="/timeMode/play" id="challenge-continue">Continue</a>
+		<?php elseif (!$isFinished): ?>
+		<p id="challenge-my-result">You finished with <strong><?= ChallengeTable::formatPoints($myRun['points']) ?></strong> points
+			(<?= ChallengeTable::percentOfMaximum($myRun['points'], (int) $challenge['problem_count']) ?>%),
+			<?= $myRun['solved_count'] ?> of <?= (int) $challenge['problem_count'] ?> problems solved.</p>
+		<p class="hint" id="challenge-in-progress">The challenge is in progress, <?= $finishedCount ?> of <?= (int) $challenge['participant_count'] ?> players finished.
+			The places show once everyone has finished.</p>
 		<?php else: ?>
 		<p id="challenge-my-result"><?= $this->element('Challenges/placement', ['place' => (int) $myRun['place']]) ?> You are <strong><?= Util::ordinal((int) $myRun['place']) ?></strong> of <?= $finishedCount ?>
 			with <strong><?= ChallengeTable::formatPoints($myRun['points']) ?></strong> points,
@@ -79,7 +90,9 @@ $cellSymbols = ['failed' => '✗', 'timeout' => '⏱', 'skipped' => '–', 'queu
 			<table class="challenges__table">
 				<thead>
 					<tr>
+						<?php if ($isFinished): ?>
 						<th>#</th>
+						<?php endif; ?>
 						<th class="challenges__player">Player</th>
 						<th>Points</th>
 						<th>Solved</th>
@@ -92,18 +105,31 @@ $cellSymbols = ['failed' => '✗', 'timeout' => '⏱', 'skipped' => '–', 'queu
 				<tbody>
 					<?php foreach ($standings as $row): ?>
 					<tr class="challenges__standing<?= Auth::isLoggedIn() && (int) $row['user_id'] === Auth::getUserID() ? ' challenges__standing--me' : '' ?>" data-user-id="<?= (int) $row['user_id'] ?>">
+						<?php if ($isFinished): ?>
+						<td class="challenges__place"><?= $row['place'] !== null ? $this->element('Challenges/placement', ['place' => (int) $row['place']]) : '' ?></td>
+						<?php endif; ?>
+						<td class="challenges__player"><?= UserTable::renderLink($row) ?>
+							<?php if (in_array((int) $row['user_id'], $removableUserIDs, true)): ?>
+							<form class="challenges__inline-form" method="post" action="/challenges/remove/<?= $challengeId ?>"
+								onsubmit="return confirm('Remove the player from the challenge? It then finishes without them.');">
+								<input type="hidden" name="user_id" value="<?= (int) $row['user_id'] ?>">
+								<button class="btn btn--small btn--neutral challenges__remove" type="submit"
+									title="Their run waits too long: not started for <?= ChallengeTable::REMOVABLE_NOT_STARTED_AFTER_HOURS ?> hours, or no answer for <?= ChallengeTable::REMOVABLE_IDLE_AFTER_MINUTES ?> minutes">Remove</button>
+							</form>
+							<?php endif; ?>
+						</td>
 						<?php if ($row['run'] === ChallengeTable::RUN_FINISHED): ?>
-						<td class="challenges__place"><?= $this->element('Challenges/placement', ['place' => (int) $row['place']]) ?></td>
-						<td class="challenges__player"><?= UserTable::renderLink($row) ?></td>
 						<td class="challenges__points"><?= ChallengeTable::formatPoints($row['points']) ?></td>
 						<td><?= $row['solved_count'] ?>/<?= (int) $challenge['problem_count'] ?></td>
 						<td><?= ChallengeTable::formatSeconds($row['seconds']) ?></td>
 						<?php else: ?>
-						<td></td>
-						<td class="challenges__player"><?= UserTable::renderLink($row) ?></td>
-						<td colspan="3" class="hint"><?= $row['run'] === ChallengeTable::RUN_PLAYING
-							? 'playing, ' . $row['played_count'] . '/' . (int) $challenge['problem_count']
-							: ($row['run'] === ChallengeTable::RUN_DECLINED ? 'declined' : 'not played yet') ?></td>
+						<td colspan="3" class="hint challenges__run"><?= match ($row['run'])
+						{
+							ChallengeTable::RUN_PLAYING => 'playing, ' . $row['played_count'] . '/' . (int) $challenge['problem_count'],
+							ChallengeTable::RUN_DECLINED => 'declined',
+							ChallengeTable::RUN_REMOVED => 'removed by the creator',
+							default => 'not played yet',
+						} ?></td>
 						<?php endif; ?>
 						<?php foreach (array_keys($problemButtons) as $order): ?>
 						<?php

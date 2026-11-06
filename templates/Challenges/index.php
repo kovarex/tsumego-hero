@@ -74,8 +74,10 @@ use App\Model\Table\UserTable;
 		<?php endif; ?>
 		<?php foreach ($challenges as $challenge): ?>
 		<?php
-			$canDecline = $challenge['my_run_status_id'] === null && $challenge['my_declined'] === null;
-			if ($challenge['my_declined'] !== null && $challenge['my_run_status_id'] === null)
+			$canDecline = $challenge['my_run_status_id'] === null && $challenge['my_declined'] === null && $challenge['my_removed'] === null;
+			if ($challenge['my_removed'] !== null)
+				$myRun = 'removed by the creator';
+			elseif ($challenge['my_declined'] !== null && $challenge['my_run_status_id'] === null)
 				$myRun = 'you declined';
 			elseif ($challenge['my_run_status_id'] === null)
 				$myRun = '<strong>not played yet</strong>';
@@ -87,7 +89,9 @@ use App\Model\Table\UserTable;
 				$myRun = '<strong>' . ChallengeTable::formatPoints($points) . ' points</strong> ('
 					. ChallengeTable::percentOfMaximum($points, (int) $challenge['problem_count']) . '%)';
 			}
-			$placing = $places[(int) $challenge['id']] ?? null;
+			// a challenge in progress has no places yet
+			$isFinished = ChallengeTable::isFinished($challenge);
+			$placing = $isFinished ? $places[(int) $challenge['id']] ?? null : null;
 			// the winner, unless it is the player alone, whose own place says so
 			$winners = $placing === null || ($placing['myPlace'] === 1 && count($placing['winners']) === 1) ? [] : $placing['winners'];
 			$finishedCount = $placing['finishedCount'] ?? 0;
@@ -108,7 +112,11 @@ use App\Model\Table\UserTable;
 			<span class="hint challenges__row-details">
 				<?= h(ChallengeTable::describe($challenge)) ?>
 				· by <?= UserTable::renderLink($challenge) ?>
-				· <?= (int) $challenge['finished_count'] ?>/<?= (int) $challenge['participant_count'] ?> played
+				<?php if ($isFinished): ?>
+				· finished
+				<?php else: ?>
+				· <span class="challenges__progress"><?= (int) $challenge['finished_count'] ?> of <?= (int) $challenge['participant_count'] ?> finished</span>
+				<?php endif; ?>
 				<?php if ($canDecline): ?>
 				<form class="challenges__inline-form" method="post" action="/challenges/decline/<?= (int) $challenge['id'] ?>" onsubmit="return confirm('Decline the challenge?');"><button class="btn btn--small btn--neutral" type="submit">Decline</button></form>
 				<?php endif; ?>
