@@ -243,19 +243,16 @@ besogo.addTest("Editor", "SaveKeepsAStatusSetAsideByATransposition", function()
 	CHECK(sgf.includes("S[DEAD]"));
 });
 
-// A status is saved as it was written while it reads the same, a text besogo reads otherwise or can't read too (old
-// saves wrote "KO " for "KO+"); one set in the editor is written as besogo writes it
+// A status is saved as it was written while it reads the same, a text besogo reads otherwise too (old saves wrote
+// "KO " for "KO+"); one besogo can't read ("A 2KO " for "A+2KO+", S[undefined]) is left out, never written as
+// "undefined"; one set in the editor is written as besogo writes it
 besogo.addTest("Editor", "SaveKeepsTheStatusAsWritten", function()
 {
-	let editor = loadEditor("(;SZ[19]G[KILL]AB[bb](;B[aa];W[ba]S[KO ])(;B[ba];W[aa]S[A 2KO ]))");
+	let editor = loadEditor("(;SZ[19]G[KILL]AB[bb](;B[aa];W[ba]S[KO ])(;B[ba];W[aa]S[A 2KO ])(;B[ca];W[aa]S[undefined]))");
 	let sgf = besogo.composeSgf(editor);
 	CHECK(sgf.includes("S[KO ]"));
-	CHECK(sgf.includes("S[A 2KO ]"));
+	CHECK(!sgf.includes("A 2KO"));
 	CHECK(!sgf.includes("undefined"));
-	// a status besogo can't read, changed in the editor, comes out as "undefined": the text loaded stays
-	let unreadable = editor.getRoot().children[1].children[0];
-	unreadable.statusSource.blackFirst.approaches = 1;
-	CHECK(!besogo.composeSgf(editor).includes("undefined"));
 	let end = editor.getRoot().children[0].children[0];
 	end.setStatusSource(besogo.loadStatusFromString("DEAD"));
 	CHECK(besogo.composeSgf(editor).includes("S[DEAD]"));

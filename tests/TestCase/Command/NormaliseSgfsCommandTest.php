@@ -71,8 +71,6 @@ class NormaliseSgfsCommandTest extends AppTestCase
 		$this->assertStringContainsString('"black":"cc"', $bottomRight['preview']);
 		$comment = Util::query('SELECT message, position FROM tsumego_comment')[0];
 		$this->assertSame(['message' => 'black A19 then w A18', 'position' => '1/2/1/1/2/1/2/1/sgf|1/1+1/2'], $comment);
-		$this->assertSame([self::BOTTOM_RIGHT_COMMENT], array_map(fn($row) => ['message' => $row['message'], 'position' => $row['position']],
-			Util::query('SELECT message, position FROM tsumego_comment_before_normalisation')));
 
 		$this->assertSame('aa', $this->sgfRow($context->tsumegos[1]['id'])['correct_moves']);
 		$this->assertSame(['B', 'aa'], [$this->sgfRow($context->tsumegos[2]['id'])['first_move_color'], $this->sgfRow($context->tsumegos[2]['id'])['correct_moves']]);
@@ -80,9 +78,6 @@ class NormaliseSgfsCommandTest extends AppTestCase
 		$this->assertSame(self::DONE, $this->sgfRow($context->tsumegos[4]['id'])['sgf'], 'already as the site keeps it');
 
 		$this->assertSame($before, Util::query('SELECT id, tsumego_id, user_id, sgf_status_id, created, accepted, description FROM sgf ORDER BY id'), 'no row added, none changed but its SGF');
-		$backups = Util::query('SELECT sgf_id, sgf, transformation FROM sgf_before_normalisation ORDER BY sgf_id');
-		$this->assertCount(4, $backups);
-		$this->assertSame([self::BOTTOM_RIGHT, '{"transpose":false,"flipX":true,"flipY":true,"invertColors":false}'], [$backups[0]['sgf'], $backups[0]['transformation']]);
 	}
 
 	public function testASecondRunChangesNothing(): void
@@ -178,7 +173,6 @@ class NormaliseSgfsCommandTest extends AppTestCase
 		$this->assertOutputContains("1 rows rewritten lose what was on lines besogo merges into a transposition: $id; what went: ");
 		$this->assertOutputContains('LB 2 in 1 rows');
 		$this->assertNotSame($sgf, $this->sgfRow($context->tsumegos[0]['id'])['sgf']);
-		$this->assertSame($sgf, Util::query('SELECT sgf FROM sgf_before_normalisation WHERE sgf_id = ?', [$id])[0]['sgf']);
 	}
 
 	//Setup listed twice (as sgf 19415 and 19416 of the site) shows one stone and is written once; the row is rewritten
@@ -207,7 +201,6 @@ class NormaliseSgfsCommandTest extends AppTestCase
 		$this->assertOutputContains("1 whose properties would change unexpectedly (kept as they are): $id");
 		$this->assertOutputContains("sgf $id (tsumego {$context->tsumegos[0]['id']}, current version) would change: XY 1→0");
 		$this->assertSame($sgf, $this->sgfRow($context->tsumegos[0]['id'])['sgf']);
-		$this->assertSame([], Util::query('SELECT * FROM sgf_before_normalisation'));
 	}
 
 	//A row kept as it is says whether it is the version shown or an old one of the history (as 19451 and 19452 of the
@@ -223,74 +216,19 @@ class NormaliseSgfsCommandTest extends AppTestCase
 		$this->assertOutputContains("sgf $old (tsumego {$context->tsumegos[0]['id']}, old version, not current) would change: XY 1→0");
 	}
 
-	//--restore puts rows back as they were before --write: text, values, the transformations that took their turn in,
-	//the comments of the version shown; a later run rewrites them again
-	public function testRestorePutsTheRowsBackAsTheyWere(): void
+	//A status besogo can't read (S[undefined] of old saves, "A 2KO " for "A+2KO+") is left out, as every save does,
+	//and counted; the others are written as they were
+	public function testAStatusBesogoCantReadIsLeftOut(): void
 	{
-		$context = new ContextPreparator(['tsumegos' => [
-			['sgf' => ['data' => self::BOTTOM_RIGHT], 'comments' => [self::BOTTOM_RIGHT_COMMENT]],
-			['sgfs' => [['data' => self::BOTTOM_RIGHT], ['data' => self::TOP_RIGHT, 'sgf_status_id' => SgfTable::STATUS_PROPOSED]]]]]);
-		$ids = array_column(Util::query('SELECT id FROM sgf WHERE tsumego_id = ? ORDER BY id', [$context->tsumegos[1]['id']]), 'id');
-		Util::execute('UPDATE sgf SET source_sgf_id = ?, transformation_from_source = ? WHERE id = ?',
-			[$ids[0], '{"transpose":false,"flipX":false,"flipY":true,"invertColors":false}', $ids[1]]);
-		$columns = 'id, sgf, first_move_color, correct_moves, transformation_from_source';
-		$before = Util::query("SELECT $columns FROM sgf ORDER BY id");
-		$comments = Util::query('SELECT id, message, position FROM tsumego_comment ORDER BY id');
-
-		$this->exec('normalise_sgfs --write');
-		$this->assertNotSame($before, Util::query("SELECT $columns FROM sgf ORDER BY id"));
-		$this->exec('normalise_sgfs --restore ' . implode(',', array_column($before, 'id')));
-
-		$this->assertExitSuccess();
-		$this->assertOutputContains("sgf {$context->tsumegos[0]['sgfs'][0]['id']}: put back as it was, with the comments of its problem");
-		$this->assertSame($before, Util::query("SELECT $columns FROM sgf ORDER BY id"));
-		$this->assertSame($comments, Util::query('SELECT id, message, position FROM tsumego_comment ORDER BY id'));
-		$this->assertSame([], Util::query('SELECT * FROM sgf_before_normalisation'));
-		$this->assertSame([], Util::query('SELECT * FROM tsumego_comment_before_normalisation'));
-
-		$this->exec('normalise_sgfs');
-		$this->assertOutputContains('turned');
-		$this->assertOutputNotContains('0 turned');
-	}
-
-	//--damaged-statuses lists the S values old saves damaged, a + written as a space, with the repair proposed, and
-	//writes nothing; a row with a status besogo can't read is kept as it is
-	public function testTheDamagedStatusesAreListedWithTheirRepair(): void
-	{
-		$sgf = '(;SZ[19]G[KILL]AB[rb][sb](;B[sa];W[ra]S[A 2KO ])(;B[ra];W[qa]S[SEKI ])(;B[qa];W[ra]S[NONSENSE]))';
-		$context = new ContextPreparator(['tsumegos' => [['sgf' => ['data' => $sgf]], ['sgf' => ['data' => self::DONE]]]]);
+		$sgf = '(;SZ[19]G[KILL]AB[rb][sb](;B[sa];W[ra]S[A 2KO ])(;B[ra];W[qa]S[KO ])(;B[qa];W[ra]S[undefined]))';
+		$context = new ContextPreparator(['tsumego' => ['sgf' => ['data' => $sgf]]]);
 		$id = $this->sgfRow($context->tsumegos[0]['id'])['id'];
-		$this->exec('normalise_sgfs --damaged-statuses');
-
-		$this->assertExitSuccess();
-		$this->assertOutputContains("sgf $id (tsumego {$context->tsumegos[0]['id']}, current version): \"A 2KO \" -> \"A+2KO+\", "
-			. '"SEKI " -> "SEKI+" (a guess: "SEKI" reads too), "NONSENSE" -> ? (no repair besogo reads)');
-		$this->assertOutputContains('1 rows with 3 damaged statuses: 1 with one repair, 1 a guess, 1 with none besogo reads. Nothing was written.');
-		$this->assertSame($sgf, $this->sgfRow($context->tsumegos[0]['id'])['sgf']);
-
 		$this->exec('normalise_sgfs --write');
-		$this->assertOutputContains("would change: S besogo can't read: \"A 2KO \", \"NONSENSE\"");
-		$this->assertSame($sgf, $this->sgfRow($context->tsumegos[0]['id'])['sgf']);
-	}
 
-	//--check-written finds the rows an earlier --write wrote otherwise than this version (here a row damaged after its
-	//rewrite, as the setup turn and status bugs did), and the --restore it prints puts them back to be rewritten right
-	public function testCheckWrittenFindsTheRowsAnEarlierRunWroteWrong(): void
-	{
-		$context = $this->prepare();
-		$this->exec('normalise_sgfs --write');
-		$this->exec('normalise_sgfs --check-written');
-		$this->assertOutputContains('rows written by an earlier run checked, 0 written otherwise than this version writes them.');
-
-		$id = (int) $this->sgfRow($context->tsumegos[0]['id'])['id'];
-		$right = $this->sgfRow($context->tsumegos[0]['id'])['sgf'];
-		Util::execute('UPDATE sgf SET sgf = REPLACE(sgf, ?, ?) WHERE id = ?', ['AB[cc]', 'AW[cc]', $id]);
-		$this->exec('normalise_sgfs --check-written');
-		$this->assertOutputContains("sgf $id (tsumego {$context->tsumegos[0]['id']}, current version) was written otherwise: rewritten otherwise now");
-		$this->assertOutputContains("1 written otherwise than this version writes them. To put them back, then rewrite them: bin/cake normalise_sgfs --restore $id");
-
-		$this->exec("normalise_sgfs --restore $id");
-		$this->exec('normalise_sgfs --write');
-		$this->assertSame($right, $this->sgfRow($context->tsumegos[0]['id'])['sgf']);
+		$this->assertOutputContains("1 rows rewritten leave out 2 statuses besogo can't read (S[undefined], or a + an old save wrote as a space): $id");
+		$stored = $this->sgfRow($context->tsumegos[0]['id'])['sgf'];
+		$this->assertStringContainsString('S[KO ]', $stored);
+		$this->assertStringNotContainsString('A 2KO', $stored);
+		$this->assertStringNotContainsString('undefined', $stored);
 	}
 }

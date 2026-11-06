@@ -30,14 +30,10 @@ use Cake\Console\ConsoleOptionParser;
 //a G written on every node, a stone, label or comment lost on a node that stays). What was on a node besogo merges
 //into a transposition goes with it (its move, status, markup, comment); the report counts the rows stored with such a
 //loss and what went. Setup is written as besogo shows it, a point listed twice once: the play check compares the
-//stones shown, and the report counts the rows whose setup is written so. The report sums the change of every property.
-//Everything changed is kept first in sgf_before_normalisation and tsumego_comment_before_normalisation.
-//--restore <sgf ids> puts rows back as they were from there (text, preview, values), undoes their turn in the
-//transformations from source that took it in (their own, and those of the rows made from them), and, for the version
-//shown, puts back the comments of its problem; their backups are removed, so a later run rewrites them again.
-//--check-written lists the rows an earlier --write rewrote otherwise than this version would (a bug fixed since),
-//with the --restore line that puts them back. A status besogo can't read keeps its row as it is; --damaged-statuses lists the S values old saves damaged (a +
-//written as a space) with the repair proposed, and writes nothing.
+//stones shown, and the report counts the rows whose setup is written so. A status besogo can't read (S[undefined] of
+//old saves, or one whose + an old save wrote as a space, "A 2KO ") is left out, as every save does now, and counted;
+//every other status is written as it was. The report sums the change of every property. Nothing is kept aside: the
+//database is backed up before a run.
 //A problem is done in one transaction; a row already normalised comes back unchanged, so a run that stopped is
 //simply run again, and a second run changes nothing. Without --write nothing is written and it reports what would
 //change, with the time it took.
@@ -56,10 +52,7 @@ class NormaliseSgfsCommand extends Command
 			->addOption('batch', ['default' => '200', 'help' => 'Problems analysed per run of node'])
 			->addOption('limit', ['default' => '0', 'help' => 'Stop after this many problems (0: all); run again to go on'])
 			->addOption('show', ['default' => '20', 'help' => 'How many of the changes to list'])
-			->addOption('sgf', ['default' => '', 'help' => 'Comma separated sgf ids whose old and new text to print, for checking them'])
-			->addOption('restore', ['default' => '', 'help' => 'Comma separated sgf ids to put back as they were before a --write, from sgf_before_normalisation'])
-			->addOption('damaged-statuses', ['boolean' => true, 'help' => 'Only list the S values old saves damaged (a + written as a space), with the repair proposed; writes nothing'])
-			->addOption('check-written', ['boolean' => true, 'help' => 'Only list the rows an earlier --write rewrote otherwise than this version would, to --restore; writes nothing']);
+			->addOption('sgf', ['default' => '', 'help' => 'Comma separated sgf ids whose old and new text to print, for checking them']);
 	}
 
 	private bool $write;
@@ -80,6 +73,8 @@ class NormaliseSgfsCommand extends Command
 	private array $losingMergedLines = [];
 	/** @var array<int, array<string, int>> sgf id => the change of its setup properties, written as besogo shows them */
 	private array $setupRewritten = [];
+	/** @var array<int, int> sgf id => the statuses besogo can't read that its rewrite leaves out */
+	private array $unreadableStatuses = [];
 	//sgf id => what changes unexpectedly in its rewrite, which keeps it as it is
 	/** @var array<int, list<string>> */
 	private array $changingUnexpectedly = [];
@@ -100,13 +95,6 @@ class NormaliseSgfsCommand extends Command
 	{
 		$start = microtime(true);
 		$this->console = $io;
-		$restore = array_map('intval', array_filter(explode(',', (string) $args->getOption('restore'))));
-		if ($restore)
-			return $this->restore($restore);
-		if ($args->getOption('damaged-statuses'))
-			return $this->reportDamagedStatuses(max(1, (int) $args->getOption('batch')));
-		if ($args->getOption('check-written'))
-			return $this->checkWritten(max(1, (int) $args->getOption('batch')));
 		$this->write = (bool) $args->getOption('write');
 		$this->show = max(0, (int) $args->getOption('show'));
 		$batch = max(1, (int) $args->getOption('batch'));
@@ -208,12 +196,8 @@ class NormaliseSgfsCommand extends Command
 			$this->countPropertyChanges($id, $analysis);
 
 			if ($this->write)
-			{
-				Util::execute('INSERT INTO sgf_before_normalisation (sgf_id, sgf, first_move_color, correct_moves, transformation_from_source, transformation) VALUES (?, ?, ?, ?, ?, ?)',
-					[$id, $row['sgf'], $row['first_move_color'], $row['correct_moves'], $row['transformation_from_source'], $transformation->toJson()]);
 				Util::execute('UPDATE sgf SET sgf = ?, preview = ?, first_move_color = ?, correct_moves = ? WHERE id = ?',
 					[$analysis->sgf, TsumegoButton::sgfToPreviewJson((string) $analysis->sgf), $analysis->firstMoveColor, $analysis->correctMoves, $id]);
-			}
 			if (!$turned)
 				continue;
 			// the transformation from its source to it ends in its turn now, and those from it start with its turn undone
@@ -224,130 +208,6 @@ class NormaliseSgfsCommand extends Command
 			if ($id === $currentID)
 				$this->moveComments($tsumegoID, $transformation, (string) $analysis->sgf);
 		}
-	}
-
-	//The rows an earlier --write rewrote otherwise than this version would: each backup's original is normalised again
-	//and compared with the row stored, the rewrite kept when it plays the same and loses nothing unexpected, the
-	//original otherwise. A row listed was written by a version with a bug since fixed (the setup of a node after a move
-	//turned wrong, a status written otherwise) and is put back with --restore, then rewritten by a run.
-	private function checkWritten(int $batch): int
-	{
-		$wrong = [];
-		$checked = 0;
-		$lastID = 0;
-		while ($chunk = Util::query('SELECT backup.sgf_id, backup.sgf AS original, sgf.sgf AS stored, sgf.tsumego_id FROM sgf_before_normalisation backup
-			JOIN sgf ON sgf.id = backup.sgf_id WHERE backup.sgf_id > ? ORDER BY backup.sgf_id LIMIT ' . $batch, [$lastID]))
-		{
-			$lastID = (int) end($chunk)['sgf_id'];
-			$analyses = SgfAnalysis::ofMany(array_map(fn($row) => (string) $row['original'], array_column($chunk, null, 'sgf_id')), SgfAnalysis::TIMEOUT * 5, true);
-			foreach ($chunk as $row)
-			{
-				$checked++;
-				$analysis = $analyses[(int) $row['sgf_id']];
-				$expected = $analysis instanceof SgfAnalysis && $analysis->changed && $analysis->rewriteIsFaithful() ? $analysis->sgf : $row['original'];
-				if ($expected === $row['stored'])
-					continue;
-				$id = (int) $row['sgf_id'];
-				$wrong[] = $id;
-				$why = !$analysis instanceof SgfAnalysis ? 'unreadable now'
-					: (!$analysis->rewriteIsFaithful() ? 'kept as it is now: ' . ($analysis->samePlay ? implode(', ', $analysis->unexpectedChanges) : 'would play differently')
-					: 'rewritten otherwise now');
-				$current = $id === SgfTable::findCurrentVersionID((int) $row['tsumego_id']) ? 'current version' : 'old version';
-				$this->console->out("sgf $id (tsumego {$row['tsumego_id']}, $current) was written otherwise: $why");
-			}
-		}
-		$this->console->out("$checked rows written by an earlier run checked, " . count($wrong) . ' written otherwise than this version writes them.'
-			. ($wrong ? ' To put them back, then rewrite them: bin/cake normalise_sgfs --restore ' . implode(',', $wrong) : ''));
-		return static::CODE_SUCCESS;
-	}
-
-	//The S values old saves damaged, a + written as a space ("A 2KO " for "A+2KO+"), or that besogo can't read, row by
-	//row with the repair proposed; a repair that is a guess ("SEKI " may be "SEKI+" or "SEKI") or that besogo can't read
-	//either is flagged. Nothing is written: the repair is decided first.
-	private function reportDamagedStatuses(int $batch): int
-	{
-		$rows = $values = $guesses = $unrepairable = 0;
-		$lastID = 0;
-		while ($chunk = Util::query('SELECT id, tsumego_id, sgf FROM sgf WHERE id > ? AND sgf LIKE ? ORDER BY id LIMIT ' . $batch, [$lastID, '%S[%']))
-		{
-			$lastID = (int) end($chunk)['id'];
-			$damaged = SgfAnalysis::damagedStatuses(array_map(fn($row) => (string) $row['sgf'], array_column($chunk, null, 'id')), SgfAnalysis::TIMEOUT * 5);
-			foreach ($chunk as $row)
-			{
-				$statuses = $damaged[(int) $row['id']] ?? [];
-				if (!$statuses)
-					continue;
-				$rows++;
-				$current = (int) $row['id'] === SgfTable::findCurrentVersionID((int) $row['tsumego_id']) ? 'current version' : 'old version';
-				$listed = [];
-				foreach ($statuses as $status)
-				{
-					$values++;
-					$note = '';
-					if ($status['repaired'] === null)
-					{
-						$unrepairable++;
-						$note = ' (no repair besogo reads)';
-					}
-					elseif ($status['trimmedReads'])
-					{
-						$guesses++;
-						$note = ' (a guess: ' . json_encode(trim($status['value'])) . ' reads too)';
-					}
-					$listed[] = json_encode($status['value']) . ' -> ' . ($status['repaired'] === null ? '?' : json_encode($status['repaired'])) . $note;
-				}
-				$this->console->out("sgf {$row['id']} (tsumego {$row['tsumego_id']}, $current): " . implode(', ', $listed));
-			}
-		}
-		$this->console->out("$rows rows with $values damaged statuses: " . ($values - $guesses - $unrepairable) . " with one repair, $guesses a guess, $unrepairable with none besogo reads. Nothing was written.");
-		return static::CODE_SUCCESS;
-	}
-
-	//Puts the rows back as they were before they were rewritten, each in a transaction of its own
-	/** @param list<int> $ids */
-	private function restore(array $ids): int
-	{
-		foreach ($ids as $id)
-		{
-			$backup = Util::query('SELECT * FROM sgf_before_normalisation WHERE sgf_id = ?', [$id])[0] ?? null;
-			if (!$backup)
-			{
-				$this->console->out("sgf $id: no backup, left as it is");
-				continue;
-			}
-			$row = Util::query('SELECT tsumego_id, transformation_from_source FROM sgf WHERE id = ?', [$id])[0];
-			$turn = BoardTransformation::fromJson($backup['transformation']);
-			Util::execute('START TRANSACTION');
-			try
-			{
-				Util::execute('UPDATE sgf SET sgf = ?, preview = ?, first_move_color = ?, correct_moves = ? WHERE id = ?',
-					[$backup['sgf'], TsumegoButton::sgfToPreviewJson((string) $backup['sgf']), $backup['first_move_color'], $backup['correct_moves'], $id]);
-				// the turn is taken out of the transformations it was put into, as normaliseProblem put it in
-				if (!empty($row['transformation_from_source']))
-					Util::execute('UPDATE sgf SET transformation_from_source = ? WHERE id = ?',
-						[BoardTransformation::fromJson($row['transformation_from_source'])->then($turn->inverse())->toJson(), $id]);
-				foreach (Util::query('SELECT id, transformation_from_source FROM sgf WHERE source_sgf_id = ? AND transformation_from_source IS NOT NULL', [$id]) as $dependent)
-					Util::execute('UPDATE sgf SET transformation_from_source = ? WHERE id = ?',
-						[$turn->then(BoardTransformation::fromJson($dependent['transformation_from_source']))->toJson(), $dependent['id']]);
-				$comments = 0;
-				if ($id === SgfTable::findCurrentVersionID((int) $row['tsumego_id']))
-				{
-					$comments = Util::execute('UPDATE tsumego_comment comment JOIN tsumego_comment_before_normalisation backup ON backup.tsumego_comment_id = comment.id
-						SET comment.message = backup.message, comment.position = backup.position WHERE comment.tsumego_id = ?', [$row['tsumego_id']]);
-					Util::execute('DELETE backup FROM tsumego_comment_before_normalisation backup JOIN tsumego_comment comment ON comment.id = backup.tsumego_comment_id
-						WHERE comment.tsumego_id = ?', [$row['tsumego_id']]);
-				}
-				Util::execute('DELETE FROM sgf_before_normalisation WHERE sgf_id = ?', [$id]);
-				Util::execute('COMMIT');
-				$this->console->out("sgf $id: put back as it was" . ($comments ? ", with the comments of its problem" : ''));
-			}
-			catch (\Throwable $error)
-			{
-				Util::execute('ROLLBACK');
-				throw $error;
-			}
-		}
-		return static::CODE_SUCCESS;
 	}
 
 	//$change applied to the transformation from the source of the row; one that was never recorded stays unknown
@@ -375,8 +235,6 @@ class NormaliseSgfsCommand extends Command
 			$this->counts['comments moved']++;
 			if (!$this->write)
 				continue;
-			Util::execute('INSERT IGNORE INTO tsumego_comment_before_normalisation (tsumego_comment_id, message, position) VALUES (?, ?, ?)',
-				[$comment['id'], $comment['message'], $comment['position']]);
 			Util::execute('UPDATE tsumego_comment SET message = ?, position = ? WHERE id = ?', [$message, $position, $comment['id']]);
 		}
 	}
@@ -388,6 +246,8 @@ class NormaliseSgfsCommand extends Command
 			$this->losingMergedLines[] = $id;
 		if ($analysis->setupRewritten)
 			$this->setupRewritten[$id] = $analysis->setupRewritten;
+		if ($analysis->unreadableStatuses)
+			$this->unreadableStatuses[$id] = $analysis->unreadableStatuses;
 		foreach ($analysis->mergedAway as $property => $count)
 		{
 			$this->mergedAway[$property]['rows'] = ($this->mergedAway[$property]['rows'] ?? 0) + 1;
@@ -457,6 +317,8 @@ class NormaliseSgfsCommand extends Command
 				fn($property, $lost) => "$property {$lost['count']} in {$lost['rows']} rows", array_keys($this->mergedAway), $this->mergedAway)) : ''));
 		$this->console->out(count($this->setupRewritten) . ' rows rewritten have their setup written as besogo shows it (a point listed twice, or set to the stone it has, written once; the stones shown are the same)'
 			. self::ids(array_keys($this->setupRewritten)));
+		$this->console->out(count($this->unreadableStatuses) . ' rows rewritten leave out ' . array_sum($this->unreadableStatuses)
+			. ' statuses besogo can\'t read (S[undefined], or a + an old save wrote as a space)' . self::ids(array_keys($this->unreadableStatuses)));
 		foreach (array_slice($this->setupRewritten, 0, 50, true) as $id => $changes)
 			$this->console->out("sgf $id setup: " . implode(', ', array_map(fn($property, $change) => "$property " . sprintf('%+d', $change), array_keys($changes), $changes)));
 		ksort($this->examples);

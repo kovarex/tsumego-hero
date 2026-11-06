@@ -6,11 +6,10 @@
 //It runs the very files of webroot/besogo/js the site serves, in a context of their own with the few browser
 //globals they touch stubbed, so the rules of correct and wrong (statuses, goals, transpositions) are not forked.
 //With "normalise": true it also gives the SGF as the site stores it (normalise below), and the values are of that SGF.
-//Input on stdin: JSON lines, each {"id": any, "sgf": "(;...)", "normalise"?: bool, "statuses"?: bool}; with
-//"statuses" the answer is {"id", "damaged_statuses"} (damagedStatuses below). Output on stdout: a JSON line for
+//Input on stdin: JSON lines, each {"id": any, "sgf": "(;...)", "normalise"?: bool}. Output on stdout: a JSON line for
 //each, in order, {"id", "first_move_color", "correct_moves", "problem"} (and with normalise "sgf", "transformation",
-//"changed", "same_play", and when changed "property_changes", "unexpected_changes", "merged_away", "setup_rewritten"),
-//or {"id", "error"} when the SGF can't be read.
+//"changed", "same_play", and when changed "property_changes", "unexpected_changes", "merged_away", "setup_rewritten",
+//"unreadable_statuses"), or {"id", "error"} when the SGF can't be read.
 import { readFileSync } from 'node:fs';
 import { createInterface } from 'node:readline';
 import { dirname, join } from 'node:path';
@@ -132,27 +131,6 @@ export function statusReads(besogo, value)
 	return !besogo.loadStatusFromString(value.trim()).str().includes('undefined');
 }
 
-//The S values of an SGF that old saves damaged, a + written as a space ("A 2KO " for "A+2KO+"), or that besogo can't
-//read, each with the repair proposed: the spaces back to + when besogo reads that (else null), and whether the value
-//without its spaces at the ends reads too, which makes the repair a guess ("SEKI " may be "SEKI+" or "SEKI")
-export function damagedStatuses(besogo, sgf)
-{
-	const damaged = [];
-	for (const node of textNodes(besogo.parseSgf(sgf)))
-		for (const prop of node.props)
-			if (prop.id === 'S')
-				for (const value of prop.values)
-				{
-					if (!/\s/.test(value) && statusReads(besogo, value))
-						continue;
-					const repaired = value.trim().replace(/\s/g, '+');
-					const plus = value.replace(/\s/g, '+');
-					const candidate = [plus, repaired].find(text => statusReads(besogo, text) && !/\s/.test(text)) ?? null;
-					damaged.push({ value, repaired: candidate, trimmed_reads: value.trim() !== value && statusReads(besogo, value.trim()) });
-				}
-	return damaged;
-}
-
 //The nodes of a parsed SGF, depth first
 function textNodes(tree)
 {
@@ -183,7 +161,7 @@ function normalisedText(besogo, editor, sgf, result, loaded)
 	const { loadedSignature, ...shown } = result;
 	return { sgf: text, ...shown, same_play: loadedSignature === signature(reloaded.getRoot()),
 		property_changes: changes.counts, unexpected_changes: changes.unexpected, merged_away: changes.mergedAway,
-		setup_rewritten: changes.setup };
+		setup_rewritten: changes.setup, unreadable_statuses: changes.unreadableStatuses };
 }
 
 //What a save may change in the properties of an SGF, besides the coordinates. Any other change of the count of a property
@@ -219,16 +197,21 @@ export function propertyChanges(besogo, before, after, loaded = {})
 	const unexpected = [];
 	const merged = {};
 	const setup = {};
+	// a status besogo can't read (S[undefined], or a + an old save wrote as a space) is left out by every save
+	const unreadableStatuses = old.statuses.filter(status => !statusReads(besogo, status)).length;
 	for (const id of new Set([...old.counts.keys(), ...now.counts.keys()]))
 	{
 		const [was, is] = [old.counts.get(id) ?? 0, now.counts.get(id) ?? 0];
 		if (was === is)
 			continue;
 		counts[id] = [was, is];
-		// all that is gone was on merged away nodes
-		if (is < was && is === was - (old.merged.get(id) ?? 0))
+		// all that is gone was on merged away nodes, or a status besogo can't read
+		const onMerged = old.merged.get(id) ?? 0;
+		const unreadable = id === 'S' ? unreadableStatuses : 0;
+		if (is < was && is === was - onMerged - unreadable)
 		{
-			merged[id] = was - is;
+			if (onMerged)
+				merged[id] = onMerged;
 			continue;
 		}
 		if (SETUP.has(id))
@@ -243,16 +226,16 @@ export function propertyChanges(besogo, before, after, loaded = {})
 		if (!expected)
 			unexpected.push(id + ' ' + was + '→' + is + (illegal ? ' (' + illegal + ' illegal, besogo leaves it out)' : ''));
 	}
-	// a status besogo can't read is left for the repair of the statuses (normalise_sgfs --damaged-statuses)
-	const unreadable = old.statuses.filter(status => !statusReads(besogo, status));
-	if (unreadable.length)
-		unexpected.push('S besogo can\'t read: ' + unreadable.map(status => JSON.stringify(status)).join(', '));
-	// a status that stays is written as it was (an S besogo writes otherwise, as S[undefined], is a status lost); one
-	// lost is told by the count
+	// a status that stays is written as it was (an S besogo writes otherwise is a status lost); one lost is told by the
+	// count
+	const readable = old.statuses.filter(status => statusReads(besogo, status));
+	const writtenUnreadable = now.statuses.filter(status => !statusReads(besogo, status));
+	if (writtenUnreadable.length)
+		unexpected.push('S written that besogo can\'t read: ' + writtenUnreadable.map(status => JSON.stringify(status)).join(', '));
 	const statuses = values => values.slice().sort().join(' | ');
-	if (old.statuses.length === now.statuses.length && statuses(old.statuses) !== statuses(now.statuses))
+	if (readable.length === now.statuses.length && statuses(readable) !== statuses(now.statuses))
 	{
-		const changed = old.statuses.filter(status => !now.statuses.includes(status));
+		const changed = readable.filter(status => !now.statuses.includes(status));
 		unexpected.push('S written otherwise: ' + changed.map(status => JSON.stringify(status)).join(', '));
 	}
 	const kept = new Set(now.comments.keys());
@@ -260,7 +243,7 @@ export function propertyChanges(besogo, before, after, loaded = {})
 	const lostOnKeptNodes = lost.filter(([, comment]) => comment.onKeptNode).map(([, comment]) => comment.written);
 	if (lostOnKeptNodes.length)
 		unexpected.push('C lost: ' + lostOnKeptNodes.map(comment => JSON.stringify(comment.slice(0, 40))).join(', '));
-	return { counts, unexpected, mergedAway: merged, setup };
+	return { counts, unexpected, mergedAway: merged, setup, unreadableStatuses };
 }
 
 //The count of the values of each property of a parsed SGF (a point range of a point list as its points), the part of
@@ -420,9 +403,7 @@ async function main()
 			id = input.id ?? null;
 			if (typeof input.sgf !== 'string')
 				throw new Error('no sgf text');
-			result = input.statuses === true
-				? { id, damaged_statuses: damagedStatuses(loaded.besogo, input.sgf) }
-				: { id, ...analyse(loaded, input.sgf, input.normalise === true) };
+			result = { id, ...analyse(loaded, input.sgf, input.normalise === true) };
 		}
 		catch (error)
 		{

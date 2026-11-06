@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { analyse, damagedStatuses, makeBesogo, propertyChanges } from './sgfCorrectMoves.mjs';
+import { analyse, makeBesogo, propertyChanges } from './sgfCorrectMoves.mjs';
 
 const besogo = makeBesogo();
 const of = sgf => analyse(besogo, sgf);
@@ -189,13 +189,15 @@ test('only what was on the merged away nodes may go', () =>
 	assert.deepEqual(normalised('(;SZ[19]AB[rr][rs][qq](;B[ss]C[+])(;B[sr];W[qs];B[qq];W[ps]))').unexpected_changes,
 		['B 3→2 (1 illegal, besogo leaves it out)']);
 	//a status is written back as it was, one besogo reads otherwise too (old saves wrote "KO " for "KO+"); one it can't
-	//read keeps the row as it is, for the repair of the statuses, and so does a status written otherwise, as S[undefined]
-	const statuses = normalised('(;SZ[19]G[KILL]AB[rb][sb](;B[sa];W[ra]S[A 2KO ])(;B[ra];W[qa]S[KO ])(;B[qa];W[ra]S[SEKI ]))');
-	assert.deepEqual([statuses.same_play, statuses.unexpected_changes], [true, ['S besogo can\'t read: "A 2KO "']]);
-	for (const status of ['S[A 2KO ]', 'S[KO ]', 'S[SEKI ]'])
+	//read (S[undefined], or "A 2KO " for "A+2KO+") is left out and counted; one written that besogo can't read keeps the
+	//row as it is
+	const statuses = normalised('(;SZ[19]G[KILL]AB[rb][sb](;B[sa];W[ra]S[A 2KO ])(;B[ra];W[qa]S[KO ])(;B[qa];W[ra]S[SEKI ])(;B[pa];W[ra]S[undefined]))');
+	assert.deepEqual([statuses.same_play, statuses.unexpected_changes, statuses.unreadable_statuses], [true, [], 2]);
+	for (const status of ['S[KO ]', 'S[SEKI ]'])
 		assert.ok(statuses.sgf.includes(status), status);
-	assert.deepEqual(propertyChanges(besogo.besogo, '(;SZ[19];B[aa]S[A 2KO ])', '(;FF[4]GM[1]SZ[19]ST[0];B[aa]S[undefined])').unexpected,
-		['S besogo can\'t read: "A 2KO "', 'S written otherwise: "A 2KO "']);
+	assert.ok(!statuses.sgf.includes('A 2KO') && !statuses.sgf.includes('undefined'), statuses.sgf);
+	assert.deepEqual(propertyChanges(besogo.besogo, '(;SZ[19];B[aa]S[DEAD])', '(;FF[4]GM[1]SZ[19]ST[0];B[aa]S[undefined])').unexpected,
+		['S written that besogo can\'t read: "undefined"', 'S written otherwise: "DEAD"']);
 	//setup after a move is turned with the stone it leaves (sgf 19415 and 19416 of the site had an AE turned into an AW),
 	//and the play check compares the stones shown with the problem as loaded, before the turn
 	const belowTheRoot = normalised('(;SZ[19]AB[rr][rs][pr](;B[ss]C[+])(;B[sr];W[qs];AE[pr]AB[qs]C[+]))');
@@ -273,17 +275,4 @@ test('an editor save changes no property but those besogo does not keep', () =>
 		besogo.besogo.loadSgf(besogo.besogo.parseSgf(sgf), editor);
 		assert.deepEqual(propertyChanges(besogo.besogo, sgf, besogo.besogo.composeSgf(editor)).unexpected, [], sgf);
 	}
-});
-
-//The statuses old saves damaged (a + written as a space) are listed with the repair proposed: the spaces back to +,
-//when besogo reads that, and whether the value without its end spaces reads too, which makes the repair a guess
-test('the damaged statuses are listed with their repair', () =>
-{
-	const sgf = '(;SZ[19]G[KILL](;B[aa]S[A 2KO ])(;B[bb]S[KO 2])(;B[cc]S[SEKI ])(;B[dd]S[A-1KO ])(;B[ee]S[DEAD])(;B[ff]S[NONSENSE]))';
-	assert.deepEqual(damagedStatuses(besogo.besogo, sgf), [
-		{ value: 'A 2KO ', repaired: 'A+2KO+', trimmed_reads: false },
-		{ value: 'KO 2', repaired: 'KO+2', trimmed_reads: false },
-		{ value: 'SEKI ', repaired: 'SEKI+', trimmed_reads: true },
-		{ value: 'A-1KO ', repaired: 'A-1KO+', trimmed_reads: true },
-		{ value: 'NONSENSE', repaired: null, trimmed_reads: false }]);
 });

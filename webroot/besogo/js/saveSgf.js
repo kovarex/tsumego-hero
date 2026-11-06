@@ -119,14 +119,11 @@ besogo.composeSgf = function(editor, expand = false)
     let statusToSave = node.statusSource || node.statusSetAside;
     if (statusToSave)
     {
-      // S as it was loaded while the status reads the same: a text besogo reads otherwise ("KO " of old saves, or one
-      // it can't read) isn't rewritten
+      // S as it was loaded while the status reads the same ("KO " of old saves stays as it is); a status besogo can't
+      // read comes out as "undefined" (S[undefined] of old saves, "A 2KO " for "A+2KO+") and is left out
       let hasText = Object.hasOwn(node, 'statusText') && node.statusText !== null;
       let text = hasText && statusToSave.str() === node.statusTextReads ? node.statusText : statusToSave.str();
-      // a status besogo can't read comes out as "undefined", which is never written: the text loaded stays instead
-      if (text.includes('undefined'))
-        text = hasText ? node.statusText : null;
-      if (text !== null)
+      if (!statusToSave.str().includes('undefined'))
       {
         string += (string ? '\n' : '');
         string += 'S[' + escapeText(text) + ']';
