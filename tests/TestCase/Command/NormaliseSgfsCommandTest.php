@@ -84,7 +84,7 @@ class NormaliseSgfsCommandTest extends AppTestCase
 	}
 
 	//The line a challenge was failed on is in the coordinates of its version, so it turns with it; a pass stays one
-	public function testAFailedLineTurnsWithItsVersion(): void
+	public function testAChallengeFailedLineTurnsWithItsVersion(): void
 	{
 		$context = new ContextPreparator([
 			'user' => ['name' => 'challenger'],
@@ -93,14 +93,14 @@ class NormaliseSgfsCommandTest extends AppTestCase
 			'time-mode-sessions' => [['category' => TimeModeCategoryTable::BLITZ, 'status' => TimeModeSessionStatusTable::SOLVED, 'rank' => '5k',
 				'attempts' => [['order' => 1, 'status' => TimeModeAttemptStatusTable::FAILED]]]]]);
 		$sgfID = (int) $this->sgfRow($context->tsumegos[0]['id'])['id'];
-		Util::execute('UPDATE time_mode_attempt SET failed_line = ?, sgf_id = ?', ['sssrrstt', $sgfID]);
+		Util::execute('INSERT INTO challenge_failed_line (time_mode_attempt_id, moves, sgf_id) SELECT id, ?, ? FROM time_mode_attempt', ['sssrrstt', $sgfID]);
 
 		$this->exec('normalise_sgfs');
-		$this->assertOutputContains('1 failed lines turned');
-		$this->assertSame('sssrrstt', Util::query('SELECT failed_line FROM time_mode_attempt')[0]['failed_line']);
+		$this->assertOutputContains('1 challenge failed lines turned');
+		$this->assertSame('sssrrstt', Util::query('SELECT moves FROM challenge_failed_line')[0]['moves']);
 
 		$this->exec('normalise_sgfs --write');
-		$this->assertSame('aaabbatt', Util::query('SELECT failed_line FROM time_mode_attempt')[0]['failed_line']);
+		$this->assertSame('aaabbatt', Util::query('SELECT moves FROM challenge_failed_line')[0]['moves']);
 	}
 
 	public function testASecondRunChangesNothing(): void
@@ -111,7 +111,7 @@ class NormaliseSgfsCommandTest extends AppTestCase
 		$comments = Util::query('SELECT * FROM tsumego_comment ORDER BY id');
 
 		$this->exec('normalise_sgfs --write');
-		$this->assertOutputContains('5 problems, 5 rows, 0 turned, 0 reordered only, 0 values only, 0 comments moved, 0 failed lines turned, 0 transformations from source fixed');
+		$this->assertOutputContains('5 problems, 5 rows, 0 turned, 0 reordered only, 0 values only, 0 comments moved, 0 challenge failed lines turned, 0 transformations from source fixed');
 		$this->assertSame($after, Util::query('SELECT * FROM sgf ORDER BY id'));
 		$this->assertSame($comments, Util::query('SELECT * FROM tsumego_comment ORDER BY id'));
 	}

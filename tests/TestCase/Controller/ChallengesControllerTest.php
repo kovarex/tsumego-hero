@@ -68,11 +68,12 @@ class ChallengesControllerTest extends IntegrationTestCase
 			Util::query('SELECT user_id FROM challenge_participant WHERE challenge_id = ? ORDER BY id', [$challengeId]));
 	}
 
-	/** @return array<array<string, mixed>> The attempts of the run of the player, in their order */
+	/** @return array<array<string, mixed>> The attempts of the run of the player, in their order, with the line kept of a fail (line_moves, line_sgf_id) */
 	private function runAttempts(int $challengeId, string $name): array
 	{
-		return Util::query('SELECT a.* FROM time_mode_attempt a
+		return Util::query('SELECT a.*, line.moves AS line_moves, line.sgf_id AS line_sgf_id FROM time_mode_attempt a
 			JOIN time_mode_session s ON s.id = a.time_mode_session_id
+			LEFT JOIN challenge_failed_line line ON line.time_mode_attempt_id = a.id
 			WHERE s.challenge_id = ? AND s.user_id = ?
 			ORDER BY a.`order`', [$challengeId, $this->userId($name)]);
 	}
@@ -659,15 +660,15 @@ class ChallengesControllerTest extends IntegrationTestCase
 		$challengeId = $this->create(['problem_count' => 5]);
 		$problemIDs = ChallengeTable::problemIDs($challengeId);
 		$this->playRun($challengeId, [
-			[PlayOutcome::Failed, 10, ['failed_line' => 'aabbcc', 'sgf_id' => $this->sgfID($problemIDs[0])]],
-			[PlayOutcome::TimedOut, 60, ['failed_line' => 'ddtt', 'sgf_id' => $this->sgfID($problemIDs[1])]],
-			[PlayOutcome::Failed, 10, ['failed_line' => 'aazz', 'sgf_id' => $this->sgfID($problemIDs[2])]],
-			[PlayOutcome::Failed, 10, ['failed_line' => 'aabb', 'sgf_id' => $this->sgfID($problemIDs[0])]],
-			[PlayOutcome::SolvedClean, 10, ['failed_line' => 'aabb', 'sgf_id' => $this->sgfID($problemIDs[4])]]]);
+			[PlayOutcome::Failed, 10, ['challenge_failed_line' => 'aabbcc', 'sgf_id' => $this->sgfID($problemIDs[0])]],
+			[PlayOutcome::TimedOut, 60, ['challenge_failed_line' => 'ddtt', 'sgf_id' => $this->sgfID($problemIDs[1])]],
+			[PlayOutcome::Failed, 10, ['challenge_failed_line' => 'aazz', 'sgf_id' => $this->sgfID($problemIDs[2])]],
+			[PlayOutcome::Failed, 10, ['challenge_failed_line' => 'aabb', 'sgf_id' => $this->sgfID($problemIDs[0])]],
+			[PlayOutcome::SolvedClean, 10, ['challenge_failed_line' => 'aabb', 'sgf_id' => $this->sgfID($problemIDs[4])]]]);
 
 		$attempts = $this->runAttempts($challengeId, 'challenger');
-		$this->assertSame(['aabbcc', 'ddtt', null, null, null], array_column($attempts, 'failed_line'));
-		$this->assertSame([$this->sgfID($problemIDs[0]), $this->sgfID($problemIDs[1]), null, null, null], array_map(fn($sgfID) => $sgfID === null ? null : (int) $sgfID, array_column($attempts, 'sgf_id')));
+		$this->assertSame(['aabbcc', 'ddtt', null, null, null], array_column($attempts, 'line_moves'));
+		$this->assertSame([$this->sgfID($problemIDs[0]), $this->sgfID($problemIDs[1]), null, null, null], array_map(fn($sgfID) => $sgfID === null ? null : (int) $sgfID, array_column($attempts, 'line_sgf_id')));
 		$this->assertSame([TimeModeAttemptStatusTable::FAILED, TimeModeAttemptStatusTable::TIMEOUT, TimeModeAttemptStatusTable::FAILED, TimeModeAttemptStatusTable::FAILED, TimeModeAttemptStatusTable::SOLVED],
 			array_map('intval', array_column($attempts, 'time_mode_attempt_status_id')));
 	}
@@ -678,7 +679,7 @@ class ChallengesControllerTest extends IntegrationTestCase
 		$this->prepare(12, self::SGF);
 		$challengeId = $this->create(['problem_count' => 5, 'players' => 'DN_friend']);
 		$problemIDs = ChallengeTable::problemIDs($challengeId);
-		$this->playRun($challengeId, [[PlayOutcome::Failed, 10, ['failed_line' => 'aabb', 'sgf_id' => $this->sgfID($problemIDs[0])]]]
+		$this->playRun($challengeId, [[PlayOutcome::Failed, 10, ['challenge_failed_line' => 'aabb', 'sgf_id' => $this->sgfID($problemIDs[0])]]]
 			+ array_fill(1, 4, [PlayOutcome::SolvedClean, 10]));
 
 		$this->get('/challenges/' . $challengeId);
@@ -721,6 +722,28 @@ class ChallengesControllerTest extends IntegrationTestCase
 		$timeMode = new App\Utility\TimeMode();
 		$this->assertNull($timeMode->challenge);
 		$this->assertSame(TimeModeCategoryTable::BLITZ, $timeMode->currentSession->time_mode_category_id);
+	}
+
+	//Only a challenge shows the lines, so a fail of plain time mode keeps none, even when the page sends one
+	public function testAFailOfPlainTimeModeKeepsNoLine(): void
+	{
+		$this->prepare(12, self::SGF);
+		$this->get('/timeMode/start?categoryID=' . TimeModeCategoryTable::BLITZ . '&rankID=' . $this->rankId('5k'));
+		Auth::init();
+		$timeMode = new App\Utility\TimeMode();
+		$this->assertNull($timeMode->currentSession->challenge_id);
+		$attempt = Util::query('SELECT tsumego_id FROM time_mode_attempt WHERE time_mode_session_id = ? ORDER BY `order` LIMIT 1', [$timeMode->currentSession->id])[0];
+		$this->post('/timeMode/play/1');
+		Auth::init();
+		$this->post('/tsumegos/result', [
+			'tsumego_id' => $attempt['tsumego_id'],
+			'seconds' => 10,
+			'outcome' => PlayOutcome::Failed->value,
+			'challenge_failed_line' => 'aabb',
+			'sgf_id' => $this->sgfID((int) $attempt['tsumego_id'])]);
+
+		$this->assertSame(TimeModeAttemptStatusTable::FAILED, (int) Util::query('SELECT time_mode_attempt_status_id FROM time_mode_attempt WHERE time_mode_session_id = ? ORDER BY `order` LIMIT 1', [$timeMode->currentSession->id])[0]['time_mode_attempt_status_id']);
+		$this->assertSame(0, (int) Util::query('SELECT COUNT(*) AS kept FROM challenge_failed_line')[0]['kept']);
 	}
 
 	public function testPlayingAnotherChallengeEndsTheRunOfTheFirst(): void
@@ -1009,8 +1032,8 @@ class ChallengesControllerTest extends IntegrationTestCase
 		$browser->waitForSubmitResult();
 
 		$attempt = $this->runAttempts($challengeId, 'challenger')[0];
-		$this->assertSame($expectedLine, $attempt['failed_line']);
-		$this->assertSame($this->sgfID((int) $attempt['tsumego_id']), (int) $attempt['sgf_id']);
+		$this->assertSame($expectedLine, $attempt['line_moves']);
+		$this->assertSame($this->sgfID((int) $attempt['tsumego_id']), (int) $attempt['line_sgf_id']);
 
 		$nextButton = $browser->find('#besogo-next-button');
 		$nextButton->click();

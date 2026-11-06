@@ -1,15 +1,15 @@
 <?php
 
 use App\Utility\BoardTransformation;
-use App\Utility\FailedLine;
+use App\Utility\ChallengeFailedLine;
 use App\Utility\Util;
 
-class FailedLineTest extends AppTestCase
+class ChallengeFailedLineTest extends AppTestCase
 {
 	//The board turns the problem to the top left as the problem buttons show it, and the line with it
 	public function testThePreviewTurnsTheLineWithTheStones(): void
 	{
-		$preview = FailedLine::previewData('(;GM[1]FF[4]SZ[19]AB[qq](;B[ss];W[sr];B[rs]C[+]))', 'sssrtteo');
+		$preview = ChallengeFailedLine::previewData('(;GM[1]FF[4]SZ[19]AB[qq](;B[ss];W[sr];B[rs]C[+]))', 'sssrtteo');
 		$this->assertSame('cc', $preview['black']);
 		$this->assertSame('aaabttoe', $preview['line']);
 		$this->assertSame('B', $preview['firstColor']);
@@ -20,14 +20,14 @@ class FailedLineTest extends AppTestCase
 
 	public function testALineTurnsPointByPoint(): void
 	{
-		$this->assertSame('aaabbatt', FailedLine::transformed('sssrrstt', new BoardTransformation(flipX: true, flipY: true), 19));
-		$this->assertSame('abtt', FailedLine::transformed('batt', new BoardTransformation(transpose: true), 19));
-		$this->assertSame('ia', FailedLine::transformed('aa', new BoardTransformation(flipX: true), 9));
+		$this->assertSame('aaabbatt', ChallengeFailedLine::transformed('sssrrstt', new BoardTransformation(flipX: true, flipY: true), 19));
+		$this->assertSame('abtt', ChallengeFailedLine::transformed('batt', new BoardTransformation(transpose: true), 19));
+		$this->assertSame('ia', ChallengeFailedLine::transformed('aa', new BoardTransformation(flipX: true), 9));
 	}
 
 	public function testThePreviewTellsWhoPlaysFirst(): void
 	{
-		$this->assertSame('W', FailedLine::previewData('(;GM[1]FF[4]SZ[19]AB[cc];W[aa])', 'aa')['firstColor']);
+		$this->assertSame('W', ChallengeFailedLine::previewData('(;GM[1]FF[4]SZ[19]AB[cc];W[aa])', 'aa')['firstColor']);
 	}
 
 	public function testOnlyALineOnAVersionOfTheProblemIsKept(): void
@@ -37,13 +37,13 @@ class FailedLineTest extends AppTestCase
 		$sgfID = (int) Util::query('SELECT id FROM sgf WHERE tsumego_id = ?', [$tsumegoID])[0]['id'];
 		$otherSgfID = (int) Util::query('SELECT id FROM sgf WHERE tsumego_id = ?', [$context->tsumegos[1]['id']])[0]['id'];
 
-		$this->assertSame('aatt', FailedLine::fromRequest('aatt', $sgfID, $tsumegoID)?->moves);
-		$this->assertNull(FailedLine::fromRequest('aatt', $otherSgfID, $tsumegoID));
-		$this->assertNull(FailedLine::fromRequest('', $sgfID, $tsumegoID));
-		$this->assertNull(FailedLine::fromRequest('aab', $sgfID, $tsumegoID));
-		$this->assertNull(FailedLine::fromRequest('aazz', $sgfID, $tsumegoID));
-		$this->assertNull(FailedLine::fromRequest(['aa'], $sgfID, $tsumegoID));
-		$this->assertNull(FailedLine::fromRequest(str_repeat('aa', FailedLine::MAXIMUM_MOVES + 1), $sgfID, $tsumegoID));
-		$this->assertNotNull(FailedLine::fromRequest(str_repeat('aa', FailedLine::MAXIMUM_MOVES), $sgfID, $tsumegoID));
+		$this->assertSame('aatt', ChallengeFailedLine::fromRequest('aatt', $sgfID, $tsumegoID)?->moves);
+		$this->assertNull(ChallengeFailedLine::fromRequest('aatt', $otherSgfID, $tsumegoID));
+		$this->assertNull(ChallengeFailedLine::fromRequest('', $sgfID, $tsumegoID));
+		$this->assertNull(ChallengeFailedLine::fromRequest('aab', $sgfID, $tsumegoID));
+		$this->assertNull(ChallengeFailedLine::fromRequest('aazz', $sgfID, $tsumegoID));
+		$this->assertNull(ChallengeFailedLine::fromRequest(['aa'], $sgfID, $tsumegoID));
+		$this->assertNull(ChallengeFailedLine::fromRequest(str_repeat('aa', ChallengeFailedLine::MAXIMUM_MOVES + 1), $sgfID, $tsumegoID));
+		$this->assertNotNull(ChallengeFailedLine::fromRequest(str_repeat('aa', ChallengeFailedLine::MAXIMUM_MOVES), $sgfID, $tsumegoID));
 	}
 }
