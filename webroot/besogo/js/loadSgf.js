@@ -126,7 +126,10 @@ besogo.loadSgf = function(sgf, editor, mode = NORMAL_LOAD)
       case 'SL': // Add 'selected' (small filled square) markup
         applyPointList(prop.values, node, markupFunc, 5);
         break;
-      case 'L': // Intentional fallthrough treats 'L' as 'LB'
+      case 'L': // L of FF[3] labels its points A, B, C... in order, LB[point:text] of FF[4] says the text
+        applyPointList(prop.values.map((value, index) => value.includes(':') ? value : value + ':' + String.fromCharCode(65 + index % 26)),
+          node, markupFunc, 'label');
+        break;
       case 'LB': // Add label markup
         applyPointList(prop.values, node, markupFunc, 'label');
         break;
@@ -137,12 +140,18 @@ besogo.loadSgf = function(sgf, editor, mode = NORMAL_LOAD)
           node.comment = prop.values.join().trim();
         break;
       case 'S':
-        node.statusSource = besogo.loadStatusFromString(prop.values.join().trim());
+        // the text is kept, so a save writes it back as it was while the status reads the same, whatever the text
+        node.statusText = prop.values.join();
+        node.statusSource = besogo.loadStatusFromString(node.statusText.trim());
+        node.statusTextReads = node.statusSource.str();
         break;
       case 'SKD':
         node.superkoMeansDead = true;
+        break;
       case 'G':
-        node.goal = besogo.loadGoalFromString(prop.values.join().trim());
+        // the text is kept as it is, so a save writes G back unchanged, whatever its value
+        node.goalText = prop.values.join();
+        node.goal = besogo.loadGoalFromString(node.goalText.trim());
         break;
     }
   }

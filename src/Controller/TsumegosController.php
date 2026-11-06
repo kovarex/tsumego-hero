@@ -17,7 +17,6 @@ use App\Model\Table\TsumegoVariantTable;
 use App\Utility\AchievementChecker;
 use App\Utility\AdminActivityLogger;
 use App\Utility\Auth;
-use App\Utility\BoardTransformation;
 use App\Utility\Constants;
 use App\Utility\DailyStreak;
 use App\Utility\FailedLine;
@@ -25,7 +24,6 @@ use App\Utility\CookieFlash;
 use App\Utility\PlayOutcome;
 use App\Utility\Rating;
 use App\Utility\RatingParseException;
-use App\Utility\SgfCommentReorientation;
 use App\Utility\SgfParser;
 use App\Utility\SimilarSearchLogic;
 use App\Utility\Trash;
@@ -225,8 +223,7 @@ class TsumegosController extends AppController
 		if ($newSgf !== null)
 		{
 			AdminActivityLogger::log(AdminActivityTypeTable::SGF_EDIT, (int) $tsumegoID, $setConnection->set_id);
-			$this->renderNewSgfSetup($setConnection->id, $newSgf, (string) ($data['sgf_description'] ?? ''));
-			return null;
+			return $this->saveNewSgf($setConnection->id, $newSgf, $data['sgf_description'] ?? null);
 		}
 		return $this->redirect($this->input('redirect'));
 	}
@@ -374,88 +371,6 @@ class TsumegosController extends AppController
 		if ($flash)
 			CookieFlash::set($flash['message'], $flash['type']);
 		return $this->redirect('/tsumegos/mergeForm');
-	}
-
-	#[HttpGet]
-	public function setupSgf(): mixed
-	{
-		$this->Authorization->authorize('Tsumego');
-
-		$sgf = $this->fetchTable('Sgf')->find()
-			->select(['id', 'sgf'])
-			->where(['OR' => ['first_move_color IS' => null, 'correct_moves IS' => null]])
-			->first();
-		if (!$sgf)
-		{
-			CookieFlash::set('All sgfs converted', 'success');
-			return $this->redirect('/sets');
-		}
-		$this->set('sgf', $sgf->sgf);
-		$this->set('sgfID', $sgf->id);
-		return null;
-	}
-
-	#[HttpGet]
-	public function setupSgfStep2(int $sgfID, string $firstMoveColor, ?string $correctMoves = null)
-	{
-		$this->Authorization->authorize('Tsumego');
-		$sgfTable = $this->fetchTable('Sgf');
-		$sgf = $sgfTable->find()->select(['id', 'sgf'])->where(['id' => $sgfID])->first();
-		if (!$sgf)
-			return;
-		if (empty($sgf->sgf))
-		{
-			$sgfTable->deleteOrFail($sgf);
-			return $this->redirect('/tsumegos/setupSgf');
-		}
-		$sgf->first_move_color = $firstMoveColor;
-		$sgf->correct_moves = $correctMoves ?? '';
-		$sgfTable->saveOrFail($sgf);
-		return $this->redirect('/tsumegos/setupSgf');
-	}
-
-	#[HttpPost]
-	public function setupNewSgfStep2()
-	{
-		$this->Authorization->authorize('Sgf', 'propose');
-
-		$setConnectionID = $this->input('setConnectionID');
-
-		$setConnection = $this->fetchTable('SetConnection')->find()->select(['tsumego_id'])->where(['id' => (int) $setConnectionID])->first();
-		if (!$setConnection)
-			return;
-		$tsumegoID = $setConnection->tsumego_id;
-
-		$sgfData = $this->input('sgf');
-		$firstMoveColor = $this->input('firstMoveColor');
-		$correctMoves = $this->input('correctMoves');
-
-		if ($problem = SgfParser::validationProblem($sgfData))
-			throw new BadRequestException('Invalid SGF format: ' . $problem);
-
-		if (!$this->fetchTable('Tsumego')->exists(['id' => $tsumegoID]))
-			return;
-
-		$sgf = [];
-		$sgf['sgf'] = $sgfData;
-		$sgf['user_id'] = Auth::getUserId();
-		$sgf['tsumego_id'] = $tsumegoID;
-		$sgf += Auth::isAdmin() ? SgfTable::acceptedBy(Auth::getUserID()) : ['sgf_status_id' => SgfTable::STATUS_PROPOSED];
-		$sgf['first_move_color'] = $firstMoveColor;
-		$sgf['correct_moves'] = $correctMoves;
-		// the admin reviewing a proposal needs to know what it is about, an admin's own edit may go without
-		$sgf['description'] = SgfTable::descriptionFromRequest($this->input('description'), !Auth::isAdmin());
-		// what the board editor did to the SGF it was opened with, so the comments can follow
-		$sgfTable = $this->fetchTable('Sgf');
-		$source = $sgfTable->find()->select(['id', 'tsumego_id'])->where(['id' => (int) ($this->input('sourceSgfID') ?? 0)])->first();
-		if ($source && $source->tsumego_id == $tsumegoID)
-		{
-			$sgf['source_sgf_id'] = $source->id;
-			$sgf['transformation_from_source'] = BoardTransformation::fromJson($this->input('transformationFromSource'))->toJson();
-		}
-		$saved = $sgfTable->saveOrFail($sgfTable->newEntity($sgf));
-		SgfCommentReorientation::afterAccepted($saved->id);
-		return $this->redirect('/' . $setConnectionID);
 	}
 
 	#[HttpGet]
