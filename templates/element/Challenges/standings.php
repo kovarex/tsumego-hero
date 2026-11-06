@@ -75,8 +75,11 @@ $cellSymbols = ['failed' => '✗', 'timeout' => '⏱', 'skipped' => '–', 'queu
 							$attempt = $row['session_id'] === null ? null : ($attemptsByRun[(int) $row['session_id']][$order] ?? null);
 							$status = $attempt['status'] ?? 'queued';
 						?>
-						<td class="challenges__cell challenges__cell--<?= h($status) ?>"<?= $attempt !== null && $attempt['seconds'] !== null ? ' title="' . ChallengeTable::formatSeconds($attempt['seconds']) . '"' : '' ?>>
+						<?php $failedLine = $attempt['failedLine'] ?? null; ?>
+						<td class="challenges__cell challenges__cell--<?= h($status) ?><?= $failedLine ? ' challenges__cell--line' : '' ?>"<?= $attempt !== null && $attempt['seconds'] !== null ? ' title="' . ChallengeTable::formatSeconds($attempt['seconds']) . '"' : '' ?>
+							<?= $failedLine ? ' tabindex="0" data-failed-line="' . h(json_encode($failedLine)) . '"' : '' ?>>
 							<?= $status === 'solved' ? ChallengeTable::formatPoints((float) $attempt['points']) : $cellSymbols[$status] ?? '' ?>
+							<?php if ($failedLine): ?><span class="tooltip-box challenges__line-board"></span><?php endif; ?>
 						</td>
 						<?php endforeach; ?>
 					</tr>
@@ -88,7 +91,8 @@ $cellSymbols = ['failed' => '✗', 'timeout' => '⏱', 'skipped' => '–', 'queu
 		<p class="hint challenges__legend">A problem button opens the problem and shows its board when you point at it, its colour is how you did with it. A solved problem shows its points, the time is in its tooltip.
 			<span class="challenges__cell challenges__cell--failed">✗</span> failed
 			<span class="challenges__cell challenges__cell--timeout">⏱</span> out of time
-			<span class="challenges__cell challenges__cell--skipped">–</span> skipped</p>
+			<span class="challenges__cell challenges__cell--skipped">–</span> skipped.
+			Point at or tap a ✗ or ⏱ to see the moves played until then.</p>
 		<?php elseif ($finishedCount > 0): ?>
 		<p class="hint">How everyone did with each problem shows once you finish your run.</p>
 		<?php endif; ?>

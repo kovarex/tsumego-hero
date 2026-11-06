@@ -101,10 +101,23 @@ class SgfBoard
 		return $result;
 	}
 
+	//A point of the SGF where the board has it: SgfParser::process() turns the stones to the top left
+	public function orientedPoint(int $position): int
+	{
+		if ($this->flippedX)
+			$position = BoardPosition::flipX($position, $this->size);
+		if ($this->flippedY)
+			$position = BoardPosition::flipY($position, $this->size);
+		return $position;
+	}
+
 	public array $stones = [];
 	public array $correctMoves = [];
 	public array $info;
 	public int $size;
+	//How SgfParser::process() turned the stones of the SGF
+	public bool $flippedX = false;
+	public bool $flippedY = false;
 
 	public const int BLACK = 0;
 	public const int WHITE = 1;

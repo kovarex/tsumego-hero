@@ -17,6 +17,7 @@ use App\Utility\TsumegoUtil;
  * @var TsumegoButtons $tsumegoButtonsOfPublishedTsumegos
  * @var array|null $userOfTheDay
  * @var int|null $mistakeTrainingDue Problems due in the mistake training, null when it is not offered
+ * @var \App\Utility\FriendActivity|null $friendActivity What the friends did lately, null for a guest or a player without friends
  */
 
 $loggedIn = Auth::isLoggedIn();
@@ -57,6 +58,8 @@ foreach ($tsumegoButtonsOfPublishedTsumegos as $tsumegoButton)
 				<span class="mistake-training-card__go" aria-hidden="true">&rsaquo;</span>
 			</a>
 		<?php endif; ?>
+
+		<?php if (isset($friendActivity)) echo $this->element('friend_activity', ['activity' => $friendActivity]); ?>
 
 		<div class="achievements-panel">
 			<img src="/img/new_startpage/<?php echo h($quote); ?>e.png?v=4.3" class="achievement-quote-pick" alt="Most Recent Achievements" title="Most Recent Achievements">

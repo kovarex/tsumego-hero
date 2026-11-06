@@ -465,6 +465,25 @@ function submitResult(outcome)
 	showResultResponse(outcome, sendResult(outcome));
 }
 
+//The moves from the root to the one on the board, as points of the stored SGF, however the board is
+//turned: two letters each, tt for a pass
+function playedLineInSgf()
+{
+	let moves = [];
+	for (let node = besogo.editor.getCurrent(); node; node = node.parent)
+		if (node.move)
+		{
+			if (node.move.x === 0 && node.move.y === 0)
+				moves.unshift("tt");
+			else
+			{
+				let point = besogo.editor.viewPointToSgf({x: node.move.x, y: node.move.y});
+				moves.unshift(String.fromCharCode(96 + point.x) + String.fromCharCode(96 + point.y));
+			}
+		}
+	return moves.join("");
+}
+
 // Null for a guest, whose results aren't recorded
 function sendResult(outcome)
 {
@@ -482,6 +501,12 @@ function sendResult(outcome)
 		// another tab may have switched the stored mode since this page was opened
 		mode: mode,
 	};
+	// the challenge page shows how a problem of the run was failed (App\Utility\ChallengeFailedLine)
+	if (mode == playPage.page.modes.time && playPage.page.challengeRun && !isSolved(outcome))
+	{
+		data.challenge_failed_line = playedLineInSgf();
+		data.sgf_id = playPage.problem.sgfID;
+	}
 
 	let response = fetch('/tsumegos/result', {
 		method: 'POST',

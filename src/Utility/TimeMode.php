@@ -265,7 +265,9 @@ class TimeMode
 		return TimeModeAttemptStatusTable::SOLVED;
 	}
 
-	public function processPlayResult(Tsumego $previousTsumego, bool $solved, float $seconds = 0, bool $timeout = false): void
+	//$challengeFailedLine: What was played until the fail or the time-out, which the page of a challenge shows; a
+	//run of plain time mode keeps none
+	public function processPlayResult(Tsumego $previousTsumego, bool $solved, float $seconds = 0, bool $timeout = false, ?ChallengeFailedLine $challengeFailedLine = null): void
 	{
 		if (!$this->currentSession)
 			return;
@@ -279,6 +281,8 @@ class TimeMode
 		$seconds = $timeout ? $this->overallSecondsToSolve : min($seconds, $this->overallSecondsToSolve);
 		self::recordAttempt($currentAttempt, self::deduceAttemptStatus($solved, $timeout), $seconds,
 			$solved ? self::calculatePoints($seconds, $this->overallSecondsToSolve) : 0);
+		if (!$solved && $challengeFailedLine !== null && $this->currentSession->challenge_id !== null)
+			$challengeFailedLine->store($currentAttempt->id);
 		$this->currentOrder++;
 	}
 
