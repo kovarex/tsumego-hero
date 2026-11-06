@@ -92,7 +92,7 @@ use App\Utility\ViteManifest;
 				<?php $points = (float) $challenge['my_points']; ?>
 				<?php $myPoints = '<strong>' . ChallengeTable::formatPoints($points) . ' points</strong> (' . ChallengeTable::percentOfMaximum($points, (int) $challenge['problem_count']) . '%)'; ?>
 				<?php if ($isFinished): ?>
-				<span class="challenges__placing challenges__my-place"><?= $this->element('Challenges/placement', ['place' => $placing['myPlace']]) ?> <?= Util::ordinal($placing['myPlace']) ?></span>
+				<span class="challenges__my-place"><?= $this->element('Challenges/placement', ['place' => $placing['myPlace']]) ?> <?= Util::ordinal($placing['myPlace']) ?></span>
 				of <?= $standings ?> with <?= $myPoints ?> in <?= $link ?>
 				<?php else: ?>
 				<?= $myPoints ?> in <?= $link ?> · <?= $finishedOf ?>
