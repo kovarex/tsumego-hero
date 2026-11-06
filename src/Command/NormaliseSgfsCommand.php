@@ -27,7 +27,9 @@ use Cake\Console\ConsoleOptionParser;
 //and what the board editor doesn't write (AP, CA, game info, + of a status problem). A row is kept as it is and named
 //when besogo would not play its rewrite the same (every move, transposition and correct or wrong end), or when the count
 //of a property changes in a way a save isn't expected to change it (propertyChanges of scripts/sgfCorrectMoves.mjs:
-//a G written on every node, a stone, label or comment lost). The report sums the change of every property.
+//a G written on every node, a stone, label or comment lost on a node that stays). What was on a node besogo merges
+//into a transposition goes with it (its move, status, markup, comment); the report counts the rows stored with such a
+//loss and what went. The report sums the change of every property.
 //Everything changed is kept first in sgf_before_normalisation and tsumego_comment_before_normalisation.
 //A problem is done in one transaction; a row already normalised comes back unchanged, so a run that stopped is
 //simply run again, and a second run changes nothing. Without --write nothing is written and it reports what would
@@ -61,6 +63,11 @@ class NormaliseSgfsCommand extends Command
 	//property => its count in the rows rewritten, before and after, and the first of those rows
 	/** @var array<string, array{rows: int, before: int, after: int, ids: list<int>}> */
 	private array $propertyChanges = [];
+	//property => what went with the merged away nodes of the rows rewritten, and in how many rows
+	/** @var array<string, array{rows: int, count: int}> */
+	private array $mergedAway = [];
+	/** @var list<int> rows rewritten that lose something with their merged away nodes */
+	private array $losingMergedLines = [];
 	//sgf id => what changes unexpectedly in its rewrite, which keeps it as it is
 	/** @var array<int, list<string>> */
 	private array $changingUnexpectedly = [];
@@ -226,9 +233,16 @@ class NormaliseSgfsCommand extends Command
 		}
 	}
 
-	//The change of the count of each property in the rows rewritten
+	//The change of the count of each property in the rows rewritten, and what went with their merged away nodes
 	private function countPropertyChanges(int $id, SgfAnalysis $analysis): void
 	{
+		if ($analysis->mergedAway)
+			$this->losingMergedLines[] = $id;
+		foreach ($analysis->mergedAway as $property => $count)
+		{
+			$this->mergedAway[$property]['rows'] = ($this->mergedAway[$property]['rows'] ?? 0) + 1;
+			$this->mergedAway[$property]['count'] = ($this->mergedAway[$property]['count'] ?? 0) + $count;
+		}
 		foreach ($analysis->propertyChanges as $property => [$before, $after])
 		{
 			$change = $this->propertyChanges[$property] ?? ['rows' => 0, 'before' => 0, 'after' => 0, 'ids' => []];
@@ -278,6 +292,10 @@ class NormaliseSgfsCommand extends Command
 				array_keys($this->propertyChanges), $this->propertyChanges)) : 'no change'));
 		foreach ($this->propertyChanges as $property => $change)
 			$this->console->out("Rows that change $property: " . implode(', ', $change['ids']) . ($change['rows'] > 10 ? ', ...' : ''));
+		uasort($this->mergedAway, fn($a, $b) => $b['rows'] <=> $a['rows']);
+		$this->console->out(count($this->losingMergedLines) . ' rows rewritten lose what was on lines besogo merges into a transposition'
+			. self::ids($this->losingMergedLines) . ($this->mergedAway ? '; what went: ' . implode(', ', array_map(
+				fn($property, $lost) => "$property {$lost['count']} in {$lost['rows']} rows", array_keys($this->mergedAway), $this->mergedAway)) : ''));
 		ksort($this->examples);
 		foreach ($this->examples as $kind => $tsumegoIDs)
 			$this->console->out("Problems turned $kind (current version): " . implode(', ', $tsumegoIDs));

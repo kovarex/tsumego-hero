@@ -146,18 +146,35 @@ test('the two problems of the report end in the top-left corner with their corre
 
 //The text leaves out what besogo merges: a line that transposes into another and the moves after a ko comes round.
 //Loaded again it plays the same, which normalising checks (sgf 17040 and 16783 of the site). The labels on the merged
-//line of 17040 are lost though, so its rewrite isn't stored.
+//line of 17040 go with it, as all a merged away node has.
 test('a rewrite that leaves out merged moves still plays the same', () =>
 {
-	for (const [sgf, unexpected] of [
-		['(;SZ[13]AW[di][ei][fi][dj][gj][ck][fk][gk][cl][dl][fl][cm]AB[cg][dh][eh][fh][gh][ci][hi][cj][ej][hj][bk][dk][ek][hk][bl][gl][hl](;B[gi];W[fj];B[fm];W[el](;B[em];W[ek])(;B[ek];W[em]))(;B[fm](;W[em];B[gi];W[gm];B[fj]C[+])(;W[el](;B[gi];W[fj]LB[ek:A][em:B])(;B[em]C[+])))(;B[em];W[fm];B[el];W[fj]))', ['LB 2→0']],
-		['(;PL[W]SZ[9]AB[ad][ae][ag][bb][be][bf][bg][bi][ch][fc][gb][gd][ge][gf][gi][hf][hg][hh][hi]AW[ai][bc][bd][cc][ce][cf][cg][dd][dh][eb][ec][eh][fd][fe][ff][fi][gg][gh][if][ii](;W[fb];B[ac](;W[gc];B[hc];W[hb];B[ga];W[hd];B[fc];W[ci];B[bh];W[gc];B[ic])(;W[hb];B[ga];W[gc];B[hc];W[fa];B[fc];W[bh];B[ah];W[gc];B[fg];W[ha];B[fh]))(;W[ga];B[fa];W[fb];B[ha];W[gc];B[hc];W[ac];B[ea];W[da];B[ga];W[db];B[fc];W[di]C[+]))', []]])
+	for (const [sgf, mergedAway] of [
+		['(;SZ[13]AW[di][ei][fi][dj][gj][ck][fk][gk][cl][dl][fl][cm]AB[cg][dh][eh][fh][gh][ci][hi][cj][ej][hj][bk][dk][ek][hk][bl][gl][hl](;B[gi];W[fj];B[fm];W[el](;B[em];W[ek])(;B[ek];W[em]))(;B[fm](;W[em];B[gi];W[gm];B[fj]C[+])(;W[el](;B[gi];W[fj]LB[ek:A][em:B])(;B[em]C[+])))(;B[em];W[fm];B[el];W[fj]))', { W: 1, LB: 2 }],
+		['(;PL[W]SZ[9]AB[ad][ae][ag][bb][be][bf][bg][bi][ch][fc][gb][gd][ge][gf][gi][hf][hg][hh][hi]AW[ai][bc][bd][cc][ce][cf][cg][dd][dh][eb][ec][eh][fd][fe][ff][fi][gg][gh][if][ii](;W[fb];B[ac](;W[gc];B[hc];W[hb];B[ga];W[hd];B[fc];W[ci];B[bh];W[gc];B[ic])(;W[hb];B[ga];W[gc];B[hc];W[fa];B[fc];W[bh];B[ah];W[gc];B[fg];W[ha];B[fh]))(;W[ga];B[fa];W[fb];B[ha];W[gc];B[hc];W[ac];B[ea];W[da];B[ga];W[db];B[fc];W[di]C[+]))', { B: 5, W: 4 }]])
 	{
 		const result = normalised(sgf);
 		assert.equal(result.changed, true);
 		assert.equal(result.same_play, true);
-		assert.deepEqual(result.unexpected_changes, unexpected);
+		assert.deepEqual(result.unexpected_changes, []);
+		assert.deepEqual(result.merged_away, mergedAway);
 	}
+});
+
+//What a node besogo merges into a transposition has goes with it: its move, status, markup, comment. The same lost on a
+//node that stays keeps the rewrite from being stored, and so does a setup stone lost, said why when a point was set twice.
+test('only what was on the merged away nodes may go', () =>
+{
+	const merged = normalised('(;SZ[19]AB[dd](;B[jj];W[pd])(;B[pp];W[pd];B[dp]C[+])(;B[dp];W[pd];B[pp]C[A real comment]TR[qq]S[DEAD]))');
+	assert.equal(merged.changed, true);
+	assert.deepEqual(merged.unexpected_changes, []);
+	assert.deepEqual(merged.merged_away, { B: 1, C: 1, TR: 1, S: 1 });
+	//W[sa] is a suicide, besogo keeps its node without the move
+	const illegal = normalised('(;SZ[19]G[KILL]AB[rb][sb](;B[sa];W[ra]S[DEAD])(;B[ra];W[sa]C[on a kept node]S[ALIVE]))');
+	assert.deepEqual(illegal.unexpected_changes, ['W 2→1']);
+	//sgf 19415 and 19416 of the site lose setup stones; a point set twice on a node is written once
+	const setTwice = normalised('(;SZ[19]AB[rr][rs][rr]AW[qq](;B[ss]C[+])(;B[sr];W[qs]))');
+	assert.deepEqual(setTwice.unexpected_changes, ['AB 3→2 (each a point set twice on its node)']);
 });
 
 //G is the goal of a status problem, and any other G is kept as it is too, once, on the node it was on
@@ -193,7 +210,7 @@ test('a status problem is judged the same without its C[+]', () =>
 //property is unexpected, and so is a comment that is gone
 test('the property check tells the expected changes from the others', () =>
 {
-	const check = (before, after, merged = false) => propertyChanges(besogo.besogo, before, after, merged).unexpected;
+	const check = (before, after, mergedAway = new Set()) => propertyChanges(besogo.besogo, before, after, mergedAway).unexpected;
 	const was = '(;GM[1]FF[4]CA[UTF-8]AP[x]PW[]SZ[19]G[KILL]AB[aa:bb]L[cc]C[hi]C[there];B[dd]C[+];W[ee]S[ALIVE])';
 	assert.deepEqual(check(was, '(;FF[4]GM[1]SZ[19]ST[0]G[KILL]AB[aa][ab][ba][bb]LB[cc:A]C[hi\nthere];B[dd];W[ee]S[ALIVE])'), []);
 	for (const [after, unexpected] of [
@@ -210,8 +227,11 @@ test('the property check tells the expected changes from the others', () =>
 	assert.deepEqual(check('(;SZ[19];B[aa]C[++])', '(;FF[4]GM[1]SZ[19]ST[0];B[aa])'), ['C lost: "++"']);
 	//the same comment twice, on a line and the line merged into it, may be written once
 	assert.deepEqual(check('(;SZ[19](;B[aa]C[Same])(;B[bb]C[Same]))', '(;FF[4]GM[1]SZ[19]ST[0](;B[aa]C[Same])(;B[bb]))'), []);
-	//moves merged into a transposition are written once, and a property besogo doesn't know is never dropped unseen
-	assert.deepEqual(check('(;SZ[19](;B[aa];W[bb])(;B[cc]))', '(;FF[4]GM[1]SZ[19]ST[0](;B[aa])(;B[cc]))', true), []);
+	//a node merged away (here the third, W[bb]) goes with all it has; the same on a node that stays is lost
+	assert.deepEqual(check('(;SZ[19](;B[aa];W[bb]C[Merged]TR[cc])(;B[cc]))', '(;FF[4]GM[1]SZ[19]ST[0](;B[aa])(;B[cc]))', new Set([2])), []);
+	assert.deepEqual(check('(;SZ[19](;B[aa];W[bb]C[Merged]TR[cc])(;B[cc]))', '(;FF[4]GM[1]SZ[19]ST[0](;B[aa])(;B[cc]))'),
+		['W 1→0', 'TR 1→0', 'C lost: "Merged"']);
+	//a property besogo doesn't know is never dropped unseen
 	assert.deepEqual(check('(;SZ[19]XY[1];B[aa])', '(;FF[4]GM[1]SZ[19]ST[0];B[aa])'), ['XY 1→0']);
 });
 
