@@ -54,14 +54,14 @@ class TsumegoButton
 		echo '<li class="problem-nav__item problem-nav__item--' . ($this->status ?: 'N') . ($this->isCurrentlyOpened ? ' problem-nav__item--current' : '') . '">';
 		$status = $this->status ?: 'N';
 		$label = $this->label ?? TsumegoStatusTable::label($status);
-		$description = $this->description ?? TsumegoStatusTable::description($status);
+		$descriptionHtml = $this->descriptionHtml ?? h($this->description ?? TsumegoStatusTable::description($status));
 		echo '<a class="tooltip' . ($this->rung === null ? '' : ' problem-nav__rung-link') . '" href="' . $this->linkPrefix . $this->setConnectionID . '"'
 			. ' data-tsumego-id="' . $this->tsumegoID . '"'
 			. $sgfAttr . '>'
 			. $num . $details
 			. '<span class="tooltip-box">'
 			. '<div class="tooltip-label status' . $status . '">' . h($label) . '</div>'
-			. '<div class="tooltip-desc">' . h($description) . '</div>'
+			. '<div class="tooltip-desc">' . $descriptionHtml . '</div>'
 			. '</span></a>';
 		echo '</li>';
 	}
@@ -162,4 +162,6 @@ class TsumegoButton
 	//something other than the tsumego status.
 	public ?string $label = null;
 	public ?string $description = null;
+	//The description as HTML, for one that carries a <time> the page formats (the mistake training)
+	public ?string $descriptionHtml = null;
 }

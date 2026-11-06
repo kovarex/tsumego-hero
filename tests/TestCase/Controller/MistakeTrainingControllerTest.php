@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\UserTable;
 use App\Utility\Auth;
 use App\Utility\Constants;
 use App\Utility\CookieFlash;
@@ -618,7 +619,7 @@ class MistakeTrainingControllerTest extends IntegrationTestCase
 		$this->assertStringContainsString('<summary>Problems in training (2)</summary>', $html);
 		$this->assertMatchesRegularExpression('~#7</td>\s*<td><span class="training-overview__insignia training-overview__insignia--chevron" role="img" aria-label="' . MistakeTraining::rungName(0) . '"~', $html);
 		$this->assertMatchesRegularExpression('~title="' . MistakeTraining::rungName(4) . '">.*?</span></td>\s*<td>'
-			. date('M j', strtotime(MistakeTraining::today() . ' +10 days')) . '</td>~s', $html, 'With the rung as insignia and the day of the next review');
+			. preg_quote(MistakeTraining::dayHtml(MistakeTraining::today() . ' +10 days')) . '</td>~s', $html, 'With the rung as insignia and the day of the next review');
 		$this->assertLessThan(strpos($html, '#3</td>'), strpos($html, '#7</td>'), 'Soonest review first');
 	}
 
@@ -795,4 +796,49 @@ class MistakeTrainingControllerTest extends IntegrationTestCase
 		$this->assertSame([$untouched, $missed, $solved], $inTraining(), 'Two days later the solved one is back');
 	}
 
+	//The day of a next review and the days of the calendar are written in the date format of the player
+	public function testTheOverviewWritesItsDaysInTheDateFormatOfThePlayer()
+	{
+		$day = date('Y-m-d', strtotime(MistakeTraining::today() . ' +10 days'));
+		$today = MistakeTraining::today();
+		foreach ([
+			UserTable::DATE_FORMAT_ISO => [date('M j', strtotime($day)), $today],
+			UserTable::DATE_FORMAT_DAY_MONTH_YEAR => [date('j M', strtotime($day)), date('j. n. Y', strtotime($today))]] as $dateFormat => [$review, $calendarDay])
+		{
+			new ContextPreparator([
+				'user' => ['name' => 'testuser', 'date_format_id' => $dateFormat],
+				'tsumego' => ['set_order' => 1, 'status' => ['name' => 'S', 'mistake_training_due' => $day . ' 00:00:00']],
+			]);
+			$browser = Browser::instance();
+			$browser->get(substr(MistakeTraining::$OVERVIEW_LINK, 1));
+
+			$this->assertSame($review, $browser->driver->executeScript(
+				'return document.querySelector(".mistake-training-pool__table time[datetime=\'' . $day . '\']").textContent;'),
+				"The next review in format $dateFormat");
+			$this->assertStringStartsWith($calendarDay . ': ', (string) $browser->find('[data-day="' . $today . '"]')->getAttribute('title'),
+				"The calendar day in format $dateFormat");
+		}
+	}
+
+	//The next review a solve says under "Correct!" is written by the page in the date format of the player
+	public function testTheNextReviewAfterASolveIsInTheDateFormatOfThePlayer()
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'testuser', 'date_format_id' => UserTable::DATE_FORMAT_DAY_MONTH_YEAR],
+			'tsumego' => [
+				'set_order' => 1,
+				'status' => ['name' => 'S', 'mistake_training_due' => date('Y-m-d H:i:s', strtotime('-1 day')), 'mistake_training_rung' => 3],
+			],
+		]);
+		$browser = Browser::instance();
+		$browser->get('mistake-training');
+		$browser->playWithResult('S');
+
+		// a clean solve on the fourth rung brings the problem back after 15 days, a date and not a weekday
+		$nextDue = MistakeTraining::getPoolRow((int) $context->user['id'], (int) $context->tsumegos[0]['id'])['next_due'];
+		$browser->waitUntil(fn() => str_contains($browser->find('#status')->getText(), 'next review'), context: 'the outcome of the solve');
+		$this->assertStringContainsString('next review ' . date('j M', strtotime($nextDue)) . '.', $browser->find('#status .mistake-training-outcome')->getText());
+		$this->assertStringContainsString(date('j M', strtotime($nextDue)), (string) $browser->driver->executeScript(
+			'return document.querySelector(".problem-nav__item--current .tooltip-desc").textContent;'), 'And so does the tooltip of the button');
+	}
 }

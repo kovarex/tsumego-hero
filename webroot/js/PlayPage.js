@@ -27,7 +27,10 @@ function updateMistakeTrainingButton(button, xp)
 	let label = link.querySelector(".tooltip-label");
 	label.className = "tooltip-label status" + button.status;
 	label.textContent = button.label;
-	link.querySelector(".tooltip-desc").textContent = button.description;
+	// the description is the server's HTML, with the day of the next review as a <time>
+	let description = link.querySelector(".tooltip-desc");
+	description.innerHTML = button.description;
+	window.localizeTimeElements?.(description);
 
 	// A solve says under "Correct!" what it did to the problem: its next review, or its graduation
 	let status = document.getElementById("status");
@@ -38,7 +41,8 @@ function updateMistakeTrainingButton(button, xp)
 		outcome = document.createElement("p");
 		outcome.className = "mistake-training-outcome";
 		let earned = xp ? xp.review + xp.graduation : 0;
-		outcome.textContent = (earned > 0 ? "+" + earned + " XP \u00b7 " : "") + button.description;
+		outcome.innerHTML = (earned > 0 ? "+" + Number(earned) + " XP \u00b7 " : "") + button.description;
+		window.localizeTimeElements?.(outcome);
 		status.appendChild(outcome);
 		if (xp && xp.clear > 0)
 		{
