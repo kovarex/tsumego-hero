@@ -98,6 +98,30 @@
   color: var(--text-color);
   text-decoration: none;
 }
+/* What the friends of the player did lately (templates/element/friend_activity.php) */
+.friend-activity {
+  margin-top: 6px;
+  padding: var(--space-3) var(--space-4);
+  text-align: left;
+}
+.friend-activity__title {
+  font-size: var(--font-size-md);
+  margin: 0 0 var(--space-2);
+}
+.friend-activity__today {
+  margin: 0 0 var(--space-2);
+}
+.friend-activity__event {
+  padding: var(--space-1) 0;
+  border-bottom: 1px solid var(--current-border-color);
+}
+.friend-activity__event:last-child {
+  border-bottom: none;
+}
+.friend-activity__event time {
+  margin-left: var(--space-1);
+  white-space: nowrap;
+}
 .mistake-training-card:hover {
   background: var(--surface-hover);
   text-decoration: none;
