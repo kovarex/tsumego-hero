@@ -161,6 +161,7 @@ class NormaliseSgfsCommandTest extends AppTestCase
 		$this->exec('normalise_sgfs --write --show 0 --sgf ' . $id);
 
 		$this->assertOutputContains("1 that would play differently (kept as they are): $id");
+		$this->assertOutputContains("sgf $id (tsumego {$context->tsumegos[0]['id']}, current version) would play differently");
 		$this->assertOutputContains("sgf $id before:");
 		$this->assertSame($sgf, $this->sgfRow($context->tsumegos[0]['id'])['sgf']);
 	}
@@ -204,8 +205,21 @@ class NormaliseSgfsCommandTest extends AppTestCase
 		$this->exec('normalise_sgfs --write');
 
 		$this->assertOutputContains("1 whose properties would change unexpectedly (kept as they are): $id");
-		$this->assertOutputContains("sgf $id would change: XY 1→0");
+		$this->assertOutputContains("sgf $id (tsumego {$context->tsumegos[0]['id']}, current version) would change: XY 1→0");
 		$this->assertSame($sgf, $this->sgfRow($context->tsumegos[0]['id'])['sgf']);
 		$this->assertSame([], Util::query('SELECT * FROM sgf_before_normalisation'));
+	}
+
+	//A row kept as it is says whether it is the version shown or an old one of the history (as 19451 and 19452 of the
+	//site, while the current version of their problem is clean)
+	public function testAKeptOldVersionIsNamedSo(): void
+	{
+		$context = new ContextPreparator(['tsumego' => ['sgfs' => [
+			['data' => '(;SZ[19]XY[1]AB[rr][rs](;B[ss]C[+])(;B[sr];W[qs]))'],
+			['data' => self::BOTTOM_RIGHT]]]]);
+		$old = Util::query('SELECT MIN(id) AS id FROM sgf WHERE tsumego_id = ?', [$context->tsumegos[0]['id']])[0]['id'];
+		$this->exec('normalise_sgfs');
+
+		$this->assertOutputContains("sgf $old (tsumego {$context->tsumegos[0]['id']}, old version, not current) would change: XY 1→0");
 	}
 }

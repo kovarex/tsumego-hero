@@ -80,6 +80,9 @@ class NormaliseSgfsCommand extends Command
 	private array $unreadable = [];
 	/** @var list<int> rows whose rewrite besogo would play differently, kept as they are */
 	private array $playingDifferently = [];
+	//sgf id => its problem and whether it is the current version, of the rows kept as they are, which the report names
+	/** @var array<int, array{tsumego: int, current: bool}> */
+	private array $kept = [];
 	private int $listed = 0;
 	/** @var list<int> */
 	private array $printed = [];
@@ -167,6 +170,8 @@ class NormaliseSgfsCommand extends Command
 
 			if (in_array($id, $this->printed, true))
 				$this->console->out("sgf $id before:\n" . $row['sgf'] . "\nsgf $id after:\n" . $analysis->sgf);
+			if (!$analysis->rewriteIsFaithful())
+				$this->kept[$id] = ['tsumego' => $tsumegoID, 'current' => $id === $currentID];
 			if (!$analysis->samePlay)
 			{
 				$this->playingDifferently[] = $id;
@@ -282,14 +287,23 @@ class NormaliseSgfsCommand extends Command
 		return $ids ? ': ' . implode(', ', array_slice($ids, 0, 50)) . (count($ids) > 50 ? ', ...' : '') : '';
 	}
 
+	//A row kept as it is, with its problem and whether it is the version shown or one of its history
+	private function keptRow(int $id): string
+	{
+		$kept = $this->kept[$id];
+		return "sgf $id (tsumego {$kept['tsumego']}, " . ($kept['current'] ? 'current version' : 'old version, not current') . ')';
+	}
+
 	private function report(float $seconds): void
 	{
 		$this->console->out(implode(', ', array_map(fn($name, $count) => "$count $name", array_keys($this->counts), $this->counts))
 			. ', ' . count($this->unreadable) . ' unreadable (kept as they are)' . self::ids($this->unreadable)
 			. ', ' . count($this->playingDifferently) . ' that would play differently (kept as they are)' . self::ids($this->playingDifferently)
 			. ', ' . count($this->changingUnexpectedly) . ' whose properties would change unexpectedly (kept as they are)' . self::ids(array_keys($this->changingUnexpectedly)));
+		foreach (array_slice($this->playingDifferently, 0, 50) as $id)
+			$this->console->out($this->keptRow($id) . ' would play differently');
 		foreach (array_slice($this->changingUnexpectedly, 0, 50, true) as $id => $changes)
-			$this->console->out("sgf $id would change: " . implode(', ', $changes));
+			$this->console->out($this->keptRow($id) . ' would change: ' . implode(', ', $changes));
 		// every change left in the rows rewritten is one a save is expected to make
 		uasort($this->propertyChanges, fn($a, $b) => $b['rows'] <=> $a['rows']);
 		$this->console->out('Property counts of the rewritten rows, before -> after: ' . ($this->propertyChanges
