@@ -246,3 +246,56 @@ a[href="/challenges"],
 	white-space: nowrap;
 }
 }
+
+/* The list of players under a field of names (webroot/js/PlayerNameSuggestions.js) */
+.player-suggestions-field
+{
+	position: relative;
+}
+
+.player-suggestions
+{
+	position: absolute;
+	z-index: 10;
+	left: 0;
+	right: 0;
+	margin: 2px 0 0;
+	padding: 0;
+	list-style: none;
+	border: 1px solid var(--current-border-color);
+	border-radius: var(--radius-sm);
+	background: var(--info-box-background);
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+	max-height: 16rem;
+	overflow-y: auto;
+}
+
+.player-suggestions[hidden]
+{
+	display: none;
+}
+
+/* li floats left everywhere on the site (site.css) */
+.player-suggestions__option
+{
+	float: none;
+	display: flex;
+	align-items: baseline;
+	gap: var(--space-1);
+	padding: 6px var(--space-2);
+	color: var(--text-color);
+	text-align: left;
+	cursor: pointer;
+}
+
+.player-suggestions__option:hover,
+.player-suggestions__option[aria-selected="true"]
+{
+	background: var(--surface-hover);
+}
+
+.player-suggestions__details
+{
+	color: var(--text-softer-color);
+	font-size: var(--font-size-sm);
+}

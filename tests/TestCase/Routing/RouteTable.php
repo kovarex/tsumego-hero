@@ -76,6 +76,7 @@ return [
 		'/sets' => ['Sets', 'index', []],
 		'/challenges' => ['Challenges', 'index', []],
 		'/challenges/create' => ['Challenges', 'create', []],
+		'/challenges/players' => ['Challenges', 'players', []],
 		'/challenges/5' => ['Challenges', 'view', ['5']],
 		'/challenges/join/5' => ['Challenges', 'join', ['5']],
 		'/challenges/decline/5' => ['Challenges', 'decline', ['5']],
@@ -194,6 +195,7 @@ return [
 		'/challenges/join/7' => ['Challenges', 'join', ['7']],
 		'/challenges/play' => ['Challenges', 'play', []],
 		'/challenges/play/7' => ['Challenges', 'play', ['7']],
+		'/challenges/players/7' => ['Challenges', 'players', ['7']],
 		'/challenges/view' => ['Challenges', 'view', []],
 		'/challenges/view/7' => ['Challenges', 'view', ['7']],
 

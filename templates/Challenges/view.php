@@ -148,7 +148,7 @@ $cellSymbols = ['failed' => '✗', 'timeout' => '⏱', 'skipped' => '–', 'queu
 		<form method="post" action="/challenges/invite/<?= $challengeId ?>">
 			<div class="form-field">
 				<label class="form-field__label" for="invite-players">Names of the players, separated by commas</label>
-				<input class="form-field__control" type="text" id="invite-players" name="players" required>
+				<input class="form-field__control" type="text" id="invite-players" name="players" data-player-suggestions="/challenges/players" required>
 			</div>
 			<button class="btn" type="submit">Invite</button>
 		</form>
