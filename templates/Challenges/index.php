@@ -1,14 +1,16 @@
 <?php
 
 use App\Model\Table\ChallengeTable;
-use App\Model\Table\TimeModeSessionStatusTable;
 use App\Model\Table\UserTable;
+use App\Utility\Util;
+use App\Utility\ViteManifest;
 
 /**
  * The challenges of a player and the form to start one.
  *
  * @var \App\View\AppView $this
  * @var array $challenges What ChallengeTable::ofPlayer() returned
+ * @var array $places What ChallengeTable::placesOfPlayer() returned
  * @var array<\App\Model\Entity\TimeModeRank> $ranks The rows of time_mode_rank, the easiest first
  * @var int|null $defaultRankID The rank of the player, to start the form with
  * @var string|null $opponent The name of the player to invite, from the button on a profile
@@ -73,30 +75,43 @@ use App\Model\Table\UserTable;
 		<?php endif; ?>
 		<?php foreach ($challenges as $challenge): ?>
 		<?php
+			$challengeId = (int) $challenge['id'];
 			$canDecline = $challenge['my_run_status_id'] === null && $challenge['my_declined'] === null;
-			if ($challenge['my_declined'] !== null && $challenge['my_run_status_id'] === null)
-				$myRun = 'you declined';
-			elseif ($challenge['my_run_status_id'] === null)
-				$myRun = '<strong>not played yet</strong>';
-			elseif ((int) $challenge['my_run_status_id'] === TimeModeSessionStatusTable::IN_PROGRESS)
-				$myRun = '<strong>playing</strong>';
-			else
-				$myRun = 'your points ' . ChallengeTable::formatPoints((float) $challenge['my_points']);
+			$placing = $places[$challengeId] ?? null;
+			$link = '<a href="/challenges/' . $challengeId . '">' . h(ChallengeTable::title($challenge)) . '</a>';
+			$standings = $placing === null ? '' : $this->element('Challenges/standings_popup', ['challengeId' => $challengeId, 'standings' => $placing['standings']]);
+			// when the player finished their run, or else when the challenge was made
+			$when = $placing['myFinished'] ?? $challenge['created'];
 		?>
 		<div class="challenges__row">
-			<span>
-				<a href="/challenges/<?= (int) $challenge['id'] ?>"><?= h(ChallengeTable::title($challenge)) ?></a>
-				<span class="hint"><?= h(ChallengeTable::describe($challenge)) ?></span>
-			</span>
-			<span class="hint">
-				by <?= UserTable::renderLink($challenge) ?>
-				· <?= (int) $challenge['finished_count'] ?>/<?= (int) $challenge['participant_count'] ?> played
-				· <?= $myRun ?>
+			<div class="challenges__row-main">
+				<?php if ($placing !== null && $placing['myPlace'] !== null): ?>
+				<?php $points = (float) $challenge['my_points']; ?>
+				<span class="challenges__my-place"><?= $this->element('Challenges/placement', ['place' => $placing['myPlace']]) ?> <?= Util::ordinal($placing['myPlace']) ?></span>
+				of <?= $standings ?> with <strong><?= ChallengeTable::formatPoints($points) ?> points</strong> (<?= ChallengeTable::percentOfMaximum($points, (int) $challenge['problem_count']) ?>%) in <?= $link ?>
+				<?php else: ?>
+				<?php if ($challenge['my_declined'] !== null && $challenge['my_run_status_id'] === null): ?>
+				Declined: <?= $link ?>
+				<?php elseif ($challenge['my_run_status_id'] === null): ?>
+				<strong>Not played yet:</strong> <?= $link ?>
+				<?php else: ?>
+				<strong>Playing:</strong> <?= $link ?>
+				<?php endif; ?>
+				<?php if ($placing !== null): ?>
+				· <?= $standings ?> finished
+				<?php endif; ?>
+				<?php endif; ?>
+				<time class="hint challenges__when" datetime="<?= Util::toIso8601($when) ?>" data-format="relative"><?= date('Y-m-d H:i', (int) strtotime($when)) ?></time>
+			</div>
+			<span class="hint challenges__row-details">
+				<?= h(ChallengeTable::describe($challenge)) ?>
+				· by <?= UserTable::renderLink($challenge) ?>
 				<?php if ($canDecline): ?>
-				<form class="challenges__inline-form" method="post" action="/challenges/decline/<?= (int) $challenge['id'] ?>" onsubmit="return confirm('Decline the challenge?');"><button class="btn btn--small btn--neutral" type="submit">Decline</button></form>
+				<form class="challenges__inline-form" method="post" action="/challenges/decline/<?= $challengeId ?>" onsubmit="return confirm('Decline the challenge?');"><button class="btn btn--small btn--neutral" type="submit">Decline</button></form>
 				<?php endif; ?>
 			</span>
 		</div>
 		<?php endforeach; ?>
 	</section>
 </div>
+<?= ViteManifest::legacyScript('challenges') ?>

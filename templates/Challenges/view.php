@@ -64,7 +64,7 @@ $cellSymbols = ['failed' => '✗', 'timeout' => '⏱', 'skipped' => '–', 'queu
 		<p>You are in the middle of your run, <?= (int) $myRun['played_count'] ?> of <?= (int) $challenge['problem_count'] ?> problems played.</p>
 		<a class="btn btn--success" href="/timeMode/play" id="challenge-continue">Continue</a>
 		<?php else: ?>
-		<p id="challenge-my-result">You are <strong><?= Util::ordinal((int) $myRun['place']) ?></strong> of <?= $finishedCount ?>
+		<p id="challenge-my-result"><?= $this->element('Challenges/placement', ['place' => (int) $myRun['place']]) ?> You are <strong><?= Util::ordinal((int) $myRun['place']) ?></strong> of <?= $finishedCount ?>
 			with <strong><?= ChallengeTable::formatPoints($myRun['points']) ?></strong> points,
 			<?= $myRun['solved_count'] ?> of <?= (int) $challenge['problem_count'] ?> problems solved.</p>
 		<form method="post" action="/challenges/rematch/<?= $challengeId ?>">
@@ -93,7 +93,7 @@ $cellSymbols = ['failed' => '✗', 'timeout' => '⏱', 'skipped' => '–', 'queu
 					<?php foreach ($standings as $row): ?>
 					<tr class="challenges__standing<?= Auth::isLoggedIn() && (int) $row['user_id'] === Auth::getUserID() ? ' challenges__standing--me' : '' ?>" data-user-id="<?= (int) $row['user_id'] ?>">
 						<?php if ($row['run'] === ChallengeTable::RUN_FINISHED): ?>
-						<td class="challenges__place"><?= (int) $row['place'] ?></td>
+						<td class="challenges__place"><?= $this->element('Challenges/placement', ['place' => (int) $row['place']]) ?></td>
 						<td class="challenges__player"><?= UserTable::renderLink($row) ?></td>
 						<td class="challenges__points"><?= ChallengeTable::formatPoints($row['points']) ?></td>
 						<td><?= $row['solved_count'] ?>/<?= (int) $challenge['problem_count'] ?></td>

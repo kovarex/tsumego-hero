@@ -91,6 +91,118 @@
 	border-bottom: 1px solid var(--current-border-color);
 }
 
+/* A challenge in the list: the place, the challenge and the result first, what is played and who
+   started it on the right. */
+.challenges__row-main
+{
+	line-height: 1.8;
+}
+
+.challenges__when
+{
+	margin-left: var(--space-2);
+	white-space: nowrap;
+}
+
+.challenges__row-details
+{
+	margin-left: auto;
+	text-align: right;
+}
+
+/* The medal of the player's place sits on the line of the phrase, as high as its letters */
+.challenges__my-place .challenge-place
+{
+	vertical-align: -0.3em;
+}
+
+.challenges__my-place .challenge-place svg
+{
+	width: 1.1em;
+	height: 1.3em;
+}
+
+/* The number of the players who finished, which opens their standings at once (ChallengesPage.js) */
+.challenge-standings-popup
+{
+	position: relative;
+	display: inline;
+}
+
+.challenge-standings-popup__toggle
+{
+	padding: 0;
+	border: none;
+	text-decoration: underline dotted;
+	text-underline-offset: 0.15em;
+	background: none;
+	color: inherit;
+	font: inherit;
+	cursor: pointer;
+}
+
+.challenge-standings-popup__panel
+{
+	display: none;
+	position: absolute;
+	top: 100%;
+	left: 0;
+	z-index: 1000;
+	width: max-content;
+	max-width: calc(100vw - 2 * var(--space-4));
+	padding: var(--space-2);
+	border: 1px solid var(--current-border-color);
+	background: var(--surface-bar);
+	color: var(--text-color);
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+	line-height: normal;
+	text-align: left;
+	white-space: nowrap;
+}
+
+.challenge-standings-popup:hover .challenge-standings-popup__panel,
+.challenge-standings-popup:focus-within .challenge-standings-popup__panel,
+.challenge-standings-popup.is-open .challenge-standings-popup__panel
+{
+	display: grid;
+	grid-template-columns: auto 1fr auto;
+	gap: var(--space-1) var(--space-2);
+	align-items: center;
+}
+
+.challenge-standings-popup.is-dismissed .challenge-standings-popup__panel
+{
+	display: none;
+}
+
+.challenge-standings-popup__title
+{
+	grid-column: 1 / -1;
+	font-weight: bold;
+}
+
+/* Each run lays its place, player and points in the columns of the panel */
+.challenge-standings-popup__run
+{
+	display: contents;
+}
+
+.challenge-standings-popup__place
+{
+	text-align: center;
+}
+
+.challenge-standings-popup__place .challenge-place svg
+{
+	width: 19px;
+	height: 22px;
+}
+
+.challenge-standings-popup__points
+{
+	text-align: right;
+}
+
 .challenges__action
 {
 	text-align: center;
@@ -244,5 +356,66 @@ a[href="/challenges"],
 {
 	position: relative;
 	white-space: nowrap;
+}
+
+/* The place of a finished run (element/Challenges/placement.php): a medal for the first three, the
+   number in a ring after them. The metals keep their colours in both themes, the ring follows the text. */
+.challenge-place
+{
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	vertical-align: middle;
+	line-height: 1;
+}
+
+.challenge-place svg
+{
+	display: block;
+	filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.25));
+}
+
+.challenge-place__ribbon-left { fill: #3b6fd8; }
+.challenge-place__ribbon-right { fill: #d8463b; }
+
+.challenge-place__number
+{
+	font: bold 10px sans-serif;
+	fill: #2b2207;
+}
+
+.challenge-place--gold .challenge-place__rim { fill: #b8860b; }
+.challenge-place--gold .challenge-place__face { fill: #f4c430; }
+.challenge-place--silver .challenge-place__rim { fill: #7d868f; }
+.challenge-place--silver .challenge-place__face { fill: #d5dadf; }
+.challenge-place--bronze .challenge-place__rim { fill: #8c5523; }
+.challenge-place--bronze .challenge-place__face { fill: #d99a5b; }
+
+.challenge-place--rank
+{
+	min-width: 22px;
+	height: 22px;
+	padding: 0 4px;
+	box-sizing: border-box;
+	border: 2px solid currentColor;
+	border-radius: 11px;
+	font-size: 12px;
+	font-weight: var(--font-weight-bold);
+	opacity: 0.75;
+}
+
+.challenges__placing
+{
+	display: inline-flex;
+	align-items: center;
+	gap: var(--space-1);
+	vertical-align: middle;
+}
+
+/* In the line of a challenge in the list the medal is the height of the avatars beside it. */
+.challenges__placing .challenge-place svg
+{
+	width: 19px;
+	height: 22px;
 }
 }
