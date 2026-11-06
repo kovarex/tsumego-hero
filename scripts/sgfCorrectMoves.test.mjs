@@ -188,8 +188,11 @@ test('only what was on the merged away nodes may go', () =>
 	assert.match(setAside.sgf, /W\[bb\]\nS\[ALIVE\]/);
 	assert.deepEqual(normalised('(;SZ[19]AB[rr][rs][qq](;B[ss]C[+])(;B[sr];W[qs];B[qq];W[ps]))').unexpected_changes,
 		['B 3→2 (1 illegal, besogo leaves it out)']);
-	//a stone shown that the rewrite loses keeps the row as it is: the turn leaves out the setup of a node after a move
-	assert.equal(normalised('(;SZ[19]AB[rr][rs](;B[ss]C[+])(;B[sr];W[qs];AB[qs]))').same_play, false);
+	//setup after a move is turned with the stone it leaves (sgf 19415 and 19416 of the site had an AE turned into an AW),
+	//and the play check compares the stones shown with the problem as loaded, before the turn
+	const belowTheRoot = normalised('(;SZ[19]AB[rr][rs][pr](;B[ss]C[+])(;B[sr];W[qs];AE[pr]AB[qs]C[+]))');
+	assert.equal(belowTheRoot.same_play, true);
+	assert.match(belowTheRoot.sgf, /W\[ca\]\n;AB\[ca\]AE\[db\]/);
 });
 
 //G is the goal of a status problem, and any other G is kept as it is too, once, on the node it was on
