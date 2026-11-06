@@ -3,15 +3,16 @@
 namespace App\Utility;
 
 use Cake\Core\Configure;
-use Exception;
+use RuntimeException;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 
 //JWT-based stateless authentication.
 //Replaces session-based authentication with signed JWT tokens stored in cookies.
-//Tokens contain user ID and expiration, signed with HMAC-SHA256.
+//Tokens contain the user ID, the expiration and a claim of the password, signed with HMAC-SHA256 and
+//the secret of config/jwt_secret.php.
 //Usage:
-//  JwtAuth::setAuthCookie($userId)      // Login: create token and set cookie
+//  JwtAuth::setAuthCookie($userId, $passwordHash) // Login: create token and set cookie
 //  JwtAuth::getUserIdFromCookie()       // Check auth: get user ID from cookie
 //  JwtAuth::clearAuthCookie()           // Logout: delete cookie
 class JwtAuth
@@ -29,12 +30,15 @@ class JwtAuth
 	//Whether the cookie was looked at already in this request
 	private static bool $cookieRead = false;
 
+	//The shortest secret taken: bin2hex(random_bytes(32)) makes 64 characters
+	private const MINIMUM_SECRET_LENGTH = 32;
+
 	//Create a JWT token for the given user ID.
 	//$userId: The user ID to encode
-	//$expirySeconds: Seconds until expiration (null = default 30 days)
 	//$passwordHash: The password the session is opened with
+	//$expirySeconds: Seconds until expiration (null = default 30 days)
 	//Returns the JWT token
-	public static function createToken(int $userId, ?int $expirySeconds = null, ?string $passwordHash = null): string
+	public static function createToken(int $userId, string $passwordHash, ?int $expirySeconds = null): string
 	{
 		$expiry = $expirySeconds ?? self::DEFAULT_EXPIRY_SECONDS;
 
@@ -42,18 +46,17 @@ class JwtAuth
 			'sub' => $userId,
 			'iat' => time(),
 			'exp' => time() + $expiry,
+			'pwd' => self::passwordClaim($passwordHash),
 		];
-		if ($passwordHash !== null)
-			$payload['pwd'] = self::passwordClaim($passwordHash);
 
 		return JWT::encode($payload, self::getSecret(), self::ALGORITHM);
 	}
 
 	//The claim a token gets from the password it is issued with. A password change
 	//changes the hash, so tokens of the old password no longer fit the account.
-	public static function claimOf(?string $passwordHash): ?string
+	public static function claimOf(string $passwordHash): string
 	{
-		return $passwordHash === null ? null : self::passwordClaim($passwordHash);
+		return self::passwordClaim($passwordHash);
 	}
 
 	//The password claim of the token in the cookie, or null when it has none.
@@ -96,21 +99,24 @@ class JwtAuth
 			return;
 
 		self::$cachedUserId = (int) $payload->sub;
-		self::$cachedPasswordClaim = $payload->pwd ?? null;
+		self::$cachedPasswordClaim = $payload->pwd;
 	}
 
-	//Check the signature and the expiry of a token, the one place that does it.
-	//A token that does not check out is null for every caller.
+	//Check the signature and the expiry of a token, the one place that does it. Every token is issued
+	//with the password claim, so one without it is not taken. A token that does not check out is null
+	//for every caller; a missing secret is an error of the server, not a bad token, so it is thrown.
 	private static function decodePayload(string $token): ?object
 	{
+		$key = new Key(self::getSecret(), self::ALGORITHM);
 		try
 		{
-			return JWT::decode($token, new Key(self::getSecret(), self::ALGORITHM));
+			$payload = JWT::decode($token, $key);
 		}
 		catch (\Exception $e)
 		{
 			return null;
 		}
+		return isset($payload->pwd) && is_string($payload->pwd) ? $payload : null;
 	}
 
 	private static function passwordClaim(string $passwordHash): string
@@ -121,9 +127,9 @@ class JwtAuth
 	//Set auth cookie with JWT token for the given user ID.
 	//$passwordHash: The password the session is opened with
 	//Returns the token that was set
-	public static function setAuthCookie(int $userId, ?string $passwordHash = null): string
+	public static function setAuthCookie(int $userId, string $passwordHash): string
 	{
-		$token = self::createToken($userId, null, $passwordHash);
+		$token = self::createToken($userId, $passwordHash);
 		// The forum (phpBB) reads this cookie too, so its attributes stay as they are: no SameSite,
 		// unreadable by scripts, the whole site.
 		Util::setCookie(self::COOKIE_NAME, $token, [
@@ -154,18 +160,14 @@ class JwtAuth
 		self::$cookieRead = false;
 	}
 
-	//Get the JWT secret key.
+	//The secret tokens are signed with: Security.jwtSecret, which config/bootstrap.php reads from
+	//config/jwt_secret.php outside git. There is no fallback to anything else, as whatever is in git
+	//is public, and anyone with the secret can sign in as any player.
 	private static function getSecret(): string
 	{
-		$secret = Configure::read('Security.jwtSecret');
-		if (!$secret)
-		{
-			// Fall back to Security.salt if jwtSecret not configured
-			$secret = Configure::read('Security.salt');
-		}
-		if (!$secret)
-			throw new Exception('No JWT secret configured. Set Security.jwtSecret or Security.salt.');
-
+		$secret = (string) Configure::read('Security.jwtSecret');
+		if (strlen($secret) < self::MINIMUM_SECRET_LENGTH)
+			throw new RuntimeException('The JWT secret is not set (' . self::MINIMUM_SECRET_LENGTH . ' characters or more): create config/jwt_secret.php, see config/jwt_secret.example.php.');
 		return $secret;
 	}
 }

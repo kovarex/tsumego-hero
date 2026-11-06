@@ -123,7 +123,7 @@ class PasswordPreferenceTest extends IntegrationTestCase
 	public function testAnotherDeviceIsSignedOutAfterTheChange(): void
 	{
 		$user = $this->prepareUser('passwordOtherDevice');
-		$oldToken = JwtAuth::createToken($user['id'], null, $this->storedHash($user['id']));
+		$oldToken = JwtAuth::createToken($user['id'], $this->storedHash($user['id']));
 
 		$this->changePassword([
 			'current' => self::CURRENT_PASSWORD,
@@ -176,20 +176,6 @@ class PasswordPreferenceTest extends IntegrationTestCase
 		// not one of them.
 		$_COOKIE = $this->browserCookies();
 		unset($_COOKIE['hackedLoggedInUserID']);
-		JwtAuth::clearCache();
-		Auth::init();
-
-		$this->assertTrue(Auth::isLoggedIn());
-	}
-
-	//Sessions opened before a token carried the password still work, so nobody is
-	//signed out by the change that introduced it.
-	public function testASessionWithoutThePasswordClaimStillWorks(): void
-	{
-		$user = $this->prepareUser('passwordOldToken');
-
-		unset($_COOKIE['hackedLoggedInUserID']);
-		$_COOKIE['auth_token'] = JwtAuth::createToken($user['id']);
 		JwtAuth::clearCache();
 		Auth::init();
 
