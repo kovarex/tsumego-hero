@@ -8,7 +8,8 @@
 //With "normalise": true it also gives the SGF as the site stores it (normalise below), and the values are of that SGF.
 //Input on stdin: JSON lines, each {"id": any, "sgf": "(;...)", "normalise"?: bool}. Output on stdout: a JSON line for
 //each, in order, {"id", "first_move_color", "correct_moves", "problem"} (and with normalise "sgf", "transformation",
-//"changed", "same_play", and when changed "property_changes", "unexpected_changes", "merged_away", "setup_rewritten"),
+//"changed", "same_play", and when changed "property_changes", "unexpected_changes", "merged_away", "setup_rewritten",
+//"status_ignored"),
 //or {"id", "error"}
 //when the SGF can't be read.
 import { readFileSync } from 'node:fs';
@@ -55,7 +56,7 @@ export function makeBesogo()
 //the site stores for it comes along (normalise below) and the values are those of that SGF.
 export function analyse({ besogo, BLACK }, sgf, normalise = false)
 {
-	const { editor, mergedAway } = loadTracked(besogo, sgf);
+	const { editor, loaded } = loadTracked(besogo, sgf);
 	const result = normalise ? normaliseLoaded(besogo, editor) : {};
 	const root = editor.getRoot();
 	const next = root.nextMove();
@@ -64,14 +65,17 @@ export function analyse({ besogo, BLACK }, sgf, normalise = false)
 		first_move_color: next ? (next == BLACK ? 'B' : 'W') : 'N',
 		correct_moves: root.exportCorrectMoves(),
 		problem: problem ? problem.message + ' (move ' + problem.node.moveNumber + ')' : null,
-		...(normalise ? normalisedText(besogo, editor, sgf, result, mergedAway) : {})
+		...(normalise ? normalisedText(besogo, editor, sgf, result, loaded) : {})
 	};
 }
 
-//Loads an SGF as the site does, and tells which of its nodes besogo merged away, by their place in the text (depth
-//first, the root 0): a line that transposes into another is pruned with all that comes after it (pruneTree of
-//treeProblemUpdater.js). loadNodeTree of loadSgf.js makes a node for each node of the text, in that order, before
-//anything else makes one, so the nodes are matched by the order they were made in.
+//Loads an SGF as the site does, and tells by their place in the text (depth first, the root 0) which of its nodes
+//besogo shows otherwise than written: mergedAway, the nodes of a line that transposes into another, pruned with all
+//that comes after them (pruneTree of treeProblemUpdater.js); statusIgnored, the nodes whose status besogo sets aside
+//because the position goes on by a transposition (clearCorrectValues: a node with a child, virtual too, has no status
+//of its own); movesLeftOut, the nodes whose move is illegal (besogo couldn't play it, or played it over a stone). loadNodeTree of loadSgf.js
+//makes a node for each node of the text, in that order, before anything else makes one, so the nodes are matched by
+//the order they were made in.
 export function loadTracked(besogo, sgf)
 {
 	const parsed = besogo.parseSgf(sgf);
@@ -110,13 +114,20 @@ export function loadTracked(besogo, sgf)
 		node.children.forEach(visit);
 	};
 	visit(root);
-	const mergedAway = new Set();
-	const count = textNodes(parsed).length;
-	if (made.length >= count)
-		for (let index = 0; index < count; ++index)
+	const loaded = { mergedAway: new Set(), statusIgnored: new Set(), movesLeftOut: new Set() };
+	const nodes = textNodes(parsed);
+	if (made.length >= nodes.length)
+		nodes.forEach((node, index) =>
+		{
+			const has = id => node.props.some(prop => prop.id === id);
 			if (!kept.has(made[index]))
-				mergedAway.add(index);
-	return { editor, mergedAway };
+				loaded.mergedAway.add(index);
+			else if (has('S') && !made[index].statusSource && made[index].virtualChildren.length > 0)
+				loaded.statusIgnored.add(index);
+			if (kept.has(made[index]) && (has('B') || has('W')) && (!made[index].move || made[index].move.overwrite))
+				loaded.movesLeftOut.add(index);
+		});
+	return { editor, loaded };
 }
 
 //The nodes of a parsed SGF, depth first
@@ -135,17 +146,17 @@ function textNodes(tree)
 //The text of the normalised problem, and whether it plays the same: loaded again, its tree must have the same lines,
 //moves, transpositions and correct or wrong ends as the turned tree it was composed from (the text leaves out what
 //besogo merges, a transposition or a ko coming round, and markup or comments the board editor doesn't write)
-function normalisedText(besogo, editor, sgf, result, mergedAway)
+function normalisedText(besogo, editor, sgf, result, loaded)
 {
 	if (!result.changed)
 		return { sgf, ...result, same_play: true };
 	const text = besogo.composeSgf(editor);
 	const reloaded = besogo.makeEditor(19, 19, {});
 	besogo.loadSgf(besogo.parseSgf(text), reloaded);
-	const changes = propertyChanges(besogo, sgf, text, mergedAway);
+	const changes = propertyChanges(besogo, sgf, text, loaded);
 	return { sgf: text, ...result, same_play: signature(editor.getRoot()) === signature(reloaded.getRoot()),
 		property_changes: changes.counts, unexpected_changes: changes.unexpected, merged_away: changes.mergedAway,
-		setup_rewritten: changes.setup };
+		setup_rewritten: changes.setup, status_ignored: changes.statusIgnored };
 }
 
 //What a save may change in the properties of an SGF, besides the coordinates. Any other change of the count of a property
@@ -168,30 +179,35 @@ const ALIASES = { L: 'LB', M: 'MA' };
 const POINT_LISTS = new Set(['AB', 'AW', 'AE', 'CR', 'SQ', 'TR', 'MA', 'SL', 'M']);
 
 //The count of each property of the two texts that differ, {id: [before, after]}, those of the changes that aren't
-//expected, as "id before→after", and what went with the nodes besogo merged away, {id: count} (mergedAway: their places
-//in the text before, see loadTracked). What a merged away node had (its move, status, markup, comment) goes with it,
-//as decided for the site; what any other node had must be written. Comments are compared whole, as besogo reads them
+//expected, as "id before→after", what went with the nodes besogo merged away, {id: count}, and the statuses besogo set
+//aside (loaded: the places of those nodes in the text before, see loadTracked). What a merged away node had (its move,
+//status, markup, comment) goes with it, as decided for the site, and so does a status besogo sets aside; what any
+//other node had must be written. A move besogo couldn't play is named in the change. Comments are compared whole, as besogo reads them
 //(the C of a node joined, one leading + that marks the move correct left aside): every one on a node that stays must
 //still be the comment of a node.
-export function propertyChanges(besogo, before, after, mergedAway = new Set())
+export function propertyChanges(besogo, before, after, loaded = {})
 {
-	const old = propertyCounts(besogo.parseSgf(before), mergedAway);
+	const old = propertyCounts(besogo.parseSgf(before), loaded);
 	const now = propertyCounts(besogo.parseSgf(after));
 	const counts = {};
 	const unexpected = [];
 	const merged = {};
 	const setup = {};
+	let statusIgnored = 0;
 	for (const id of new Set([...old.counts.keys(), ...now.counts.keys()]))
 	{
 		const [was, is] = [old.counts.get(id) ?? 0, now.counts.get(id) ?? 0];
 		if (was === is)
 			continue;
 		counts[id] = [was, is];
-		const onKeptNodes = was - (old.merged.get(id) ?? 0);
-		// all that is gone was on merged away nodes
-		if (is < was && is === onKeptNodes)
+		const onMerged = old.merged.get(id) ?? 0;
+		const ignored = id === 'S' ? old.statusIgnored : 0;
+		// all that is gone was on merged away nodes, or a status besogo sets aside
+		if (is < was && (is === was - onMerged - ignored || is === was - onMerged))
 		{
-			merged[id] = was - is;
+			if (onMerged)
+				merged[id] = onMerged;
+			statusIgnored += was - onMerged - is;
 			continue;
 		}
 		if (SETUP.has(id))
@@ -202,24 +218,28 @@ export function propertyChanges(besogo, before, after, mergedAway = new Set())
 		const expected = id === 'C' ? is <= was
 			: HEADER.has(id) ? is === 1
 			: is < was && (NOT_KEPT.has(id) || GAME_INFO.has(id));
+		const illegal = old.movesLeftOut.get(id) ?? 0;
 		if (!expected)
-			unexpected.push(id + ' ' + was + '→' + is);
+			unexpected.push(id + ' ' + was + '→' + is + (illegal ? ' (' + illegal + ' illegal, besogo leaves it out)' : ''));
 	}
 	const kept = new Set(now.comments.keys());
 	const lost = [...old.comments].filter(([text]) => !kept.has(text));
 	const lostOnKeptNodes = lost.filter(([, comment]) => comment.onKeptNode).map(([, comment]) => comment.written);
 	if (lostOnKeptNodes.length)
 		unexpected.push('C lost: ' + lostOnKeptNodes.map(comment => JSON.stringify(comment.slice(0, 40))).join(', '));
-	return { counts, unexpected, mergedAway: merged, setup };
+	return { counts, unexpected, mergedAway: merged, setup, statusIgnored };
 }
 
 //The count of the values of each property of a parsed SGF (a point range of a point list as its points), the part of
-//them on the nodes besogo merged away (by their place, depth first), and its comments: the comment of each node as besogo reads it (loadSgf.js joins the C of a node, treeProblemUpdater.js
+//them on the nodes besogo merged away (by their place, depth first), the statuses besogo sets aside, the moves it
+//couldn't play, and its comments: the comment of each node as besogo reads it (loadSgf.js joins the C of a node, treeProblemUpdater.js
 //takes one leading + as the mark of a correct move) => the comment as it was written and whether a node that stays has it
-function propertyCounts(tree, mergedAway = new Set())
+function propertyCounts(tree, { mergedAway = new Set(), statusIgnored = new Set(), movesLeftOut = new Set() } = {})
 {
 	const counts = new Map();
 	const merged = new Map();
+	const leftOut = new Map();
+	let ignored = 0;
 	const comments = new Map();
 	textNodes(tree).forEach((node, index) =>
 	{
@@ -241,9 +261,13 @@ function propertyCounts(tree, mergedAway = new Set())
 			counts.set(id, (counts.get(id) ?? 0) + count);
 			if (away)
 				merged.set(id, (merged.get(id) ?? 0) + count);
+			else if (id === 'S' && statusIgnored.has(index))
+				ignored += count;
+			if ((id === 'B' || id === 'W') && movesLeftOut.has(index))
+				leftOut.set(id, (leftOut.get(id) ?? 0) + count);
 		}
 	});
-	return { counts, merged, comments };
+	return { counts, merged, statusIgnored: ignored, movesLeftOut: leftOut, comments };
 }
 
 //The points of a point list value: "aa", or the rectangle "aa:cc"

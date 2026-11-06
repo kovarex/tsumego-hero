@@ -181,6 +181,12 @@ test('only what was on the merged away nodes may go', () =>
 		assert.deepEqual(listedTwice.unexpected_changes, []);
 		assert.deepEqual(listedTwice.setup_rewritten, { AB: -1 });
 	}
+	//a status on a node whose position goes on by a transposition is set aside by besogo (as on 24 rows of the site) and
+	//may go; an illegal move is named (sgf 19451 and 19452 of the site play on a stone)
+	const ignored = normalised('(;SZ[19]G[KILL]AB[jj](;B[qq];W[rr]S[ALIVE])(;B[ss];W[rr];B[qq]S[DEAD]))');
+	assert.deepEqual([ignored.changed, ignored.same_play, ignored.unexpected_changes, ignored.status_ignored], [true, true, [], 1]);
+	assert.deepEqual(normalised('(;SZ[19]AB[rr][rs][qq](;B[ss]C[+])(;B[sr];W[qs];B[qq];W[ps]))').unexpected_changes,
+		['B 3→2 (1 illegal, besogo leaves it out)']);
 	//a stone shown that the rewrite loses keeps the row as it is: the turn leaves out the setup of a node after a move
 	assert.equal(normalised('(;SZ[19]AB[rr][rs](;B[ss]C[+])(;B[sr];W[qs];AB[qs]))').same_play, false);
 });
@@ -218,7 +224,7 @@ test('a status problem is judged the same without its C[+]', () =>
 //property is unexpected, and so is a comment that is gone
 test('the property check tells the expected changes from the others', () =>
 {
-	const check = (before, after, mergedAway = new Set()) => propertyChanges(besogo.besogo, before, after, mergedAway).unexpected;
+	const check = (before, after, mergedAway = new Set()) => propertyChanges(besogo.besogo, before, after, { mergedAway }).unexpected;
 	const was = '(;GM[1]FF[4]CA[UTF-8]AP[x]PW[]SZ[19]G[KILL]AB[aa:bb]L[cc]C[hi]C[there];B[dd]C[+];W[ee]S[ALIVE])';
 	assert.deepEqual(check(was, '(;FF[4]GM[1]SZ[19]ST[0]G[KILL]AB[aa][ab][ba][bb]LB[cc:A]C[hi\nthere];B[dd];W[ee]S[ALIVE])'), []);
 	for (const [after, unexpected] of [
