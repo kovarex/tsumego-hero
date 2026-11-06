@@ -142,6 +142,15 @@ class ChallengeTable extends AppTable
 		return $buttons;
 	}
 
+	//The most points a problem gives, solved at once (TimeMode::calculatePoints()).
+	public const MAXIMUM_POINTS_PER_PROBLEM = 100;
+
+	//The points of a run as the percentage of the most a run of the challenge can get, rounded.
+	public static function percentOfMaximum(float $points, int $problemCount): int
+	{
+		return $problemCount > 0 ? (int) round($points / ($problemCount * self::MAXIMUM_POINTS_PER_PROBLEM) * 100) : 0;
+	}
+
 	//Points as the tables show them, to a tenth.
 	public static function formatPoints(float $points): string
 	{

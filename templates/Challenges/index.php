@@ -82,27 +82,33 @@ use App\Model\Table\UserTable;
 			elseif ((int) $challenge['my_run_status_id'] === TimeModeSessionStatusTable::IN_PROGRESS)
 				$myRun = '<strong>playing</strong>';
 			else
-				$myRun = 'your points ' . ChallengeTable::formatPoints((float) $challenge['my_points']);
+			{
+				$points = (float) $challenge['my_points'];
+				$myRun = '<strong>' . ChallengeTable::formatPoints($points) . ' points</strong> ('
+					. ChallengeTable::percentOfMaximum($points, (int) $challenge['problem_count']) . '%)';
+			}
 			$placing = $places[(int) $challenge['id']] ?? null;
 			// the winner, unless it is the player alone, whose own place says so
 			$winners = $placing === null || ($placing['myPlace'] === 1 && count($placing['winners']) === 1) ? [] : $placing['winners'];
+			$finishedCount = $placing['finishedCount'] ?? 0;
 		?>
 		<div class="challenges__row">
-			<span>
-				<a href="/challenges/<?= (int) $challenge['id'] ?>"><?= h(ChallengeTable::title($challenge)) ?></a>
-				<span class="hint"><?= h(ChallengeTable::describe($challenge)) ?></span>
-			</span>
-			<span class="hint">
-				by <?= UserTable::renderLink($challenge) ?>
-				· <?= (int) $challenge['finished_count'] ?>/<?= (int) $challenge['participant_count'] ?> played
-				· <?= $myRun ?>
+			<span class="challenges__row-main">
 				<?php if ($placing !== null && $placing['myPlace'] !== null): ?>
-				· <span class="challenges__placing challenges__my-place"><?= $this->element('Challenges/placement', ['place' => $placing['myPlace']]) ?> of <?= $placing['finishedCount'] ?></span>
+				<span class="challenges__placing challenges__my-place"><?= $this->element('Challenges/placement', ['place' => $placing['myPlace']]) ?>
+					of <span class="challenges__finished-count" title="<?= $finishedCount ?> <?= $finishedCount === 1 ? 'player' : 'players' ?> finished"><?= $finishedCount ?></span></span>
 				<?php endif; ?>
+				<a href="/challenges/<?= (int) $challenge['id'] ?>"><?= h(ChallengeTable::title($challenge)) ?></a>
+				<span class="challenges__my-run"><?= $myRun ?></span>
 				<?php if (!empty($winners)): ?>
-				· <span class="challenges__placing challenges__winner"><?= $this->element('Challenges/placement', ['place' => 1]) ?>
+				<span class="challenges__placing challenges__winner hint"><?= $this->element('Challenges/placement', ['place' => 1]) ?>
 					<?= implode(', ', array_map(fn(array $winner) => UserTable::renderLink($winner), $winners)) ?></span>
 				<?php endif; ?>
+			</span>
+			<span class="hint challenges__row-details">
+				<?= h(ChallengeTable::describe($challenge)) ?>
+				· by <?= UserTable::renderLink($challenge) ?>
+				· <?= (int) $challenge['finished_count'] ?>/<?= (int) $challenge['participant_count'] ?> played
 				<?php if ($canDecline): ?>
 				<form class="challenges__inline-form" method="post" action="/challenges/decline/<?= (int) $challenge['id'] ?>" onsubmit="return confirm('Decline the challenge?');"><button class="btn btn--small btn--neutral" type="submit">Decline</button></form>
 				<?php endif; ?>

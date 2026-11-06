@@ -380,7 +380,9 @@ class ChallengesControllerTest extends IntegrationTestCase
 		$this->get('/challenges');
 		$row = $this->listRow($wonByFriend);
 		$this->assertStringContainsString('aria-label="2nd place"', $row);
-		$this->assertStringContainsString('of 2', $row);
+		$this->assertStringContainsString('title="2 players finished">2</span>', $row);
+		$this->assertLessThan(strpos($row, '<a href="/challenges/' . $wonByFriend . '">'), strpos($row, 'aria-label="2nd place"'), 'the place comes first');
+		$this->assertStringContainsString('<strong>0.0 points</strong> (0%)', $row, 'all five failed');
 		$this->assertStringContainsString('challenges__winner', $row);
 		$this->assertStringContainsString('DN_friend', $row);
 
@@ -389,6 +391,9 @@ class ChallengesControllerTest extends IntegrationTestCase
 		$row = $this->listRow($wonByFriend);
 		$this->assertStringContainsString('aria-label="1st place"', $row);
 		$this->assertStringNotContainsString('challenges__winner', $row, 'the winner sees their own medal');
+		$points = (float) ChallengeTable::runOf($wonByFriend, $this->userId('friend'))->points;
+		$this->assertStringContainsString('<strong>' . ChallengeTable::formatPoints($points) . ' points</strong> ('
+			. (int) round($points / 500 * 100) . '%)', $row, 'of the most five problems give');
 	}
 
 	public function testTheListTakesAsManyQueriesForManyChallengesAsForOne(): void
@@ -417,8 +422,10 @@ class ChallengesControllerTest extends IntegrationTestCase
 	//The row of the list of challenges of the challenge.
 	private function listRow(int $challengeId): string
 	{
-		$start = strpos($this->view, '<a href="/challenges/' . $challengeId . '">');
-		return substr($this->view, $start, strpos($this->view, 'class="challenges__row"', $start) ?: strlen($this->view) - $start);
+		$link = strpos($this->view, '<a href="/challenges/' . $challengeId . '">');
+		$start = strrpos(substr($this->view, 0, $link), 'class="challenges__row"');
+		$end = strpos($this->view, 'class="challenges__row"', $link);
+		return substr($this->view, $start, $end === false ? null : $end - $start);
 	}
 
 	public function testTheProblemsShowOnlyToThePlayersWhoFinishedTheirRun(): void
