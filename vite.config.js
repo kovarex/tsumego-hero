@@ -174,6 +174,7 @@ export default defineConfig({
 		legacyBundlePlugin('time-mode', ['webroot/js/TimeModePages.js']),
 		legacyBundlePlugin('schedule', ['webroot/js/SchedulePage.js']),
 		legacyBundlePlugin('challenge', ['webroot/js/ChallengePage.js']),
+		legacyBundlePlugin('challenges', ['webroot/js/ChallengesPage.js']),
 		legacyBundlePlugin('settings', ['webroot/js/SettingsPage.js']),
 		//The admin pages of the problems: their upload history, the tag overview and the similar problem search
 		legacyBundlePlugin('problem-admin', ['webroot/js/UploadHistoryPage.js', 'webroot/js/TagOverviewPage.js', 'webroot/js/DuplicateSearchPage.js']),

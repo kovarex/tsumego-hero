@@ -18,14 +18,13 @@ use Cake\ORM\TableRegistry;
 //started their run can decline the challenge; the row stays, so the others see it and nobody
 //invites them again, and the player can still change their mind and play.
 //A challenge is in progress until every player still in it finished their run; only then are there
-//places. The creator can remove a player whose run is waiting too long (canRemove()), who then
-//doesn't count for the finish.
+//places. The creator can remove a player who hasn't started their run, or whose run is stuck on a
+//problem (canRemove()), who then doesn't count for the finish.
 class ChallengeTable extends AppTable
 {
-	//How long a run may wait before the creator can remove its player: an invited player who
-	//hasn't started, and a started run without an answer.
-	public const REMOVABLE_NOT_STARTED_AFTER_HOURS = 24;
-	public const REMOVABLE_IDLE_AFTER_MINUTES = 60;
+	//How many times the time for a problem a started run may stay on one problem before the creator
+	//can remove its player.
+	public const REMOVABLE_AFTER_TIMES_FOR_A_PROBLEM = 2;
 
 	//The times for a problem to choose from, in seconds.
 	public const SECONDS_PER_PROBLEM_CHOICES = [15, 30, 45, 60, 90, 120, 180, 240, 300, 600, 1800];
@@ -280,16 +279,17 @@ class ChallengeTable extends AppTable
 		return (int) $challenge['participant_count'] > 0 && (int) $challenge['finished_count'] >= (int) $challenge['participant_count'];
 	}
 
-	//Whether the creator can remove the player of the row of standings(): their run waits too long,
-	//not started REMOVABLE_NOT_STARTED_AFTER_HOURS after they got into the challenge, or without an
-	//answer REMOVABLE_IDLE_AFTER_MINUTES after the last problem was shown.
+	//Whether the creator can remove the player of the row of standings(): at any time before they
+	//started their run, and once started, when they haven't moved on to a new problem for
+	//REMOVABLE_AFTER_TIMES_FOR_A_PROBLEM times the time for a problem, counted from the start of their
+	//current problem.
 	/** @param array<string, mixed> $standing */
-	public static function canRemove(array $standing, int $now): bool
+	public static function canRemove(array $standing, int $secondsPerProblem, int $now): bool
 	{
 		return match ($standing['run'])
 		{
-			self::RUN_NOT_STARTED => strtotime($standing['joined']) <= $now - self::REMOVABLE_NOT_STARTED_AFTER_HOURS * 3600,
-			self::RUN_PLAYING => strtotime($standing['last_activity']) <= $now - self::REMOVABLE_IDLE_AFTER_MINUTES * 60,
+			self::RUN_NOT_STARTED => true,
+			self::RUN_PLAYING => strtotime($standing['last_activity']) <= $now - self::REMOVABLE_AFTER_TIMES_FOR_A_PROBLEM * $secondsPerProblem,
 			default => false,
 		};
 	}
@@ -421,22 +421,24 @@ class ChallengeTable extends AppTable
 		return count($better) + 1;
 	}
 
-	//Where the player is in each of their challenges and who won it, for the list of their
-	//challenges, from one query of the finished runs of all of them; the list shows them only for a
+	//Where the player is in each of their challenges and how everyone who finished it did, for the list of their
+	//challenges, from one query of the finished runs of all of them. The list shows the places only for a
 	//finished challenge (isFinished()). The runs of removed players don't count.
 	/**
-	 * @return array<int, array{myPlace: ?int, finishedCount: int, winners: list<array<string, mixed>>}> By challenge id,
-	 *   only the challenges with a finished run; the winners are rows of USER_COLUMNS, by their names
+	 * @return array<int, array{myPlace: ?int, myFinished: ?string, standings: list<array<string, mixed>>}> By challenge
+	 *   id, only the challenges with a finished run. The standings are the finished runs, the best first: rows of
+	 *   USER_COLUMNS with their points, place and when they finished.
 	 */
 	public static function placesOfPlayer(int $userId): array
 	{
-		$runs = Util::query('SELECT s.challenge_id, s.points, attempts.seconds, ' . ClassroomTable::USER_COLUMNS . '
+		$runs = Util::query('SELECT s.challenge_id, s.points, attempts.seconds, COALESCE(attempts.finished, s.created) AS finished, ' . ClassroomTable::USER_COLUMNS . '
 			FROM challenge_participant me
 			JOIN time_mode_session s ON s.challenge_id = me.challenge_id AND s.time_mode_session_status_id != ?
 			JOIN user u ON u.id = s.user_id AND u.deleted IS NULL
 			JOIN challenge_participant p ON p.challenge_id = s.challenge_id AND p.user_id = s.user_id AND p.removed IS NULL
 			LEFT JOIN (
-				SELECT a.time_mode_session_id, SUM(a.seconds) AS seconds
+				SELECT a.time_mode_session_id, SUM(a.seconds) AS seconds,
+					MAX(a.started + INTERVAL COALESCE(a.seconds, 0) SECOND) AS finished
 				FROM challenge_participant mine
 				JOIN time_mode_session run ON run.challenge_id = mine.challenge_id
 				JOIN time_mode_attempt a ON a.time_mode_session_id = run.id
@@ -458,11 +460,16 @@ class ChallengeTable extends AppTable
 		$places = [];
 		foreach ($byChallenge as $challengeId => $finishedRuns)
 		{
+			foreach ($finishedRuns as &$run)
+				$run['place'] = self::placeAmong($run, $finishedRuns);
+			unset($run);
+			// stable, so the runs sharing a place stay by their names
+			usort($finishedRuns, fn(array $a, array $b) => $a['place'] <=> $b['place']);
 			$myRun = array_find($finishedRuns, fn(array $run) => (int) $run['user_id'] === $userId);
 			$places[$challengeId] = [
-				'myPlace' => $myRun === null ? null : self::placeAmong($myRun, $finishedRuns),
-				'finishedCount' => count($finishedRuns),
-				'winners' => array_values(array_filter($finishedRuns, fn(array $run) => self::placeAmong($run, $finishedRuns) === 1)),
+				'myPlace' => $myRun['place'] ?? null,
+				'myFinished' => $myRun['finished'] ?? null,
+				'standings' => $finishedRuns,
 			];
 		}
 		return $places;
