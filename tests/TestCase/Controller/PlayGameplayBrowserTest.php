@@ -1044,6 +1044,55 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 		return $context;
 	}
 
+	//Which review button the board shows: active, or inactive while Review is not available
+	private function reviewButton(Browser $browser): string
+	{
+		return (string) $browser->driver->executeScript('return document.getElementById("besogo-review-button") ? "active" : (document.getElementById("besogo-review-button-inactive") ? "inactive" : "none");');
+	}
+
+	//In a run of time mode Review isn't available before the problem is answered, and is after it, solved or not,
+	//whether the player solved the problem before outside the run or never did
+	public function testTimeModeReviewIsAvailableOnceTheProblemIsAnswered(): void
+	{
+		foreach ([null, 'S'] as $statusBefore)
+			foreach (['S', 'F'] as $answer)
+			{
+				$tsumego = ['set_order' => 1, 'sgf' => self::SGF_19];
+				if ($statusBefore !== null)
+					$tsumego['status'] = $statusBefore;
+				new ContextPreparator([
+					'tsumego' => $tsumego,
+					'tsumegos' => [['set_order' => 2, 'sgf' => self::SGF_19]],
+					'time-mode-ranks' => ['5k'],
+					'time-mode-sessions' => [[
+						'category' => TimeModeCategoryTable::BLITZ,
+						'rank' => '5k',
+						'status' => TimeModeSessionStatusTable::IN_PROGRESS,
+						'attempts' => [
+							['order' => 1, 'status' => TimeModeAttemptStatusTable::QUEUED],
+							['order' => 2, 'status' => TimeModeAttemptStatusTable::QUEUED, 'tsumego_id' => 'other:1']]]]]);
+				$browser = Browser::instance();
+				$browser->get('/timeMode/play');
+				$this->waitForBoard($browser);
+				$case = 'solved before: ' . ($statusBefore ?? 'no') . ', answered ' . $answer;
+				$this->assertSame('inactive', $this->reviewButton($browser), $case . ', before the answer');
+				$browser->driver->executeScript("displayResult('" . $answer . "')");
+				$browser->waitForSubmitResult();
+				$this->assertSame('active', $this->reviewButton($browser), $case . ', after the answer');
+			}
+	}
+
+	//A problem made by the player is no exception in a run
+	public function testTimeModeReviewOfTheirOwnProblemWaitsForTheAnswer(): void
+	{
+		$browser = Browser::instance();
+		$context = $this->startTimeMode($browser);
+		Util::execute('UPDATE tsumego SET author_user_id = ?', [$context->user['id']]);
+		$browser->get('/timeMode/play');
+		$this->waitForBoard($browser);
+		$this->assertSame('inactive', $this->reviewButton($browser));
+	}
+
 	//The page submits a timeout when its clock runs out.
 	public function testTimeModeTimerSubmitsATimeoutWhenTheClockRunsOut(): void
 	{
@@ -1060,6 +1109,7 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 
 		$this->assertSame('timed_out', $browser->driver->executeScript('return window._sent[0].outcome;'));
 		$this->assertSame("Time's up!", trim($browser->findById('status')->getText()));
+		$this->assertSame('active', $this->reviewButton($browser), 'a problem out of time can be reviewed');
 		$this->assertSame(
 			TimeModeAttemptStatusTable::TIMEOUT,
 			(int) $this->fetchTable('TimeModeAttempt')->find()->where(['time_mode_session_id' => $context->timeModeSessions[0]->id, 'order' => 1])->first()->time_mode_attempt_status_id);
