@@ -46,4 +46,21 @@ class SgfAnalysisTest extends AppTestCase
 			Configure::delete('SgfAnalysis.node');
 		}
 	}
+
+	//The normalised text is given only when it loses nothing a save isn't expected to; otherwise the SGF as it came
+	public function testANormalisedTextThatWouldLoseSomethingUnexpectedIsNotGiven(): void
+	{
+		$faithful = SgfAnalysis::of('(;CA[UTF-8]SZ[19]AB[rr][rs](;B[ss]C[+])(;B[sr];W[qs]))', true);
+		$this->assertTrue($faithful->rewriteIsFaithful());
+		$this->assertSame([0, 1], $faithful->propertyChanges['FF']);
+		$this->assertSame([1, 0], $faithful->propertyChanges['CA']);
+		$this->assertStringContainsString('AB[ba][bb]', $faithful->sgf);
+
+		// XY isn't a property besogo knows, so the rewrite would lose it
+		$sgf = '(;SZ[19]XY[1]AB[rr][rs](;B[ss]C[+])(;B[sr];W[qs]))';
+		$this->assertSame(['XY 1→0'], SgfAnalysis::ofMany([$sgf], SgfAnalysis::TIMEOUT, true)[0]->unexpectedChanges);
+		$kept = SgfAnalysis::of($sgf, true);
+		$this->assertNull($kept->sgf);
+		$this->assertSame('ss', $kept->correctMoves);
+	}
 }

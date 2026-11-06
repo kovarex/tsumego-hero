@@ -14,14 +14,46 @@ class SgfAnalysis
 	//The seconds a whole run may take
 	public const int TIMEOUT = 120;
 
+	//With normalise: $sgf is the SGF as the site stores it (top-left, correct variations first, see
+	//scripts/sgfCorrectMoves.mjs), the values are of it, $transformation goes from the given SGF to it and $changed
+	//tells whether it differs from the given one (an SGF already like that comes back as it was); $samePlay tells
+	//whether besogo plays the normalised text the same (every move, transposition and correct or wrong end);
+	//$propertyChanges has the count of each property that differs in the normalised text, [before, after], and
+	//$unexpectedChanges those changes that aren't what a save of the board editor is expected to leave out, and
+	//$mergedAway what went with the nodes besogo merged into a transposition, property => count, and $setupRewritten
+	//the change of the count of setup properties written as besogo shows them (a point listed twice written once),
+	//property => change
+	/**
+	 * @param array<string, array{int, int}> $propertyChanges
+	 * @param list<string> $unexpectedChanges
+	 * @param array<string, int> $mergedAway
+	 * @param array<string, int> $setupRewritten
+	 */
 	public function __construct(
 		public readonly string $firstMoveColor,
 		public readonly string $correctMoves,
-		public readonly ?string $problem) {}
+		public readonly ?string $problem,
+		public readonly ?string $sgf = null,
+		public readonly ?BoardTransformation $transformation = null,
+		public readonly bool $changed = false,
+		public readonly bool $samePlay = true,
+		public readonly array $propertyChanges = [],
+		public readonly array $unexpectedChanges = [],
+		public readonly array $mergedAway = [],
+		public readonly array $setupRewritten = []) {}
 
-	public static function of(string $sgf): self
+	//Whether the normalised text may be stored in place of the given one: it plays the same and loses nothing unexpected
+	public function rewriteIsFaithful(): bool
 	{
-		$result = self::ofMany([$sgf])[0];
+		return $this->samePlay && empty($this->unexpectedChanges);
+	}
+
+	public static function of(string $sgf, bool $normalise = false): self
+	{
+		$result = self::ofMany([$sgf], self::TIMEOUT, $normalise)[0];
+		// a text that wouldn't play the same, or would lose something unexpected, is kept as it came
+		if ($result instanceof self && !$result->rewriteIsFaithful())
+			$result = self::ofMany([$sgf])[0];
 		if (is_string($result))
 			throw new RuntimeException('The SGF could not be read: ' . $result);
 		return $result;
@@ -32,14 +64,14 @@ class SgfAnalysis
 	 * @param array<int|string, string> $sgfs
 	 * @return array<int|string, self|string>
 	 */
-	public static function ofMany(array $sgfs, int $timeout = self::TIMEOUT): array
+	public static function ofMany(array $sgfs, int $timeout = self::TIMEOUT, bool $normalise = false): array
 	{
 		if (empty($sgfs))
 			return [];
 		$input = '';
 		$keys = array_keys($sgfs);
 		foreach ($keys as $index => $key)
-			$input .= json_encode(['id' => $index, 'sgf' => $sgfs[$key]], JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR) . "\n";
+			$input .= json_encode(['id' => $index, 'sgf' => $sgfs[$key], 'normalise' => $normalise], JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR) . "\n";
 		$lines = explode("\n", trim(self::run($input, $timeout)));
 
 		$results = [];
@@ -51,7 +83,18 @@ class SgfAnalysis
 			$key = $keys[$output['id']];
 			$results[$key] = isset($output['error'])
 				? (string) $output['error']
-				: new self((string) $output['first_move_color'], (string) $output['correct_moves'], $output['problem'] ?? null);
+				: new self(
+					(string) $output['first_move_color'],
+					(string) $output['correct_moves'],
+					$output['problem'] ?? null,
+					isset($output['sgf']) ? (string) $output['sgf'] : null,
+					isset($output['transformation']) ? BoardTransformation::fromArray($output['transformation']) : null,
+					!empty($output['changed']),
+					($output['same_play'] ?? true) !== false,
+					array_map(fn($counts) => [(int) $counts[0], (int) $counts[1]], (array) ($output['property_changes'] ?? [])),
+					array_values(array_map('strval', (array) ($output['unexpected_changes'] ?? []))),
+					array_map('intval', (array) ($output['merged_away'] ?? [])),
+					array_map('intval', (array) ($output['setup_rewritten'] ?? [])));
 		}
 		if (count($results) !== count($sgfs))
 			throw new RuntimeException('sgfCorrectMoves.mjs answered ' . count($results) . ' of ' . count($sgfs) . ' SGFs');

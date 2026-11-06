@@ -115,10 +115,12 @@ besogo.composeSgf = function(editor, expand = false)
       string += 'C[' + escapeText((correctToSave ? '+' : '') + node.comment) + ']';
     }
 
-    if (node.statusSource)
+    // the status the node shows, or the one written on it that besogo sets aside while a transposition goes on from it
+    let statusToSave = node.statusSource || node.statusSetAside;
+    if (statusToSave)
     {
       string += (string ? '\n' : '');
-      string += 'S[' + node.statusSource.str() + ']';
+      string += 'S[' + statusToSave.str() + ']';
     }
 
     if (node.superkoMeansDead)
@@ -127,7 +129,13 @@ besogo.composeSgf = function(editor, expand = false)
       string += 'SKD[]';
     }
 
-    if (node.parent == null && node.goal != GOAL_NONE)
+    // G as it was loaded, on the node it was on (children inherit it through makeChild), or the goal the editor set on the root
+    if (Object.hasOwn(node, 'goalText') && node.goalText !== undefined && node.goalText !== null)
+    {
+      string += (string ? '\n' : '');
+      string += 'G[' + escapeText(node.goalText) + ']';
+    }
+    else if (node.parent == null && node.goal != GOAL_NONE)
     {
       string += (string ? '\n' : '');
       string += 'G[' + besogo.goalStr(node.goal) + ']';
