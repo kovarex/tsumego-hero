@@ -3,6 +3,7 @@
 namespace App\Model\Table;
 
 use App\Model\Entity\Sgf;
+use App\Utility\SgfAnalysis;
 use App\Utility\TsumegoButton;
 use App\Utility\Util;
 use ArrayObject;
@@ -87,8 +88,16 @@ class SgfTable extends AppTable
 		else
 			$sgfData = $sgfDataOrFile;
 
+		// stored as the site keeps every SGF (top-left, correct variations first), with the color to move first and
+		// the correct first moves by besogo's own rules; what besogo can't read is saved as it came, without them, for
+		// bin/cake normalise_sgfs to retry
+		$analysis = SgfAnalysis::ofMany([(string) $sgfData], SgfAnalysis::TIMEOUT, true)[0];
+		// a text that wouldn't play the same, or would lose something unexpected, is kept as it came, with its own values
+		if (!is_string($analysis) && !$analysis->rewriteIsFaithful())
+			$analysis = SgfAnalysis::ofMany([(string) $sgfData])[0];
+		$normalised = is_string($analysis) ? [] : ['sgf' => $analysis->sgf ?? $sgfData, 'first_move_color' => $analysis->firstMoveColor, 'correct_moves' => $analysis->correctMoves];
 		$sgfTable = TableRegistry::getTableLocator()->get('Sgf');
-		$sgf = $sgfTable->newEntity(['sgf' => $sgfData, 'user_id' => $userID, 'tsumego_id' => $tsumegoID]
+		$sgf = $sgfTable->newEntity($normalised + ['sgf' => $sgfData, 'user_id' => $userID, 'tsumego_id' => $tsumegoID]
 			+ ($accepted ? self::acceptedBy($userID) : ['sgf_status_id' => self::STATUS_PROPOSED]));
 		if ($sgf->hasErrors() || !$sgfTable->save($sgf))
 		{

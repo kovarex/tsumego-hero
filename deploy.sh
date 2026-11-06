@@ -1,13 +1,43 @@
 #!/bin/bash
 
+# Everything the deploy writes (the pulled code, the bundles, vendor) must be readable by PHP,
+# which runs as another user, whatever umask the shell had: under 077 the pull wrote
+# config/bootstrap.php owner-only and the site stopped. The secrets set their own stricter modes.
+umask 022
+
+ROOT_DIR="$(cd "$(dirname "$0")"; pwd)"
+
+# The site shows the static maintenance page while this flag exists (webroot/.htaccess), from before
+# the pull to the end of the deploy. Whatever way the deploy ends, failed or stopped too, the flag
+# goes, so a failed deploy doesn't leave the site down unseen. exec runs no EXIT trap, so the flag
+# stays on through the re-exec after the pull, whose new script sets it and its trap again.
+MAINTENANCE_FLAG="$ROOT_DIR/tmp/maintenance.flag"
+end_maintenance() {
+    status=$?
+    rm -f "$MAINTENANCE_FLAG"
+    if [ "$status" -ne 0 ]; then
+        echo "=== Deploy FAILED (exit $status): the maintenance page is off again, check the site ===" >&2
+    else
+        echo "=== Maintenance page off ==="
+    fi
+}
+trap end_maintenance EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM HUP
+mkdir -p "$ROOT_DIR/tmp"
+date > "$MAINTENANCE_FLAG"
+echo "=== Maintenance page on ==="
+
+# The secrets that are not in git first, so the code the pull brings never starts without them
+# (scripts/ensure-secrets.sh). After the pull the new script runs it again, which changes nothing.
+bash "$ROOT_DIR/scripts/ensure-secrets.sh" "$ROOT_DIR" || exit 1
+
 if [ -z "$DEPLOY_REEXEC" ]; then
     git pull || exit 1
     exec env DEPLOY_REEXEC=1 bash "$0" "$@"
 fi
 
 set -e
-
-ROOT_DIR="$(cd "$(dirname "$0")"; pwd)"
 
 DB_CONFIG_FILE="$ROOT_DIR/config/database.php"
 DB_CONFIG_TEMPLATE="$ROOT_DIR/config/database.example.php"

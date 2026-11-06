@@ -14,6 +14,9 @@ config/database.php
 config/email.php
 config/core.local.php
 config/define.local.php
+config/jwt_secret.php
+# core.php held the salt until it moved to core.local.php; a copy left on a server stays out of git
+config/core.php
 
 # Build artifacts & caches #
 ############################

@@ -6,7 +6,9 @@ use App\Model\Table\AdminActivityTypeTable;
 use App\Model\Entity\TsumegoComment;
 use App\Model\Table\UserTable;
 use App\Utility\Auth;
+use App\Utility\SgfAnalysis;
 use App\Utility\Constants;
+use Facebook\WebDriver\WebDriverBy;
 
 class SgfControllerUploadTest extends IntegrationTestCase
 {
@@ -55,7 +57,11 @@ class SgfControllerUploadTest extends IntegrationTestCase
 			input.files = dt.files;
 			input.dispatchEvent(new Event('change', { bubbles: true }));
 		", [$sgf]);
+		//the save, which runs node on the server, ends in a new page, saved or refused; the database is read after it
+		$page = $browser->driver->findElement(WebDriverBy::tagName('html'));
 		$browser->clickId('tsumego-edit-submit');
+		$browser->waitUntilStale($page, 30);
+		$browser->waitUntilJs('document.readyState === "complete"');
 	}
 
 	public function testUploadSgfViaBesogoEditor()
@@ -127,9 +133,11 @@ class SgfControllerUploadTest extends IntegrationTestCase
 		// Verify new SGF was added
 		$sgfs = $this->fetchTable('Sgf')->find()->where(['tsumego_id' => $context->tsumegos[0]['id']])->orderByDesc('id')->toArray();
 		$this->assertEquals(2, count($sgfs), 'Should have 2 SGFs after file upload');
-		$this->assertEquals($newSgfContent, $sgfs[0]->sgf);
+		// stored as the site keeps every SGF
+		$stored = SgfAnalysis::of($newSgfContent, true);
+		$this->assertEquals($stored->sgf, $sgfs[0]->sgf);
 		$this->assertEquals('B', $sgfs[0]->first_move_color);
-		$this->assertEquals('cd', $sgfs[0]->correct_moves);
+		$this->assertEquals($stored->correctMoves, $sgfs[0]->correct_moves);
 
 		// Verify admin activity was logged
 		$activity = $this->fetchTable('AdminActivity')->find()
@@ -144,7 +152,8 @@ class SgfControllerUploadTest extends IntegrationTestCase
 		$this->assertEquals($context->tsumegos[0]['set-connections'][0]['set_id'], $activity->set_id);
 	}
 
-	//The problem turned in the board editor is saved turned, and its comments are turned with it.
+	//The problem turned in the board editor is saved back in the top-left corner, as every SGF is kept, so only what
+	//the turn back doesn't undo stays: here the swapped colours, which the comments follow.
 	public function testCommentsFollowTheProblemTurnedInTheEditor()
 	{
 		$browser = Browser::instance();
@@ -156,17 +165,18 @@ class SgfControllerUploadTest extends IntegrationTestCase
 		$saved = $this->newestSgf($context);
 		$this->assertEquals(SgfTable::STATUS_ACCEPTED, $saved->sgf_status_id);
 		$this->assertEquals($context->tsumegos[0]['sgfs'][0]['id'], $saved->source_sgf_id);
-		$this->assertSame('{"transpose":false,"flipX":true,"flipY":false,"invertColors":true}', $saved->transformation_from_source);
+		$this->assertSame('{"transpose":false,"flipX":false,"flipY":false,"invertColors":true}', $saved->transformation_from_source);
 		$comment = $this->comment($context);
-		$this->assertSame('white T19 then b T18', $comment->message);
-		$this->assertSame('19/2/19/1/18/1/2/1/sgf|19/1+19/2', $comment->position);
+		$this->assertSame('white A19 then b A18', $comment->message);
+		$this->assertSame(self::COMMENT['position'], $comment->position);
 
 		// the page turns the new version back into the top-left corner, where the comment points at the same stones
 		$browser->expandComments();
 		$browser->waitUntilCssSelectorExistsWithText('.comment__text', 'white A19 then b A18');
 	}
 
-	//The editor rotates the problem by a quarter turn, the comments follow.
+	//The editor rotates the problem by a quarter turn, into the top-right corner; turned back to the top-left it is
+	//transposed, and the comments follow.
 	public function testCommentsFollowTheProblemRotatedInTheEditor()
 	{
 		$browser = Browser::instance();
@@ -175,11 +185,11 @@ class SgfControllerUploadTest extends IntegrationTestCase
 			'tsumego' => ['set_order' => 1, 'status' => 'S', 'sgf' => self::SGF, 'comments' => [self::COMMENT]]]);
 		$this->saveFromEditor($browser, $context, ['Rotate']);
 
-		// clockwise: A19 goes to T19 and A18 to S19
-		$this->assertSame('{"transpose":true,"flipX":true,"flipY":false,"invertColors":false}', $this->newestSgf($context)->transformation_from_source);
+		// clockwise A19 went to T19 and A18 to S19, back in the top-left A19 stays and A18 is B19
+		$this->assertSame('{"transpose":true,"flipX":false,"flipY":false,"invertColors":false}', $this->newestSgf($context)->transformation_from_source);
 		$comment = $this->comment($context);
-		$this->assertSame('black T19 then w S19', $comment->message);
-		$this->assertSame('18/1/19/1/19/2/2/1/sgf|19/1+18/1', $comment->position);
+		$this->assertSame('black A19 then w B19', $comment->message);
+		$this->assertSame('2/1/1/1/1/2/2/1/sgf|1/1+2/1', $comment->position);
 	}
 
 	//The editor shows a problem stored in another corner in the top-left, so saving it there
@@ -202,7 +212,7 @@ class SgfControllerUploadTest extends IntegrationTestCase
 		$this->assertSame(self::COMMENT['position'], $comment->position);
 	}
 
-	//A proposal turned in the board editor turns the comments when an admin accepts it, not before.
+	//A proposal flipped in the board editor is kept in the top-left like every SGF, so accepting it moves no comment.
 	public function testCommentsFollowAProposalWhenItIsAccepted()
 	{
 		$browser = Browser::instance();
@@ -213,7 +223,7 @@ class SgfControllerUploadTest extends IntegrationTestCase
 
 		$proposal = $this->newestSgf($context);
 		$this->assertEquals(SgfTable::STATUS_PROPOSED, $proposal->sgf_status_id);
-		$this->assertSame('{"transpose":false,"flipX":true,"flipY":false,"invertColors":false}', $proposal->transformation_from_source);
+		$this->assertSame('{"transpose":false,"flipX":false,"flipY":false,"invertColors":false}', $proposal->transformation_from_source);
 		$comment = $this->comment($context);
 		$this->assertSame(self::COMMENT['message'], $comment->message);
 		$this->assertSame(self::COMMENT['position'], $comment->position);
@@ -223,11 +233,11 @@ class SgfControllerUploadTest extends IntegrationTestCase
 		$browser->post('/proposals/acceptSgf/' . $proposal->id);
 
 		$comment = $this->comment($context);
-		$this->assertSame('black T19 then w T18', $comment->message);
-		$this->assertSame('19/2/19/1/18/1/2/1/sgf|19/1+19/2', $comment->position);
+		$this->assertSame(self::COMMENT['message'], $comment->message);
+		$this->assertSame(self::COMMENT['position'], $comment->position);
 	}
 
-	//An uploaded file carries no transformation, its stones tell where the problem went and the comments follow.
+	//An uploaded file in another corner is kept in the top-left like every SGF, where the comments already are.
 	public function testCommentsFollowAnUploadedSgfInAnotherCorner()
 	{
 		$browser = Browser::instance();
@@ -244,8 +254,8 @@ class SgfControllerUploadTest extends IntegrationTestCase
 
 		$this->assertNull($this->newestSgf($context)->source_sgf_id);
 		$comment = $this->comment($context);
-		$this->assertSame('black A1 then w A2', $comment->message);
-		$this->assertSame('1/18/1/19/2/19/2/1/sgf|1/19+1/18', $comment->position);
+		$this->assertSame(self::COMMENT['message'], $comment->message);
+		$this->assertSame(self::COMMENT['position'], $comment->position);
 	}
 
 	//A status based problem needs a status at every end position, the board editor refuses to save it otherwise and so does the file upload.
@@ -258,7 +268,7 @@ class SgfControllerUploadTest extends IntegrationTestCase
 		$browser->get('/' . $context->setConnections[0]['id']);
 		$this->uploadSgfFile($browser, '(;GM[1]FF[4]ST[2]SZ[19]G[KILL](;B[aa];W[ab];B[ba]S[DEAD])(;B[da];W[aa]))');
 
-		$browser->waitUntilCssSelectorExistsWithText('#uploadProblem', 'The SGF was not saved: End position without status. (move 2)');
+		$browser->waitUntilCssSelectorExistsWithText('.alert-error', 'The SGF was not saved: End position without status. (move 2)');
 		$this->assertEquals($context->tsumegos[0]['sgfs'][0]['id'], $this->newestSgf($context)->id, 'Nothing was saved');
 		$browser->assertNoJsErrors();
 	}
@@ -274,6 +284,6 @@ class SgfControllerUploadTest extends IntegrationTestCase
 		$this->uploadSgfFile($browser, $sgf);
 
 		$browser->waitUntilJs('location.pathname === ' . json_encode('/' . $context->setConnections[0]['id']) . ' && document.readyState === "complete"');
-		$this->assertSame($sgf, $this->newestSgf($context)->sgf);
+		$this->assertSame(SgfAnalysis::of($sgf, true)->sgf, $this->newestSgf($context)->sgf);
 	}
 }
