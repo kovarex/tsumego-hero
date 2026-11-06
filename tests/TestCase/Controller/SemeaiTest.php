@@ -138,4 +138,40 @@ class SemeaiTest extends IntegrationTestCase
 				$browser->find('#besogo-multipleChoice' . $answer)->getCssValue('background-color'),
 				"answer $answer");
 	}
+
+	//The explanation shown after the semeai problem with the given explanation is answered
+	private function explanationAfterAnswering(?string $explanation): string
+	{
+		$context = new ContextPreparator(['tsumego' => [
+			'set_order' => 1,
+			'sgf' => '(;GM[1]FF[4]SZ[19]TR[aa][ab][ac]SQ[ba][bb][bc];B[cc])',
+			'semeai' => [
+				'semeai_type_id' => SemeaiTypeTable::TYPE_BIG_EYE_VS_SMALLER_EYE,
+				'liberty_count' => 6,
+				'inside_liberties' => 0,
+				'explanation' => $explanation]]]);
+		$browser = Browser::instance();
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		$browser->clickId('besogo-multipleChoice1');
+		$browser->waitUntilCssSelectorDisplayed('#multipleChoiceAlerts');
+		return $browser->find('#multipleChoiceText')->getText();
+	}
+
+	//A problem whose liberties aren't obvious adds its own words after the computed explanation, as text
+	public function testTheExplanationOfTheProblemFollowsTheComputedOne(): void
+	{
+		$text = $this->explanationAfterAnswering('White can play 2 <b>tesujis</b> & gain 2 liberties.');
+
+		$this->assertStringContainsString('Semeai Type 5: Big eye vs smaller eye.', $text);
+		$this->assertStringEndsWith('White can play 2 <b>tesujis</b> & gain 2 liberties.', $text);
+	}
+
+	public function testWithoutAnExplanationOnlyTheComputedOneIsShown(): void
+	{
+		$text = $this->explanationAfterAnswering(null);
+
+		$this->assertStringContainsString('Semeai Type 5: Big eye vs smaller eye.', $text);
+		// the computed verdict is the last line
+		$this->assertMatchesRegularExpression('/\n(Black is dead|White is dead|The position is unsettled)[^\n]*$/', $text);
+	}
 }

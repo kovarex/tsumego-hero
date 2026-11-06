@@ -1,6 +1,7 @@
 <?php
 
 use App\Utility\BoardComparator;
+use App\Utility\BoardPosition;
 use App\Utility\SgfBoard;
 use App\Utility\SgfParser;
 
@@ -218,5 +219,102 @@ class BoardComparatorTest extends AppTestCase
 		$this->assertNull(BoardComparator::compare($a->stones, 'B', SgfBoard::decodePositionString('ab'), $b->stones, 'B', SgfBoard::decodePositionString('ab')));
 		$c = SgfParser::process('(;GM[1]FF[4]SZ[19]AB[aa][ba][ca][da][ea][fa])');
 		$this->assertSame(5, BoardComparator::compare($a->stones, 'B', SgfBoard::decodePositionString('ab'), $c->stones, 'B', SgfBoard::decodePositionString('ab'))->difference);
+	}
+
+	//A corner problem without any symmetry of its own, in SGF coordinates of a 19x19 board: black is
+	//to play, white around it
+	private const CORNER_BLACK = ['ac', 'bc', 'cb', 'db', 'da'];
+	private const CORNER_WHITE = ['ad', 'bd', 'cd', 'dc', 'eb', 'ea', 'ce'];
+
+	//The 8 symmetries of the 19x19 board, each taking the corner problem into one of its corners
+	private static function symmetries(): array
+	{
+		return [
+			'identity' => fn(int $x, int $y) => [$x, $y],
+			'left to right' => fn(int $x, int $y) => [18 - $x, $y],
+			'top to bottom' => fn(int $x, int $y) => [$x, 18 - $y],
+			'180°' => fn(int $x, int $y) => [18 - $x, 18 - $y],
+			'diagonal' => fn(int $x, int $y) => [$y, $x],
+			'90°' => fn(int $x, int $y) => [18 - $y, $x],
+			'270°' => fn(int $x, int $y) => [$y, 18 - $x],
+			'anti-diagonal' => fn(int $x, int $y) => [18 - $y, 18 - $x]];
+	}
+
+	//The SGF coordinates through the symmetry, as packed positions with the color given
+	private static function transformed(array $coordinates, callable $symmetry, int|bool $color): array
+	{
+		$result = [];
+		foreach ($coordinates as $coordinate)
+		{
+			[$x, $y] = $symmetry(ord($coordinate[0]) - ord('a'), ord($coordinate[1]) - ord('a'));
+			$result[BoardPosition::pack($x, $y)] = $color;
+		}
+		return $result;
+	}
+
+	//The corner problem through the symmetry, with the colors switched when asked
+	private static function cornerStones(callable $symmetry, bool $colorsSwitched): array
+	{
+		return self::transformed(self::CORNER_BLACK, $symmetry, $colorsSwitched ? SgfBoard::WHITE : SgfBoard::BLACK)
+			+ self::transformed(self::CORNER_WHITE, $symmetry, $colorsSwitched ? SgfBoard::BLACK : SgfBoard::WHITE);
+	}
+
+	//The same problem in any of the 8 symmetries of the board, and with the colors switched, is found
+	//the same, from either side, with one correct move and with two
+	public function testTheSameProblemIsFoundInEverySymmetryOfTheBoard()
+	{
+		$identity = self::symmetries()['identity'];
+		foreach (['one correct move' => ['ba'], 'two correct moves' => ['ba', 'ab']] as $correctMovesName => $correctMoves)
+			foreach (self::symmetries() as $symmetryName => $symmetry)
+				foreach ([false, true] as $colorsSwitched)
+				{
+					$context = "$correctMovesName, $symmetryName" . ($colorsSwitched ? ', colors switched' : '');
+					$original = [self::cornerStones($identity, false), 'B', self::transformed($correctMoves, $identity, true)];
+					$other = [self::cornerStones($symmetry, $colorsSwitched), $colorsSwitched ? 'W' : 'B', self::transformed($correctMoves, $symmetry, true)];
+					$this->assertSame(0, BoardComparator::compare(...$original, ...$other)?->difference, $context);
+					$this->assertSame(0, BoardComparator::compare(...$other, ...$original)?->difference, $context . ', the other way');
+				}
+	}
+
+	//Without correct moves the problem is found in every symmetry of the board as well, the colors
+	//as they are and switched, from either side
+	public function testTheSameProblemWithoutCorrectMovesIsFoundInEverySymmetryOfTheBoard()
+	{
+		$original = self::cornerStones(self::symmetries()['identity'], false);
+		foreach (self::symmetries() as $symmetryName => $symmetry)
+			foreach ([false, true] as $colorsSwitched)
+			{
+				$context = $symmetryName . ($colorsSwitched ? ', colors switched' : '');
+				$other = self::cornerStones($symmetry, $colorsSwitched);
+				$this->assertSame(0, BoardComparator::compare($original, 'N', [], $other, 'N', [])?->difference, $context);
+				$this->assertSame(0, BoardComparator::compare($other, 'N', [], $original, 'N', [])?->difference, $context . ', the other way');
+			}
+	}
+
+	//A problem turned by 90° that differs in a missing stone and a stone of the other color is found
+	//with those two stones as the difference, shown where they are on the turned board
+	public function testASlightlyDifferentProblemIsFoundTurned()
+	{
+		$identity = self::symmetries()['identity'];
+		$turned = self::symmetries()['90°'];
+		$other = self::cornerStones($turned, false);
+		$missing = BoardPosition::pack(...$turned(2, 4)); // the white stone on ce
+		$switched = BoardPosition::pack(...$turned(3, 1)); // the black stone on db
+		unset($other[$missing]);
+		$other[$switched] = SgfBoard::WHITE;
+
+		$result = BoardComparator::compare(
+			self::cornerStones($identity, false),
+			'B',
+			self::transformed(['ba'], $identity, true),
+			$other,
+			'B',
+			self::transformed(['ba'], $turned, true));
+		$this->assertSame(2, $result?->difference);
+		$differentStones = str_split($result->diff, 2);
+		sort($differentStones);
+		$expected = [BoardPosition::toLetters($missing), BoardPosition::toLetters($switched)];
+		sort($expected);
+		$this->assertSame($expected, $differentStones);
 	}
 }

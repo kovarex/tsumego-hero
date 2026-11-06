@@ -25,6 +25,8 @@ class SimilarSearchLogic
 			throw new NotFoundException('SGF not found');
 		$this->sourceBoard = SgfParser::process($sgf->sgf, SgfBoard::decodePositionString($sgf->correct_moves ?? ''));
 		$this->sourceFirstMoveColor = $sgf->first_move_color ?? 'N';
+		// the source is transformed once, for all the candidates
+		$this->comparator = new BoardComparator($this->sourceBoard->stones, $this->sourceFirstMoveColor, $this->sourceBoard->correctMoves);
 		$this->sourceStoneCount = $this->sourceBoard->getStoneCount();
 		$this->sourceMoveCount = substr_count($sgf->sgf, ';');
 		$this->sourceSgf = $sgf->sgf;
@@ -78,13 +80,7 @@ ORDER BY tsumego.id",
 		if (abs($board->getStoneCount() - $this->sourceStoneCount) > $this->maxDifference)
 			return null;
 
-		return BoardComparator::compare(
-			$this->sourceBoard->stones,
-			$this->sourceFirstMoveColor,
-			$this->sourceBoard->correctMoves,
-			$board->stones,
-			$candidate['first_move_color'] ?? 'N',
-			$board->correctMoves);
+		return $this->comparator->compareWith($board->stones, $candidate['first_move_color'] ?? 'N', $board->correctMoves);
 	}
 
 	//The matches as result items: the collection each is shown in and the status of the player on it, read
@@ -140,6 +136,7 @@ WHERE tsumego.id IN ($placeholders)", $tsumegoIDs) as $row)
 	public int $maxDifference = 5;
 	public SgfBoard $sourceBoard;
 	public string $sourceFirstMoveColor;
+	private BoardComparator $comparator;
 	public int $sourceMoveCount;
 	public int $sourceStoneCount;
 	public SimilarSearchResult $result;

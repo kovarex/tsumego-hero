@@ -53,9 +53,23 @@ const SEMEAI_ANSWER = {blackDead: 1, whiteDead: 2, unsettled: 3, seki: 4};
 
 const SEMEAI_SEKI_RULES = "Seki possible if there is one or more inside liberties.<br>The favorite's task is to kill.<br>The favorite counts his exclusive liberties.<br>The underdog's task is Seki.<br>The underdog counts his exclusive plus all inside liberties.<br>";
 
-//The explanation of the problem's race and the right answer, from the liberties the play page
-//left each side (PlayPage.js): its liberty count less those it took from the other color
+//The explanation of the problem's race and the right answer, followed by what the problem adds to
+//it (tsumego_semeai.explanation, plain text)
 function semeaiExplanation()
+{
+	const result = semeaiComputedExplanation();
+	if (multipleChoiceSemeaiExplanation)
+	{
+		const added = document.createElement("div");
+		added.textContent = multipleChoiceSemeaiExplanation;
+		result.text += (result.text.endsWith("<br>") ? "" : "<br>") + added.innerHTML + "<br>";
+	}
+	return result;
+}
+
+//The race from the liberties the play page left each side (PlayPage.js): its liberty count less
+//those it took from the other color
+function semeaiComputedExplanation()
 {
 	const count = parseInt(multipleChoiceLibertyCount);
 	const inside = parseInt(multipleChoiceInsideLiberties);
@@ -102,23 +116,14 @@ function semeaiNoEyesInsideLiberties(black, white, inside)
 	return {text: text + underdog.name + " is dead. (" + lead + " move(s) behind)<br>", correct: semeaiDeadAnswer(underdog.name)};
 }
 
-//All inside liberties count for the group with the eye. A few problems show the liberties as the
-//tesujis that gain some leave them.
+//All inside liberties count for the group with the eye
 function semeaiEyeAgainstNoEye(count)
 {
-	let takenFromBlack = multipleChoiceLibertiesB;
-	let takenFromWhite = multipleChoiceLibertiesW;
-	let shownBlack = count - takenFromWhite;
-	let shownWhite = count - takenFromBlack;
-	if ([29824, 29825, 29826, 29827].some(id => id == tsumegoID) && takenFromBlack == 1 && takenFromWhite == 2)
-	{
-		takenFromWhite = 1;
-		shownBlack = shownWhite = {29824: 7, 29827: 15}[tsumegoID] ?? 5;
-	}
-	const result = semeaiPlainRace(count - takenFromWhite, count - takenFromBlack, "The position is unsettled. (Whoever plays first wins.)");
-	const tesujis = tsumegoID == 29824 ? "White can play 2 under the stones tesujis to gain 2 more liberties.<br>" : "";
+	const black = count - multipleChoiceLibertiesW;
+	const white = count - multipleChoiceLibertiesB;
+	const result = semeaiPlainRace(black, white, "The position is unsettled. (Whoever plays first wins.)");
 	result.text = "Semeai Type 3: Eye vs no eye.<br>No Seki possible.<br> All inside liberties count for the group with the eye.<br>Black has "
-		+ semeaiLiberties(shownBlack) + ".<br> White has " + semeaiLiberties(shownWhite) + ".<br>" + tesujis + result.text;
+		+ semeaiLiberties(black) + ".<br> White has " + semeaiLiberties(white) + ".<br>" + result.text;
 	return result;
 }
 
