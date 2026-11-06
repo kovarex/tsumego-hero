@@ -231,4 +231,16 @@ class NormaliseSgfsCommandTest extends AppTestCase
 		$this->assertStringNotContainsString('A 2KO', $stored);
 		$this->assertStringNotContainsString('undefined', $stored);
 	}
+
+	//A row already as the site keeps it but for an S[undefined] (old saves wrote it for a status besogo couldn't read)
+	//is rewritten without it
+	public function testAnUndefinedStatusOfANormalisedRowIsLeftOut(): void
+	{
+		$sgf = "(;FF[4]GM[1]SZ[19]ST[0]\nAB[bb]\nG[KILL]\n(;B[ba]\n;W[aa]\nS[DEAD])\n(;B[aa]\n;W[ba]\nS[undefined]))";
+		$context = new ContextPreparator(['tsumego' => ['sgf' => ['data' => $sgf]]]);
+		$this->exec('normalise_sgfs --write');
+
+		$this->assertOutputContains("1 rows rewritten leave out 1 statuses besogo can't read");
+		$this->assertSame(str_replace("\nS[undefined]", '', $sgf), $this->sgfRow($context->tsumegos[0]['id'])['sgf']);
+	}
 }
