@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use Cake\Http\Exception\BadRequestException;
 use Cake\Http\Exception\NotFoundException;
+use Cake\Http\Response;
 use App\Attribute\HttpGet;
 use App\Attribute\HttpPost;
 use App\Model\Table\AdminActivityTypeTable;
@@ -44,7 +45,7 @@ class SgfController extends AppController
 	}
 
 	#[HttpPost]
-	public function upload(string $setConnectionID): void
+	public function upload(string $setConnectionID): ?Response
 	{
 		$this->Authorization->authorize('Sgf', 'propose');
 
@@ -70,10 +71,10 @@ class SgfController extends AppController
 			$setConnection->set_id,
 		);
 
-		$this->renderNewSgfSetup(
+		return $this->saveNewSgf(
 			(int) $setConnectionID,
 			$sgfDataOrFile,
-			(string) ($this->input('description') ?? ''),
+			$this->input('description'),
 			$fileUpload ? null : $this->input('sourceSgfID'),
 			$fileUpload ? null : $this->input('transformationFromSource'));
 	}

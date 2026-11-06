@@ -19,3 +19,6 @@ define ('CRON_SECRET', 'example');
 // separate, in config/jwt_secret.php (see config/jwt_secret.example.php). Empty here, so a copy left as
 // it is fails loudly.
 Configure::write('Security.salt', '');
+
+// The node that runs scripts/sgfCorrectMoves.mjs (App\Utility\SgfAnalysis), when the web server's PATH has none
+// Configure::write('SgfAnalysis.node', '/usr/local/bin/node');

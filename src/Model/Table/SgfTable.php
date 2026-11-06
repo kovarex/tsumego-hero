@@ -3,6 +3,7 @@
 namespace App\Model\Table;
 
 use App\Model\Entity\Sgf;
+use App\Utility\SgfAnalysis;
 use App\Utility\TsumegoButton;
 use App\Utility\Util;
 use ArrayObject;
@@ -87,8 +88,12 @@ class SgfTable extends AppTable
 		else
 			$sgfData = $sgfDataOrFile;
 
+		// the color to move first and the correct first moves, by besogo's own rules; what besogo can't read is
+		// saved without them, as before
+		$analysis = SgfAnalysis::ofMany([(string) $sgfData])[0];
+		$moves = is_string($analysis) ? [] : ['first_move_color' => $analysis->firstMoveColor, 'correct_moves' => $analysis->correctMoves];
 		$sgfTable = TableRegistry::getTableLocator()->get('Sgf');
-		$sgf = $sgfTable->newEntity(['sgf' => $sgfData, 'user_id' => $userID, 'tsumego_id' => $tsumegoID]
+		$sgf = $sgfTable->newEntity(['sgf' => $sgfData, 'user_id' => $userID, 'tsumego_id' => $tsumegoID] + $moves
 			+ ($accepted ? self::acceptedBy($userID) : ['sgf_status_id' => self::STATUS_PROPOSED]));
 		if ($sgf->hasErrors() || !$sgfTable->save($sgf))
 		{
