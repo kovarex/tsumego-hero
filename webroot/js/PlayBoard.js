@@ -198,8 +198,7 @@ redrawHearts();
 		div.style.width = options.width + 'px';
 	}
 	options.reviewMode = false;
-	options.reviewEnabled = playPage.problem.solved || playPage.problem.requestSolution;
-	if (authorProblem)
-		options.reviewEnabled = true;
+	//a problem of a time mode run (or a challenge) is reviewed only once it is answered, whoever made it (PlayPage.js enableReview())
+	options.reviewEnabled = mode != playPage.page.modes.time && (playPage.problem.solved || playPage.problem.requestSolution || authorProblem);
 	besogo.create(div, options);
 })();
