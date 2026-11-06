@@ -8,9 +8,8 @@
 //With "normalise": true it also gives the SGF as the site stores it (normalise below), and the values are of that SGF.
 //Input on stdin: JSON lines, each {"id": any, "sgf": "(;...)", "normalise"?: bool}. Output on stdout: a JSON line for
 //each, in order, {"id", "first_move_color", "correct_moves", "problem"} (and with normalise "sgf", "transformation",
-//"changed", "same_play", and when changed "property_changes", "unexpected_changes", "merged_away", "setup_rewritten"),
-//or {"id", "error"}
-//when the SGF can't be read.
+//"changed", "same_play", and when changed "property_changes", "unexpected_changes", "merged_away", "setup_rewritten",
+//"unreadable_statuses"), or {"id", "error"} when the SGF can't be read.
 import { readFileSync } from 'node:fs';
 import { createInterface } from 'node:readline';
 import { dirname, join } from 'node:path';
@@ -126,6 +125,12 @@ export function loadTracked(besogo, sgf)
 	return { editor, loaded };
 }
 
+//Whether besogo reads an S value as a status: what it can't read comes out as "undefined" when written
+export function statusReads(besogo, value)
+{
+	return !besogo.loadStatusFromString(value.trim()).str().includes('undefined');
+}
+
 //The nodes of a parsed SGF, depth first
 function textNodes(tree)
 {
@@ -145,14 +150,18 @@ function textNodes(tree)
 function normalisedText(besogo, editor, sgf, result, loaded)
 {
 	if (!result.changed)
-		return { sgf, ...result, same_play: true };
+	{
+		const { loadedSignature, ...shown } = result;
+		return { sgf, ...shown, same_play: true };
+	}
 	const text = besogo.composeSgf(editor);
 	const reloaded = besogo.makeEditor(19, 19, {});
 	besogo.loadSgf(besogo.parseSgf(text), reloaded);
 	const changes = propertyChanges(besogo, sgf, text, loaded);
-	return { sgf: text, ...result, same_play: signature(editor.getRoot()) === signature(reloaded.getRoot()),
+	const { loadedSignature, ...shown } = result;
+	return { sgf: text, ...shown, same_play: loadedSignature === signature(reloaded.getRoot()),
 		property_changes: changes.counts, unexpected_changes: changes.unexpected, merged_away: changes.mergedAway,
-		setup_rewritten: changes.setup };
+		setup_rewritten: changes.setup, unreadable_statuses: changes.unreadableStatuses };
 }
 
 //What a save may change in the properties of an SGF, besides the coordinates. Any other change of the count of a property
@@ -188,16 +197,21 @@ export function propertyChanges(besogo, before, after, loaded = {})
 	const unexpected = [];
 	const merged = {};
 	const setup = {};
+	// a status besogo can't read (S[undefined], or a + an old save wrote as a space) is left out by every save
+	const unreadableStatuses = old.statuses.filter(status => !statusReads(besogo, status)).length;
 	for (const id of new Set([...old.counts.keys(), ...now.counts.keys()]))
 	{
 		const [was, is] = [old.counts.get(id) ?? 0, now.counts.get(id) ?? 0];
 		if (was === is)
 			continue;
 		counts[id] = [was, is];
-		// all that is gone was on merged away nodes
-		if (is < was && is === was - (old.merged.get(id) ?? 0))
+		// all that is gone was on merged away nodes, or a status besogo can't read
+		const onMerged = old.merged.get(id) ?? 0;
+		const unreadable = id === 'S' ? unreadableStatuses : 0;
+		if (is < was && is === was - onMerged - unreadable)
 		{
-			merged[id] = was - is;
+			if (onMerged)
+				merged[id] = onMerged;
 			continue;
 		}
 		if (SETUP.has(id))
@@ -212,22 +226,36 @@ export function propertyChanges(besogo, before, after, loaded = {})
 		if (!expected)
 			unexpected.push(id + ' ' + was + '→' + is + (illegal ? ' (' + illegal + ' illegal, besogo leaves it out)' : ''));
 	}
+	// a status that stays is written as it was (an S besogo writes otherwise is a status lost); one lost is told by the
+	// count
+	const readable = old.statuses.filter(status => statusReads(besogo, status));
+	const writtenUnreadable = now.statuses.filter(status => !statusReads(besogo, status));
+	if (writtenUnreadable.length)
+		unexpected.push('S written that besogo can\'t read: ' + writtenUnreadable.map(status => JSON.stringify(status)).join(', '));
+	const statuses = values => values.slice().sort().join(' | ');
+	if (readable.length === now.statuses.length && statuses(readable) !== statuses(now.statuses))
+	{
+		const changed = readable.filter(status => !now.statuses.includes(status));
+		unexpected.push('S written otherwise: ' + changed.map(status => JSON.stringify(status)).join(', '));
+	}
 	const kept = new Set(now.comments.keys());
 	const lost = [...old.comments].filter(([text]) => !kept.has(text));
 	const lostOnKeptNodes = lost.filter(([, comment]) => comment.onKeptNode).map(([, comment]) => comment.written);
 	if (lostOnKeptNodes.length)
 		unexpected.push('C lost: ' + lostOnKeptNodes.map(comment => JSON.stringify(comment.slice(0, 40))).join(', '));
-	return { counts, unexpected, mergedAway: merged, setup };
+	return { counts, unexpected, mergedAway: merged, setup, unreadableStatuses };
 }
 
 //The count of the values of each property of a parsed SGF (a point range of a point list as its points), the part of
-//them on the nodes besogo merged away (by their place, depth first), the illegal moves, and its comments: the comment of each node as besogo reads it (loadSgf.js joins the C of a node, treeProblemUpdater.js
+//them on the nodes besogo merged away (by their place, depth first), the illegal moves, the statuses of the nodes that
+//stay, and its comments: the comment of each node as besogo reads it (loadSgf.js joins the C of a node, treeProblemUpdater.js
 //takes one leading + as the mark of a correct move) => the comment as it was written and whether a node that stays has it
 function propertyCounts(tree, { mergedAway = new Set(), movesLeftOut = new Set() } = {})
 {
 	const counts = new Map();
 	const merged = new Map();
 	const leftOut = new Map();
+	const statuses = [];
 	const comments = new Map();
 	textNodes(tree).forEach((node, index) =>
 	{
@@ -249,11 +277,13 @@ function propertyCounts(tree, { mergedAway = new Set(), movesLeftOut = new Set()
 			counts.set(id, (counts.get(id) ?? 0) + count);
 			if (away)
 				merged.set(id, (merged.get(id) ?? 0) + count);
+			else if (id === 'S')
+				statuses.push(...prop.values);
 			if ((id === 'B' || id === 'W') && movesLeftOut.has(index))
 				leftOut.set(id, (leftOut.get(id) ?? 0) + count);
 		}
 	});
-	return { counts, merged, movesLeftOut: leftOut, comments };
+	return { counts, merged, movesLeftOut: leftOut, statuses, comments };
 }
 
 //The points of a point list value: "aa", or the rectangle "aa:cc"
@@ -268,16 +298,20 @@ function pointsIn(value)
 
 //The stones of the root and of a node with setup stones, as besogo shows them: setup listed twice, or a stone set where
 //it already is, shows nothing more and isn't written again, but every stone shown must still be there
-function boardOf(node)
+function boardOf(node, turn = null)
 {
 	if (node.parent != null && node.getType() !== 'setup')
 		return '';
 	const size = node.getSize();
-	let board = '';
+	const board = [];
 	for (let y = 1; y <= size.y; ++y)
 		for (let x = 1; x <= size.x; ++x)
-			board += { [-1]: 'b', 1: 'w' }[node.getStone(x, y)] ?? '.';
-	return board;
+		{
+			const point = turn ? turn.apply({ x, y }, size) : { x, y };
+			const stone = turn ? turn.applyOnColor(node.getStone(x, y)) : node.getStone(x, y);
+			board[(point.y - 1) * size.x + point.x - 1] = { [-1]: 'b', 1: 'w' }[stone] ?? '.';
+		}
+	return board.join('');
 }
 
 //The G of a node as a save writes it (saveSgf.js): the text it was loaded with, or the goal the editor set on the root
@@ -290,10 +324,13 @@ function goalOf(node)
 	return node.parent == null && node.goal ? 'G' + ({ 1: 'KILL', 2: 'LIVE' }[node.goal] ?? '') : '';
 }
 
-//What a tree plays as, with its G and the stones its setup shows: every move from every position, real or merged by a transposition, the order left aside, with
+//What a tree plays as, with its G and the stones its setup shows, in the coordinates turn turns it to (none: as it is): every move from every position, real or merged by a transposition, the order left aside, with
 //whether each position is correct, wrong or neither. A position met again on its own line (a ko) counts as reached.
-function signature(root)
+function signature(root, turn = null)
 {
+	const size = root.getSize();
+	const point = move => turn ? turn.apply(move, size) : move;
+	const color = stone => turn ? turn.applyOnColor(stone) : stone;
 	const known = new Map();
 	const onLine = new Set();
 	const of = node =>
@@ -305,10 +342,11 @@ function signature(root)
 		onLine.add(node);
 		//a turned virtual move keeps only its point (gameRoot's applyTransformation), its color is the target's
 		const moves = node.children.map(child => [child.move, child]).concat(node.virtualChildren.map(virtual => [virtual.move, virtual.target]))
-			.map(([move, child]) => (move ? ((move.color ?? child.move?.color) == -1 ? 'B' : 'W') + move.x + ',' + move.y : 'pass') + '(' + of(child) + ')')
+			.map(([move, child]) => (move ? (color(move.color ?? child.move?.color) == -1 ? 'B' : 'W') + point(move).x + ',' + point(move).y : 'pass')
+				+ '(' + of(child) + ')')
 			.sort();
 		onLine.delete(node);
-		const result = node.correct + ':' + goalOf(node) + ':' + boardOf(node) + ':' + moves.join(';');
+		const result = node.correct + ':' + goalOf(node) + ':' + boardOf(node, turn) + ':' + moves.join(';');
 		known.set(node, result);
 		return result;
 	};
@@ -324,12 +362,14 @@ function normaliseLoaded(besogo, editor)
 {
 	const turn = besogo.makeTransformation();
 	besogo.scaleParameters.prepareTransformation(turn);
+	//what the tree plays as and shows, as loaded, in the coordinates it is turned to: the rewrite is compared with it
+	const loadedSignature = signature(editor.getRoot(), turn);
 	if (turn.hFlip || turn.vFlip)
 		editor.applyTransformation(turn);
 	const reordered = correctFirst(editor.getRoot());
 	//a plain object, the one of besogo comes from its own context
 	const transformation = JSON.parse(JSON.stringify(editor.getTransformationFromSgf()));
-	return { transformation, changed: reordered || transformation.transpose || transformation.flipX || transformation.flipY };
+	return { transformation, loadedSignature, changed: reordered || transformation.transpose || transformation.flipX || transformation.flipY };
 }
 
 //Puts the correct children of every node of the tree before the others, keeping the order within each; whether it moved any

@@ -140,7 +140,10 @@ besogo.loadSgf = function(sgf, editor, mode = NORMAL_LOAD)
           node.comment = prop.values.join().trim();
         break;
       case 'S':
-        node.statusSource = besogo.loadStatusFromString(prop.values.join().trim());
+        // the text is kept, so a save writes it back as it was while the status reads the same, whatever the text
+        node.statusText = prop.values.join();
+        node.statusSource = besogo.loadStatusFromString(node.statusText.trim());
+        node.statusTextReads = node.statusSource.str();
         break;
       case 'SKD':
         node.superkoMeansDead = true;

@@ -36,6 +36,8 @@ besogo.makeGameRoot = function(sizeX = 19, sizeY = 19)
     node.cameFrom = null;
     node.statusSource = null;
     node.statusSetAside = null; // the status written on a node that goes on only by a transposition, see clearCorrectValues
+    node.statusText = null; // S as it was loaded, see saveSgf
+    node.statusTextReads = null;
     node.status = null;
     node.visited = false; // player already was in this position while solving
 	node.visitedInRecursion = false; // internal bool for recursive algorithm
@@ -869,15 +871,23 @@ besogo.makeGameRoot = function(sizeX = 19, sizeY = 19)
 
   root.applyTransformationOnSetupStones = function(transformation)
   {
+    // setupStones holds the change from the parent's stone, so the stone the setup leaves is placed again: below the
+    // root, removing a black stone or turning a white one black isn't the colour of the change
     let oldSetupStones = this.setupStones;
+    let stonesLeft = [];
+    for (let i = 0; i < oldSetupStones.length; ++i)
+      if (oldSetupStones[i])
+      {
+        let position = this.toXY(i);
+        stonesLeft[i] = this.getStone(position.x, position.y);
+      }
     this.setupStones = [];
     this.board = makeBoard(this.parent);
     for (let i = 0; i < oldSetupStones.length; ++i)
       if (oldSetupStones[i])
       {
-        let position = this.toXY(i);
-        let newPosition = transformation.apply(position, {x: sizeX, y: sizeY});
-        this.placeSetup(newPosition.x, newPosition.y, transformation.applyOnColor(oldSetupStones[i]));
+        let newPosition = transformation.apply(this.toXY(i), {x: sizeX, y: sizeY});
+        this.placeSetup(newPosition.x, newPosition.y, transformation.applyOnColor(stonesLeft[i]));
       }
   }
 

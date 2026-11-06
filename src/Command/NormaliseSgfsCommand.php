@@ -30,8 +30,10 @@ use Cake\Console\ConsoleOptionParser;
 //a G written on every node, a stone, label or comment lost on a node that stays). What was on a node besogo merges
 //into a transposition goes with it (its move, status, markup, comment); the report counts the rows stored with such a
 //loss and what went. Setup is written as besogo shows it, a point listed twice once: the play check compares the
-//stones shown, and the report counts the rows whose setup is written so. The report sums the change of every property.
-//Everything changed is kept first in sgf_before_normalisation and tsumego_comment_before_normalisation.
+//stones shown, and the report counts the rows whose setup is written so. A status besogo can't read (S[undefined] of
+//old saves, or one whose + an old save wrote as a space, "A 2KO ") is left out, as every save does now, and counted;
+//every other status is written as it was. The report sums the change of every property. Nothing is kept aside: the
+//database is backed up before a run.
 //A problem is done in one transaction; a row already normalised comes back unchanged, so a run that stopped is
 //simply run again, and a second run changes nothing. Without --write nothing is written and it reports what would
 //change, with the time it took.
@@ -71,6 +73,8 @@ class NormaliseSgfsCommand extends Command
 	private array $losingMergedLines = [];
 	/** @var array<int, array<string, int>> sgf id => the change of its setup properties, written as besogo shows them */
 	private array $setupRewritten = [];
+	/** @var array<int, int> sgf id => the statuses besogo can't read that its rewrite leaves out */
+	private array $unreadableStatuses = [];
 	//sgf id => what changes unexpectedly in its rewrite, which keeps it as it is
 	/** @var array<int, list<string>> */
 	private array $changingUnexpectedly = [];
@@ -192,12 +196,8 @@ class NormaliseSgfsCommand extends Command
 			$this->countPropertyChanges($id, $analysis);
 
 			if ($this->write)
-			{
-				Util::execute('INSERT INTO sgf_before_normalisation (sgf_id, sgf, first_move_color, correct_moves, transformation_from_source, transformation) VALUES (?, ?, ?, ?, ?, ?)',
-					[$id, $row['sgf'], $row['first_move_color'], $row['correct_moves'], $row['transformation_from_source'], $transformation->toJson()]);
 				Util::execute('UPDATE sgf SET sgf = ?, preview = ?, first_move_color = ?, correct_moves = ? WHERE id = ?',
 					[$analysis->sgf, TsumegoButton::sgfToPreviewJson((string) $analysis->sgf), $analysis->firstMoveColor, $analysis->correctMoves, $id]);
-			}
 			if (!$turned)
 				continue;
 			// the transformation from its source to it ends in its turn now, and those from it start with its turn undone
@@ -235,8 +235,6 @@ class NormaliseSgfsCommand extends Command
 			$this->counts['comments moved']++;
 			if (!$this->write)
 				continue;
-			Util::execute('INSERT IGNORE INTO tsumego_comment_before_normalisation (tsumego_comment_id, message, position) VALUES (?, ?, ?)',
-				[$comment['id'], $comment['message'], $comment['position']]);
 			Util::execute('UPDATE tsumego_comment SET message = ?, position = ? WHERE id = ?', [$message, $position, $comment['id']]);
 		}
 	}
@@ -248,6 +246,8 @@ class NormaliseSgfsCommand extends Command
 			$this->losingMergedLines[] = $id;
 		if ($analysis->setupRewritten)
 			$this->setupRewritten[$id] = $analysis->setupRewritten;
+		if ($analysis->unreadableStatuses)
+			$this->unreadableStatuses[$id] = $analysis->unreadableStatuses;
 		foreach ($analysis->mergedAway as $property => $count)
 		{
 			$this->mergedAway[$property]['rows'] = ($this->mergedAway[$property]['rows'] ?? 0) + 1;
@@ -317,6 +317,8 @@ class NormaliseSgfsCommand extends Command
 				fn($property, $lost) => "$property {$lost['count']} in {$lost['rows']} rows", array_keys($this->mergedAway), $this->mergedAway)) : ''));
 		$this->console->out(count($this->setupRewritten) . ' rows rewritten have their setup written as besogo shows it (a point listed twice, or set to the stone it has, written once; the stones shown are the same)'
 			. self::ids(array_keys($this->setupRewritten)));
+		$this->console->out(count($this->unreadableStatuses) . ' rows rewritten leave out ' . array_sum($this->unreadableStatuses)
+			. ' statuses besogo can\'t read (S[undefined], or a + an old save wrote as a space)' . self::ids(array_keys($this->unreadableStatuses)));
 		foreach (array_slice($this->setupRewritten, 0, 50, true) as $id => $changes)
 			$this->console->out("sgf $id setup: " . implode(', ', array_map(fn($property, $change) => "$property " . sprintf('%+d', $change), array_keys($changes), $changes)));
 		ksort($this->examples);

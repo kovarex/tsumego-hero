@@ -71,8 +71,6 @@ class NormaliseSgfsCommandTest extends AppTestCase
 		$this->assertStringContainsString('"black":"cc"', $bottomRight['preview']);
 		$comment = Util::query('SELECT message, position FROM tsumego_comment')[0];
 		$this->assertSame(['message' => 'black A19 then w A18', 'position' => '1/2/1/1/2/1/2/1/sgf|1/1+1/2'], $comment);
-		$this->assertSame([self::BOTTOM_RIGHT_COMMENT], array_map(fn($row) => ['message' => $row['message'], 'position' => $row['position']],
-			Util::query('SELECT message, position FROM tsumego_comment_before_normalisation')));
 
 		$this->assertSame('aa', $this->sgfRow($context->tsumegos[1]['id'])['correct_moves']);
 		$this->assertSame(['B', 'aa'], [$this->sgfRow($context->tsumegos[2]['id'])['first_move_color'], $this->sgfRow($context->tsumegos[2]['id'])['correct_moves']]);
@@ -80,9 +78,6 @@ class NormaliseSgfsCommandTest extends AppTestCase
 		$this->assertSame(self::DONE, $this->sgfRow($context->tsumegos[4]['id'])['sgf'], 'already as the site keeps it');
 
 		$this->assertSame($before, Util::query('SELECT id, tsumego_id, user_id, sgf_status_id, created, accepted, description FROM sgf ORDER BY id'), 'no row added, none changed but its SGF');
-		$backups = Util::query('SELECT sgf_id, sgf, transformation FROM sgf_before_normalisation ORDER BY sgf_id');
-		$this->assertCount(4, $backups);
-		$this->assertSame([self::BOTTOM_RIGHT, '{"transpose":false,"flipX":true,"flipY":true,"invertColors":false}'], [$backups[0]['sgf'], $backups[0]['transformation']]);
 	}
 
 	public function testASecondRunChangesNothing(): void
@@ -178,7 +173,6 @@ class NormaliseSgfsCommandTest extends AppTestCase
 		$this->assertOutputContains("1 rows rewritten lose what was on lines besogo merges into a transposition: $id; what went: ");
 		$this->assertOutputContains('LB 2 in 1 rows');
 		$this->assertNotSame($sgf, $this->sgfRow($context->tsumegos[0]['id'])['sgf']);
-		$this->assertSame($sgf, Util::query('SELECT sgf FROM sgf_before_normalisation WHERE sgf_id = ?', [$id])[0]['sgf']);
 	}
 
 	//Setup listed twice (as sgf 19415 and 19416 of the site) shows one stone and is written once; the row is rewritten
@@ -207,7 +201,6 @@ class NormaliseSgfsCommandTest extends AppTestCase
 		$this->assertOutputContains("1 whose properties would change unexpectedly (kept as they are): $id");
 		$this->assertOutputContains("sgf $id (tsumego {$context->tsumegos[0]['id']}, current version) would change: XY 1→0");
 		$this->assertSame($sgf, $this->sgfRow($context->tsumegos[0]['id'])['sgf']);
-		$this->assertSame([], Util::query('SELECT * FROM sgf_before_normalisation'));
 	}
 
 	//A row kept as it is says whether it is the version shown or an old one of the history (as 19451 and 19452 of the
@@ -221,5 +214,21 @@ class NormaliseSgfsCommandTest extends AppTestCase
 		$this->exec('normalise_sgfs');
 
 		$this->assertOutputContains("sgf $old (tsumego {$context->tsumegos[0]['id']}, old version, not current) would change: XY 1→0");
+	}
+
+	//A status besogo can't read (S[undefined] of old saves, "A 2KO " for "A+2KO+") is left out, as every save does,
+	//and counted; the others are written as they were
+	public function testAStatusBesogoCantReadIsLeftOut(): void
+	{
+		$sgf = '(;SZ[19]G[KILL]AB[rb][sb](;B[sa];W[ra]S[A 2KO ])(;B[ra];W[qa]S[KO ])(;B[qa];W[ra]S[undefined]))';
+		$context = new ContextPreparator(['tsumego' => ['sgf' => ['data' => $sgf]]]);
+		$id = $this->sgfRow($context->tsumegos[0]['id'])['id'];
+		$this->exec('normalise_sgfs --write');
+
+		$this->assertOutputContains("1 rows rewritten leave out 2 statuses besogo can't read (S[undefined], or a + an old save wrote as a space): $id");
+		$stored = $this->sgfRow($context->tsumegos[0]['id'])['sgf'];
+		$this->assertStringContainsString('S[KO ]', $stored);
+		$this->assertStringNotContainsString('A 2KO', $stored);
+		$this->assertStringNotContainsString('undefined', $stored);
 	}
 }
