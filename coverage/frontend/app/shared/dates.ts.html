@@ -23,16 +23,16 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">86.66% </span>
+                <span class="strong">73.68% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>13/15</span>
+                <span class='fraction'>14/19</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">50% </span>
+                <span class="strong">45.45% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>4/8</span>
+                <span class='fraction'>5/11</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">85.71% </span>
+                <span class="strong">72.22% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>12/14</span>
+                <span class='fraction'>13/18</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line high'></div>
+    <div class='status-line medium'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -127,7 +127,16 @@
 <a name='L62'></a><a href='#L62'>62</a>
 <a name='L63'></a><a href='#L63'>63</a>
 <a name='L64'></a><a href='#L64'>64</a>
-<a name='L65'></a><a href='#L65'>65</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L65'></a><a href='#L65'>65</a>
+<a name='L66'></a><a href='#L66'>66</a>
+<a name='L67'></a><a href='#L67'>67</a>
+<a name='L68'></a><a href='#L68'>68</a>
+<a name='L69'></a><a href='#L69'>69</a>
+<a name='L70'></a><a href='#L70'>70</a>
+<a name='L71'></a><a href='#L71'>71</a>
+<a name='L72'></a><a href='#L72'>72</a>
+<a name='L73'></a><a href='#L73'>73</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -170,16 +179,17 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">222x</span>
-<span class="cline-any cline-yes">222x</span>
+<span class="cline-any cline-yes">229x</span>
+<span class="cline-any cline-yes">229x</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-yes">222x</span>
-<span class="cline-any cline-yes">222x</span>
+<span class="cline-any cline-yes">229x</span>
+<span class="cline-any cline-yes">229x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">181x</span>
+<span class="cline-any cline-yes">182x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -187,11 +197,18 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">283x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">181x</span>
-<span class="cline-any cline-yes">181x</span>
+<span class="cline-any cline-yes">182x</span>
+<span class="cline-any cline-yes">182x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">182x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import dayjs, { type Dayjs } from 'dayjs';
+import { relativeTime } from './relativeTime';
 &nbsp;
 //The dates of the whole site are written here, in the format the player picked in the settings, ISO by default.
 //The server prints dates as &lt;time datetime="..." data-format="..."&gt;, see localizeTimeElements, and the React
@@ -246,12 +263,19 @@ function isDateFormat(format: string): format is DateFormat
 	return (DATE_FORMATS as readonly string[]).includes(format);
 }
 &nbsp;
-//Replaces the text of every &lt;time datetime="..."&gt; rendered by the server with its formatted date.
+//Replaces the text of every &lt;time datetime="..."&gt; rendered by the server with its formatted date. The format
+//'relative' writes how long ago it was ("3 days ago") and puts the date and time in the tooltip.
 export function localizeTimeElements(): void
 {
 	document.querySelectorAll&lt;HTMLTimeElement&gt;('time[datetime]').forEach(element =&gt;
 	{
 		const format = element.getAttribute('data-format') ?? <span class="branch-1 cbranch-no" title="branch not covered" >'datetime';</span>
+		<span class="missing-if-branch" title="if path not taken" >I</span>if (format === 'relative' &amp;&amp; <span class="branch-1 cbranch-no" title="branch not covered" >dayjs(element.dateTime).isValid())</span>
+		{
+<span class="cstat-no" title="statement not covered" >			element.textContent = relativeTime(dayjs(element.dateTime).toDate(), new Date());</span>
+<span class="cstat-no" title="statement not covered" >			element.title = formatDate(element.dateTime);</span>
+<span class="cstat-no" title="statement not covered" >			return;</span>
+		}
 		element.textContent = formatDate(element.dateTime, isDateFormat(format) ? format : <span class="branch-1 cbranch-no" title="branch not covered" >'datetime')</span>;
 	});
 }
@@ -262,7 +286,7 @@ export function localizeTimeElements(): void
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-11-06T12:38:55.733Z
+                at 2026-11-06T13:23:29.060Z
             </div>
         <script src="../../prettify.js"></script>
         <script>
