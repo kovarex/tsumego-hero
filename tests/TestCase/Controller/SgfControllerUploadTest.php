@@ -7,6 +7,7 @@ use App\Model\Entity\TsumegoComment;
 use App\Model\Table\UserTable;
 use App\Utility\Auth;
 use App\Utility\Constants;
+use Facebook\WebDriver\WebDriverBy;
 
 class SgfControllerUploadTest extends IntegrationTestCase
 {
@@ -55,7 +56,11 @@ class SgfControllerUploadTest extends IntegrationTestCase
 			input.files = dt.files;
 			input.dispatchEvent(new Event('change', { bubbles: true }));
 		", [$sgf]);
+		//the save, which runs node on the server, ends in a new page, saved or refused; the database is read after it
+		$page = $browser->driver->findElement(WebDriverBy::tagName('html'));
 		$browser->clickId('tsumego-edit-submit');
+		$browser->waitUntilStale($page, 30);
+		$browser->waitUntilJs('document.readyState === "complete"');
 	}
 
 	public function testUploadSgfViaBesogoEditor()
@@ -258,7 +263,7 @@ class SgfControllerUploadTest extends IntegrationTestCase
 		$browser->get('/' . $context->setConnections[0]['id']);
 		$this->uploadSgfFile($browser, '(;GM[1]FF[4]ST[2]SZ[19]G[KILL](;B[aa];W[ab];B[ba]S[DEAD])(;B[da];W[aa]))');
 
-		$browser->waitUntilCssSelectorExistsWithText('#uploadProblem', 'The SGF was not saved: End position without status. (move 2)');
+		$browser->waitUntilCssSelectorExistsWithText('.alert-error', 'The SGF was not saved: End position without status. (move 2)');
 		$this->assertEquals($context->tsumegos[0]['sgfs'][0]['id'], $this->newestSgf($context)->id, 'Nothing was saved');
 		$browser->assertNoJsErrors();
 	}

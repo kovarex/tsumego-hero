@@ -1,5 +1,7 @@
 <?php
 
+use Facebook\WebDriver\WebDriverBy;
+
 //Tests that SGF data with special characters survives the round-trip
 //through json_encode → JavaScript → besogo/database without data loss or JS errors.
 class SgfSpecialCharacterRenderTest extends IntegrationTestCase
@@ -94,8 +96,7 @@ class SgfSpecialCharacterRenderTest extends IntegrationTestCase
 	}
 
 	//Upload SGF with special chars and verify it's preserved exactly in the database.
-	//The upload flow goes through templates/Tsumegos/setup_new_sgf.php, which uses json_encode to embed
-	//the SGF in JavaScript for besogo parsing, then auto-submits to setupNewSgfStep2.
+	//The server reads the uploaded SGF for its correct moves (SgfAnalysis) and stores the text as it came.
 	public function testUploadPreservesEvilSgfInDatabase()
 	{
 		$browser = Browser::instance();
@@ -120,10 +121,12 @@ class SgfSpecialCharacterRenderTest extends IntegrationTestCase
 			input.files = dt.files;
 			input.dispatchEvent(new Event('change', { bubbles: true }));
 		", [self::tortureSgf()]);
+		$page = $browser->driver->findElement(WebDriverBy::tagName('html'));
 		$browser->clickId('tsumego-edit-submit');
 
-		// Wait for setup_new_sgf.php to process and redirect back
-		$browser->waitUntilJs('!location.href.includes("/tsumegos/edit/")');
+		// Wait for the page the save ends in; the address is the same before and after
+		$browser->waitUntilStale($page, 30);
+		$browser->waitUntilJs('document.readyState === "complete"');
 
 		// Verify the uploaded SGF was saved to the database
 		$sgfs = $this->fetchTable('Sgf')->find()->where(['tsumego_id' => $context->tsumegos[0]['id']])->orderByDesc('id')->toArray();
