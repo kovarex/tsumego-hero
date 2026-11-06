@@ -193,7 +193,7 @@ return [
 		'/challenges/play/7' => ['Challenges', 'play', ['7']],
 		'/challenges/rematch' => ['Challenges', 'rematch', []],
 		'/challenges/rematch/7' => ['Challenges', 'rematch', ['7']],
-		'/challenges/view' =>['Challenges', 'view', []],
+		'/challenges/view' => ['Challenges', 'view', []],
 		'/challenges/view/7' => ['Challenges', 'view', ['7']],
 
 		'/changelog/changelogTimestamps' => ['Changelog', 'changelogTimestamps', []],
