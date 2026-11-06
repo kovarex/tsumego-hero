@@ -124,10 +124,11 @@ class ChallengesController extends AppController
 		$challenge = $this->findChallenge($id);
 		$isParticipant = Auth::isLoggedIn() && ChallengeTable::isParticipant((int) $challenge['id'], Auth::getUserID());
 		$variables = $this->standingsVariables($challenge, $isParticipant);
+		// never kept by a cache on the way, which would show the page a table it has outgrown
 		return $this->respondJson([
 			'finished' => $variables['isFinished'],
 			'html' => $this->createView()->element('Challenges/standings', ['challenge' => $challenge] + $variables),
-		]);
+		])->withHeader('Cache-Control', 'private, no-store');
 	}
 
 	//What the table of the players needs, the same for the page and for standings(). How each

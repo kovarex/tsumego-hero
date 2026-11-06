@@ -423,6 +423,7 @@ class ChallengesControllerTest extends IntegrationTestCase
 		$this->assertFalse($body['finished']);
 		$this->assertStringContainsString('not played yet', $body['html']);
 		$this->assertStringNotContainsString('challenge-place', $body['html']);
+		$this->assertHeader('Cache-Control', 'private, no-store');
 
 		$this->login('friend');
 		$this->playRun($challengeId, array_fill(0, 5, [PlayOutcome::SolvedClean, 20]));
