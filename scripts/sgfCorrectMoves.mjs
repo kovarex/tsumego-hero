@@ -145,12 +145,16 @@ function textNodes(tree)
 function normalisedText(besogo, editor, sgf, result, loaded)
 {
 	if (!result.changed)
-		return { sgf, ...result, same_play: true };
+	{
+		const { loadedSignature, ...shown } = result;
+		return { sgf, ...shown, same_play: true };
+	}
 	const text = besogo.composeSgf(editor);
 	const reloaded = besogo.makeEditor(19, 19, {});
 	besogo.loadSgf(besogo.parseSgf(text), reloaded);
 	const changes = propertyChanges(besogo, sgf, text, loaded);
-	return { sgf: text, ...result, same_play: signature(editor.getRoot()) === signature(reloaded.getRoot()),
+	const { loadedSignature, ...shown } = result;
+	return { sgf: text, ...shown, same_play: loadedSignature === signature(reloaded.getRoot()),
 		property_changes: changes.counts, unexpected_changes: changes.unexpected, merged_away: changes.mergedAway,
 		setup_rewritten: changes.setup };
 }
@@ -268,16 +272,20 @@ function pointsIn(value)
 
 //The stones of the root and of a node with setup stones, as besogo shows them: setup listed twice, or a stone set where
 //it already is, shows nothing more and isn't written again, but every stone shown must still be there
-function boardOf(node)
+function boardOf(node, turn = null)
 {
 	if (node.parent != null && node.getType() !== 'setup')
 		return '';
 	const size = node.getSize();
-	let board = '';
+	const board = [];
 	for (let y = 1; y <= size.y; ++y)
 		for (let x = 1; x <= size.x; ++x)
-			board += { [-1]: 'b', 1: 'w' }[node.getStone(x, y)] ?? '.';
-	return board;
+		{
+			const point = turn ? turn.apply({ x, y }, size) : { x, y };
+			const stone = turn ? turn.applyOnColor(node.getStone(x, y)) : node.getStone(x, y);
+			board[(point.y - 1) * size.x + point.x - 1] = { [-1]: 'b', 1: 'w' }[stone] ?? '.';
+		}
+	return board.join('');
 }
 
 //The G of a node as a save writes it (saveSgf.js): the text it was loaded with, or the goal the editor set on the root
@@ -290,10 +298,13 @@ function goalOf(node)
 	return node.parent == null && node.goal ? 'G' + ({ 1: 'KILL', 2: 'LIVE' }[node.goal] ?? '') : '';
 }
 
-//What a tree plays as, with its G and the stones its setup shows: every move from every position, real or merged by a transposition, the order left aside, with
+//What a tree plays as, with its G and the stones its setup shows, in the coordinates turn turns it to (none: as it is): every move from every position, real or merged by a transposition, the order left aside, with
 //whether each position is correct, wrong or neither. A position met again on its own line (a ko) counts as reached.
-function signature(root)
+function signature(root, turn = null)
 {
+	const size = root.getSize();
+	const point = move => turn ? turn.apply(move, size) : move;
+	const color = stone => turn ? turn.applyOnColor(stone) : stone;
 	const known = new Map();
 	const onLine = new Set();
 	const of = node =>
@@ -305,10 +316,11 @@ function signature(root)
 		onLine.add(node);
 		//a turned virtual move keeps only its point (gameRoot's applyTransformation), its color is the target's
 		const moves = node.children.map(child => [child.move, child]).concat(node.virtualChildren.map(virtual => [virtual.move, virtual.target]))
-			.map(([move, child]) => (move ? ((move.color ?? child.move?.color) == -1 ? 'B' : 'W') + move.x + ',' + move.y : 'pass') + '(' + of(child) + ')')
+			.map(([move, child]) => (move ? (color(move.color ?? child.move?.color) == -1 ? 'B' : 'W') + point(move).x + ',' + point(move).y : 'pass')
+				+ '(' + of(child) + ')')
 			.sort();
 		onLine.delete(node);
-		const result = node.correct + ':' + goalOf(node) + ':' + boardOf(node) + ':' + moves.join(';');
+		const result = node.correct + ':' + goalOf(node) + ':' + boardOf(node, turn) + ':' + moves.join(';');
 		known.set(node, result);
 		return result;
 	};
@@ -324,12 +336,14 @@ function normaliseLoaded(besogo, editor)
 {
 	const turn = besogo.makeTransformation();
 	besogo.scaleParameters.prepareTransformation(turn);
+	//what the tree plays as and shows, as loaded, in the coordinates it is turned to: the rewrite is compared with it
+	const loadedSignature = signature(editor.getRoot(), turn);
 	if (turn.hFlip || turn.vFlip)
 		editor.applyTransformation(turn);
 	const reordered = correctFirst(editor.getRoot());
 	//a plain object, the one of besogo comes from its own context
 	const transformation = JSON.parse(JSON.stringify(editor.getTransformationFromSgf()));
-	return { transformation, changed: reordered || transformation.transpose || transformation.flipX || transformation.flipY };
+	return { transformation, loadedSignature, changed: reordered || transformation.transpose || transformation.flipX || transformation.flipY };
 }
 
 //Puts the correct children of every node of the tree before the others, keeping the order within each; whether it moved any
