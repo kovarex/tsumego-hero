@@ -188,6 +188,14 @@ test('only what was on the merged away nodes may go', () =>
 	assert.match(setAside.sgf, /W\[bb\]\nS\[ALIVE\]/);
 	assert.deepEqual(normalised('(;SZ[19]AB[rr][rs][qq](;B[ss]C[+])(;B[sr];W[qs];B[qq];W[ps]))').unexpected_changes,
 		['B 3→2 (1 illegal, besogo leaves it out)']);
+	//a status is written back as it was, one besogo reads otherwise or can't read too (old saves wrote "KO " for "KO+"),
+	//and a status written otherwise, as S[undefined], keeps the row as it is
+	const statuses = normalised('(;SZ[19]G[KILL]AB[rb][sb](;B[sa];W[ra]S[A 2KO ])(;B[ra];W[qa]S[KO ])(;B[qa];W[ra]S[SEKI ]))');
+	assert.deepEqual([statuses.same_play, statuses.unexpected_changes], [true, []]);
+	for (const status of ['S[A 2KO ]', 'S[KO ]', 'S[SEKI ]'])
+		assert.ok(statuses.sgf.includes(status), status);
+	assert.deepEqual(propertyChanges(besogo.besogo, '(;SZ[19];B[aa]S[A 2KO ])', '(;FF[4]GM[1]SZ[19]ST[0];B[aa]S[undefined])').unexpected,
+		['S written otherwise: "A 2KO "']);
 	//setup after a move is turned with the stone it leaves (sgf 19415 and 19416 of the site had an AE turned into an AW),
 	//and the play check compares the stones shown with the problem as loaded, before the turn
 	const belowTheRoot = normalised('(;SZ[19]AB[rr][rs][pr](;B[ss]C[+])(;B[sr];W[qs];AE[pr]AB[qs]C[+]))');

@@ -36,6 +36,8 @@ besogo.makeGameRoot = function(sizeX = 19, sizeY = 19)
     node.cameFrom = null;
     node.statusSource = null;
     node.statusSetAside = null; // the status written on a node that goes on only by a transposition, see clearCorrectValues
+    node.statusText = null; // S as it was loaded, see saveSgf
+    node.statusTextReads = null;
     node.status = null;
     node.visited = false; // player already was in this position while solving
 	node.visitedInRecursion = false; // internal bool for recursive algorithm

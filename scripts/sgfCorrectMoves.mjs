@@ -216,6 +216,14 @@ export function propertyChanges(besogo, before, after, loaded = {})
 		if (!expected)
 			unexpected.push(id + ' ' + was + '→' + is + (illegal ? ' (' + illegal + ' illegal, besogo leaves it out)' : ''));
 	}
+	// a status that stays is written as it was (an S besogo writes otherwise, as S[undefined], is a status lost); one
+	// lost is told by the count
+	const statuses = values => values.slice().sort().join(' | ');
+	if (old.statuses.length === now.statuses.length && statuses(old.statuses) !== statuses(now.statuses))
+	{
+		const changed = old.statuses.filter(status => !now.statuses.includes(status));
+		unexpected.push('S written otherwise: ' + changed.map(status => JSON.stringify(status)).join(', '));
+	}
 	const kept = new Set(now.comments.keys());
 	const lost = [...old.comments].filter(([text]) => !kept.has(text));
 	const lostOnKeptNodes = lost.filter(([, comment]) => comment.onKeptNode).map(([, comment]) => comment.written);
@@ -225,13 +233,15 @@ export function propertyChanges(besogo, before, after, loaded = {})
 }
 
 //The count of the values of each property of a parsed SGF (a point range of a point list as its points), the part of
-//them on the nodes besogo merged away (by their place, depth first), the illegal moves, and its comments: the comment of each node as besogo reads it (loadSgf.js joins the C of a node, treeProblemUpdater.js
+//them on the nodes besogo merged away (by their place, depth first), the illegal moves, the statuses of the nodes that
+//stay, and its comments: the comment of each node as besogo reads it (loadSgf.js joins the C of a node, treeProblemUpdater.js
 //takes one leading + as the mark of a correct move) => the comment as it was written and whether a node that stays has it
 function propertyCounts(tree, { mergedAway = new Set(), movesLeftOut = new Set() } = {})
 {
 	const counts = new Map();
 	const merged = new Map();
 	const leftOut = new Map();
+	const statuses = [];
 	const comments = new Map();
 	textNodes(tree).forEach((node, index) =>
 	{
@@ -253,11 +263,13 @@ function propertyCounts(tree, { mergedAway = new Set(), movesLeftOut = new Set()
 			counts.set(id, (counts.get(id) ?? 0) + count);
 			if (away)
 				merged.set(id, (merged.get(id) ?? 0) + count);
+			else if (id === 'S')
+				statuses.push(...prop.values);
 			if ((id === 'B' || id === 'W') && movesLeftOut.has(index))
 				leftOut.set(id, (leftOut.get(id) ?? 0) + count);
 		}
 	});
-	return { counts, merged, movesLeftOut: leftOut, comments };
+	return { counts, merged, movesLeftOut: leftOut, statuses, comments };
 }
 
 //The points of a point list value: "aa", or the rectangle "aa:cc"

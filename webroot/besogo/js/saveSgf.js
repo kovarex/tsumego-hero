@@ -119,8 +119,11 @@ besogo.composeSgf = function(editor, expand = false)
     let statusToSave = node.statusSource || node.statusSetAside;
     if (statusToSave)
     {
+      // S as it was loaded while the status reads the same: a text besogo reads otherwise ("KO " of old saves, or one
+      // it can't read) isn't rewritten
+      let loaded = Object.hasOwn(node, 'statusText') && node.statusText !== null && statusToSave.str() === node.statusTextReads;
       string += (string ? '\n' : '');
-      string += 'S[' + statusToSave.str() + ']';
+      string += 'S[' + (loaded ? escapeText(node.statusText) : statusToSave.str()) + ']';
     }
 
     if (node.superkoMeansDead)
