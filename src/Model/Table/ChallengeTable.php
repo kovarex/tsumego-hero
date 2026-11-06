@@ -38,12 +38,16 @@ class ChallengeTable extends AppTable
 
 	//Draws the problems and creates the challenge, with its creator as its first participant.
 	//Returns the id of the new challenge, null when there is no problem of these ranks
-	public static function start(int $creatorUserId, int $minimumTimeModeRankId, int $maximumTimeModeRankId, int $secondsPerProblem, int $problemCount): ?int
+	/** @param list<int> $avoidTsumegoIds Problems drawn only when there are not enough others, like the ones of the challenge a rematch repeats */
+	public static function start(int $creatorUserId, int $minimumTimeModeRankId, int $maximumTimeModeRankId, int $secondsPerProblem, int $problemCount, array $avoidTsumegoIds = []): ?int
 	{
 		$tsumegos = TimeMode::getTsumegosOfRanks($minimumTimeModeRankId, $maximumTimeModeRankId);
 		if (empty($tsumegos))
 			return null;
 		shuffle($tsumegos);
+		$avoid = array_fill_keys($avoidTsumegoIds, true);
+		// the sort keeps the shuffled order within the problems to draw first and within the ones to avoid
+		usort($tsumegos, fn(array $a, array $b) => isset($avoid[(int) $a['id']]) <=> isset($avoid[(int) $b['id']]));
 
 		$challengeTable = TableRegistry::getTableLocator()->get('Challenge');
 		$challenge = $challengeTable->saveOrFail($challengeTable->newEntity([
@@ -59,6 +63,37 @@ class ChallengeTable extends AppTable
 				[$challengeId, $tsumego['id'], $index + 1]);
 		self::addParticipant($challengeId, $creatorUserId, null);
 		return $challengeId;
+	}
+
+	//A new challenge with the settings of the challenge, started by the player, with the other players
+	//of the challenge invited (the ones who declined it or deleted their account are left out). New
+	//problems are drawn, the ones of the challenge only when the ranks have too few others.
+	//Returns the id of the new challenge and the ids of the players invited to it, null when the ranks have no problem anymore
+	/**
+	 * @param array<string, mixed> $challenge As withDetails() returns it
+	 * @return array{0: int, 1: list<int>}|null
+	 */
+	public static function rematch(array $challenge, int $userId): ?array
+	{
+		$challengeId = (int) $challenge['id'];
+		$rematchId = self::start(
+			$userId,
+			(int) $challenge['minimum_time_mode_rank_id'],
+			(int) $challenge['maximum_time_mode_rank_id'],
+			(int) $challenge['seconds_per_problem'],
+			(int) $challenge['problem_count'],
+			self::problemIDs($challengeId));
+		if ($rematchId === null)
+			return null;
+
+		$players = array_map('intval', array_column(Util::query('SELECT p.user_id
+			FROM challenge_participant p
+			JOIN user u ON u.id = p.user_id AND u.deleted IS NULL
+			WHERE p.challenge_id = ? AND p.declined IS NULL AND p.user_id != ?
+			ORDER BY p.id', [$challengeId, $userId]), 'user_id'));
+		foreach ($players as $playerId)
+			self::addParticipant($rematchId, $playerId, $userId);
+		return [$rematchId, $players];
 	}
 
 	//The problems of a challenge in the order they are played.

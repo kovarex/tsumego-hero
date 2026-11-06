@@ -286,7 +286,7 @@ return function (RouteBuilder $routes): void
 		['controller' => 'Challenges', 'action' => 'view'],
 		['pass' => ['id'], 'id' => '[0-9]+']
 	);
-	foreach (['join' => 'join', 'decline' => 'decline', 'invite' => 'invite', 'play' => 'play'] as $path => $challengeAction)
+	foreach (['join' => 'join', 'decline' => 'decline', 'invite' => 'invite', 'play' => 'play', 'rematch' => 'rematch'] as $path => $challengeAction)
 		$routes->connect(
 			'/challenges/' . $path . '/{id}',
 			['controller' => 'Challenges', 'action' => $challengeAction],

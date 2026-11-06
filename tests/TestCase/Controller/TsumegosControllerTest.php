@@ -865,9 +865,11 @@ class TsumegosControllerTest extends IntegrationTestCase
 			['name' => 'new.sgf', 'tmp_name' => $file, 'error' => UPLOAD_ERR_OK, 'size' => strlen($sgf)],
 			$this->editFormOf($tsumegoID, ['hint' => 'look at the corner', 'set_connection_id' => $context->tsumegos[0]['set-connections'][0]['id'], 'sgf_description' => 'fixed the corner']));
 
-		$this->assertResponseOk();
-		$this->assertSame($sgf, $this->viewVariable('sgf'));
-		$this->assertSame('fixed the corner', $this->viewVariable('description'));
+		//saved right away, with the correct moves the server works out, and back to the problem
+		$setConnectionID = $context->tsumegos[0]['set-connections'][0]['id'];
+		$this->assertRedirect('/' . $setConnectionID);
+		$saved = $this->fetchTable('Sgf')->find()->where(['tsumego_id' => $tsumegoID])->orderByDesc('id')->first();
+		$this->assertSame([$sgf, 'fixed the corner', 'B', 'aa'], [$saved->sgf, $saved->description, $saved->first_move_color, $saved->correct_moves]);
 		$this->assertSame('look at the corner', $this->fetchTable('Tsumego')->get($tsumegoID)->hint);
 	}
 

@@ -9,7 +9,8 @@ use App\Log\LogLineFormatter;
 
 //The configuration of the app, what core.php, database.php and the configuration part of
 //bootstrap.php did on Cake 2. Each server overrides it in its config/core.local.php and
-//config/database.php, which config/bootstrap.php reads after it.
+//config/database.php, which config/bootstrap.php reads after it. The secrets are only in those
+//files and in config/jwt_secret.php, none of which are in git.
 $debug = !empty($_SERVER['SERVER_NAME']) && str_contains($_SERVER['SERVER_NAME'], '.ddev.site');
 $modelCacheDuration = $debug ? '+10 seconds' : '+999 days';
 return [

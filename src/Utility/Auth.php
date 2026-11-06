@@ -31,7 +31,7 @@ class Auth
 		{
 			Auth::$user = $user;
 			// Set JWT cookie for stateless auth
-			JwtAuth::setAuthCookie(Auth::getUserID(), $user['password_hash'] ?? null);
+			JwtAuth::setAuthCookie(Auth::getUserID(), (string) ($user['password_hash'] ?? ''));
 			return;
 		}
 
@@ -54,13 +54,11 @@ class Auth
 	}
 
 	//A token is issued with the password the session was opened with, so changing the
-	//password ends the sessions that were opened with the old one. A token without the
-	//claim is taken at face value.
+	//password ends the sessions that were opened with the old one.
 	/** @param UserRow $user */
 	private static function tokenFitsTheAccount(array $user): bool
 	{
-		$claim = JwtAuth::getPasswordClaimFromCookie();
-		return $claim === null || $claim === JwtAuth::claimOf($user['password_hash'] ?? null);
+		return JwtAuth::getPasswordClaimFromCookie() === JwtAuth::claimOf((string) ($user['password_hash'] ?? ''));
 	}
 
 	public static function isLoggedIn(): bool

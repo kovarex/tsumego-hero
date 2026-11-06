@@ -115,10 +115,19 @@ besogo.composeSgf = function(editor, expand = false)
       string += 'C[' + escapeText((correctToSave ? '+' : '') + node.comment) + ']';
     }
 
-    if (node.statusSource)
+    // the status the node shows, or the one written on it that besogo sets aside while a transposition goes on from it
+    let statusToSave = node.statusSource || node.statusSetAside;
+    if (statusToSave)
     {
-      string += (string ? '\n' : '');
-      string += 'S[' + node.statusSource.str() + ']';
+      // S as it was loaded while the status reads the same ("KO " of old saves stays as it is); a status besogo can't
+      // read comes out as "undefined" (S[undefined] of old saves, "A 2KO " for "A+2KO+") and is left out
+      let hasText = Object.hasOwn(node, 'statusText') && node.statusText !== null;
+      let text = hasText && statusToSave.str() === node.statusTextReads ? node.statusText : statusToSave.str();
+      if (!statusToSave.str().includes('undefined'))
+      {
+        string += (string ? '\n' : '');
+        string += 'S[' + escapeText(text) + ']';
+      }
     }
 
     if (node.superkoMeansDead)
@@ -127,7 +136,13 @@ besogo.composeSgf = function(editor, expand = false)
       string += 'SKD[]';
     }
 
-    if (node.parent == null && node.goal != GOAL_NONE)
+    // G as it was loaded, on the node it was on (children inherit it through makeChild), or the goal the editor set on the root
+    if (Object.hasOwn(node, 'goalText') && node.goalText !== undefined && node.goalText !== null)
+    {
+      string += (string ? '\n' : '');
+      string += 'G[' + escapeText(node.goalText) + ']';
+    }
+    else if (node.parent == null && node.goal != GOAL_NONE)
     {
       string += (string ? '\n' : '');
       string += 'G[' + besogo.goalStr(node.goal) + ']';
