@@ -272,4 +272,25 @@ class NormaliseSgfsCommandTest extends AppTestCase
 		$this->assertOutputContains("would change: S besogo can't read: \"A 2KO \", \"NONSENSE\"");
 		$this->assertSame($sgf, $this->sgfRow($context->tsumegos[0]['id'])['sgf']);
 	}
+
+	//--check-written finds the rows an earlier --write wrote otherwise than this version (here a row damaged after its
+	//rewrite, as the setup turn and status bugs did), and the --restore it prints puts them back to be rewritten right
+	public function testCheckWrittenFindsTheRowsAnEarlierRunWroteWrong(): void
+	{
+		$context = $this->prepare();
+		$this->exec('normalise_sgfs --write');
+		$this->exec('normalise_sgfs --check-written');
+		$this->assertOutputContains('rows written by an earlier run checked, 0 written otherwise than this version writes them.');
+
+		$id = (int) $this->sgfRow($context->tsumegos[0]['id'])['id'];
+		$right = $this->sgfRow($context->tsumegos[0]['id'])['sgf'];
+		Util::execute('UPDATE sgf SET sgf = REPLACE(sgf, ?, ?) WHERE id = ?', ['AB[cc]', 'AW[cc]', $id]);
+		$this->exec('normalise_sgfs --check-written');
+		$this->assertOutputContains("sgf $id (tsumego {$context->tsumegos[0]['id']}, current version) was written otherwise: rewritten otherwise now");
+		$this->assertOutputContains("1 written otherwise than this version writes them. To put them back, then rewrite them: bin/cake normalise_sgfs --restore $id");
+
+		$this->exec("normalise_sgfs --restore $id");
+		$this->exec('normalise_sgfs --write');
+		$this->assertSame($right, $this->sgfRow($context->tsumegos[0]['id'])['sgf']);
+	}
 }

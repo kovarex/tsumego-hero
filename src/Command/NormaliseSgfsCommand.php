@@ -35,7 +35,8 @@ use Cake\Console\ConsoleOptionParser;
 //--restore <sgf ids> puts rows back as they were from there (text, preview, values), undoes their turn in the
 //transformations from source that took it in (their own, and those of the rows made from them), and, for the version
 //shown, puts back the comments of its problem; their backups are removed, so a later run rewrites them again.
-//A status besogo can't read keeps its row as it is; --damaged-statuses lists the S values old saves damaged (a +
+//--check-written lists the rows an earlier --write rewrote otherwise than this version would (a bug fixed since),
+//with the --restore line that puts them back. A status besogo can't read keeps its row as it is; --damaged-statuses lists the S values old saves damaged (a +
 //written as a space) with the repair proposed, and writes nothing.
 //A problem is done in one transaction; a row already normalised comes back unchanged, so a run that stopped is
 //simply run again, and a second run changes nothing. Without --write nothing is written and it reports what would
@@ -57,7 +58,8 @@ class NormaliseSgfsCommand extends Command
 			->addOption('show', ['default' => '20', 'help' => 'How many of the changes to list'])
 			->addOption('sgf', ['default' => '', 'help' => 'Comma separated sgf ids whose old and new text to print, for checking them'])
 			->addOption('restore', ['default' => '', 'help' => 'Comma separated sgf ids to put back as they were before a --write, from sgf_before_normalisation'])
-			->addOption('damaged-statuses', ['boolean' => true, 'help' => 'Only list the S values old saves damaged (a + written as a space), with the repair proposed; writes nothing']);
+			->addOption('damaged-statuses', ['boolean' => true, 'help' => 'Only list the S values old saves damaged (a + written as a space), with the repair proposed; writes nothing'])
+			->addOption('check-written', ['boolean' => true, 'help' => 'Only list the rows an earlier --write rewrote otherwise than this version would, to --restore; writes nothing']);
 	}
 
 	private bool $write;
@@ -103,6 +105,8 @@ class NormaliseSgfsCommand extends Command
 			return $this->restore($restore);
 		if ($args->getOption('damaged-statuses'))
 			return $this->reportDamagedStatuses(max(1, (int) $args->getOption('batch')));
+		if ($args->getOption('check-written'))
+			return $this->checkWritten(max(1, (int) $args->getOption('batch')));
 		$this->write = (bool) $args->getOption('write');
 		$this->show = max(0, (int) $args->getOption('show'));
 		$batch = max(1, (int) $args->getOption('batch'));
@@ -220,6 +224,41 @@ class NormaliseSgfsCommand extends Command
 			if ($id === $currentID)
 				$this->moveComments($tsumegoID, $transformation, (string) $analysis->sgf);
 		}
+	}
+
+	//The rows an earlier --write rewrote otherwise than this version would: each backup's original is normalised again
+	//and compared with the row stored, the rewrite kept when it plays the same and loses nothing unexpected, the
+	//original otherwise. A row listed was written by a version with a bug since fixed (the setup of a node after a move
+	//turned wrong, a status written otherwise) and is put back with --restore, then rewritten by a run.
+	private function checkWritten(int $batch): int
+	{
+		$wrong = [];
+		$checked = 0;
+		$lastID = 0;
+		while ($chunk = Util::query('SELECT backup.sgf_id, backup.sgf AS original, sgf.sgf AS stored, sgf.tsumego_id FROM sgf_before_normalisation backup
+			JOIN sgf ON sgf.id = backup.sgf_id WHERE backup.sgf_id > ? ORDER BY backup.sgf_id LIMIT ' . $batch, [$lastID]))
+		{
+			$lastID = (int) end($chunk)['sgf_id'];
+			$analyses = SgfAnalysis::ofMany(array_map(fn($row) => (string) $row['original'], array_column($chunk, null, 'sgf_id')), SgfAnalysis::TIMEOUT * 5, true);
+			foreach ($chunk as $row)
+			{
+				$checked++;
+				$analysis = $analyses[(int) $row['sgf_id']];
+				$expected = $analysis instanceof SgfAnalysis && $analysis->changed && $analysis->rewriteIsFaithful() ? $analysis->sgf : $row['original'];
+				if ($expected === $row['stored'])
+					continue;
+				$id = (int) $row['sgf_id'];
+				$wrong[] = $id;
+				$why = !$analysis instanceof SgfAnalysis ? 'unreadable now'
+					: (!$analysis->rewriteIsFaithful() ? 'kept as it is now: ' . ($analysis->samePlay ? implode(', ', $analysis->unexpectedChanges) : 'would play differently')
+					: 'rewritten otherwise now');
+				$current = $id === SgfTable::findCurrentVersionID((int) $row['tsumego_id']) ? 'current version' : 'old version';
+				$this->console->out("sgf $id (tsumego {$row['tsumego_id']}, $current) was written otherwise: $why");
+			}
+		}
+		$this->console->out("$checked rows written by an earlier run checked, " . count($wrong) . ' written otherwise than this version writes them.'
+			. ($wrong ? ' To put them back, then rewrite them: bin/cake normalise_sgfs --restore ' . implode(',', $wrong) : ''));
+		return static::CODE_SUCCESS;
 	}
 
 	//The S values old saves damaged, a + written as a space ("A 2KO " for "A+2KO+"), or that besogo can't read, row by
