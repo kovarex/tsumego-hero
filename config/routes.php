@@ -282,6 +282,10 @@ return function (RouteBuilder $routes): void
 		['controller' => 'Challenges', 'action' => 'create']
 	);
 	$routes->connect(
+		'/challenges/players',
+		['controller' => 'Challenges', 'action' => 'players']
+	);
+	$routes->connect(
 		'/challenges/{id}',
 		['controller' => 'Challenges', 'action' => 'view'],
 		['pass' => ['id'], 'id' => '[0-9]+']

@@ -61,7 +61,7 @@ use App\Utility\ViteManifest;
 			</div>
 			<div class="form-field">
 				<label class="form-field__label" for="challenge-players">Invite players</label>
-				<input class="form-field__control" type="text" id="challenge-players" name="players" value="<?= h((string) $opponent) ?>" placeholder="Names of the players, separated by commas">
+				<input class="form-field__control" type="text" id="challenge-players" name="players" value="<?= h((string) $opponent) ?>" placeholder="Names of the players, separated by commas" data-player-suggestions="/challenges/players">
 			</div>
 			<button class="btn" type="submit" id="challenge-create">Create challenge</button>
 			<p class="hint">The invited players find the challenge in their challenges. You can also send them the link, anyone who opens it can join.</p>
