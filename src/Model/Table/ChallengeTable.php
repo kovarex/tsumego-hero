@@ -366,21 +366,23 @@ class ChallengeTable extends AppTable
 		return count($better) + 1;
 	}
 
-	//Where the player is in each of their challenges and who won it so far, for the list of their
+	//Where the player is in each of their challenges and how everyone who finished it did, for the list of their
 	//challenges, from one query of the finished runs of all of them.
 	/**
-	 * @return array<int, array{myPlace: ?int, finishedCount: int, winners: list<array<string, mixed>>}> By challenge id,
-	 *   only the challenges with a finished run; the winners are rows of USER_COLUMNS, by their names
+	 * @return array<int, array{myPlace: ?int, myFinished: ?string, standings: list<array<string, mixed>>}> By challenge
+	 *   id, only the challenges with a finished run. The standings are the finished runs, the best first: rows of
+	 *   USER_COLUMNS with their points, place and when they finished.
 	 */
 	public static function placesOfPlayer(int $userId): array
 	{
-		$runs = Util::query('SELECT s.challenge_id, s.points, attempts.seconds, ' . ClassroomTable::USER_COLUMNS . '
+		$runs = Util::query('SELECT s.challenge_id, s.points, attempts.seconds, COALESCE(attempts.finished, s.created) AS finished, ' . ClassroomTable::USER_COLUMNS . '
 			FROM challenge_participant me
 			JOIN time_mode_session s ON s.challenge_id = me.challenge_id AND s.time_mode_session_status_id != ?
 			JOIN user u ON u.id = s.user_id AND u.deleted IS NULL
 			JOIN challenge_participant p ON p.challenge_id = s.challenge_id AND p.user_id = s.user_id
 			LEFT JOIN (
-				SELECT a.time_mode_session_id, SUM(a.seconds) AS seconds
+				SELECT a.time_mode_session_id, SUM(a.seconds) AS seconds,
+					MAX(a.started + INTERVAL COALESCE(a.seconds, 0) SECOND) AS finished
 				FROM challenge_participant mine
 				JOIN time_mode_session run ON run.challenge_id = mine.challenge_id
 				JOIN time_mode_attempt a ON a.time_mode_session_id = run.id
@@ -402,11 +404,16 @@ class ChallengeTable extends AppTable
 		$places = [];
 		foreach ($byChallenge as $challengeId => $finishedRuns)
 		{
+			foreach ($finishedRuns as &$run)
+				$run['place'] = self::placeAmong($run, $finishedRuns);
+			unset($run);
+			// stable, so the runs sharing a place stay by their names
+			usort($finishedRuns, fn(array $a, array $b) => $a['place'] <=> $b['place']);
 			$myRun = array_find($finishedRuns, fn(array $run) => (int) $run['user_id'] === $userId);
 			$places[$challengeId] = [
-				'myPlace' => $myRun === null ? null : self::placeAmong($myRun, $finishedRuns),
-				'finishedCount' => count($finishedRuns),
-				'winners' => array_values(array_filter($finishedRuns, fn(array $run) => self::placeAmong($run, $finishedRuns) === 1)),
+				'myPlace' => $myRun['place'] ?? null,
+				'myFinished' => $myRun['finished'] ?? null,
+				'standings' => $finishedRuns,
 			];
 		}
 		return $places;

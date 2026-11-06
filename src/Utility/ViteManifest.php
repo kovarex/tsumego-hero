@@ -28,6 +28,7 @@ use RuntimeException;
 //  'profile'      → virtual:legacy-profile              (the code of the profile page)
 //  'schedule'     → virtual:legacy-schedule             (the code of the schedule page)
 //  'time-mode'    → virtual:legacy-time-mode            (the code of the time mode overview and results)
+//  'challenges'   → virtual:legacy-challenges           (the code of the list of challenges)
 //  'settings'     → virtual:legacy-settings             (the code of the settings page)
 //  'problem-admin' → virtual:legacy-problem-admin       (the upload history, the tag overview and the similar problem search)
 class ViteManifest
@@ -53,6 +54,7 @@ class ViteManifest
 		'sets-view'   => 'virtual:legacy-sets-view',
 		'time-mode'   => 'virtual:legacy-time-mode',
 		'schedule'    => 'virtual:legacy-schedule',
+		'challenges'  => 'virtual:legacy-challenges',
 		'settings'    => 'virtual:legacy-settings',
 		'problem-admin' => 'virtual:legacy-problem-admin',
 	];

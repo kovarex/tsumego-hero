@@ -12,6 +12,7 @@ use App\Utility\PlayOutcome;
 use App\Utility\Rating;
 use App\Utility\TimeModeUtil;
 use App\Utility\Util;
+use Facebook\WebDriver\WebDriverKeys;
 
 //Challenges between players: everyone in a challenge plays the same problems like a time mode
 //run, and the page of the challenge ranks them by their points.
@@ -366,12 +367,12 @@ class ChallengesControllerTest extends IntegrationTestCase
 		$this->assertStringNotContainsString('challenge-place--silver', $standings);
 	}
 
-	//The list of the player's challenges shows their place among the finished runs and the winner,
-	//one query for the places of all the challenges.
-	public function testTheListShowsThePlaceOfThePlayerAndTheWinner(): void
+	//The list of the player's challenges says "2nd of 2 with X points (Y%) in Challenge #N", the 2 opening the
+	//standings of everyone who finished, and when the player finished or else when the challenge was made.
+	public function testTheListShowsThePlaceOfThePlayerAndTheStandingsOfTheChallenge(): void
 	{
 		$this->prepare();
-		$wonByFriend = $this->create(['problem_count' => 5, 'players' => 'DN_friend']);
+		$wonByFriend = $this->create(['problem_count' => 5, 'players' => 'DN_friend, DN_stranger']);
 		$this->playRun($wonByFriend, array_fill(0, 5, [PlayOutcome::Failed, 10]));
 		$this->login('friend');
 		$this->playRun($wonByFriend, array_fill(0, 5, [PlayOutcome::SolvedClean, 10]));
@@ -379,23 +380,80 @@ class ChallengesControllerTest extends IntegrationTestCase
 
 		$this->get('/challenges');
 		$row = $this->listRow($wonByFriend);
-		$this->assertStringContainsString('aria-label="2nd place"', $row);
-		$this->assertStringContainsString('title="2 players finished">2</span>', $row);
-		$this->assertLessThan(strpos($row, '<a href="/challenges/' . $wonByFriend . '">'), strpos($row, 'aria-label="2nd place"'), 'the place comes first');
-		$this->assertStringContainsString('<strong>0.0 points</strong> (0%)', $row, 'all five failed');
-		$this->assertStringContainsString('challenges__winner', $row);
-		$this->assertStringContainsString('DN_friend', $row);
+		$phrase = ['aria-label="2nd place"', '2nd</span>', 'of <span class="challenge-standings-popup">', 'with <strong>0.0 points</strong> (0%) in',
+			'<a href="/challenges/' . $wonByFriend . '">', 'data-format="relative"', 'class="hint challenges__row-details"'];
+		$positions = array_map(fn(string $part) => strpos($row, $part), $phrase);
+		$this->assertNotContains(false, $positions, 'the row has all the parts of the phrase');
+		$sorted = $positions;
+		sort($sorted);
+		$this->assertSame($sorted, $positions, 'in the order of the phrase');
+		$this->assertStringNotContainsString('played', $row);
+
+		// the standings, the best first, each with its place, player and points
+		$this->assertStringContainsString('aria-controls="challenge-standings-' . $wonByFriend . '" aria-describedby="challenge-standings-' . $wonByFriend . '">2</button>', $row);
+		$popup = substr($row, strpos($row, 'class="challenge-standings-popup__panel"'));
+		$friendPoints = (float) ChallengeTable::runOf($wonByFriend, $this->userId('friend'))->points;
+		$this->assertMatchesRegularExpression('/aria-label="1st place".*DN_friend.*' . preg_quote(ChallengeTable::formatPoints($friendPoints)) . ' points'
+			. '.*aria-label="2nd place".*DN_challenger.*0\.0 points/s', $popup);
+		$this->assertStringNotContainsString('DN_stranger', $popup, 'who has not finished');
+
+		// the time of the player's own run
+		$this->assertStringContainsString('datetime="' . Util::toIso8601(ChallengeTable::placesOfPlayer($this->userId('challenger'))[$wonByFriend]['myFinished']) . '"', $row);
 
 		$this->login('friend');
 		$this->get('/challenges');
 		$row = $this->listRow($wonByFriend);
 		$this->assertStringContainsString('aria-label="1st place"', $row);
-		$this->assertStringNotContainsString('challenges__winner', $row, 'the winner sees their own medal');
-		$points = (float) ChallengeTable::runOf($wonByFriend, $this->userId('friend'))->points;
-		$this->assertStringContainsString('<strong>' . ChallengeTable::formatPoints($points) . ' points</strong> ('
-			. (int) round($points / 500 * 100) . '%)', $row, 'of the most five problems give');
+		$this->assertStringContainsString('<strong>' . ChallengeTable::formatPoints($friendPoints) . ' points</strong> ('
+			. (int) round($friendPoints / 500 * 100) . '%)', $row, 'of the most five problems give');
+
+		// who hasn't played sees how many finished, and when the challenge was made
+		$this->login('stranger');
+		$this->get('/challenges');
+		$row = $this->listRow($wonByFriend);
+		$this->assertStringContainsString('<strong>Not played yet:</strong> <a href="/challenges/' . $wonByFriend . '">', $row);
+		$this->assertMatchesRegularExpression('/· <span class="challenge-standings-popup">.*>2<\/button>.*<\/span>\s*finished/s', $row);
+		$created = (string) Util::query('SELECT created FROM challenge WHERE id = ?', [$wonByFriend])[0]['created'];
+		$this->assertStringContainsString('datetime="' . Util::toIso8601($created) . '" data-format="relative"', $row);
 	}
 
+	//In the browser the number of the finished players opens their standings on a click or a tap, Escape and a click
+	//elsewhere close them; the time of the row says how long ago it was, the date in its tooltip.
+	public function testTheStandingsOpenFromTheListOfChallengesInTheBrowser(): void
+	{
+		$this->prepare();
+		$challengeId = $this->create(['problem_count' => 5, 'players' => 'DN_friend']);
+		$this->playRun($challengeId, array_fill(0, 5, [PlayOutcome::SolvedClean, 10]));
+		$this->login('friend');
+		$this->playRun($challengeId, array_fill(0, 5, [PlayOutcome::Failed, 10]));
+		$this->login('challenger');
+
+		$browser = Browser::instance();
+		$browser->get('challenges');
+		$time = $browser->find('.challenges__when');
+		$this->assertContains($time->getText(), ['just now', 'a minute ago']);
+		$this->assertMatchesRegularExpression('/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/', $time->getAttribute('title'));
+
+		$toggle = $browser->find('.challenge-standings-popup__toggle');
+		$panel = $browser->find('#challenge-standings-' . $challengeId);
+		$this->assertFalse($panel->isDisplayed());
+		$toggle->click();
+		$this->assertTrue($panel->isDisplayed());
+		$this->assertSame('true', $toggle->getAttribute('aria-expanded'));
+		$this->assertStringContainsString('DN_friend', $panel->getText());
+
+		$browser->driver->getKeyboard()->sendKeys(WebDriverKeys::ESCAPE);
+		$this->assertFalse($panel->isDisplayed());
+		$this->assertSame('false', $toggle->getAttribute('aria-expanded'));
+
+		$toggle->click();
+		$this->assertTrue($panel->isDisplayed());
+		$browser->find('.challenges__title')->click();
+		$this->assertFalse($panel->isDisplayed());
+		$browser->assertNoJsErrors();
+	}
+
+	//The places and the standings of every challenge of the list come from one query, whatever their number.
 	public function testTheListTakesAsManyQueriesForManyChallengesAsForOne(): void
 	{
 		$this->prepare();
@@ -408,6 +466,9 @@ class ChallengesControllerTest extends IntegrationTestCase
 		$playOne = function (): void {
 			$challengeId = $this->create(['problem_count' => 5, 'players' => 'DN_friend']);
 			$this->playRun($challengeId, array_fill(0, 5, [PlayOutcome::SolvedClean, 10]));
+			$this->login('friend');
+			$this->playRun($challengeId, array_fill(0, 5, [PlayOutcome::Failed, 10]));
+			$this->login('challenger');
 		};
 
 		$playOne();
@@ -417,6 +478,8 @@ class ChallengesControllerTest extends IntegrationTestCase
 		$playOne();
 		$playOne();
 		$this->assertSame($queriesOfOne, $queriesOfTheList());
+		$this->assertSame(3, substr_count($this->view, 'class="challenge-standings-popup__panel"'));
+		$this->assertSame(6, substr_count($this->view, 'class="challenge-standings-popup__run"'), 'two players in each');
 	}
 
 	//The row of the list of challenges of the challenge.
