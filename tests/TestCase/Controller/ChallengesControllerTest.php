@@ -1014,6 +1014,41 @@ class ChallengesControllerTest extends IntegrationTestCase
 		$this->playAFailedLine('(;GM[1]FF[4]SZ[19]AB[qq](;B[ss];W[sr];B[rs]C[+]))', 'sssros');
 	}
 
+	//The last problem of the run failed, the run ends at once, with the line of the fail kept
+	public function testARunWhoseLastProblemIsFailedEndsAtOnce(): void
+	{
+		$this->prepare(2, self::SGF);
+		$challengeId = ChallengeTable::start($this->userId('challenger'), $this->rankId('5k'), $this->rankId('5k'), 60, 5);
+
+		$browser = Browser::instance();
+		$browser->get('challenges/' . $challengeId);
+		$playButton = $browser->find('#challenge-play');
+		$playButton->click();
+		$browser->waitUntilStale($playButton);
+		$browser->playWithResult('S');
+		$nextButton = $browser->find('#besogo-next-button');
+		$nextButton->click();
+		$browser->waitUntilStale($nextButton);
+
+		$browser->clickBoard(1, 1);
+		$browser->waitUntilJs('besogo.editor.getCurrent().moveNumber >= 2');
+		$browser->clickBoard(5, 1);
+		$browser->waitUntilJs('document.getElementById("status").textContent.includes("Incorrect")');
+		// Next right away, as a player does, with the result maybe still on its way
+		$started = microtime(true);
+		$nextButton = $browser->find('#besogo-next-button');
+		$nextButton->click();
+		$browser->waitUntilStale($nextButton);
+		$browser->waitUntilJs('location.pathname === "/challenges/' . $challengeId . '"');
+		$this->assertLessThan(5, microtime(true) - $started, 'the run ends without waiting for its last result');
+
+		$attempts = $this->runAttempts($challengeId, 'challenger');
+		$this->assertSame([TimeModeAttemptStatusTable::SOLVED, TimeModeAttemptStatusTable::FAILED], array_map(fn(array $attempt) => (int) $attempt['time_mode_attempt_status_id'], $attempts));
+		$this->assertSame([null, 'aaabea'], array_column($attempts, 'line_moves'));
+		$this->assertCount(1, $browser->getElements('.challenges__cell--line'));
+		$browser->assertNoJsErrors();
+	}
+
 	//Plays black (1,1), and after white's answer (5,1), on the board as shown, which fails the problem
 	private function playAFailedLine(string $sgf, string $expectedLine): void
 	{
