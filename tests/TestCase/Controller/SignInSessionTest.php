@@ -20,16 +20,27 @@ class SignInSessionTest extends IntegrationTestCase
 		$this->post('/users/login', ['username' => $name, 'password' => self::PASSWORD]);
 	}
 
-	//The user id in the cookie, checked the way the forum does it: the HMAC of the token with the
-	//salt it reads out of config/core.php.
-	private static function userIdTheForumReads(string $token): ?int
+	//The forum's provider of the single sign-on, as phpBB loads it from the project, without the
+	//services of phpBB its constructor takes: only its checks of the token are used.
+	private static function forumProvider(string $forumRoot = ROOT . '/webroot/forums/'): object
 	{
-		preg_match("/Configure::write\\('Security\\.salt',\\s*'([^']+)'/", (string) file_get_contents(ROOT . '/config/core.php'), $matches);
-		[$header, $payload, $signature] = explode('.', $token);
-		$expected = rtrim(strtr(base64_encode(hash_hmac('sha256', $header . '.' . $payload, $matches[1], true)), '+/', '-_'), '=');
-		if (!hash_equals($expected, $signature))
-			return null;
-		return json_decode(base64_decode(strtr($payload, '-_', '+/')), true)['sub'] ?? null;
+		require_once ROOT . '/webroot/forums/phpbb/auth/provider/provider_interface.php';
+		require_once ROOT . '/webroot/forums/ext/tsumego/customsso/auth/provider/jwtauth.php';
+		$provider = new ReflectionClass(\tsumego\customsso\auth\provider\jwtauth::class)->newInstanceWithoutConstructor();
+		new ReflectionProperty($provider, 'phpbb_root_path')->setValue($provider, $forumRoot);
+		return $provider;
+	}
+
+	//A protected method of the forum's provider
+	private static function callForum(object $provider, string $method, mixed ...$arguments): mixed
+	{
+		return new ReflectionMethod($provider, $method)->invoke($provider, ...$arguments);
+	}
+
+	//A token of the site as anyone could sign it with the given key
+	private static function tokenSignedWith(string $key, int $userID): string
+	{
+		return \Firebase\JWT\JWT::encode(['sub' => $userID, 'iat' => time(), 'exp' => time() + 3600, 'pwd' => JwtAuth::claimOf('hash')], $key, 'HS256');
 	}
 
 	public function testSigningInWithThePasswordSetsTheCookieOfTheSession(): void
@@ -45,18 +56,41 @@ class SignInSessionTest extends IntegrationTestCase
 		$this->assertSame($context->user['id'], JwtAuth::validateToken($token));
 	}
 
-	//The forum checks the cookie with the salt of config/core.php and reads the player from the user
-	//table by the id in it.
+	//The forum checks the cookie with the secret of config/jwt_secret.php and reads the player from the
+	//user table by the id in it, while the password the token was issued with is still the account's.
 	public function testTheForumSignsInThePlayerOfTheCookie(): void
 	{
 		$context = new ContextPreparator(['user' => ['name' => 'forumPlayer', 'display_name' => 'Forum Player', 'email' => 'forum.player@example.com']]);
 
 		$this->signInWithPassword('forumPlayer');
 
-		$userID = self::userIdTheForumReads($this->browserCookies()['auth_token']);
-		$this->assertSame($context->user['id'], $userID);
-		$row = Util::query('SELECT id, display_name as name, email FROM user WHERE id = ' . (int) $userID)[0];
+		$forum = self::forumProvider();
+		$claims = self::callForum($forum, 'validateJwtToken', $this->browserCookies()['auth_token']);
+		$this->assertSame($context->user['id'], $claims['sub']);
+		$row = Util::query('SELECT id, display_name as name, email, password_hash FROM user WHERE id = ' . (int) $claims['sub'])[0];
+		$this->assertSame(self::callForum($forum, 'passwordClaim', $row['password_hash']), $claims['pwd']);
+		unset($row['password_hash']);
 		$this->assertSame(['id' => $context->user['id'], 'name' => 'Forum Player', 'email' => 'forum.player@example.com'], $row);
+	}
+
+	//The forum reads the secret of the site from config/jwt_secret.php, and takes no token signed
+	//with the salt, which was in git.
+	public function testTheForumChecksTheCookieWithTheSecretOfTheSite(): void
+	{
+		$forum = self::forumProvider();
+		$this->assertTrue(hash_equals((string) \Cake\Core\Configure::read('Security.jwtSecret'), self::callForum($forum, 'getJwtSecret')), 'the forum reads the secret the site signs with');
+
+		$this->assertSame(42, self::callForum($forum, 'validateJwtToken', self::tokenSignedWith((string) \Cake\Core\Configure::read('Security.jwtSecret'), 42))['sub']);
+		$this->assertNull(self::callForum($forum, 'validateJwtToken', self::tokenSignedWith((string) \Cake\Core\Configure::read('Security.salt'), 42)));
+	}
+
+	//Without config/jwt_secret.php the forum signs nobody in and says why
+	public function testTheForumFailsLoudlyWithoutTheSecret(): void
+	{
+		$forum = self::forumProvider(TMP . 'project-without-the-secret/webroot/forums/');
+		$this->expectException(RuntimeException::class);
+		$this->expectExceptionMessage('config/jwt_secret.php');
+		self::callForum($forum, 'validateJwtToken', self::tokenSignedWith('any-key-of-at-least-thirty-two-characters', 42));
 	}
 
 	//The next request finds the player in the cookie, as the same row as before: the columns as they

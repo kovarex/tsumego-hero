@@ -33,7 +33,7 @@ class ContextPreparator
 		$pdo = Util::connection();
 		$pdo->exec('SET FOREIGN_KEY_CHECKS = 0');
 		foreach ([
-			'classroom_assignment_result', 'classroom_assignment_problem', 'classroom_assignment', 'classroom_member', 'classroom',
+			'classroom_assignment_result', 'classroom_assignment_problem', 'classroom_assignment', 'classroom_member', 'classroom', 'friendship',
 			'tag_connection', 'tag', 'schedule', 'progress_deletion',
 			'day_record', 'sgf_review', 'sgf', 'time_mode_attempt', 'time_mode_session', 'challenge_participant', 'challenge_problem', 'challenge',
 			'tsumego_comment', 'tsumego_issue', 'admin_activity', 'admin_overview_seen', 'message',

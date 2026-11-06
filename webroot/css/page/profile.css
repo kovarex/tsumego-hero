@@ -101,6 +101,21 @@
 	vertical-align: middle;
 }
 
+/* Where the visitor stands with the player as friends, and the buttons that change it */
+.profile-header__friend
+{
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	gap: var(--space-2);
+	margin: 0 auto var(--space-2);
+}
+
+.profile-header__friend-state
+{
+	font-weight: 600;
+}
+
 /* ── Rank display ── */
 .stat td.rank
 {
@@ -397,4 +412,49 @@
 [data-theme="dark"] .profileTable2 a {
 	color: var(--color-white);
 }
+}
+
+/* ── Friends (templates/Friends/index.php) ── */
+.friends__section
+{
+	margin-bottom: var(--space-4);
+	padding: var(--space-4);
+}
+
+.friends__heading
+{
+	font-size: var(--font-size-md);
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	color: var(--text-softer-color);
+	margin: 0 0 var(--space-3);
+}
+
+.friends__row
+{
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: var(--space-2);
+	padding: var(--space-2) 0;
+	border-bottom: 1px solid var(--current-border-color);
+}
+
+.friends__row:last-child
+{
+	border-bottom: none;
+}
+
+.friends__actions
+{
+	display: inline-flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: var(--space-2);
+}
+
+.friends__actions form
+{
+	margin: 0;
 }

@@ -1,5 +1,24 @@
+# While a deploy runs (deploy.sh, scripts/deploy-test-hook.cgi), tmp/maintenance.flag of the project
+# exists, and every request gets the static maintenance.html as a 503, Apache alone deciding it: PHP
+# is what a half-updated site breaks. Excepted are the page itself and the test site's deploy hook,
+# which GitHub asks how the deploy goes. The flag is in the document root on the servers (the project
+# root, rewritten into webroot/) and in its parent in DDEV (whose document root is webroot/).
+# webroot/forums/.htaccess, whose rewrite rules replace these for the forum, has the same rule.
+ErrorDocument 503 /maintenance.html
+<IfModule mod_headers.c>
+	Header always set Retry-After "60" "expr=%{REQUEST_STATUS} == 503"
+	Header always set Cache-Control "no-store" "expr=%{REQUEST_STATUS} == 503"
+</IfModule>
+
 <IfModule mod_rewrite.c>
 	RewriteEngine On
+
+	RewriteCond %{DOCUMENT_ROOT}/tmp/maintenance.flag -f [OR]
+	RewriteCond %{DOCUMENT_ROOT}/../tmp/maintenance.flag -f
+	RewriteCond %{REQUEST_URI} !/maintenance\.html$
+	RewriteCond %{REQUEST_URI} !/deploy-hook\.cgi$
+	RewriteRule ^ - [R=503,L]
+
 	RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
 
 	# WebP Support: Serve WebP images when browser supports and file exists

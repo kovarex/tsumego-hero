@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- The page every request gets while a deploy runs (deploy.sh, webroot/.htaccess): plain HTML with
+     everything inline, as the rest of the site may be half updated. It asks again every 30 seconds,
+     so it goes back to the site by itself once the deploy is done. -->
+<meta http-equiv="refresh" content="30">
+<meta name="robots" content="noindex">
+<title>Upgrade in progress · Tsumego Hero</title>
+<style>
+	/* The colours of the site (webroot/css/tokens.css): the dark gradient around a light panel, or a
+	   dark one for a dark preference */
+	:root
+	{
+		color-scheme: light dark;
+		--body-background: linear-gradient(#282828, #424141);
+		--panel-background: linear-gradient(#fff, #f2f2f2);
+		--text-color: #222;
+		--text-softer-color: #666;
+		--accent-color: #6cc644;
+	}
+	@media (prefers-color-scheme: dark)
+	{
+		:root
+		{
+			--body-background: linear-gradient(#2a2a2a, #111);
+			--panel-background: linear-gradient(#3c3c3c, #2a2a2a);
+			--text-color: #ddd;
+			--text-softer-color: #aaa;
+		}
+	}
+	html
+	{
+		min-height: 100%;
+		background: var(--body-background);
+	}
+	body
+	{
+		margin: 0;
+		min-height: 100vh;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		gap: 28px;
+		padding: 24px;
+		box-sizing: border-box;
+		font-family: "Times New Roman", Times, serif;
+		color: var(--text-color);
+	}
+	.logo
+	{
+		width: min(347px, 80vw);
+		height: auto;
+		/* the logo has a dark background of its own */
+		border-radius: 8px;
+	}
+	main
+	{
+		max-width: 460px;
+		padding: 28px 36px;
+		border-radius: 10px;
+		background: var(--panel-background);
+		box-shadow: 0 6px 24px rgba(0, 0, 0, 0.35);
+		text-align: center;
+	}
+	h1
+	{
+		margin: 0 0 12px;
+		font-size: 28px;
+	}
+	p
+	{
+		margin: 0;
+		font-size: 18px;
+		line-height: 1.5;
+	}
+	.again
+	{
+		margin-top: 16px;
+		font-size: 15px;
+		color: var(--text-softer-color);
+	}
+	/* Three stones, lit one after another, while it waits */
+	.stones
+	{
+		display: flex;
+		justify-content: center;
+		gap: 10px;
+		margin: 18px 0 0;
+	}
+	.stones span
+	{
+		width: 14px;
+		height: 14px;
+		border-radius: 50%;
+		background: var(--accent-color);
+		opacity: 0.25;
+		animation: light 1.5s infinite;
+	}
+	.stones span:nth-child(2) { animation-delay: 0.5s; }
+	.stones span:nth-child(3) { animation-delay: 1s; }
+	@keyframes light
+	{
+		0%, 100% { opacity: 0.25; }
+		30% { opacity: 1; }
+	}
+	@media (prefers-reduced-motion: reduce)
+	{
+		.stones span { animation: none; opacity: 0.6; }
+	}
+</style>
+</head>
+<body>
+<img class="logo" width="694" height="203" alt="Tsumego Hero" src="data:image/png;base64,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">
+<main>
+	<h1>Upgrade in progress</h1>
+	<p>Tsumego Hero is being updated, this usually takes a minute or two.</p>
+	<div class="stones" aria-hidden="true"><span></span><span></span><span></span></div>
+	<p class="again">This page tries again by itself every 30 seconds.</p>
+</main>
+</body>
+</html>
