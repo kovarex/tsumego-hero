@@ -722,6 +722,75 @@ class ChallengesControllerTest extends IntegrationTestCase
 		$this->assertSame(1, ChallengeTable::countWaitingFor($this->userId('challenger')));
 	}
 
+	//When both players click Rematch, the second click starts nothing: it takes them to the rematch of the first,
+	//which they are in already, and the page of the challenge links the rematch instead of the button.
+	public function testTwoPlayersClickingRematchStartOneRematch(): void
+	{
+		$this->prepare();
+		$challengeId = $this->create(['problem_count' => 5, 'players' => 'DN_friend']);
+		$this->playRun($challengeId, array_fill(0, 5, [PlayOutcome::SolvedClean, 10]));
+		$this->login('friend');
+		$this->playRun($challengeId, array_fill(0, 5, [PlayOutcome::SolvedClean, 20]));
+		$this->login('challenger');
+		$this->post('/challenges/rematch/' . $challengeId);
+		$rematchId = (int) ChallengeTable::rematchOf($challengeId)['id'];
+
+		$this->login('friend');
+		$this->get('/challenges/' . $challengeId);
+		$this->assertTextNotContains('action="/challenges/rematch/', $this->view);
+		$this->assertMatchesRegularExpression('/id="challenge-rematch-started">Rematch started by <a href="\/users\/view\/' . $this->userId('challenger') . '">.*DN_challenger/s', $this->view);
+		$this->assertTextContains('href="/challenges/' . $rematchId . '" id="challenge-rematch-open">Open</a>', $this->view);
+
+		$this->post('/challenges/rematch/' . $challengeId);
+		$this->assertSame(Util::getInternalAddress() . '/challenges/' . $rematchId, $this->headerValue('Location'));
+		$this->assertSame('DN_challenger started the rematch already, here it is.', CookieFlash::get());
+		$this->assertSame(1, $this->rematchCount($challengeId));
+		$this->assertSame([$this->userId('challenger'), $this->userId('friend')], $this->participants($rematchId));
+	}
+
+	//Two clicks at the same moment: the second one gets past the check for a rematch before the first one saved
+	//it, and the unique key turns its insert down, so it gets the rematch of the first.
+	public function testARematchStartedAtTheSameMomentStaysOne(): void
+	{
+		$this->prepare();
+		$challengeId = $this->create(['problem_count' => 5, 'players' => 'DN_friend']);
+		$firstClick = ChallengeTable::start($this->userId('challenger'), $this->rankId('5k'), $this->rankId('5k'), 60, 5, [], $challengeId);
+
+		$secondClick = ChallengeTable::rematch(ChallengeTable::withDetails($challengeId), $this->userId('friend'));
+
+		$this->assertSame(['id' => $firstClick, 'invited' => [], 'started' => false], $secondClick);
+		$this->assertSame(1, $this->rematchCount($challengeId));
+		$this->assertSame(0, (int) Util::query('SELECT COUNT(*) AS count FROM challenge_problem WHERE challenge_id NOT IN (SELECT id FROM challenge)')[0]['count']);
+	}
+
+	//A player of the challenge who isn't in its rematch (here they joined after it started) goes to the rematch,
+	//where they can join it like anyone with the link.
+	public function testAPlayerLeftOutOfTheRematchGoesToItsPage(): void
+	{
+		$this->prepare();
+		$challengeId = $this->create(['problem_count' => 5]);
+		$this->playRun($challengeId, array_fill(0, 5, [PlayOutcome::SolvedClean, 10]));
+		$this->post('/challenges/rematch/' . $challengeId);
+		$rematchId = (int) ChallengeTable::rematchOf($challengeId)['id'];
+		$this->login('stranger');
+		$this->post('/challenges/join/' . $challengeId);
+		$this->playRun($challengeId, array_fill(0, 5, [PlayOutcome::SolvedClean, 10]));
+
+		$this->get('/challenges/' . $challengeId);
+		$this->assertTextContains('href="/challenges/' . $rematchId . '" id="challenge-rematch-open">Join</a>', $this->view);
+		$this->post('/challenges/rematch/' . $challengeId);
+		$this->assertSame(Util::getInternalAddress() . '/challenges/' . $rematchId, $this->headerValue('Location'));
+		$this->assertSame(1, $this->rematchCount($challengeId));
+		$this->assertFalse(ChallengeTable::isParticipant($rematchId, $this->userId('stranger')));
+		$this->get('/challenges/' . $rematchId);
+		$this->assertTextContains('id="challenge-join"', $this->view);
+	}
+
+	private function rematchCount(int $challengeId): int
+	{
+		return (int) Util::query('SELECT COUNT(*) AS count FROM challenge WHERE rematch_of_challenge_id = ?', [$challengeId])[0]['count'];
+	}
+
 	//With too few problems of the ranks for new ones, the rematch takes some of the old ones too.
 	public function testARematchOfFewProblemsTakesOldOnesToo(): void
 	{

@@ -7,6 +7,7 @@ use App\Model\Entity\TimeModeSession;
 use App\Utility\TimeMode;
 use App\Utility\TsumegoButton;
 use App\Utility\Util;
+use Cake\Database\Exception\QueryException;
 use Cake\ORM\TableRegistry;
 
 //A challenge between players: one player picks a range of difficulty, the time for a problem and
@@ -47,7 +48,7 @@ class ChallengeTable extends AppTable
 	//Draws the problems and creates the challenge, with its creator as its first participant.
 	//Returns the id of the new challenge, null when there is no problem of these ranks
 	/** @param list<int> $avoidTsumegoIds Problems drawn only when there are not enough others, like the ones of the challenge a rematch repeats */
-	public static function start(int $creatorUserId, int $minimumTimeModeRankId, int $maximumTimeModeRankId, int $secondsPerProblem, int $problemCount, array $avoidTsumegoIds = []): ?int
+	public static function start(int $creatorUserId, int $minimumTimeModeRankId, int $maximumTimeModeRankId, int $secondsPerProblem, int $problemCount, array $avoidTsumegoIds = [], ?int $rematchOfChallengeId = null): ?int
 	{
 		$tsumegos = TimeMode::getTsumegosOfRanks($minimumTimeModeRankId, $maximumTimeModeRankId);
 		if (empty($tsumegos))
@@ -63,6 +64,7 @@ class ChallengeTable extends AppTable
 			'minimum_time_mode_rank_id' => $minimumTimeModeRankId,
 			'maximum_time_mode_rank_id' => $maximumTimeModeRankId,
 			'seconds_per_problem' => $secondsPerProblem,
+			'rematch_of_challenge_id' => $rematchOfChallengeId,
 		]));
 		$challengeId = $challenge->id;
 
@@ -73,24 +75,38 @@ class ChallengeTable extends AppTable
 		return $challengeId;
 	}
 
-	//A new challenge with the settings of the challenge, started by the player, with the other players
-	//of the challenge invited (the ones who declined it, were removed or deleted their account are left out). New
+	//The rematch of the challenge: a new challenge with its settings, started by the player, with the other
+	//players of the challenge invited (the ones who declined it, were removed or deleted their account are left out). New
 	//problems are drawn, the ones of the challenge only when the ranks have too few others.
-	//Returns the id of the new challenge and the ids of the players invited to it, null when the ranks have no problem anymore
+	//A challenge has one rematch at most, which the unique key of rematch_of_challenge_id keeps even when two
+	//players start it at the same moment: the one who comes second gets the rematch of the first.
+	//Returns the id of the rematch, the ids of the players invited to it (none when it was there already) and
+	//whether this started it; null when the ranks have no problem anymore
 	/**
 	 * @param array<string, mixed> $challenge As withDetails() returns it
-	 * @return array{0: int, 1: list<int>}|null
+	 * @return array{id: int, invited: list<int>, started: bool}|null
 	 */
 	public static function rematch(array $challenge, int $userId): ?array
 	{
 		$challengeId = (int) $challenge['id'];
-		$rematchId = self::start(
-			$userId,
-			(int) $challenge['minimum_time_mode_rank_id'],
-			(int) $challenge['maximum_time_mode_rank_id'],
-			(int) $challenge['seconds_per_problem'],
-			(int) $challenge['problem_count'],
-			self::problemIDs($challengeId));
+		try
+		{
+			$rematchId = self::start(
+				$userId,
+				(int) $challenge['minimum_time_mode_rank_id'],
+				(int) $challenge['maximum_time_mode_rank_id'],
+				(int) $challenge['seconds_per_problem'],
+				(int) $challenge['problem_count'],
+				self::problemIDs($challengeId),
+				$challengeId);
+		}
+		catch (QueryException $exception)
+		{
+			$existing = self::rematchOf($challengeId);
+			if ($existing === null)
+				throw $exception;
+			return ['id' => (int) $existing['id'], 'invited' => [], 'started' => false];
+		}
 		if ($rematchId === null)
 			return null;
 
@@ -101,7 +117,17 @@ class ChallengeTable extends AppTable
 			ORDER BY p.id', [$challengeId, $userId]), 'user_id'));
 		foreach ($players as $playerId)
 			self::addParticipant($rematchId, $playerId, $userId);
-		return [$rematchId, $players];
+		return ['id' => $rematchId, 'invited' => $players, 'started' => true];
+	}
+
+	//The rematch of the challenge, when a player started one: its id and the player who started it (USER_COLUMNS).
+	/** @return array<string, mixed>|null */
+	public static function rematchOf(int $challengeId): ?array
+	{
+		return Util::query('SELECT c.id, ' . ClassroomTable::USER_COLUMNS . '
+			FROM challenge c
+			LEFT JOIN user u ON u.id = c.created_by_user_id
+			WHERE c.rematch_of_challenge_id = ?', [$challengeId])[0] ?? null;
 	}
 
 	//The problems of a challenge in the order they are played.

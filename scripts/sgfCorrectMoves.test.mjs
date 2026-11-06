@@ -276,3 +276,13 @@ test('an editor save changes no property but those besogo does not keep', () =>
 		assert.deepEqual(propertyChanges(besogo.besogo, sgf, besogo.besogo.composeSgf(editor)).unexpected, [], sgf);
 	}
 });
+
+//A text already as the site keeps it but for a status besogo can't read (S[undefined] of an old save) is rewritten
+//without it, so normalise_sgfs leaves no S[undefined] behind
+test('a normalised text with a status besogo cannot read is rewritten without it', () =>
+{
+	const result = normalised('(;SZ[19]G[KILL]AB[bb](;B[aa];W[ba]S[undefined])(;B[ba];W[aa]S[DEAD]))');
+	assert.deepEqual([result.changed, result.same_play, result.unexpected_changes, result.unreadable_statuses], [true, true, [], 1]);
+	assert.ok(!result.sgf.includes('undefined') && result.sgf.includes('S[DEAD]'), result.sgf);
+	assert.equal(normalised(result.sgf).changed, false);
+});

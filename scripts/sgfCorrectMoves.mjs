@@ -56,6 +56,9 @@ export function analyse({ besogo, BLACK }, sgf, normalise = false)
 {
 	const { editor, loaded } = loadTracked(besogo, sgf);
 	const result = normalise ? normaliseLoaded(besogo, editor) : {};
+	// a status besogo can't read (S[undefined]) is never written, so a text with one isn't as the site keeps it
+	if (normalise && !result.changed && hasUnreadableStatus(besogo, sgf))
+		result.changed = true;
 	const root = editor.getRoot();
 	const next = root.nextMove();
 	const problem = root.checkTsumegoHeroCompatibility(root);
@@ -129,6 +132,13 @@ export function loadTracked(besogo, sgf)
 export function statusReads(besogo, value)
 {
 	return !besogo.loadStatusFromString(value.trim()).str().includes('undefined');
+}
+
+//Whether an SGF has an S value besogo can't read
+function hasUnreadableStatus(besogo, sgf)
+{
+	return textNodes(besogo.parseSgf(sgf)).some(node =>
+		node.props.some(prop => prop.id === 'S' && prop.values.some(value => !statusReads(besogo, value))));
 }
 
 //The nodes of a parsed SGF, depth first

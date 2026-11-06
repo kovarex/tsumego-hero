@@ -1,2 +1,3 @@
 Changed: A challenge shows places and medals only once every player in it has finished; until then it shows the points of the finished runs and how many players finished.
 Added: The creator of a challenge can remove a player who hasn't started their run, or who has been on the same problem for twice the time for a problem, so the challenge can finish without them.
+Fixed: When two players clicked Rematch on the same challenge, each click started its own rematch. A challenge now has one rematch: the later clicks take the players to it, and the challenge's page links it with the name of the player who started it.
