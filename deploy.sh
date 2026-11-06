@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# Everything the deploy writes (the pulled code, the bundles, vendor) must be readable by PHP,
+# which runs as another user, whatever umask the shell had: under 077 the pull wrote
+# config/bootstrap.php owner-only and the site stopped. The secrets set their own stricter modes.
+umask 022
+
 # The secrets that are not in git first, so the code the pull brings never starts without them
 # (scripts/ensure-secrets.sh). After the pull the new script runs it again, which changes nothing.
 bash "$(dirname "$0")/scripts/ensure-secrets.sh" "$(cd "$(dirname "$0")"; pwd)" || exit 1

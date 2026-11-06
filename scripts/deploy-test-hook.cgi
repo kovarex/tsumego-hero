@@ -88,6 +88,9 @@ deploy_steps() {
 	export GIT_CONFIG_KEY_2=pack.windowMemory GIT_CONFIG_VALUE_2=64m
 	export GIT_CONFIG_KEY_3=pack.threads GIT_CONFIG_VALUE_3=1
 	cd "$REPO_DIR"
+	# The checkout must be readable by PHP, which runs as another user, whatever umask the CGI
+	# process got (as deploy.sh does for its pull)
+	umask 022
 	if [ "$1" = 0 ]; then
 		git fetch origin master
 	else

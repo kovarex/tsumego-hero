@@ -124,9 +124,14 @@ test('a core.local.php ending with ?> stops the deploy before anything changes, 
 	assert.equal(read(root, 'core.local.php'), coreLocal);
 });
 
-test('the deploy runs it before the pull, and the test site before the checkout', () => {
+//The code must be readable by PHP, which runs as another user, whatever the umask of the shell or
+//the CGI process, and the secrets must exist before it changes
+test('the deploy sets umask 022 first, then makes the secrets, then pulls; the test site the same around its checkout', () => {
 	const deploy = readFileSync(join(dirname(SCRIPT), '..', 'deploy.sh'), 'utf-8');
+	const firstCommand = deploy.split('\n').find(line => line.trim() !== '' && !line.trim().startsWith('#'));
+	assert.equal(firstCommand, 'umask 022');
 	assert.ok(deploy.indexOf('scripts/ensure-secrets.sh') < deploy.indexOf('git pull'));
 	const hook = readFileSync(join(dirname(SCRIPT), 'deploy-test-hook.cgi'), 'utf-8');
+	assert.ok(hook.indexOf('umask 022') < hook.indexOf('bash scripts/ensure-secrets.sh'));
 	assert.ok(hook.indexOf('bash scripts/ensure-secrets.sh') < hook.indexOf('git checkout'));
 });

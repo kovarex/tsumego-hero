@@ -31,10 +31,23 @@ unusable() {
 	[ "${#1}" -lt 32 ] || [ "$(printf '%s' "$1" | openssl dgst -sha256 | awk '{print $NF}')" = "$compromised_sha256" ]
 }
 
-# A file this script made is read by the web server's group where there is one (web on
-# NearlyFreeSpeech), else by its owner only
-restrict() {
-	{ chgrp web "$1" && chmod 640 "$1"; } 2> /dev/null || chmod 600 "$1"
+# Whether there is the group web, the one PHP runs in on NearlyFreeSpeech. Elsewhere (DDEV, CI) PHP
+# runs as the owner of the files.
+web_group_exists() {
+	getent group web > /dev/null 2>&1 || grep -q '^web:' /etc/group 2> /dev/null
+}
+
+# Both files are read by PHP: where the group web exists, they belong to it and only it reads them
+# besides the owner, whatever mode they had; a file this script makes is its owner's only otherwise.
+# A file PHP couldn't read stops the deploy here rather than the site later.
+make_readable_by_php() {
+	web_group_exists || return 0
+	for file in "$jwt_file" "$core_local"; do
+		if ! { chgrp web "$file" && chmod 640 "$file"; } 2> /dev/null; then
+			echo "${file#"$root"/} could not be given to the group web, so PHP could not read it" >&2
+			exit 1
+		fi
+	done
 }
 
 # The value the file returns, prefixed by v: when it is a literal string
@@ -51,7 +64,6 @@ salt_value() {
 write_jwt_secret() {
 	secret=$(random_secret)
 	(umask 077 && printf "<?php\n\n//The secret of the session cookie, made by scripts/ensure-secrets.sh (see config/jwt_secret.example.php)\nreturn '%s';\n" "$secret" > "$jwt_file")
-	restrict "$jwt_file"
 }
 
 if [ ! -f "$jwt_file" ]; then
@@ -67,7 +79,6 @@ fi
 
 if [ ! -f "$core_local" ]; then
 	(umask 077 && printf "<?php\n" > "$core_local")
-	restrict "$core_local"
 fi
 if ! grep -Eq "$salt_line" "$core_local"; then
 	if tail -n 3 "$core_local" | grep -q '?>'; then
@@ -92,3 +103,5 @@ else
 		echo "replaced the unusable Security.salt of config/core.local.php"
 	fi
 fi
+
+make_readable_by_php
