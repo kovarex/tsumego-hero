@@ -116,22 +116,14 @@ function semeaiNoEyesInsideLiberties(black, white, inside)
 	return {text: text + underdog.name + " is dead. (" + lead + " move(s) behind)<br>", correct: semeaiDeadAnswer(underdog.name)};
 }
 
-//All inside liberties count for the group with the eye. A few problems show the liberties as the
-//tesujis that gain some leave them.
+//All inside liberties count for the group with the eye
 function semeaiEyeAgainstNoEye(count)
 {
-	let takenFromBlack = multipleChoiceLibertiesB;
-	let takenFromWhite = multipleChoiceLibertiesW;
-	let shownBlack = count - takenFromWhite;
-	let shownWhite = count - takenFromBlack;
-	if (tsumegoID == 29827 && takenFromBlack == 1 && takenFromWhite == 2)
-	{
-		takenFromWhite = 1;
-		shownBlack = shownWhite = 15;
-	}
-	const result = semeaiPlainRace(count - takenFromWhite, count - takenFromBlack, "The position is unsettled. (Whoever plays first wins.)");
+	const black = count - multipleChoiceLibertiesW;
+	const white = count - multipleChoiceLibertiesB;
+	const result = semeaiPlainRace(black, white, "The position is unsettled. (Whoever plays first wins.)");
 	result.text = "Semeai Type 3: Eye vs no eye.<br>No Seki possible.<br> All inside liberties count for the group with the eye.<br>Black has "
-		+ semeaiLiberties(shownBlack) + ".<br> White has " + semeaiLiberties(shownWhite) + ".<br>" + result.text;
+		+ semeaiLiberties(black) + ".<br> White has " + semeaiLiberties(white) + ".<br>" + result.text;
 	return result;
 }
 
