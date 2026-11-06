@@ -181,10 +181,11 @@ test('only what was on the merged away nodes may go', () =>
 		assert.deepEqual(listedTwice.unexpected_changes, []);
 		assert.deepEqual(listedTwice.setup_rewritten, { AB: -1 });
 	}
-	//a status on a node whose position goes on by a transposition is set aside by besogo (as on 24 rows of the site) and
-	//may go; an illegal move is named (sgf 19451 and 19452 of the site play on a stone)
-	const ignored = normalised('(;SZ[19]G[KILL]AB[jj](;B[qq];W[rr]S[ALIVE])(;B[ss];W[rr];B[qq]S[DEAD]))');
-	assert.deepEqual([ignored.changed, ignored.same_play, ignored.unexpected_changes, ignored.status_ignored], [true, true, [], 1]);
+	//a status on a node whose position goes on by a transposition, which besogo sets aside, is written back (24 rows of
+	//the site lost it); an illegal move is named (sgf 19451 and 19452 of the site play on a stone)
+	const setAside = normalised('(;SZ[19]G[KILL]AB[jj](;B[qq];W[rr]S[ALIVE])(;B[ss];W[rr];B[qq]S[DEAD]))');
+	assert.deepEqual([setAside.changed, setAside.same_play, setAside.unexpected_changes], [true, true, []]);
+	assert.match(setAside.sgf, /W\[bb\]\nS\[ALIVE\]/);
 	assert.deepEqual(normalised('(;SZ[19]AB[rr][rs][qq](;B[ss]C[+])(;B[sr];W[qs];B[qq];W[ps]))').unexpected_changes,
 		['B 3→2 (1 illegal, besogo leaves it out)']);
 	//a stone shown that the rewrite loses keeps the row as it is: the turn leaves out the setup of a node after a move

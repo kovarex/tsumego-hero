@@ -35,6 +35,7 @@ besogo.makeGameRoot = function(sizeX = 19, sizeY = 19)
     node.superkoMeansDead = false;
     node.cameFrom = null;
     node.statusSource = null;
+    node.statusSetAside = null; // the status written on a node that goes on only by a transposition, see clearCorrectValues
     node.status = null;
     node.visited = false; // player already was in this position while solving
 	node.visitedInRecursion = false; // internal bool for recursive algorithm
@@ -379,6 +380,7 @@ besogo.makeGameRoot = function(sizeX = 19, sizeY = 19)
     if (!child.localEdit)
     {
       this.statusSource = null;
+      this.statusSetAside = null;
       this.correct = CORRECT_BAD;
       this.correctSource = false;
     }
@@ -693,6 +695,7 @@ besogo.makeGameRoot = function(sizeX = 19, sizeY = 19)
     if (this.hasNonLocalChildIncludingVirtual())
       return false;
     this.statusSource = statusSource;
+    this.statusSetAside = null;
     besogo.updateCorrectValues(this.getRoot());
     return true;
   }

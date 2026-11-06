@@ -22,7 +22,7 @@ class SgfAnalysis
 	//$unexpectedChanges those changes that aren't what a save of the board editor is expected to leave out, and
 	//$mergedAway what went with the nodes besogo merged into a transposition, property => count, and $setupRewritten
 	//the change of the count of setup properties written as besogo shows them (a point listed twice written once),
-	//property => change, and $statusIgnored the statuses besogo sets aside, where the position goes on by a transposition
+	//property => change
 	/**
 	 * @param array<string, array{int, int}> $propertyChanges
 	 * @param list<string> $unexpectedChanges
@@ -40,8 +40,7 @@ class SgfAnalysis
 		public readonly array $propertyChanges = [],
 		public readonly array $unexpectedChanges = [],
 		public readonly array $mergedAway = [],
-		public readonly array $setupRewritten = [],
-		public readonly int $statusIgnored = 0) {}
+		public readonly array $setupRewritten = []) {}
 
 	//Whether the normalised text may be stored in place of the given one: it plays the same and loses nothing unexpected
 	public function rewriteIsFaithful(): bool
@@ -95,8 +94,7 @@ class SgfAnalysis
 					array_map(fn($counts) => [(int) $counts[0], (int) $counts[1]], (array) ($output['property_changes'] ?? [])),
 					array_values(array_map('strval', (array) ($output['unexpected_changes'] ?? []))),
 					array_map('intval', (array) ($output['merged_away'] ?? [])),
-					array_map('intval', (array) ($output['setup_rewritten'] ?? [])),
-					(int) ($output['status_ignored'] ?? 0));
+					array_map('intval', (array) ($output['setup_rewritten'] ?? [])));
 		}
 		if (count($results) !== count($sgfs))
 			throw new RuntimeException('sgfCorrectMoves.mjs answered ' . count($results) . ' of ' . count($sgfs) . ' SGFs');

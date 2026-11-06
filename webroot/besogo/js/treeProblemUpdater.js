@@ -109,8 +109,19 @@ besogo.clearCorrectValues = function(node)
 {
   node.correct = CORRECT_EMPTY;
   node.status = null;
+  // A node whose position goes on has no status of its own. The one written on a node that goes on only by a
+  // transposition is set aside, so a save writes it back as it was, and it is the node's status again when it is an end.
   if (node.hasNonLocalChildIncludingVirtual())
+  {
+    if (node.statusSource && !node.children.some(child => !child.localEdit))
+      node.statusSetAside = node.statusSource;
     node.statusSource = null;
+  }
+  else if (node.statusSetAside)
+  {
+    node.statusSource = node.statusSetAside;
+    node.statusSetAside = null;
+  }
   for (let i = 0; i < node.children.length; ++i)
     besogo.clearCorrectValues(node.children[i]);
 }

@@ -53,7 +53,6 @@ class NormaliseSgfsCommandTest extends AppTestCase
 		$this->assertOutputContains('0 whose properties would change unexpectedly (kept as they are)');
 		$this->assertOutputContains('Property counts of the rewritten rows, before -> after: ');
 		$this->assertOutputContains('CA 1 -> 0 in 1 rows');
-		$this->assertOutputContains('0 rows rewritten lose 0 statuses besogo sets aside');
 		$this->assertSame($before, Util::query('SELECT * FROM sgf ORDER BY id'));
 		$this->assertSame(self::BOTTOM_RIGHT_COMMENT['message'], Util::query('SELECT message FROM tsumego_comment')[0]['message']);
 	}

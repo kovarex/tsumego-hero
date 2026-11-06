@@ -115,10 +115,12 @@ besogo.composeSgf = function(editor, expand = false)
       string += 'C[' + escapeText((correctToSave ? '+' : '') + node.comment) + ']';
     }
 
-    if (node.statusSource)
+    // the status the node shows, or the one written on it that besogo sets aside while a transposition goes on from it
+    let statusToSave = node.statusSource || node.statusSetAside;
+    if (statusToSave)
     {
       string += (string ? '\n' : '');
-      string += 'S[' + node.statusSource.str() + ']';
+      string += 'S[' + statusToSave.str() + ']';
     }
 
     if (node.superkoMeansDead)
