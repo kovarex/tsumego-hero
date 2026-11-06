@@ -5,6 +5,7 @@ namespace App\Controller;
 use Cake\Http\Exception\BadRequestException;
 use Cake\Http\Exception\ForbiddenException;
 use Cake\Http\Exception\NotFoundException;
+use Cake\Http\Response;
 use Cake\Routing\Router;
 use App\Attribute\HttpGet;
 use App\Attribute\HttpPost;
@@ -100,6 +101,9 @@ class ChallengesController extends AppController
 		$this->set('isParticipant', $isParticipant);
 		$this->set('hasDeclined', $participation !== null && !$isParticipant);
 		$this->set('myRun', $myRun);
+		$rematch = ChallengeTable::rematchOf($challengeID);
+		$this->set('rematch', $rematch);
+		$this->set('isInRematch', $rematch !== null && Auth::isLoggedIn() && ChallengeTable::isParticipant((int) $rematch['id'], Auth::getUserID()));
 		$this->set('isFull', !$isParticipant && ChallengeTable::participantCount($challengeID) >= ChallengeTable::MAXIMUM_PARTICIPANTS);
 		$this->set('joinUrl', Router::url(self::challengeUrl($challengeID), true));
 
@@ -155,25 +159,43 @@ class ChallengesController extends AppController
 	}
 
 	//A player of the challenge starts a new one with its settings and its players invited, where
-	//they can play again; the problems are new ones.
+	//they can play again; the problems are new ones. A challenge has one rematch: once a player started
+	//it, Rematch takes the others to it, where the usual rules of joining apply.
 	#[HttpPost]
 	public function rematch(string $id): mixed
 	{
 		$challenge = $this->findChallenge($id);
-		if (!Auth::isLoggedIn() || !ChallengeTable::isParticipant((int) $challenge['id'], Auth::getUserID()))
+		$challengeID = (int) $challenge['id'];
+		if (!Auth::isLoggedIn() || !ChallengeTable::isParticipant($challengeID, Auth::getUserID()))
 			throw new ForbiddenException('Only the players of the challenge can start a rematch.');
-		$this->Authorization->authorize('Challenge', 'create');
 
+		$existing = ChallengeTable::rematchOf($challengeID);
+		if ($existing !== null)
+			return $this->toStartedRematch($existing);
+
+		$this->Authorization->authorize('Challenge', 'create');
 		$rematch = ChallengeTable::rematch($challenge, Auth::getUserID());
 		if ($rematch === null)
 		{
 			CookieFlash::set('There are no problems of these ranks anymore, start a challenge of other ones.', 'error');
-			return $this->redirect(self::challengeUrl((int) $challenge['id']));
+			return $this->redirect(self::challengeUrl($challengeID));
 		}
-		[$rematchID, $invited] = $rematch;
+		// another player's click started it at the same moment
+		if (!$rematch['started'])
+			return $this->toStartedRematch(ChallengeTable::rematchOf($challengeID) ?? ['id' => $rematch['id']]);
+		$invited = $rematch['invited'];
 		CookieFlash::set('A rematch of ' . ChallengeTable::title($challenge) . ' with new problems'
 			. (empty($invited) ? '.' : ', ' . count($invited) . (count($invited) === 1 ? ' player is' : ' players are') . ' invited.'), 'success');
-		return $this->redirect(self::challengeUrl($rematchID));
+		return $this->redirect(self::challengeUrl($rematch['id']));
+	}
+
+	//To the rematch another player started
+	/** @param array<string, mixed> $rematch As ChallengeTable::rematchOf() returns it */
+	private function toStartedRematch(array $rematch): Response
+	{
+		if (isset($rematch['user_display_name']))
+			CookieFlash::set($rematch['user_display_name'] . ' started the rematch already, here it is.', 'success');
+		return $this->redirect(self::challengeUrl((int) $rematch['id']));
 	}
 
 	//Starts the run of the player, joining the challenge first when they aren't in yet, or gets

@@ -9,6 +9,8 @@ use App\Model\Table\ChallengeTable;
  * @var \App\View\AppView $this
  * @var array $challenge What ChallengeTable::withDetails() returned
  * @var array $standings What ChallengeTable::standings() returned
+ * @var array|null $rematch The rematch of the challenge, ChallengeTable::rematchOf()
+ * @var bool $isInRematch Whether the player looking is in the rematch
  * @var bool $isParticipant In the challenge and not declined
  * @var bool $hasDeclined The viewer declined the challenge
  * @var array|null $myRun The row of the viewer in $standings
@@ -67,9 +69,14 @@ $cellSymbols = ['failed' => '✗', 'timeout' => '⏱', 'skipped' => '–', 'queu
 		<p id="challenge-my-result"><?= $this->element('Challenges/placement', ['place' => (int) $myRun['place']]) ?> You are <strong><?= Util::ordinal((int) $myRun['place']) ?></strong> of <?= $finishedCount ?>
 			with <strong><?= ChallengeTable::formatPoints($myRun['points']) ?></strong> points,
 			<?= $myRun['solved_count'] ?> of <?= (int) $challenge['problem_count'] ?> problems solved.</p>
+		<?php if ($rematch !== null): ?>
+		<p id="challenge-rematch-started">Rematch started by <?= UserTable::renderLink($rematch) ?>
+			<a class="btn btn--success" href="/challenges/<?= (int) $rematch['id'] ?>" id="challenge-rematch-open"><?= $isInRematch ? 'Open' : 'Join' ?></a></p>
+		<?php else: ?>
 		<form method="post" action="/challenges/rematch/<?= $challengeId ?>">
 			<button class="btn btn--success" type="submit" id="challenge-rematch" title="A new challenge with these settings and new problems, its players invited">Rematch</button>
 		</form>
+		<?php endif; ?>
 		<?php endif; ?>
 	</section>
 

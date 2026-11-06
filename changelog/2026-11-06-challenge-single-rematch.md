@@ -1,0 +1,1 @@
+Fixed: When two players clicked Rematch on the same challenge, each click started its own rematch. A challenge now has one rematch: the later clicks take the players to it, and the challenge's page links it with the name of the player who started it.
