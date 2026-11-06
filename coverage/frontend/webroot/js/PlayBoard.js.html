@@ -23,16 +23,16 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">78.94% </span>
+                <span class="strong">79.33% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>120/152</span>
+                <span class='fraction'>119/150</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">67.14% </span>
+                <span class="strong">68.57% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>47/70</span>
+                <span class='fraction'>48/70</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">82.06% </span>
+                <span class="strong">82.51% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>119/145</span>
+                <span class='fraction'>118/143</span>
             </div>
         
             
@@ -267,8 +267,7 @@
 <a name='L202'></a><a href='#L202'>202</a>
 <a name='L203'></a><a href='#L203'>203</a>
 <a name='L204'></a><a href='#L204'>204</a>
-<a name='L205'></a><a href='#L205'>205</a>
-<a name='L206'></a><a href='#L206'>206</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L205'></a><a href='#L205'>205</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -336,8 +335,8 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">86x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">77x</span>
-<span class="cline-any cline-yes">77x</span>
+<span class="cline-any cline-yes">76x</span>
+<span class="cline-any cline-yes">76x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">86x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -394,9 +393,9 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">40x</span>
+<span class="cline-any cline-yes">38x</span>
 <span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">40x</span>
+<span class="cline-any cline-yes">38x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">86x</span>
@@ -418,18 +417,18 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">98x</span>
+<span class="cline-any cline-yes">97x</span>
 <span class="cline-any cline-yes">4x</span>
-<span class="cline-any cline-yes">94x</span>
+<span class="cline-any cline-yes">93x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">966x</span>
-<span class="cline-any cline-yes">966x</span>
-<span class="cline-any cline-yes">966x</span>
-<span class="cline-any cline-yes">966x</span>
+<span class="cline-any cline-yes">956x</span>
+<span class="cline-any cline-yes">956x</span>
+<span class="cline-any cline-yes">956x</span>
+<span class="cline-any cline-yes">956x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">94x</span>
-<span class="cline-any cline-yes">94x</span>
-<span class="cline-any cline-yes">94x</span>
+<span class="cline-any cline-yes">93x</span>
+<span class="cline-any cline-yes">93x</span>
+<span class="cline-any cline-yes">93x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">86x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -468,9 +467,8 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">86x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">86x</span>
-<span class="cline-any cline-yes">86x</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-yes">86x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">//The board of the play page, created as soon as Tsumegos/play.php has its &lt;div id="target"&gt;, so the
@@ -673,9 +671,8 @@ redrawHearts();
 <span class="cstat-no" title="statement not covered" >		div.style.width = options.width + 'px';</span>
 	}
 	options.reviewMode = false;
-	options.reviewEnabled = playPage.problem.solved || playPage.problem.requestSolution;
-	<span class="missing-if-branch" title="if path not taken" >I</span>if (authorProblem)
-<span class="cstat-no" title="statement not covered" >		options.reviewEnabled = true;</span>
+	//a problem of a time mode run (or a challenge) is reviewed only once it is answered, whoever made it (PlayPage.js enableReview())
+	options.reviewEnabled = mode != playPage.page.modes.time &amp;&amp; (playPage.problem.solved || playPage.problem.requestSolution || authorProblem);
 	besogo.create(div, options);
 })();
 &nbsp;</pre></td></tr></table></pre>
@@ -685,7 +682,7 @@ redrawHearts();
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-11-06T15:08:33.175Z
+                at 2026-11-06T15:14:08.603Z
             </div>
         <script src="../../prettify.js"></script>
         <script>
