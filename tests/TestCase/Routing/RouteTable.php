@@ -81,6 +81,7 @@ return [
 		'/challenges/decline/5' => ['Challenges', 'decline', ['5']],
 		'/challenges/invite/5' => ['Challenges', 'invite', ['5']],
 		'/challenges/play/5' => ['Challenges', 'play', ['5']],
+		'/challenges/rematch/5' => ['Challenges', 'rematch', ['5']],
 		'/classes' => ['Classrooms', 'index', []],
 		'/classes/create' => ['Classrooms', 'create', []],
 		'/classes/collections' => ['Classrooms', 'collections', []],
@@ -190,7 +191,9 @@ return [
 		'/challenges/join/7' => ['Challenges', 'join', ['7']],
 		'/challenges/play' => ['Challenges', 'play', []],
 		'/challenges/play/7' => ['Challenges', 'play', ['7']],
-		'/challenges/view' => ['Challenges', 'view', []],
+		'/challenges/rematch' => ['Challenges', 'rematch', []],
+		'/challenges/rematch/7' => ['Challenges', 'rematch', ['7']],
+		'/challenges/view' =>['Challenges', 'view', []],
 		'/challenges/view/7' => ['Challenges', 'view', ['7']],
 
 		'/changelog/changelogTimestamps' => ['Changelog', 'changelogTimestamps', []],
