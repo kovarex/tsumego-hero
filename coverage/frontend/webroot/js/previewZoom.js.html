@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">85.71% </span>
+                <span class="strong">40% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>30/35</span>
+                <span class='fraction'>14/35</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">71.42% </span>
+                <span class="strong">19.04% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>15/21</span>
+                <span class='fraction'>4/21</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">90% </span>
+                <span class="strong">30% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>9/10</span>
+                <span class='fraction'>3/10</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">90% </span>
+                <span class="strong">43.33% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>27/30</span>
+                <span class='fraction'>13/30</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line high'></div>
+    <div class='status-line low'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -137,42 +137,42 @@
 <span class="cline-any cline-yes">283x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">283x</span>
 <span class="cline-any cline-yes">283x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">31x</span>
-<span class="cline-any cline-yes">31x</span>
-<span class="cline-any cline-yes">31x</span>
-<span class="cline-any cline-yes">31x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">31x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">30x</span>
+<span class="cline-any cline-yes">30x</span>
+<span class="cline-any cline-yes">30x</span>
+<span class="cline-any cline-yes">30x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">30x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -198,19 +198,19 @@
 	var STORAGE_KEY = 'preview-mode';
 	var ZOOM_CLASS = 'preview-zoomed';
 &nbsp;
-	function containerOf(toggle) {
-		<span class="missing-if-branch" title="if path not taken" >I</span>if (toggle.dataset.target)
+	function <span class="fstat-no" title="function not covered" >containerOf(</span>toggle) {
+<span class="cstat-no" title="statement not covered" >		if (toggle.dataset.target)</span>
 <span class="cstat-no" title="statement not covered" >			return document.querySelector(toggle.dataset.target);</span>
-		return toggle.closest('.set-view-main') || toggle.closest('table') || <span class="branch-2 cbranch-no" title="branch not covered" >document.documentElement;</span>
+<span class="cstat-no" title="statement not covered" >		return toggle.closest('.set-view-main') || toggle.closest('table') || document.documentElement;</span>
 	}
 &nbsp;
-	function setMode(toggle, on) {
-		var container = containerOf(toggle) || <span class="branch-1 cbranch-no" title="branch not covered" >document.documentElement;</span>
-		container.classList.toggle(ZOOM_CLASS, on);
-		if (on)
-			renderPreviewsIn(container);
+	function <span class="fstat-no" title="function not covered" >setMode(</span>toggle, on) {
+		var container = <span class="cstat-no" title="statement not covered" >containerOf(toggle) || document.documentElement;</span>
+<span class="cstat-no" title="statement not covered" >		container.classList.toggle(ZOOM_CLASS, on);</span>
+<span class="cstat-no" title="statement not covered" >		if (on)</span>
+<span class="cstat-no" title="statement not covered" >			renderPreviewsIn(container);</span>
 		else
-			container.querySelectorAll('a[data-sgf-preview] svg').forEach(function (svg) { svg.remove(); });
+<span class="cstat-no" title="statement not covered" >			container.querySelectorAll('a[data-sgf-preview] svg').forEach(<span class="fstat-no" title="function not covered" >fu</span>nction (svg) { <span class="cstat-no" title="statement not covered" >svg.remove(); </span>});</span>
 	}
 &nbsp;
 	function init() {
@@ -220,21 +220,21 @@
 		var on = localStorage.getItem(STORAGE_KEY) === '1';
 		toggles.forEach(function (toggle) {
 			toggle.checked = on;
-			if (on)
-				setMode(toggle, true);
-			toggle.addEventListener('change', function () {
-				setMode(toggle, this.checked);
-				localStorage.setItem(STORAGE_KEY, this.checked ? <span class="branch-0 cbranch-no" title="branch not covered" >'1' </span>: '0');
+			<span class="missing-if-branch" title="if path not taken" >I</span>if (on)
+<span class="cstat-no" title="statement not covered" >				setMode(toggle, true);</span>
+			toggle.addEventListener('change', <span class="fstat-no" title="function not covered" >fu</span>nction () {
+<span class="cstat-no" title="statement not covered" >				setMode(toggle, this.checked);</span>
+<span class="cstat-no" title="statement not covered" >				localStorage.setItem(STORAGE_KEY, this.checked ? '1' : '0');</span>
 			});
 		});
 	}
 &nbsp;
-	function renderPreviewsIn(container) {
-		container.querySelectorAll('a[data-sgf-preview]:not(:has(svg))').forEach(function (target) {
+	function <span class="fstat-no" title="function not covered" >renderPreviewsIn(</span>container) {
+<span class="cstat-no" title="statement not covered" >		container.querySelectorAll('a[data-sgf-preview]:not(:has(svg))').forEach(<span class="fstat-no" title="function not covered" >fu</span>nction (target) {</span>
 			var data;
-			try { data = JSON.parse(target.dataset.sgfPreview); } catch (e) { <span class="cstat-no" title="statement not covered" >return; </span>}
-			<span class="missing-if-branch" title="if path not taken" >I</span>if (!data || !data.black) <span class="cstat-no" title="statement not covered" >return;</span>
-			createBoard(target, data.black, data.white, data.xMax, data.yMax, data.boardSize);
+<span class="cstat-no" title="statement not covered" >			try { <span class="cstat-no" title="statement not covered" >data = JSON.parse(target.dataset.sgfPreview); </span>} catch (e) { <span class="cstat-no" title="statement not covered" >return; </span>}</span>
+<span class="cstat-no" title="statement not covered" >			if (!data || !data.black) <span class="cstat-no" title="statement not covered" >return;</span></span>
+<span class="cstat-no" title="statement not covered" >			createBoard(target, data.black, data.white, data.xMax, data.yMax, data.boardSize);</span>
 		});
 	}
 &nbsp;
@@ -256,7 +256,7 @@
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-11-06T00:37:53.115Z
+                at 2026-11-06T01:13:31.797Z
             </div>
         <script src="../../prettify.js"></script>
         <script>
