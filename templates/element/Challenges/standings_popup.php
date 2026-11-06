@@ -16,9 +16,7 @@ use App\Model\Table\UserTable;
 
 $panelId = 'challenge-standings-' . $challengeId;
 ?>
-<span class="challenge-standings-popup<?= $showPlaces ? '' : ' challenge-standings-popup--unranked' ?>">
-	<button type="button" class="challenge-standings-popup__toggle" aria-expanded="false" aria-controls="<?= $panelId ?>" aria-describedby="<?= $panelId ?>"><?= count($standings) ?></button>
-	<span class="challenge-standings-popup__panel" id="<?= $panelId ?>">
+<span class="challenge-standings-popup<?= $showPlaces ? '' : ' challenge-standings-popup--unranked' ?>"><button type="button" class="challenge-standings-popup__toggle" aria-expanded="false" aria-controls="<?= $panelId ?>" aria-describedby="<?= $panelId ?>"><?= count($standings) ?></button><span class="challenge-standings-popup__panel" id="<?= $panelId ?>">
 		<span class="challenge-standings-popup__title"><?= count($standings) ?> finished</span>
 		<?php foreach ($standings as $run): ?>
 		<span class="challenge-standings-popup__run">
@@ -29,5 +27,4 @@ $panelId = 'challenge-standings-' . $challengeId;
 			<span class="challenge-standings-popup__points"><?= ChallengeTable::formatPoints((float) $run['points']) ?> points</span>
 		</span>
 		<?php endforeach; ?>
-	</span>
-</span>
+	</span></span><?php // no white space after, the phrase goes on right after the number

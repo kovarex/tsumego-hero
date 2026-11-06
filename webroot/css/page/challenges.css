@@ -110,18 +110,31 @@
 	text-align: right;
 }
 
+/* The medal of the player's place sits on the line of the phrase, as high as its letters */
+.challenges__my-place .challenge-place
+{
+	vertical-align: -0.3em;
+}
+
+.challenges__my-place .challenge-place svg
+{
+	width: 1.1em;
+	height: 1.3em;
+}
+
 /* The number of the players who finished, which opens their standings at once (ChallengesPage.js) */
 .challenge-standings-popup
 {
 	position: relative;
-	display: inline-block;
+	display: inline;
 }
 
 .challenge-standings-popup__toggle
 {
-	padding: 0 2px;
+	padding: 0;
 	border: none;
-	border-bottom: 1px dotted currentColor;
+	text-decoration: underline dotted;
+	text-underline-offset: 0.15em;
 	background: none;
 	color: inherit;
 	font: inherit;
