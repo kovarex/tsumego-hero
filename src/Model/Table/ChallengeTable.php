@@ -7,6 +7,7 @@ use App\Model\Entity\TimeModeSession;
 use App\Utility\TimeMode;
 use App\Utility\TsumegoButton;
 use App\Utility\Util;
+use Cake\Database\Exception\QueryException;
 use Cake\ORM\TableRegistry;
 
 //A challenge between players: one player picks a range of difficulty, the time for a problem and
@@ -17,8 +18,15 @@ use Cake\ORM\TableRegistry;
 //another participant invited, and anyone who opened its link and joined. A player who hasn't
 //started their run can decline the challenge; the row stays, so the others see it and nobody
 //invites them again, and the player can still change their mind and play.
+//A challenge is in progress until every player still in it finished their run; only then are there
+//places. The creator can remove a player who hasn't started their run, or whose run is stuck on a
+//problem (canRemove()), who then doesn't count for the finish.
 class ChallengeTable extends AppTable
 {
+	//How many times the time for a problem a started run may stay on one problem before the creator
+	//can remove its player.
+	public const REMOVABLE_AFTER_TIMES_FOR_A_PROBLEM = 2;
+
 	//The times for a problem to choose from, in seconds.
 	public const SECONDS_PER_PROBLEM_CHOICES = [15, 30, 45, 60, 90, 120, 180, 240, 300, 600, 1800];
 	public const DEFAULT_SECONDS_PER_PROBLEM = 60;
@@ -35,11 +43,12 @@ class ChallengeTable extends AppTable
 	public const RUN_PLAYING = 'playing';
 	public const RUN_FINISHED = 'finished';
 	public const RUN_DECLINED = 'declined';
+	public const RUN_REMOVED = 'removed';
 
 	//Draws the problems and creates the challenge, with its creator as its first participant.
 	//Returns the id of the new challenge, null when there is no problem of these ranks
 	/** @param list<int> $avoidTsumegoIds Problems drawn only when there are not enough others, like the ones of the challenge a rematch repeats */
-	public static function start(int $creatorUserId, int $minimumTimeModeRankId, int $maximumTimeModeRankId, int $secondsPerProblem, int $problemCount, array $avoidTsumegoIds = []): ?int
+	public static function start(int $creatorUserId, int $minimumTimeModeRankId, int $maximumTimeModeRankId, int $secondsPerProblem, int $problemCount, array $avoidTsumegoIds = [], ?int $rematchOfChallengeId = null): ?int
 	{
 		$tsumegos = TimeMode::getTsumegosOfRanks($minimumTimeModeRankId, $maximumTimeModeRankId);
 		if (empty($tsumegos))
@@ -55,6 +64,7 @@ class ChallengeTable extends AppTable
 			'minimum_time_mode_rank_id' => $minimumTimeModeRankId,
 			'maximum_time_mode_rank_id' => $maximumTimeModeRankId,
 			'seconds_per_problem' => $secondsPerProblem,
+			'rematch_of_challenge_id' => $rematchOfChallengeId,
 		]));
 		$challengeId = $challenge->id;
 
@@ -65,35 +75,59 @@ class ChallengeTable extends AppTable
 		return $challengeId;
 	}
 
-	//A new challenge with the settings of the challenge, started by the player, with the other players
-	//of the challenge invited (the ones who declined it or deleted their account are left out). New
+	//The rematch of the challenge: a new challenge with its settings, started by the player, with the other
+	//players of the challenge invited (the ones who declined it, were removed or deleted their account are left out). New
 	//problems are drawn, the ones of the challenge only when the ranks have too few others.
-	//Returns the id of the new challenge and the ids of the players invited to it, null when the ranks have no problem anymore
+	//A challenge has one rematch at most, which the unique key of rematch_of_challenge_id keeps even when two
+	//players start it at the same moment: the one who comes second gets the rematch of the first.
+	//Returns the id of the rematch, the ids of the players invited to it (none when it was there already) and
+	//whether this started it; null when the ranks have no problem anymore
 	/**
 	 * @param array<string, mixed> $challenge As withDetails() returns it
-	 * @return array{0: int, 1: list<int>}|null
+	 * @return array{id: int, invited: list<int>, started: bool}|null
 	 */
 	public static function rematch(array $challenge, int $userId): ?array
 	{
 		$challengeId = (int) $challenge['id'];
-		$rematchId = self::start(
-			$userId,
-			(int) $challenge['minimum_time_mode_rank_id'],
-			(int) $challenge['maximum_time_mode_rank_id'],
-			(int) $challenge['seconds_per_problem'],
-			(int) $challenge['problem_count'],
-			self::problemIDs($challengeId));
+		try
+		{
+			$rematchId = self::start(
+				$userId,
+				(int) $challenge['minimum_time_mode_rank_id'],
+				(int) $challenge['maximum_time_mode_rank_id'],
+				(int) $challenge['seconds_per_problem'],
+				(int) $challenge['problem_count'],
+				self::problemIDs($challengeId),
+				$challengeId);
+		}
+		catch (QueryException $exception)
+		{
+			$existing = self::rematchOf($challengeId);
+			if ($existing === null)
+				throw $exception;
+			return ['id' => (int) $existing['id'], 'invited' => [], 'started' => false];
+		}
 		if ($rematchId === null)
 			return null;
 
 		$players = array_map('intval', array_column(Util::query('SELECT p.user_id
 			FROM challenge_participant p
 			JOIN user u ON u.id = p.user_id AND u.deleted IS NULL
-			WHERE p.challenge_id = ? AND p.declined IS NULL AND p.user_id != ?
+			WHERE p.challenge_id = ? AND p.declined IS NULL AND p.removed IS NULL AND p.user_id != ?
 			ORDER BY p.id', [$challengeId, $userId]), 'user_id'));
 		foreach ($players as $playerId)
 			self::addParticipant($rematchId, $playerId, $userId);
-		return [$rematchId, $players];
+		return ['id' => $rematchId, 'invited' => $players, 'started' => true];
+	}
+
+	//The rematch of the challenge, when a player started one: its id and the player who started it (USER_COLUMNS).
+	/** @return array<string, mixed>|null */
+	public static function rematchOf(int $challengeId): ?array
+	{
+		return Util::query('SELECT c.id, ' . ClassroomTable::USER_COLUMNS . '
+			FROM challenge c
+			LEFT JOIN user u ON u.id = c.created_by_user_id
+			WHERE c.rematch_of_challenge_id = ?', [$challengeId])[0] ?? null;
 	}
 
 	//The problems of a challenge in the order they are played.
@@ -201,7 +235,7 @@ class ChallengeTable extends AppTable
 	/** @return array<array<string, mixed>> */
 	public static function ofPlayer(int $userId): array
 	{
-		return Util::query(self::selectSql('my_run.time_mode_session_status_id AS my_run_status_id, my_run.points AS my_points, me.declined AS my_declined,') . '
+		return Util::query(self::selectSql('my_run.time_mode_session_status_id AS my_run_status_id, my_run.points AS my_points, me.declined AS my_declined, me.removed AS my_removed,') . '
 			JOIN challenge_participant me ON me.challenge_id = c.id AND me.user_id = ?
 			LEFT JOIN time_mode_session my_run ON my_run.challenge_id = c.id AND my_run.user_id = me.user_id
 			ORDER BY c.created DESC, c.id DESC',
@@ -222,7 +256,7 @@ class ChallengeTable extends AppTable
 		return ['SELECT COUNT(*) AS count
 			FROM challenge_participant p
 			LEFT JOIN time_mode_session s ON s.challenge_id = p.challenge_id AND s.user_id = p.user_id
-			WHERE p.user_id = ? AND p.declined IS NULL AND s.id IS NULL', [$userId]];
+			WHERE p.user_id = ? AND p.declined IS NULL AND p.removed IS NULL AND s.id IS NULL', [$userId]];
 	}
 
 	//$extraColumns: Columns the caller joins in, each followed by a comma
@@ -232,8 +266,9 @@ class ChallengeTable extends AppTable
 				c.seconds_per_problem, c.created, minimum_rank.name AS minimum_rank, maximum_rank.name AS maximum_rank, ' . $extraColumns . '
 				(SELECT COUNT(*) FROM challenge_problem p WHERE p.challenge_id = c.id) AS problem_count,
 				(SELECT COUNT(*) FROM challenge_participant p JOIN user pu ON pu.id = p.user_id AND pu.deleted IS NULL
-					WHERE p.challenge_id = c.id AND p.declined IS NULL) AS participant_count,
+					WHERE p.challenge_id = c.id AND p.declined IS NULL AND p.removed IS NULL) AS participant_count,
 				(SELECT COUNT(*) FROM time_mode_session s JOIN user su ON su.id = s.user_id AND su.deleted IS NULL
+					JOIN challenge_participant sp ON sp.challenge_id = s.challenge_id AND sp.user_id = s.user_id AND sp.removed IS NULL
 					WHERE s.challenge_id = c.id AND s.time_mode_session_status_id != ' . TimeModeSessionStatusTable::IN_PROGRESS . ') AS finished_count,
 				' . ClassroomTable::USER_COLUMNS . '
 			FROM challenge c
@@ -249,17 +284,46 @@ class ChallengeTable extends AppTable
 		return Util::query('SELECT * FROM challenge_participant WHERE challenge_id = ? AND user_id = ?', [$challengeId, $userId])[0] ?? null;
 	}
 
-	//Whether the player is in the challenge and didn't decline it.
+	//Whether the player is in the challenge: they didn't decline it and the creator didn't remove them.
 	public static function isParticipant(int $challengeId, int $userId): bool
 	{
 		$participation = self::participation($challengeId, $userId);
-		return $participation !== null && $participation['declined'] === null;
+		return $participation !== null && $participation['declined'] === null && $participation['removed'] === null;
 	}
 
-	//The players in the challenge, without the ones who declined it.
+	//The players in the challenge, without the ones who declined it or were removed from it.
 	public static function participantCount(int $challengeId): int
 	{
-		return (int) Util::query('SELECT COUNT(*) AS count FROM challenge_participant WHERE challenge_id = ? AND declined IS NULL', [$challengeId])[0]['count'];
+		return (int) Util::query('SELECT COUNT(*) AS count FROM challenge_participant WHERE challenge_id = ? AND declined IS NULL AND removed IS NULL', [$challengeId])[0]['count'];
+	}
+
+	//Whether every player still in the challenge finished their run, so the places are final. With
+	//the counts of withDetails() and ofPlayer(), which leave out the declined, removed and deleted players.
+	/** @param array<string, mixed> $challenge */
+	public static function isFinished(array $challenge): bool
+	{
+		return (int) $challenge['participant_count'] > 0 && (int) $challenge['finished_count'] >= (int) $challenge['participant_count'];
+	}
+
+	//Whether the creator can remove the player of the row of standings(): at any time before they
+	//started their run, and once started, when they haven't moved on to a new problem for
+	//REMOVABLE_AFTER_TIMES_FOR_A_PROBLEM times the time for a problem, counted from the start of their
+	//current problem.
+	/** @param array<string, mixed> $standing */
+	public static function canRemove(array $standing, int $secondsPerProblem, int $now): bool
+	{
+		return match ($standing['run'])
+		{
+			self::RUN_NOT_STARTED => true,
+			self::RUN_PLAYING => strtotime($standing['last_activity']) <= $now - self::REMOVABLE_AFTER_TIMES_FOR_A_PROBLEM * $secondsPerProblem,
+			default => false,
+		};
+	}
+
+	//The creator takes the player out of the challenge; the row stays, so the table says so and nobody invites them again.
+	public static function remove(int $challengeId, int $userId): void
+	{
+		Util::execute('UPDATE challenge_participant SET removed = NOW() WHERE challenge_id = ? AND user_id = ? AND removed IS NULL', [$challengeId, $userId]);
 	}
 
 	//$invitedByUserId: Who invited the player, null when they came on their own
@@ -299,18 +363,21 @@ class ChallengeTable extends AppTable
 	}
 
 	//The players of a challenge in the order of the table: the finished runs by their points
-	//(the faster one first when the points are the same) with their place, then the runs being
-	//played, then the players who haven't started, and the ones who declined last. A deleted account
-	//is left out.
+	//(the faster one first when the points are the same), then the runs being played, then the
+	//players who haven't started, the ones who declined and the ones the creator removed last. A
+	//deleted account is left out. The finished runs have their place once the challenge is
+	//finished (everyoneFinished()).
 	/**
 	 * @return array<array<string, mixed>> Rows of USER_COLUMNS, session_id, run (RUN_*), points,
-	 *   solved_count, played_count, seconds and place (null for a run not finished)
+	 *   solved_count, played_count, seconds, last_activity (the last problem shown, or the start of
+	 *   the run) and place (null for a run not finished and while the challenge is in progress)
 	 */
 	public static function standings(int $challengeId): array
 	{
-		$rows = Util::query('SELECT p.created AS joined, p.declined, ' . ClassroomTable::USER_COLUMNS . ',
+		$rows = Util::query('SELECT p.created AS joined, p.declined, p.removed, ' . ClassroomTable::USER_COLUMNS . ',
 				s.id AS session_id, s.time_mode_session_status_id, s.points,
-				attempts.solved_count, attempts.played_count, attempts.seconds
+				attempts.solved_count, attempts.played_count, attempts.seconds,
+				COALESCE(attempts.last_started, s.created) AS last_activity
 			FROM challenge_participant p
 			JOIN user u ON u.id = p.user_id AND u.deleted IS NULL
 			LEFT JOIN time_mode_session s ON s.challenge_id = p.challenge_id AND s.user_id = p.user_id
@@ -318,7 +385,8 @@ class ChallengeTable extends AppTable
 				SELECT a.time_mode_session_id,
 					SUM(a.time_mode_attempt_status_id = ?) AS solved_count,
 					SUM(a.time_mode_attempt_status_id != ?) AS played_count,
-					SUM(a.seconds) AS seconds
+					SUM(a.seconds) AS seconds,
+					MAX(a.started) AS last_started
 				FROM time_mode_session run
 				JOIN time_mode_attempt a ON a.time_mode_session_id = run.id
 				WHERE run.challenge_id = ?
@@ -329,7 +397,9 @@ class ChallengeTable extends AppTable
 
 		foreach ($rows as &$row)
 		{
-			if ($row['session_id'] === null)
+			if ($row['removed'] !== null)
+				$row['run'] = self::RUN_REMOVED;
+			elseif ($row['session_id'] === null)
 				$row['run'] = $row['declined'] === null ? self::RUN_NOT_STARTED : self::RUN_DECLINED;
 			elseif ((int) $row['time_mode_session_status_id'] === TimeModeSessionStatusTable::IN_PROGRESS)
 				$row['run'] = self::RUN_PLAYING;
@@ -343,14 +413,25 @@ class ChallengeTable extends AppTable
 		}
 		unset($row);
 
-		$runOrder = [self::RUN_FINISHED => 0, self::RUN_PLAYING => 1, self::RUN_NOT_STARTED => 2, self::RUN_DECLINED => 3];
+		$runOrder = [self::RUN_FINISHED => 0, self::RUN_PLAYING => 1, self::RUN_NOT_STARTED => 2, self::RUN_DECLINED => 3, self::RUN_REMOVED => 4];
 		usort($rows, fn(array $a, array $b) => [$runOrder[$a['run']], -$a['points'], $a['seconds'], -$a['played_count'], $a['joined'], $a['user_display_name']]
 			<=> [$runOrder[$b['run']], -$b['points'], $b['seconds'], -$b['played_count'], $b['joined'], $b['user_display_name']]);
 
+		if (!self::everyoneFinished($rows))
+			return $rows;
 		$finished = array_filter($rows, fn(array $row) => $row['run'] === self::RUN_FINISHED);
 		foreach ($finished as $index => $row)
 			$rows[$index]['place'] = self::placeAmong($row, $finished);
 		return $rows;
+	}
+
+	//Whether the players of the standings still in the challenge all finished their run, the rule
+	//isFinished() counts by: the ones who declined or were removed don't count.
+	/** @param array<array<string, mixed>> $standings */
+	public static function everyoneFinished(array $standings): bool
+	{
+		$inIt = array_filter($standings, fn(array $row) => $row['run'] !== self::RUN_DECLINED && $row['run'] !== self::RUN_REMOVED);
+		return !empty($inIt) && array_all($inIt, fn(array $row) => $row['run'] === self::RUN_FINISHED);
 	}
 
 	//The place of a finished run among the finished runs of its challenge: one more than the runs with
@@ -367,7 +448,8 @@ class ChallengeTable extends AppTable
 	}
 
 	//Where the player is in each of their challenges and how everyone who finished it did, for the list of their
-	//challenges, from one query of the finished runs of all of them.
+	//challenges, from one query of the finished runs of all of them. The list shows the places only for a
+	//finished challenge (isFinished()). The runs of removed players don't count.
 	/**
 	 * @return array<int, array{myPlace: ?int, myFinished: ?string, standings: list<array<string, mixed>>}> By challenge
 	 *   id, only the challenges with a finished run. The standings are the finished runs, the best first: rows of
@@ -379,7 +461,7 @@ class ChallengeTable extends AppTable
 			FROM challenge_participant me
 			JOIN time_mode_session s ON s.challenge_id = me.challenge_id AND s.time_mode_session_status_id != ?
 			JOIN user u ON u.id = s.user_id AND u.deleted IS NULL
-			JOIN challenge_participant p ON p.challenge_id = s.challenge_id AND p.user_id = s.user_id
+			JOIN challenge_participant p ON p.challenge_id = s.challenge_id AND p.user_id = s.user_id AND p.removed IS NULL
 			LEFT JOIN (
 				SELECT a.time_mode_session_id, SUM(a.seconds) AS seconds,
 					MAX(a.started + INTERVAL COALESCE(a.seconds, 0) SECOND) AS finished

@@ -76,21 +76,31 @@ use App\Utility\ViteManifest;
 		<?php foreach ($challenges as $challenge): ?>
 		<?php
 			$challengeId = (int) $challenge['id'];
-			$canDecline = $challenge['my_run_status_id'] === null && $challenge['my_declined'] === null;
+			$canDecline = $challenge['my_run_status_id'] === null && $challenge['my_declined'] === null && $challenge['my_removed'] === null;
+			// a challenge in progress has no places yet: its standings list who finished, without the places
+			$isFinished = ChallengeTable::isFinished($challenge);
 			$placing = $places[$challengeId] ?? null;
 			$link = '<a href="/challenges/' . $challengeId . '">' . h(ChallengeTable::title($challenge)) . '</a>';
-			$standings = $placing === null ? '' : $this->element('Challenges/standings_popup', ['challengeId' => $challengeId, 'standings' => $placing['standings']]);
-			// when the player finished their run, or else when the challenge was made
-			$when = $placing['myFinished'] ?? $challenge['created'];
+			$standings = $placing === null ? '' : $this->element('Challenges/standings_popup', ['challengeId' => $challengeId, 'standings' => $placing['standings'], 'showPlaces' => $isFinished]);
+			$finishedOf = $standings . ($isFinished ? '' : ' of ' . (int) $challenge['participant_count']) . ' finished';
+			// when the last player finished, or when the challenge started while it is in progress
+			$when = $isFinished && $placing !== null ? max(array_column($placing['standings'], 'finished')) : $challenge['created'];
 		?>
 		<div class="challenges__row">
 			<div class="challenges__row-main">
 				<?php if ($placing !== null && $placing['myPlace'] !== null): ?>
 				<?php $points = (float) $challenge['my_points']; ?>
+				<?php $myPoints = '<strong>' . ChallengeTable::formatPoints($points) . ' points</strong> (' . ChallengeTable::percentOfMaximum($points, (int) $challenge['problem_count']) . '%)'; ?>
+				<?php if ($isFinished): ?>
 				<span class="challenges__my-place"><?= $this->element('Challenges/placement', ['place' => $placing['myPlace']]) ?> <?= Util::ordinal($placing['myPlace']) ?></span>
-				of <?= $standings ?> with <strong><?= ChallengeTable::formatPoints($points) ?> points</strong> (<?= ChallengeTable::percentOfMaximum($points, (int) $challenge['problem_count']) ?>%) in <?= $link ?>
+				of <?= $standings ?> with <?= $myPoints ?> in <?= $link ?>
 				<?php else: ?>
-				<?php if ($challenge['my_declined'] !== null && $challenge['my_run_status_id'] === null): ?>
+				<?= $myPoints ?> in <?= $link ?> · <?= $finishedOf ?>
+				<?php endif; ?>
+				<?php else: ?>
+				<?php if ($challenge['my_removed'] !== null): ?>
+				Removed by the creator: <?= $link ?>
+				<?php elseif ($challenge['my_declined'] !== null && $challenge['my_run_status_id'] === null): ?>
 				Declined: <?= $link ?>
 				<?php elseif ($challenge['my_run_status_id'] === null): ?>
 				<strong>Not played yet:</strong> <?= $link ?>
@@ -98,10 +108,10 @@ use App\Utility\ViteManifest;
 				<strong>Playing:</strong> <?= $link ?>
 				<?php endif; ?>
 				<?php if ($placing !== null): ?>
-				· <?= $standings ?> finished
+				· <?= $finishedOf ?>
 				<?php endif; ?>
 				<?php endif; ?>
-				<time class="hint challenges__when" datetime="<?= Util::toIso8601($when) ?>" data-format="relative"><?= date('Y-m-d H:i', (int) strtotime($when)) ?></time>
+				<span class="hint challenges__when"><?= $isFinished ? '' : 'started ' ?><time datetime="<?= Util::toIso8601($when) ?>" data-format="relative"><?= date('Y-m-d H:i', (int) strtotime($when)) ?></time></span>
 			</div>
 			<span class="hint challenges__row-details">
 				<?= h(ChallengeTable::describe($challenge)) ?>

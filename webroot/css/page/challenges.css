@@ -158,6 +158,9 @@
 	line-height: normal;
 	text-align: left;
 	white-space: nowrap;
+	grid-template-columns: auto 1fr auto;
+	gap: var(--space-1) var(--space-2);
+	align-items: center;
 }
 
 .challenge-standings-popup:hover .challenge-standings-popup__panel,
@@ -165,9 +168,11 @@
 .challenge-standings-popup.is-open .challenge-standings-popup__panel
 {
 	display: grid;
-	grid-template-columns: auto 1fr auto;
-	gap: var(--space-1) var(--space-2);
-	align-items: center;
+}
+
+.challenge-standings-popup--unranked .challenge-standings-popup__panel
+{
+	grid-template-columns: 1fr auto;
 }
 
 .challenge-standings-popup.is-dismissed .challenge-standings-popup__panel
