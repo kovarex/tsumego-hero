@@ -1,6 +1,12 @@
 <IfModule mod_rewrite.c>
 RewriteEngine on
 
+# The maintenance page of a deploy, as webroot/.htaccess gives it to the rest of the site: these rules
+# replace its rewrite rules for the forum, so the forum needs its own (the 503 page comes from there)
+RewriteCond %{DOCUMENT_ROOT}/tmp/maintenance.flag -f [OR]
+RewriteCond %{DOCUMENT_ROOT}/../tmp/maintenance.flag -f
+RewriteRule ^ - [R=503,L]
+
 #
 # Uncomment the statement below if URL rewriting doesn't
 # work properly. If you installed phpBB in a subdirectory

@@ -99,6 +99,8 @@ Before anything else, it makes the secrets that are not in git when they are mis
 Other than that pulls git, installs composer stuff, sets required folders and their access rights, update minification, runs migrations (also for test db in local environment with ddev).
 So running ./deploy.sh is the way to always update server or dev enrironment to the up to date state.
 
+While it runs, the site and the forum show the static page `webroot/maintenance.html` ("Upgrade in progress", HTTP 503, tries again every 30 seconds) instead of whatever a half-updated site would. `deploy.sh` creates `tmp/maintenance.flag` before the pull and removes it when it ends, also when it fails (it then says `Deploy FAILED`); Apache serves the page while the flag exists (`webroot/.htaccess`, `webroot/forums/.htaccess`), without PHP. The test site's deploy hook does the same around its checkout. If a deploy was killed so hard that the flag stayed, `rm tmp/maintenance.flag` brings the site back.
+
 ### Debug with phpstorm
 
 https://www.jetbrains.com/help/phpstorm/debugging-with-phpstorm-ultimate-guide.html#setup-from-zero
