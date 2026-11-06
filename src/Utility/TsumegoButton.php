@@ -117,7 +117,13 @@ class TsumegoButton
 	{
 		if ($sgf === '')
 			return null;
-		$parsed = SgfParser::process($sgf);
+		return self::previewDataOf(SgfParser::process($sgf));
+	}
+
+	//The preview of a parsed SGF, as previewBoard.js draws it
+	/** @return array{black: string, white: string, xMax: int, yMax: int, boardSize: int} */
+	public static function previewDataOf(SgfBoard $parsed): array
+	{
 		return [
 			'black' => implode('', array_map(fn($stone) => BoardPosition::toLetters($stone), $parsed->filterStonesPositions(SgfBoard::BLACK))),
 			'white' => implode('', array_map(fn($stone) => BoardPosition::toLetters($stone), $parsed->filterStonesPositions(SgfBoard::WHITE))),

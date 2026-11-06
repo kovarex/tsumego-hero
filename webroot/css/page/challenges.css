@@ -349,6 +349,28 @@
 	color: #fff;
 }
 
+/* A cell with the moves played until the fail or the time-out shows them on a board under it, while it is
+   pointed at, or after a tap, which focuses it (the script of the view places the board) */
+.challenges__cell--line
+{
+	cursor: pointer;
+}
+
+/* As specific as .challenges__problem .tooltip-box, so the absolute position of .tooltip-box, whose
+   sheet comes later, doesn't win */
+.challenges__cell--line .challenges__line-board
+{
+	position: fixed;
+	border-radius: var(--radius-sm);
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+}
+
+.challenges__cell--line:hover .challenges__line-board,
+.challenges__cell--line:focus .challenges__line-board
+{
+	opacity: 1;
+}
+
 .challenges__cell--skipped
 {
 	background: color-mix(in srgb, var(--color-red) 35%, transparent);

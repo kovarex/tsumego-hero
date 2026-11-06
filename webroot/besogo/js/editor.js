@@ -102,6 +102,7 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
     makeCommentPosition: makeCommentPosition,
     sgfLabelToView: sgfLabelToView,
     viewLabelToSgf: viewLabelToSgf,
+    viewPointToSgf: viewPointToSgf,
     isColorInverted: isColorInverted,
     getTransformationFromSgf: getTransformationFromSgf,
     getAnchoredCommentCount: getAnchoredCommentCount,

@@ -15,13 +15,39 @@
 		}
 	}
 
-	function createBoard(target, black, white, xMax=0, yMax=0, boardSize=19, diff='')
+	//A line of moves over the stones, numbered from 1: the colours take turns from the first one, and a
+	//pass (tt) is counted without a stone
+	function drawNumberedLine(line, size, increment, border, svg, w3)
+	{
+		let black = line.firstColor !== 'W';
+		for (let i = 0; i < line.moves.length; i += 2, black = !black)
+		{
+			if (line.moves.substr(i, 2) === 'tt')
+				continue;
+			let x = decodeLetter(line.moves[i]) * increment + size + border;
+			let y = decodeLetter(line.moves[i + 1]) * increment + size + border;
+			placePreviewStone(x, y, size, black ? "black" : "white", svg, w3);
+			let number = document.createElementNS(w3, "text");
+			number.setAttribute("x", x);
+			number.setAttribute("y", y);
+			number.setAttribute("text-anchor", "middle");
+			number.setAttribute("dominant-baseline", "central");
+			number.setAttribute("font-size", size * (i < 18 ? 1.2 : 0.9));
+			number.setAttribute("font-family", "Helvetica, Arial, sans-serif");
+			number.setAttribute("fill", black ? "white" : "black");
+			number.textContent = String(i / 2 + 1);
+			svg.appendChild(number);
+		}
+	}
+
+	//line: the moves to draw numbered over the stones ({moves, firstColor}), null for none
+	function createBoard(target, black, white, xMax=0, yMax=0, boardSize=19, diff='', line=null)
 	{
 		const w3 = "http://www.w3.org/2000/svg";
 		const w32 = "http://www.w3.org/1999/xlink";
 		let svg = document.createElementNS(w3, "svg");
 
-		let img, size, border, increment;
+		let img, size, border, increment, columns, rows;
 
 		if (boardSize <= 13)
 		{
@@ -30,6 +56,7 @@
 			size = zoom ? 6 : 4;
 			border = size / 2;
 			increment = size * 2;
+			columns = rows = boardSize;
 			xMax = increment * boardSize + border;
 			yMax = xMax;
 			img = "/img/theBoard" + boardSize + "x" + boardSize + ".png";
@@ -45,24 +72,69 @@
 			let bpx = (xMax == 19) ? size : size / 2;
 			yMax = (yMax >= 13) ? 19 : yMax + 4;
 			let bpy = (yMax == 19) ? size : size / 2;
+			columns = xMax;
+			rows = yMax;
 			xMax = increment * xMax + bpx;
 			yMax = increment * yMax + bpy;
 			img = zoom ? "/img/theBoard2.png" : "/img/theBoard.png";
 		}
 
-		setPreviewBoard(xMax, yMax, svg, img, w3, w32);
+		//A line is shown larger than a button's preview, where the board image would look blurry
+		if (line)
+			drawVectorBoard(xMax, yMax, columns, rows, boardSize, size + border, increment, svg, w3);
+		else
+			setPreviewBoard(xMax, yMax, svg, img, w3, w32);
 		drawStoneString(black, "black", size, size, increment, border, svg, w3);
 		drawStoneString(white, "white", size, size, increment, border, svg, w3);
 		drawStoneString(diff, "red", size, size / 2, increment, border, svg, w3);
+		if (line)
+			drawNumberedLine(line, size, increment, border, svg, w3);
 		svg.style.width = xMax + "px";
 		svg.style.height = yMax + "px";
 		let targetContainer = target.querySelector('span');
 		targetContainer.insertBefore(svg, targetContainer.firstChild);
+		return svg;
 	}
 
 	function createPreviewBoard(target, black, white, xMax=0, yMax=0, boardSize=19, diff = '')
 	{
 		createBoard(target, black, white, xMax, yMax, boardSize, diff);
+	}
+
+	//The wood and the grid drawn as shapes, sharp at any size: the shown columns and rows start at the top
+	//left, a side cut off before the edge of the board has its lines running out to the edge of the picture
+	function drawVectorBoard(width, height, columns, rows, boardSize, first, increment, svg, w3)
+	{
+		let wood = document.createElementNS(w3, "rect");
+		wood.setAttribute("width", width);
+		wood.setAttribute("height", height);
+		wood.setAttribute("fill", "#dcb35c");
+		svg.appendChild(wood);
+		let last = (count) => first + (count - 1) * increment;
+		let right = columns < boardSize ? width : last(columns);
+		let bottom = rows < boardSize ? height : last(rows);
+		let path = "";
+		for (let column = 0; column < columns; column++)
+			path += "M" + (first + column * increment) + " " + first + "V" + bottom;
+		for (let row = 0; row < rows; row++)
+			path += "M" + first + " " + (first + row * increment) + "H" + right;
+		let grid = document.createElementNS(w3, "path");
+		grid.setAttribute("d", path);
+		grid.setAttribute("stroke", "#000");
+		grid.setAttribute("stroke-opacity", "0.7");
+		grid.setAttribute("stroke-width", increment / 16);
+		grid.setAttribute("fill", "none");
+		svg.appendChild(grid);
+		//The star points: the corner ones and the centre
+		let corners = {19: [3, 15], 13: [3, 9], 9: [2, 6]}[boardSize] || [];
+		let stars = corners.flatMap(x => corners.map(y => [x, y]));
+		if (corners.length)
+			stars.push([(boardSize - 1) / 2, (boardSize - 1) / 2]);
+		if (boardSize == 19)
+			stars.push([3, 9], [9, 3], [15, 9], [9, 15]);
+		for (let [x, y] of stars)
+			if (x < columns && y < rows)
+				placePreviewStone(first + x * increment, first + y * increment, increment / 10, "#000", svg, w3);
 	}
 
 	function setPreviewBoard(xMax, yMax, svg, img, w3, w32)
