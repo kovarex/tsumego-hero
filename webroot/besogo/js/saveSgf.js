@@ -121,9 +121,16 @@ besogo.composeSgf = function(editor, expand = false)
     {
       // S as it was loaded while the status reads the same: a text besogo reads otherwise ("KO " of old saves, or one
       // it can't read) isn't rewritten
-      let loaded = Object.hasOwn(node, 'statusText') && node.statusText !== null && statusToSave.str() === node.statusTextReads;
-      string += (string ? '\n' : '');
-      string += 'S[' + (loaded ? escapeText(node.statusText) : statusToSave.str()) + ']';
+      let hasText = Object.hasOwn(node, 'statusText') && node.statusText !== null;
+      let text = hasText && statusToSave.str() === node.statusTextReads ? node.statusText : statusToSave.str();
+      // a status besogo can't read comes out as "undefined", which is never written: the text loaded stays instead
+      if (text.includes('undefined'))
+        text = hasText ? node.statusText : null;
+      if (text !== null)
+      {
+        string += (string ? '\n' : '');
+        string += 'S[' + escapeText(text) + ']';
+      }
     }
 
     if (node.superkoMeansDead)

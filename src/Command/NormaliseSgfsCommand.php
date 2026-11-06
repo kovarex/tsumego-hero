@@ -35,6 +35,8 @@ use Cake\Console\ConsoleOptionParser;
 //--restore <sgf ids> puts rows back as they were from there (text, preview, values), undoes their turn in the
 //transformations from source that took it in (their own, and those of the rows made from them), and, for the version
 //shown, puts back the comments of its problem; their backups are removed, so a later run rewrites them again.
+//A status besogo can't read keeps its row as it is; --damaged-statuses lists the S values old saves damaged (a +
+//written as a space) with the repair proposed, and writes nothing.
 //A problem is done in one transaction; a row already normalised comes back unchanged, so a run that stopped is
 //simply run again, and a second run changes nothing. Without --write nothing is written and it reports what would
 //change, with the time it took.
@@ -54,7 +56,8 @@ class NormaliseSgfsCommand extends Command
 			->addOption('limit', ['default' => '0', 'help' => 'Stop after this many problems (0: all); run again to go on'])
 			->addOption('show', ['default' => '20', 'help' => 'How many of the changes to list'])
 			->addOption('sgf', ['default' => '', 'help' => 'Comma separated sgf ids whose old and new text to print, for checking them'])
-			->addOption('restore', ['default' => '', 'help' => 'Comma separated sgf ids to put back as they were before a --write, from sgf_before_normalisation']);
+			->addOption('restore', ['default' => '', 'help' => 'Comma separated sgf ids to put back as they were before a --write, from sgf_before_normalisation'])
+			->addOption('damaged-statuses', ['boolean' => true, 'help' => 'Only list the S values old saves damaged (a + written as a space), with the repair proposed; writes nothing']);
 	}
 
 	private bool $write;
@@ -98,6 +101,8 @@ class NormaliseSgfsCommand extends Command
 		$restore = array_map('intval', array_filter(explode(',', (string) $args->getOption('restore'))));
 		if ($restore)
 			return $this->restore($restore);
+		if ($args->getOption('damaged-statuses'))
+			return $this->reportDamagedStatuses(max(1, (int) $args->getOption('batch')));
 		$this->write = (bool) $args->getOption('write');
 		$this->show = max(0, (int) $args->getOption('show'));
 		$batch = max(1, (int) $args->getOption('batch'));
@@ -215,6 +220,48 @@ class NormaliseSgfsCommand extends Command
 			if ($id === $currentID)
 				$this->moveComments($tsumegoID, $transformation, (string) $analysis->sgf);
 		}
+	}
+
+	//The S values old saves damaged, a + written as a space ("A 2KO " for "A+2KO+"), or that besogo can't read, row by
+	//row with the repair proposed; a repair that is a guess ("SEKI " may be "SEKI+" or "SEKI") or that besogo can't read
+	//either is flagged. Nothing is written: the repair is decided first.
+	private function reportDamagedStatuses(int $batch): int
+	{
+		$rows = $values = $guesses = $unrepairable = 0;
+		$lastID = 0;
+		while ($chunk = Util::query('SELECT id, tsumego_id, sgf FROM sgf WHERE id > ? AND sgf LIKE ? ORDER BY id LIMIT ' . $batch, [$lastID, '%S[%']))
+		{
+			$lastID = (int) end($chunk)['id'];
+			$damaged = SgfAnalysis::damagedStatuses(array_map(fn($row) => (string) $row['sgf'], array_column($chunk, null, 'id')), SgfAnalysis::TIMEOUT * 5);
+			foreach ($chunk as $row)
+			{
+				$statuses = $damaged[(int) $row['id']] ?? [];
+				if (!$statuses)
+					continue;
+				$rows++;
+				$current = (int) $row['id'] === SgfTable::findCurrentVersionID((int) $row['tsumego_id']) ? 'current version' : 'old version';
+				$listed = [];
+				foreach ($statuses as $status)
+				{
+					$values++;
+					$note = '';
+					if ($status['repaired'] === null)
+					{
+						$unrepairable++;
+						$note = ' (no repair besogo reads)';
+					}
+					elseif ($status['trimmedReads'])
+					{
+						$guesses++;
+						$note = ' (a guess: ' . json_encode(trim($status['value'])) . ' reads too)';
+					}
+					$listed[] = json_encode($status['value']) . ' -> ' . ($status['repaired'] === null ? '?' : json_encode($status['repaired'])) . $note;
+				}
+				$this->console->out("sgf {$row['id']} (tsumego {$row['tsumego_id']}, $current): " . implode(', ', $listed));
+			}
+		}
+		$this->console->out("$rows rows with $values damaged statuses: " . ($values - $guesses - $unrepairable) . " with one repair, $guesses a guess, $unrepairable with none besogo reads. Nothing was written.");
+		return static::CODE_SUCCESS;
 	}
 
 	//Puts the rows back as they were before they were rewritten, each in a transaction of its own

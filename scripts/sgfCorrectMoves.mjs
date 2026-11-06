@@ -6,11 +6,11 @@
 //It runs the very files of webroot/besogo/js the site serves, in a context of their own with the few browser
 //globals they touch stubbed, so the rules of correct and wrong (statuses, goals, transpositions) are not forked.
 //With "normalise": true it also gives the SGF as the site stores it (normalise below), and the values are of that SGF.
-//Input on stdin: JSON lines, each {"id": any, "sgf": "(;...)", "normalise"?: bool}. Output on stdout: a JSON line for
+//Input on stdin: JSON lines, each {"id": any, "sgf": "(;...)", "normalise"?: bool, "statuses"?: bool}; with
+//"statuses" the answer is {"id", "damaged_statuses"} (damagedStatuses below). Output on stdout: a JSON line for
 //each, in order, {"id", "first_move_color", "correct_moves", "problem"} (and with normalise "sgf", "transformation",
 //"changed", "same_play", and when changed "property_changes", "unexpected_changes", "merged_away", "setup_rewritten"),
-//or {"id", "error"}
-//when the SGF can't be read.
+//or {"id", "error"} when the SGF can't be read.
 import { readFileSync } from 'node:fs';
 import { createInterface } from 'node:readline';
 import { dirname, join } from 'node:path';
@@ -126,6 +126,33 @@ export function loadTracked(besogo, sgf)
 	return { editor, loaded };
 }
 
+//Whether besogo reads an S value as a status: what it can't read comes out as "undefined" when written
+export function statusReads(besogo, value)
+{
+	return !besogo.loadStatusFromString(value.trim()).str().includes('undefined');
+}
+
+//The S values of an SGF that old saves damaged, a + written as a space ("A 2KO " for "A+2KO+"), or that besogo can't
+//read, each with the repair proposed: the spaces back to + when besogo reads that (else null), and whether the value
+//without its spaces at the ends reads too, which makes the repair a guess ("SEKI " may be "SEKI+" or "SEKI")
+export function damagedStatuses(besogo, sgf)
+{
+	const damaged = [];
+	for (const node of textNodes(besogo.parseSgf(sgf)))
+		for (const prop of node.props)
+			if (prop.id === 'S')
+				for (const value of prop.values)
+				{
+					if (!/\s/.test(value) && statusReads(besogo, value))
+						continue;
+					const repaired = value.trim().replace(/\s/g, '+');
+					const plus = value.replace(/\s/g, '+');
+					const candidate = [plus, repaired].find(text => statusReads(besogo, text) && !/\s/.test(text)) ?? null;
+					damaged.push({ value, repaired: candidate, trimmed_reads: value.trim() !== value && statusReads(besogo, value.trim()) });
+				}
+	return damaged;
+}
+
 //The nodes of a parsed SGF, depth first
 function textNodes(tree)
 {
@@ -216,6 +243,10 @@ export function propertyChanges(besogo, before, after, loaded = {})
 		if (!expected)
 			unexpected.push(id + ' ' + was + '→' + is + (illegal ? ' (' + illegal + ' illegal, besogo leaves it out)' : ''));
 	}
+	// a status besogo can't read is left for the repair of the statuses (normalise_sgfs --damaged-statuses)
+	const unreadable = old.statuses.filter(status => !statusReads(besogo, status));
+	if (unreadable.length)
+		unexpected.push('S besogo can\'t read: ' + unreadable.map(status => JSON.stringify(status)).join(', '));
 	// a status that stays is written as it was (an S besogo writes otherwise, as S[undefined], is a status lost); one
 	// lost is told by the count
 	const statuses = values => values.slice().sort().join(' | ');
@@ -389,7 +420,9 @@ async function main()
 			id = input.id ?? null;
 			if (typeof input.sgf !== 'string')
 				throw new Error('no sgf text');
-			result = { id, ...analyse(loaded, input.sgf, input.normalise === true) };
+			result = input.statuses === true
+				? { id, damaged_statuses: damagedStatuses(loaded.besogo, input.sgf) }
+				: { id, ...analyse(loaded, input.sgf, input.normalise === true) };
 		}
 		catch (error)
 		{

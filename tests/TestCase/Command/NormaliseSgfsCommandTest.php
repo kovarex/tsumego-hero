@@ -252,4 +252,24 @@ class NormaliseSgfsCommandTest extends AppTestCase
 		$this->assertOutputContains('turned');
 		$this->assertOutputNotContains('0 turned');
 	}
+
+	//--damaged-statuses lists the S values old saves damaged, a + written as a space, with the repair proposed, and
+	//writes nothing; a row with a status besogo can't read is kept as it is
+	public function testTheDamagedStatusesAreListedWithTheirRepair(): void
+	{
+		$sgf = '(;SZ[19]G[KILL]AB[rb][sb](;B[sa];W[ra]S[A 2KO ])(;B[ra];W[qa]S[SEKI ])(;B[qa];W[ra]S[NONSENSE]))';
+		$context = new ContextPreparator(['tsumegos' => [['sgf' => ['data' => $sgf]], ['sgf' => ['data' => self::DONE]]]]);
+		$id = $this->sgfRow($context->tsumegos[0]['id'])['id'];
+		$this->exec('normalise_sgfs --damaged-statuses');
+
+		$this->assertExitSuccess();
+		$this->assertOutputContains("sgf $id (tsumego {$context->tsumegos[0]['id']}, current version): \"A 2KO \" -> \"A+2KO+\", "
+			. '"SEKI " -> "SEKI+" (a guess: "SEKI" reads too), "NONSENSE" -> ? (no repair besogo reads)');
+		$this->assertOutputContains('1 rows with 3 damaged statuses: 1 with one repair, 1 a guess, 1 with none besogo reads. Nothing was written.');
+		$this->assertSame($sgf, $this->sgfRow($context->tsumegos[0]['id'])['sgf']);
+
+		$this->exec('normalise_sgfs --write');
+		$this->assertOutputContains("would change: S besogo can't read: \"A 2KO \", \"NONSENSE\"");
+		$this->assertSame($sgf, $this->sgfRow($context->tsumegos[0]['id'])['sgf']);
+	}
 }

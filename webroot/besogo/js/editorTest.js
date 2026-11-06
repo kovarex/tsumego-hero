@@ -252,6 +252,10 @@ besogo.addTest("Editor", "SaveKeepsTheStatusAsWritten", function()
 	CHECK(sgf.includes("S[KO ]"));
 	CHECK(sgf.includes("S[A 2KO ]"));
 	CHECK(!sgf.includes("undefined"));
+	// a status besogo can't read, changed in the editor, comes out as "undefined": the text loaded stays
+	let unreadable = editor.getRoot().children[1].children[0];
+	unreadable.statusSource.blackFirst.approaches = 1;
+	CHECK(!besogo.composeSgf(editor).includes("undefined"));
 	let end = editor.getRoot().children[0].children[0];
 	end.setStatusSource(besogo.loadStatusFromString("DEAD"));
 	CHECK(besogo.composeSgf(editor).includes("S[DEAD]"));

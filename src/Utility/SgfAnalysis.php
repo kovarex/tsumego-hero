@@ -107,6 +107,35 @@ class SgfAnalysis
 	}
 
 	//The output of the script for $input, the error of node when it fails or takes longer than $timeout seconds
+	//The S values of each SGF that old saves damaged (a + written as a space) or besogo can't read, by its key, each with
+	//the repair proposed (damagedStatuses of scripts/sgfCorrectMoves.mjs): the spaces back to +, null when besogo can't
+	//read that either, and whether the value without its end spaces reads too, which makes the repair a guess
+	/**
+	 * @param array<int|string, string> $sgfs
+	 * @return array<int|string, list<array{value: string, repaired: ?string, trimmedReads: bool}>>
+	 */
+	public static function damagedStatuses(array $sgfs, int $timeout = self::TIMEOUT): array
+	{
+		if (empty($sgfs))
+			return [];
+		$input = '';
+		$keys = array_keys($sgfs);
+		foreach ($keys as $index => $key)
+			$input .= json_encode(['id' => $index, 'sgf' => $sgfs[$key], 'statuses' => true], JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR) . "\n";
+		$results = [];
+		foreach (explode("\n", trim(self::run($input, $timeout))) as $line)
+		{
+			$output = json_decode($line, true);
+			if (!is_array($output) || !is_int($output['id'] ?? null) || !isset($keys[$output['id']]))
+				throw new RuntimeException('Unexpected output of sgfCorrectMoves.mjs: ' . substr($line, 0, 200));
+			$results[$keys[$output['id']]] = array_map(fn($status) => [
+				'value' => (string) $status['value'],
+				'repaired' => isset($status['repaired']) ? (string) $status['repaired'] : null,
+				'trimmedReads' => !empty($status['trimmed_reads'])], (array) ($output['damaged_statuses'] ?? []));
+		}
+		return $results;
+	}
+
 	private static function run(string $input, int $timeout): string
 	{
 		//a node that can't be started fails below with its name, not with a warning
