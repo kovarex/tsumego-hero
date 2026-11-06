@@ -19,6 +19,7 @@ use App\Utility\AdminActivityLogger;
 use App\Utility\Auth;
 use App\Utility\Constants;
 use App\Utility\DailyStreak;
+use App\Utility\ChallengeFailedLine;
 use App\Utility\CookieFlash;
 use App\Utility\PlayOutcome;
 use App\Utility\Rating;
@@ -51,7 +52,8 @@ class TsumegosController extends AppController
 			outcome: $outcome,
 			seconds: (float) ($data['seconds'] ?? 0),
 			setConnectionID: isset($data['set_connection_id']) ? (int) $data['set_connection_id'] : null,
-			pageMode: isset($data['mode']) ? (int) $data['mode'] : null
+			pageMode: isset($data['mode']) ? (int) $data['mode'] : null,
+			challengeFailedLine: ChallengeFailedLine::fromRequest($data['challenge_failed_line'] ?? null, $data['sgf_id'] ?? null, (int) $data['tsumego_id'])
 		);
 
 		// Keep the response as pure data; the client renders the popup from the

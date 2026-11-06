@@ -20,16 +20,20 @@ class ChallengesControllerTest extends IntegrationTestCase
 {
 	private ContextPreparator $context;
 
+	//Black (1,1) and then (2,1) after white's answer (1,2) solves it, anything else fails
+	private const SGF = '(;GM[1]FF[4]SZ[19]AB[cc](;B[aa];W[ab];B[ba]C[+]))';
+
 	//The player 'challenger' is signed in, 'friend' and 'stranger' can join, and there are
 	//twelve problems of the one rank of the time mode.
-	private function prepare(int $problemCount = 12): void
+	//$sgf: the SGF of every problem, none when null
+	private function prepare(int $problemCount = 12, ?string $sgf = null): void
 	{
 		Auth::logout();
 		$this->context = new ContextPreparator([
 			'user' => ['name' => 'challenger', 'mode' => Constants::$LEVEL_MODE],
 			'other-users' => [['name' => 'friend'], ['name' => 'stranger']],
 			'time-mode-ranks' => ['5k'],
-			'tsumegos' => range(1, $problemCount),
+			'tsumegos' => $sgf === null ? range(1, $problemCount) : array_map(fn(int $order) => ['set_order' => $order, 'sgf' => $sgf], range(1, $problemCount)),
 		]);
 		$this->login('challenger');
 	}
@@ -64,26 +68,28 @@ class ChallengesControllerTest extends IntegrationTestCase
 			Util::query('SELECT user_id FROM challenge_participant WHERE challenge_id = ? ORDER BY id', [$challengeId]));
 	}
 
-	/** @return array<array<string, mixed>> The attempts of the run of the player, in their order */
+	/** @return array<array<string, mixed>> The attempts of the run of the player, in their order, with the line kept of a fail (line_moves, line_sgf_id) */
 	private function runAttempts(int $challengeId, string $name): array
 	{
-		return Util::query('SELECT a.* FROM time_mode_attempt a
+		return Util::query('SELECT a.*, line.moves AS line_moves, line.sgf_id AS line_sgf_id FROM time_mode_attempt a
 			JOIN time_mode_session s ON s.id = a.time_mode_session_id
+			LEFT JOIN challenge_failed_line line ON line.time_mode_attempt_id = a.id
 			WHERE s.challenge_id = ? AND s.user_id = ?
 			ORDER BY a.`order`', [$challengeId, $this->userId($name)]);
 	}
 
 	//Plays the run of the signed-in player through the result requests the board sends.
-	/** @param list<array{0: PlayOutcome, 1: float}> $results The outcome and seconds of each problem */
+	/** @param list<array{0: PlayOutcome, 1: float, 2?: array<string, mixed>}> $results The outcome and seconds of each problem, and what else the request sends */
 	private function playRun(int $challengeId, array $results): void
 	{
 		$this->post('/challenges/play/' . $challengeId);
 		$problemIDs = ChallengeTable::problemIDs($challengeId);
-		foreach ($results as $index => [$outcome, $seconds])
+		foreach ($results as $index => $result)
 		{
+			[$outcome, $seconds] = $result;
 			$this->post('/timeMode/play/' . ($index + 1));
 			Auth::init();
-			$this->post('/tsumegos/result', [
+			$this->post('/tsumegos/result', ($result[2] ?? []) + [
 				'tsumego_id' => $problemIDs[$index],
 				'seconds' => $seconds,
 				'outcome' => $outcome->value]);
@@ -641,6 +647,54 @@ class ChallengesControllerTest extends IntegrationTestCase
 		$this->assertTextContains('shows once you finish your run', $page);
 	}
 
+	private function sgfID(int $tsumegoID): int
+	{
+		return (int) Util::query('SELECT id FROM sgf WHERE tsumego_id = ? ORDER BY id DESC LIMIT 1', [$tsumegoID])[0]['id'];
+	}
+
+	//A fail and a time-out keep the line played, in the coordinates of the version played; a line that
+	//isn't one, or one on a version of another problem, is left out and the result still counts
+	public function testAFailedProblemKeepsTheLinePlayed(): void
+	{
+		$this->prepare(12, self::SGF);
+		$challengeId = $this->create(['problem_count' => 5]);
+		$problemIDs = ChallengeTable::problemIDs($challengeId);
+		$this->playRun($challengeId, [
+			[PlayOutcome::Failed, 10, ['challenge_failed_line' => 'aabbcc', 'sgf_id' => $this->sgfID($problemIDs[0])]],
+			[PlayOutcome::TimedOut, 60, ['challenge_failed_line' => 'ddtt', 'sgf_id' => $this->sgfID($problemIDs[1])]],
+			[PlayOutcome::Failed, 10, ['challenge_failed_line' => 'aazz', 'sgf_id' => $this->sgfID($problemIDs[2])]],
+			[PlayOutcome::Failed, 10, ['challenge_failed_line' => 'aabb', 'sgf_id' => $this->sgfID($problemIDs[0])]],
+			[PlayOutcome::SolvedClean, 10, ['challenge_failed_line' => 'aabb', 'sgf_id' => $this->sgfID($problemIDs[4])]]]);
+
+		$attempts = $this->runAttempts($challengeId, 'challenger');
+		$this->assertSame(['aabbcc', 'ddtt', null, null, null], array_column($attempts, 'line_moves'));
+		$this->assertSame([$this->sgfID($problemIDs[0]), $this->sgfID($problemIDs[1]), null, null, null], array_map(fn($sgfID) => $sgfID === null ? null : (int) $sgfID, array_column($attempts, 'line_sgf_id')));
+		$this->assertSame([TimeModeAttemptStatusTable::FAILED, TimeModeAttemptStatusTable::TIMEOUT, TimeModeAttemptStatusTable::FAILED, TimeModeAttemptStatusTable::FAILED, TimeModeAttemptStatusTable::SOLVED],
+			array_map('intval', array_column($attempts, 'time_mode_attempt_status_id')));
+	}
+
+	//The line shows on the cell of the fail to the players who finished their run, as the results do
+	public function testTheFailedLineShowsOnlyToThePlayersWhoFinishedTheirRun(): void
+	{
+		$this->prepare(12, self::SGF);
+		$challengeId = $this->create(['problem_count' => 5, 'players' => 'DN_friend']);
+		$problemIDs = ChallengeTable::problemIDs($challengeId);
+		$this->playRun($challengeId, [[PlayOutcome::Failed, 10, ['challenge_failed_line' => 'aabb', 'sgf_id' => $this->sgfID($problemIDs[0])]]]
+			+ array_fill(1, 4, [PlayOutcome::SolvedClean, 10]));
+
+		$this->get('/challenges/' . $challengeId);
+		preg_match('/data-failed-line="([^"]*)"/', $this->view, $match);
+		$this->assertNotEmpty($match, 'the cell of the fail has its line');
+		$line = json_decode(html_entity_decode($match[1]), true);
+		$this->assertSame('B', $line['firstColor']);
+		$this->assertSame(4, strlen($line['line']));
+		$this->assertSame(19, $line['boardSize']);
+
+		$this->login('friend');
+		$this->get('/challenges/' . $challengeId);
+		$this->assertTextNotContains('data-failed-line', $this->view);
+	}
+
 	public function testStartingATimeModeRunEndsTheRunOfAChallenge(): void
 	{
 		$this->prepare();
@@ -668,6 +722,28 @@ class ChallengesControllerTest extends IntegrationTestCase
 		$timeMode = new App\Utility\TimeMode();
 		$this->assertNull($timeMode->challenge);
 		$this->assertSame(TimeModeCategoryTable::BLITZ, $timeMode->currentSession->time_mode_category_id);
+	}
+
+	//Only a challenge shows the lines, so a fail of plain time mode keeps none, even when the page sends one
+	public function testAFailOfPlainTimeModeKeepsNoLine(): void
+	{
+		$this->prepare(12, self::SGF);
+		$this->get('/timeMode/start?categoryID=' . TimeModeCategoryTable::BLITZ . '&rankID=' . $this->rankId('5k'));
+		Auth::init();
+		$timeMode = new App\Utility\TimeMode();
+		$this->assertNull($timeMode->currentSession->challenge_id);
+		$attempt = Util::query('SELECT tsumego_id FROM time_mode_attempt WHERE time_mode_session_id = ? ORDER BY `order` LIMIT 1', [$timeMode->currentSession->id])[0];
+		$this->post('/timeMode/play/1');
+		Auth::init();
+		$this->post('/tsumegos/result', [
+			'tsumego_id' => $attempt['tsumego_id'],
+			'seconds' => 10,
+			'outcome' => PlayOutcome::Failed->value,
+			'challenge_failed_line' => 'aabb',
+			'sgf_id' => $this->sgfID((int) $attempt['tsumego_id'])]);
+
+		$this->assertSame(TimeModeAttemptStatusTable::FAILED, (int) Util::query('SELECT time_mode_attempt_status_id FROM time_mode_attempt WHERE time_mode_session_id = ? ORDER BY `order` LIMIT 1', [$timeMode->currentSession->id])[0]['time_mode_attempt_status_id']);
+		$this->assertSame(0, (int) Util::query('SELECT COUNT(*) AS kept FROM challenge_failed_line')[0]['kept']);
 	}
 
 	public function testPlayingAnotherChallengeEndsTheRunOfTheFirst(): void
@@ -922,6 +998,89 @@ class ChallengesControllerTest extends IntegrationTestCase
 		$this->assertStringEndsWith('/challenges/' . $challengeId, $browser->driver->getCurrentURL());
 		$this->assertStringContainsString('You are 1st of 1', $browser->find('#challenge-my-result')->getText());
 		$this->assertCount(3, $browser->getElements('.challenges__standing .challenges__cell--solved'));
+		$browser->assertNoJsErrors();
+	}
+
+	//The board sends the moves of a lost line in the coordinates of the SGF, however it turned the board,
+	//and the cell of the fail shows them numbered on the problem
+	public function testAFailedLineShowsOnTheCellOfTheFail(): void
+	{
+		$this->playAFailedLine(self::SGF, 'aaabea');
+	}
+
+	//The same problem in the bottom right corner, which the board shows in the top left
+	public function testAFailedLineIsInTheCoordinatesOfTheSgf(): void
+	{
+		$this->playAFailedLine('(;GM[1]FF[4]SZ[19]AB[qq](;B[ss];W[sr];B[rs]C[+]))', 'sssros');
+	}
+
+	//The last problem of the run failed, the run ends at once, with the line of the fail kept
+	public function testARunWhoseLastProblemIsFailedEndsAtOnce(): void
+	{
+		$this->prepare(2, self::SGF);
+		$challengeId = ChallengeTable::start($this->userId('challenger'), $this->rankId('5k'), $this->rankId('5k'), 60, 5);
+
+		$browser = Browser::instance();
+		$browser->get('challenges/' . $challengeId);
+		$playButton = $browser->find('#challenge-play');
+		$playButton->click();
+		$browser->waitUntilStale($playButton);
+		$browser->playWithResult('S');
+		$nextButton = $browser->find('#besogo-next-button');
+		$nextButton->click();
+		$browser->waitUntilStale($nextButton);
+
+		$browser->clickBoard(1, 1);
+		$browser->waitUntilJs('besogo.editor.getCurrent().moveNumber >= 2');
+		$browser->clickBoard(5, 1);
+		$browser->waitUntilJs('document.getElementById("status").textContent.includes("Incorrect")');
+		// Next right away, as a player does, with the result maybe still on its way
+		$started = microtime(true);
+		$nextButton = $browser->find('#besogo-next-button');
+		$nextButton->click();
+		$browser->waitUntilStale($nextButton);
+		$browser->waitUntilJs('location.pathname === "/challenges/' . $challengeId . '"');
+		$this->assertLessThan(5, microtime(true) - $started, 'the run ends without waiting for its last result');
+
+		$attempts = $this->runAttempts($challengeId, 'challenger');
+		$this->assertSame([TimeModeAttemptStatusTable::SOLVED, TimeModeAttemptStatusTable::FAILED], array_map(fn(array $attempt) => (int) $attempt['time_mode_attempt_status_id'], $attempts));
+		$this->assertSame([null, 'aaabea'], array_column($attempts, 'line_moves'));
+		$this->assertCount(1, $browser->getElements('.challenges__cell--line'));
+		$browser->assertNoJsErrors();
+	}
+
+	//Plays black (1,1), and after white's answer (5,1), on the board as shown, which fails the problem
+	private function playAFailedLine(string $sgf, string $expectedLine): void
+	{
+		$this->prepare(1, $sgf);
+		$challengeId = ChallengeTable::start($this->userId('challenger'), $this->rankId('5k'), $this->rankId('5k'), 60, 5);
+
+		$browser = Browser::instance();
+		$browser->get('challenges/' . $challengeId);
+		$playButton = $browser->find('#challenge-play');
+		$playButton->click();
+		$browser->waitUntilStale($playButton);
+		$browser->clickBoard(1, 1);
+		$browser->waitUntilJs('besogo.editor.getCurrent().moveNumber >= 2');
+		$browser->clickBoard(5, 1);
+		$browser->waitUntilJs('document.getElementById("status").textContent.includes("Incorrect")');
+		$browser->waitForSubmitResult();
+
+		$attempt = $this->runAttempts($challengeId, 'challenger')[0];
+		$this->assertSame($expectedLine, $attempt['line_moves']);
+		$this->assertSame($this->sgfID((int) $attempt['tsumego_id']), (int) $attempt['line_sgf_id']);
+
+		$nextButton = $browser->find('#besogo-next-button');
+		$nextButton->click();
+		$browser->waitUntilStale($nextButton);
+		$this->assertStringEndsWith('/challenges/' . $challengeId, $browser->driver->getCurrentURL());
+		$browser->hover($browser->find('.challenges__cell--line'));
+		$browser->waitUntilJs('document.querySelector(".challenges__line-board svg") !== null');
+		$this->assertSame(['1', '2', '3'], $browser->driver->executeScript('return Array.from(document.querySelectorAll(".challenges__line-board svg text")).map(number => number.textContent);'));
+		$this->assertSame('1', $browser->driver->executeScript('return getComputedStyle(document.querySelector(".challenges__line-board")).opacity;'));
+		//The board sits right under the cell, as a problem button's preview sits under its button
+		$gap = $browser->driver->executeScript('const cell = document.querySelector(".challenges__cell--line").getBoundingClientRect(), board = document.querySelector(".challenges__line-board").getBoundingClientRect(); return [Math.round(board.left - cell.left), Math.round(board.top - cell.bottom)];');
+		$this->assertSame([0, 4], $gap);
 		$browser->assertNoJsErrors();
 	}
 }

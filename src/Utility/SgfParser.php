@@ -27,9 +27,12 @@ class SgfParser
 		foreach ($stones as $position => $color)
 			$boardBounds->add($position);
 
-		self::normalizeOrientation($stones, $correctMoves, $boardBounds, $boardSize);
+		[$flippedX, $flippedY] = self::normalizeOrientation($stones, $correctMoves, $boardBounds, $boardSize);
 		$tInfo = [$boardBounds->x->max, $boardBounds->y->max];
-		return new SgfBoard($stones, $tInfo, $boardSize, $correctMoves);
+		$board = new SgfBoard($stones, $tInfo, $boardSize, $correctMoves);
+		$board->flippedX = $flippedX;
+		$board->flippedY = $flippedY;
+		return $board;
 	}
 
 	//Determine the color of the first move in an SGF string.
@@ -212,19 +215,24 @@ class SgfParser
 		return self::sizeOf(self::firstValues($sgf, ['SZ'])['SZ']);
 	}
 
-	private static function normalizeOrientation(array &$stones, array&$correctMoves, BoardBounds $boardBounds, int $boardSize): void
+	//Returns whether it flipped the board along x and along y
+	/** @return array{bool, bool} */
+	private static function normalizeOrientation(array &$stones, array&$correctMoves, BoardBounds $boardBounds, int $boardSize): array
 	{
-		if ($boardBounds->x->isCloserToEnd($boardSize))
+		$flippedX = $boardBounds->x->isCloserToEnd($boardSize);
+		if ($flippedX)
 		{
 			$stones = SgfBoard::getStonesFlipedX($stones, $boardSize);
 			$correctMoves = SgfBoard::getStonesFlipedX($correctMoves, $boardSize);
 			$boardBounds->x->flip($boardSize);
 		}
-		if ($boardBounds->y->isCloserToEnd($boardSize))
+		$flippedY = $boardBounds->y->isCloserToEnd($boardSize);
+		if ($flippedY)
 		{
 			$stones = SgfBoard::getStonesFlipedY($stones, $boardSize);
 			$correctMoves = SgfBoard::getStonesFlipedY($correctMoves, $boardSize);
 			$boardBounds->y->flip($boardSize);
 		}
+		return [$flippedX, $flippedY];
 	}
 }
