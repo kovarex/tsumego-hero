@@ -93,6 +93,11 @@ deploy_steps() {
 	else
 		git fetch origin "pull/$1/head"
 	fi
+	# The secrets that are not in git before the checkout, so the new code never starts without
+	# them. A checkout from before the script has none; deploy.sh runs it after the checkout too.
+	if [ -f scripts/ensure-secrets.sh ]; then
+		bash scripts/ensure-secrets.sh "$REPO_DIR"
+	fi
 	git checkout --force --detach FETCH_HEAD
 	git log -1 --format='%h %s' > "$STATE_DIR/commit"
 	cat "$STATE_DIR/commit"

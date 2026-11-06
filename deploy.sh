@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# The secrets that are not in git first, so the code the pull brings never starts without them
+# (scripts/ensure-secrets.sh). After the pull the new script runs it again, which changes nothing.
+bash "$(dirname "$0")/scripts/ensure-secrets.sh" "$(cd "$(dirname "$0")"; pwd)" || exit 1
+
 if [ -z "$DEPLOY_REEXEC" ]; then
     git pull || exit 1
     exec env DEPLOY_REEXEC=1 bash "$0" "$@"
@@ -161,34 +165,6 @@ if [[ ! -f "$PHPBB_CONFIG_FILE" ]]; then
         "$PHPBB_CONFIG_FILE"
 else
     echo "webroot/forums/config.php already exists, skipping."
-fi
-
-### The secrets outside git (config/jwt_secret.example.php, config/core.local.example.php): made
-### here when the server has none, random and never printed, so a fresh checkout or a dev
-### environment starts. An existing value is never changed.
-random_secret() {
-    od -An -tx1 -N32 /dev/urandom | tr -d ' \n'
-}
-
-JWT_SECRET_FILE="$ROOT_DIR/config/jwt_secret.php"
-if [[ ! -f "$JWT_SECRET_FILE" ]]; then
-    echo "Creating config/jwt_secret.php with a new random secret ..."
-    (umask 077 && printf "<?php\nreturn '%s';\n" "$(random_secret)" > "$JWT_SECRET_FILE")
-    # read by the web server's group where there is one (web on NearlyFreeSpeech)
-    { chgrp web "$JWT_SECRET_FILE" && chmod 640 "$JWT_SECRET_FILE"; } 2>/dev/null || true
-else
-    echo "config/jwt_secret.php already exists, skipping."
-fi
-
-CORE_LOCAL_FILE="$ROOT_DIR/config/core.local.php"
-if grep -qs "Security\.salt" "$CORE_LOCAL_FILE"; then
-    echo "config/core.local.php has a salt, skipping."
-elif [[ -f "$CORE_LOCAL_FILE" ]] && tail -n 3 "$CORE_LOCAL_FILE" | grep -q '?>'; then
-    echo "WARNING: config/core.local.php ends with ?>, so no salt was added to it; add one as config/core.local.example.php shows."
-else
-    echo "Adding a new random Security.salt to config/core.local.php ..."
-    [[ -f "$CORE_LOCAL_FILE" ]] || (umask 077 && printf "<?php\n" > "$CORE_LOCAL_FILE")
-    printf "\nConfigure::write('Security.salt', '%s');\n" "$(random_secret)" >> "$CORE_LOCAL_FILE"
 fi
 
 
