@@ -105,7 +105,8 @@ class ChallengesController extends AppController
 		$this->set('isFinished', ChallengeTable::everyoneFinished($standings));
 		$isCreator = Auth::isLoggedIn() && (int) $challenge['created_by_user_id'] === Auth::getUserID();
 		$this->set('removableUserIDs', $isCreator ? array_map(fn(array $row) => (int) $row['user_id'],
-			array_values(array_filter($standings, fn(array $row) => ChallengeTable::canRemove($row, time())))) : []);
+			array_values(array_filter($standings, fn(array $row) => (int) $row['user_id'] !== Auth::getUserID()
+				&& ChallengeTable::canRemove($row, (int) $challenge['seconds_per_problem'], time())))) : []);
 		$this->set('myRun', $myRun);
 		$this->set('isFull', !$isParticipant && ChallengeTable::participantCount($challengeID) >= ChallengeTable::MAXIMUM_PARTICIPANTS);
 		$this->set('joinUrl', Router::url(self::challengeUrl($challengeID), true));
@@ -161,8 +162,8 @@ class ChallengesController extends AppController
 		return $this->redirect(self::challengeUrl((int) $challenge['id']));
 	}
 
-	//The creator removes a player whose run waits too long (ChallengeTable::canRemove()), so the
-	//challenge can finish without them.
+	//The creator removes a player who hasn't started, or whose run is stuck on a problem
+	//(ChallengeTable::canRemove()), so the challenge can finish without them.
 	//user_id: The player to remove
 	#[HttpPost]
 	public function remove(string $id): mixed
@@ -173,8 +174,8 @@ class ChallengesController extends AppController
 			throw new ForbiddenException('Only the creator of the challenge can remove its players.');
 		$userID = (int) ($this->input('user_id') ?? 0);
 		$standing = array_find(ChallengeTable::standings($challengeID), fn(array $row) => (int) $row['user_id'] === $userID);
-		if ($standing === null || $userID === Auth::getUserID() || !ChallengeTable::canRemove($standing, time()))
-			throw new UnprocessableContentException('Only a player whose run waits too long can be removed.');
+		if ($standing === null || $userID === Auth::getUserID() || !ChallengeTable::canRemove($standing, (int) $challenge['seconds_per_problem'], time()))
+			throw new UnprocessableContentException('Only a player who hasn\'t started, or is stuck on a problem, can be removed.');
 
 		ChallengeTable::remove($challengeID, $userID);
 		CookieFlash::set('Removed ' . $standing['user_display_name'] . ' from the challenge.', 'success');

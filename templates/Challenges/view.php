@@ -114,7 +114,8 @@ $cellSymbols = ['failed' => '✗', 'timeout' => '⏱', 'skipped' => '–', 'queu
 								onsubmit="return confirm('Remove the player from the challenge? It then finishes without them.');">
 								<input type="hidden" name="user_id" value="<?= (int) $row['user_id'] ?>">
 								<button class="btn btn--small btn--neutral challenges__remove" type="submit"
-									title="Their run waits too long: not started for <?= ChallengeTable::REMOVABLE_NOT_STARTED_AFTER_HOURS ?> hours, or no answer for <?= ChallengeTable::REMOVABLE_IDLE_AFTER_MINUTES ?> minutes">Remove</button>
+									title="<?= $row['run'] === ChallengeTable::RUN_NOT_STARTED ? 'They haven\'t started their run'
+										: 'No new problem for ' . ChallengeTable::formatTimeForAProblem(ChallengeTable::REMOVABLE_AFTER_TIMES_FOR_A_PROBLEM * (int) $challenge['seconds_per_problem']) . ', twice the time for a problem' ?>">Remove</button>
 							</form>
 							<?php endif; ?>
 						</td>

@@ -1,1 +1,1 @@
-Added: Challenges show places with medals: gold, silver and bronze for the first three in the table of a challenge, and your place and the winner of each challenge in your list of challenges.
+Added: Challenges show places with medals: gold, silver and bronze for the first three in the table of a challenge, and in your list of challenges your place as "2nd of 3 with 330.0 points (66%)", where the 3 opens the standings of everyone who finished, and how long ago you played it.
