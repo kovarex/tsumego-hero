@@ -9,6 +9,7 @@ use App\Model\Table\UserTable;
  *
  * @var \App\View\AppView $this
  * @var array $challenges What ChallengeTable::ofPlayer() returned
+ * @var array $places What ChallengeTable::placesOfPlayer() returned
  * @var array<\App\Model\Entity\TimeModeRank> $ranks The rows of time_mode_rank, the easiest first
  * @var int|null $defaultRankID The rank of the player, to start the form with
  * @var string|null $opponent The name of the player to invite, from the button on a profile
@@ -82,6 +83,9 @@ use App\Model\Table\UserTable;
 				$myRun = '<strong>playing</strong>';
 			else
 				$myRun = 'your points ' . ChallengeTable::formatPoints((float) $challenge['my_points']);
+			$placing = $places[(int) $challenge['id']] ?? null;
+			// the winner, unless it is the player alone, whose own place says so
+			$winners = $placing === null || ($placing['myPlace'] === 1 && count($placing['winners']) === 1) ? [] : $placing['winners'];
 		?>
 		<div class="challenges__row">
 			<span>
@@ -92,6 +96,13 @@ use App\Model\Table\UserTable;
 				by <?= UserTable::renderLink($challenge) ?>
 				· <?= (int) $challenge['finished_count'] ?>/<?= (int) $challenge['participant_count'] ?> played
 				· <?= $myRun ?>
+				<?php if ($placing !== null && $placing['myPlace'] !== null): ?>
+				· <span class="challenges__placing challenges__my-place"><?= $this->element('Challenges/placement', ['place' => $placing['myPlace']]) ?> of <?= $placing['finishedCount'] ?></span>
+				<?php endif; ?>
+				<?php if (!empty($winners)): ?>
+				· <span class="challenges__placing challenges__winner"><?= $this->element('Challenges/placement', ['place' => 1]) ?>
+					<?= implode(', ', array_map(fn(array $winner) => UserTable::renderLink($winner), $winners)) ?></span>
+				<?php endif; ?>
 				<?php if ($canDecline): ?>
 				<form class="challenges__inline-form" method="post" action="/challenges/decline/<?= (int) $challenge['id'] ?>" onsubmit="return confirm('Decline the challenge?');"><button class="btn btn--small btn--neutral" type="submit">Decline</button></form>
 				<?php endif; ?>

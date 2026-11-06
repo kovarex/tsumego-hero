@@ -347,6 +347,80 @@ class ChallengesControllerTest extends IntegrationTestCase
 		$this->assertTextContains('You got it wrong.', $page);
 	}
 
+	//Runs with the same points in the same time share their place and its medal, the next run skips the shared places.
+	public function testTiedRunsShareTheirPlaceAndMedal(): void
+	{
+		$this->prepare();
+		$challengeId = $this->create(['problem_count' => 5, 'players' => 'DN_friend, DN_stranger']);
+		$this->playRun($challengeId, array_fill(0, 5, [PlayOutcome::SolvedClean, 10]));
+		$this->login('friend');
+		$this->playRun($challengeId, array_fill(0, 5, [PlayOutcome::SolvedClean, 10]));
+		$this->login('stranger');
+		$this->playRun($challengeId, array_fill(0, 5, [PlayOutcome::Failed, 10]));
+
+		$this->assertSame([1, 1, 3], array_column(ChallengeTable::standings($challengeId), 'place'));
+		$this->get('/challenges/' . $challengeId);
+		$standings = substr($this->view, strpos($this->view, 'id="challenge-standings"'));
+		$this->assertSame(2, substr_count($standings, 'class="challenge-place challenge-place--gold" role="img" aria-label="1st place"'));
+		$this->assertSame(1, substr_count($standings, 'aria-label="3rd place"'));
+		$this->assertStringNotContainsString('challenge-place--silver', $standings);
+	}
+
+	//The list of the player's challenges shows their place among the finished runs and the winner,
+	//one query for the places of all the challenges.
+	public function testTheListShowsThePlaceOfThePlayerAndTheWinner(): void
+	{
+		$this->prepare();
+		$wonByFriend = $this->create(['problem_count' => 5, 'players' => 'DN_friend']);
+		$this->playRun($wonByFriend, array_fill(0, 5, [PlayOutcome::Failed, 10]));
+		$this->login('friend');
+		$this->playRun($wonByFriend, array_fill(0, 5, [PlayOutcome::SolvedClean, 10]));
+		$this->login('challenger');
+
+		$this->get('/challenges');
+		$row = $this->listRow($wonByFriend);
+		$this->assertStringContainsString('aria-label="2nd place"', $row);
+		$this->assertStringContainsString('of 2', $row);
+		$this->assertStringContainsString('challenges__winner', $row);
+		$this->assertStringContainsString('DN_friend', $row);
+
+		$this->login('friend');
+		$this->get('/challenges');
+		$row = $this->listRow($wonByFriend);
+		$this->assertStringContainsString('aria-label="1st place"', $row);
+		$this->assertStringNotContainsString('challenges__winner', $row, 'the winner sees their own medal');
+	}
+
+	public function testTheListTakesAsManyQueriesForManyChallengesAsForOne(): void
+	{
+		$this->prepare();
+		$queriesOfTheList = function (): int {
+			$questions = fn() => (int) Util::query("SHOW SESSION STATUS LIKE 'Questions'")[0]['Value'];
+			$before = $questions();
+			$this->get('/challenges');
+			return $questions() - $before;
+		};
+		$playOne = function (): void {
+			$challengeId = $this->create(['problem_count' => 5, 'players' => 'DN_friend']);
+			$this->playRun($challengeId, array_fill(0, 5, [PlayOutcome::SolvedClean, 10]));
+		};
+
+		$playOne();
+		// the first request fills the caches of the request, like UserTable's list of deleted accounts
+		$queriesOfTheList();
+		$queriesOfOne = $queriesOfTheList();
+		$playOne();
+		$playOne();
+		$this->assertSame($queriesOfOne, $queriesOfTheList());
+	}
+
+	//The row of the list of challenges of the challenge.
+	private function listRow(int $challengeId): string
+	{
+		$start = strpos($this->view, '<a href="/challenges/' . $challengeId . '">');
+		return substr($this->view, $start, strpos($this->view, 'class="challenges__row"', $start) ?: strlen($this->view) - $start);
+	}
+
 	public function testTheProblemsShowOnlyToThePlayersWhoFinishedTheirRun(): void
 	{
 		$this->prepare();

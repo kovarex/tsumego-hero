@@ -245,4 +245,65 @@ a[href="/challenges"],
 	position: relative;
 	white-space: nowrap;
 }
+
+/* The place of a finished run (element/Challenges/placement.php): a medal for the first three, the
+   number in a ring after them. The metals keep their colours in both themes, the ring follows the text. */
+.challenge-place
+{
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	vertical-align: middle;
+	line-height: 1;
+}
+
+.challenge-place svg
+{
+	display: block;
+	filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.25));
+}
+
+.challenge-place__ribbon-left { fill: #3b6fd8; }
+.challenge-place__ribbon-right { fill: #d8463b; }
+
+.challenge-place__number
+{
+	font: bold 10px sans-serif;
+	fill: #2b2207;
+}
+
+.challenge-place--gold .challenge-place__rim { fill: #b8860b; }
+.challenge-place--gold .challenge-place__face { fill: #f4c430; }
+.challenge-place--silver .challenge-place__rim { fill: #7d868f; }
+.challenge-place--silver .challenge-place__face { fill: #d5dadf; }
+.challenge-place--bronze .challenge-place__rim { fill: #8c5523; }
+.challenge-place--bronze .challenge-place__face { fill: #d99a5b; }
+
+.challenge-place--rank
+{
+	min-width: 22px;
+	height: 22px;
+	padding: 0 4px;
+	box-sizing: border-box;
+	border: 2px solid currentColor;
+	border-radius: 11px;
+	font-size: 12px;
+	font-weight: var(--font-weight-bold);
+	opacity: 0.75;
+}
+
+.challenges__placing
+{
+	display: inline-flex;
+	align-items: center;
+	gap: var(--space-1);
+	vertical-align: middle;
+}
+
+/* In the line of a challenge in the list the medal is the height of the avatars beside it. */
+.challenges__placing .challenge-place svg
+{
+	width: 19px;
+	height: 22px;
+}
 }

@@ -33,6 +33,7 @@ class ChallengesController extends AppController
 		$this->set('_page', 'challenges');
 		$this->set('_title', 'Tsumego Hero - Challenges');
 		$this->set('challenges', ChallengeTable::ofPlayer(Auth::getUserID()));
+		$this->set('places', ChallengeTable::placesOfPlayer(Auth::getUserID()));
 
 		$ranks = $this->fetchTable('TimeModeRank')->find()->orderBy('id')->toArray();
 		$this->set('ranks', $ranks);
