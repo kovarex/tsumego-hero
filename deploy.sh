@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# Everything the deploy writes (the pulled code, the bundles, vendor) must be readable by PHP,
+# which runs as another user, whatever umask the shell had: under 077 the pull wrote
+# config/bootstrap.php owner-only and the site stopped. The secrets set their own stricter modes.
+umask 022
+
 if [ -z "$DEPLOY_REEXEC" ]; then
     git pull || exit 1
     exec env DEPLOY_REEXEC=1 bash "$0" "$@"
@@ -187,7 +192,10 @@ elif [[ -f "$CORE_LOCAL_FILE" ]] && tail -n 3 "$CORE_LOCAL_FILE" | grep -q '?>';
     echo "WARNING: config/core.local.php ends with ?>, so no salt was added to it; add one as config/core.local.example.php shows."
 else
     echo "Adding a new random Security.salt to config/core.local.php ..."
-    [[ -f "$CORE_LOCAL_FILE" ]] || (umask 077 && printf "<?php\n" > "$CORE_LOCAL_FILE")
+    if [[ ! -f "$CORE_LOCAL_FILE" ]]; then
+        (umask 077 && printf "<?php\n" > "$CORE_LOCAL_FILE")
+        { chgrp web "$CORE_LOCAL_FILE" && chmod 640 "$CORE_LOCAL_FILE"; } 2>/dev/null || true
+    fi
     printf "\nConfigure::write('Security.salt', '%s');\n" "$(random_secret)" >> "$CORE_LOCAL_FILE"
 fi
 
