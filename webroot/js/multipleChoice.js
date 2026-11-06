@@ -124,10 +124,10 @@ function semeaiEyeAgainstNoEye(count)
 	let takenFromWhite = multipleChoiceLibertiesW;
 	let shownBlack = count - takenFromWhite;
 	let shownWhite = count - takenFromBlack;
-	if ([29826, 29827].some(id => id == tsumegoID) && takenFromBlack == 1 && takenFromWhite == 2)
+	if (tsumegoID == 29827 && takenFromBlack == 1 && takenFromWhite == 2)
 	{
 		takenFromWhite = 1;
-		shownBlack = shownWhite = {29827: 15}[tsumegoID] ?? 5;
+		shownBlack = shownWhite = 15;
 	}
 	const result = semeaiPlainRace(count - takenFromWhite, count - takenFromBlack, "The position is unsettled. (Whoever plays first wins.)");
 	result.text = "Semeai Type 3: Eye vs no eye.<br>No Seki possible.<br> All inside liberties count for the group with the eye.<br>Black has "
