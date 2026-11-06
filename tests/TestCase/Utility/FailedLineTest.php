@@ -1,6 +1,8 @@
 <?php
 
+use App\Utility\BoardTransformation;
 use App\Utility\FailedLine;
+use App\Utility\Util;
 
 class FailedLineTest extends AppTestCase
 {
@@ -16,6 +18,13 @@ class FailedLineTest extends AppTestCase
 		$this->assertSame(4, $preview['yMax']);
 	}
 
+	public function testALineTurnsPointByPoint(): void
+	{
+		$this->assertSame('aaabbatt', FailedLine::transformed('sssrrstt', new BoardTransformation(flipX: true, flipY: true), 19));
+		$this->assertSame('abtt', FailedLine::transformed('batt', new BoardTransformation(transpose: true), 19));
+		$this->assertSame('ia', FailedLine::transformed('aa', new BoardTransformation(flipX: true), 9));
+	}
+
 	public function testThePreviewTellsWhoPlaysFirst(): void
 	{
 		$this->assertSame('W', FailedLine::previewData('(;GM[1]FF[4]SZ[19]AB[cc];W[aa])', 'aa')['firstColor']);
@@ -25,8 +34,8 @@ class FailedLineTest extends AppTestCase
 	{
 		$context = new ContextPreparator(['tsumegos' => [['set_order' => 1, 'sgf' => '(;GM[1]SZ[19]AB[cc];B[aa])'], ['set_order' => 2, 'sgf' => '(;GM[1]SZ[19]AB[cc];B[aa])']]]);
 		$tsumegoID = (int) $context->tsumegos[0]['id'];
-		$sgfID = (int) App\Utility\Util::query('SELECT id FROM sgf WHERE tsumego_id = ?', [$tsumegoID])[0]['id'];
-		$otherSgfID = (int) App\Utility\Util::query('SELECT id FROM sgf WHERE tsumego_id = ?', [$context->tsumegos[1]['id']])[0]['id'];
+		$sgfID = (int) Util::query('SELECT id FROM sgf WHERE tsumego_id = ?', [$tsumegoID])[0]['id'];
+		$otherSgfID = (int) Util::query('SELECT id FROM sgf WHERE tsumego_id = ?', [$context->tsumegos[1]['id']])[0]['id'];
 
 		$this->assertSame('aatt', FailedLine::fromRequest('aatt', $sgfID, $tsumegoID)?->moves);
 		$this->assertNull(FailedLine::fromRequest('aatt', $otherSgfID, $tsumegoID));

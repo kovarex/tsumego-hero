@@ -5,6 +5,7 @@ namespace App\Command;
 use App\Model\Table\SgfTable;
 use App\Utility\BoardTransformation;
 use App\Utility\CommentCoordinates;
+use App\Utility\FailedLine;
 use App\Utility\SgfAnalysis;
 use App\Utility\SgfTree;
 use App\Utility\TsumegoButton;
@@ -21,6 +22,7 @@ use Cake\Console\ConsoleOptionParser;
 //history compares like with like: no row is added, and the status, author, dates and review of a row stay as they
 //are. Its preview is made again from the new text. What goes with the coordinates follows the turn:
 //- the comments of a problem, kept in the coordinates of its current version, move with that version's turn;
+//- the line a time mode or challenge attempt failed on (time_mode_attempt.failed_line) turns with its version;
 //- transformation_from_source, from the source version to this one, takes in both turns (source^-1, then the old
 //  transformation, then this one), each when that row is rewritten, so the result doesn't depend on the order.
 //A rewrite leaves out what besogo merges anyway (a line transposing into another, the moves after a ko comes round)
@@ -100,7 +102,7 @@ class NormaliseSgfsCommand extends Command
 		$batch = max(1, (int) $args->getOption('batch'));
 		$limit = max(0, (int) $args->getOption('limit'));
 		$this->printed = array_map('intval', array_filter(explode(',', (string) $args->getOption('sgf'))));
-		$this->counts = array_fill_keys(['problems', 'rows', 'turned', 'reordered only', 'values only', 'comments moved', 'transformations from source fixed'], 0);
+		$this->counts = array_fill_keys(['problems', 'rows', 'turned', 'reordered only', 'values only', 'comments moved', 'failed lines turned', 'transformations from source fixed'], 0);
 		$io->out($this->write ? 'Writing the normalised SGFs.' : 'Dry run: nothing is written (--write writes it).');
 
 		$tsumegoIDs = array_map('intval', array_column(Util::query('SELECT DISTINCT tsumego_id FROM sgf ORDER BY tsumego_id'), 'tsumego_id'));
@@ -207,6 +209,20 @@ class NormaliseSgfsCommand extends Command
 				$this->changeTransformationFromSource((int) $dependent['id'], $dependent['transformation_from_source'], fn(BoardTransformation $old) => $transformation->inverse()->then($old));
 			if ($id === $currentID)
 				$this->moveComments($tsumegoID, $transformation, (string) $analysis->sgf);
+			$this->turnFailedLines($id, $transformation, (string) $analysis->sgf);
+		}
+	}
+
+	//The lines a challenge or time mode failed on this version are in its coordinates, so they turn with it
+	private function turnFailedLines(int $id, BoardTransformation $transformation, string $sgf): void
+	{
+		$size = SgfTree::parse($sgf)?->boardSize() ?? 19;
+		foreach (Util::query('SELECT id, failed_line FROM time_mode_attempt WHERE sgf_id = ? AND failed_line IS NOT NULL', [$id]) as $attempt)
+		{
+			$this->counts['failed lines turned']++;
+			if ($this->write)
+				Util::execute('UPDATE time_mode_attempt SET failed_line = ? WHERE id = ?',
+					[FailedLine::transformed((string) $attempt['failed_line'], $transformation, $size), $attempt['id']]);
 		}
 	}
 

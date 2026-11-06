@@ -21,6 +21,24 @@ final class FailedLine
 		return new self($moves, (int) $sgfID);
 	}
 
+	//The moves turned as the SGF they are in is turned (NormaliseSgfsCommand rewrites a version in place); a pass
+	//stays a pass
+	public static function transformed(string $moves, BoardTransformation $transformation, int $boardSize): string
+	{
+		$result = '';
+		foreach (str_split($moves, 2) as $move)
+		{
+			if ($move === 'tt')
+			{
+				$result .= 'tt';
+				continue;
+			}
+			[$x, $y] = $transformation->applyToPoint(ord($move[0]) - ord('a') + 1, ord($move[1]) - ord('a') + 1, $boardSize);
+			$result .= chr(ord('a') + $x - 1) . chr(ord('a') + $y - 1);
+		}
+		return $result;
+	}
+
 	//The board of the problem with the line, as previewBoard.js draws it: the stones as the problem buttons
 	//show them, turned to the top left, the line turned with them, and the colour of its first move
 	/** @return array{black: string, white: string, xMax: int, yMax: int, boardSize: int, line: string, firstColor: string} */
