@@ -8,21 +8,21 @@
  * @var bool $isCurrent The run just finished, or opened from the history, rather than the best one
  */
 
-$color = $session['status'] == 'passed' ? 'var(--color-green)' : 'var(--feedback-error)';
+$outcome = $session['status'] == 'passed' ? 'time-result--passed' : 'time-result--failed';
 ?>
 <tr>
 	<td colspan="5">
-		<h4 style="color:<?php echo $color; ?>;"><?php echo ($isCurrent ? 'Result' : 'Best') . ': ' . $session['status'] . '(' . $session['solvedCount'] . '/' . count($session['attempts']) . ')'; ?><?php if ($isCurrent): ?>- <?php echo $session['points']; ?> points<?php endif; ?></h4>
+		<h4 class="<?php echo $outcome; ?>"><?php echo ($isCurrent ? 'Result' : 'Best') . ': ' . $session['status'] . '(' . $session['solvedCount'] . '/' . count($session['attempts']) . ')'; ?><?php if ($isCurrent): ?>- <?php echo $session['points']; ?> points<?php endif; ?></h4>
 	</td>
 </tr>
 <?php foreach ($session['attempts'] as $attempt):
-	$color = $attempt['status'] == 'solved' ? 'var(--color-green)' : 'var(--feedback-error)';
+	$outcome = $attempt['status'] == 'solved' ? 'time-result--passed' : 'time-result--failed';
 ?>
 <tr>
-	<td width="9%">#<?php echo $attempt['order']; ?></td>
-	<td width="46%"><a href="/tsumegos/play/<?php echo $attempt['tsumego_id']; ?>"><?php echo $attempt['set'] . ' - ' . $attempt['set_order']; ?></a></td>
-	<td width="7%" style="color:<?php echo $color; ?>;"><?php echo $attempt['status']; ?></td>
-	<td width="8%" style="color:<?php echo $color; ?>;"><?php echo $attempt['seconds']; ?></td>
+	<td class="time-result__order">#<?php echo $attempt['order']; ?></td>
+	<td class="time-result__problem"><a href="/tsumegos/play/<?php echo $attempt['tsumego_id']; ?>"><?php echo $attempt['set'] . ' - ' . $attempt['set_order']; ?></a></td>
+	<td class="time-result__outcome <?php echo $outcome; ?>"><?php echo $attempt['status']; ?></td>
+	<td class="time-result__score <?php echo $outcome; ?>"><?php echo $attempt['seconds']; ?></td>
 	<td><?php echo $attempt['points']; ?> points</td>
 </tr>
 <?php endforeach; ?>

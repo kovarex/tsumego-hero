@@ -12,10 +12,10 @@ use App\Utility\ViteManifest;
  */
 
 ?>
-	<div align="center">
+	<div class="legacy-center">
 	<h2>Time Mode Results</h2>
 	<br>
-	<div align="center">
+	<div class="legacy-center">
 		<a class="btn btn--primary" href="/timeMode/overview">Select</a>
 		<a class="btn btn--inactive" href="#">Results</a>
 	</div>
@@ -24,16 +24,16 @@ use App\Utility\ViteManifest;
 		<label>
 		<input type="checkbox" class="toast__toggle" id="alertCheckbox" autocomplete="off">
 		<div class="toast" id="time-rank-unlock-alert">
-			<div class="toast__banner" align="center">Unlocked<span class="toast__close">x</span></div>
+			<div class="toast__banner legacy-center">Unlocked<span class="toast__close">x</span></div>
 			<span class="toast__body">
-		<a style="color:var(--color-black);text-decoration:none;" href="/timeMode/overview"><img id="hpIcon1" src="/img/rankButton<?php echo $unlock['rank']; ?>.png">
+		<a class="toast__link" href="/timeMode/overview"><img id="hpIcon1" src="/img/rankButton<?php echo $unlock['rank']; ?>.png">
 		  You unlocked the <?php echo $unlock['rank']; ?> <?php echo $unlock['category']; ?> rank.
 		</a><br>
 		<br class="clear1"/></span>
 		</div>
 		</label>
 	<?php endif; ?>
-	<table class="timeModeTable" border="0">
+	<table class="timeModeTable">
 	<?php foreach ($sessionsToShow as $categoryToShow): ?>
 		<?php foreach ($categoryToShow as $rankToShow):
 			$isOpen = isset($rankToShow['current']);
@@ -43,19 +43,19 @@ use App\Utility\ViteManifest;
 		<tr>
 			<td>
 				<div class="tScoreTitle <?php echo $headerSession['status'] == 'passed' ? 'tScoreTitle1' : 'tScoreTitle2'; ?>" id="title<?php echo $headerSession['id']; ?>">
-					<table class="timeModeTable2" width="100%" border="0">
+					<table class="timeModeTable2">
 						<tr>
-							<td width="9%"><?php echo $headerSession['category']; ?></td>
-							<td width="46%"><?php echo $headerSession['rank']; ?></td>
-							<td width="15%"><b><?php echo $headerSession['status']; ?></b></td>
-							<td width="13%"><?php echo $headerSession['points']; ?> points</td>
+							<td class="time-result__category"><?php echo $headerSession['category']; ?></td>
+							<td class="time-result__rank"><?php echo $headerSession['rank']; ?></td>
+							<td class="time-result__status"><b><?php echo $headerSession['status']; ?></b></td>
+							<td class="time-result__points"><?php echo $headerSession['points']; ?> points</td>
 							<td class="timeModeTable2td"><time datetime="<?php echo Util::toIso8601($headerSession['created']); ?>" data-format="datetime"><?php echo $headerSession['created']; ?></time></td>
-							<td width="3%" class="timeModeTable2td"><img class="rankArrow" src="<?php echo $isOpen ? $rankArrowOpened : $rankArrowClosed; ?>"></td>
+							<td class="time-result__arrow timeModeTable2td"><img class="rankArrow" src="<?php echo $isOpen ? $rankArrowOpened : $rankArrowClosed; ?>"></td>
 						</tr>
 					</table>
 				</div>
-				<div class="timeModeTable3" width="100%" style="display: <?php echo $isOpen ? '' : 'none'; ?>;" id="results_<?php echo $headerSession['category']; ?>_<?php echo $headerSession['rank']; ?>">
-					<table width="100%" class="scoreTable" border="0">
+				<div class="timeModeTable3" style="display: <?php echo $isOpen ? '' : 'none'; ?>;" id="results_<?php echo $headerSession['category']; ?>_<?php echo $headerSession['rank']; ?>">
+					<table class="scoreTable time-result__runs">
 					<?php
 					if (isset($rankToShow['best']))
 						echo $this->element('TimeMode/result_session', ['session' => $rankToShow['best'], 'isCurrent' => false]);
@@ -70,13 +70,13 @@ use App\Utility\ViteManifest;
 							<td colspan="5"><h4>History: <?php echo count($history); ?> runs</h4></td>
 						</tr>
 						<?php foreach ($history as $index => $run):
-							$color = $run['status'] == 'passed' ? 'var(--color-green)' : 'var(--feedback-error)';
+							$outcome = $run['status'] == 'passed' ? 'time-result--passed' : 'time-result--failed';
 						?>
-						<tr<?php echo in_array($run['id'], $shownSessionIDs) ? ' style="font-weight:bold;"' : ''; ?>>
-							<td width="9%">#<?php echo count($history) - $index; ?></td>
-							<td width="46%"><a href="/timeMode/result/<?php echo $run['id']; ?>?history=1"><time datetime="<?php echo Util::toIso8601($run['created']); ?>" data-format="datetime"><?php echo $run['created']; ?></time></a></td>
-							<td width="7%" style="color:<?php echo $color; ?>;"><?php echo $run['status']; ?></td>
-							<td width="8%" style="color:<?php echo $color; ?>;"><?php echo $run['solvedCount'] . '/' . $run['attemptCount']; ?></td>
+						<tr<?php echo in_array($run['id'], $shownSessionIDs) ? ' class="time-result__shown"' : ''; ?>>
+							<td class="time-result__order">#<?php echo count($history) - $index; ?></td>
+							<td class="time-result__problem"><a href="/timeMode/result/<?php echo $run['id']; ?>?history=1"><time datetime="<?php echo Util::toIso8601($run['created']); ?>" data-format="datetime"><?php echo $run['created']; ?></time></a></td>
+							<td class="time-result__outcome <?php echo $outcome; ?>"><?php echo $run['status']; ?></td>
+							<td class="time-result__score <?php echo $outcome; ?>"><?php echo $run['solvedCount'] . '/' . $run['attemptCount']; ?></td>
 							<td><?php echo $run['points']; ?> points</td>
 						</tr>
 						<?php endforeach; ?>

@@ -7,7 +7,7 @@
  * @var bool $isOwn
  */
 ?>
-<div align="center" class="display1">
+<div class="legacy-center display1">
 	<?= $this->element('user_header', ['user' => $profileUser, 'activeTab' => 'sets']) ?>
 
 	<?php if ($isOwn): ?>
@@ -17,7 +17,7 @@
 		</div>
 	<?php endif; ?>
 
-	<div align="center" class="set-index display1">
+	<div class="legacy-center set-index display1">
 	<?php if (empty($setsNew)): ?>
 		<p class="set-index-empty"><?= $isOwn ? 'No sets yet. Click the heart on any problem to start your first set, or <a href="/sets/create">create one here</a>.' : 'This user has no public sets.' ?></p>
 	<?php else: ?>
