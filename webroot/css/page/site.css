@@ -49,7 +49,7 @@ body {
   position: relative;
   margin: auto;
   padding: 0;
-  background-color: var(--color-white);
+  background-color: var(--info-box-background);
   min-height: 700px;
   border: 2px solid var(--color-black);
   box-shadow: 10px 10px 15px var(--color-black);
@@ -152,7 +152,7 @@ li a.menuLi.nav__link--active {
   color: var(--color-green);
 }
 .title {
-  color: var(--color-black);
+  color: var(--title-text);
   padding: 0px;
   margin-top: 7px;
   margin-bottom: 0px;
@@ -607,14 +607,10 @@ input.newCheck {
 .clear1 {
   clear: both;
 }
-.alert-success { background: var(--alert-success-bg); color: var(--alert-success-fg); border-color: var(--color-green-light); }
-.alert-error { background: var(--alert-error-bg); color: var(--alert-error-fg); border-color: var(--color-red); }
-.alert-warning { background: var(--alert-warning-bg); color: var(--alert-warning-fg); border-color: var(--color-yellow); }
-.alert-info { background: var(--alert-info-bg); color: var(--alert-info-fg); border-color: var(--color-blue); }
-[data-theme="dark"] .alert-success { background: var(--alert-success-bg); color: var(--alert-success-fg); border-color: var(--color-green-dark); }
-[data-theme="dark"] .alert-error { background: var(--alert-error-bg); color: var(--alert-error-fg); border-color: var(--color-red-dark); }
-[data-theme="dark"] .alert-warning { background: var(--alert-warning-bg); color: var(--alert-warning-fg); border-color: var(--color-yellow-dark); }
-[data-theme="dark"] .alert-info { background: var(--alert-info-bg); color: var(--alert-info-fg); border-color: var(--color-blue-dark); }
+.alert-success { background: var(--alert-success-bg); color: var(--alert-success-fg); border-color: var(--alert-success-border); }
+.alert-error { background: var(--alert-error-bg); color: var(--alert-error-fg); border-color: var(--alert-error-border); }
+.alert-warning { background: var(--alert-warning-bg); color: var(--alert-warning-fg); border-color: var(--alert-warning-border); }
+.alert-info { background: var(--alert-info-bg); color: var(--alert-info-fg); border-color: var(--alert-info-border); }
 #plus2 {
   display: none;
   position: absolute;
@@ -802,15 +798,9 @@ nav ul ul ul li {
 }
 
 /* Dark overrides */
-[data-theme="dark"] .whitebox2 {
-	background-color: var(--info-box-background);
-}
 [data-theme="dark"] #status2 font font,
 [data-theme="dark"] .titleDescription1 font {
 	color: var(--color-gray);
-}
-[data-theme="dark"] .title {
-	color: var(--color-white);
 }
 
 /* Responsive */

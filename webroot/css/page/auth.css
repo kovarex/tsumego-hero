@@ -70,8 +70,8 @@
 	text-decoration: underline;
 	cursor: pointer;
 }
-[data-theme=dark] .signin {
-	background: var(--surface-dark);
+.signin {
+	background: var(--signin-background);
 }
 .left {
   box-sizing: border-box;
