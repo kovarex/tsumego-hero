@@ -799,23 +799,29 @@ class MistakeTrainingControllerTest extends IntegrationTestCase
 	//The day of a next review and the days of the calendar are written in the date format of the player
 	public function testTheOverviewWritesItsDaysInTheDateFormatOfThePlayer()
 	{
-		$day = date('Y-m-d', strtotime(MistakeTraining::today() . ' +10 days'));
 		$today = MistakeTraining::today();
+		$far = date('Y-m-d', strtotime($today . ' +10 days'));
+		$near = date('Y-m-d', strtotime($today . ' +3 days'));
+		$czech = fn(string $day) => date('j. n. Y', strtotime($day));
 		foreach ([
-			UserTable::DATE_FORMAT_ISO => [date('M j', strtotime($day)), $today],
-			UserTable::DATE_FORMAT_DAY_MONTH_YEAR => [date('j M', strtotime($day)), date('j. n. Y', strtotime($today))]] as $dateFormat => [$review, $calendarDay])
+			UserTable::DATE_FORMAT_ISO => fn(string $day) => $day,
+			UserTable::DATE_FORMAT_DAY_MONTH_YEAR => $czech] as $dateFormat => $format)
 		{
 			new ContextPreparator([
 				'user' => ['name' => 'testuser', 'date_format_id' => $dateFormat],
-				'tsumego' => ['set_order' => 1, 'status' => ['name' => 'S', 'mistake_training_due' => $day . ' 00:00:00']],
+				'tsumegos' => [
+					['set_order' => 1, 'status' => ['name' => 'S', 'mistake_training_due' => $far . ' 00:00:00']],
+					['set_order' => 2, 'status' => ['name' => 'S', 'mistake_training_due' => $near . ' 00:00:00']],
+				],
 			]);
 			$browser = Browser::instance();
 			$browser->get(substr(MistakeTraining::$OVERVIEW_LINK, 1));
+			$rows = $browser->getElements('.mistake-training-pool__table tr[data-tsumego] td:last-child');
 
-			$this->assertSame($review, $browser->driver->executeScript(
-				'return document.querySelector(".mistake-training-pool__table time[datetime=\'' . $day . '\']").textContent;'),
-				"The next review in format $dateFormat");
-			$this->assertStringStartsWith($calendarDay . ': ', (string) $browser->find('[data-day="' . $today . '"]')->getAttribute('title'),
+			$this->assertSame(date('l', strtotime($near)) . ' (' . $format($near) . ')', $rows[0]->getText(),
+				"A review within the week is named and dated, in format $dateFormat");
+			$this->assertSame($format($far), $rows[1]->getText(), "A later review is dated, in format $dateFormat");
+			$this->assertStringStartsWith($format($today) . ': ', (string) $browser->find('[data-day="' . $today . '"]')->getAttribute('title'),
 				"The calendar day in format $dateFormat");
 		}
 	}
@@ -823,22 +829,28 @@ class MistakeTrainingControllerTest extends IntegrationTestCase
 	//The next review a solve says under "Correct!" is written by the page in the date format of the player
 	public function testTheNextReviewAfterASolveIsInTheDateFormatOfThePlayer()
 	{
-		$context = new ContextPreparator([
-			'user' => ['name' => 'testuser', 'date_format_id' => UserTable::DATE_FORMAT_DAY_MONTH_YEAR],
-			'tsumego' => [
-				'set_order' => 1,
-				'status' => ['name' => 'S', 'mistake_training_due' => date('Y-m-d H:i:s', strtotime('-1 day')), 'mistake_training_rung' => 3],
-			],
-		]);
-		$browser = Browser::instance();
-		$browser->get('mistake-training');
-		$browser->playWithResult('S');
+		foreach ([
+			UserTable::DATE_FORMAT_ISO => fn(string $day) => date('Y-m-d', strtotime($day)),
+			UserTable::DATE_FORMAT_DAY_MONTH_YEAR => fn(string $day) => date('j. n. Y', strtotime($day))] as $dateFormat => $format)
+		{
+			$context = new ContextPreparator([
+				'user' => ['name' => 'testuser', 'date_format_id' => $dateFormat],
+				'tsumego' => [
+					'set_order' => 1,
+					'status' => ['name' => 'S', 'mistake_training_due' => date('Y-m-d H:i:s', strtotime('-1 day')), 'mistake_training_rung' => 3],
+				],
+			]);
+			$browser = Browser::instance();
+			$browser->get('mistake-training');
+			$browser->playWithResult('S');
 
-		// a clean solve on the fourth rung brings the problem back after 15 days, a date and not a weekday
-		$nextDue = MistakeTraining::getPoolRow((int) $context->user['id'], (int) $context->tsumegos[0]['id'])['next_due'];
-		$browser->waitUntil(fn() => str_contains($browser->find('#status')->getText(), 'next review'), context: 'the outcome of the solve');
-		$this->assertStringContainsString('next review ' . date('j M', strtotime($nextDue)) . '.', $browser->find('#status .mistake-training-outcome')->getText());
-		$this->assertStringContainsString(date('j M', strtotime($nextDue)), (string) $browser->driver->executeScript(
-			'return document.querySelector(".problem-nav__item--current .tooltip-desc").textContent;'), 'And so does the tooltip of the button');
+			// a clean solve on the fourth rung brings the problem back after 15 days
+			$nextDue = MistakeTraining::getPoolRow((int) $context->user['id'], (int) $context->tsumegos[0]['id'])['next_due'];
+			$browser->waitUntil(fn() => str_contains($browser->find('#status')->getText(), 'next review'), context: 'the outcome of the solve');
+			$this->assertStringContainsString('next review ' . $format($nextDue) . '.', $browser->find('#status .mistake-training-outcome')->getText(),
+				"The line under Correct! in format $dateFormat");
+			$this->assertStringContainsString($format($nextDue), (string) $browser->driver->executeScript(
+				'return document.querySelector(".problem-nav__item--current .tooltip-desc").textContent;'), "And the tooltip of the button, in format $dateFormat");
+		}
 	}
 }

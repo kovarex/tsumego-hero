@@ -464,7 +464,7 @@ class MistakeTrainingTest extends IntegrationTestCase
 		$this->assertSame('tomorrow', MistakeTraining::describeDay(date('Y-m-d', strtotime('+1 day')), $today));
 		$this->assertSame(date('l', strtotime('+3 day')), MistakeTraining::describeDay(date('Y-m-d', strtotime('+3 day')), $today));
 		$day = date('Y-m-d', strtotime('+30 days'));
-		$this->assertSame('<time datetime="' . $day . '" data-format="month-day">' . date('M j', strtotime($day)) . '</time>',
+		$this->assertSame('<time datetime="' . $day . '" data-format="date">' . $day . '</time>',
 			MistakeTraining::describeDay($day, $today), 'A date for the page to write in the format of the player');
 	}
 
