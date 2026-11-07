@@ -18,6 +18,24 @@
 	text-align: center;
 }
 
+.text-right
+{
+	text-align: right;
+}
+
+/* What align="center" on a block did: the text and the blocks inside it are centred */
+.legacy-center
+{
+	text-align: -moz-center;
+	text-align: -webkit-center;
+}
+
+/* A form that sits in a line of text */
+.inline-form
+{
+	display: inline;
+}
+
 /* Italic emphasis */
 .italic
 {

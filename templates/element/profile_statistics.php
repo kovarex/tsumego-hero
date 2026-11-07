@@ -30,17 +30,17 @@ use App\View\Helper\AchievementHelper;
 					['label' => 'Fails', 'color' => '#888888']]); ?>
 			</div>
 			<div id="userShowAchievements<?php echo $side; ?>">
-				<table width="95%" border="0">
+				<table class="profile-statistics__heading">
 					<tr>
 						<td class="h1profile"><h1 class="h1">Achievements</h1></td>
-						<td style="text-align:right;"><b class="profileTable2"><a href="/achievements/user/<?php echo $user['id']; ?>">View Achievements</a></b></td>
+						<td class="text-right"><b class="profileTable2"><a href="/achievements/user/<?php echo $user['id']; ?>">View Achievements</a></b></td>
 					</tr>
 				</table>
 				<?php foreach ($latestAchievements as $achievement): ?>
 				<a href="/achievements/view/<?php echo $achievement['id'] . '/' . $user['id']; ?>">
-				<div align="center" class="achievementSmall <?php echo $achievement['color']; ?>">
+				<div class="legacy-center achievementSmall <?php echo $achievement['color']; ?>">
 					<div class="acTitle2">
-						<b<?php echo strlen($achievement['name']) > 30 ? ' style="font-weight:normal;font-size:17px;"' : ''; ?>><?php echo h($achievement['name']); ?></b>
+						<b<?php echo strlen($achievement['name']) > 30 ? ' class="acTitle2__long"' : ''; ?>><?php echo h($achievement['name']); ?></b>
 					</div>
 					<div class="acImg">
 						<img src="/img/<?php echo h($achievement['image']); ?>.png" title="<?php echo h($achievement['description']); ?>">

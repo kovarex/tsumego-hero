@@ -1,8 +1,41 @@
 @layer page
 {
 .profileTable {
+  width: 100%;
   padding: 0;
   margin: 0;
+}
+.profileTable__half {
+  width: 50%;
+}
+.profile-statistics__heading {
+  width: 95%;
+}
+.acTitle2__long {
+  font-weight: normal;
+  font-size: 17px;
+}
+/* Settings: the fields of a new e-mail and password */
+.settings-account__field {
+  width: 150px;
+}
+/* Solve history */
+.solve-history__preview-toggle {
+  cursor: pointer;
+  font-size: 11px;
+  color: var(--text-softer-color);
+  font-weight: normal;
+  text-transform: none;
+}
+.solve-history__preview-toggle input {
+  vertical-align: middle;
+  margin-right: 2px;
+}
+.solve-history__solved {
+  color: var(--color-green);
+}
+.solve-history__failed {
+  color: var(--color-red);
 }
 .profileTable tr {
   padding: 0;

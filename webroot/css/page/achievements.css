@@ -354,9 +354,14 @@
   }
 }
 
-/* Dark overrides */
-[data-theme="dark"] #achievementWrapper font {
-	color: var(--text-softer-color);
+/* The page of one achievement */
+.achievement-view__back {
+  text-decoration: none;
+}
+/* The progress bar of a counter achievement */
+#achievementWrapper .progress {
+  width: 220px;
+  margin: 0 auto;
 }
 .acCollections {
 	margin: var(--space-4) auto 0 auto;
