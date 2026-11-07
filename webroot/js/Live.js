@@ -3,8 +3,9 @@
 //The page asks for the stamps it watches every POLL_MS while it is visible, with a conditional request
 //that Apache answers with a 304 from the file system, and not at all while it is hidden; coming back it
 //asks at once. onChange gets nothing but the news: the caller fetches what changed itself.
-//How the news arrives is the transport's business: a push hub reading the same stamps can take the place
-//of this polling later (Live.transport), and the callers stay as they are.
+//How the news arrives is the transport's business, the callers stay the same either way: the push hub
+//(scripts/live-hub.mjs, behind /live/sse where the site runs it) tells the page the moment a stamp changes,
+//and where there is none, or its stream fails, the page asks for the stamps itself (polling).
 var Live = (function()
 {
 	var POLL_MS = 1500;
@@ -83,6 +84,50 @@ var Live = (function()
 		}
 	};
 
+	//The transport of the hub: one stream for every channel the page watches, opened again when it watches
+	//another one. A stream that never opens (no hub: the 204 of webroot/live/.htaccess, a 404 or a 502 of a
+	//proxy) or that the browser gives up on hands the page over to polling, for good.
+	var push = {
+		source: null,
+		topics: '',
+		opened: false,
+		start: function()
+		{
+			var names = Object.keys(channels).sort().join(',');
+			if (push.source && push.topics === names)
+				return;
+			push.stop();
+			if (names === '')
+				return;
+			push.topics = names;
+			push.opened = false;
+			var source = new EventSource('/live/sse?topics=' + encodeURIComponent(names));
+			push.source = source;
+			source.addEventListener('open', function() { push.opened = true; });
+			source.addEventListener('stamp', function(event)
+			{
+				var data = JSON.parse(event.data);
+				received(data.topic, data.stamp);
+			});
+			source.addEventListener('error', function()
+			{
+				// a stream that worked reconnects by itself (retry:), one that never did or is closed for good is no hub
+				if (push.opened && source.readyState !== EventSource.CLOSED)
+					return;
+				push.stop();
+				Live.transport = polling;
+				polling.start();
+			});
+		},
+		stop: function()
+		{
+			if (push.source)
+				push.source.close();
+			push.source = null;
+			push.topics = '';
+		}
+	};
+
 	document.addEventListener('visibilitychange', function()
 	{
 		if (document.visibilityState === 'visible')
@@ -92,7 +137,13 @@ var Live = (function()
 	});
 
 	return {
-		transport: polling,
+		transport: typeof EventSource === 'function' ? push : polling,
+
+		//Whether the page has the stamp of the channel, from which on its changes are news
+		seen: function(channel)
+		{
+			return channels[channel] !== undefined && channels[channel].stamp !== undefined;
+		},
 
 		//Returns the function that stops watching
 		watch: function(channel, onChange)

@@ -527,7 +527,7 @@ class ChallengesControllerTest extends IntegrationTestCase
 	//The page has seen the stamp of the challenge once, so what changes from now on is news to it
 	private function waitForTheFirstStamp(Browser $browser, int $challengeId): void
 	{
-		$browser->waitUntilJs('performance.getEntriesByType("resource").some(entry => entry.name.endsWith("/live/' . Live::challengeChannel($challengeId) . '") && entry.responseEnd > 0)');
+		$browser->waitUntilJs('Live.seen("' . Live::challengeChannel($challengeId) . '")');
 	}
 
 	public function testOnlyTheCreatorRemovesPlayers(): void
