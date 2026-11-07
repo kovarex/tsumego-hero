@@ -35,7 +35,7 @@ $profileUserID = $viewedUser['id'] ?? (Auth::isLoggedIn() ? Auth::getUserID() : 
 // A repeatable achievement earned on more collections than are marked here was earned on some that no longer count
 $markedCollections = count(array_filter($collections, fn(array $collection) => $collection['earned']));
 ?>
-<div align="center" >
+<div class="legacy-center">
 	<div class="acHeader">
 		<div class="achievemetIndexLink">
 			<a href="/achievements<?php echo $viewedUser ? '/user/' . $viewedUser['id'] : ''; ?>">View Achievements</a>
@@ -47,9 +47,9 @@ $markedCollections = count(array_filter($collections, fn(array $collection) => $
 			<?php if ($profileUserID): ?><a href="/users/view/<?php echo $profileUserID; ?>">Profile</a><?php endif; ?>
 		</div>
 	</div>
-	<div align="center" id="achievementWrapper">
-	<a href="/achievements" style="text-decoration:none;">
-	<div align="center" class="achievement2 <?php echo $aColor; ?>">
+	<div class="legacy-center" id="achievementWrapper">
+	<a href="/achievements" class="achievement-view__back">
+	<div class="legacy-center achievement2 <?php echo $aColor; ?>">
 		<div class="acTitle">
 			<h1><?php echo h($achievement->name); ?></h1>
 		</div>
@@ -70,7 +70,7 @@ $markedCollections = count(array_filter($collections, fn(array $collection) => $
 	</a>
 	<?php if ($progress !== null && $progressGoal > 0):
 		$progressPercent = (int) round($progress / $progressGoal * 100); ?>
-		<div class="progress" style="width:220px;margin:0 auto;">
+		<div class="progress achievement-view__progress">
 			<div class="progress__fill progress__fill--tonal" style="--percent:<?php echo $progressPercent; ?>;width:<?php echo $progressPercent; ?>%"></div>
 			<div class="progress__label"><?php echo $progress; ?>/<?php echo $progressGoal; ?></div>
 		</div>
@@ -78,8 +78,8 @@ $markedCollections = count(array_filter($collections, fn(array $collection) => $
 	<div class="acRarity">
 		<span class="rarity rarity--<?php echo strtolower(str_replace(' ', '-', $rarity)); ?>" title="<?php echo $completionPercent; ?>% of all users"><?php echo h($rarity); ?></span>
 	</div>
-	<font color="gray">
-	<?php if ($achievement->additional_description != null) echo '*' . h($achievement->additional_description); ?></font>
+	<span class="text-muted">
+	<?php if ($achievement->additional_description != null) echo '*' . h($achievement->additional_description); ?></span>
 	<?php if ($collections): ?>
 	<div class="acCollections">
 		<p class="acCollections__title">Collections that can earn this</p>
@@ -95,7 +95,7 @@ $markedCollections = count(array_filter($collections, fn(array $collection) => $
 	<?php endif; ?>
 	<br>
 	<br>
-	<font color="gray">
+	<span class="text-muted">
 	<?php if ($completerCount == 0): ?>
 	Nobody completed this achievement.
 	<?php else: ?>
@@ -111,6 +111,6 @@ $markedCollections = count(array_filter($collections, fn(array $collection) => $
 	<?php echo $moreCount > 0 ? 'and ' . $moreCount . ' others.' : ''; ?>
 	</div>
 	<?php endif; ?>
-	</font>
+	</span>
 	</div>
 </div>

@@ -214,18 +214,18 @@ foreach ($heroPowers as $power)
 		$height = '1200';
 ?>
 <div class="userBottom1">
-	<table class="profileTable" width="100%" border="0">
+	<table class="profileTable">
 	<tr>
-	<td width="50%">
-		<div align="center">
+	<td class="profileTable__half">
+		<div class="legacy-center">
 			<a id="userShowLevelButtonLeft" class="btn" data-profile-show="level" data-profile-side="Left">Level</a>
 			<a id="userShowRatingButtonLeft" class="btn" data-profile-show="rating" data-profile-side="Left">Rating</a>
 			<a id="userShowTimeButtonLeft" class="btn" data-profile-show="time" data-profile-side="Left">Time</a>
 			<a id="userShowAchievementsButtonLeft" class="btn" data-profile-show="achievement" data-profile-side="Left">Achievements</a>
 		</div>
 	</td>
-	<td width="50%">
-		<div align="center">
+	<td class="profileTable__half">
+		<div class="legacy-center">
 			<a id="userShowLevelButtonRight" class="btn" data-profile-show="level" data-profile-side="Right">Level</a>
 			<a id="userShowRatingButtonRight" class="btn" data-profile-show="rating" data-profile-side="Right">Rating</a>
 			<a id="userShowTimeButtonRight" class="btn" data-profile-show="time" data-profile-side="Right">Time</a>
@@ -235,7 +235,7 @@ foreach ($heroPowers as $power)
 	</tr>
 	</table>
 	<br>
-	<table class="profileTable" width="100%" border="0">
+	<table class="profileTable">
 		<tr>
 			<?php foreach (['Left', 'Right'] as $side)
 				echo $this->element('profile_statistics', compact('side', 'user', 'latestAchievements', 'dailyResults', 'timeGraph')); ?>
