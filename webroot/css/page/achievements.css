@@ -38,7 +38,7 @@
   width: 175px;
   height: 200px;
   margin: 15px;
-  box-shadow: 5px 5px 8px black;
+  box-shadow: var(--shadow-achievement);
   background: var(--achievement-card-background, linear-gradient(
     180deg,
     rgb(99.608% 99.608% 99.608%) 0%,
@@ -71,7 +71,7 @@
   width: 220px;
   height: 241px;
   margin: 15px;
-  box-shadow: 2px 2px 4px black;
+  box-shadow: var(--shadow-card);
 
   background: var(--achievement-card-background, linear-gradient(
     0deg,
@@ -110,7 +110,7 @@
 .achievementColorBluex:hover,
 .achievementColorTeal:hover,
 .achievementColorGold:hover {
-  box-shadow: 5px 5px 8px black;
+  box-shadow: var(--shadow-achievement);
   left: -1px;
   top: -1px;
 }
@@ -195,7 +195,7 @@
   width: 220px;
   height: 241px;
   margin: 15px;
-  box-shadow: 5px 5px 8px black;
+  box-shadow: var(--shadow-achievement);
   background: var(--achievement-card-background, linear-gradient(
     0deg,
     rgb(0% 0% 0% / 0.3) 0%,

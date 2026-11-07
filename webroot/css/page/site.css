@@ -89,7 +89,7 @@ body {
   position: absolute;
   left: 214px;
   top: -8px;
-  z-index: 50;
+  z-index: var(--layer-drawer);
   width: 900px;
 }
 .site-nav__signin {
@@ -358,7 +358,7 @@ li a.menuLi.nav__link--active {
    type, so a wrapped second line clears the first instead of sitting on it, and
    the lines are balanced so a wrap splits the words evenly. */
 .title4 {
-	padding: 8px;
+	padding: var(--space-2);
 	margin-top: 6px;
 	margin-bottom: 0px;
 	font-size: 24px;
@@ -369,12 +369,12 @@ li a.menuLi.nav__link--active {
 	text-wrap: balance;
 	text-decoration: none;
 	background: var(--title4-gradient);
-	border-radius: 4px 4px 0 0;
+	border-radius: var(--radius-sm) var(--radius-sm) 0 0;
 	border: 1px solid var(--surface-border-muted);
 	color: var(--text-color);
 }
 .title4date3 {
-  padding: 8px;
+  padding: var(--space-2);
   margin-top: 7px;
   margin-bottom: 0px;
   font-size: 24px;
@@ -392,7 +392,7 @@ li a.menuLi.nav__link--active {
   top: 0px;
   left: 6px;
   display: inline;
-  padding: 4px;
+  padding: var(--space-1);
 }
 #logo1:hover {
   background-color: var(--color-gray);
@@ -458,9 +458,9 @@ input.newCheck {
   letter-spacing: 1px;
   font-size: 14px;
   font-weight: 600;
-  z-index: 5;
+  z-index: var(--layer-account-menu);
   cursor: pointer;
-  border-radius: 4px 4px 0 0;
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
   display: none;
 }
 #heroProfile li a {
@@ -479,7 +479,7 @@ input.newCheck {
   letter-spacing: 1px;
   font-size: 14px;
   font-weight: 600;
-  z-index: 5;
+  z-index: var(--layer-account-menu);
   cursor: pointer;
   border-top: 1px solid var(--surface-ink);
   display: none;
@@ -500,7 +500,7 @@ input.newCheck {
   letter-spacing: 1px;
   font-size: 14px;
   font-weight: 600;
-  z-index: 5;
+  z-index: var(--layer-account-menu);
   border-top: 1px solid var(--surface-ink);
   cursor: pointer;
   display: none;
@@ -521,7 +521,7 @@ input.newCheck {
   letter-spacing: 1px;
   font-size: 14px;
   font-weight: 600;
-  z-index: 5;
+  z-index: var(--layer-account-menu);
   border-top: 1px solid var(--surface-ink);
   cursor: pointer;
   display: none;
@@ -542,7 +542,7 @@ input.newCheck {
   letter-spacing: 1px;
   font-size: 14px;
   font-weight: 600;
-  z-index: 5;
+  z-index: var(--layer-account-menu);
   border-top: 1px solid var(--surface-ink);
   cursor: pointer;
   display: none;
@@ -563,7 +563,7 @@ input.newCheck {
   letter-spacing: 1px;
   font-size: 14px;
   font-weight: 600;
-  z-index: 5;
+  z-index: var(--layer-account-menu);
   border-top: 1px solid var(--surface-ink);
   cursor: pointer;
   display: none;
@@ -584,11 +584,11 @@ input.newCheck {
   letter-spacing: 1px;
   font-size: 14px;
   font-weight: 600;
-  z-index: 5;
+  z-index: var(--layer-account-menu);
   cursor: pointer;
   border-top: 1px solid var(--surface-ink);
   white-space: nowrap;
-  border-radius: 0 0 4px 4px;
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
   display: none;
 }
 #heroLogout li a {
@@ -676,7 +676,7 @@ nav > ul > li > a {
 nav ul ul {
   display: none;
   position: absolute;
-  z-index: 1000;
+  z-index: var(--layer-popover);
 }
 nav ul li:hover > ul {
   display: inherit;
@@ -738,7 +738,7 @@ nav ul ul ul li {
   color: var(--color-red);
   font-weight: bold;
   background-color: var(--surface-panel-light);
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   border: 1px solid var(--color-red);
   display: none;
 }
@@ -762,7 +762,7 @@ nav ul ul ul li {
   top: 41px;
   right: 136px;
   left: auto;
-  border-bottom-left-radius: 4px;
+  border-bottom-left-radius: var(--radius-sm);
   border-top-right-radius: 2px;
   cursor: pointer;
 }
@@ -811,11 +811,116 @@ nav ul ul ul li {
 
 /* CookieFlash messages (CakePHP2 flash infrastructure) */
 .alert {
-  padding: 8px 12px;
-  border-radius: 4px;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
   font-size: 12px;
-  margin-bottom: 12px;
+  margin-bottom: var(--space-3);
   border: 1px solid;
+}
+
+/* ── Error page (templates/Error/error.php): the code faint and big behind the title ── */
+.error-page {
+  position: relative;
+  max-width: 800px;
+  margin: 100px auto;
+  padding: 40px;
+  text-align: center;
+}
+.error-page__heading {
+  position: relative;
+  z-index: 1;
+}
+.error-page__code {
+  font-size: 120px;
+  opacity: 0.15;
+  margin: 0;
+  line-height: 1;
+  position: absolute;
+  top: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.error-page__code--neutral { color: var(--error-code-neutral); }
+.error-page__code--warning { color: var(--error-code-warning); }
+.error-page__code--danger { color: var(--error-code-danger); }
+.error-page__title {
+  font-size: 36px;
+  color: var(--text-color);
+  margin: 60px 0 20px 0;
+  position: relative;
+  z-index: 2;
+}
+.error-page__address {
+  color: var(--color-green);
+}
+.error-page__message,
+.error-page__details {
+  color: var(--text-softer-color);
+  line-height: 1.6;
+  position: relative;
+  z-index: 2;
+}
+.error-page__message {
+  font-size: 18px;
+}
+.error-page__details {
+  font-size: 16px;
+  margin-top: 20px;
+}
+/* What a developer sees about the error (debug mode only) */
+.error-page__debug {
+  margin-top: 60px;
+  padding: 30px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  text-align: left;
+  position: relative;
+  z-index: 2;
+}
+.error-page__debug-title {
+  color: var(--text-color);
+  margin-top: 0;
+  margin-bottom: 20px;
+}
+.error-page__fact {
+  margin: 15px 0;
+  padding: 10px;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 4px;
+}
+.error-page__fact-name {
+  color: var(--text-color);
+}
+.error-page__fact-value {
+  color: var(--feedback-error);
+  background: rgba(0, 0, 0, 0.04);
+  padding: 4px 8px;
+  border-radius: 3px;
+  display: inline-block;
+  margin-top: 5px;
+}
+.error-page__trace {
+  margin-top: 20px;
+}
+.error-page__trace-title {
+  color: var(--text-color);
+  display: block;
+  padding: 10px;
+  background: rgba(0, 0, 0, 0.03);
+  border-radius: 4px;
+}
+.error-page__trace-lines {
+  overflow: auto;
+  max-height: 500px;
+  background: rgba(0, 0, 0, 0.8);
+  color: var(--color-white);
+  padding: 20px;
+  border-radius: 5px;
+  font-size: 13px;
+  line-height: 1.6;
+  margin-top: 10px;
+  font-family: var(--font-family-code);
 }
 
 /* Dark overrides */
@@ -892,7 +997,7 @@ nav ul ul ul li {
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
-		padding: 8px 12px;
+		padding: var(--space-2) var(--space-3);
 		min-height: 56px;
 	}
 	#logo1 {
@@ -910,7 +1015,7 @@ nav ul ul ul li {
 		gap: 5px;
 		width: 40px;
 		height: 40px;
-		padding: 8px;
+		padding: var(--space-2);
 		cursor: pointer;
 		box-sizing: border-box;
 	}
@@ -942,12 +1047,12 @@ nav ul ul ul li {
 		position: fixed;
 		left: 0;
 		top: 0;
-		z-index: 1000;
+		z-index: var(--layer-popover);
 		width: min(80vw, 360px);
 		height: 100vh;
 		overflow-y: auto;
 		margin: 0;
-		padding: 16px 12px;
+		padding: var(--space-4) var(--space-3);
 		background: var(--surface-near-black);
 		box-shadow: 2px 0 12px rgba(0,0,0,0.5);
 		transform: translateX(-100%);
@@ -959,7 +1064,7 @@ nav ul ul ul li {
 	/* Keep the hamburger above the drawer so it can be used to close it. */
 	.nav-toggle-btn {
 		position: relative;
-		z-index: 1001;
+		z-index: var(--layer-popover-above);
 	}
 	/* Stack the mega-menu vertically instead of absolute hover columns. */
 	.site-nav #newMenu,
@@ -994,7 +1099,7 @@ nav ul ul ul li {
 	.site-nav nav ul ul {
 		position: static;
 		display: block;
-		padding-left: 24px;
+		padding-left: var(--space-5);
 	}
 	.site-nav nav ul ul.newMenuLi4 {
 		display: none;
@@ -1032,7 +1137,7 @@ nav ul ul ul li {
 		justify-content: center;
 		width: 100%;
 		height: 48px;
-		padding: 0 8px;
+		padding: 0 var(--space-2);
 		box-sizing: border-box;
 		text-align: center;
 	}
@@ -1052,13 +1157,13 @@ nav ul ul ul li {
 	   and there is no empty space above the username. */
 	.site-nav__account {
 		display: block;
-		padding: 0 0 8px;
+		padding: 0 0 var(--space-2);
 		border-bottom: 1px solid var(--surface-border-strong);
-		margin-bottom: 8px;
+		margin-bottom: var(--space-2);
 	}
 	.site-nav__account-user {
 		font-size: 16px;
-		padding: 8px 8px 0;
+		padding: var(--space-2) var(--space-2) 0;
 		color: var(--color-white);
 	}
 	.site-nav__account-user a {

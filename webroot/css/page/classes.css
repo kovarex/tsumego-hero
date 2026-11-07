@@ -423,7 +423,7 @@ a[href="/sets"]
 {
 	width: 190px;
 	height: 120px;
-	margin: 8px;
+	margin: var(--space-2);
 	font: inherit;
 	font-size: 16px;
 	text-align: left;
