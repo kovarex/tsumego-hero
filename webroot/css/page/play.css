@@ -6,19 +6,11 @@
   }
 }
 #show,
-#show3,
 .selectable-text {
   font-size: 16px;
   color: var(--text-softer-color);
   text-decoration: underline;
   cursor: pointer;
-}
-.selectable-text--inline {
-  display: inline-block;
-}
-.status-message {
-  color: var(--color-red);
-  font-weight: var(--font-weight-heavy);
 }
 .message--locked {
   font-size: var(--font-size-lg);
@@ -30,17 +22,6 @@
 #openSgfLink,
 #showx99 {
   display: none;
-}
-#show2 {
-  font-size: 16px;
-  color: var(--text-softer-color);
-  text-decoration: underline;
-  cursor: pointer;
-}
-#show7 {
-  font-size: 16px;
-  text-decoration: underline;
-  cursor: pointer;
 }
 .sandboxTable2 {
   padding: 0;
@@ -108,16 +89,8 @@
   border-right: 1px solid var(--surface-border-strong);
   border-bottom: 1px solid var(--surface-border-strong);
   border-left: 1px solid var(--surface-border-light);
-  -moz-border-radius-bottomleft: 9px;
-  -moz-border-radius-bottomright: 9px;
-  border-radius-bottomleft: 9px;
-  border-radius-bottomright: 9px;
-  -moz-border-radius-bottomright: 9px;
-  -moz-border-radius-bottomleft: 9px;
   border-bottom-right-radius: 9px;
   border-bottom-left-radius: 9px;
-  -moz-border-radius-topright: 9px;
-  -moz-border-radius-topleft: 9px;
   border-top-right-radius: 9px;
   border-top-left-radius: 9px;
 }
@@ -156,26 +129,6 @@
     rgba(33, 33, 33, 0.2)
   ) !important;
 }
-#ans {
-  position: absolute;
-  left: 835px;
-  top: 665px;
-  background-color: var(--color-white);
-  border: 1px solid var(--color-black);
-  padding: 5px;
-}
-#ans2 {
-  color: var(--feedback-error);
-  padding: 4px 0 0 45px;
-}
-#ansBig {
-  position: absolute;
-  left: 835px;
-  top: 960px;
-  background-color: var(--color-white);
-  border: 1px solid var(--color-black);
-  padding: 5px;
-}
 .display1 {
   font-size: 20px;
 }
@@ -186,15 +139,6 @@
 }
 #playTitleA { color: var(--text-color); }
 #descriptionText { color: var(--text-softer-color); }
-.sandboxTable {
-  font-size: 16px;
-}
-.sandboxTable a {
-  font-size: 16px;
-}
-.sandboxTable td {
-  vertical-align: text-top;
-}
 h1 {
   font-family: var(--font-family-display);
   letter-spacing: 1px;
@@ -203,11 +147,6 @@ h1 {
   font-variant: normal;
   font-weight: 400;
   line-height: 19.8px;
-}
-.add-tag-list {
-  color: var(--text-softer-color);
-  font-size: 14px;
-  display: none;
 }
 .add-tag-list-anchor {
   color: var(--text-softer-color);
@@ -233,26 +172,6 @@ h1 {
   padding: 20px;
   text-align: center;
 }
-#sandboxLink {
-  color: var(--color-green);
-  position: absolute;
-  left: 419px;
-  width: 179px;
-  height: 46px;
-  top: 80px;
-  display: none;
-  background-color: var(--color-gray);
-  padding: 3px 0px 1px 29px;
-  font-family: var(--font-family-display);
-  letter-spacing: 1px;
-  font-size: 24px;
-  font-weight: 700;
-  z-index: 5;
-  cursor: pointer;
-}
-#sandboxLink li a {
-  color: var(--color-green);
-}
 .xpDisplay { align:center; color: var(--color-black); }
 .solvedXpDisplay { color: var(--color-green); }
 .goldenTsumegoXpDisplay { color: var(--color-gold); font-weight:800; text-shadow: 0 0 6px rgba(218, 165, 32, 0.4); }
@@ -276,10 +195,6 @@ h1 {
 }
 .eloTooltip:hover .eloTooltiptext {
   visibility: visible;
-}
-#mode-text {
-  color: var(--color-purple-ink);
-  font-weight: 800;
 }
 .besogo-board {
   /* Do NOT force the width here: besogo's JS sets an inline width per
@@ -305,9 +220,6 @@ h1 {
   justify-content: center;
   margin: 15px 15px 2px 15px;
 }
-.besogo-file #openButton {
-  background-color: var(--surface-button);
-}
 .besogo-tsumegoPlayTool input[type="button"],
 .besogo-file input[type="button"] {
   font-size: 16px;
@@ -324,16 +236,8 @@ h1 {
   border-bottom: 1px solid var(--surface-border-strong);
   border-left: 1px solid var(--surface-border-light);
   text-transform: uppercase;
-  -moz-border-radius-bottomleft: 9px;
-  -moz-border-radius-bottomright: 9px;
-  border-radius-bottomleft: 9px;
-  border-radius-bottomright: 9px;
-  -moz-border-radius-bottomright: 9px;
-  -moz-border-radius-bottomleft: 9px;
   border-bottom-right-radius: 9px;
   border-bottom-left-radius: 9px;
-  -moz-border-radius-topright: 9px;
-  -moz-border-radius-topleft: 9px;
   border-top-right-radius: 9px;
   border-top-left-radius: 9px;
   cursor: pointer;
@@ -355,16 +259,8 @@ h1 {
   border-bottom: 1px solid var(--surface-border-strong);
   border-left: 1px solid var(--surface-border-light);
   text-transform: uppercase;
-  -moz-border-radius-bottomleft: 9px;
-  -moz-border-radius-bottomright: 9px;
-  border-radius-bottomleft: 9px;
-  border-radius-bottomright: 9px;
-  -moz-border-radius-bottomright: 9px;
-  -moz-border-radius-bottomleft: 9px;
   border-bottom-right-radius: 9px;
   border-bottom-left-radius: 9px;
-  -moz-border-radius-topright: 9px;
-  -moz-border-radius-topleft: 9px;
   border-top-right-radius: 9px;
   border-top-left-radius: 9px;
   cursor: pointer;
@@ -388,16 +284,8 @@ h1 {
   border-left: 1px solid var(--surface-border-light);
   border-color: var(--surface-button-inactive);
   text-transform: none;
-  -moz-border-radius-bottomleft: 9px;
-  -moz-border-radius-bottomright: 9px;
-  border-radius-bottomleft: 9px;
-  border-radius-bottomright: 9px;
-  -moz-border-radius-bottomright: 9px;
-  -moz-border-radius-bottomleft: 9px;
   border-bottom-right-radius: 9px;
   border-bottom-left-radius: 9px;
-  -moz-border-radius-topright: 9px;
-  -moz-border-radius-topleft: 9px;
   border-top-right-radius: 9px;
   border-top-left-radius: 9px;
   cursor: pointer;
@@ -442,18 +330,6 @@ h1 {
 #time-mode2,
 #time-mode3 {
   height: 900px;
-}
-#settingsToggle {
-  margin: 0 22px;
-  cursor: pointer;
-}
-#settingsText {
-  color: var(--color-gray-dark);
-  font-size: 18px;
-}
-#cog {
-  position: relative;
-  top: 3px;
 }
 .besogo-container {
   flex-wrap: wrap;
@@ -549,16 +425,8 @@ h1 {
   border-bottom: 1px solid var(--surface-border-strong);
   border-left: 1px solid var(--surface-border-light);
   text-transform: uppercase;
-  -moz-border-radius-bottomleft: 9px;
-  -moz-border-radius-bottomright: 9px;
-  border-radius-bottomleft: 9px;
-  border-radius-bottomright: 9px;
-  -moz-border-radius-bottomright: 9px;
-  -moz-border-radius-bottomleft: 9px;
   border-bottom-right-radius: 9px;
   border-bottom-left-radius: 9px;
-  -moz-border-radius-topright: 9px;
-  -moz-border-radius-topleft: 9px;
   border-top-right-radius: 9px;
   border-top-left-radius: 9px;
 }
@@ -593,34 +461,15 @@ h1 {
 #besogo-review-button:hover {
   background-color: var(--color-red-muted);
 }
-#commentPosition {
-  margin-top: 10px;
-  margin-bottom: 17px;
-  font-size: 16px;
-  color: var(--text-softer-color);
-  text-decoration: underline;
-  cursor: pointer;
-}
-.positionIcon1 {
-  position: relative;
-  top: 2px;
-  cursor: pointer;
-}
 #levelBarDisplay1 {
   width: 15px;
   height: 15px;
   accent-color: var(--color-green);
 }
-#levelBarDisplay1text {
-  color: var(--color-green);
-}
 #levelBarDisplay2 {
   width: 15px;
   height: 15px;
   accent-color: var(--color-purple-3);
-}
-#levelBarDisplay2text {
-  color: var(--color-purple-3);
 }
 .slidecontainer {
   transform: translateY(-10px);
@@ -706,9 +555,6 @@ h1 {
 	background-color: var(--surface-button);
 }
 [data-theme="dark"] #show,
-[data-theme="dark"] #show2,
-[data-theme="dark"] #commentPosition,
-[data-theme="dark"] #show3,
 [data-theme="dark"] .selectable-text {
 	color: var(--link-color);
 }
@@ -718,14 +564,8 @@ h1 {
 [data-theme="dark"] #levelBarDisplay1 {
 	accent-color: var(--color-green);
 }
-[data-theme="dark"] #levelBarDisplay1text {
-	color: var(--color-green);
-}
 [data-theme="dark"] #levelBarDisplay2 {
 	accent-color: var(--color-mode-rating);
-}
-[data-theme="dark"] #levelBarDisplay2text {
-	color: var(--color-mode-rating);
 }
 [data-theme="dark"] .xpDisplay {
 	align: center;
@@ -772,13 +612,6 @@ h1 {
   flex-direction: column;
   row-gap: 2px;
   padding: 2px;
-}
-
-/* Responsive */
-@media (width < 81.25rem) {
-	#sandboxLink {
-		top: 68px;
-	}
 }
 
 /* Mobile: stack the besogo control/tool panels and let the board fill the
