@@ -773,7 +773,21 @@ nav ul ul ul li {
   background-image: var(--color-purple-btn-gradient);
 }
 .xpDisplayTable {
+  width: 70%;
   text-align: center;
+}
+.xpDisplayTable__third {
+  width: 33%;
+}
+/* The rating of the problem under the board: <font size="4"> was large */
+.status-rating {
+  font-size: large;
+}
+.status-rating__number {
+  color: grey;
+}
+.discuss-disabled__link {
+  color: var(--surface-muted-text);
 }
 /* The theme icon comes from the theme token, so it follows the palette without a
    second file to load or a src the script would have to swap. Its width is in rem,
@@ -903,7 +917,6 @@ nav ul ul ul li {
 }
 
 /* Dark overrides */
-[data-theme="dark"] #status2 font font,
 [data-theme="dark"] .titleDescription1 font {
 	color: var(--color-gray);
 }

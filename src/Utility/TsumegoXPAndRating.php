@@ -24,10 +24,10 @@ class TsumegoXPAndRating
 
 	public function render(): void
 	{
-		echo '<div align="center" id="xpDisplayDiv">
-		<table class="xpDisplayTable" border="0" width="70%">
+		echo '<div class="legacy-center" id="xpDisplayDiv">
+		<table class="xpDisplayTable">
 			<tr>
-			<td style="width:33%;">';
+			<td class="xpDisplayTable__third">';
 		echo '
 	<div id="xpDisplay">
 		<span id="xpDisplayText"></span>
@@ -38,14 +38,14 @@ class TsumegoXPAndRating
 		if (Auth::isInTimeMode())
 			echo '<div id="time-mode-countdown">10.0</div><div id="plus2">+2</div>';
 		echo '</td>
-			<td style="width:33%;">
-				<div id="status" align="center"></div>
+			<td class="xpDisplayTable__third">
+				<div id="status" class="legacy-center"></div>
 			</td>
-			<td style="width:33%;">
-				<div id="status2" align="center">
-				<font size="4">
-				' . Rating::getReadableRankFromRating($this->tsumegoRating) . ' <font color="grey">(' . $this->tsumegoRating . ')</font>
-				</font>
+			<td class="xpDisplayTable__third">
+				<div id="status2" class="legacy-center">
+				<span class="status-rating">
+				' . Rating::getReadableRankFromRating($this->tsumegoRating) . ' <span class="status-rating__number">(' . $this->tsumegoRating . ')</span>
+				</span>
 				</div>
 			</td>
 			</tr>

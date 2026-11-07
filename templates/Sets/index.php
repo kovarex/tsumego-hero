@@ -20,7 +20,7 @@ use App\Utility\ViteManifest;
  * @var array $rankFilterLabels
  */
 ?>
-	<div align="center" class="set-search-menu query-<?php echo h($tsumegoFilters->query); ?>">
+	<div class="legacy-center set-search-menu query-<?php echo h($tsumegoFilters->query); ?>">
 		<div class="set-buttons-left">
 			<div class="set-buttons">
 				<button id="topics-button" class="btn btn-link collapsed set-search" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
@@ -31,7 +31,7 @@ use App\Utility\ViteManifest;
 						<?php echo $this->element('filter_chevron'); ?>
 					</div>
 				</button>
-				<div align="left" id="dropdown-topics" class="dropdown__menu dropdown__menu--filters">
+				<div class="legacy-left" id="dropdown-topics" class="dropdown__menu dropdown__menu--filters">
 					<?php
 						for($i = 0; $i < count($setTiles); $i++)
 							echo '<div class="dropdown__tile" id="tile-topics' . $i . '">' . h($setTiles[$i]) . '</div>';
@@ -54,7 +54,7 @@ use App\Utility\ViteManifest;
 						<?php echo $this->element('filter_chevron'); ?>
 					</div>
 				</button>
-				<div align="left" id="dropdown-difficulty" class="dropdown__menu dropdown__menu--filters">
+				<div class="legacy-left" id="dropdown-difficulty" class="dropdown__menu dropdown__menu--filters">
 					<?php
 						for($i = 0; $i < count($difficultyTiles); $i++)
 							echo '<div class="dropdown__tile dropdown__tile--difficulty" id="tile-difficulty' . $i . '" style="--rank-color:' . Rating::rankColorVar($difficultyTiles[$i]) . '">' . h($difficultyTiles[$i]) . '</div>';
@@ -100,7 +100,7 @@ use App\Utility\ViteManifest;
 						<?php echo $this->element('filter_chevron'); ?>
 					</div>
 				</button>
-				<div align="left" id="dropdown-tags" class="dropdown__menu dropdown__menu--filters">
+				<div class="legacy-left" id="dropdown-tags" class="dropdown__menu dropdown__menu--filters">
 					<?php
 						for($i = 0; $i < count($tagTiles); $i++)
 							echo '<div class="dropdown__tile" id="tile-tags' . $i . '">' . h($tagTiles[$i]) . '</div>';
@@ -124,13 +124,13 @@ use App\Utility\ViteManifest;
 				<input id="set-size-input" type="number" value="<?php echo $tsumegoFilters->collectionSize; ?>" step="<?php echo Constants::$COLLECTION_SIZE_STEP; ?>" min="<?php echo Constants::$MIN_COLLECTION_SIZE; ?>" max="<?php echo Constants::$MAX_COLLECTION_SIZE; ?>" name="collection_size">
 			</div>
 			<div class="set-buttons">
-			<input type="submit" id="submit-size-button" class="btn btn-link collapsed set-search" style="width:70px;" value="Submit">
+			<input type="submit" id="submit-size-button" class="btn btn-link collapsed set-search set-search__submit" value="Submit">
 			</div>
 		</div>
 		</form>
 	</div>
 	<div class="active-tiles-container"></div>
-	<div align="center" class="set-index display1">
+	<div class="legacy-center set-index display1">
 	<?php
 	if($lightDark == 'light')
 		$lightDarkBoxes = '4';

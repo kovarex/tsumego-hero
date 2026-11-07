@@ -10,7 +10,7 @@ use App\Utility\Level;
  */
 
 ?>
-<div align="center" class="highscore">
+<div class="legacy-center highscore">
 <?php echo $this->element('highscore_nav', ['activeTab' => 'level']); ?>
 
 <?php echo HighscoreHelper::renderTable(

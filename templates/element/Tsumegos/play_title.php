@@ -24,11 +24,11 @@ $order = $setConnection->num;
 ?>
 <?php if ($classroomAssignment !== null): ?>
 	<a id="playTitleA" href="/classes/<?php echo (int) $classroomAssignment['classroom_id']; ?>"><?php echo h(ClassroomAssignmentTable::title($classroomAssignment)) . ' ' . $tsumegoButtons->currentOrder . '/' . $tsumegoButtons->highestTsumegoOrder; ?></a><br>
-	<font style="font-weight:400;" color="grey">
-		<a style="color:grey;" class="play-title__origin" href="<?php echo SetTable::url($set->id); ?>">(<?php echo h($set->title) . ' ' . $order . '/' . $amountOfOtherCollection; ?>)</a>
-	</font>
+	<span class="play-title__origin-line">
+		<a class="play-title__origin" href="<?php echo SetTable::url($set->id); ?>">(<?php echo h($set->title) . ' ' . $order . '/' . $amountOfOtherCollection; ?>)</a>
+	</span>
 <?php elseif (Auth::isInTimeMode()): ?>
-	<font size="5px"><?php echo $timeMode->currentPosition() . ' of ' . $timeMode->overallCount; ?></font>
+	<span class="play-title__time-mode"><?php echo $timeMode->currentPosition() . ' of ' . $timeMode->overallCount; ?></span>
 <?php elseif (Auth::isInRatingMode()): ?>
 	<div class="slidecontainer">
 		<input type="range" min="1" max="7" value="<?php echo h((string) $difficulty); ?>" class="slider" id="rangeInput" name="rangeInput">
@@ -39,9 +39,9 @@ $order = $setConnection->num;
 	<a id="playTitleA" href="<?php echo MistakeTraining::$OVERVIEW_LINK; ?>">Mistake Training <?php echo ($tsumegoButtons->currentOrder ?? 0) . '/' . ($tsumegoButtons->highestTsumegoOrder ?? 0); ?></a>
 <?php elseif ($tsumegoFilters->query == 'difficulty' || $tsumegoFilters->query == 'tags'): ?>
 	<a id="playTitleA" href="<?php echo SetTable::url($tsumegoFilters->getSetID($set), $tsumegoButtons?->getPartition() ?? 1); ?>"><?php echo h($queryTitle); ?></a><br>
-	<font style="font-weight:400;" color="grey">
-		<a style="color:grey;" class="play-title__origin" href="<?php echo SetTable::url($set->id); ?>">(<?php echo h($set->title) . ' ' . $order . '/' . $amountOfOtherCollection; ?>)</a>
-	</font>
+	<span class="play-title__origin-line">
+		<a class="play-title__origin" href="<?php echo SetTable::url($set->id); ?>">(<?php echo h($set->title) . ' ' . $order . '/' . $amountOfOtherCollection; ?>)</a>
+	</span>
 <?php else: ?>
 	<a id="playTitleA" href="<?php echo SetTable::url($set->id, $tsumegoButtons?->getPartition() ?? 1); ?>"><?php echo h($set->title) . ' ' . $tsumegoButtons?->getPartitionTitleSuffix() . ' ' . $order . '/' . $tsumegoButtons?->highestTsumegoOrder; ?></a>
 <?php endif; ?>

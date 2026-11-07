@@ -138,6 +138,11 @@
   color: var(--text-color);
 }
 #playTitleA { color: var(--text-color); }
+/* The collection a problem of a class or a query comes from */
+.play-title__origin-line { font-weight: 400; }
+.play-title__origin { color: grey; }
+/* <font size="5px"> was x-large */
+.play-title__time-mode { font-size: x-large; }
 #descriptionText { color: var(--text-softer-color); }
 h1 {
   font-family: var(--font-family-display);

@@ -30,6 +30,13 @@
 	text-align: -webkit-center;
 }
 
+/* What align="left" inside a centred block did */
+.legacy-left
+{
+	text-align: -moz-left;
+	text-align: -webkit-left;
+}
+
 /* A form that sits in a line of text */
 .inline-form
 {

@@ -125,9 +125,9 @@ $friendsBadge = $friendRequests > 0
 	? ' <span class="messages-unread-count" title="Players asking to be your friend">' . $friendRequests . '</span>'
 	: '';
 ?>
-<div id="container" align="center">
+<div id="container" class="legacy-center">
 	<div class="whitebox1">
-		<div align="left">
+		<div class="legacy-left">
 			<a href="/">
 				<img id="logo1" alt="Tsumego Hero" title="Tsumego Hero" src="/img/tsumegoHero1.png" onmouseover="this.src='/img/tsumegoHero2.png'" onmouseout="this.src='/img/tsumegoHero1.png'" height="55px">
 			</a>
@@ -211,7 +211,7 @@ $friendsBadge = $friendRequests > 0
 						<?php if (Auth::isLoggedIn()): ?>
 						<li><a class="<?php echo $active('discuss'); ?>" href="/comments<?php echo Auth::isAdmin() ? '?filter=false' : ''; ?>">Discuss</a></li>
 						<?php else: ?>
-						<li class="discuss-disabled"><a style="color:var(--surface-muted-text);">Discuss</a></li>
+						<li class="discuss-disabled"><a class="discuss-disabled__link">Discuss</a></li>
 						<?php endif; ?>
 						<li class="menuIcons1">
 							<a href="#" id="soundButton" onclick="changeSound(); return false;"><img id="soundButtonImage" src="/img/<?php echo $soundSetting === 'off' ? 'sound-icon2.png' : 'sound-icon1.png'; ?>" width="25px"></a>
@@ -224,9 +224,9 @@ $friendsBadge = $friendRequests > 0
 								<input class="dropdown__open" type="checkbox" id="board-picker-toggle" style="display:none;">
 								<label for="board-picker-toggle" class="dropdown__overlay"></label>
 								<div class="dropdown__menu">
-									<table id="dropdowntable" border="0"></table>
+									<table id="dropdowntable"></table>
 									<br>
-									<div id="dropdowntable2" align="center">
+									<div id="dropdowntable2" class="legacy-center">
 										<a class="btn btn--primary" href="<?php echo h(Util::requestUri()); ?>">Save</a>
 										<br><br>
 									</div>
@@ -247,7 +247,7 @@ $friendsBadge = $friendRequests > 0
 	<?php if (Auth::isLoggedIn()): ?>
 		<?php echo $this->element('account_widget', ['bar' => AccountWidget::bar($timeMode), 'unreadMessageCount' => $unreadMessageCount, 'friendsBadge' => $friendsBadge]); ?>
 	<?php endif; ?>
-	<div align="left" class="whitebox2">
+	<div class="legacy-left whitebox2">
 		<div id="content">
 			<?php
 			echo CookieFlash::render();
