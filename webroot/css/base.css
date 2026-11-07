@@ -38,6 +38,19 @@
 		font-family: var(--font-family-code);
 	}
 
+	*,
+	::before,
+	::after
+	{
+		box-sizing: border-box;
+	}
+
+	figure,
+	ul ul
+	{
+		margin: 0;
+	}
+
 	h1,
 	h2,
 	h3,
@@ -48,14 +61,54 @@
 		font-family: var(--font-family-heading);
 	}
 
+	h2
+	{
+		font-size: clamp(22px, 1.1rem + 1vw, 28px);
+		font-style: normal;
+		font-variant: normal;
+		font-weight: 600;
+		line-height: 1.2;
+	}
+
+	h3
+	{
+		font-size: clamp(16px, 0.9rem + 0.6vw, 20px);
+		font-style: normal;
+		font-variant: normal;
+		font-weight: 400;
+		line-height: 1.2;
+	}
+
+	h4
+	{
+		font-size: clamp(17px, 1rem + 0.5vw, 21px);
+		font-weight: 600;
+		margin-bottom: 10px;
+		margin-top: 0px;
+	}
+
+	pre
+	{
+		font-size: 18px;
+		color: var(--color-white);
+	}
+
 	a
 	{
-		color: var(--link-color);
+		color: var(--color-link);
 	}
 
 	a:hover
 	{
 		text-decoration: none;
+	}
+
+	/* The ring around what the keyboard acts on. A mouse click on a button or a link doesn't
+	   match :focus-visible, so only keyboard users see it; a text field shows it as you type. */
+	:focus-visible
+	{
+		outline: 2px solid var(--color-focus);
+		outline-offset: 2px;
 	}
 
 	/* Fluid media: never let an image/video overflow the viewport.
@@ -88,19 +141,26 @@
 		text-decoration: none;
 	}
 
-ul
-{
-	list-style-type: none;
-	margin: 0;
-	padding: 0;
-}
+	ul
+	{
+		list-style-type: none;
+		margin: 0;
+		padding: 0;
+	}
+
+	/* The items of the old menus sit side by side; a list that wants them stacked says so in its own rule */
+	li
+	{
+		list-style-type: none;
+		float: left;
+	}
 
 	/* FormHelper (CakePHP) element defaults. The design-system form styling
 	   uses the .form-field component; these raw-element defaults cover forms
 	   that emit stock FormHelper markup (login, add-user, create/edit set). */
 	fieldset
 	{
-		border: 1px solid var(--current-border-color);
+		border: 1px solid var(--color-border);
 		border-radius: var(--radius-sm);
 		padding: var(--space-3);
 		margin-bottom: var(--space-4);
@@ -110,7 +170,7 @@ ul
 	{
 		font-weight: var(--font-weight-bold);
 		padding: 0 var(--space-1);
-		color: var(--text-color);
+		color: var(--color-text);
 	}
 
 	label
@@ -118,7 +178,7 @@ ul
 		display: block;
 		font-weight: var(--font-weight-bold);
 		margin-bottom: var(--space-1);
-		color: var(--text-color);
+		color: var(--color-text);
 	}
 
 	input[type="text"],
@@ -131,9 +191,9 @@ ul
 	{
 		width: 100%;
 		box-sizing: border-box;
-		background: var(--surface-bar);
-		color: var(--text-color);
-		border: 1px solid var(--current-border-color);
+		background: var(--color-surface-sunken);
+		color: var(--color-text);
+		border: 1px solid var(--color-border);
 		border-radius: var(--radius-sm);
 		padding: var(--space-2);
 		font: inherit;
@@ -141,13 +201,13 @@ ul
 
 	form .error
 	{
-		color: var(--feedback-error);
+		color: var(--color-danger);
 		font-size: var(--font-size-sm);
 	}
 
 	form .required label::after
 	{
 		content: " *";
-		color: var(--feedback-error);
+		color: var(--color-danger);
 	}
 }
