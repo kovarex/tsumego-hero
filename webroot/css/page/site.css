@@ -815,7 +815,9 @@ nav ul ul ul li {
   border-radius: var(--radius-sm);
   font-size: 12px;
   margin-bottom: var(--space-3);
-  border: 1px solid;
+  /* Width and style only, so the border colour of .alert-error etc. above is not reset */
+  border-width: 1px;
+  border-style: solid;
 }
 
 /* ── Error page (templates/Error/error.php): the code faint and big behind the title ── */
