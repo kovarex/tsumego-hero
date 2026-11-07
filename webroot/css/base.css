@@ -58,6 +58,14 @@
 		text-decoration: none;
 	}
 
+	/* The ring around what the keyboard acts on. A mouse click on a button or a link doesn't
+	   match :focus-visible, so only keyboard users see it; a text field shows it as you type. */
+	:focus-visible
+	{
+		outline: 2px solid var(--color-focus);
+		outline-offset: 2px;
+	}
+
 	/* Fluid media: never let an image/video overflow the viewport.
 	   height:auto keeps the aspect ratio when the width shrinks (prevents CLS
 	   when explicit dimensions are set elsewhere). */
