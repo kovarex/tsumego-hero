@@ -23,10 +23,12 @@ class PlayTimingBrowserTest extends IntegrationTestCase
 		usleep(300000);
 		$browser->get('sets');
 
+		// the last three: the page a previous test left the browser on sends its own when the test leaves it
+		$expected = ['problem_open', 'result_post', 'problem_next'];
 		$samples = [];
-		for ($wait = 0; $wait < 50 && count($samples) < 3; $wait++, usleep(100000))
-			$samples = Util::query('SELECT metric, milliseconds, server_milliseconds, mode FROM rum_sample ORDER BY id');
-		$this->assertSame(['problem_open', 'result_post', 'problem_next'], array_column($samples, 'metric'));
+		for ($wait = 0; $wait < 50 && array_column($samples, 'metric') !== $expected; $wait++, usleep(100000))
+			$samples = array_slice(Util::query('SELECT metric, milliseconds, server_milliseconds, mode FROM rum_sample ORDER BY id'), -3);
+		$this->assertSame($expected, array_column($samples, 'metric'));
 		foreach ($samples as $sample)
 		{
 			$this->assertGreaterThan(0, (int) $sample['milliseconds'], $sample['metric']);
