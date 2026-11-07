@@ -2,7 +2,6 @@
 
 namespace App;
 
-use App\Middleware\ServerTimingMiddleware;
 use Cake\Core\Configure;
 use Cake\Error\Middleware\ErrorHandlerMiddleware;
 use Cake\Http\BaseApplication;
@@ -17,7 +16,6 @@ class Application extends BaseApplication
 	public function middleware(MiddlewareQueue $middlewareQueue): MiddlewareQueue
 	{
 		return $middlewareQueue
-			->add(new ServerTimingMiddleware())
 			->add(new ErrorHandlerMiddleware(Configure::read('Error'), $this))
 			->add(new AssetMiddleware(['cacheTime' => Configure::read('Asset.cacheTime')]))
 			->add(new RoutingMiddleware($this))

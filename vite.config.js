@@ -167,7 +167,7 @@ export default defineConfig({
 		legacyBundlePlugin('app', LEGACY_APP_FILES),
 		legacyBundlePlugin('besogo', LEGACY_BESOGO_FILES, { minify: false }),
 		//The play page's own script, apart from the data the page prints (see templates/Tsumegos/play.php)
-		legacyBundlePlugin('play', ['webroot/js/PlayTiming.js', 'webroot/js/PlayPage.js']),
+		legacyBundlePlugin('play', ['webroot/js/PlayPage.js']),
 		//The board of the play page, loaded right after its <div> so that the first paint has it
 		legacyBundlePlugin('play-board', ['webroot/js/PlayBoard.js']),
 		legacyBundlePlugin('profile', ['webroot/js/ProfilePage.js']),
