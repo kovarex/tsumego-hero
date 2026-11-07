@@ -818,7 +818,7 @@
 
 .dropdown__tile--muted
 {
-	background-color: #33333388;
+	background-color: var(--dropdown-tile-muted);
 }
 
 .dropdown__tile--context
@@ -826,10 +826,6 @@
 	cursor: context-menu;
 }
 
-[data-theme=dark] .dropdown__tile--muted
-{
-	background-color: var(--surface-translucent);
-}
 
 .dropdown__tile-actions
 {
@@ -1225,6 +1221,7 @@
 
 .toast__body
 {
+	color: var(--toast-text);
 	display: table;
 	margin: 10px;
 	width: 100%;
@@ -1253,9 +1250,6 @@
 	width: 40px;
 }
 
-[data-theme="dark"] .toast__body {
-	color: var(--color-black);
-}
 
 /* ── Charts (app/charts): the line chart and the bar chart share the title, legend and tooltip ── */
 .chart {

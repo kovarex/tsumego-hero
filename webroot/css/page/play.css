@@ -8,7 +8,7 @@
 #show,
 .selectable-text {
   font-size: 16px;
-  color: var(--text-softer-color);
+  color: var(--play-link);
   text-decoration: underline;
   cursor: pointer;
 }
@@ -17,7 +17,7 @@
 }
 .sandboxTable2time {
   vertical-align: top;
-  color: var(--text-softer-color);
+  color: var(--play-comment-time);
 }
 #openSgfLink,
 #showx99 {
@@ -105,8 +105,8 @@
   display: none;
 }
 #sandbox {
-  color: var(--color-black);
-  background-color: var(--color-white);
+  color: var(--play-sandbox-text);
+  background-color: var(--play-sandbox-background);
   border: 1px solid var(--color-black);
   padding: 10px;
   width: 100%;
@@ -172,10 +172,10 @@ h1 {
   padding: 20px;
   text-align: center;
 }
-.xpDisplay { align:center; color: var(--color-black); }
-.solvedXpDisplay { color: var(--color-green); }
-.goldenTsumegoXpDisplay { color: var(--color-gold); font-weight:800; text-shadow: 0 0 6px rgba(218, 165, 32, 0.4); }
-.sprintXpDisplay { color: var(--color-blue); }
+.xpDisplay { align:center; color: var(--xp-display); }
+.solvedXpDisplay { color: var(--xp-display-solved); }
+.goldenTsumegoXpDisplay { color: var(--xp-display-golden); font-weight:800; text-shadow: 0 0 6px rgba(218, 165, 32, 0.4); }
+.sprintXpDisplay { color: var(--xp-display-sprint); }
 .eloTooltip {
   position: relative;
   display: inline-block;
@@ -209,11 +209,8 @@ h1 {
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
 }
-[data-theme="light"] .besogo-board-red-glow {
-  box-shadow: 0 2px 14px 0 rgba(183, 19, 19, 0.8), 0 6px 20px 0 rgba(183, 19, 19, 0.2) !important;
-}
-[data-theme="dark"] .besogo-board-red-glow {
-  box-shadow: 0 2px 14px 0 rgb(225, 34, 34), 0 6px 20px 0 rgba(253, 59, 59, 0.58) !important;
+.besogo-board-red-glow {
+  box-shadow: var(--board-red-glow) !important;
 }
 .besogo-tsumegoPlayTool {
   display: flex;
@@ -469,7 +466,7 @@ h1 {
 #levelBarDisplay2 {
   width: 15px;
   height: 15px;
-  accent-color: var(--color-purple-3);
+  accent-color: var(--play-rating-bar-accent);
 }
 .slidecontainer {
   transform: translateY(-10px);
@@ -527,6 +524,12 @@ h1 {
   border: thick double var(--color-gray);
   width: fit-content;
   min-width: 300px;
+  color: var(--play-dark-text);
+}
+#multipleChoiceText,
+#potionAlerts,
+#customAlerts {
+  color: var(--play-dark-text);
 }
 #xpDisplayDiv {
   height: 48px;
@@ -539,51 +542,14 @@ h1 {
    Tsumego Comments & Issues Styling
    ============================================================================= */
 
-[data-theme=dark] .besogo-tree-line {
-  stroke: var(--text-on-dark);
+.besogo-tree-line {
+  stroke: var(--board-tree-line);
 }
 
-/* Dark overrides */
+/* The board themes (board-dark.css) set the background of the board box, and a rule in the
+   light theme would cover it, so this one stays a dark-only rule. */
 [data-theme="dark"] .besogo-container {
 	background: var(--info-box-background);
-}
-[data-theme="dark"] .sandboxTable2time {
-	color: var(--text-on-dark-soft);
-}
-[data-theme="dark"] #sandbox {
-	color: var(--link-color);
-	background-color: var(--surface-button);
-}
-[data-theme="dark"] #show,
-[data-theme="dark"] .selectable-text {
-	color: var(--link-color);
-}
-[data-theme="dark"] #theComment {
-	color: var(--color-black);
-}
-[data-theme="dark"] #levelBarDisplay1 {
-	accent-color: var(--color-green);
-}
-[data-theme="dark"] #levelBarDisplay2 {
-	accent-color: var(--color-mode-rating);
-}
-[data-theme="dark"] .xpDisplay {
-	align: center;
-	color: var(--link-color);
-}
-[data-theme="dark"] .solvedXpDisplay {
-	color: var(--xp-solved);
-}
-[data-theme="dark"] .goldenTsumegoXpDisplay {
-	color: var(--xp-solved);
-}
-[data-theme="dark"] .sprintXpDisplay {
-	color: var(--xp-sprint);
-}
-[data-theme="dark"] #multipleChoiceText,
-[data-theme="dark"] #potionAlerts,
-[data-theme="dark"] #customAlerts {
-	color: var(--color-black);
 }
 
 /* The hearts, the title and the hero powers above the board, in three columns of the widths

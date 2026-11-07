@@ -39,7 +39,7 @@
   height: 200px;
   margin: 15px;
   box-shadow: 5px 5px 8px black;
-  background: linear-gradient(
+  background: var(--achievement-card-background, linear-gradient(
     180deg,
     rgb(99.608% 99.608% 99.608%) 0%,
     rgb(99.607% 99.607% 99.607%) 6.25%,
@@ -58,7 +58,7 @@
     rgb(81.907% 81.907% 81.907%) 87.5%,
     rgb(76.282% 76.282% 76.282%) 93.75%,
     rgb(69.412% 69.412% 69.412%) 100%
-  );
+  ));
 
   border-bottom-right-radius: 20px;
   border-bottom-left-radius: 20px;
@@ -73,7 +73,7 @@
   margin: 15px;
   box-shadow: 2px 2px 4px black;
 
-  background: linear-gradient(
+  background: var(--achievement-card-background, linear-gradient(
     0deg,
     rgb(0% 0% 0% / 0.3) 0%,
     rgb(44.897% 44.897% 44.897% / 0.4232177734375) 6.25%,
@@ -92,7 +92,7 @@
     rgb(98.347% 98.347% 98.347% / 0.9986328124999999) 87.5%,
     rgb(98.421% 98.421% 98.421% / 0.9998291015625) 93.75%,
     rgb(98.431% 98.431% 98.431%) 100%
-  );
+  ));
   border-bottom-right-radius: 20px;
   border-bottom-left-radius: 20px;
   border-top-right-radius: 20px;
@@ -196,7 +196,7 @@
   height: 241px;
   margin: 15px;
   box-shadow: 5px 5px 8px black;
-  background: linear-gradient(
+  background: var(--achievement-card-background, linear-gradient(
     0deg,
     rgb(0% 0% 0% / 0.3) 0%,
     rgb(44.897% 44.897% 44.897% / 0.4232177734375) 6.25%,
@@ -215,7 +215,7 @@
     rgb(98.347% 98.347% 98.347% / 0.9986328124999999) 87.5%,
     rgb(98.421% 98.421% 98.421% / 0.9998291015625) 93.75%,
     rgb(98.431% 98.431% 98.431%) 100%
-  );
+  ));
   border-bottom-right-radius: 20px;
   border-bottom-left-radius: 20px;
   border-top-right-radius: 20px;
@@ -355,11 +355,6 @@
 }
 
 /* Dark overrides */
-[data-theme="dark"] .achievement1,
-[data-theme="dark"] .achievement2,
-[data-theme="dark"] .achievementSmall {
-	background: var(--ach-silver-gradient);
-}
 [data-theme="dark"] #achievementWrapper font {
 	color: var(--text-softer-color);
 }
