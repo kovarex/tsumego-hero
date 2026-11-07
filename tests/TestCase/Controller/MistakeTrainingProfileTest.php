@@ -74,7 +74,7 @@ class MistakeTrainingProfileTest extends IntegrationTestCase
 	{
 		$day = $this->daysAgo($daysAgo);
 		$this->assertMatchesRegularExpression(
-			'/class="' . preg_quote($class, '/') . '" [^>]*data-day="' . $day . '" title="' . preg_quote(date('M j, Y', strtotime($day)) . ': ' . $description, '/') . '"/',
+			'/class="' . preg_quote($class, '/') . '" [^>]*data-day="' . $day . '" title="' . preg_quote($day . ': ' . $description, '/') . '"/',
 			$html
 		);
 	}

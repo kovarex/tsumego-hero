@@ -757,7 +757,7 @@ class MistakeTraining
 		return self::dayHtml($day);
 	}
 
-	//describeDay() with the date after a name, "Monday (Nov 10)", as HTML.
+	//describeDay() with the date after a name, "Monday (2026-11-10)", as HTML.
 	public static function describeDayWithDate(string $day): string
 	{
 		$name = self::describeDay($day);
@@ -765,12 +765,12 @@ class MistakeTraining
 		return $name === $date ? $date : $name . ' (' . $date . ')';
 	}
 
-	//A day of the training as the player's date format shows a day of the month (app/shared/dates.ts),
-	//with the ISO day in the element; the text is what shows before the script formats it.
+	//A day of the training in the player's date format (app/shared/dates.ts), with the ISO day in the
+	//element, which is also the text before the script formats it.
 	public static function dayHtml(string $day): string
 	{
 		$day = date('Y-m-d', strtotime($day));
-		return '<time datetime="' . $day . '" data-format="month-day">' . date('M j', strtotime($day)) . '</time>';
+		return '<time datetime="' . $day . '" data-format="date">' . $day . '</time>';
 	}
 
 	//Build the navigation buttons for today's training. One button per tsumego,
@@ -876,7 +876,7 @@ class MistakeTraining
 			return;
 		}
 		$button->label = 'Solved today';
-		$button->descriptionHtml = h($rungText . ', next review ') . self::describeDay(date('Y-m-d', strtotime($row['next_due']))) . '.';
+		$button->descriptionHtml = h($rungText . ', next review ') . self::describeDayWithDate(date('Y-m-d', strtotime($row['next_due']))) . '.';
 	}
 
 	//What a clean solve of a due problem would do, for its tooltip: graduate it at
