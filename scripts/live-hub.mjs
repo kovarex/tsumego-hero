@@ -6,7 +6,8 @@
 //  GET /live/sse?topics=challenge-123,challenge-456   text/event-stream
 //    event: stamp, data: {"topic": "challenge-123", "stamp": "<the content of the stamp, '' without one>"}
 //    once for each topic when the stream opens, then whenever a stamp changes; a comment every HEARTBEAT_MS.
-//It runs as a daemon of NearlyFreeSpeech behind the proxy of /live/sse (see the description of PR #720):
+//It runs as a daemon of NearlyFreeSpeech behind the proxy of /live/sse (see the description of PR #720),
+//through its run script scripts/live-hub.sh, or anywhere as
 //  node scripts/live-hub.mjs
 //with the environment (all optional):
 //  LIVE_HUB_PORT             the local port to listen on, 8091
