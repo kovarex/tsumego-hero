@@ -85,6 +85,56 @@ class RatingModeControllerTest extends IntegrationTestCase
 			$this->pickedTsumegoIDs(30));
 	}
 
+	//With every problem in range solved, an unsolved one a bit out of range is better: a solved problem
+	//gives no rating or XP. The narrowest wider range that has one is taken.
+	public function testAnUnsolvedProblemOfAWiderRangeComesBeforeASolvedOneInRange(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'alice', 'rating' => 1000],
+			'tsumegos' => [
+				['rating' => 1000, 'status' => 'S', 'sets' => [['name' => 'set 1', 'num' => 1]]],
+				['rating' => 1400, 'sets' => [['name' => 'set 2', 'num' => 1]]],
+				['rating' => 1800, 'sets' => [['name' => 'set 3', 'num' => 1]]]]]);
+		$this->login('alice');
+
+		$this->assertSame([$context->tsumegos[1]['id']], $this->pickedTsumegoIDs());
+	}
+
+	//When even the widest range has only solved problems, they come before an unsolved one far away
+	public function testSolvedProblemsComeOnceTheWidestRangeHasNothingUnsolved(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'alice', 'rating' => 1000],
+			'tsumegos' => [
+				['rating' => 1000, 'status' => 'S', 'sets' => [['name' => 'set 1', 'num' => 1]]],
+				['rating' => 2200, 'sets' => [['name' => 'set 2', 'num' => 1]]]]]);
+		$this->login('alice');
+
+		$this->assertSame([$context->tsumegos[0]['id']], $this->pickedTsumegoIDs());
+	}
+
+	//A player far from every problem at the difficulty picked gets the closest problem, so they keep
+	//playing and keep the slider to change the difficulty on (it was a redirect to the collections,
+	//on every visit, as the difficulty can only be changed on the page of rating mode).
+	public function testTheClosestProblemIsPickedWhenNoneIsInRangeOfTheDifficulty(): void
+	{
+		foreach ([[100, 1, 0], [2700, 7, 2]] as [$rating, $difficulty, $closest])
+		{
+			$context = new ContextPreparator([
+				'user' => ['name' => 'alice', 'rating' => $rating],
+				'tsumegos' => [
+					['rating' => 300, 'sets' => [['name' => 'set 1', 'num' => 1]]],
+					['rating' => 1500, 'sets' => [['name' => 'set 2', 'num' => 1]]],
+					['rating' => 2600, 'sets' => [['name' => 'set 3', 'num' => 1]]]]]);
+			$this->login('alice');
+			// the slider of rating mode sets the cookie
+			$_COOKIE['difficulty'] = (string) $difficulty;
+
+			$this->assertSame([$context->tsumegos[$closest]['id']], $this->pickedTsumegoIDs(), "rating $rating, difficulty $difficulty");
+			$this->assertSame($difficulty, (int) $this->viewVariable('difficulty'));
+		}
+	}
+
 	//The distinct problems rating mode opened in the given number of visits, sorted by id.
 	private function pickedTsumegoIDs(int $picks = self::PICKS): array
 	{
