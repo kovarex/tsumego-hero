@@ -388,6 +388,8 @@
 		--paginator-info-text-color: #666;
 		--admin-text-color: #1010EE;
 		--color-surface: #fff;
+		/* The ring around what the keyboard acts on: at least 3:1 against the white box and the dark menu */
+		--color-focus: var(--color-blue);
 		--alert-success-bg: #e6f9e6;
 		--alert-success-fg: #1a5c1a;
 		--alert-error-bg: #fde8e8;
@@ -434,6 +436,7 @@
 		--paginator-info-text-color: #999;
 		--admin-text-color: #7EE0FF;
 		--color-surface: #2a2a2a;
+		--color-focus: #6db3f2;
 		--color-blue-accent: #6db3f2;
 		--color-blue-accent-hover: #9dd0ff;
 		--color-danger: #ff6b6b;

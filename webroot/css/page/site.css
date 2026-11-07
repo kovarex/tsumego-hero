@@ -348,31 +348,8 @@ li a.menuLi.nav__link--active {
   border-radius: 5px;
   -webkit-filter: blur(5px);
 }
-*:focus {
-  outline: none;
-}
 .sitesTable td {
   vertical-align: top;
-}
-h2 {
-  font-size: clamp(22px, 1.1rem + 1vw, 28px);
-  font-style: normal;
-  font-variant: normal;
-  font-weight: 600;
-  line-height: 1.2;
-}
-h3 {
-  font-size: clamp(16px, 0.9rem + 0.6vw, 20px);
-  font-style: normal;
-  font-variant: normal;
-  font-weight: 400;
-  line-height: 1.2;
-}
-h4 {
-  font-size: clamp(17px, 1rem + 0.5vw, 21px);
-  font-weight: 600;
-  margin-bottom: 10px;
-  margin-top: 0px;
 }
 #darkButton {
   cursor: pointer;
@@ -623,10 +600,6 @@ input.newCheck {
   margin: 0;
   white-space: nowrap;
 }
-pre {
-  font-size: 18px;
-  color: var(--color-white);
-}
 #time-mode-countdown {
   font-size: 21px;
   font-weight: 800;
@@ -818,10 +791,6 @@ nav ul ul ul li {
   background-position: center;
   background-size: contain;
 }
-li {
-  list-style-type: none;
-  float: left;
-}
 
 /* CookieFlash messages (CakePHP2 flash infrastructure) */
 .alert {
@@ -830,16 +799,6 @@ li {
   font-size: 12px;
   margin-bottom: 12px;
   border: 1px solid;
-}
-@charset "UTF-8";
-*,
-:after,
-:before {
-  box-sizing: border-box;
-}
-figure,
-ul ul {
-  margin: 0;
 }
 
 /* Dark overrides */
