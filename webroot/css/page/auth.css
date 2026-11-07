@@ -2,8 +2,7 @@
 {
 /* The two halves sit side by side and the card takes the height of the taller one, so
    a longer form (or a rendered Google button) grows the card instead of spilling out. */
-#login-box,
-#login-box2 {
+#login-box {
   display: flex;
   align-items: stretch;
   margin: 5% auto;
@@ -15,11 +14,6 @@
 #login-box {
   max-width: 690px;
   min-height: 450px;
-}
-#login-box2 {
-  max-width: 900px;
-  min-height: 670px;
-  margin-bottom: 25px;
 }
 /* ── Auth form (login / register / password pages) ── */
 .signin h1 {
@@ -103,8 +97,7 @@
    is dropped, it costs height below the form without telling anyone anything. */
 @media (width < 40rem)
 {
-	#login-box,
-	#login-box2 {
+	#login-box {
 		flex-direction: column;
 		min-height: 0;
 	}

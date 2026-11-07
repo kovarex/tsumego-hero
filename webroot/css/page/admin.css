@@ -1,8 +1,5 @@
 @layer page
 {
-.adminpanel-table-text {
-  max-width: 350px;
-}
 .adminpanel-link {
   overflow-wrap: anywhere;
 }

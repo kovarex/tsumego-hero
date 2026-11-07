@@ -10,10 +10,6 @@
   border-top: 1px solid var(--color-black);
   border-bottom: 1px solid var(--color-black);
 }
-.timeTableColor11 {
-  font-weight: 800;
-  background: var(--time-table-gradient);
-}
 .versionColor {
   background: var(--time-table-gradient);
 }
@@ -26,16 +22,8 @@
 }
 .tScoreTitle {
   padding: 5px;
-  -moz-border-radius-bottomleft: 7px;
-  -moz-border-radius-bottomright: 7px;
-  border-radius-bottomleft: 7px;
-  border-radius-bottomright: 7px;
-  -moz-border-radius-bottomright: 7px;
-  -moz-border-radius-bottomleft: 7px;
   border-bottom-right-radius: 7px;
   border-bottom-left-radius: 7px;
-  -moz-border-radius-topright: 7px;
-  -moz-border-radius-topleft: 7px;
   border-top-right-radius: 7px;
   border-top-left-radius: 7px;
   border: 1px solid var(--time-border);
@@ -56,16 +44,8 @@
 .timeModeTable3 {
   border: 1px solid var(--time-border);
   padding: 5px;
-  -moz-border-radius-bottomleft: 7px;
-  -moz-border-radius-bottomright: 7px;
-  border-radius-bottomleft: 7px;
-  border-radius-bottomright: 7px;
-  -moz-border-radius-bottomright: 7px;
-  -moz-border-radius-bottomleft: 7px;
   border-bottom-right-radius: 7px;
   border-bottom-left-radius: 7px;
-  -moz-border-radius-topright: 7px;
-  -moz-border-radius-topleft: 7px;
   border-top-right-radius: 7px;
   border-top-left-radius: 7px;
 }
@@ -88,10 +68,6 @@
 }
 
 /* Dark overrides */
-[data-theme="dark"] .timeTableColor11 {
-	color: var(--color-white);
-	background: var(--time-dark-gradient);
-}
 [data-theme="dark"] .timeModeTable2 {
 	color: var(--color-black);
 }
