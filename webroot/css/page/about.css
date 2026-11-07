@@ -148,7 +148,7 @@
 		flex-direction: column;
 	}
 	.timeline__event__icon {
-		margin: 0 0 12px;
+		margin: 0 0 var(--space-3);
 	}
 }
 
@@ -164,7 +164,7 @@
   transform: translate(-50%, -50%);
   max-width: 90vw;
   max-height: 90vh;
-  z-index: 9999;
+  z-index: var(--layer-overlay);
   pointer-events: none;
   border: 3px solid #333;
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);

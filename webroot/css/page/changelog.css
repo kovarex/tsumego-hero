@@ -118,13 +118,13 @@ a[href="/changelog"]
 	top: 2px;
 	right: 2px;
 	display: none;
-	padding: 0 4px;
+	padding: 0 var(--space-1);
 	font-size: var(--font-size-xs);
 	font-weight: var(--font-weight-bold);
 	line-height: 1.3;
 	color: #fff;
 	background: var(--color-red);
-	border-radius: 8px;
+	border-radius: var(--radius-md);
 }
 
 .nav__new-badge--visible

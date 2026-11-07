@@ -34,12 +34,12 @@
 	gap: 10px;
 }
 .tsumego-comments__tab {
-	padding: 8px 16px;
+	padding: var(--space-2) var(--space-4);
 	border: 1px solid var(--comment-tab-border);
 	background: var(--comment-tab-background);
 	color: var(--comment-tab-text);
 	cursor: pointer;
-	border-radius: 4px;
+	border-radius: var(--radius-sm);
 	font-family: var(--font-family-display);
 	font-size: 13px;
 }
@@ -76,12 +76,12 @@
 	margin-right: 2px;
 }
 .tsumego-comments__anchor-btn {
-	padding: 4px 12px;
+	padding: var(--space-1) var(--space-3);
 	border: 1px solid var(--current-border-color);
 	background: var(--surface-bar);
 	color: var(--text-softer-color);
 	cursor: pointer;
-	border-radius: 12px;
+	border-radius: var(--radius-lg);
 	font-family: Georgia, serif;
 	font-size: 12px;
 }
@@ -112,7 +112,7 @@
 /* Comment styling */
 
 .tsumego-comment {
-	margin-bottom: 8px;
+	margin-bottom: var(--space-2);
 }
 .tsumego-comment__author {
 	font-weight: bold;
@@ -231,7 +231,7 @@
 	margin: 20px 14px;
 	padding: 15px;
 	background: var(--comment-form-background);
-	border-radius: 8px;
+	border-radius: var(--radius-md);
 }
 .tsumego-comments__form h4 {
 	margin: 0 0 10px 0;
@@ -241,11 +241,11 @@
 .tsumego-comments__form textarea {
 	width: 100%;
 	min-height: 80px;
-	padding: 8px;
+	padding: var(--space-2);
 	background: var(--info-box-background);
 	color: var(--text-color);
 	border: 1px solid var(--comment-textarea-border);
-	border-radius: 4px;
+	border-radius: var(--radius-sm);
 	resize: vertical;
 	font-size: 13px;
 	box-sizing: border-box;
@@ -255,7 +255,7 @@
 	font-size: 11px;
 	color: var(--text-softer-color);
 	margin-top: 2px;
-	margin-bottom: 8px;
+	margin-bottom: var(--space-2);
 }
 .tsumego-comments__form-actions {
 	margin-top: 10px;
@@ -292,9 +292,9 @@
 /* Form buttons container */
 
 .tsumego-comments__form-buttons {
-	margin-top: 12px;
+	margin-top: var(--space-3);
 	display: flex;
-	gap: 8px;
+	gap: var(--space-2);
 }
 /* Sandbox comment box (legacy shared: sandbox page + issue comments) */
 .sandboxComment {
@@ -310,7 +310,7 @@
 .tsumego-comment__drag-handle-cell {
 	width: 36px;
 	vertical-align: middle;
-	padding-right: 8px;
+	padding-right: var(--space-2);
 }
 .tsumego-comment__drag-handle {
 	display: inline-block;
@@ -319,7 +319,7 @@
 	color: var(--text-softer-color);
 	user-select: none;
 	padding: 8px 10px;
-	border-radius: 4px;
+	border-radius: var(--radius-sm);
 	transition: color 0.15s, background-color 0.15s;
 }
 .tsumego-comment__drag-handle:hover {
@@ -354,8 +354,8 @@
 	display: none;
 	align-items: center;
 	justify-content: center;
-	z-index: 100;
-	border-radius: 8px;
+	z-index: var(--layer-dropdown);
+	border-radius: var(--radius-md);
 	border: 3px dashed var(--comment-link-blue);
 	pointer-events: auto; /* Ensure overlay receives events */
 }
@@ -408,7 +408,7 @@
 	margin: 20px 14px;
 	padding: 15px;
 	border: 2px solid var(--issue-border);
-	border-radius: 8px;
+	border-radius: var(--radius-md);
 	background: var(--issue-background);
 }
 .tsumego-issue__header {
@@ -435,7 +435,7 @@
 }
 .tsumego-issue__badge {
 	padding: 3px 8px;
-	border-radius: 4px;
+	border-radius: var(--radius-sm);
 	font-size: 12px;
 	font-weight: bold;
 }
@@ -468,7 +468,7 @@
 .tsumego-issue__reply-btn {
 	background: transparent;
 	border: 1px solid var(--text-softer-color);
-	border-radius: 4px;
+	border-radius: var(--radius-sm);
 	padding: 5px 12px;
 	font-size: 12px;
 	cursor: pointer;
@@ -486,11 +486,11 @@
 }
 .tsumego-issue__reply-form textarea {
 	width: 100%;
-	padding: 8px;
+	padding: var(--space-2);
 	background: var(--issue-reply-textarea-background);
 	color: var(--text-color);
 	border: 1px solid var(--comment-textarea-border);
-	border-radius: 4px;
+	border-radius: var(--radius-sm);
 	font-size: 13px;
 	resize: vertical;
 	min-height: 50px;
@@ -501,7 +501,7 @@
 .tsumego-issue .sandboxComment {
 	background: transparent;
 	box-shadow: none;
-	padding: 8px 0;
+	padding: var(--space-2) 0;
 	border-bottom: 1px solid var(--issue-comment-divider);
 }
 .tsumego-issue .tsumego-comment:last-child .sandboxComment {
@@ -525,8 +525,8 @@
 	margin-bottom: 20px;
 }
 .issues-filter {
-	padding: 8px 16px;
-	border-radius: 4px;
+	padding: var(--space-2) var(--space-4);
+	border-radius: var(--radius-sm);
 	text-decoration: none;
 	background: var(--surface-hover);
 	color: var(--issues-filter-text);

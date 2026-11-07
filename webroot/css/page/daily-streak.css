@@ -11,7 +11,7 @@
 	position: absolute;
 	left: 1120px;
 	top: 12px;
-	z-index: 60;
+	z-index: var(--layer-streak);
 	display: flex;
 	flex-direction: column;
 	align-items: center;
@@ -190,7 +190,7 @@
 .daily-streak__title
 {
 	font-weight: 700;
-	margin-bottom: 4px;
+	margin-bottom: var(--space-1);
 	color: var(--color-streak-flame);
 }
 
@@ -249,7 +249,7 @@
 	{
 		position: static;
 		flex-direction: row;
-		gap: 4px;
+		gap: var(--space-1);
 		width: auto;
 		margin-left: auto;
 		margin-right: 14px;
