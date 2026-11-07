@@ -60,16 +60,8 @@
     rgb(69.412% 69.412% 69.412%) 100%
   );
 
-  -moz-border-radius-bottomleft: 20px;
-  -moz-border-radius-bottomright: 20px;
-  border-radius-bottomleft: 20px;
-  border-radius-bottomright: 20px;
-  -moz-border-radius-bottomright: 20px;
-  -moz-border-radius-bottomleft: 20px;
   border-bottom-right-radius: 20px;
   border-bottom-left-radius: 20px;
-  -moz-border-radius-topright: 20px;
-  -moz-border-radius-topleft: 20px;
   border-top-right-radius: 20px;
   border-top-left-radius: 20px;
 }
@@ -101,16 +93,8 @@
     rgb(98.421% 98.421% 98.421% / 0.9998291015625) 93.75%,
     rgb(98.431% 98.431% 98.431%) 100%
   );
-  -moz-border-radius-bottomleft: 20px;
-  -moz-border-radius-bottomright: 20px;
-  border-radius-bottomleft: 20px;
-  border-radius-bottomright: 20px;
-  -moz-border-radius-bottomright: 20px;
-  -moz-border-radius-bottomleft: 20px;
   border-bottom-right-radius: 20px;
   border-bottom-left-radius: 20px;
-  -moz-border-radius-topright: 20px;
-  -moz-border-radius-topleft: 20px;
   border-top-right-radius: 20px;
   border-top-left-radius: 20px;
 }
@@ -134,88 +118,73 @@
   color: var(--ach-gray);
   box-shadow: 1px 1px 2px var(--color-black) !important;
 }
-.achievementColorGray2 {
-  color: var(--ach-gray);
-}
-.achievementColorBlack,
-.achievementColorBlack2 {
+.achievementColorBlack {
   position: relative;
   top: 0;
   left: 0;
   color: var(--ach-black);
 }
-.achievementColorPurple,
-.achievementColorPurple2 {
+.achievementColorPurple {
   position: relative;
   top: 0;
   left: 0;
   color: var(--ach-purple);
 }
-.achievementColorGreen,
-.achievementColorGreen2 {
+.achievementColorGreen {
   position: relative;
   top: 0;
   left: 0;
   color: var(--ach-green);
 }
-.achievementColorOrange,
-.achievementColorOrange2 {
+.achievementColorOrange {
   position: relative;
   top: 0;
   left: 0;
   color: var(--ach-orange);
 }
-.achievementColorBlue,
-.achievementColorBlue2 {
+.achievementColorBlue {
   color: var(--ach-blue);
   position: relative;
   top: 0;
   left: 0;
 }
-.achievementColorDarkblue,
-.achievementColorDarkblue2 {
+.achievementColorDarkblue {
   color: var(--ach-darkblue);
   position: relative;
   top: 0;
   left: 0;
 }
-.achievementColorRed,
-.achievementColorRed2 {
+.achievementColorRed {
   color: var(--ach-red);
   position: relative;
   top: 0;
   left: 0;
 }
-.achievementColorRating,
-.achievementColorRating2 {
+.achievementColorRating {
   color: var(--ach-rating);
   position: relative;
   top: 0;
   left: 0;
 }
-.achievementColorTime,
-.achievementColorTime2 {
+.achievementColorTime {
   color: var(--ach-time);
   position: relative;
   top: 0;
   left: 0;
 }
-.achievementColorBluex,
-.achievementColorBluex2 {
+.achievementColorBluex {
   color: var(--ach-bluex);
   position: relative;
   top: 0;
   left: 0;
 }
-.achievementColorTeal,
-.achievementColorTeal2 {
+.achievementColorTeal {
   color: var(--ach-teal);
   position: relative;
   top: 0;
   left: 0;
 }
-.achievementColorGold,
-.achievementColorGold2 {
+.achievementColorGold {
   color: var(--ach-gold);
   position: relative;
   top: 0;
@@ -247,16 +216,8 @@
     rgb(98.421% 98.421% 98.421% / 0.9998291015625) 93.75%,
     rgb(98.431% 98.431% 98.431%) 100%
   );
-  -moz-border-radius-bottomleft: 20px;
-  -moz-border-radius-bottomright: 20px;
-  border-radius-bottomleft: 20px;
-  border-radius-bottomright: 20px;
-  -moz-border-radius-bottomright: 20px;
-  -moz-border-radius-bottomleft: 20px;
   border-bottom-right-radius: 20px;
   border-bottom-left-radius: 20px;
-  -moz-border-radius-topright: 20px;
-  -moz-border-radius-topleft: 20px;
   border-top-right-radius: 20px;
   border-top-left-radius: 20px;
 }
@@ -401,17 +362,6 @@
 }
 [data-theme="dark"] #achievementWrapper font {
 	color: var(--text-softer-color);
-}
-[data-theme="dark"] .achievementColorBlack2,
-[data-theme="dark"] .achievementColorPurple2,
-[data-theme="dark"] .achievementColorGreen2,
-[data-theme="dark"] .achievementColorOrange2,
-[data-theme="dark"] .achievementColorBlue2,
-[data-theme="dark"] .achievementColorDarkblue2,
-[data-theme="dark"] .achievementColorRed2,
-[data-theme="dark"] .achievementColorRating2,
-[data-theme="dark"] .achievementColorTime2 {
-	color: var(--color-white);
 }
 .acCollections {
 	margin: var(--space-4) auto 0 auto;

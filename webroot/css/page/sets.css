@@ -135,11 +135,6 @@
 .rotateArrow {
   transform: rotate(180deg);
 }
-#undo-tags-button {
-  padding: 0 2px;
-  font-size: 11px;
-  cursor: pointer;
-}
 .set-search-menu {
   margin: 5px 23px;
   display: flex;

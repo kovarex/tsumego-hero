@@ -136,18 +136,6 @@
 .timeline_box_height7 {
   height:196px;
 }
-.google-profile-image {
-  position: relative;
-  top: 2px;
-  border-radius: 50%;
-  width: 16px;
-  height: 16px;
-  border: 1px solid var(--about-red);
-  margin-right: 1px;
-}
-.curl-table .x td {
-  font-weight: 800;
-}
 
 /* Timeline stacks: icon above content below 64rem (1024px). The alternating
    row-reverse (odd events) is disabled so every card reads icon-then-content. */
