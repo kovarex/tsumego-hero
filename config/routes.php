@@ -28,6 +28,19 @@ return function (RouteBuilder $routes): void
 	//Public changelog / "what's new" page
 	$routes->connect('/changelog', ['controller' => 'Changelog', 'action' => 'index']);
 
+	//A problem for the play page to show without loading again (TsumegosController::problem()), and
+	//the visit of one it loaded ahead
+	$routes->connect(
+		'/api/v1/problems/{setConnectionID}',
+		['controller' => 'Tsumegos', 'action' => 'problem'],
+		['pass' => ['setConnectionID'], 'setConnectionID' => '[0-9]+']
+	);
+	$routes->connect(
+		'/api/v1/problems/{setConnectionID}/visit',
+		['controller' => 'Tsumegos', 'action' => 'visit'],
+		['pass' => ['setConnectionID'], 'setConnectionID' => '[0-9]+']
+	);
+
 	//TsumegoComments routes - for managing comments on tsumego problems
 	$routes->connect(
 		'/tsumego-comments/index/{tsumegoId}',

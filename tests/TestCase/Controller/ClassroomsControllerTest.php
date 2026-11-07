@@ -795,6 +795,27 @@ class ClassroomsControllerTest extends IntegrationTestCase
 	//title says where in the assignment the pupil is and which problem of which collection it is.
 	//Without a problem the route opens the first one not solved for the assignment yet, and a
 	//solve of it is sent though it was solved before.
+	//Asked for JSON, the route answers with the problem and the row of the assignment, for the page to
+	//show it without loading again (AppController::renderPlay())
+	public function testAProblemOfTheAssignmentComesInJson(): void
+	{
+		$this->prepare();
+		$classroomId = $this->createClassroom();
+		$this->addMember($classroomId, 'pupil');
+		$assignmentId = $this->createAssignment($classroomId, '2026-10-01 00:00:00', '2026-10-08', [3, 1, 0]);
+		$this->login('pupil');
+
+		$this->configRequest(['headers' => ['Accept' => 'application/json']]);
+		$this->get('/classes/play/' . $assignmentId . '/' . $this->setConnectionId(1));
+
+		$this->assertResponseOk();
+		$data = json_decode($this->view, true, flags: JSON_THROW_ON_ERROR);
+		$this->assertSame((int) $this->context->tsumegos[1]['id'], $data['problem']['tsumegoID']);
+		$this->assertSame('/classes/play/' . $assignmentId . '/' . $this->setConnectionId(3), $data['problem']['previousLink']);
+		$this->assertSame('/classes/play/' . $assignmentId . '/' . $this->setConnectionId(0), $data['problem']['nextLink']);
+		$this->assertStringContainsString('href="/classes/play/' . $assignmentId . '/' . $this->setConnectionId(0) . '"', $data['content']);
+	}
+
 	public function testAPupilPlaysTheAssignmentAsOneRow(): void
 	{
 		$this->prepare();

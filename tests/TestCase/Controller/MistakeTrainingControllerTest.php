@@ -232,6 +232,24 @@ class MistakeTrainingControllerTest extends IntegrationTestCase
 		$this->assertStringContainsString('problem-nav__item--N', $this->view, 'It stays grey until it is solved');
 	}
 
+	//Asked for JSON, the route answers with its problem, its row and its title, for the page to show
+	//it without loading again (AppController::renderPlay())
+	public function testATrainingProblemComesInJson()
+	{
+		$context = $this->prepareTraining([], self::reviewedToday(MistakeTraining::REVIEW_SOLVED));
+
+		$this->configRequest(['headers' => ['Accept' => 'application/json']]);
+		$this->get('/mistake-training/play/' . self::setConnectionId($context, 1));
+
+		$this->assertResponseOk();
+		$data = json_decode($this->view, true, flags: JSON_THROW_ON_ERROR);
+		$this->assertSame((int) $context->tsumegos[1]['id'], $data['problem']['tsumegoID']);
+		$this->assertSame(Constants::$MISTAKE_TRAINING_MODE, $data['page']['mode']);
+		$this->assertSame('Mistake Training 2/2 on Tsumego Hero', $data['title']);
+		$this->assertSame('/mistake-training/play/' . self::setConnectionId($context, 1), $data['problem']['resetLink']);
+		$this->assertStringContainsString('Already solved today. This try does not count.', $data['content']);
+	}
+
 	public function testAProblemSolvedTodayOpensAsAReplay()
 	{
 		$context = $this->prepareTraining([], self::reviewedToday(MistakeTraining::REVIEW_SOLVED));

@@ -113,6 +113,34 @@ class TsumegosController extends AppController
 		return null;
 	}
 
+	//The problem of /{setConnectionID} as the play page shows it, in JSON (AppController::renderPlay()):
+	//the play routes of the other modes answer the same when they are asked for JSON
+	#[HttpGet]
+	public function problem(string $setConnectionID): mixed
+	{
+		$this->request = $this->request->withHeader('Accept', 'application/json');
+		return $this->play(null, $setConnectionID);
+	}
+
+	//The play page shows a problem it loaded ahead (the X-Play-Prefetch request wrote nothing): it is
+	//the last problem visited, and visited for the player when they never opened it and its route marks it
+	#[HttpPost]
+	public function visit(string $setConnectionID): Response
+	{
+		$setConnection = $this->fetchTable('SetConnection')->find()->where(['id' => (int) $setConnectionID])->first();
+		if (!$setConnection)
+			throw new NotFoundException('Problem not found');
+		$tsumego = $this->fetchTable('Tsumego')->get($setConnection->tsumego_id);
+		$set = $this->fetchTable('Set')->get($setConnection->set_id);
+		if ($tsumego->deleted !== null && !Auth::isAdmin())
+			throw new NotFoundException('Problem not found');
+		$this->Authorization->authorize($set, 'play');
+		Util::setCookie('lastVisit', (int) $tsumego->id);
+		if (Auth::isLoggedIn() && $this->input('markAsVisited'))
+			TsumegoStatusTable::markVisited(Auth::getUserID(), (int) $tsumego->id);
+		return $this->respond('', null, 204);
+	}
+
 	#[HttpGet]
 	public function duplicatesearch(string $setConnectionID): mixed
 	{

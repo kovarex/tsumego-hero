@@ -33,8 +33,10 @@ class Play
 	//$classroomAssignment: the class assignment the problem is played in, with its collections, set by
 	//its route (ClassroomsController::play()): its problems are the row of buttons and Next walks them.
 	//$markAsVisited: the normal modes mark a problem the player opens for the first time as visited.
+	//$prefetch: the page loads the problem ahead, before the player gets to it (webroot/js/PlayPage.js),
+	//so nothing of the visit is written; the page records it when it shows the problem (TsumegosController::visit()).
 	/** @param array<string, mixed>|null $classroomAssignment */
-	public function __construct(int $setConnectionID, ServerRequest $request, private ?array $classroomAssignment = null, private bool $markAsVisited = false)
+	public function __construct(int $setConnectionID, ServerRequest $request, private ?array $classroomAssignment = null, private bool $markAsVisited = false, private bool $prefetch = false)
 	{
 		$this->buildPage();
 		$this->buildProblem($setConnectionID, $request);
@@ -249,7 +251,8 @@ class Play
 
 		$set = TableRegistry::getTableLocator()->get('Set')->get($setConnection->set_id);
 		AuthorizationComponent::require(SetPolicy::canPlay(Auth::getIdentity(), $set));
-		Util::setCookie('lastVisit', $tsumegoID);
+		if (!$this->prefetch)
+			Util::setCookie('lastVisit', $tsumegoID);
 
 		$tsumegoVariant = TableRegistry::getTableLocator()->get('TsumegoVariant')->find()->where(['tsumego_id' => $tsumegoID])->first();
 		$tsumegoFilters = new TsumegoFilters();
@@ -342,11 +345,9 @@ class Play
 		if (!Auth::isLoggedIn())
 			return TsumegoStatusTable::$VISITED;
 		$status = TsumegoStatusTable::statusOf(Auth::getUserID(), $tsumegoID);
-		if ($status !== null || !$this->markAsVisited)
+		if ($status !== null || !$this->markAsVisited || $this->prefetch)
 			return $status ?? TsumegoStatusTable::$VISITED;
-		$inserted = Util::execute(
-			'INSERT INTO tsumego_status (user_id, tsumego_id, status) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE status = status',
-			[Auth::getUserID(), $tsumegoID, TsumegoStatusTable::$VISITED]);
+		$inserted = TsumegoStatusTable::markVisited(Auth::getUserID(), $tsumegoID);
 		return $inserted ? TsumegoStatusTable::$VISITED : TsumegoStatusTable::statusOf(Auth::getUserID(), $tsumegoID) ?? TsumegoStatusTable::$VISITED;
 	}
 

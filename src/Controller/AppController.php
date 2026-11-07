@@ -55,12 +55,36 @@ class AppController extends Controller
 	 */
 	protected function renderPlay(int $setConnectionID, array $viewVars = [], ?array $classroomAssignment = null, bool $markAsVisited = false): void
 	{
-		$play = new Play($setConnectionID, $this->request, $classroomAssignment, $markAsVisited);
+		$prefetch = $this->request->getHeaderLine(self::PREFETCH_HEADER) === '1';
+		$play = new Play($setConnectionID, $this->request, $classroomAssignment, $markAsVisited, $prefetch);
 		$play->addRouteValues($viewVars);
 		$this->set($play->viewVars());
-		$this->set('playPage', $play->clientData((string) $this->viewBuilder()->getVar('lightDark')));
-		$this->render('/Tsumegos/play');
+		$playPage = $play->clientData((string) $this->viewBuilder()->getVar('lightDark'));
+		$this->set('playPage', $playPage);
+		//the same address answers with the page or with its problem, a cache must keep them apart
+		$this->setResponseHeader('Vary', 'Accept');
+		if (!$this->request->is('json'))
+		{
+			$this->render('/Tsumegos/play');
+			return;
+		}
+		$this->viewBuilder()->disableAutoLayout();
+		$content = (string) $this->render('/Tsumegos/play')->getBody();
+		//Asked for JSON (Accept: application/json), a play route answers with all the page needs to show the
+		//problem without loading again: what its script reads (Play::clientData()), the title of the window
+		//and the page's content without the layout. visit: what the page records when it shows a prefetched
+		//problem (TsumegosController::visit()), null when the request recorded it already.
+		$this->setResponseHeader('Cache-Control', 'no-store');
+		$this->respondJson([
+			'page' => $playPage['page'],
+			'problem' => $playPage['problem'],
+			'title' => (string) ($this->viewBuilder()->getVar('_title') ?? 'Tsumego Hero'),
+			'content' => $content,
+			'visit' => $prefetch ? ['setConnectionID' => $setConnectionID, 'markAsVisited' => $markAsVisited] : null]);
 	}
+
+	//A request of the next problem ahead of time (webroot/js/PlayPage.js), which writes nothing of the visit
+	public const PREFETCH_HEADER = 'X-Play-Prefetch';
 
 	//The actions read the request through these few methods. A dotted name reads a nested field ('Set.title').
 

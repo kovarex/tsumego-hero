@@ -82,6 +82,14 @@ class TsumegoStatusTable extends AppTable
 			->first()?->status;
 	}
 
+	//The player opened the problem: visited when they have no status there yet, a status written
+	//meanwhile is kept. Whether it was written.
+	public static function markVisited(int $userID, int $tsumegoID): bool
+	{
+		return Util::execute('INSERT INTO tsumego_status (user_id, tsumego_id, status) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE status = status',
+			[$userID, $tsumegoID, self::$VISITED]) > 0;
+	}
+
 	//Sets the status of a problem for a player, whether the player has a status there yet or not.
 	public static function setStatus(int $userID, int $tsumegoID, string $status): void
 	{
