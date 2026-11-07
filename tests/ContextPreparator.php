@@ -40,7 +40,7 @@ class ContextPreparator
 			'achievement_condition', 'achievement_status', 'set_connection',
 			'tsumego_attempt', 'tsumego_status', 'mistake_training_review', 'mistake_training_day', 'mistake_training_pool',
 			'tsumego_variant', 'tsumego_semeai', 'reject', 'user_avatar', 'user', 'time_mode_rank',
-			'tsumego', 'set', 'phpbb_users', 'phpbb_topics',
+			'tsumego', 'set', 'phpbb_users', 'phpbb_topics', 'rum_sample',
 		] as $table)
 			$pdo->exec("DELETE FROM `$table`");
 		// The ids start at 1 again, so a test gets the same ids whichever tests ran before it in the

@@ -201,6 +201,7 @@ function setUpPageEnd()
 		document.querySelectorAll(".loader-container").forEach(loader => loader.style.display = "flex");
 		window.location.href = "/tsumegos/duplicatesearch/" + playPage.problem.setConnectionID;
 	});
+	PlayTiming.boardReady();
 }
 if (document.readyState === "loading")
 	document.addEventListener("DOMContentLoaded", setUpPageEnd);
@@ -512,13 +513,17 @@ function sendResult(outcome)
 		data.sgf_id = playPage.problem.sgfID;
 	}
 
+	const sent = performance.now();
 	let response = fetch('/tsumegos/result', {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
 		body: JSON.stringify(data),
 		// the request outlives the page, so leaving right after a lost line still counts it
 		keepalive: true,
-	}).then(response => response.json());
+	}).then(response => response.json().then(result => {
+		PlayTiming.result(performance.now() - sent, response.headers.get('Server-Timing'));
+		return result;
+	}));
 	window._submitResultPromise = response.catch(err => console.error('submitResult failed:', err));
 	return response;
 }

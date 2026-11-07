@@ -41,8 +41,15 @@ class CronController extends AppController
 			Trash::purgeExpired();
 		});
 		Live::pruneStale();
+		self::pruneRumSamples();
 
 		return $this->respond('');
+	}
+
+	//The browsers' timings are kept for 60 days, enough to compare a change with what was before it
+	private static function pruneRumSamples(): void
+	{
+		Util::execute('DELETE FROM rum_sample WHERE created < NOW() - INTERVAL 60 DAY');
 	}
 
 	//The daily updates go through whole tables, no index fits their conditions. Under the default
