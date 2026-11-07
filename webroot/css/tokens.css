@@ -168,8 +168,6 @@
 		--about-blue-gradient: linear-gradient(to left, #4348ac, #9799c0);
 		--comment-box-blue: #c8ebfb;
 		--comment-link-blue: #337ab7;
-		--comment-info-bg: #e6f0ff;
-		--comment-light-bg: #fafafa;
 		--comment-error-bg: #f2dede;
 		--comment-error-fg: #a94442;
 		--comment-success-bg: #dff0d8;
@@ -226,13 +224,12 @@
 		/* ── Accent / feedback tokens (auto-adapt light ↔ dark) ── */
 		--color-blue-accent: #007bff;
 		--color-blue-accent-hover: #0056b3;
-		--feedback-error: #e03c4b;
-		--feedback-warning: #f0ad4e;
-		--surface-danger: #fee;
-		--surface-hover: #eee;
-		--surface-hover-strong: #ddd;
+		--color-danger: #e03c4b;
+		--color-warning: #f0ad4e;
+		--color-danger-surface: #fee;
+		--color-surface-hover: #eee;
+		--color-surface-hover-strong: #ddd;
 		--surface-panel-light: #f0f0f0;
-		--issue-highlight-gradient: linear-gradient(#666, #555);
 
 		/* ── Spacing and radius ── */
 		--space-1: 4px;
@@ -322,20 +319,43 @@
 		--color-red-light: #ff8080;
 	}
 
+	/* ── Colour roles: what a colour is for. Components and new rules use these; the theme blocks
+	   below give them their light and dark values. The names on the left are the older ones,
+	   kept as aliases until no rule uses them. ── */
+	:root
+	{
+		--text-color: var(--color-text);
+		--text-softer-color: var(--color-text-muted);
+		--link-color: var(--color-link);
+		--current-border-color: var(--color-border);
+		--info-box-background: var(--color-surface);
+		--surface-bar: var(--color-surface-sunken);
+		--surface-hover: var(--color-surface-hover);
+		--surface-hover-strong: var(--color-surface-hover-strong);
+		--feedback-error: var(--color-danger);
+		--feedback-warning: var(--color-warning);
+		--surface-danger: var(--color-danger-surface);
+		--color-brand: var(--color-green);
+		--color-brand-strong: var(--color-green-dark);
+		--color-accent: var(--color-purple);
+		--color-info: var(--color-blue);
+		--color-on-fill: var(--color-white);
+	}
+
 	/* ── Theme tokens: light is default (:root) ── */
 	:root
 	{
-		--text-color: #222;
-		--text-softer-color: grey;
-		--link-color: #0000EE;
-		--current-border-color: #ccc;
+		--color-text: #222;
+		--color-text-muted: grey;
+		--color-link: #0000EE;
+		--color-border: #ccc;
 		--chart-text-color: #999;
 		--chart-grid-color: rgba(0, 0, 0, 0.08);
 		--chart-background: transparent;
 		--chart-separator-color: #fff;
 		--chart-tooltip-background: rgba(20, 20, 20, 0.95);
 		--chart-tooltip-text-color: #fff;
-		--surface-bar: #f5f5f5;
+		--color-surface-sunken: #f5f5f5;
 		--dark-button-icon: url("/img/light-icon1x.png");
 		--new1-gradient: linear-gradient(#fff, #f2f2f2);
 		--surface-button-neutral-hover: #d6d6d6;
@@ -363,8 +383,45 @@
 		--active-paginator-button-background-color: #333;
 		--active-paginator-button-text-color: #fff;
 		--paginator-info-text-color: #666;
+
+		/* Pages that look different in the dark theme: the light value here, the dark one below */
+		--board-red-glow: 0 2px 14px 0 rgba(183, 19, 19, 0.8), 0 6px 20px 0 rgba(183, 19, 19, 0.2);
+		--board-tree-line: black;
+		--play-link: var(--text-softer-color);
+		--play-comment-time: var(--text-softer-color);
+		--play-sandbox-text: var(--color-black);
+		--play-sandbox-background: var(--color-white);
+		--play-dark-text: currentColor;
+		--play-rating-bar-accent: var(--color-purple-3);
+		--xp-display: var(--color-black);
+		--xp-display-solved: var(--color-green);
+		--xp-display-golden: var(--color-gold);
+		--xp-display-sprint: var(--color-blue);
+		--alert-success-border: var(--color-green-light);
+		--alert-error-border: var(--color-red);
+		--alert-warning-border: var(--color-yellow);
+		--alert-info-border: var(--color-blue);
+		--title-text: var(--color-black);
+		--set-accuracy: var(--set-accent-purple);
+		--set-time: var(--set-accent-orange);
+		--set-size-background: var(--surface-dark);
+		--set-filter-background: var(--surface-dark);
+		--set-filter-text: var(--color-white);
+		--set-filter-hover-background: var(--surface-dark);
+		--set-card-hover-shade: linear-gradient(rgba(200, 200, 200, 0.6), rgba(33, 33, 33, 0.65));
+		--training-title: var(--color-green-dark);
+		--profile-name: black;
+		--time-mode-table-text: currentColor;
+		--time-mode-version-link: var(--link-color);
+		--signin-background: transparent;
+		--schedule-link: var(--color-white);
+		--dropdown-tile-muted: #33333388;
+		--toast-text: currentColor;
+		/* An achievement card keeps the light gradient of its own rule; this one is set in the dark theme only */
 		--admin-text-color: #1010EE;
-		--info-box-background: #fff;
+		--color-surface: #fff;
+		/* The ring around what the keyboard acts on: at least 3:1 against the white box and the dark menu */
+		--color-focus: var(--color-blue);
 		--alert-success-bg: #e6f9e6;
 		--alert-success-fg: #1a5c1a;
 		--alert-error-bg: #fde8e8;
@@ -373,19 +430,52 @@
 		--alert-warning-fg: #7a5e00;
 		--alert-info-bg: #e8f0fe;
 		--alert-info-fg: #2a5090;
+
+		/* Comments and issues under a problem (comments.css): the light value here, the dark one below */
+		--comment-coord-white: rgba(0, 0, 0, 0.04);
+		--comment-coord-hover: rgba(30, 107, 184, 0.2);
+		--comment-tab-background: var(--surface-bar);
+		--comment-tab-border: var(--current-border-color);
+		--comment-tab-text: currentColor;
+		--comment-tab-active-background: var(--text-softer-color);
+		--comment-tab-active-border: var(--text-softer-color);
+		--comment-tab-active-text: var(--color-white);
+		--comment-tab-hover-background: var(--surface-hover);
+		--comment-tab-empty-background: var(--info-box-background);
+		--comment-tab-empty-border: var(--current-border-color);
+		--comment-form-background: var(--surface-bar);
+		--comment-form-muted: currentColor;
+		--comment-textarea-border: var(--current-border-color);
+		--comment-background: var(--surface-hover-strong);
+		--comment-shadow: var(--text-softer-color);
+		--comment-delete-text: var(--feedback-error);
+		--issue-background: var(--info-box-background);
+		--issue-border: var(--current-border-color);
+		--issue-opened-background: var(--comment-error-bg);
+		--issue-opened-text: var(--comment-error-fg);
+		--issue-closed-background: var(--comment-success-bg);
+		--issue-closed-text: var(--comment-success-fg);
+		--issue-comment-divider: rgba(128, 128, 128, 0.2);
+		--issue-reply-hover-background: var(--surface-bar);
+		--issue-reply-hover-text: var(--text-softer-color);
+		--issue-reply-form-background: var(--surface-bar);
+		--issue-reply-form-border: var(--surface-hover);
+		--issue-reply-textarea-background: var(--surface-bar);
+		--issues-filter-text: var(--text-color);
+		--issues-empty-text: currentColor;
 	}
 
 	/* ── Dark theme overrides ── */
 	[data-theme="dark"]
 	{
-		--text-color: #ddd;
-		--text-softer-color: grey;
-		--link-color: #f0f0f0;
-		--current-border-color: #444;
+		--color-text: #ddd;
+		--color-text-muted: grey;
+		--color-link: #f0f0f0;
+		--color-border: #444;
 		--chart-grid-color: rgba(255, 255, 255, 0.08);
 		--chart-background: #2a2a2a;
 		--chart-separator-color: #2a2a2a;
-		--surface-bar: #303030;
+		--color-surface-sunken: #303030;
 		--dark-button-icon: url("/img/dark-icon1.png");
 		--new1-gradient: linear-gradient(#3c3c3c, #2a2a2a);
 		--surface-button-neutral-hover: #555;
@@ -409,15 +499,50 @@
 		--active-paginator-button-background-color: #ccc;
 		--active-paginator-button-text-color: #000;
 		--paginator-info-text-color: #999;
+
+		--board-red-glow: 0 2px 14px 0 rgb(225, 34, 34), 0 6px 20px 0 rgba(253, 59, 59, 0.58);
+		--board-tree-line: var(--text-on-dark);
+		--play-link: var(--link-color);
+		--play-comment-time: var(--text-on-dark-soft);
+		--play-sandbox-text: var(--link-color);
+		--play-sandbox-background: var(--surface-button);
+		--play-dark-text: var(--color-black);
+		--play-rating-bar-accent: var(--color-mode-rating);
+		--xp-display: var(--link-color);
+		--xp-display-solved: var(--xp-solved);
+		--xp-display-golden: var(--xp-solved);
+		--xp-display-sprint: var(--xp-sprint);
+		--alert-success-border: var(--color-green-dark);
+		--alert-error-border: var(--color-red-dark);
+		--alert-warning-border: var(--color-yellow-dark);
+		--alert-info-border: var(--color-blue-dark);
+		--title-text: var(--color-white);
+		--set-accuracy: var(--set-accent-purple-dark);
+		--set-time: var(--set-accent-orange-dark);
+		--set-size-background: var(--surface-ink2);
+		--set-filter-background: var(--surface-ink);
+		--set-filter-text: var(--surface-muted-text);
+		--set-filter-hover-background: var(--surface-border-strong);
+		--set-card-hover-shade: linear-gradient(rgba(200, 200, 200, 0.3), rgba(33, 33, 33, 0.35));
+		--training-title: var(--color-green);
+		--profile-name: var(--color-white);
+		--time-mode-table-text: var(--color-black);
+		--time-mode-version-link: var(--color-blue-accent);
+		--signin-background: var(--surface-dark);
+		--schedule-link: var(--link-color);
+		--dropdown-tile-muted: var(--surface-translucent);
+		--toast-text: var(--color-black);
+		--achievement-card-background: var(--ach-silver-gradient);
 		--admin-text-color: #7EE0FF;
-		--info-box-background: #2a2a2a;
+		--color-surface: #2a2a2a;
+		--color-focus: #6db3f2;
 		--color-blue-accent: #6db3f2;
 		--color-blue-accent-hover: #9dd0ff;
-		--feedback-error: #ff6b6b;
-		--feedback-warning: #c87f0a;
-		--surface-danger: #3a2020;
-		--surface-hover: #3a3a3a;
-		--surface-hover-strong: #444;
+		--color-danger: #ff6b6b;
+		--color-warning: #c87f0a;
+		--color-danger-surface: #3a2020;
+		--color-surface-hover: #3a3a3a;
+		--color-surface-hover-strong: #444;
 		--surface-rank-bg: transparent;
 		--alert-success-bg: #1a3a1a;
 		--alert-success-fg: #82c95b;
@@ -427,5 +552,37 @@
 		--alert-warning-fg: #e6c832;
 		--alert-info-bg: #1a2a3a;
 		--alert-info-fg: #5b9bd5;
+
+		--comment-coord-white: rgba(255, 255, 255, 0.12);
+		--comment-coord-hover: rgba(109, 179, 242, 0.25);
+		--comment-tab-background: var(--surface-hover);
+		--comment-tab-border: var(--surface-hover-strong);
+		--comment-tab-text: var(--text-color);
+		--comment-tab-active-background: var(--surface-hover-strong);
+		--comment-tab-active-border: var(--surface-hover-strong);
+		--comment-tab-active-text: var(--text-color);
+		--comment-tab-hover-background: var(--surface-hover-strong);
+		--comment-tab-empty-background: var(--surface-hover);
+		--comment-tab-empty-border: var(--surface-hover-strong);
+		--comment-form-background: var(--surface-hover);
+		--comment-form-muted: var(--text-softer-color);
+		--comment-textarea-border: var(--surface-hover-strong);
+		--comment-background: var(--time-dark-gradient);
+		--comment-shadow: var(--color-black);
+		--comment-delete-text: var(--color-white);
+		--issue-background: linear-gradient(var(--surface-hover), var(--info-box-background));
+		--issue-border: var(--surface-hover-strong);
+		--issue-opened-background: var(--surface-danger);
+		--issue-opened-text: var(--feedback-error);
+		--issue-closed-background: var(--alert-success-bg);
+		--issue-closed-text: var(--alert-success-fg);
+		--issue-comment-divider: rgba(255, 255, 255, 0.1);
+		--issue-reply-hover-background: var(--surface-hover-strong);
+		--issue-reply-hover-text: var(--text-color);
+		--issue-reply-form-background: var(--surface-border-strong);
+		--issue-reply-form-border: var(--surface-hover-strong);
+		--issue-reply-textarea-background: var(--info-box-background);
+		--issues-filter-text: var(--text-softer-color);
+		--issues-empty-text: var(--text-softer-color);
 	}
 }
