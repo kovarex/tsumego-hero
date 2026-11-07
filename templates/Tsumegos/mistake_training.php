@@ -23,15 +23,15 @@ use App\Utility\RungInsignia;
  */
 ?>
 <div class="info-box info-box--empty">
-	<h2 style="margin-bottom: var(--space-4);">Mistake Training</h2>
+	<h2 class="mistake-training__title">Mistake Training</h2>
 	<?php if ($dueToday > 0): ?>
 	<p class="info-box__title" id="mistake-training-due"><?php echo $dueToday; ?> problem<?php echo $dueToday == 1 ? '' : 's'; ?> to review today</p>
-	<p style="margin-bottom: var(--space-3);">
+	<p class="mistake-training__block">
 		<a class="btn" id="mistake-training-start" href="<?php echo MistakeTraining::$QUEUE_LINK; ?>"><?php echo $solvedToday > 0 ? 'Continue training' : 'Start training'; ?></a>
 	</p>
 	<?php elseif (!$everTrained): ?>
 	<p class="info-box__title">Nothing to review yet</p>
-	<p class="hint" style="margin-bottom: var(--space-3);">
+	<p class="hint mistake-training__block">
 		When you solve a problem but make a mistake first, it comes here. You review it the next day, and then at
 		growing intervals until you know it.
 	</p>
@@ -40,7 +40,7 @@ use App\Utility\RungInsignia;
 	<p class="info-box__title">All caught up!</p>
 	<?php endif; ?>
 	<?php if ($solvedToday > 0): ?>
-	<p class="hint" style="margin-bottom: var(--space-3);">
+	<p class="hint mistake-training__block">
 		Today you solved <?php echo $solvedToday; ?> problem<?php echo $solvedToday == 1 ? '' : 's'; ?>.
 		<?php if ($dueToday == 0): ?>
 		<a href="<?php echo htmlspecialchars((string) $todaysTrainingLink, ENT_QUOTES, 'UTF-8'); ?>">Look at today's training</a>
@@ -48,12 +48,12 @@ use App\Utility\RungInsignia;
 	</p>
 	<?php endif; ?>
 	<?php if ($totalInTraining > 0): ?>
-	<p class="hint" style="margin-bottom: var(--space-3);">
+	<p class="hint mistake-training__block">
 		<?php echo $totalInTraining; ?> problem<?php echo $totalInTraining == 1 ? '' : 's'; ?> in training.
 	</p>
 	<?php if (!empty($upcomingDays)): ?>
 	<div class="hint">
-		<div style="margin-bottom: var(--space-2);">Coming up</div>
+		<div class="mistake-training__upcoming-title">Coming up</div>
 		<?php foreach ($upcomingDays as $day => $count): ?>
 		<div>
 			<?php echo $count; ?> review<?php echo $count == 1 ? '' : 's'; ?>
@@ -61,7 +61,7 @@ use App\Utility\RungInsignia;
 		</div>
 		<?php endforeach; ?>
 		<?php if ($furtherDays > 0): ?>
-		<div style="margin-top: var(--space-2);">
+		<div class="mistake-training__further">
 			and <?php echo $furtherDays; ?> more day<?php echo $furtherDays == 1 ? '' : 's'; ?>,
 			the last one on <?php echo MistakeTraining::dayHtml($lastUpcomingDay); ?>.
 		</div>
@@ -72,7 +72,7 @@ use App\Utility\RungInsignia;
 	<p class="hint">Every problem you trained has graduated.</p>
 	<?php endif; ?>
 	<?php if ($dueToday == 0): ?>
-	<p class="hint" style="margin-top: var(--space-3);">
+	<p class="hint mistake-training__import">
 		Problems you solved with a mistake before the training started can be brought in
 		<?php echo MistakeTraining::IMPORT_LIMIT; ?> at a time, and reviewed like the rest.
 	</p>

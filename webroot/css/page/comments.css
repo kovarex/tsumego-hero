@@ -13,6 +13,15 @@
 }
 /* Comments index table (Comments/index) */
 
+.co-table {
+  width: 100%;
+}
+.co-table__half {
+  width: 50%;
+}
+.co-table__all {
+  margin-bottom: 15px;
+}
 .co-table tr td {
 	vertical-align: top;
 }

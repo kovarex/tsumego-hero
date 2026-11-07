@@ -733,6 +733,15 @@ h1 {
   font-size: 0.85em;
   color: var(--text-softer-color);
 }
+.play-edit__proposal-sent {
+  color: var(--text-softer-color);
+}
+.play-edit__field {
+  width: 100%;
+}
+.play-edit__note {
+  color: #888;
+}
 .play-edit__part {
   margin-bottom: var(--space-3);
 }

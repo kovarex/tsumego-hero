@@ -15,7 +15,7 @@ use App\Utility\ViteManifest;
 
 ?>
 
-	<div align="center">
+	<div class="legacy-center">
 	<p class="title">
 		<br>
 		<?php if($type == 'tsumego')
@@ -28,7 +28,7 @@ else
 		<?php } ?>
 		<br><br>
 	</p>
-	<div align="left">
+	<div class="legacy-left">
 		<?php if($type == 'tsumego')
 		{ ?>
 			<a href="/tsumegos/play/<?php echo $id; ?>">back</a>
@@ -38,37 +38,37 @@ else
 			<a href="/sgfs/view/<?php echo $id; ?>">back</a>
 		<?php } ?>
 	</div>
-	<table class="data-table" border="0">
+	<table class="data-table">
 	<tbody>
 	<tr>
 		<th>Date</th>
-		<th align="left">&nbsp;Author</th>
-		<th align="left">&nbsp;Version</th>
-		<th align="left">&nbsp;Description</th>
+		<th class="legacy-left">&nbsp;Author</th>
+		<th class="legacy-left">&nbsp;Version</th>
+		<th class="legacy-left">&nbsp;Description</th>
 		<th></th>
 	</tr>
 	<?php
 		for($i = 0; $i < count($versions); $i++)
 		{
 			echo '<tr id="' . $versions[$i]['id'] . '">
-			<td class="timeTableLeft versionColor" align="center">
+			<td class="timeTableLeft versionColor legacy-center">
 				<time datetime="' . Util::toIso8601($versions[$i]['created']) . '" data-format="datetime">' . $versions[$i]['created'] . '</time>
 			</td>
-			<td class="timeTableMiddle versionColor" align="left">';
+			<td class="timeTableMiddle versionColor legacy-left">';
 			if($versions[$i]['user_id'] === null)
 				echo 'automatically generated';
 			else
 				echo '<a href="/sgfs/view/' . $versions[$i]['tsumego_id'] . '?user=' . $versions[$i]['user_id'] . '">' . h($versions[$i]['user']) . '</a>';
 			echo '</td>';
-			echo '<td class="timeTableMiddle versionColor" align="left">';
+			echo '<td class="timeTableMiddle versionColor legacy-left">';
 			if($type == 'tsumego')
 				echo '<a href="/tsumegos/play/' . ($versions[$i]['tsumego_id']) . '"> ' . h($versions[$i]['title']) . '</a> ';
 			else
 				echo '<a href="/sgfs/view/' . $versions[$i]['tsumego_id'] . '"> ' . h($versions[$i]['title']) . '</a> ';
 			echo '<a href="/sgfs/view/' . $versions[$i]['tsumego_id'] . '" id="dl1-' . $versions[$i]['id'] . '" data-download="' . h($versions[$i]['title'] . ' v' . $versions[$i]['version'] . '.sgf') . '">v ' . $versions[$i]['version'] . '</a>';
 			echo '</td>';
-			echo '<td class="timeTableMiddle versionColor proposal-description" align="left" id="description-' . $versions[$i]['id'] . '">' . SgfDescription::render($versions[$i]['description'] ?? null) . '</td>';
-			echo '<td class="timeTableRight versionColor" align="left">
+			echo '<td class="timeTableMiddle versionColor proposal-description legacy-left" id="description-' . $versions[$i]['id'] . '">' . SgfDescription::render($versions[$i]['description'] ?? null) . '</td>';
+			echo '<td class="timeTableRight versionColor legacy-left">
 			<a id="open-' . $versions[$i]['id'] . '" class="openHistoryPointLink" href="/editor?sgfID=' . (int) $versions[$i]['id'] . '">open</a>&nbsp;&nbsp;&nbsp;';
 			if ($versions[$i]['diff'])
 				echo '<a id="compare-' . $versions[$i]['id'] . '" class="openDiff" href="/editor?sgfID=' . $versions[$i]['id'] . '&diffID=' . $versions[$i]['diff'] . '" data-compared-with="' . (int) $versions[$i]['diff'] . '">diff</a>&nbsp;&nbsp;&nbsp;';
