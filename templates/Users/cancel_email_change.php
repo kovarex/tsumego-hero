@@ -9,7 +9,7 @@
  * @var string $token
  */
 ?>
-<div align="center">
+<div class="legacy-center">
 <p class="title">
 	Cancel the address change
 	<br>

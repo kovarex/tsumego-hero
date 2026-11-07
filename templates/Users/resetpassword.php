@@ -15,7 +15,7 @@ use App\Utility\CookieFlash;
 	<div class="left signin">
 		<?php echo CookieFlash::render(); ?>
 		<h1>Reset password</h1>
-		<form action="/users/resetpassword" id="UserResetpasswordForm" method="post" accept-charset="utf-8"><div style="display:none;"><input type="hidden" name="_method" value="POST"/></div>
+		<form action="/users/resetpassword" id="UserResetpasswordForm" method="post" accept-charset="utf-8"><div hidden><input type="hidden" name="_method" value="POST"/></div>
 		<div class="input text required">
 			<label for="UserEmail">E-Mail</label>
 			<input name="email" maxlength="<?php echo UserTable::EMAIL_MAX_LENGTH; ?>" type="text" id="UserEmail" autocomplete="email" required="required"/>

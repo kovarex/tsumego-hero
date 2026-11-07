@@ -9,7 +9,7 @@
 use App\Model\Table\UserTable;
 
 ?>
-<div align="center">
+<div class="legacy-center">
 <p class="title">
 	Delete account
 	<br>

@@ -14,7 +14,7 @@ use App\Utility\CookieFlash;
 		<div class="left signin">
 			<?php echo CookieFlash::render(); ?>
 			<h1>Sign in</h1>
-			<form action="/users/login" id="UserLoginForm" method="post" accept-charset="utf-8"><div style="display:none;"><input type="hidden" name="_method" value="POST"/></div>
+			<form action="/users/login" id="UserLoginForm" method="post" accept-charset="utf-8"><div hidden><input type="hidden" name="_method" value="POST"/></div>
 			<input type="hidden" name="redirect" value="<?php echo h($redirectUrl); ?>"/>
 			<input type="hidden" name="redirect_signature" value="<?php echo h($redirectSignature); ?>"/>
 			<div class="input text required">

@@ -32,7 +32,7 @@ endif;
 
 ?>
 
-<div align="center">
+<div class="legacy-center">
 	<?php echo $this->element('user_header', ['user' => $viewedUser, 'activeTab' => 'contributions']); ?>
 	<?php echo PaginationHelper::render($pageIndex, (int) ceil($count / $pageSize), 'page'); ?>
 	<table class="data-table">
