@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1794094605">
-  <project timestamp="1794094605">
+<coverage generated="1794095097">
+  <project timestamp="1794095097">
     <package name="App">
       <file name="/home/runner/work/tsumego-hero/tsumego-hero/src/Application.php">
         <class name="App\Application" namespace="App">
@@ -3830,11 +3830,11 @@
         <line num="190" type="stmt" count="1"/>
         <line num="194" type="stmt" count="26"/>
         <line num="195" type="stmt" count="26"/>
-        <line num="196" type="stmt" count="4"/>
-        <line num="197" type="stmt" count="4"/>
-        <line num="198" type="stmt" count="4"/>
-        <line num="199" type="stmt" count="4"/>
-        <line num="200" type="stmt" count="4"/>
+        <line num="196" type="stmt" count="6"/>
+        <line num="197" type="stmt" count="6"/>
+        <line num="198" type="stmt" count="6"/>
+        <line num="199" type="stmt" count="6"/>
+        <line num="200" type="stmt" count="6"/>
         <line num="202" type="stmt" count="26"/>
         <line num="203" type="stmt" count="26"/>
         <line num="204" type="stmt" count="26"/>
@@ -4232,7 +4232,7 @@
       </file>
       <file name="/home/runner/work/tsumego-hero/tsumego-hero/src/Controller/Component/PlayResultProcessorComponent.php">
         <class name="App\Controller\Component\PlayResultProcessorComponent" namespace="App\Controller\Component">
-          <metrics complexity="103" methods="19" coveredmethods="16" conditionals="0" coveredconditionals="0" statements="248" coveredstatements="245" elements="267" coveredelements="261"/>
+          <metrics complexity="103" methods="19" coveredmethods="17" conditionals="0" coveredconditionals="0" statements="248" coveredstatements="246" elements="267" coveredelements="263"/>
         </class>
         <line num="45" type="method" name="processResult" visibility="public" complexity="1" crap="1" count="145"/>
         <line num="47" type="stmt" count="145"/>
@@ -4254,7 +4254,7 @@
         <line num="87" type="stmt" count="145"/>
         <line num="89" type="stmt" count="145"/>
         <line num="90" type="stmt" count="145"/>
-        <line num="91" type="stmt" count="0"/>
+        <line num="91" type="stmt" count="1"/>
         <line num="93" type="stmt" count="145"/>
         <line num="94" type="stmt" count="29"/>
         <line num="97" type="stmt" count="145"/>
@@ -4501,7 +4501,7 @@
         <line num="491" type="stmt" count="7"/>
         <line num="492" type="stmt" count="4"/>
         <line num="494" type="stmt" count="4"/>
-        <metrics loc="497" ncloc="427" classes="1" methods="19" coveredmethods="16" conditionals="0" coveredconditionals="0" statements="248" coveredstatements="245" elements="267" coveredelements="261"/>
+        <metrics loc="497" ncloc="427" classes="1" methods="19" coveredmethods="17" conditionals="0" coveredconditionals="0" statements="248" coveredstatements="246" elements="267" coveredelements="263"/>
       </file>
     </package>
     <package name="App\Database">
@@ -5820,7 +5820,7 @@
         <line num="22" type="stmt" count="456"/>
         <line num="30" type="stmt" count="456"/>
         <line num="31" type="stmt" count="456"/>
-        <line num="32" type="stmt" count="2"/>
+        <line num="32" type="stmt" count="1"/>
         <line num="33" type="stmt" count="456"/>
         <line num="38" type="method" name="countRecent" visibility="public" complexity="1" crap="1" count="496"/>
         <line num="40" type="stmt" count="496"/>
@@ -5884,12 +5884,12 @@
         <class name="App\Model\Table\SetConnectionTable" namespace="App\Model\Table">
           <metrics complexity="13" methods="8" coveredmethods="8" conditionals="0" coveredconditionals="0" statements="29" coveredstatements="29" elements="37" coveredelements="37"/>
         </class>
-        <line num="14" type="method" name="privateCollectionSql" visibility="public" complexity="1" crap="1" count="755"/>
-        <line num="16" type="stmt" count="755"/>
-        <line num="24" type="method" name="displayOrderForSetSql" visibility="public" complexity="1" crap="1" count="755"/>
-        <line num="26" type="stmt" count="755"/>
-        <line num="32" type="method" name="displayOrderSql" visibility="public" complexity="1" crap="1" count="667"/>
-        <line num="34" type="stmt" count="667"/>
+        <line num="14" type="method" name="privateCollectionSql" visibility="public" complexity="1" crap="1" count="754"/>
+        <line num="16" type="stmt" count="754"/>
+        <line num="24" type="method" name="displayOrderForSetSql" visibility="public" complexity="1" crap="1" count="754"/>
+        <line num="26" type="stmt" count="754"/>
+        <line num="32" type="method" name="displayOrderSql" visibility="public" complexity="1" crap="1" count="666"/>
+        <line num="34" type="stmt" count="666"/>
         <line num="44" type="method" name="publicCollectionsWithMinimumProblemsSql" visibility="public" complexity="1" crap="1" count="15"/>
         <line num="46" type="stmt" count="15"/>
         <line num="47" type="stmt" count="15"/>
@@ -5914,13 +5914,13 @@
         <line num="84" type="stmt" count="49"/>
         <line num="85" type="stmt" count="49"/>
         <line num="86" type="stmt" count="49"/>
-        <line num="90" type="method" name="findDisplaySetConnection" visibility="public" complexity="1" crap="1" count="194"/>
-        <line num="92" type="stmt" count="194"/>
-        <line num="93" type="stmt" count="194"/>
-        <line num="94" type="stmt" count="194"/>
-        <line num="95" type="stmt" count="194"/>
-        <line num="96" type="stmt" count="194"/>
-        <line num="97" type="stmt" count="194"/>
+        <line num="90" type="method" name="findDisplaySetConnection" visibility="public" complexity="1" crap="1" count="193"/>
+        <line num="92" type="stmt" count="193"/>
+        <line num="93" type="stmt" count="193"/>
+        <line num="94" type="stmt" count="193"/>
+        <line num="95" type="stmt" count="193"/>
+        <line num="96" type="stmt" count="193"/>
+        <line num="97" type="stmt" count="193"/>
         <metrics loc="100" ncloc="74" classes="1" methods="8" coveredmethods="8" conditionals="0" coveredconditionals="0" statements="29" coveredstatements="29" elements="37" coveredelements="37"/>
       </file>
       <file name="/home/runner/work/tsumego-hero/tsumego-hero/src/Model/Table/SetTable.php">
@@ -9485,11 +9485,11 @@
         <line num="325" type="stmt" count="366"/>
         <line num="326" type="stmt" count="366"/>
         <line num="327" type="stmt" count="366"/>
-        <line num="330" type="method" name="swapColorWords" visibility="public" complexity="1" crap="1" count="57"/>
-        <line num="332" type="stmt" count="57"/>
-        <line num="333" type="stmt" count="57"/>
-        <line num="334" type="stmt" count="57"/>
-        <line num="335" type="stmt" count="57"/>
+        <line num="330" type="method" name="swapColorWords" visibility="public" complexity="1" crap="1" count="61"/>
+        <line num="332" type="stmt" count="61"/>
+        <line num="333" type="stmt" count="61"/>
+        <line num="334" type="stmt" count="61"/>
+        <line num="335" type="stmt" count="61"/>
         <line num="340" type="method" name="tsumegoStatus" visibility="private" complexity="5" crap="5" count="368"/>
         <line num="342" type="stmt" count="368"/>
         <line num="343" type="stmt" count="8"/>
@@ -13249,6 +13249,6 @@
         <metrics loc="70" ncloc="54" classes="1" methods="1" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="30" coveredstatements="28" elements="31" coveredelements="28"/>
       </file>
     </package>
-    <metrics files="247" loc="27241" ncloc="22912" classes="184" methods="1388" coveredmethods="1131" conditionals="0" coveredconditionals="0" statements="10360" coveredstatements="9877" elements="11748" coveredelements="11008"/>
+    <metrics files="247" loc="27241" ncloc="22912" classes="184" methods="1388" coveredmethods="1132" conditionals="0" coveredconditionals="0" statements="10360" coveredstatements="9878" elements="11748" coveredelements="11010"/>
   </project>
 </coverage>
