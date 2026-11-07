@@ -95,7 +95,7 @@
 
 	a
 	{
-		color: var(--link-color);
+		color: var(--color-link);
 	}
 
 	a:hover
@@ -160,7 +160,7 @@
 	   that emit stock FormHelper markup (login, add-user, create/edit set). */
 	fieldset
 	{
-		border: 1px solid var(--current-border-color);
+		border: 1px solid var(--color-border);
 		border-radius: var(--radius-sm);
 		padding: var(--space-3);
 		margin-bottom: var(--space-4);
@@ -170,7 +170,7 @@
 	{
 		font-weight: var(--font-weight-bold);
 		padding: 0 var(--space-1);
-		color: var(--text-color);
+		color: var(--color-text);
 	}
 
 	label
@@ -178,7 +178,7 @@
 		display: block;
 		font-weight: var(--font-weight-bold);
 		margin-bottom: var(--space-1);
-		color: var(--text-color);
+		color: var(--color-text);
 	}
 
 	input[type="text"],
@@ -191,9 +191,9 @@
 	{
 		width: 100%;
 		box-sizing: border-box;
-		background: var(--surface-bar);
-		color: var(--text-color);
-		border: 1px solid var(--current-border-color);
+		background: var(--color-surface-sunken);
+		color: var(--color-text);
+		border: 1px solid var(--color-border);
 		border-radius: var(--radius-sm);
 		padding: var(--space-2);
 		font: inherit;
@@ -201,13 +201,13 @@
 
 	form .error
 	{
-		color: var(--feedback-error);
+		color: var(--color-danger);
 		font-size: var(--font-size-sm);
 	}
 
 	form .required label::after
 	{
 		content: " *";
-		color: var(--feedback-error);
+		color: var(--color-danger);
 	}
 }

@@ -226,11 +226,11 @@
 		/* ── Accent / feedback tokens (auto-adapt light ↔ dark) ── */
 		--color-blue-accent: #007bff;
 		--color-blue-accent-hover: #0056b3;
-		--feedback-error: #e03c4b;
-		--feedback-warning: #f0ad4e;
-		--surface-danger: #fee;
-		--surface-hover: #eee;
-		--surface-hover-strong: #ddd;
+		--color-danger: #e03c4b;
+		--color-warning: #f0ad4e;
+		--color-danger-surface: #fee;
+		--color-surface-hover: #eee;
+		--color-surface-hover-strong: #ddd;
 		--surface-panel-light: #f0f0f0;
 		--issue-highlight-gradient: linear-gradient(#666, #555);
 
@@ -322,20 +322,43 @@
 		--color-red-light: #ff8080;
 	}
 
+	/* ── Colour roles: what a colour is for. Components and new rules use these; the theme blocks
+	   below give them their light and dark values. The names on the left are the older ones,
+	   kept as aliases until no rule uses them. ── */
+	:root
+	{
+		--text-color: var(--color-text);
+		--text-softer-color: var(--color-text-muted);
+		--link-color: var(--color-link);
+		--current-border-color: var(--color-border);
+		--info-box-background: var(--color-surface);
+		--surface-bar: var(--color-surface-sunken);
+		--surface-hover: var(--color-surface-hover);
+		--surface-hover-strong: var(--color-surface-hover-strong);
+		--feedback-error: var(--color-danger);
+		--feedback-warning: var(--color-warning);
+		--surface-danger: var(--color-danger-surface);
+		--color-brand: var(--color-green);
+		--color-brand-strong: var(--color-green-dark);
+		--color-accent: var(--color-purple);
+		--color-info: var(--color-blue);
+		--color-on-fill: var(--color-white);
+	}
+
 	/* ── Theme tokens: light is default (:root) ── */
 	:root
 	{
-		--text-color: #222;
-		--text-softer-color: grey;
-		--link-color: #0000EE;
-		--current-border-color: #ccc;
+		--color-text: #222;
+		--color-text-muted: grey;
+		--color-link: #0000EE;
+		--color-border: #ccc;
 		--chart-text-color: #999;
 		--chart-grid-color: rgba(0, 0, 0, 0.08);
 		--chart-background: transparent;
 		--chart-separator-color: #fff;
 		--chart-tooltip-background: rgba(20, 20, 20, 0.95);
 		--chart-tooltip-text-color: #fff;
-		--surface-bar: #f5f5f5;
+		--color-surface-sunken: #f5f5f5;
 		--dark-button-icon: url("/img/light-icon1x.png");
 		--new1-gradient: linear-gradient(#fff, #f2f2f2);
 		--surface-button-neutral-hover: #d6d6d6;
@@ -364,7 +387,7 @@
 		--active-paginator-button-text-color: #fff;
 		--paginator-info-text-color: #666;
 		--admin-text-color: #1010EE;
-		--info-box-background: #fff;
+		--color-surface: #fff;
 		/* The ring around what the keyboard acts on: at least 3:1 against the white box and the dark menu */
 		--color-focus: var(--color-blue);
 		--alert-success-bg: #e6f9e6;
@@ -380,14 +403,14 @@
 	/* ── Dark theme overrides ── */
 	[data-theme="dark"]
 	{
-		--text-color: #ddd;
-		--text-softer-color: grey;
-		--link-color: #f0f0f0;
-		--current-border-color: #444;
+		--color-text: #ddd;
+		--color-text-muted: grey;
+		--color-link: #f0f0f0;
+		--color-border: #444;
 		--chart-grid-color: rgba(255, 255, 255, 0.08);
 		--chart-background: #2a2a2a;
 		--chart-separator-color: #2a2a2a;
-		--surface-bar: #303030;
+		--color-surface-sunken: #303030;
 		--dark-button-icon: url("/img/dark-icon1.png");
 		--new1-gradient: linear-gradient(#3c3c3c, #2a2a2a);
 		--surface-button-neutral-hover: #555;
@@ -412,15 +435,15 @@
 		--active-paginator-button-text-color: #000;
 		--paginator-info-text-color: #999;
 		--admin-text-color: #7EE0FF;
-		--info-box-background: #2a2a2a;
+		--color-surface: #2a2a2a;
 		--color-focus: #6db3f2;
 		--color-blue-accent: #6db3f2;
 		--color-blue-accent-hover: #9dd0ff;
-		--feedback-error: #ff6b6b;
-		--feedback-warning: #c87f0a;
-		--surface-danger: #3a2020;
-		--surface-hover: #3a3a3a;
-		--surface-hover-strong: #444;
+		--color-danger: #ff6b6b;
+		--color-warning: #c87f0a;
+		--color-danger-surface: #3a2020;
+		--color-surface-hover: #3a3a3a;
+		--color-surface-hover-strong: #444;
 		--surface-rank-bg: transparent;
 		--alert-success-bg: #1a3a1a;
 		--alert-success-fg: #82c95b;

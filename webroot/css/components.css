@@ -58,7 +58,7 @@
 /* ── Card ── */
 .card
 {
-	border: 3px solid var(--current-border-color);
+	border: 3px solid var(--color-border);
 	box-sizing: border-box;
 	padding: var(--space-2);
 }
@@ -76,7 +76,7 @@
 .card__title
 {
 	font-weight: var(--font-weight-heavy);
-	color: var(--text-softer-color);
+	color: var(--color-text-muted);
 	text-transform: uppercase;
 	font-size: var(--font-size-base);
 	letter-spacing: 0.05em;
@@ -86,8 +86,8 @@
 /* ── Info box (muted callout / empty-state container) ── */
 .info-box
 {
-	background: var(--info-box-background);
-	border: 1px solid var(--current-border-color);
+	background: var(--color-surface);
+	border: 1px solid var(--color-border);
 	border-radius: var(--radius-md);
 	padding: var(--space-6);
 }
@@ -141,7 +141,7 @@
 .progress
 {
 	height: 18px;
-	background: var(--surface-bar);
+	background: var(--color-surface-sunken);
 	border-radius: var(--radius-full);
 	overflow: hidden;
 	margin-top: var(--space-1);
@@ -362,14 +362,14 @@
 
 .btn--warning
 {
-	background: var(--feedback-warning);
-	border-color: var(--feedback-warning);
+	background: var(--color-warning);
+	border-color: var(--color-warning);
 	color: var(--color-white);
 }
 
 .btn--warning:hover
 {
-	background: var(--feedback-warning);
+	background: var(--color-warning);
 	color: var(--color-white);
 }
 
@@ -409,7 +409,7 @@
 .btn--neutral
 {
 	background: var(--new1-gradient);
-	color: var(--text-color);
+	color: var(--color-text);
 	border: 1px solid var(--color-black);
 	border-radius: 5px;
 }
@@ -425,13 +425,13 @@
 	display: flex;
 	gap: 0;
 	justify-content: center;
-	border-bottom: 2px solid var(--current-border-color);
+	border-bottom: 2px solid var(--color-border);
 }
 
 .subnav__link
 {
 	padding: var(--space-3) var(--space-5);
-	color: var(--text-softer-color);
+	color: var(--color-text-muted);
 	text-decoration: none;
 	font-weight: var(--font-weight-bold);
 	font-size: var(--font-size-lg);
@@ -450,7 +450,7 @@
 
 .subnav__link--active
 {
-	color: var(--text-color);
+	color: var(--color-text);
 	border-bottom-color: var(--color-green);
 }
 
@@ -464,9 +464,9 @@
 	font-weight: var(--font-weight-bold);
 	text-transform: uppercase;
 	letter-spacing: 0.04em;
-	border: 1px solid var(--current-border-color);
+	border: 1px solid var(--color-border);
 	border-radius: var(--radius-full);
-	color: var(--text-softer-color);
+	color: var(--color-text-muted);
 }
 
 .badge--active
@@ -532,14 +532,14 @@
 	padding: 2px 8px;
 	border-radius: 12px;
 	font-size: 13px;
-	background: var(--info-box-background);
-	color: var(--text-color);
-	border: 1px solid var(--current-border-color);
+	background: var(--color-surface);
+	color: var(--color-text);
+	border: 1px solid var(--color-border);
 }
 
 .tag-pill a
 {
-	color: var(--link-color);
+	color: var(--color-link);
 	text-decoration: none;
 }
 
@@ -549,7 +549,7 @@
 	padding: 0;
 	background: none;
 	border: none;
-	color: var(--text-softer-color);
+	color: var(--color-text-muted);
 	cursor: pointer;
 	font-size: var(--font-size-md);
 }
@@ -565,7 +565,7 @@
 
 .field__option
 {
-	color: var(--text-color);
+	color: var(--color-text);
 	font-size: var(--font-size-md);
 	cursor: pointer;
 }
@@ -578,7 +578,7 @@
 .field__label
 {
 	font-weight: var(--font-weight-bold);
-	color: var(--text-color);
+	color: var(--color-text);
 }
 
 /* When a field has a group label (e.g. a preference heading), the label sits
@@ -600,16 +600,16 @@
 	display: block;
 	font-weight: var(--font-weight-bold);
 	margin-bottom: var(--space-1);
-	color: var(--text-color);
+	color: var(--color-text);
 }
 
 .form-field__control
 {
 	width: 100%;
 	box-sizing: border-box;
-	background: var(--surface-bar);
-	color: var(--text-color);
-	border: 1px solid var(--current-border-color);
+	background: var(--color-surface-sunken);
+	color: var(--color-text);
+	border: 1px solid var(--color-border);
 	border-radius: var(--radius-sm);
 	padding: var(--space-2);
 }
@@ -620,7 +620,7 @@
 	width: 24px;
 	height: 24px;
 	padding: 0;
-	border: 2px solid var(--current-border-color);
+	border: 2px solid var(--color-border);
 	border-radius: var(--radius-full);
 	cursor: pointer;
 	background: none;
@@ -631,7 +631,7 @@
 {
 	cursor: pointer;
 	font-size: var(--font-size-sm);
-	color: var(--text-softer-color);
+	color: var(--color-text-muted);
 	margin-left: var(--space-3);
 	vertical-align: middle;
 }
@@ -657,7 +657,7 @@
 	width: 24px;
 	height: 24px;
 	border-radius: var(--radius-full);
-	border: 2px solid var(--current-border-color);
+	border: 2px solid var(--color-border);
 	cursor: pointer;
 	background: var(--swatch-color);
 }
@@ -673,9 +673,9 @@
 {
 	position: absolute;
 	z-index: 1000;
-	background: var(--surface-bar);
-	border: 1px solid var(--current-border-color);
-	color: var(--text-color);
+	background: var(--color-surface-sunken);
+	border: 1px solid var(--color-border);
+	color: var(--color-text);
 	padding: var(--space-2);
 	max-height: 300px;
 	overflow-y: auto;
@@ -689,13 +689,13 @@
 	padding: var(--space-1);
 	cursor: pointer;
 	white-space: nowrap;
-	color: var(--text-color);
+	color: var(--color-text);
 }
 
 .dropdown__empty
 {
 	padding: var(--space-1);
-	color: var(--text-softer-color);
+	color: var(--color-text-muted);
 }
 
 /* ── Dropdown trigger / overlay / menu (checkbox-hack + JS toggled popover) ── */
@@ -716,8 +716,8 @@
 
 .dropdown__menu
 {
-	background: var(--surface-bar);
-	border: var(--current-border-color) solid 1px;
+	background: var(--color-surface-sunken);
+	border: var(--color-border) solid 1px;
 	border-radius: 3px;
 	position: absolute;
 	opacity: 0;
@@ -856,7 +856,7 @@
 .hint
 {
 	font-size: var(--font-size-base);
-	color: var(--text-softer-color);
+	color: var(--color-text-muted);
 }
 
 .hint--danger
@@ -887,7 +887,7 @@
 	display: inline-block;
 	margin: 0 2px;
 	padding: 5px 10px;
-	border: 1px solid var(--current-border-color);
+	border: 1px solid var(--color-border);
 	text-decoration: none;
 	color: var(--paginator-button-text-color);
 	border-radius: 3px;
@@ -929,38 +929,38 @@
 
 .data-table th
 {
-	color: var(--text-softer-color);
+	color: var(--color-text-muted);
 	position: sticky;
 	top: 0;
-	background: var(--info-box-background);
+	background: var(--color-surface);
 	z-index: 1;
 }
 
 .data-table td
 {
 	padding: 15px;
-	border-top: 1px solid var(--current-border-color);
-	border-bottom: 1px solid var(--current-border-color);
-	background: var(--info-box-background);
-	color: var(--text-color);
+	border-top: 1px solid var(--color-border);
+	border-bottom: 1px solid var(--color-border);
+	background: var(--color-surface);
+	color: var(--color-text);
 	font-weight: normal;
 }
 
 .data-table td:first-child
 {
 	border-radius: 12px 0 0 12px;
-	border-left: 1px solid var(--current-border-color);
+	border-left: 1px solid var(--color-border);
 }
 
 .data-table td:last-child
 {
 	border-radius: 0 12px 12px 0;
-	border-right: 1px solid var(--current-border-color);
+	border-right: 1px solid var(--color-border);
 }
 
 .data-table tr:nth-child(even) td
 {
-	background: var(--surface-bar);
+	background: var(--color-surface-sunken);
 }
 
 .data-table--compact td
@@ -983,7 +983,7 @@
 .data-table__row--separator td
 {
 	font-size: 24px;
-	color: var(--text-softer-color);
+	color: var(--color-text-muted);
 	padding: 4px 0;
 	border: none;
 	background: transparent;
@@ -1054,9 +1054,9 @@
 {
 	background: linear-gradient(
 		90deg,
-		var(--surface-hover) 25%,
-		var(--surface-hover-strong) 50%,
-		var(--surface-hover) 75%
+		var(--color-surface-hover) 25%,
+		var(--color-surface-hover-strong) 50%,
+		var(--color-surface-hover) 75%
 	);
 	background-size: 200% 100%;
 	animation: skeleton-shimmer 1.5s infinite;
@@ -1073,8 +1073,8 @@
 {
 	padding: 20px;
 	margin: 20px 14px;
-	background: var(--surface-danger);
-	border: 2px solid var(--feedback-error);
+	background: var(--color-danger-surface);
+	border: 2px solid var(--color-danger);
 	border-radius: 8px;
 	text-align: center;
 }
@@ -1082,7 +1082,7 @@
 .error-message p
 {
 	margin: 0 0 15px 0;
-	color: var(--feedback-error);
+	color: var(--color-danger);
 	font-size: 14px;
 }
 
@@ -1090,8 +1090,8 @@
 {
 	padding: 30px;
 	margin: 20px 14px;
-	background: var(--surface-danger);
-	border: 3px solid var(--feedback-error);
+	background: var(--color-danger-surface);
+	border: 3px solid var(--color-danger);
 	border-radius: 8px;
 	text-align: center;
 }
@@ -1099,14 +1099,14 @@
 .error-boundary__content h3
 {
 	margin: 0 0 10px 0;
-	color: var(--feedback-error);
+	color: var(--color-danger);
 	font-size: 18px;
 }
 
 .error-boundary__content p
 {
 	margin: 0 0 20px 0;
-	color: var(--text-softer-color);
+	color: var(--color-text-muted);
 	font-size: 14px;
 }
 
@@ -1116,14 +1116,14 @@
 	text-align: left;
 	padding: 10px;
 	background: var(--color-white);
-	border: 1px solid var(--surface-hover-strong);
+	border: 1px solid var(--color-surface-hover-strong);
 	border-radius: 4px;
 }
 
 .error-boundary__details summary
 {
 	cursor: pointer;
-	color: var(--text-softer-color);
+	color: var(--color-text-muted);
 	font-size: 12px;
 	padding: 5px;
 }
@@ -1132,17 +1132,17 @@
 {
 	margin: 10px 0 0 0;
 	padding: 10px;
-	background: var(--surface-bar);
-	border: 1px solid var(--surface-hover-strong);
+	background: var(--color-surface-sunken);
+	border: 1px solid var(--color-surface-hover-strong);
 	border-radius: 4px;
 	overflow-x: auto;
 	font-size: 11px;
-	color: var(--feedback-error);
+	color: var(--color-danger);
 }
 
 .loading
 {
-	color: var(--text-softer-color);
+	color: var(--color-text-muted);
 	font-size: var(--font-size-md);
 }
 
@@ -1267,7 +1267,7 @@
 .chart__title {
 	font-weight: bold;
 	text-align: left;
-	color: var(--text-color);
+	color: var(--color-text);
 	padding: var(--space-1) var(--space-2);
 }
 .chart__legend {
@@ -1370,7 +1370,7 @@
 .bar-chart__total {
 	padding-left: var(--space-1);
 	font-weight: bold;
-	color: var(--text-color);
+	color: var(--color-text);
 }
 .bar-chart__grid,
 .bar-chart__axis {
