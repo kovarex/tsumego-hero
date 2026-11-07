@@ -348,9 +348,6 @@ li a.menuLi.nav__link--active {
   border-radius: 5px;
   -webkit-filter: blur(5px);
 }
-*:focus {
-  outline: none;
-}
 .sitesTable td {
   vertical-align: top;
 }
