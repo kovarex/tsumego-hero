@@ -363,7 +363,8 @@
 .achievement-view__back {
   text-decoration: none;
 }
-.achievement-view__progress {
+/* The progress bar of a counter achievement */
+#achievementWrapper .progress {
   width: 220px;
   margin: 0 auto;
 }
