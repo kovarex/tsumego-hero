@@ -43,6 +43,7 @@ return [
 		'/avatar/5/bbbbbbbbbbbbbbbb.webp' => ['Avatars', 'picture', ['5', 'bbbbbbbbbbbbbbbb']],
 		'/roles' => ['Roles', 'index', []],
 		'/roles/change/5' => ['Roles', 'change', ['5']],
+		'/rum/record' => ['Rum', 'record', []],
 		'/admin' => ['Admin', 'index', []],
 		'/admin/activity' => ['Admin', 'activity', []],
 		'/admin/sgf-proposals' => ['Admin', 'sgfProposals', []],
