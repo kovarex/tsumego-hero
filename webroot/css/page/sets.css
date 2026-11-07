@@ -21,13 +21,13 @@
 }
 
 .setViewAccuracy {
-  color: var(--set-accent-purple);
+  color: var(--set-accuracy);
   margin: 2px 9px;
   padding: 3px;
   display: inline-block;
 }
 .setViewTime {
-  color: var(--set-accent-orange);
+  color: var(--set-time);
   margin: 2px 9px;
   padding: 3px;
   display: inline-block;
@@ -162,12 +162,8 @@
   padding: 6px 10px;
   margin: 5px;
   border-radius: 5px;
-  background: var(--surface-ink);
-  color: var(--surface-muted-text);
-}
-[data-theme="light"] .btn.set-search {
-  background: var(--surface-dark);
-  color: var(--color-white);
+  background: var(--set-filter-background);
+  color: var(--set-filter-text);
 }
 /* Active filter accent: the set-search-menu gets query-{filter} (from the
    query cookie) and the matching button text/icon + border is colored. */
@@ -235,14 +231,14 @@
 }
 #submit-size-button {
   border: 1px solid var(--surface-near-black);
-  background: var(--surface-dark);
+  background: var(--set-size-background);
 }
 #submit-size-button:disabled {
   background: var(--color-white);
   color: var(--color-white);
 }
 #set-size-input {
-  background: var(--surface-dark);
+  background: var(--set-size-background);
   width: 90px;
   border: 1px solid var(--surface-near-black);
   padding: 5px;
@@ -261,6 +257,11 @@
 }
 #tags-button {
   border: 1px solid var(--surface-near-black);
+}
+#tags-button:hover,
+#difficulty-button:hover,
+#topics-button:hover {
+  background: var(--set-filter-hover-background);
 }
 #tile-topics-submit {
   color: var(--color-topic);
@@ -600,34 +601,6 @@
 	}
 }
 
-/* Dark overrides */
-[data-theme="dark"] .setViewAccuracy {
-	color: var(--set-accent-purple-dark);
-}
-[data-theme="dark"] .setViewTime {
-	color: var(--set-accent-orange-dark);
-}
-[data-theme="dark"] #set-size-input {
-	background: var(--surface-ink2);
-	width: 90px;
-	border: 1px solid var(--surface-near-black);
-	padding: 5px;
-	border-radius: 4px;
-	color: var(--surface-muted-text);
-	font-size: 16px;
-	font-weight: 800;
-	padding: 6px 10px;
-	margin: 5px;
-}
-[data-theme="dark"] #submit-size-button {
-	border: 1px solid var(--surface-near-black);
-	background: var(--surface-ink2);
-}
-[data-theme="dark"] #tags-button:hover,
-[data-theme="dark"] #difficulty-button:hover,
-[data-theme="dark"] #topics-button:hover {
-	background: var(--surface-border-strong);
-}
 
 /* ── Set card (set collection tiles) ──*/
 .set-card__link {
@@ -654,16 +627,7 @@
 	box-shadow: 2px 2px 4px black;
 }
 .set-card:hover {
-	background-image: linear-gradient(
-		rgba(200, 200, 200, 0.3),
-		rgba(33, 33, 33, 0.35)
-	) !important;
-}
-[data-theme="light"] .set-card:hover {
-	background-image: linear-gradient(
-		rgba(200, 200, 200, 0.6),
-		rgba(33, 33, 33, 0.65)
-	) !important;
+	background-image: var(--set-card-hover-shade) !important;
 }
 .set-card__top {
 	grid-area: collection-top;

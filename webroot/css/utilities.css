@@ -9,7 +9,7 @@
 /* Muted text */
 .text-muted
 {
-	color: var(--text-softer-color);
+	color: var(--color-text-muted);
 }
 
 /* Alignment */
