@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1794059824">
-  <project timestamp="1794059824">
+<coverage generated="1794066824">
+  <project timestamp="1794066824">
     <package name="App">
       <file name="/home/runner/work/tsumego-hero/tsumego-hero/src/Application.php">
         <class name="App\Application" namespace="App">
@@ -7167,7 +7167,7 @@
         <line num="89" type="stmt" count="1499"/>
         <line num="90" type="stmt" count="1499"/>
         <line num="91" type="stmt" count="1499"/>
-        <line num="92" type="stmt" count="217"/>
+        <line num="92" type="stmt" count="216"/>
         <line num="94" type="stmt" count="1499"/>
         <line num="97" type="method" name="unlocked" visibility="public" complexity="1" crap="1" count="1522"/>
         <line num="99" type="stmt" count="1522"/>
@@ -8170,7 +8170,7 @@
         <line num="124" type="stmt" count="51"/>
         <line num="133" type="method" name="progressOf" visibility="public" complexity="3" crap="3" count="1012"/>
         <line num="135" type="stmt" count="1012"/>
-        <line num="136" type="stmt" count="988"/>
+        <line num="136" type="stmt" count="989"/>
         <line num="137" type="stmt" count="115"/>
         <line num="138" type="stmt" count="115"/>
         <line num="148" type="method" name="view" visibility="public" complexity="1" crap="1" count="1008"/>
@@ -8212,8 +8212,8 @@
         <line num="219" type="method" name="daysBetween" visibility="private" complexity="1" crap="1" count="86"/>
         <line num="221" type="stmt" count="86"/>
         <line num="222" type="stmt" count="86"/>
-        <line num="225" type="method" name="addDays" visibility="private" complexity="2" crap="2" count="9"/>
-        <line num="227" type="stmt" count="9"/>
+        <line num="225" type="method" name="addDays" visibility="private" complexity="2" crap="2" count="10"/>
+        <line num="227" type="stmt" count="10"/>
         <metrics loc="230" ncloc="172" classes="1" methods="16" coveredmethods="16" conditionals="0" coveredconditionals="0" statements="84" coveredstatements="84" elements="100" coveredelements="100"/>
       </file>
       <file name="/home/runner/work/tsumego-hero/tsumego-hero/src/Utility/DataTableRenderer.php">
@@ -9472,11 +9472,11 @@
         <line num="325" type="stmt" count="361"/>
         <line num="326" type="stmt" count="361"/>
         <line num="327" type="stmt" count="361"/>
-        <line num="330" type="method" name="swapColorWords" visibility="public" complexity="1" crap="1" count="61"/>
-        <line num="332" type="stmt" count="61"/>
-        <line num="333" type="stmt" count="61"/>
-        <line num="334" type="stmt" count="61"/>
-        <line num="335" type="stmt" count="61"/>
+        <line num="330" type="method" name="swapColorWords" visibility="public" complexity="1" crap="1" count="60"/>
+        <line num="332" type="stmt" count="60"/>
+        <line num="333" type="stmt" count="60"/>
+        <line num="334" type="stmt" count="60"/>
+        <line num="335" type="stmt" count="60"/>
         <line num="340" type="method" name="tsumegoStatus" visibility="private" complexity="5" crap="5" count="363"/>
         <line num="342" type="stmt" count="363"/>
         <line num="343" type="stmt" count="8"/>
@@ -11902,7 +11902,7 @@
         <line num="238" type="stmt" count="312"/>
         <line num="239" type="stmt" count="287"/>
         <line num="241" type="stmt" count="312"/>
-        <line num="242" type="stmt" count="42"/>
+        <line num="242" type="stmt" count="41"/>
         <line num="243" type="stmt" count="312"/>
         <line num="244" type="stmt" count="63"/>
         <line num="245" type="stmt" count="312"/>
@@ -12530,7 +12530,7 @@
         <line num="14" type="stmt" count="8"/>
         <line num="15" type="stmt" count="356"/>
         <line num="16" type="stmt" count="111"/>
-        <line num="17" type="stmt" count="311"/>
+        <line num="17" type="stmt" count="312"/>
         <line num="18" type="stmt" count="3"/>
         <line num="19" type="stmt" count="362"/>
         <line num="21" type="stmt" count="362"/>
