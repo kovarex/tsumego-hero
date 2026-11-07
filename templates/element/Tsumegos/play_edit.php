@@ -36,7 +36,7 @@ $variantType = $tv ? (int) $tv->tsumego_variant_type_id : null;
 		<?php if (Auth::isAdmin()): ?>
 			<a id="openSgfLink" href="/editor/?setConnectionID=<?php echo $setConnection->id; ?>&sgfID=<?php echo $sgf->id; ?>" class="selectable-text mr-5">Open</a>
 		<?php elseif ($isAllowedToContribute && $hasSgfProposal): ?>
-			<a id="openSgfLink" href="/editor/?setConnectionID=<?php echo $setConnection->id; ?>&sgfID=<?php echo $sgf->id; ?>&proposal=1" class="selectable-text mr-5" style="color:var(--text-softer-color);">Proposal sent</a>
+			<a id="openSgfLink" href="/editor/?setConnectionID=<?php echo $setConnection->id; ?>&sgfID=<?php echo $sgf->id; ?>&proposal=1" class="selectable-text mr-5 play-edit__proposal-sent">Proposal sent</a>
 		<?php elseif ($isAllowedToContribute): ?>
 			<a id="openSgfLink" href="/editor/?setConnectionID=<?php echo $setConnection->id; ?>&sgfID=<?php echo $sgf->id; ?>&proposal=1" class="selectable-text mr-5">Make Proposal</a>
 		<?php endif; ?>
@@ -63,13 +63,13 @@ $variantType = $tv ? (int) $tv->tsumego_variant_type_id : null;
 				<tr>
 					<td><label for="description">Description:</label></td>
 					<td>
-						<textarea name="description" id="description" rows="3" style="width: 100%;"><?php echo h($displayDescription); ?></textarea>
-						<br><small style="color: #888;">Describe the problem. <?php echo ($playerColor === 'white') ? 'White' : 'Black'; ?> is to move.</small>
+						<textarea name="description" id="description" rows="3" class="play-edit__field"><?php echo h($displayDescription); ?></textarea>
+						<br><small class="play-edit__note">Describe the problem. <?php echo ($playerColor === 'white') ? 'White' : 'Black'; ?> is to move.</small>
 					</td>
 				</tr>
 				<tr>
 					<td><label for="hint">Hint:</label></td>
-					<td><textarea name="hint" id="hint" rows="1" style="width: 100%;"><?php echo h($tsumego->hint); ?></textarea></td>
+					<td><textarea name="hint" id="hint" rows="1" class="play-edit__field"><?php echo h($tsumego->hint); ?></textarea></td>
 				</tr>
 				<tr>
 					<td><label for="rating">Rating:</label></td>
@@ -130,7 +130,7 @@ $variantType = $tv ? (int) $tv->tsumego_variant_type_id : null;
 						<td><label for="delete">Delete:</label></td>
 						<td>
 							<input type="text" name="delete" id="delete" value="" placeholder="Type delete">
-							<br><small style="color: #888;">Moves the problem to the trash, it can be restored for <?php echo Trash::$RETENTION_DAYS; ?> days.</small>
+							<br><small class="play-edit__note">Moves the problem to the trash, it can be restored for <?php echo Trash::$RETENTION_DAYS; ?> days.</small>
 						</td>
 					</tr>
 				<?php endif; ?>

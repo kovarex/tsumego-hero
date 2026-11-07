@@ -18,19 +18,19 @@ $today = date('Y-m-d');
 	<p class="hint">Problems are prepared in a sandbox set and scheduled to move into a public set, one day at a time. The daily cron publishes what is due, and a schedule that starts today publishes right away.</p>
 </div>
 
-<div class="stack" style="gap:var(--space-5);align-items:stretch">
+<div class="stack schedule-page">
 	<div class="card">
 		<h2 class="card__title">Upcoming</h2>
 		<?php if (empty($upcoming)): ?>
 			<p class="hint">No problems scheduled.</p>
 		<?php else: ?>
 		<div class="set-view-main">
-		<table class="data-table" style="width:100%">
+		<table class="data-table schedule-page__table">
 			<thead>
 				<tr>
 					<th>Publish date</th>
 					<th>Source set</th>
-					<th>Problem <label style="cursor:pointer;font-weight:normal;font-size:11px;color:#888;margin-left:4px" title="Toggle board previews"><input type="checkbox" class="preview-zoom-toggle" style="vertical-align:middle;margin-right:2px">Preview</label></th>
+					<th>Problem <label class="schedule-page__column-toggle" title="Toggle board previews"><input type="checkbox" class="preview-zoom-toggle">Preview</label></th>
 					<th>Publishing to</th>
 					<th>Scheduled by</th>
 					<th></th>
@@ -71,7 +71,7 @@ $today = date('Y-m-d');
 						<?php endif; ?>
 					</td>
 					<td>
-						<form method="post" action="/schedule/cancel/<?php echo $row['id']; ?>" style="display:inline"
+						<form method="post" action="/schedule/cancel/<?php echo $row['id']; ?>" class="inline-form"
 							onsubmit="return confirm('Cancel scheduling this problem?')">
 							<button class="btn btn--danger" type="submit">Cancel</button>
 						</form>
@@ -90,7 +90,7 @@ $today = date('Y-m-d');
 		<?php if (empty($recentlyPublished)): ?>
 			<p class="hint">Nothing published in the last 7 days.</p>
 		<?php else: ?>
-		<table class="data-table" style="width:100%">
+		<table class="data-table schedule-page__table">
 			<thead>
 				<tr>
 					<th>Publish date</th>
@@ -117,9 +117,9 @@ $today = date('Y-m-d');
 		<?php endif; ?>
 	</div>
 
-	<div class="card card--green" style="max-width:500px">
+	<div class="card card--green schedule-page__form-card">
 		<h2 class="card__title">Schedule problems</h2>
-		<form method="post" action="/schedule/add" style="text-align:left" id="schedule-form">
+		<form method="post" action="/schedule/add" class="schedule-page__form" id="schedule-form">
 			<div class="form-field">
 				<label class="form-field__label" for="schedule-from">Source sandbox set</label>
 				<select class="form-field__control" id="schedule-from" name="set_id_from">
@@ -160,9 +160,9 @@ $today = date('Y-m-d');
 			</div>
 			<button class="btn" type="submit" id="schedule-submit">Schedule</button>
 		</form>
-		<div style="margin-top:var(--space-4)">
-			<label style="cursor:pointer;font-size:12px;color:#888;margin-bottom:var(--space-2);display:inline-block" title="Toggle board previews">
-				<input type="checkbox" class="preview-zoom-toggle" data-target="#schedule-preview" style="vertical-align:middle;margin-right:4px">Preview
+		<div class="schedule-page__preview">
+			<label class="schedule-page__preview-toggle" title="Toggle board previews">
+				<input type="checkbox" class="preview-zoom-toggle" data-target="#schedule-preview">Preview
 			</label>
 			<div id="schedule-preview" class="set-view-main"></div>
 		</div>

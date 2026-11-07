@@ -14,7 +14,7 @@ use App\Utility\ViteManifest;
  */
 
 ?>
-<div style="text-align:center;">
+<div class="text-center">
 	<p class="title">
 		Similar problem search:
 	<p>Search took: <?php echo round($result->elapsed, 1); ?> seconds</p>
@@ -24,10 +24,10 @@ use App\Utility\ViteManifest;
 	<tr>
 		<td><b>Source</b></td>
 		<td id="previewMaster"><span></span></td>
-		<td style="text-align:right"><?php echo $sourceMoveCount ?></td>
+		<td class="text-right"><?php echo $sourceMoveCount ?></td>
 		<td></td>
 		<td>
-			<div style="display:flex;align-items: center">
+			<div class="duplicate-search__problem">
 			<?php
 				$sourceTsumegoButton->render();
 				echo '&nbsp;&nbsp;';
@@ -42,7 +42,7 @@ use App\Utility\ViteManifest;
 			echo '<tr>';
 			echo '<td>' . $item->difference . '</td>';
 			echo '<td id="preview' . $item->tsumegoButton->setConnectionID . '"><span></span></td>';
-			echo '<td style="text-align:right">' . $item->moveCount . '</td>';
+			echo '<td class="text-right">' . $item->moveCount . '</td>';
 			echo '<td>';
 			if (Auth::isAdmin())
 			{
@@ -55,7 +55,7 @@ use App\Utility\ViteManifest;
 			else
 				echo '(Only admins)';
 			echo '</td>';
-			echo '<td><div style="display:flex;align-items: center">';
+			echo '<td><div class="duplicate-search__problem">';
 			$item->tsumegoButton->render();
 			echo '&nbsp;&nbsp;';
 			echo h($item->title) . '</div></td>';

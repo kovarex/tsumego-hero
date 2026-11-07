@@ -9,17 +9,17 @@ use App\Utility\CommentsRenderer;
  */
 
 ?>
-	<table class="co-table" width="100%">
+	<table class="co-table">
 	<tr>
-	<td width="50%">
+	<td class="co-table__half">
 		<p class="title4">Comments</p>
-		<div class="new1" width="100%" style="margin-bottom:15px;">
-			<div align="center"><?php $allComments->render(); ?></div>
+		<div class="new1 co-table__all">
+			<div class="legacy-center"><?php $allComments->render(); ?></div>
 		</div>
 	</td>
-	<td width="50%">
+	<td class="co-table__half">
 		<p class="title4">Your Comments</p>
-		<div width="100%"> <?php $yourComments->render(); ?> </div>
+		<div> <?php $yourComments->render(); ?> </div>
 	</td>
 	</tr>
 	</table>

@@ -208,4 +208,52 @@
 .schedule-page .preview-day { margin-bottom: var(--space-3); }
 /* A number the target set has already, which publishing renumbers. */
 .schedule-page .problem-nav__number--collision::before { content: "\21BB"; margin-right: 2px; font-size: 0.7em; vertical-align: 1px; color: #c0392b; }
+
+/* The schedule of new problems */
+.schedule-page {
+  gap: var(--space-5);
+  align-items: stretch;
+}
+.schedule-page__table {
+  width: 100%;
+}
+.schedule-page__column-toggle {
+  cursor: pointer;
+  font-weight: normal;
+  font-size: 11px;
+  color: #888;
+  margin-left: 4px;
+}
+.schedule-page__column-toggle input {
+  vertical-align: middle;
+  margin-right: 2px;
+}
+.schedule-page__form-card {
+  max-width: 500px;
+}
+.schedule-page__form {
+  text-align: left;
+}
+.schedule-page__preview {
+  margin-top: var(--space-4);
+}
+.schedule-page__preview-toggle {
+  cursor: pointer;
+  font-size: 12px;
+  color: #888;
+  margin-bottom: var(--space-2);
+  display: inline-block;
+}
+.schedule-page__preview-toggle input {
+  vertical-align: middle;
+  margin-right: 4px;
+}
+/* Duplicate search: a problem's button and its name in one line */
+.duplicate-search__problem {
+  display: flex;
+  align-items: center;
+}
+.demote-admin__error {
+  color: #d63a49;
+}
 }

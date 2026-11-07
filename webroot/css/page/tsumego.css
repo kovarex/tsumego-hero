@@ -449,6 +449,22 @@ a[data-tsumego-id]:hover .tooltip-desc
 
 /* Mistake training: the status keeps room for its two lines, so the board does not
    move when a result shows, and stays clear of the board */
+/* The mistake training page */
+.mistake-training__title {
+  margin-bottom: var(--space-4);
+}
+.mistake-training__block {
+  margin-bottom: var(--space-3);
+}
+.mistake-training__upcoming-title {
+  margin-bottom: var(--space-2);
+}
+.mistake-training__further {
+  margin-top: var(--space-2);
+}
+.mistake-training__import {
+  margin-top: var(--space-3);
+}
 .play-status--training #xpDisplayDiv
 {
 	height: auto;
