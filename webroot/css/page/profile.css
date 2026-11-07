@@ -66,7 +66,7 @@
 .profile-header
 {
 	position: relative;
-	margin-bottom: 12px;
+	margin-bottom: var(--space-3);
 }
 
 /* Out of the way of the tabs: the top-right corner, above the name on a narrow screen. */
@@ -144,10 +144,10 @@
 /* ── Hero powers ── */
 .hero-powers
 {
-	margin: 0 4px 16px;
+	margin: 0 var(--space-1) var(--space-4);
 	border: 3px solid var(--color-blue);
 	box-sizing: border-box;
-	padding: 12px 16px;
+	padding: var(--space-3) var(--space-4);
 }
 
 .hero-powers__title
@@ -231,10 +231,10 @@
 /* ── Mistake training ── */
 .training-overview
 {
-	margin: 0 4px 16px;
+	margin: 0 var(--space-1) var(--space-4);
 	border: 3px solid var(--color-green);
 	box-sizing: border-box;
-	padding: 12px 16px;
+	padding: var(--space-3) var(--space-4);
 	min-width: 0;
 	color: var(--text-color);
 }
@@ -332,7 +332,7 @@
 {
 	max-width: 100%;
 	overflow-x: auto;
-	padding-bottom: 4px;
+	padding-bottom: var(--space-1);
 }
 
 .training-calendar__grid
@@ -361,7 +361,7 @@
 .training-calendar__weekday
 {
 	grid-column: 1;
-	padding-right: 4px;
+	padding-right: var(--space-1);
 }
 
 .training-calendar__day

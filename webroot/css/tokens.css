@@ -241,9 +241,27 @@
 		--space-4: 16px;
 		--space-5: 24px;
 		--space-6: 32px;
+		--space-7: 48px;
 		--radius-sm: 4px;
 		--radius-md: 8px;
+		--radius-lg: 12px;
 		--radius-full: 999px;
+
+		/* ── Shadows: the ones the site uses more than once ── */
+		--shadow-popover: 0 4px 12px rgba(0, 0, 0, 0.2);
+		--shadow-card: 2px 2px 4px black;
+		--shadow-achievement: 5px 5px 8px black;
+
+		/* ── Stacking: what sits above what across the page. Small local values (a pseudo
+		   element behind its box, a header cell above its column) stay numbers. ── */
+		--layer-account-menu: 5;
+		--layer-list-popup: 10;
+		--layer-drawer: 50;
+		--layer-streak: 60;
+		--layer-dropdown: 100;
+		--layer-popover: 1000;
+		--layer-popover-above: 1001;
+		--layer-overlay: 9999;
 
 		/* Avatar sizes: the default in lists, the score tables and a profile. */
 		--avatar-size: 24px;

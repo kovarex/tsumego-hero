@@ -24,7 +24,7 @@
   position: absolute;
   top: 61px;
   left: 141px;
-  z-index: 100;
+  z-index: var(--layer-dropdown);
   box-shadow: 0 10px 26px rgba(0, 0, 0, 0.45);
   max-height: min(70vh, 520px);
   overflow-y: auto;
@@ -36,14 +36,14 @@
   border-top: 1px solid rgba(255, 255, 255, 0.16);
 }
 .difficulty-range__scale {
-  padding: 8px 0;
+  padding: var(--space-2) 0;
   cursor: pointer;
   touch-action: none;
 }
 .difficulty-range__scale-track {
   position: relative;
   height: 8px;
-  border-radius: 999px;
+  border-radius: var(--radius-full);
   overflow: hidden;
   background: linear-gradient(to right, var(--rank-30k), var(--rank-15k), var(--rank-10k), var(--rank-1k), var(--rank-1d), var(--rank-9d));
 }
@@ -69,7 +69,7 @@
   flex-wrap: wrap;
   align-items: center;
   gap: 6px;
-  margin-top: 8px;
+  margin-top: var(--space-2);
 }
 .difficulty-range__caption {
   color: var(--text-on-dark-soft);
@@ -90,7 +90,7 @@
   background: var(--surface-translucent);
   color: var(--color-white);
   border: 1px solid var(--color-tile-purple);
-  border-radius: 999px;
+  border-radius: var(--radius-full);
   padding: 3px 8px;
   font-size: 12px;
 }
@@ -111,7 +111,7 @@
   top: 61px;
   left: 265px;
   max-width: 597px;
-  z-index: 100;
+  z-index: var(--layer-dropdown);
 }
 .set-button-icon {
   display: flex;
@@ -141,7 +141,7 @@
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
-  padding-right: 4px;
+  padding-right: var(--space-1);
 }
 .btn.set-search {
   display: flex;
@@ -182,16 +182,16 @@
 /* The active filters above the problems of a collection, folded in under the Filters link. */
 .set-view-problems #msgFilters {
 	display: none;
-	margin: 0 4px 8px;
+	margin: 0 var(--space-1) var(--space-2);
 }
 
 .set-view-problems .showFilters {
 	display: inline-block;
-	margin: 8px 4px;
+	margin: var(--space-2) var(--space-1);
 }
 
 .set-view-problems #showFilters {
-	margin: 8px 4px;
+	margin: var(--space-2) var(--space-1);
 }
 
 .set-view-problems .showFilters--hidden {
@@ -200,7 +200,7 @@
 
 .set-view-main {
   width: 100%;
-  margin-top: 12px;
+  margin-top: var(--space-3);
   display: flex;
   flex-wrap: wrap;
   gap: 2px;
@@ -214,7 +214,7 @@
   top: -5px;
 }
 .active-tiles-container {
-  margin-left: 24px;
+  margin-left: var(--space-5);
   width: 100%;
 }
 .tiles-view {
@@ -233,7 +233,7 @@
   width: 90px;
   border: 1px solid var(--surface-near-black);
   padding: 5px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   color: var(--surface-muted-text);
   font-size: 16px;
   font-weight: 800;
@@ -299,7 +299,7 @@
   top: 61px;
   left: 37px;
   max-width: 900px;
-  z-index: 100;
+  z-index: var(--layer-dropdown);
 }
 /* ══════════════════════════════════════════════════════
    Sets pages (create/edit UI)
@@ -483,7 +483,7 @@
 .set-view__edit-row
 {
 	text-align: center;
-	padding-top: 8px;
+	padding-top: var(--space-2);
 }
 
 .set-view__owner
@@ -495,7 +495,7 @@
 .set-view__share
 {
 	display: block;
-	margin-top: 12px;
+	margin-top: var(--space-3);
 }
 
 .set-view__share-toggle
@@ -510,7 +510,7 @@
 	gap: 6px;
 	align-items: center;
 	justify-content: center;
-	margin-top: 8px;
+	margin-top: var(--space-2);
 }
 
 .set-view__share-link
@@ -529,7 +529,7 @@
 {
 	display: block;
 	min-height: 1.2em;
-	margin-top: 4px;
+	margin-top: var(--space-1);
 	color: var(--text-softer-color);
 }
 
@@ -599,7 +599,7 @@
 	width: 90px;
 	border: 1px solid var(--surface-near-black);
 	padding: 5px;
-	border-radius: 4px;
+	border-radius: var(--radius-sm);
 	color: var(--surface-muted-text);
 	font-size: 16px;
 	font-weight: 800;
@@ -638,7 +638,7 @@
 		"collection-bottom collection-bottom";
 	gap: 5px;
 	position: relative;
-	box-shadow: 2px 2px 4px black;
+	box-shadow: var(--shadow-card);
 }
 .set-card:hover {
 	background-image: linear-gradient(
@@ -696,13 +696,13 @@
 		margin: 5px 12px;
 		flex-wrap: wrap;
 		justify-content: flex-start;
-		gap: 8px;
+		gap: var(--space-2);
 	}
 	.active-tiles-container {
-		margin-left: 12px;
+		margin-left: var(--space-3);
 	}
 	.set-index {
-		padding: 0 12px;
+		padding: 0 var(--space-3);
 		box-sizing: border-box;
 	}
 }
