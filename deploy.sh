@@ -248,5 +248,10 @@ echo "=== Clearing caches ==="
 rm -rf "$ROOT_DIR/tmp/cache/models"/*
 rm -rf "$ROOT_DIR/tmp/cache/persistent"/*
 
+# The push hub of the change stamps (scripts/live-hub.mjs), where the site runs it as a daemon of
+# NearlyFreeSpeech: stopped, so that NFSN starts it again with the new code. Its pages reconnect, or ask
+# for the stamps themselves meanwhile. Nothing to stop where no hub runs, which is no failure.
+pkill -TERM -f 'scripts/live-hub.mjs' >/dev/null 2>&1 || true
+
 
 echo "=== Deploy complete ==="

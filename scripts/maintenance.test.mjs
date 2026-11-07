@@ -9,7 +9,7 @@ import { fileURLToPath } from 'node:url';
 const REPO = join(dirname(fileURLToPath(import.meta.url)), '..');
 const FLAG = 'tmp/maintenance.flag';
 
-//A project the real deploy.sh runs in, with the commands it calls (git, npx, composer, phinx) as
+//A project the real deploy.sh runs in, with the commands it calls (git, npx, composer, phinx, pkill) as
 //stubs that note whether the maintenance flag is there when they run, and that fail when asked to
 function project()
 {
@@ -30,7 +30,7 @@ echo "$name $1 flag=$flag reexec=\${DEPLOY_REEXEC:-}" >> "$PROJECT/calls.log"
 [ "$FAIL" = "$name $1" ] && exit 1
 exit 0
 `;
-	for (const file of ['bin/git', 'bin/npx', 'bin/composer', 'vendor/bin/phinx'])
+	for (const file of ['bin/git', 'bin/npx', 'bin/composer', 'bin/pkill', 'vendor/bin/phinx'])
 	{
 		writeFileSync(join(root, file), stub);
 		chmodSync(join(root, file), 0o755);
@@ -105,4 +105,27 @@ test('the site, the forum and both deploys use the same flag', () => {
 	}
 	assert.match(read('webroot/.htaccess'), /ErrorDocument 503 \/maintenance\.html/);
 	assert.match(read('webroot/maintenance.html'), /Upgrade in progress/);
+});
+
+test('the deploy stops the push hub after the migrations, with the maintenance page still on', () => {
+	const root = project();
+
+	const { status, stderr, calls } = deploy(root);
+
+	assert.equal(status, 0, stderr);
+	assert.ok(calls.includes('pkill -TERM flag=yes reexec=1'), calls.join('\n'));
+	assert.ok(calls.includes('phinx migrate flag=yes reexec=1'));
+	assert.ok(calls.indexOf('pkill -TERM flag=yes reexec=1') > calls.indexOf('phinx migrate flag=yes reexec=1'), 'after the migrations');
+	assert.equal(readFileSync(join(root, 'deploy.sh'), 'utf-8').match(/^pkill .*$/m)[0],
+		"pkill -TERM -f 'scripts/live-hub.mjs' >/dev/null 2>&1 || true");
+});
+
+test('a deploy where no hub runs goes on as usual', () => {
+	const root = project();
+
+	// pkill's exit status when it found nothing to signal
+	const { status, stdout, stderr } = deploy(root, 'pkill -TERM');
+
+	assert.equal(status, 0, stderr);
+	assert.match(stdout, /=== Deploy complete ===/);
 });

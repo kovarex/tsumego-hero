@@ -1,9 +1,11 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import http from 'node:http';
+import { spawn } from 'node:child_process';
 import { mkdtemp, rename, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { createHub } from './live-hub.mjs';
 
 //A hub on a free port over a stamp directory of its own, quick enough for a test
@@ -171,4 +173,41 @@ test('closing the hub ends its streams', async () =>
 	const ended = new Promise(resolve => stream.response.on('end', resolve));
 	await stop();
 	await ended;
+});
+
+//What deploy.sh does to it (pkill -TERM), so that NearlyFreeSpeech starts it again with the new code
+test('the hub as a program ends its streams and exits at once on SIGTERM', async () =>
+{
+	const directory = await mkdtemp(join(tmpdir(), 'live-hub-'));
+	const hub = spawn(process.execPath, [join(dirname(fileURLToPath(import.meta.url)), 'live-hub.mjs')], {
+		env: {...process.env, LIVE_DIR: directory, LIVE_HUB_PORT: '0'},
+		stdio: ['ignore', 'pipe', 'inherit'],
+	});
+	try
+	{
+		let output = '';
+		hub.stdout.setEncoding('utf8');
+		await new Promise((resolve, reject) =>
+		{
+			hub.stdout.on('data', chunk => { output += chunk; if (output.includes('listening on')) resolve(); });
+			hub.on('exit', () => reject(new Error('The hub ended: ' + output)));
+		});
+		const port = Number(output.match(/listening on [^:]+:(\d+)/)[1]);
+		const stream = await open(port, '/live/sse?topics=a');
+		const streamEnded = new Promise(resolve => stream.response.on('end', resolve));
+		const started = Date.now();
+		const exited = new Promise(resolve => hub.on('exit', (code, signal) => resolve({code, signal})));
+
+		hub.kill('SIGTERM');
+
+		assert.deepEqual(await exited, {code: 0, signal: null});
+		await streamEnded;
+		assert.ok(Date.now() - started < 2000, 'without waiting for the streams');
+		assert.match(output, /live hub stopping on SIGTERM/);
+	}
+	finally
+	{
+		hub.kill('SIGKILL');
+		await rm(directory, {recursive: true, force: true});
+	}
 });

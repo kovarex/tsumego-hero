@@ -184,7 +184,7 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1])
 	});
 	const port = Number(environment.LIVE_HUB_PORT ?? 8091);
 	const host = environment.LIVE_HUB_HOST ?? '127.0.0.1';
-	hub.server.listen(port, host, () => console.log('live hub listening on ' + host + ':' + port));
+	hub.server.listen(port, host, () => console.log('live hub listening on ' + host + ':' + hub.server.address().port));
 	const stop = signal =>
 	{
 		console.log('live hub stopping on ' + signal);
