@@ -59,7 +59,7 @@
 }
 .h1profile h1,
 .profileTable2 a {
-  color: black;
+  color: var(--profile-name);
 }
 .rank-icon {
 	display: inline-block;
@@ -171,7 +171,7 @@
 	font-weight: 700;
 	text-transform: uppercase;
 	letter-spacing: 0.12em;
-	color: var(--text-muted);
+	color: var(--text-softer-color);
 }
 
 /* ── Hero powers ── */
@@ -229,7 +229,7 @@
 	height: 12px;
 	border-radius: 50%;
 	background: var(--surface-border-strong);
-	border: 2px solid var(--border);
+	border: 2px solid var(--current-border-color);
 	margin: 0 auto 2px;
 }
 
@@ -242,7 +242,7 @@
 .hero-powers__name
 {
 	font-size: 10px;
-	color: var(--text-muted);
+	color: var(--text-softer-color);
 }
 
 .hero-powers__marker--unlocked .hero-powers__name
@@ -253,7 +253,7 @@
 .hero-powers__level
 {
 	font-size: 9px;
-	color: var(--border);
+	color: var(--text-softer-color);
 }
 
 .hero-powers__marker--unlocked .hero-powers__level
@@ -277,13 +277,9 @@
 	margin: 0 0 10px;
 	font-size: 14px;
 	font-weight: 800;
-	color: var(--color-green-dark);
+	color: var(--training-title);
 }
 
-[data-theme="dark"] .training-overview__title
-{
-	color: var(--color-green);
-}
 
 .training-overview__stats
 {
@@ -441,10 +437,6 @@
 }
 
 /* Dark overrides */
-[data-theme="dark"] .h1profile h1,
-[data-theme="dark"] .profileTable2 a {
-	color: var(--color-white);
-}
 }
 
 /* ── Friends (templates/Friends/index.php) ── */

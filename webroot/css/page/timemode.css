@@ -17,6 +17,12 @@
   width: 100%;
   max-width: 900px;
 }
+.timeModeTable2 {
+  color: var(--time-mode-table-text);
+}
+.versionColor a {
+  color: var(--time-mode-version-link);
+}
 .timeModeTable2,
 .time-result__runs {
   width: 100%;
@@ -113,10 +119,4 @@
 }
 
 /* Dark overrides */
-[data-theme="dark"] .timeModeTable2 {
-	color: var(--color-black);
-}
-[data-theme="dark"] .versionColor a {
-	color: var(--color-blue-accent);
-}
 }
