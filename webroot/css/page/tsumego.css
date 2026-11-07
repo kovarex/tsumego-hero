@@ -295,7 +295,7 @@
 	flex-wrap: wrap;
 	gap: 2px;
 	justify-content: center;
-	padding: 4px;
+	padding: var(--space-1);
 }
 
 /* ── Problem-nav tooltips (SGF preview + status pill) ── */
@@ -307,7 +307,7 @@
 
 .tooltip span
 {
-	z-index: 100;
+	z-index: var(--layer-dropdown);
 }
 
 .tooltip-box
@@ -316,7 +316,7 @@
 	position: absolute;
 	top: 34px;
 	left: -1px;
-	z-index: 1000;
+	z-index: var(--layer-popover);
 	pointer-events: none;
 	transition: opacity 0s;
 }
@@ -343,7 +343,7 @@
 {
 	display: flex;
 	flex-wrap: wrap;
-	gap: 4px;
+	gap: var(--space-1);
 	align-items: flex-start;
 }
 
