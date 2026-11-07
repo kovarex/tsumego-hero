@@ -232,6 +232,10 @@
 		--surface-hover: #eee;
 		--surface-hover-strong: #ddd;
 		--surface-panel-light: #f0f0f0;
+		/* The big code behind the title of an error page: grey, orange for a bad request, red for a server error */
+		--error-code-neutral: #666;
+		--error-code-warning: #f57c00;
+		--error-code-danger: #d32f2f;
 		--issue-highlight-gradient: linear-gradient(#666, #555);
 
 		/* ── Spacing and radius ── */
