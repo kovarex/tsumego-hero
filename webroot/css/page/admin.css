@@ -36,7 +36,7 @@
 /* Accept / Reject of a proposal with the comment sent to the proposer, see ProposalDecisionForm */
 .proposal-decision {
 	display: flex;
-	gap: 4px;
+	gap: var(--space-1);
 	align-items: center;
 	white-space: nowrap;
 }
@@ -50,7 +50,7 @@
 	font-size: 13px;
 }
 .rejected-proposals { /* RejectedSGFProposalsRenderer, folded under the waiting proposals */
-	margin-top: 8px;
+	margin-top: var(--space-2);
 }
 .rejected-proposals > summary {
 	cursor: pointer;
@@ -62,15 +62,15 @@
   margin: 0 auto;
 }
 .trash .data-table {
-  margin-bottom: 24px;
+  margin-bottom: var(--space-5);
 }
 .trash-notice {
   max-width: 800px;
-  margin: 8px auto;
+  margin: var(--space-2) auto;
 }
 .trash-notice__restore {
   display: inline-block;
-  margin-left: 8px;
+  margin-left: var(--space-2);
 }
 /* The admin page (AdminController), a link to everything an admin does with a count of what waits there */
 .admin-area {
@@ -79,7 +79,7 @@
   margin: 0 auto;
 }
 .admin-area .title4 {
-  margin-bottom: 12px;
+  margin-bottom: var(--space-3);
 }
 .admin-area--wide {
   max-width: none;
@@ -87,8 +87,8 @@
 .admin-area__links {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 8px;
-  margin: 0 0 24px;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-5);
   padding: 0;
   list-style: none;
 }
@@ -96,7 +96,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  gap: var(--space-2);
   padding: 10px 14px;
   border: 1px solid var(--current-border-color);
   border-radius: 6px;
@@ -116,7 +116,7 @@
   margin: -4px 0; /* a link with a count is as tall as one without */
   min-width: 1.6em;
   padding: 1px 6px;
-  border-radius: 999px;
+  border-radius: var(--radius-full);
   font-size: 14px;
   font-weight: bold;
   line-height: 1.4;
@@ -132,7 +132,7 @@
 }
 /* The SGF changes (SgfChangesRenderer): the tick of the admin and the avatars of the others who reviewed a change */
 .sgf-changes__lists {
-  margin: 4px 0 12px;
+  margin: var(--space-1) 0 var(--space-3);
 }
 .sgf-changes__unknown {
   color: var(--text-softer-color);
@@ -144,7 +144,7 @@
 .sgf-review__tick {
   width: 28px;
   height: 28px;
-  margin-right: 4px;
+  margin-right: var(--space-1);
   padding: 0;
   border: 2px solid var(--current-border-color);
   border-radius: 50%;
@@ -159,7 +159,7 @@
 .sgf-review__own { /* holds the place of the tick, an admin does not review their own change */
   display: inline-block;
   width: 28px;
-  margin-right: 4px;
+  margin-right: var(--space-1);
 }
 .sgf-review__tick:hover {
   border-color: var(--color-green);
@@ -199,7 +199,7 @@
 }
 .role-form {
   display: inline-flex;
-  gap: 8px;
+  gap: var(--space-2);
   align-items: center;
 }
 
