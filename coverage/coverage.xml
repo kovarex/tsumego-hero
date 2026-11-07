@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1794095421">
-  <project timestamp="1794095421">
+<coverage generated="1794095732">
+  <project timestamp="1794095732">
     <package name="App">
       <file name="/home/runner/work/tsumego-hero/tsumego-hero/src/Application.php">
         <class name="App\Application" namespace="App">
@@ -3830,11 +3830,11 @@
         <line num="190" type="stmt" count="1"/>
         <line num="194" type="stmt" count="26"/>
         <line num="195" type="stmt" count="26"/>
-        <line num="196" type="stmt" count="5"/>
-        <line num="197" type="stmt" count="5"/>
-        <line num="198" type="stmt" count="5"/>
-        <line num="199" type="stmt" count="5"/>
-        <line num="200" type="stmt" count="5"/>
+        <line num="196" type="stmt" count="4"/>
+        <line num="197" type="stmt" count="4"/>
+        <line num="198" type="stmt" count="4"/>
+        <line num="199" type="stmt" count="4"/>
+        <line num="200" type="stmt" count="4"/>
         <line num="202" type="stmt" count="26"/>
         <line num="203" type="stmt" count="26"/>
         <line num="204" type="stmt" count="26"/>
@@ -9485,11 +9485,11 @@
         <line num="325" type="stmt" count="366"/>
         <line num="326" type="stmt" count="366"/>
         <line num="327" type="stmt" count="366"/>
-        <line num="330" type="method" name="swapColorWords" visibility="public" complexity="1" crap="1" count="55"/>
-        <line num="332" type="stmt" count="55"/>
-        <line num="333" type="stmt" count="55"/>
-        <line num="334" type="stmt" count="55"/>
-        <line num="335" type="stmt" count="55"/>
+        <line num="330" type="method" name="swapColorWords" visibility="public" complexity="1" crap="1" count="56"/>
+        <line num="332" type="stmt" count="56"/>
+        <line num="333" type="stmt" count="56"/>
+        <line num="334" type="stmt" count="56"/>
+        <line num="335" type="stmt" count="56"/>
         <line num="340" type="method" name="tsumegoStatus" visibility="private" complexity="5" crap="5" count="368"/>
         <line num="342" type="stmt" count="368"/>
         <line num="343" type="stmt" count="8"/>
