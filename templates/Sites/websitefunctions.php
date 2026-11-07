@@ -9,7 +9,7 @@ use App\Utility\MistakeTraining;
 
 $percent = fn(float $share): string => round($share * 100) . '%';
 ?>
-	<div align="center">
+	<div class="legacy-center">
 	<h2>Functions and Modes</h2>
 	</div>
 	<div class="split">
@@ -85,7 +85,7 @@ $percent = fn(float $share): string => round($share * 100) . '%';
 		By selecting the gray circle, the problem is marked as favorite. It can be found in the favorite collection that shows up at the beginning
 		of the collections page.
 		<br><br>
-		<div align="center">
+		<div class="legacy-center">
 		<img src="/img/mf-level3.png" width="50%">
 		</div>
 			<br>

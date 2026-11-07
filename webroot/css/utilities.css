@@ -43,6 +43,12 @@
 	display: inline;
 }
 
+/* An empty block that ends the floats above it */
+.clear-both
+{
+	clear: both;
+}
+
 /* Italic emphasis */
 .italic
 {
