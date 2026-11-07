@@ -70,7 +70,7 @@ $markedCollections = count(array_filter($collections, fn(array $collection) => $
 	</a>
 	<?php if ($progress !== null && $progressGoal > 0):
 		$progressPercent = (int) round($progress / $progressGoal * 100); ?>
-		<div class="progress achievement-view__progress">
+		<div class="progress">
 			<div class="progress__fill progress__fill--tonal" style="--percent:<?php echo $progressPercent; ?>;width:<?php echo $progressPercent; ?>%"></div>
 			<div class="progress__label"><?php echo $progress; ?>/<?php echo $progressGoal; ?></div>
 		</div>
