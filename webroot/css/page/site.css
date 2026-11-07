@@ -759,8 +759,7 @@ nav ul ul ul li {
 .homeMenuLink {
   width: 115px;
 }
-#soundButton,
-#boardsButton {
+#soundButton {
   padding: 8px 14px 1px 14px;
 }
 #errorMessage {
