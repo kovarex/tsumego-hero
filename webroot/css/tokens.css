@@ -168,8 +168,6 @@
 		--about-blue-gradient: linear-gradient(to left, #4348ac, #9799c0);
 		--comment-box-blue: #c8ebfb;
 		--comment-link-blue: #337ab7;
-		--comment-info-bg: #e6f0ff;
-		--comment-light-bg: #fafafa;
 		--comment-error-bg: #f2dede;
 		--comment-error-fg: #a94442;
 		--comment-success-bg: #dff0d8;
@@ -232,7 +230,6 @@
 		--surface-hover: #eee;
 		--surface-hover-strong: #ddd;
 		--surface-panel-light: #f0f0f0;
-		--issue-highlight-gradient: linear-gradient(#666, #555);
 
 		/* ── Spacing and radius ── */
 		--space-1: 4px;
@@ -373,6 +370,39 @@
 		--alert-warning-fg: #7a5e00;
 		--alert-info-bg: #e8f0fe;
 		--alert-info-fg: #2a5090;
+
+		/* Comments and issues under a problem (comments.css): the light value here, the dark one below */
+		--comment-coord-white: rgba(0, 0, 0, 0.04);
+		--comment-coord-hover: rgba(30, 107, 184, 0.2);
+		--comment-tab-background: var(--surface-bar);
+		--comment-tab-border: var(--current-border-color);
+		--comment-tab-text: currentColor;
+		--comment-tab-active-background: var(--text-softer-color);
+		--comment-tab-active-border: var(--text-softer-color);
+		--comment-tab-active-text: var(--color-white);
+		--comment-tab-hover-background: var(--surface-hover);
+		--comment-tab-empty-background: var(--info-box-background);
+		--comment-tab-empty-border: var(--current-border-color);
+		--comment-form-background: var(--surface-bar);
+		--comment-form-muted: currentColor;
+		--comment-textarea-border: var(--current-border-color);
+		--comment-background: var(--surface-hover-strong);
+		--comment-shadow: var(--text-softer-color);
+		--comment-delete-text: var(--feedback-error);
+		--issue-background: var(--info-box-background);
+		--issue-border: var(--current-border-color);
+		--issue-opened-background: var(--comment-error-bg);
+		--issue-opened-text: var(--comment-error-fg);
+		--issue-closed-background: var(--comment-success-bg);
+		--issue-closed-text: var(--comment-success-fg);
+		--issue-comment-divider: rgba(128, 128, 128, 0.2);
+		--issue-reply-hover-background: var(--surface-bar);
+		--issue-reply-hover-text: var(--text-softer-color);
+		--issue-reply-form-background: var(--surface-bar);
+		--issue-reply-form-border: var(--surface-hover);
+		--issue-reply-textarea-background: var(--surface-bar);
+		--issues-filter-text: var(--text-color);
+		--issues-empty-text: currentColor;
 	}
 
 	/* ── Dark theme overrides ── */
@@ -427,5 +457,37 @@
 		--alert-warning-fg: #e6c832;
 		--alert-info-bg: #1a2a3a;
 		--alert-info-fg: #5b9bd5;
+
+		--comment-coord-white: rgba(255, 255, 255, 0.12);
+		--comment-coord-hover: rgba(109, 179, 242, 0.25);
+		--comment-tab-background: var(--surface-hover);
+		--comment-tab-border: var(--surface-hover-strong);
+		--comment-tab-text: var(--text-color);
+		--comment-tab-active-background: var(--surface-hover-strong);
+		--comment-tab-active-border: var(--surface-hover-strong);
+		--comment-tab-active-text: var(--text-color);
+		--comment-tab-hover-background: var(--surface-hover-strong);
+		--comment-tab-empty-background: var(--surface-hover);
+		--comment-tab-empty-border: var(--surface-hover-strong);
+		--comment-form-background: var(--surface-hover);
+		--comment-form-muted: var(--text-softer-color);
+		--comment-textarea-border: var(--surface-hover-strong);
+		--comment-background: var(--time-dark-gradient);
+		--comment-shadow: var(--color-black);
+		--comment-delete-text: var(--color-white);
+		--issue-background: linear-gradient(var(--surface-hover), var(--info-box-background));
+		--issue-border: var(--surface-hover-strong);
+		--issue-opened-background: var(--surface-danger);
+		--issue-opened-text: var(--feedback-error);
+		--issue-closed-background: var(--alert-success-bg);
+		--issue-closed-text: var(--alert-success-fg);
+		--issue-comment-divider: rgba(255, 255, 255, 0.1);
+		--issue-reply-hover-background: var(--surface-hover-strong);
+		--issue-reply-hover-text: var(--text-color);
+		--issue-reply-form-background: var(--surface-border-strong);
+		--issue-reply-form-border: var(--surface-hover-strong);
+		--issue-reply-textarea-background: var(--info-box-background);
+		--issues-filter-text: var(--text-softer-color);
+		--issues-empty-text: var(--text-softer-color);
 	}
 }
