@@ -15,11 +15,11 @@ use App\Utility\Util;
  * @var int $userID
  */
 
-echo '<div align="center">';
+echo '<div class="legacy-center">';
 echo $this->element('user_header', ['user' => $profileUser, 'activeTab' => 'solveHistory']);
 echo PaginationHelper::render($pageIndex, intval(ceil($count / $PAGE_SIZE)), 'page');
 echo '<table class="data-table">';
-echo '<thead><tr><th>Set</th><th>Tsumego <label style="cursor:pointer;font-size:11px;color:var(--text-softer-color);font-weight:normal;text-transform:none" title="Toggle board previews"><input type="checkbox" class="preview-zoom-toggle" style="vertical-align:middle;margin-right:2px">🔍</label></th><th>Solved</th><th>Misplays</th><th>Rating</th><th>XP gained</th><th>Date</th></tr></thead>';
+echo '<thead><tr><th>Set</th><th>Tsumego <label class="solve-history__preview-toggle" title="Toggle board previews"><input type="checkbox" class="preview-zoom-toggle">🔍</label></th><th>Solved</th><th>Misplays</th><th>Rating</th><th>XP gained</th><th>Date</th></tr></thead>';
 echo '<tbody>';
 foreach ($attempts as $attempt)
 {
@@ -36,7 +36,7 @@ foreach ($attempts as $attempt)
 		echo '<td>' . h($attempt['set_title'] ?? 'Unknown') . '</td>';
 		echo '<td>' . (int) $attempt['tsumego_id'] . '</td>';
 	}
-	echo '<td>' . ($attempt['solved'] ? '<span style="color:var(--color-green)">✓</span>' : '<span style="color:var(--color-red)">✗</span>') . '</td>';
+	echo '<td>' . ($attempt['solved'] ? '<span class="solve-history__solved">✓</span>' : '<span class="solve-history__failed">✗</span>') . '</td>';
 	echo '<td>' . $attempt['misplays'] . '</td>';
 	echo '<td>' . round($attempt['user_rating']) . '</td>';
 	echo '<td>' . $attempt['xp_gain'] . '</td>';

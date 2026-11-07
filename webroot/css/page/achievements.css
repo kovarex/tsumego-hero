@@ -360,8 +360,13 @@
 [data-theme="dark"] .achievementSmall {
 	background: var(--ach-silver-gradient);
 }
-[data-theme="dark"] #achievementWrapper font {
-	color: var(--text-softer-color);
+.achievement-view__back {
+  text-decoration: none;
+}
+/* The progress bar of a counter achievement */
+#achievementWrapper .progress {
+  width: 220px;
+  margin: 0 auto;
 }
 .acCollections {
 	margin: var(--space-4) auto 0 auto;

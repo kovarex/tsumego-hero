@@ -21,7 +21,7 @@ use App\Utility\ViteManifest;
  */
 ?>
 
-<div align="center">
+<div class="legacy-center">
 	<?php echo $this->element('user_header', ['user' => $user, 'activeTab' => 'settings']); ?>
 </div>
 
@@ -41,7 +41,7 @@ use App\Utility\ViteManifest;
 			<tr>
 				<td colspan="2">
 					<span class="hint" id="unconfirmed-email">Waiting for the confirmation of <?php echo h($unconfirmedEmail); ?></span>
-					<form method="post" action="/users/cancelEmailChange/<?php echo h($user['unconfirmed_email_cancel_token']); ?>" style="display:inline;">
+					<form method="post" action="/users/cancelEmailChange/<?php echo h($user['unconfirmed_email_cancel_token']); ?>" class="inline-form">
 						<button type="submit" class="link" id="cancel-email-change">cancel</button>
 					</form>
 				</td>
@@ -52,9 +52,9 @@ use App\Utility\ViteManifest;
 				<td colspan="2">
 					<div id="email-form" style="display:none;margin-top:3px;">
 						<?php
-						echo '<form action="/users/emailPreference" id="UserEmailPreferenceForm" method="post" accept-charset="utf-8"><div style="display:none;"><input type="hidden" name="_method" value="POST"/></div>';
-						echo '<div class="input"><input type="email" name="email" placeholder="New e-mail" aria-label="New e-mail" maxlength="' . UserTable::EMAIL_MAX_LENGTH . '" style="width:150px;" required="required"></div>';
-						echo '<div class="input"><input type="password" name="password" placeholder="Password" aria-label="Password" autocomplete="current-password" style="width:150px;" required="required"></div>';
+						echo '<form action="/users/emailPreference" id="UserEmailPreferenceForm" method="post" accept-charset="utf-8"><div hidden><input type="hidden" name="_method" value="POST"/></div>';
+						echo '<div class="input"><input type="email" name="email" placeholder="New e-mail" aria-label="New e-mail" maxlength="' . UserTable::EMAIL_MAX_LENGTH . '" class="settings-account__field" required="required"></div>';
+						echo '<div class="input"><input type="password" name="password" placeholder="Password" aria-label="Password" autocomplete="current-password" class="settings-account__field" required="required"></div>';
 						echo '<div class="hint">The address changes once you open the link sent to it.</div>';
 						echo '<div class="submit"><input class="btn" value="Submit" type="submit"></div>';
 						echo '</form>';
@@ -70,10 +70,10 @@ use App\Utility\ViteManifest;
 				<td colspan="2">
 					<div id="password-form" style="display:none;margin-top:3px;">
 						<?php
-						echo '<form action="/users/passwordPreference" id="UserPasswordPreferenceForm" method="post" accept-charset="utf-8"><div style="display:none;"><input type="hidden" name="_method" value="POST"/></div>';
-						echo '<div class="input"><input type="password" name="current" placeholder="Current password" aria-label="Current password" autocomplete="current-password" style="width:150px;" required="required"></div>';
-						echo '<div class="input"><input type="password" name="new1" placeholder="New password" aria-label="New password" autocomplete="new-password" style="width:150px;" required="required"></div>';
-						echo '<div class="input"><input type="password" name="new2" placeholder="New password again" aria-label="New password again" autocomplete="new-password" style="width:150px;" required="required"></div>';
+						echo '<form action="/users/passwordPreference" id="UserPasswordPreferenceForm" method="post" accept-charset="utf-8"><div hidden><input type="hidden" name="_method" value="POST"/></div>';
+						echo '<div class="input"><input type="password" name="current" placeholder="Current password" aria-label="Current password" autocomplete="current-password" class="settings-account__field" required="required"></div>';
+						echo '<div class="input"><input type="password" name="new1" placeholder="New password" aria-label="New password" autocomplete="new-password" class="settings-account__field" required="required"></div>';
+						echo '<div class="input"><input type="password" name="new2" placeholder="New password again" aria-label="New password again" autocomplete="new-password" class="settings-account__field" required="required"></div>';
 						echo '<div class="hint">At least ' . Constants::$MINIMUM_PASSWORD_LENGTH . ' characters.</div>';
 						echo '<div class="submit"><input class="btn" value="Submit" type="submit"></div>';
 						echo '</form>';
@@ -105,7 +105,7 @@ use App\Utility\ViteManifest;
 						<div class="hint">Your own picture: JPEG, PNG, WebP or GIF up to <?php echo UploadedAvatar::maxSize(); ?>. The middle square of it is shown.</div>
 					</form>
 					<?php if (!empty($user['uploaded_avatar_hash'])): ?>
-						<form method="post" action="/users/avatarRemove" style="display:inline;">
+						<form method="post" action="/users/avatarRemove" class="inline-form">
 							<button type="submit" class="link" id="avatar-remove">remove my picture</button>
 						</form>
 					<?php endif; ?>
