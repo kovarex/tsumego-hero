@@ -27,6 +27,7 @@ use App\Model\Table\ChallengeTable;
 
 use App\Model\Table\UserTable;
 use App\Utility\Auth;
+use App\Utility\Live;
 use App\Utility\Util;
 use App\Utility\ViteManifest;
 
@@ -91,9 +92,10 @@ $finishedCount = count(array_filter($standings, fn(array $row) => $row['run'] ==
 		<?php endif; ?>
 	</section>
 
-	<?php //While the challenge is in progress the page keeps the table up to date (webroot/js/ChallengePage.js) ?>
+	<?php //While the challenge is in progress the page keeps the table up to date (webroot/js/ChallengePage.js, Live) ?>
 	<section class="challenges__section challenges__section--wide" id="challenge-standings"
-		data-standings-url="/challenges/standings/<?= $challengeId ?>" data-finished="<?= $isFinished ? '1' : '0' ?>">
+		data-standings-url="/challenges/standings/<?= $challengeId ?>" data-live-channel="<?= Live::challengeChannel($challengeId) ?>"
+		data-finished="<?= $isFinished ? '1' : '0' ?>">
 		<?= $this->element('Challenges/standings') ?>
 	</section>
 	<?php echo ViteManifest::legacyScript('challenge'); ?>

@@ -33,6 +33,7 @@ const LEGACY_APP_FILES = [
 	'webroot/js/setProgress.js',
 	'webroot/js/siteMenu.js',
 	'webroot/js/keepAlive.js',
+	'webroot/js/Live.js',
 ];
 
 //Besogo Go board viewer JS files (global-scope, loaded on puzzle pages).

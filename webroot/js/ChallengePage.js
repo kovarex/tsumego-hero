@@ -62,24 +62,27 @@
 			placeFailedLine(shownLineCell);
 	}, {capture: true, passive: true});
 
-	// While the challenge is in progress the table is asked for again every few seconds, as long as
-	// the tab is visible; the finish brings the places, the medals and the rest of the page, so it reloads.
-	var REFRESH_SECONDS = 10;
+	// While the challenge is in progress the page watches its change stamp (webroot/js/Live.js) and
+	// fetches the table once it changed; the finish brings the places, the medals and the rest of the
+	// page, so it reloads. What changes without anything written, a run whose time ran out, comes with
+	// the full refresh every SAFETY_SECONDS.
+	var SAFETY_SECONDS = 60;
 	if (standings.dataset.finished === '1')
 		return;
-	var timer = null;
 	var asking = false;
+	var askAgain = false;
 
 	function refresh()
 	{
-		timer = null;
 		if (asking)
+		{
+			askAgain = true;
 			return;
+		}
 		asking = true;
 		fetch(standings.dataset.standingsUrl, {headers: {Accept: 'application/json'}, credentials: 'same-origin'})
 			.then(function(response)
 			{
-				asking = false;
 				if (!response.ok)
 					throw new Error('HTTP ' + response.status);
 				return response.json();
@@ -92,33 +95,27 @@
 					return;
 				}
 				standings.innerHTML = data.html;
+				shownLineCell = null;
 				if (typeof window.renderPreviews === 'function')
 					window.renderPreviews();
-				schedule();
 			})
-			// a request that fails is tried again on the next round
-			.catch(function()
+			// a request that fails is made again on the next change or safety refresh
+			.catch(function() {})
+			.then(function()
 			{
 				asking = false;
-				schedule();
+				if (askAgain)
+				{
+					askAgain = false;
+					refresh();
+				}
 			});
 	}
 
-	function schedule()
-	{
-		if (timer === null && document.visibilityState === 'visible')
-			timer = setTimeout(refresh, REFRESH_SECONDS * 1000);
-	}
-
-	document.addEventListener('visibilitychange', function()
+	Live.watch(standings.dataset.liveChannel, refresh);
+	setInterval(function()
 	{
 		if (document.visibilityState === 'visible')
 			refresh();
-		else if (timer !== null)
-		{
-			clearTimeout(timer);
-			timer = null;
-		}
-	});
-	schedule();
+	}, SAFETY_SECONDS * 1000);
 })();

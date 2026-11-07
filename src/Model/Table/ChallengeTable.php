@@ -5,6 +5,7 @@ namespace App\Model\Table;
 use App\Model\Entity\Challenge;
 use App\Model\Entity\TimeModeSession;
 use App\Utility\ChallengeFailedLine;
+use App\Utility\Live;
 use App\Utility\TimeMode;
 use App\Utility\TsumegoButton;
 use App\Utility\Util;
@@ -325,6 +326,7 @@ class ChallengeTable extends AppTable
 	public static function remove(int $challengeId, int $userId): void
 	{
 		Util::execute('UPDATE challenge_participant SET removed = NOW() WHERE challenge_id = ? AND user_id = ? AND removed IS NULL', [$challengeId, $userId]);
+		Live::bump(Live::challengeChannel($challengeId));
 	}
 
 	//$invitedByUserId: Who invited the player, null when they came on their own
@@ -335,6 +337,7 @@ class ChallengeTable extends AppTable
 			return false;
 		Util::execute('INSERT INTO challenge_participant (challenge_id, user_id, invited_by_user_id) VALUES (?, ?, ?)',
 			[$challengeId, $userId, $invitedByUserId]);
+		Live::bump(Live::challengeChannel($challengeId));
 		return true;
 	}
 
@@ -346,6 +349,7 @@ class ChallengeTable extends AppTable
 		if (!self::isParticipant($challengeId, $userId) || self::runOf($challengeId, $userId) !== null)
 			return false;
 		Util::execute('UPDATE challenge_participant SET declined = NOW() WHERE challenge_id = ? AND user_id = ?', [$challengeId, $userId]);
+		Live::bump(Live::challengeChannel($challengeId));
 		return true;
 	}
 
@@ -353,6 +357,7 @@ class ChallengeTable extends AppTable
 	public static function rejoin(int $challengeId, int $userId): void
 	{
 		Util::execute('UPDATE challenge_participant SET declined = NULL WHERE challenge_id = ? AND user_id = ?', [$challengeId, $userId]);
+		Live::bump(Live::challengeChannel($challengeId));
 	}
 
 	//The run of a player in a challenge, null when they haven't started it.

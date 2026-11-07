@@ -32,7 +32,21 @@ https://host.docker.internal:8443, https://localhost:8443 {
         }
         @webpImage path_regexp \.(?i:webp)$
         header @webpImage Vary Accept
+        #The change stamps, with the headers of webroot/live/.htaccess
+        @stamp path /live/*
+        header @stamp Cache-Control no-cache
+        header @stamp X-Content-Type-Options nosniff
+        header @stamp Content-Type application/json
         file_server
+    }
+
+    #A change stamp never bumped yet: nothing changed, as webroot/live/.htaccess answers it
+    @missingStamp {
+        path /live/*
+        not file
+    }
+    handle @missingStamp {
+        respond 204
     }
 
     #Everything else is the site, through index.php

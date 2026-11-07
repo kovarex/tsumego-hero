@@ -1,0 +1,26 @@
+# The change stamps of src/Utility/Live.php: tiny static files that pages poll every second or two
+# (webroot/js/Live.js). Apache answers them from the file system, a 304 while a stamp is the same, so
+# the polling costs no PHP and no database. A stamp must never be served stale, so every cache on the
+# way (the browser, NearlyFreeSpeech's edge) asks again each time instead of keeping it.
+<IfModule mod_headers.c>
+    Header set Cache-Control "no-cache"
+    Header set X-Content-Type-Options "nosniff"
+</IfModule>
+ForceType application/json
+
+# A channel never bumped yet has no file: nothing changed, which is no error, and it mustn't fall
+# through to index.php as the rules of webroot/.htaccess would do with it (they don't apply here,
+# since this file has rules of its own).
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule ^ - [R=204,L]
+</IfModule>
+
+# The directory is web-writable (PHP writes the stamps), so nothing here is ever run.
+Options -ExecCGI -Indexes
+RemoveHandler .php .phtml .php3 .php4 .php5 .phps
+RemoveType .php .phtml .php3 .php4 .php5 .phps
+<IfModule mod_php.c>
+    php_flag engine off
+</IfModule>

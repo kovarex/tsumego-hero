@@ -92,6 +92,7 @@ class TimeMode
 			throw new InternalErrorException('The challenge has no problems.');
 		$this->leaveCurrentSession();
 		$session = $this->createSession(['challenge_id' => $challenge['id']]);
+		self::bumpChallengeOf($session);
 		$this->createSessionAttempts($session->id, $tsumegoIDs);
 	}
 
@@ -283,6 +284,7 @@ class TimeMode
 			$solved ? self::calculatePoints($seconds, $this->overallSecondsToSolve) : 0);
 		if (!$solved && $challengeFailedLine !== null && $this->currentSession->challenge_id !== null)
 			$challengeFailedLine->store($currentAttempt->id);
+		self::bumpChallengeOf($this->currentSession);
 		$this->currentOrder++;
 	}
 
@@ -295,6 +297,7 @@ class TimeMode
 			return;
 		self::recordAttempt($attempt, TimeModeAttemptStatusTable::SKIPPED,
 			min($this->overallSecondsToSolve, time() - $attempt->started->getTimestamp()), 0);
+		self::bumpChallengeOf($this->currentSession);
 		$this->currentOrder++;
 	}
 
@@ -362,6 +365,7 @@ class TimeMode
 			if ($this->secondsToSolve == 0)
 			{
 				self::recordAttempt($attempt, TimeModeAttemptStatusTable::TIMEOUT, $this->overallSecondsToSolve, 0);
+				self::bumpChallengeOf($this->currentSession);
 				$this->currentOrder++;
 				return $this->prepareWhateverIsLeft();
 			}
@@ -454,7 +458,15 @@ class TimeMode
 		$session->time_mode_session_status_id = $sessionSuccessful ? TimeModeSessionStatusTable::SOLVED : TimeModeSessionStatusTable::FAILED;
 		$session->points = (string) $overallPoints;
 		TableRegistry::getTableLocator()->get('TimeModeSession')->saveOrFail($session);
+		self::bumpChallengeOf($session);
 		Auth::saveUserField('mode_id', Constants::$LEVEL_MODE);
+	}
+
+	//A run of a challenge changed: the pages showing its table learn it (Live)
+	private static function bumpChallengeOf(TimeModeSession $session): void
+	{
+		if ($session->challenge_id !== null)
+			Live::bump(Live::challengeChannel((int) $session->challenge_id));
 	}
 
 	public static function calculatePoints(float $timeUsed, float $max): float
