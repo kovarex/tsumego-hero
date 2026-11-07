@@ -644,7 +644,7 @@ class TimeModeControllerTest extends IntegrationTestCase
 		$html = $this->view;
 
 		// the result lists the problem once (the menu's Play may lead to it as well)
-		$this->assertSame(1, substr_count($html, '<td width="46%"><a href="/tsumegos/play/' . $context->tsumegos[0]['id'] . '"'));
+		$this->assertSame(1, substr_count($html, '<td class="time-result__problem"><a href="/tsumegos/play/' . $context->tsumegos[0]['id'] . '"'));
 		// the set with an order is shown before the one without
 		$this->assertStringContainsString('time mode set two', $html);
 		$this->assertStringNotContainsString('time mode set one', $html);

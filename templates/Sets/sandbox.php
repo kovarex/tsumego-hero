@@ -10,10 +10,10 @@ use App\Utility\Auth;
  * @var array $setsNew
  */
 ?>
-	<div align="center" class="display1" style="padding-top:10px;">
+	<div class="legacy-center display1 sandbox-page">
 	<div id="sandbox">
 	<h4>Admin Panel</h4>
-		<div align="left">
+		<div class="legacy-left">
 		Collections that you find here are not yet published and need to be checked for improvement.
 		While solving them, please look for misplays and bugs.<br><br>
 		<?php
@@ -25,7 +25,7 @@ use App\Utility\Auth;
 			<br><br>
 			And here is the detailed older version (9 pages): <a class="historyLink2" href="/files/Admin-Guide-Details.pdf" target="_blank">Admin-Guide-Details.pdf</a>
 			<br><br>
-			<table width="100%">
+			<table class="sandbox-page__actions">
 			<tr>
 			<td><a href="/sets/create?sandbox=1">Create Set</a></td>
 			</tr>
@@ -34,7 +34,7 @@ use App\Utility\Auth;
 		<?php } ?>
 		</div>
 	</div>
-	<div align="center" class="set-index display1">
+	<div class="legacy-center set-index display1">
 	<?php
 	for($i = 0; $i < count($setsNew); $i++)
 		echo $this->element('set_card', ['set' => $setsNew[$i]]);

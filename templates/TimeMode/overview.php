@@ -18,23 +18,23 @@ foreach ($timeModeCategories as $timeModeCategory)
 	if ($bestSolvedRankID = $solvedMap[$timeModeCategory->id]['best-solved-rank'] ?? null)
 		$bestSolvedRankByCategory[$timeModeCategory->id] = $solvedMap[$timeModeCategory->id][$bestSolvedRankID];
 ?>
-<div align="center">
+<div class="legacy-center">
 	<h2>Time Mode Select</h2>
 </div>
 <br>
-<div align="center">
+<div class="legacy-center">
 	<a class="btn btn--inactive" href="#">Select</a>
 	<a class="btn<?php echo $hasFinishedSesssion ? ' btn--primary' : ' btn--inactive'; ?>" href="<?php echo $hasFinishedSesssion ? '/timeMode/result' : '#'; ?>">Results</a>
 	<a class="btn btn--primary" href="/challenges">Challenge a friend</a>
 </div>
 <?php if ($challengeInProgressID): ?>
-<p class="hint" align="center" id="challenge-in-progress">
+<p class="hint legacy-center" id="challenge-in-progress">
 	You are in the middle of <a href="/challenges/<?= $challengeInProgressID ?>">Challenge #<?= $challengeInProgressID ?></a>:
 	<a href="/timeMode/play">continue it</a>. Starting a time mode run ends it, and the problems you didn't play get no points.
 </p>
 <?php endif; ?>
 <br><br>
-<div align="center">
+<div class="legacy-center">
 	<?php foreach ($timeModeCategories as $timeModeCategory): ?>
 	<img id="timeMode<?php echo $timeModeCategory->id; ?>" src="/img/timeMode<?php echo $timeModeCategory->id; ?>2.png" width="200">
 	<?php endforeach; ?>
@@ -50,7 +50,7 @@ foreach ($timeModeCategories as $timeModeCategory)
 	?>
 	<div class="imageContainer1" id="rank-selector-<?php echo $timeModeCategory->id; ?>-<?php echo $rankID; ?>">
 		<?php if ($unlocked): ?>
-		<a style="text-decoration:none;" href="/timeMode/start?categoryID=<?php echo $timeModeCategory->id; ?>&rankID=<?php echo $rankID; ?>">
+		<a class="time-mode__rank-link" href="/timeMode/start?categoryID=<?php echo $timeModeCategory->id; ?>&rankID=<?php echo $rankID; ?>">
 			<img src="/img/rankButton<?php echo $rank; ?>.png" data-hover-src="/img/rankButton<?php echo $rank; ?>hover.png">
 			<div class="imageContainerText2"> <img class="timeModeIcons" src="/img/timeModeStored.png"><?php echo $timeModeRank['tsumego_count']; ?></div>
 		</a>
