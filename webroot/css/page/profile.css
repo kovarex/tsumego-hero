@@ -26,7 +26,7 @@
 }
 .h1profile h1,
 .profileTable2 a {
-  color: black;
+  color: var(--profile-name);
 }
 .rank-icon {
 	display: inline-block;
@@ -244,13 +244,9 @@
 	margin: 0 0 10px;
 	font-size: 14px;
 	font-weight: 800;
-	color: var(--color-green-dark);
+	color: var(--training-title);
 }
 
-[data-theme="dark"] .training-overview__title
-{
-	color: var(--color-green);
-}
 
 .training-overview__stats
 {
@@ -408,10 +404,6 @@
 }
 
 /* Dark overrides */
-[data-theme="dark"] .h1profile h1,
-[data-theme="dark"] .profileTable2 a {
-	color: var(--color-white);
-}
 }
 
 /* ── Friends (templates/Friends/index.php) ── */
