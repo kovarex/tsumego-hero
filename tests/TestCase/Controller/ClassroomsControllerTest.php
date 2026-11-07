@@ -844,6 +844,30 @@ class ClassroomsControllerTest extends IntegrationTestCase
 		$this->assertTrue(App\Utility\Auth::isInLevelMode());
 	}
 
+	//Next goes along the assignment in place, without loading the page (webroot/js/PlayNavigation.js),
+	//and a solve there counts for the assignment as on a loaded page
+	public function testNextGoesAlongTheAssignmentInPlace(): void
+	{
+		$this->prepare();
+		$classroomId = $this->createClassroom();
+		$this->addMember($classroomId, 'pupil');
+		$assignmentId = $this->createAssignment($classroomId, date('Y-m-d H:i:s', strtotime('-1 hour')), date('Y-m-d', strtotime('+7 days')), [0, 1]);
+		$this->login('pupil');
+		$browser = Browser::instance();
+
+		$browser->get(ClassroomAssignmentTable::playLink($assignmentId));
+		$browser->driver->executeScript('window.samePage = true;');
+		$browser->playWithResult('S');
+		$browser->clickId('besogo-next-button');
+		$browser->waitUntilJs('location.pathname === "' . ClassroomAssignmentTable::playLink($assignmentId, $this->setConnectionId(1)) . '" && window.tsumegoID === ' . (int) $this->context->tsumegos[1]['id']);
+
+		$this->assertTrue($browser->driver->executeScript('return window.samePage === true;'), 'Next shows the problem in place');
+		$this->assertSame('S', $this->buttonStatus($browser, 0));
+		$browser->playWithResult('S');
+		$this->assertNotNull($this->assignmentResult($assignmentId, 'pupil', 1)['solved']);
+		$browser->assertNoJsErrors();
+	}
+
 	//A pupil solves a new problem in the assignment row: the problem is solved like anywhere
 	//else, with its XP, and counts for the assignment, so its button stays green on the next page.
 	public function testSolvingInTheAssignmentRowSolvesTheProblemAndTheAssignment(): void

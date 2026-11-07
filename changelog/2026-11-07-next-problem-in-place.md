@@ -1,0 +1,1 @@
+Performance: Next, Back, the problem buttons and the arrow keys now show the next problem at once, without loading the page again, in the collections, the classes and the mistake training; the next few problems are loaded while you think.

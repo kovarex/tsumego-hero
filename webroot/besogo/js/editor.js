@@ -91,6 +91,7 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
     registerLineLost: registerLineLost,
     registerAddTimeForMovePlayed: registerAddTimeForMovePlayed,
     resetToStart: resetToStart,
+    dispose: dispose,
     registerShowComment: registerShowComment,
     displayHoverCoord: displayHoverCoord,
     displayHoverCoordAt: displayHoverCoordAt,
@@ -453,7 +454,8 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
       }
     }
 	else if (boardLockValue == 1 && window.problemSolved && nextButtonLink)
-        window.location.href = nextButtonLink; // Problem is solved, clicking navigates to next puzzle
+        // Problem is solved, clicking navigates to next puzzle, in place on the play page (PlayNavigation.js)
+        window.PlayNavigation ? window.PlayNavigation.open(nextButtonLink) : (window.location.href = nextButtonLink);
   }
 
   function transformTextColors(root, text) {
@@ -880,6 +882,19 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
 		notifyListeners({ navChange: true }); // Notify navigation (with no tree edits)
 		return true;
 	}
+
+  // The board made way for another (besogo.destroy()): a step of the autoplay still waiting, or a
+  // listener of the page, must not act on the page's next problem
+  function dispose() {
+    pendingAutoPlay = null;
+    autoPlay = false;
+    listeners = [];
+    var nothing = function () {};
+    displayResult = nothing;
+    lineLost = nothing;
+    showComment = nothing;
+    addTimeForMovePlayed = nothing;
+  }
 
   function resetToStart() {
     pendingAutoPlay = null;

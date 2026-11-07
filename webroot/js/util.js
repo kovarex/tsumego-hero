@@ -75,20 +75,23 @@ function updateSprint(seconds)
 
 	updateSprintStatus(seconds);
 
-	var x = setInterval(function()
+	// one countdown, also when the play page shows its next problem in place and starts it again
+	clearInterval(sprintInterval);
+	sprintInterval = setInterval(function()
 	{
-		if (!xpStatus.isSprintActive())
+		if (!xpStatus || !xpStatus.isSprintActive())
+		{
+			clearInterval(sprintInterval);
 			return;
+		}
 		var seconds = Math.floor((countDownDate - new Date()) / 1000);
 		xpStatus.set('sprintRemainingSeconds', seconds);
 		updateSprintStatus(seconds);
 		if (!xpStatus.isSprintActive())
-		{
-			clearInterval(x);
-			return;
-		}
+			clearInterval(sprintInterval);
 	}, 250);
 }
+var sprintInterval = null;
 
 //A hero power button of the play page: its picture hp<number>.png, hp<number>h.png under the
 //pointer and hp<number>x.png while the power can't be used

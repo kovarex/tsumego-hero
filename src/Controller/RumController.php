@@ -14,8 +14,10 @@ class RumController extends AppController
 	//problem_open: from the start of the navigation to a problem until its board takes moves, when
 	//    coming from another page
 	//problem_next: the same from another problem (Next, the problem buttons, the arrow keys)
+	//problem_next_in_place: the next problem shown without loading the page (webroot/js/PlayNavigation.js),
+	//    from the click until it was painted
 	//result_post: the request that records the result of a problem, until its answer arrived
-	public const METRICS = ['problem_open', 'problem_next', 'result_post'];
+	public const METRICS = ['problem_open', 'problem_next', 'problem_next_in_place', 'result_post'];
 
 	//What one beacon may carry, more is dropped
 	public const MAXIMUM_SAMPLES = 20;

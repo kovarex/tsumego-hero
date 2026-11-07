@@ -68,20 +68,24 @@ function updateMistakeTrainingButton(button, xp)
 }
 
 //A link with data-toggle shows and hides the element it names, its arrow points down while it is open
-document.querySelectorAll("[data-toggle]").forEach(toggle => toggle.addEventListener("click", event => {
-	event.preventDefault();
-	let open = toggle.dataset.open !== "1";
-	toggle.dataset.open = open ? "1" : "";
-	Display[open ? "fadeIn" : "fadeOut"](document.getElementById(toggle.dataset.toggle), 250);
-	toggle.querySelectorAll(".toggle-arrow").forEach(arrow => arrow.setAttribute("src", open ? "/img/greyArrow2.png" : "/img/greyArrow1.png"));
-	//More that tells of comments or open issues opens them too (CommentSection listens)
-	let summary = document.getElementById("moreCommentSummary");
-	if (open && toggle.id === "editToggle" && summary && getComputedStyle(summary).visibility === "visible")
-		window.dispatchEvent(new Event("comments-open"));
-}));
+function setUpToggles()
+{
+	document.querySelectorAll("[data-toggle]").forEach(toggle => toggle.addEventListener("click", event => {
+		event.preventDefault();
+		let open = toggle.dataset.open !== "1";
+		toggle.dataset.open = open ? "1" : "";
+		Display[open ? "fadeIn" : "fadeOut"](document.getElementById(toggle.dataset.toggle), 250);
+		toggle.querySelectorAll(".toggle-arrow").forEach(arrow => arrow.setAttribute("src", open ? "/img/greyArrow2.png" : "/img/greyArrow1.png"));
+		//More that tells of comments or open issues opens them too (CommentSection listens)
+		let summary = document.getElementById("moreCommentSummary");
+		if (open && toggle.id === "editToggle" && summary && getComputedStyle(summary).visibility === "visible")
+			window.dispatchEvent(new Event("comments-open"));
+	}));
+}
 
 //The filters of the problems as tiles: a tile drops its filter, clear drops them all
-(function() {
+function setUpFilterTiles()
+{
 	const filters = [
 		{tiles: activeTopicTiles, color: "green", cookie: "filtered_sets"},
 		{tiles: activeDifficultyTiles, color: "purple", cookie: "filtered_ranks"},
@@ -118,7 +122,7 @@ document.querySelectorAll("[data-toggle]").forEach(toggle => toggle.addEventList
 		clearfix.className = "clearfix";
 		container.append(clear, clearfix);
 	}
-})();
+}
 
 function elapsedSeconds()
 {
@@ -143,20 +147,31 @@ function takeSecondsOfTry()
 	timeToFirstClick = null;
 	return seconds;
 }
-if (mode == playPage.page.modes.rating)
-	var ratingModeDifficultySelector = new RatingModeDifficultySelector();
+var ratingModeDifficultySelector = null;
 
-//The explanation of a semeai or a multiple choice is closed by its box
-document.getElementById("alertCheckbox")?.addEventListener("change", () => Display.fadeOut("#multipleChoiceAlerts", 500));
-
-if (mode == playPage.page.modes.rating)
+//What the modes change on the page around the board
+function setUpMode()
 {
-	Display.hide(".problem-nav");
-	Display.hide(".selectable-text");
-	Display.hide("#commentSpace");
+	ratingModeDifficultySelector = mode == playPage.page.modes.rating ? new RatingModeDifficultySelector() : null;
+
+	//The explanation of a semeai or a multiple choice is closed by its box
+	document.getElementById("alertCheckbox")?.addEventListener("change", () => Display.fadeOut("#multipleChoiceAlerts", 500));
+
+	if (mode == playPage.page.modes.rating)
+	{
+		Display.hide(".problem-nav");
+		Display.hide(".selectable-text");
+		Display.hide("#commentSpace");
+	}
+	else if (mode == playPage.page.modes.time)
+		document.querySelectorAll("#account-bar-user > a").forEach(link => link.style.color = "#ca6658");
+	if (mode == 2)
+	{
+		let overlay = document.getElementById("targetLockOverlay");
+		if (overlay)
+			overlay.style.top = '235px';
+	}
 }
-else if (mode == playPage.page.modes.time)
-	document.querySelectorAll("#account-bar-user > a").forEach(link => link.style.color = "#ca6658");
 
 //The parts of the page after its script, as the page is still being read when it runs
 function setUpPageEnd()
@@ -175,7 +190,7 @@ function setUpPageEnd()
 
 	document.querySelectorAll(".besogo-board").forEach(board => board.addEventListener("click", () => {
 		if (locked && nextButtonLink)
-			window.location = nextButtonLink;
+			PlayNavigation.open(nextButtonLink);
 	}));
 
 	let solutionRequest = true;
@@ -201,12 +216,18 @@ function setUpPageEnd()
 		document.querySelectorAll(".loader-container").forEach(loader => loader.style.display = "flex");
 		window.location.href = "/tsumegos/duplicatesearch/" + playPage.problem.setConnectionID;
 	});
+}
+
+function setUpOpenedPageEnd()
+{
+	setUpPageEnd();
 	PlayTiming.boardReady();
+	PlayNavigation.start();
 }
 if (document.readyState === "loading")
-	document.addEventListener("DOMContentLoaded", setUpPageEnd);
+	document.addEventListener("DOMContentLoaded", setUpOpenedPageEnd);
 else
-	setTimeout(setUpPageEnd);
+	setTimeout(setUpOpenedPageEnd);
 
 function displaySolutionRequest(){
 	let request = document.getElementById("showx99");
@@ -251,9 +272,9 @@ document.addEventListener("keydown", function(event){
 			if (!isTextInput) {
 				// an empty link is a training edge with nowhere to go
 				if(keycode == '37' && previousButtonLink) {
-					window.location.href = previousButtonLink;
+					PlayNavigation.open(previousButtonLink);
 				}else if(keycode == '39' && nextButtonLink){
-					window.location.href =  nextButtonLink;
+					PlayNavigation.open(nextButtonLink);
 				}
 			}
 		}
@@ -462,7 +483,7 @@ function isSolved(outcome)
 // mode it has none either, but the widget counts the run's problems right and wrong
 function accountWidgetShowsResults()
 {
-	return typeof accountWidget !== 'undefined' && accountWidget && (typeof xpStatus !== 'undefined' || accountWidget.show == 'time');
+	return typeof accountWidget !== 'undefined' && accountWidget !== null && (xpStatus !== null || accountWidget.show == 'time');
 }
 
 function submitResult(outcome)
@@ -514,6 +535,7 @@ function sendResult(outcome)
 	}
 
 	const sent = performance.now();
+	PlayNavigation.resultSent();
 	let response = fetch('/tsumegos/result', {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
@@ -522,6 +544,7 @@ function sendResult(outcome)
 		keepalive: true,
 	}).then(response => response.json().then(result => {
 		PlayTiming.result(performance.now() - sent, response.headers.get('Server-Timing'));
+		PlayNavigation.resultRecorded();
 		return result;
 	}));
 	window._submitResultPromise = response.catch(err => console.error('submitResult failed:', err));
@@ -762,24 +785,25 @@ function resetParameters(isAtStart)
 }
 
 //The board is created by PlayBoard.js; it gets the page's callbacks, now that they are all defined
-(function() {
-if (tryAgainTomorrow) { var resetBtn = document.getElementById("besogo-reset-button"); if (resetBtn) { resetBtn.id = "besogo-reset-button-inactive"; } }
-besogo.editor.setAutoPlay(true);
-besogo.editor.registerAddTimeForMovePlayed(addTimeForMovePlayed);
-besogo.editor.registerDisplayResult(displayResult);
-besogo.editor.registerLineLost(lineLost);
-besogo.editor.addListener(function (changes)
+function connectBoard()
 {
-	// the clock starts with the first move the player really plays
-	if (timeToFirstClick !== null || !changes || !changes.navChange)
-		return;
-	let current = besogo.editor.getCurrent();
-	if (current.move && current.move.color === besogo.editor.getRoot().firstMove)
-		timeToFirstClick = elapsedSeconds();
-});
+	if (tryAgainTomorrow) { var resetBtn = document.getElementById("besogo-reset-button"); if (resetBtn) { resetBtn.id = "besogo-reset-button-inactive"; } }
+	besogo.editor.setAutoPlay(true);
+	besogo.editor.registerAddTimeForMovePlayed(addTimeForMovePlayed);
+	besogo.editor.registerDisplayResult(displayResult);
+	besogo.editor.registerLineLost(lineLost);
+	besogo.editor.addListener(function (changes)
+	{
+		// the clock starts with the first move the player really plays
+		if (timeToFirstClick !== null || !changes || !changes.navChange)
+			return;
+		let current = besogo.editor.getCurrent();
+		if (current.move && current.move.color === besogo.editor.getRoot().firstMove)
+			timeToFirstClick = elapsedSeconds();
+	});
 
-startClock();
-var showComment = function(commentText)
+	startClock();
+	var showComment = function(commentText)
 	{
 		let comment = document.getElementById("theComment");
 		if (!comment)
@@ -787,12 +811,17 @@ var showComment = function(commentText)
 		comment.style.display = commentText.length == 0 ? "none" : "block";
 		comment.textContent = besogo.boardInverted ? besogo.swapColorWords(commentText) : commentText;
 	};
-besogo.editor.registerShowComment(showComment);
-showComment(besogo.editor.getCurrent().comment || '');
-})();
-if (mode == 2)
-{
-	let overlay = document.getElementById("targetLockOverlay");
-	if (overlay)
-		overlay.style.top = '235px';
+	besogo.editor.registerShowComment(showComment);
+	showComment(besogo.editor.getCurrent().comment || '');
 }
+
+//The page around the board for its problem: when the page opens, and when it shows its next problem in
+//place (PlayNavigation.js), after the state and the board (PlayBoard.js)
+function setUpProblem()
+{
+	setUpToggles();
+	setUpFilterTiles();
+	setUpMode();
+	connectBoard();
+}
+setUpProblem();

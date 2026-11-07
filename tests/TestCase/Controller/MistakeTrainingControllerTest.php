@@ -250,6 +250,26 @@ class MistakeTrainingControllerTest extends IntegrationTestCase
 		$this->assertStringContainsString('Already solved today. This try does not count.', $data['content']);
 	}
 
+	//Next goes along today's training in place, without loading the page (webroot/js/PlayNavigation.js),
+	//from the training's first address on; a solve there is the review of the problem as on a loaded page
+	public function testNextGoesAlongTheTrainingInPlace()
+	{
+		$context = $this->prepareTraining([], [], []);
+		$browser = Browser::instance();
+		$browser->get('mistake-training');
+		$browser->driver->executeScript('window.samePage = true;');
+		$browser->playWithResult('S');
+		$browser->clickId('besogo-next-button');
+		$browser->waitUntilJs('location.pathname === "/mistake-training/play/' . self::setConnectionId($context, 1) . '" && window.tsumegoID === ' . (int) $context->tsumegos[1]['id']);
+
+		$this->assertTrue($browser->driver->executeScript('return window.samePage === true;'), 'Next shows the problem in place');
+		$this->assertStringStartsWith('Mistake Training 2/3', $browser->driver->getTitle());
+		$this->assertSame(Constants::$MISTAKE_TRAINING_MODE, (int) $browser->driver->executeScript('return mode;'));
+		$browser->playWithResult('S');
+		$this->assertFalse(MistakeTraining::isDue((int) $context->user['id'], (int) $context->tsumegos[1]['id']), 'The solve is its review');
+		$browser->assertNoJsErrors();
+	}
+
 	public function testAProblemSolvedTodayOpensAsAReplay()
 	{
 		$context = $this->prepareTraining([], self::reviewedToday(MistakeTraining::REVIEW_SOLVED));

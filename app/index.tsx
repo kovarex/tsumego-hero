@@ -1,4 +1,4 @@
-import { mountApp } from './shared/mountApp';
+import { mountApp, unmountApps } from './shared/mountApp';
 import { CommentSection } from './comments/CommentSection';
 import { IssuesList } from './issues/IssuesList';
 import { RecentAchievements } from './home/RecentAchievements';
@@ -13,19 +13,28 @@ import { syncMenuNewBadge } from './changelog/changelogCount';
 import { queryClient } from './queryClient';
 import { localizeTimeElements } from './shared/dates';
 
+function mountApps(container: ParentNode = document)
+{
+	mountApp('[data-comments-root]', CommentSection, container);
+	mountApp('[data-issues-root]', IssuesList, container);
+	mountApp('[data-recent-achievements-root]', RecentAchievements, container);
+	mountApp('[data-tag-editor-root]', TagEditor, container);
+	mountApp('[data-changelog-root]', Changelog, container);
+	mountApp('[data-classroom-progress-root]', ClassroomProgress, container);
+	mountApp('[data-assignment-editor-root]', AssignmentEditor, container);
+	mountApp('[data-messages-root]', Messages, container);
+	mountApp('[data-line-chart-root]', LineChart, container);
+	mountApp('[data-bar-chart-root]', BarChart, container);
+}
+
 function initializeApp()
 {
 	localizeTimeElements();
-	mountApp('[data-comments-root]', CommentSection);
-	mountApp('[data-issues-root]', IssuesList);
-	mountApp('[data-recent-achievements-root]', RecentAchievements);
-	mountApp('[data-tag-editor-root]', TagEditor);
-	mountApp('[data-changelog-root]', Changelog);
-	mountApp('[data-classroom-progress-root]', ClassroomProgress);
-	mountApp('[data-assignment-editor-root]', AssignmentEditor);
-	mountApp('[data-messages-root]', Messages);
-	mountApp('[data-line-chart-root]', LineChart);
-	mountApp('[data-bar-chart-root]', BarChart);
+	mountApps();
+
+	// For the play page, which replaces its content with the next problem's (webroot/js/PlayNavigation.js)
+	(window as unknown as { mountApps?: typeof mountApps }).mountApps = mountApps;
+	(window as unknown as { unmountApps?: typeof unmountApps }).unmountApps = unmountApps;
 
 	syncMenuNewBadge();
 

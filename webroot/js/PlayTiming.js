@@ -68,6 +68,12 @@ var PlayTiming = (function()
 			}));
 		},
 
+		// The next problem shown in place (PlayNavigation.js), from the click until it was painted
+		inPlace(started)
+		{
+			requestAnimationFrame(() => setTimeout(() => add('problem_next_in_place', performance.now() - started, null)));
+		},
+
 		// The request recording a result, from its sending until its answer was read, with the
 		// Server-Timing header of the answer
 		result(milliseconds, serverTiming)

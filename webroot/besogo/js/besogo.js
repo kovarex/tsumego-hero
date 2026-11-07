@@ -38,6 +38,39 @@
   besogo.boardInverted = false;
   besogo.soundsEnabled = false;
   besogo.controlButtonLock = true;
+
+  // A board can make way for another on the same page (the play page's next problem, PlayNavigation.js):
+  // besogo.destroy() takes away the listeners and observers it added outside its own elements, and puts
+  // the namespace back as the scripts left it before the first board, so nothing of a board is left over.
+  var disposers = [];
+  var initialState = null;
+  besogo.listen = function (target, type, listener) {
+    target.addEventListener(type, listener);
+    disposers.push(function () { target.removeEventListener(type, listener); });
+  };
+  besogo.onDestroy = function (dispose) {
+    disposers.push(dispose);
+  };
+  // the values of the namespace, arrays and plain objects copied, as their content changes with a board
+  function copyState(state) {
+    var copy = {};
+    Object.keys(state).forEach(function (key) {
+      var value = state[key];
+      if (Array.isArray(value)) value = value.slice();
+      else if (value && Object.getPrototypeOf(value) === Object.prototype) value = Object.assign({}, value);
+      copy[key] = value;
+    });
+    return copy;
+  }
+  besogo.destroy = function () {
+    if (besogo.editor) besogo.editor.dispose();
+    disposers.splice(0).forEach(function (dispose) { dispose(); });
+    if (!initialState) return;
+    Object.keys(besogo).forEach(function (key) {
+      if (!(key in initialState) && typeof besogo[key] !== "function") delete besogo[key];
+    });
+    Object.assign(besogo, copyState(initialState));
+  };
   besogo.theme = "";
   besogo.light = null; //light or dark theme
   besogo.multipleChoice = null; //multiple choice problems
@@ -215,7 +248,7 @@
         setDimensions(width, height);
         container.style.width = width + "px";
       };
-      window.addEventListener("resize", resizer);
+      besogo.listen(window, "resize", resizer);
       resizer(); // Initial div sizing
     } else if (options.resize === "fixed")
       setDimensions(container.clientWidth, container.clientHeight);
@@ -257,7 +290,7 @@
           boardDiv.style.width = width + "px";
         }
       };
-      window.addEventListener("resize", resizer);
+      besogo.listen(window, "resize", resizer);
       resizer(); // Initial div sizing
     }
     if (besogo.isEmbedded) {
@@ -319,10 +352,12 @@
       let height = Math.max(window.innerHeight - top - belowBoard - SPACE_UNDER_BUTTONS, MINIMUM_BOARD_HEIGHT);
       boardDiv.style.maxWidth = "min(100%, " + Math.floor((height * viewBox.width) / viewBox.height) + "px)";
     };
-    new MutationObserver(fit).observe(svg, { attributes: true, attributeFilter: ["viewBox"] });
-    window.addEventListener("resize", fit);
+    let observer = new MutationObserver(fit);
+    observer.observe(svg, { attributes: true, attributeFilter: ["viewBox"] });
+    besogo.onDestroy(function () { observer.disconnect(); });
+    besogo.listen(window, "resize", fit);
     // what is above the board may still change its height while the page loads
-    window.addEventListener("load", fit);
+    besogo.listen(window, "load", fit);
     fit();
   }
 
@@ -331,6 +366,7 @@
       boardDisplay,
       boardDiv, // Board display container
       insideText = container.textContent || container.innerText || "";
+    if (!initialState) initialState = copyState(besogo);
     if (typeof options.tsumegoPlayTool === "string")
 		besogo.isEmbedded = true;
 
