@@ -30,7 +30,7 @@
 .scheduleTsumego {
   display: block;
   clear: both;
-  color: var(--color-white);
+  color: var(--schedule-link) !important;
 }
 .new1 {
 	background: var(--new1-gradient);
@@ -467,9 +467,6 @@
 
 
 /* Dark overrides. */
-[data-theme="dark"] .scheduleTsumego {
-	color: var(--link-color) !important;
-}
 
 /* Mobile-first: single column below 64rem, then widen. Column stacking is
    handled by the .split object in composition.css; here we only make the
