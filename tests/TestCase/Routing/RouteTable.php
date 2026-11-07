@@ -84,6 +84,7 @@ return [
 		'/challenges/play/5' => ['Challenges', 'play', ['5']],
 		'/challenges/rematch/5' => ['Challenges', 'rematch', ['5']],
 		'/challenges/remove/5' => ['Challenges', 'remove', ['5']],
+		'/challenges/standings/5' => ['Challenges', 'standings', ['5']],
 		'/friends' => ['Friends', 'index', []],
 		'/friends/add/5' => ['Friends', 'add', ['5']],
 		'/friends/accept/5' => ['Friends', 'accept', ['5']],
@@ -202,6 +203,8 @@ return [
 		'/challenges/rematch/7' => ['Challenges', 'rematch', ['7']],
 		'/challenges/remove' => ['Challenges', 'remove', []],
 		'/challenges/remove/7' => ['Challenges', 'remove', ['7']],
+		'/challenges/standings' => ['Challenges', 'standings', []],
+		'/challenges/standings/7' => ['Challenges', 'standings', ['7']],
 		'/challenges/view' => ['Challenges', 'view', []],
 		'/challenges/view/7' => ['Challenges', 'view', ['7']],
 

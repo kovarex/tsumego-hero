@@ -27,6 +27,10 @@ config/core.php
 .php-cs-fixer.templates.cache
 /.php-cs-fixer.php
 
+# The change stamps that PHP writes (src/Utility/Live.php), keeping their .htaccess
+/webroot/live/*
+!/webroot/live/.htaccess
+
 # User-uploaded set cover images (keep the cache-control .htaccess)
 /webroot/img/sets/*
 !/webroot/img/sets/.htaccess

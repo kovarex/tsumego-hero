@@ -8,6 +8,7 @@ use App\Model\Table\TimeModeSessionStatusTable;
 use App\Utility\Auth;
 use App\Utility\Constants;
 use App\Utility\CookieFlash;
+use App\Utility\Live;
 use App\Utility\PlayOutcome;
 use App\Utility\Rating;
 use App\Utility\TimeModeUtil;
@@ -409,6 +410,124 @@ class ChallengesControllerTest extends IntegrationTestCase
 		$this->post('/challenges/remove/' . $challengeId, ['user_id' => $this->userId('friend')]);
 		$this->assertSame([ChallengeTable::RUN_REMOVED], array_values(array_column(array_filter(ChallengeTable::standings($challengeId),
 			fn(array $row) => (int) $row['user_id'] === $this->userId('friend')), 'run')));
+	}
+
+	//The table of the players as JSON, for the page that keeps it up to date while the challenge is in progress.
+	public function testTheStandingsAsJson(): void
+	{
+		$this->prepare();
+		$challengeId = $this->create(['problem_count' => 5, 'players' => 'DN_friend']);
+		$this->playRun($challengeId, array_fill(0, 5, [PlayOutcome::SolvedClean, 10]));
+
+		$this->get('/challenges/standings/' . $challengeId);
+		$body = json_decode((string) $this->_response->getBody(), true);
+		$this->assertFalse($body['finished']);
+		$this->assertStringContainsString('not played yet', $body['html']);
+		$this->assertStringNotContainsString('challenge-place', $body['html']);
+		$this->assertHeader('Cache-Control', 'private, no-store');
+
+		$this->login('friend');
+		$this->playRun($challengeId, array_fill(0, 5, [PlayOutcome::SolvedClean, 20]));
+		$this->logout();
+		$this->get('/challenges/standings/' . $challengeId);
+		$body = json_decode((string) $this->_response->getBody(), true);
+		$this->assertTrue($body['finished'], 'anyone with the link sees the table');
+		$this->assertStringContainsString('aria-label="2nd place"', $body['html']);
+	}
+
+	//Every change of the table of the players bumps the stamp of the challenge, which the pages showing
+	//the table watch: a new challenge, an invitation, a decline and a change of mind, a removal, the
+	//start of a run, each of its results and its end.
+	public function testEveryChangeOfTheTableBumpsTheStampOfTheChallenge(): void
+	{
+		$this->prepare();
+		$challengeId = $this->create(['problem_count' => 5, 'players' => 'DN_friend']);
+		$version = fn() => Live::read(Live::challengeChannel($challengeId))['version'] ?? 0;
+		$this->assertGreaterThanOrEqual(2, $version(), 'the challenge and its invitation');
+		$bumped = function (callable $change, int $times, string $what) use ($version): void {
+			$before = $version();
+			$change();
+			$this->assertSame($before + $times, $version(), $what);
+		};
+
+		$bumped(fn() => $this->post('/challenges/invite/' . $challengeId, ['players' => 'DN_stranger']), 1, 'an invitation');
+		$this->login('stranger');
+		$bumped(fn() => $this->post('/challenges/decline/' . $challengeId), 1, 'a decline');
+		$bumped(fn() => $this->post('/challenges/join/' . $challengeId), 1, 'a change of mind');
+		$this->login('challenger');
+		$bumped(fn() => $this->post('/challenges/remove/' . $challengeId, ['user_id' => $this->userId('stranger')]), 1, 'a removal');
+
+		$this->login('friend');
+		$bumped(fn() => $this->post('/challenges/play/' . $challengeId), 1, 'the start of a run');
+		$problemIDs = ChallengeTable::problemIDs($challengeId);
+		foreach ($problemIDs as $index => $problemID)
+		{
+			$this->post('/timeMode/play/' . ($index + 1));
+			Auth::init();
+			$bumped(fn() => $this->post('/tsumegos/result', ['tsumego_id' => $problemID, 'seconds' => 10, 'outcome' => PlayOutcome::SolvedClean->value]),
+				1, 'a result');
+		}
+		$bumped(fn() => $this->post('/timeMode/play'), 1, 'the end of the run');
+		$this->assertNotSame(TimeModeSessionStatusTable::IN_PROGRESS, ChallengeTable::runOf($challengeId, $this->userId('friend'))->time_mode_session_status_id);
+	}
+
+	//The page of a challenge in progress takes the new runs into its table by itself within about two
+	//seconds (the stamp is asked for every 1.5 s), and reloads with the places once the last player finished.
+	public function testThePageOfAChallengeInProgressFollowsTheRuns(): void
+	{
+		$this->prepare();
+		$challengeId = $this->create(['problem_count' => 5, 'players' => 'DN_friend, DN_stranger']);
+		$this->playRun($challengeId, array_fill(0, 5, [PlayOutcome::SolvedClean, 10]));
+		$browser = Browser::instance();
+		$browser->get('/challenges/' . $challengeId);
+		$browser->driver->executeScript('window.notReloaded = true;');
+		$friendRow = '#challenge-standings tr[data-user-id="' . $this->userId('friend') . '"]';
+		$this->assertStringContainsString('not played yet', $browser->find($friendRow)->getText());
+		$this->waitForTheFirstStamp($browser, $challengeId);
+
+		$this->login('friend');
+		$this->playRun($challengeId, array_fill(0, 5, [PlayOutcome::SolvedClean, 20]));
+		$browser->waitUntil(fn() => !str_contains($browser->find($friendRow)->getText(), 'not played yet'), 4, 'the run of the friend in the table');
+		$this->assertTrue($browser->driver->executeScript('return window.notReloaded === true;'), 'the table changed without a reload');
+		$this->assertCount(0, $browser->getElements('#challenge-standings .challenge-place'));
+
+		$this->login('stranger');
+		$this->playRun($challengeId, array_fill(0, 5, [PlayOutcome::Failed, 10]));
+		$browser->waitUntil(fn() => count($browser->getElements('#challenge-standings .challenge-place')) === 3, 6, 'the places after the last run');
+		$browser->assertNoJsErrors();
+	}
+
+	//The table the refresh puts in has the lines of the fails too, and pointing at a failed cell of it
+	//shows its board: the listeners are on the section, which stays.
+	public function testAFailedLineShowsOnTheTableTheRefreshPutsIn(): void
+	{
+		$this->prepare(12, self::SGF);
+		$challengeId = $this->create(['problem_count' => 5, 'players' => 'DN_friend, DN_stranger']);
+		$problemIDs = ChallengeTable::problemIDs($challengeId);
+		$this->playRun($challengeId, [[PlayOutcome::Failed, 10, ['challenge_failed_line' => 'aaabea', 'sgf_id' => $this->sgfID($problemIDs[0])]]]
+			+ array_fill(0, 5, [PlayOutcome::SolvedClean, 10]));
+		$browser = Browser::instance();
+		$browser->get('/challenges/' . $challengeId);
+		$browser->driver->executeScript('document.querySelector(".challenges__cell--line").dataset.first = "1";');
+		$friendRow = '#challenge-standings tr[data-user-id="' . $this->userId('friend') . '"]';
+		$this->waitForTheFirstStamp($browser, $challengeId);
+
+		$this->login('friend');
+		$this->playRun($challengeId, array_fill(0, 5, [PlayOutcome::SolvedClean, 20]));
+		$browser->waitUntil(fn() => !str_contains($browser->find($friendRow)->getText(), 'not played yet'), 4, 'the run of the friend in the table');
+		$cell = $browser->find('.challenges__cell--line');
+		$this->assertNull($cell->getAttribute('data-first'), 'a cell of the new table');
+
+		$browser->hover($cell);
+		$browser->waitUntilJs('document.querySelector(".challenges__line-board svg") !== null');
+		$this->assertSame(['1', '2', '3'], $browser->driver->executeScript('return Array.from(document.querySelectorAll(".challenges__line-board svg text")).map(number => number.textContent);'));
+		$browser->assertNoJsErrors();
+	}
+
+	//The page has seen the stamp of the challenge once, so what changes from now on is news to it
+	private function waitForTheFirstStamp(Browser $browser, int $challengeId): void
+	{
+		$browser->waitUntilJs('Live.seen("' . Live::challengeChannel($challengeId) . '")');
 	}
 
 	public function testOnlyTheCreatorRemovesPlayers(): void

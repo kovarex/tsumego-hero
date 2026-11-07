@@ -32,7 +32,31 @@ https://host.docker.internal:8443, https://localhost:8443 {
         }
         @webpImage path_regexp \.(?i:webp)$
         header @webpImage Vary Accept
+        #The change stamps, with the headers of webroot/live/.htaccess
+        @stamp path /live/*
+        header @stamp Cache-Control no-cache
+        header @stamp X-Content-Type-Options nosniff
+        header @stamp Content-Type application/json
         file_server
+    }
+
+    #The push hub of the stamps (scripts/live-hub.mjs) where one runs on port 8091, as the proxy of
+    #NearlyFreeSpeech sends it there; without one the 502 sends the page to asking for the stamps itself
+    @hub path /live/sse
+    handle @hub {
+        reverse_proxy http://host.docker.internal:8091 {
+            flush_interval -1
+        }
+    }
+
+    #A change stamp never bumped yet: nothing changed, as webroot/live/.htaccess answers it
+    @missingStamp {
+        path /live/*
+        not path /live/sse
+        not file
+    }
+    handle @missingStamp {
+        respond 204
     }
 
     #Everything else is the site, through index.php

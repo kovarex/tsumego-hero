@@ -33,6 +33,7 @@ const LEGACY_APP_FILES = [
 	'webroot/js/setProgress.js',
 	'webroot/js/siteMenu.js',
 	'webroot/js/keepAlive.js',
+	'webroot/js/Live.js',
 	'webroot/js/PlayerNameSuggestions.js',
 ];
 
@@ -174,6 +175,7 @@ export default defineConfig({
 		legacyBundlePlugin('sets-view', ['webroot/js/SetsViewPage.js']),
 		legacyBundlePlugin('time-mode', ['webroot/js/TimeModePages.js']),
 		legacyBundlePlugin('schedule', ['webroot/js/SchedulePage.js']),
+		legacyBundlePlugin('challenge', ['webroot/js/ChallengePage.js']),
 		legacyBundlePlugin('challenges', ['webroot/js/ChallengesPage.js']),
 		legacyBundlePlugin('settings', ['webroot/js/SettingsPage.js']),
 		//The admin pages of the problems: their upload history, the tag overview and the similar problem search

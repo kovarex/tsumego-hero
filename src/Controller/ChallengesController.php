@@ -95,22 +95,13 @@ class ChallengesController extends AppController
 		$this->set('_title', 'Tsumego Hero - ' . ChallengeTable::title($challenge));
 		$this->set('challenge', $challenge);
 
-		$standings = ChallengeTable::standings($challengeID);
-		$this->set('standings', $standings);
-
 		$participation = Auth::isLoggedIn() ? ChallengeTable::participation($challengeID, Auth::getUserID()) : null;
 		$wasRemoved = $participation !== null && $participation['removed'] !== null;
 		$isParticipant = $participation !== null && $participation['declined'] === null && !$wasRemoved;
-		$myRun = $isParticipant ? array_find($standings, fn(array $row) => (int) $row['user_id'] === Auth::getUserID()) : null;
+		$this->set($this->standingsVariables($challenge, $isParticipant));
 		$this->set('isParticipant', $isParticipant);
 		$this->set('wasRemoved', $wasRemoved);
 		$this->set('hasDeclined', $participation !== null && !$isParticipant && !$wasRemoved);
-		$this->set('isFinished', ChallengeTable::everyoneFinished($standings));
-		$isCreator = Auth::isLoggedIn() && (int) $challenge['created_by_user_id'] === Auth::getUserID();
-		$this->set('removableUserIDs', $isCreator ? array_map(fn(array $row) => (int) $row['user_id'],
-			array_values(array_filter($standings, fn(array $row) => (int) $row['user_id'] !== Auth::getUserID()
-				&& ChallengeTable::canRemove($row, (int) $challenge['seconds_per_problem'], time())))) : []);
-		$this->set('myRun', $myRun);
 		$rematch = ChallengeTable::rematchOf($challengeID);
 		$this->set('rematch', $rematch);
 		$this->set('isInRematch', $rematch !== null && Auth::isLoggedIn() && ChallengeTable::isParticipant((int) $rematch['id'], Auth::getUserID()));
@@ -124,13 +115,49 @@ class ChallengesController extends AppController
 			'challenge_id IS NOT' => null,
 			'challenge_id !=' => $challengeID])->first() : null;
 		$this->set('otherChallengeInProgressID', $otherRun?->challenge_id);
-
-		$showResults = $myRun !== null && $myRun['run'] === ChallengeTable::RUN_FINISHED;
-		$this->set('showResults', $showResults);
-		$attemptsByRun = $showResults ? ChallengeTable::attemptsByRun($challengeID) : [];
-		$this->set('attemptsByRun', $attemptsByRun);
-		$this->set('problemButtons', $showResults ? ChallengeTable::problemButtons($challengeID, $attemptsByRun[(int) $myRun['session_id']] ?? []) : []);
 		return null;
+	}
+
+	//The table of the players of a challenge as the page draws it, for the page that keeps it up to
+	//date while the challenge is in progress (webroot/js/ChallengePage.js).
+	#[HttpGet]
+	public function standings(string $id): Response
+	{
+		$challenge = $this->findChallenge($id);
+		$isParticipant = Auth::isLoggedIn() && ChallengeTable::isParticipant((int) $challenge['id'], Auth::getUserID());
+		$variables = $this->standingsVariables($challenge, $isParticipant);
+		// never kept by a cache on the way, which would show the page a table it has outgrown
+		return $this->respondJson([
+			'finished' => $variables['isFinished'],
+			'html' => $this->createView()->element('Challenges/standings', ['challenge' => $challenge] + $variables),
+		])->withHeader('Cache-Control', 'private, no-store');
+	}
+
+	//What the table of the players needs, the same for the page and for standings(). How each
+	//player did with each problem shows to the players who finished their own run.
+	/**
+	 * @param array<string, mixed> $challenge As withDetails() returns it
+	 * @return array<string, mixed>
+	 */
+	private function standingsVariables(array $challenge, bool $isParticipant): array
+	{
+		$challengeID = (int) $challenge['id'];
+		$standings = ChallengeTable::standings($challengeID);
+		$myRun = $isParticipant ? array_find($standings, fn(array $row) => (int) $row['user_id'] === Auth::getUserID()) : null;
+		$isCreator = Auth::isLoggedIn() && (int) $challenge['created_by_user_id'] === Auth::getUserID();
+		$showResults = $myRun !== null && $myRun['run'] === ChallengeTable::RUN_FINISHED;
+		$attemptsByRun = $showResults ? ChallengeTable::attemptsByRun($challengeID) : [];
+		return [
+			'standings' => $standings,
+			'myRun' => $myRun,
+			'isFinished' => ChallengeTable::everyoneFinished($standings),
+			'removableUserIDs' => $isCreator ? array_map(fn(array $row) => (int) $row['user_id'],
+				array_values(array_filter($standings, fn(array $row) => (int) $row['user_id'] !== Auth::getUserID()
+					&& ChallengeTable::canRemove($row, (int) $challenge['seconds_per_problem'], time())))) : [],
+			'showResults' => $showResults,
+			'attemptsByRun' => $attemptsByRun,
+			'problemButtons' => $showResults ? ChallengeTable::problemButtons($challengeID, $attemptsByRun[(int) $myRun['session_id']] ?? []) : [],
+		];
 	}
 
 	#[HttpPost]
