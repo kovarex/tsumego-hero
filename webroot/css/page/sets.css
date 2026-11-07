@@ -16,6 +16,12 @@
 .set-view__half {
   width: 50%;
 }
+.sandbox-page {
+  padding-top: 10px;
+}
+.sandbox-page__actions {
+  width: 100%;
+}
 .set-search__submit {
   width: 70px;
 }

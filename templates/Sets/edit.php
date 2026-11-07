@@ -37,7 +37,7 @@ if ($currentColor !== '' && !in_array(strtolower($currentColor), array_map('strt
 	<div class="set-edit__grid">
 		<div class="card card--green set-edit__section">
 			<h2 class="set-edit__heading">Details</h2>
-			<form action="/sets/edit/<?php echo $setId; ?>" id="set-edit-details" enctype="multipart/form-data" method="post" accept-charset="utf-8"><div style="display:none;"><input type="hidden" name="_method" value="POST"/></div>
+			<form action="/sets/edit/<?php echo $setId; ?>" id="set-edit-details" enctype="multipart/form-data" method="post" accept-charset="utf-8"><div hidden><input type="hidden" name="_method" value="POST"/></div>
 				<div class="form-field">
 					<label class="form-field__label" for="SetTitle">Title</label>
 					<input class="form-field__control" type="text" id="SetTitle" name="title" value="<?php echo h($set->title); ?>" required>

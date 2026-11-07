@@ -15,7 +15,7 @@ use App\Utility\Util;
 	</div>
 
 	<div class="card card--green set-edit__section">
-		<form action="<?php echo h(Util::requestUri()); ?>" id="set-edit-details" method="post" accept-charset="utf-8"><div style="display:none;"><input type="hidden" name="_method" value="POST"/></div>
+		<form action="<?php echo h(Util::requestUri()); ?>" id="set-edit-details" method="post" accept-charset="utf-8"><div hidden><input type="hidden" name="_method" value="POST"/></div>
 			<div class="form-field">
 				<label class="form-field__label" for="SetTitle">Title</label>
 				<input class="form-field__control" type="text" id="SetTitle" name="title" placeholder="My set name" required>

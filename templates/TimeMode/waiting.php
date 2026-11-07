@@ -7,7 +7,7 @@ use App\Utility\TimeModeUtil;
  */
 
 ?>
-<div align="center">
+<div class="legacy-center">
 	<h2>Time Mode</h2>
 	<br>
 	<p>Finishing your session...</p>

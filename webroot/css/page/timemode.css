@@ -23,6 +23,51 @@
 .versionColor a {
   color: var(--time-mode-version-link);
 }
+.timeModeTable2,
+.time-result__runs {
+  width: 100%;
+}
+/* The columns of a rank's row and of the runs and problems under it */
+.time-result__category,
+.time-result__order {
+  width: 9%;
+}
+.time-result__rank,
+.time-result__problem {
+  width: 46%;
+}
+.time-result__status {
+  width: 15%;
+}
+.time-result__points {
+  width: 13%;
+}
+.time-result__arrow {
+  width: 3%;
+}
+.time-result__outcome {
+  width: 7%;
+}
+.time-result__score {
+  width: 8%;
+}
+.time-result--passed {
+  color: var(--color-green);
+}
+.time-result--failed {
+  color: var(--feedback-error);
+}
+/* The best run and the current one in the history */
+.time-result__shown {
+  font-weight: bold;
+}
+.time-mode__rank-link {
+  text-decoration: none;
+}
+.toast__link {
+  color: var(--color-black);
+  text-decoration: none;
+}
 .timeModeTable2 .timeModeTable2td {
   text-align: right;
 }
