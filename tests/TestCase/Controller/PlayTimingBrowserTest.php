@@ -16,23 +16,29 @@ class PlayTimingBrowserTest extends IntegrationTestCase
 
 		$browser->get($urls[0]);
 		$browser->playWithResult('S');
+		// Next shows the problem in place (PlayNavigation.js)
 		$browser->clickId('besogo-next-button');
-		$browser->waitUntilJs('location.pathname === "' . $urls[1] . '"');
-		$browser->waitUntilJs('typeof besogo !== "undefined" && besogo.editor !== undefined');
-		// the sample of the board is taken after its first paint
+		$browser->waitUntilJs('location.pathname === "' . $urls[1] . '" && window.tsumegoID === ' . (int) $context->tsumegos[1]['id']);
+		// the samples of the boards are taken after their first paint
+		usleep(300000);
+		// a problem opened with its page from another one
+		$browser->get(ltrim($urls[0], '/'));
+		$browser->waitUntilJs('typeof besogo !== "undefined" && besogo.editor !== null');
 		usleep(300000);
 		$browser->get('sets');
 
-		// the last three: the page a previous test left the browser on sends its own when the test leaves it
-		$expected = ['problem_open', 'result_post', 'problem_next'];
+		// the last four: the page a previous test left the browser on sends its own when the test leaves it
+		$expected = ['problem_open', 'result_post', 'problem_next_in_place', 'problem_next'];
 		$samples = [];
 		for ($wait = 0; $wait < 50 && array_column($samples, 'metric') !== $expected; $wait++, usleep(100000))
-			$samples = array_slice(Util::query('SELECT metric, milliseconds, server_milliseconds, mode FROM rum_sample ORDER BY id'), -3);
+			$samples = array_slice(Util::query('SELECT metric, milliseconds, server_milliseconds, mode FROM rum_sample ORDER BY id'), -4);
 		$this->assertSame($expected, array_column($samples, 'metric'));
 		foreach ($samples as $sample)
 		{
 			$this->assertGreaterThan(0, (int) $sample['milliseconds'], $sample['metric']);
-			$this->assertNotNull($sample['server_milliseconds'], $sample['metric'] . ' has the time of the server');
+			// the server's part of a problem shown in place is in the time it was loaded ahead, not in this one
+			if ($sample['metric'] !== 'problem_next_in_place')
+				$this->assertNotNull($sample['server_milliseconds'], $sample['metric'] . ' has the time of the server');
 			$this->assertSame(Constants::$LEVEL_MODE, (int) $sample['mode'], $sample['metric']);
 		}
 		$browser->assertNoJsErrors();
