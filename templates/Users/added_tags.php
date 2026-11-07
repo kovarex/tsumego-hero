@@ -10,7 +10,7 @@ use App\View\Helper\HighscoreHelper;
 
 ?>
 
-<div align="center" class="highscore">
+<div class="legacy-center highscore">
 <?php echo $this->element('highscore_nav', ['activeTab' => 'tags']); ?>
 
 <?php echo HighscoreHelper::renderTable(

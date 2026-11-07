@@ -13,10 +13,10 @@ use App\View\Helper\HighscoreHelper;
  */
 ?>
 
-<div align="center" class="highscore">
+<div class="legacy-center highscore">
 <?php echo $this->element('highscore_nav', ['activeTab' => 'time']); ?>
 
-<div style="margin-bottom: 16px;">
+<div class="highscore__categories">
 <?php foreach ([2 => 'Slow', 1 => 'Fast', 0 => 'Blitz'] as $index => $categoryName): ?>
 	<?php if ($index === $categoryIndex): ?>
 		<a class="btn btn--inactive"><?php echo $categoryName; ?></a>
@@ -26,7 +26,7 @@ use App\View\Helper\HighscoreHelper;
 <?php endforeach; ?>
 </div>
 
-<div style="margin-bottom: 8px;">
+<div class="highscore__ranks">
 <?php foreach ($rankNames as $rankID => $name): ?>
 	<?php if ($name !== $rankName && isset($playedRankIDs[$rankID])): ?>
 		<a class="btn" href="/users/time_mode?category=<?php echo $categoryIndex; ?>&rank=<?php echo $name; ?>"><?php echo $name; ?></a>

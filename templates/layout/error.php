@@ -51,7 +51,7 @@ echo $this->fetch('script');
 			<?php echo $this->fetch('content'); ?>
 		</div>
 		<div id="footer">
-			<a href="http://www.cakephp.org/" target="_blank"><img src="/img/cake.power.gif" alt="<?php echo h($cakeDescription); ?>" border="0"/></a>
+			<a href="http://www.cakephp.org/" target="_blank"><img src="/img/cake.power.gif" alt="<?php echo h($cakeDescription); ?>"/></a>
 		</div>
 	</div>
 	<?php echo $this->element('sql_dump'); ?>

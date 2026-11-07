@@ -9,13 +9,13 @@ use App\View\Helper\HighscoreHelper;
  */
 
 ?>
-	<div align="center" class="highscore">
+	<div class="legacy-center highscore">
 <?php echo $this->element('highscore_nav', ['activeTab' => 'daily']); ?>
 
 <?php
 
 echo HighscoreHelper::renderTable(
-	'Daily Highscore<br><span style="display:inline-block;margin-top:4px;font-weight:normal;text-decoration:none"><time datetime="' . date('Y-m-d') . '" data-format="date">' . date('Y-m-d') . '</time></span>',
+	'Daily Highscore<br><span class="highscore__date"><time datetime="' . date('Y-m-d') . '" data-format="date">' . date('Y-m-d') . '</time></span>',
 	$users,
 	[
 		['label' => 'Solved', 'render' => fn($row) => $row['daily_solved']],
@@ -25,5 +25,5 @@ echo HighscoreHelper::renderTable(
 );
 ?>
 
-<p style="font-weight:400;font-style:italic;">Users can be user of the day once per week.</p>
+<p class="highscore__note">Users can be user of the day once per week.</p>
 </div>

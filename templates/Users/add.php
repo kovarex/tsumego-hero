@@ -12,7 +12,7 @@ use App\Utility\Constants;
 <div id="login-box" class="users form">
   <div class="left signin">
 		<h1>Sign up</h1>
-		<form action="/users/add" id="UserAddForm" method="post" accept-charset="utf-8"><div style="display:none;"><input type="hidden" name="_method" value="POST"/></div>
+		<form action="/users/add" id="UserAddForm" method="post" accept-charset="utf-8"><div hidden><input type="hidden" name="_method" value="POST"/></div>
 		<div class="input text required">
 			<label for="UserName">Name</label>
 			<input name="name" autocomplete="username" maxlength="50" type="text" id="UserName"/>

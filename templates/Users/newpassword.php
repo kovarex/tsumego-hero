@@ -17,7 +17,7 @@ use App\Utility\CookieFlash;
 		<?php echo CookieFlash::render(); ?>
 		 <h1>New password:</h1>
 		<form action="/users/newpassword/<?php echo urlencode($checksum); ?>" id="UserNewpasswordForm" method="post" accept-charset="utf-8">
-		<div style="display:none;"><input type="hidden" name="_method" value="POST"></div>	
+		<div hidden><input type="hidden" name="_method" value="POST"></div>	
                 <div class="input">
                         <label for="password1">New password</label>
                         <input name="password1" maxlength="50" type="password" id="password1" autocomplete="new-password" required="required"/>

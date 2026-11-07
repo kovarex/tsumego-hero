@@ -4,15 +4,15 @@
  * @var \App\View\AppView $this
  */
 ?><br>
-<div align="center">
+<div class="legacy-center">
 <p class="title">
 	About
 	<br> 
 </p>
 </div>
 <br>
-<div style="padding:0 30px">
-<table border="0">
+<div class="info-page__text">
+<table>
 <tr>
 <td>
 [Updated on 27.08.2025]
@@ -42,7 +42,7 @@ As the Adobe Flash Player was in 2017 already an outdated technology, I had to s
 </td>
 </tr>
 <tr>
-<td colspan="2" style="padding-top:15px">
+<td colspan="2" class="authors__story">
 In 2023, the website took a big step forward in terms of quality, content and features. This was made possible by <b>Michal Kovářík</b>, 
 who financially supports the website. He was also part of the development in many updates and he creates new problems. 
 <b>Michal Kovářík</b> is known for being the director and lead developer of the game <a href="https://www.factorio.com/" target="_blank">Factorio</a>,
@@ -56,7 +56,7 @@ There is not really a reason to limit the number of admins so far. So if you wou
 moderating, please contact me.<br><br>
 
 Go problems are the core of the website. Here is a list of the people who created the problems for Tsumego Hero: <br>
-<table border="0">
+<table>
 	<tr>
 		<td><b>Joschka Zimdars aka d4rkm4tter</b></td>
 		<td>7421 problems</td>

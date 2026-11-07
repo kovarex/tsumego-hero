@@ -17,6 +17,28 @@
 {
   width: 53%;
 }
+/* The date under the title of the daily board */
+.highscore__date
+{
+  display: inline-block;
+  margin-top: 4px;
+  font-weight: normal;
+  text-decoration: none;
+}
+.highscore__note
+{
+  font-weight: 400;
+  font-style: italic;
+}
+/* The time mode board: its categories, then its ranks */
+.highscore__categories
+{
+  margin-bottom: 16px;
+}
+.highscore__ranks
+{
+  margin-bottom: 8px;
+}
 .highscore
 {
   font-size: 20px;

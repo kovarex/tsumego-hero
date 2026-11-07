@@ -820,6 +820,13 @@ nav ul ul ul li {
 .discuss-disabled__link {
   color: var(--surface-muted-text);
 }
+/* The running text of the privacy policy and the authors page */
+.info-page__text {
+  padding: 0 30px;
+}
+.authors__story {
+  padding-top: 15px;
+}
 /* The theme icon comes from the theme token, so it follows the palette without a
    second file to load or a src the script would have to swap. Its width is in rem,
    so raising the base font size takes the icon along. */
