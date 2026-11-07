@@ -7,6 +7,19 @@
   padding: 3px;
   display: inline-block;
 }
+.set-view__table {
+  width: 100%;
+}
+.set-view__cover-cell {
+  width: 195px;
+}
+.set-view__half {
+  width: 50%;
+}
+.set-search__submit {
+  width: 70px;
+}
+
 .setViewAccuracy {
   color: var(--set-accent-purple);
   margin: 2px 9px;

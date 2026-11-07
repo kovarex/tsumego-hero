@@ -47,7 +47,7 @@ use App\Utility\ViteManifest;
 				'restoreAction' => '/trash/restore-set/' . (int) $set->id]);
 		?>
 		<div class="new1">
-		<table border="0" width="100%">
+		<table class="set-view__table">
 		<tr>
 			<td class="valign-top">
 				<?php
@@ -59,34 +59,34 @@ echo HtmlSanitizer::sanitize((string) ($set->description ?? ''));
 $startHref = $startingSetConnectionID === null ? '' : ' href="/' . $startingSetConnectionID . '"';
 // a cover whose name has a dash at its third letter sits at the bottom of its cell
 if ($tsumegoFilters->query == 'topics' && $set->image)
-	echo '<td width="195px" class="' . ($set->image[2] != '-' ? 'valign-top' : 'set-view__img-bottom') . '"><div align="center" class="set-view__cover">
+	echo '<td class="set-view__cover-cell ' . ($set->image[2] != '-' ? 'valign-top' : 'set-view__img-bottom') . '"><div class="legacy-center set-view__cover">
 						<a' . $startHref . '>
 						<img height="252" width="182" src="/img/' . h($set->image) . '"
 						alt="Tsumego Collection: ' . h($setTitle) . '" title="Tsumego Collection: ' . h($setTitle) . '">
 						</a></div></td>';
 elseif ($tsumegoFilters->query == 'difficulty')
-	echo '<td width="195px" class="valign-top"><div class="set-view__cover set-view__cover--rank" align="center">
+	echo '<td class="set-view__cover-cell valign-top"><div class="legacy-center set-view__cover set-view__cover--rank">
 						<a' . $startHref . '>
 						<span class="rank-icon rank-icon-large' . (str_contains((string) $set->id, '-') ? ' rank-icon-large--range' : '') . '">' . h((string) $set->id) . '</span>
 						</a></div></td>';
 else
-	echo '<td width="195px" class="valign-top"><div align="center"></div></td>';
+	echo '<td class="set-view__cover-cell valign-top"><div class="legacy-center"></div></td>';
 ?>
 		</tr>
 		<tr>
 			<td class="valign-top">
-				<table width="100%">
+				<table class="set-view__table">
 					<tr>
-						<td class="valign-top" width="50%">
-						<div align="center">
+						<td class="set-view__half valign-top">
+						<div class="legacy-center">
 						<br>
 						<?php
 echo '<b>' . count($tsumegoButtons) . ' Problems</b><br>';
 ?>
 						</div>
 						</td>
-						<td class="valign-bottom" width="50%">
-						<div align="center">
+						<td class="set-view__half valign-bottom">
+						<div class="legacy-center">
 							<br>
 							Difficulty: <?php
 	echo '<b>' . Rating::getReadableRankFromRating($setRating) . '</b>';
@@ -99,7 +99,7 @@ if ($tsumegoFilters->query != 'topics')
 				</table>
 			</td>
 			<td class="valign-top">
-				<div align="center">
+				<div class="legacy-center">
 				<br><br>
 					<?php
 					if ($startingSetConnectionID !== null)
@@ -113,16 +113,16 @@ if ($tsumegoFilters->query != 'topics')
 		{ ?>
 			<td>
 			<br>
-			<div align="center">
+			<div class="legacy-center">
 				<?php if(Auth::isLoggedIn())
 				{ ?>
 					<?php
 					echo '<table><tr><td><div class="setViewCompleted"><b>Completed: ' . $problemSolvedPercent . '%</b></div></td><td></td></tr></table>
 					<table><tr><td><div class="setViewAccuracy"><b>Accuracy: ' . $accuracy . '%</b></div></td><td>';
-					if($bestAccuracy !== null) echo '<font class="setViewAccuracy">Best completion: ' . $bestAccuracy . '%</font>';
+					if($bestAccuracy !== null) echo '<span class="setViewAccuracy">Best completion: ' . $bestAccuracy . '%</span>';
 					echo '</td></tr></table>
 					<table><tr><td><div class="setViewTime"><b>Avg. time: ' . $avgTime . 's</b></div></td><td>';
-					if($bestTime !== null && $bestTime != 60) echo '<font class="setViewTime">Best completion: ' . $bestTime . 's</font>';
+					if($bestTime !== null && $bestTime != 60) echo '<span class="setViewTime">Best completion: ' . $bestTime . 's</span>';
 					echo '</td></tr></table>';
 				} ?>
 			</div>
@@ -148,14 +148,14 @@ if ($tsumegoFilters->query != 'topics')
 					else
 						$pdCounterValue = 99;
 
-					echo '<font color="gray">XP reduced by ' . $pdCounterValue . '%. (' . $pdCounter . ' reset' . $plural . ' in the last month.)</font>';
+					echo '<span class="text-muted">XP reduced by ' . $pdCounterValue . '%. (' . $pdCounter . ' reset' . $plural . ' in the last month.)</span>';
 				}
 				if ($tsumegoFilters->collectionSize != ProgressDeletionTable::$PARTITION_SIZE)
 					echo 'Reset is only possible when collection size is set to ' . ProgressDeletionTable::$PARTITION_SIZE;
 				elseif ($tsumegoFilters->hasProblemFilters())
 					echo 'Reset is only possible without rank and tag filters';
 				elseif ($problemSolvedPercent < 50)
-					echo '<br><font color="gray">You need to complete 50% to reset.</font>';
+					echo '<br><span class="text-muted">You need to complete 50% to reset.</span>';
 				else
 					echo '<div id="msg1x"><a id="showx">Reset<img id="greyArrow1" src="/img/greyArrow1.png"></a></div><br>';
 			}
@@ -166,7 +166,7 @@ if ($tsumegoFilters->query != 'topics')
 			<td>
 			<?php if($scoring)
 			{ ?>
-			<div align="center">
+			<div class="legacy-center">
 			<br>
 			<br>
 			<a id="numbersButton" class="btn" data-score-view="numbers">Numbers</a>

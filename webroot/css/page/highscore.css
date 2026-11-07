@@ -5,6 +5,18 @@
    (they are site chrome, not highscore-page styles). */
 @layer page
 {
+.highscore-nav
+{
+  width: 100%;
+}
+.highscore-nav__side
+{
+  width: 23%;
+}
+.highscore-nav__middle
+{
+  width: 53%;
+}
 .highscore
 {
   font-size: 20px;

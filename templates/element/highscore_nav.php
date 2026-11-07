@@ -18,11 +18,11 @@ $tabs = [
 	'daily' => '/users/leaderboard',
 ];
 ?>
-<table border="0" width="100%">
+<table class="highscore-nav">
 <tr>
-	<td width="23%" valign="top"></td>
-	<td width="53%" valign="top">
-		<div align="center">
+	<td class="highscore-nav__side valign-top"></td>
+	<td class="highscore-nav__middle valign-top">
+		<div class="legacy-center">
 		<br>
 		<?php foreach ($tabs as $name => $url): ?>
 			<?php $class = ($name === $activeTab) ? 'btn--inactive' : ''; ?>
@@ -31,6 +31,6 @@ $tabs = [
 		<br><br>
 		</div>
 	</td>
-	<td width="23%" valign="top"></td>
+	<td class="highscore-nav__side valign-top"></td>
 </tr>
 </table>
