@@ -85,7 +85,7 @@ if (!isset($months[0]) && (empty($months) || min(array_keys($months)) >= 3))
 				else
 					[$state, $description] = ['', 'no training'];
 			?>
-			<span class="training-calendar__day<?php echo $state; ?>" style="grid-column: <?php echo intdiv($index, 7) + 2; ?>; grid-row: <?php echo $index % 7 + 2; ?>" data-day="<?php echo $day; ?>" title="<?php echo date('M j, Y', strtotime($day)) . ': ' . $description; ?>"></span>
+			<span class="training-calendar__day<?php echo $state; ?>" style="grid-column: <?php echo intdiv($index, 7) + 2; ?>; grid-row: <?php echo $index % 7 + 2; ?>" data-day="<?php echo $day; ?>" title="<?php echo date('M j, Y', strtotime($day)) . ': ' . $description; ?>" data-title-date="<?php echo $day; ?>" data-title-suffix=": <?php echo $description; ?>"></span>
 			<?php endfor; ?>
 		</div>
 	</div>

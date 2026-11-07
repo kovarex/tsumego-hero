@@ -27,7 +27,10 @@ function updateMistakeTrainingButton(button, xp)
 	let label = link.querySelector(".tooltip-label");
 	label.className = "tooltip-label status" + button.status;
 	label.textContent = button.label;
-	link.querySelector(".tooltip-desc").textContent = button.description;
+	// the description is the server's HTML, with the day of the next review as a <time>
+	let description = link.querySelector(".tooltip-desc");
+	description.innerHTML = button.description;
+	window.localizeTimeElements?.(description);
 
 	// A solve says under "Correct!" what it did to the problem: its next review, or its graduation
 	let status = document.getElementById("status");
@@ -38,7 +41,8 @@ function updateMistakeTrainingButton(button, xp)
 		outcome = document.createElement("p");
 		outcome.className = "mistake-training-outcome";
 		let earned = xp ? xp.review + xp.graduation : 0;
-		outcome.textContent = (earned > 0 ? "+" + earned + " XP \u00b7 " : "") + button.description;
+		outcome.innerHTML = (earned > 0 ? "+" + Number(earned) + " XP \u00b7 " : "") + button.description;
+		window.localizeTimeElements?.(outcome);
 		status.appendChild(outcome);
 		if (xp && xp.clear > 0)
 		{
@@ -607,11 +611,8 @@ function displayResult(result)
 		document.getElementById("status").innerHTML = "<h2>Correct!</h2>";
 		let glow = light ? "0 2px 14px 0 rgba(67, 255, 40, 0.7), 0 6px 20px 0 rgba(0, 0, 0, 0.2)" : "0 2px 14px 0 rgba(67, 255, 40, 0.7), 0 6px 20px 0 rgba(80, 255, 0, 0.2)";
 		document.querySelectorAll(".besogo-board").forEach(board => board.style.boxShadow = glow);
-		besogo.editor.setReviewEnabled(true);
+		enableReview();
 		besogo.editor.setControlButtonLock(false);
-		let review = document.getElementById("besogo-review-button-inactive");
-		if (review)
-			review.id = "besogo-review-button";
 		Display.show("#commentSpace");
 		let summary = document.getElementById("moreCommentSummary");
 		if (summary)
@@ -646,6 +647,7 @@ function displayResult(result)
 			{
 				setCountdownColor("var(--feedback-error)");
 				toggleBoardLock(true);
+				enableReview();
 			}
 			if (mode == playPage.page.modes.mistakeTraining)
 			{
@@ -704,6 +706,15 @@ function displayMessage(message='text', topic='Message', color='red')
 		banner.classList.toggle("toast__banner--success", color !== 'red');
 		banner.innerHTML = topic + '<span class="toast__close">x</span>';
 	});
+}
+
+//Review shows the solution, so it opens once the problem is answered: solved, and in time mode failed or out of time too
+function enableReview()
+{
+	besogo.editor.setReviewEnabled(true);
+	let review = document.getElementById("besogo-review-button-inactive");
+	if (review)
+		review.id = "besogo-review-button";
 }
 
 //The clock of the time mode, in the colour of the result

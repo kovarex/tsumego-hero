@@ -42,6 +42,7 @@ class TimeModeTimer
 			document.getElementById("status").innerHTML = "<h2>Time's up!</h2>";
 			this.stop();
 			toggleBoardLock(true);
+			enableReview();
 		}
 	}
 

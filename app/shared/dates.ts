@@ -56,9 +56,16 @@ function isDateFormat(format: string): format is DateFormat
 
 //Replaces the text of every <time datetime="..."> rendered by the server with its formatted date. The format
 //'relative' writes how long ago it was ("3 days ago") and puts the date and time in the tooltip.
-export function localizeTimeElements(): void
+//A tooltip can't hold a <time>, so an element with data-title-date gets the title "<date><data-title-suffix>".
+//root: where to look, the whole page by default, or what a script just put in
+export function localizeTimeElements(root: ParentNode = document): void
 {
-	document.querySelectorAll<HTMLTimeElement>('time[datetime]').forEach(element =>
+	root.querySelectorAll<HTMLElement>('[data-title-date]').forEach(element =>
+	{
+		if (dayjs(element.dataset.titleDate).isValid())
+			element.title = formatDate(element.dataset.titleDate ?? '', 'date') + (element.dataset.titleSuffix ?? '');
+	});
+	root.querySelectorAll<HTMLTimeElement>('time[datetime]').forEach(element =>
 	{
 		const format = element.getAttribute('data-format') ?? 'datetime';
 		if (format === 'relative' && dayjs(element.dateTime).isValid())

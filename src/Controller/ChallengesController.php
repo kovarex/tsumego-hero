@@ -5,6 +5,7 @@ namespace App\Controller;
 use Cake\Http\Exception\BadRequestException;
 use Cake\Http\Exception\ForbiddenException;
 use Cake\Http\Exception\NotFoundException;
+use Cake\Http\Exception\UnauthorizedException;
 use Cake\Http\Exception\UnprocessableContentException;
 use Cake\Http\Response;
 use Cake\Routing\Router;
@@ -15,6 +16,7 @@ use App\Model\Table\ChallengeTable;
 use App\Model\Table\TimeModeSessionStatusTable;
 use App\Utility\Auth;
 use App\Utility\CookieFlash;
+use App\Utility\PlayerNameSuggestions;
 use App\Utility\Rating;
 use App\Utility\TimeMode;
 
@@ -180,6 +182,16 @@ class ChallengesController extends AppController
 		else
 			CookieFlash::set('Only a challenge you haven\'t started can be declined.', 'error');
 		return $this->redirect('/challenges');
+	}
+
+	//The players the name being typed into an invitation can mean, friends first (PlayerNameSuggestions),
+	//for the list under the field: ?query=<what is typed>
+	#[HttpGet]
+	public function players(): Response
+	{
+		if (!Auth::isLoggedIn())
+			throw new UnauthorizedException('Sign in to invite players.');
+		return $this->respondJson(['players' => PlayerNameSuggestions::for(Auth::getUserID(), (string) $this->query('query'))]);
 	}
 
 	//A player in the challenge invites others by their names, separated by commas.
