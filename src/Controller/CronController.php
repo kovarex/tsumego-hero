@@ -8,6 +8,7 @@ use App\Attribute\HttpGet;
 use App\Model\Table\AchievementConditionTable;
 use App\Model\Table\TsumegoStatusTable;
 use App\Utility\AchievementId;
+use App\Utility\Live;
 use App\Utility\SchedulePublisher;
 use App\Utility\Trash;
 use App\Utility\Util;
@@ -39,6 +40,7 @@ class CronController extends AppController
 			self::dropExpiredAddressChanges();
 			Trash::purgeExpired();
 		});
+		Live::pruneStale();
 
 		return $this->respond('');
 	}

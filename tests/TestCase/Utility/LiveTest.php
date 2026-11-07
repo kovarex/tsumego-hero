@@ -37,6 +37,43 @@ class LiveTest extends AppTestCase
 		$this->assertSame('0644', substr(sprintf('%o', fileperms(Live::path(self::CHANNEL))), -4));
 	}
 
+	//The daily prune takes the stamps no bump touched for a week, and nothing else of the directory
+	public function testThePruneTakesOnlyTheStampsOfAWeekAgo(): void
+	{
+		$now = time();
+		$old = 'test-live-old';
+		$recent = 'test-live-recent';
+		$notAChannel = 'Test_Live.old';
+		try
+		{
+			foreach ([$old, $recent, $notAChannel] as $name)
+				file_put_contents(Live::DIRECTORY . DS . $name, '{}');
+			touch(Live::path($old), $now - Live::STALE_AFTER_DAYS * 24 * 3600 - 1);
+			touch(Live::path($recent), $now - Live::STALE_AFTER_DAYS * 24 * 3600 + 60);
+			touch(Live::DIRECTORY . DS . $notAChannel, $now - 30 * 24 * 3600);
+			$htaccessTime = filemtime(Live::DIRECTORY . DS . '.htaccess');
+			touch(Live::DIRECTORY . DS . '.htaccess', $now - 30 * 24 * 3600);
+
+			$this->assertGreaterThanOrEqual(1, Live::pruneStale($now));
+
+			$this->assertFileDoesNotExist(Live::path($old));
+			$this->assertFileExists(Live::path($recent));
+			$this->assertFileExists(Live::DIRECTORY . DS . $notAChannel, 'not a channel name');
+			$this->assertFileExists(Live::DIRECTORY . DS . '.htaccess');
+			touch(Live::DIRECTORY . DS . '.htaccess', $htaccessTime);
+
+			// a stamp gone is a stamp never bumped
+			$this->assertNull(Live::read($old));
+			Live::bump($old);
+			$this->assertSame(1, Live::read($old)['version']);
+		}
+		finally
+		{
+			foreach ([$old, $recent, $notAChannel] as $name)
+				@unlink(Live::DIRECTORY . DS . $name);
+		}
+	}
+
 	//A channel is a file name in webroot/live, nothing that could leave it
 	public function testAChannelIsAPlainName(): void
 	{

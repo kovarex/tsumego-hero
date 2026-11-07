@@ -62,6 +62,30 @@ class Live
 			: null;
 	}
 
+	//Days after its last bump that a stamp goes, see pruneStale()
+	public const int STALE_AFTER_DAYS = 7;
+
+	//Deletes the stamps no bump touched for STALE_AFTER_DAYS (the daily cron), so the directory doesn't keep one
+	//file for every challenge there ever was. A page that still watches one gets the 204 of a stamp never
+	//bumped, the hub an empty stamp, and the next bump writes it again. Only files named as channels go: the
+	//.htaccess and anything else in the directory stay.
+	//Returns how many stamps went
+	public static function pruneStale(?int $now = null): int
+	{
+		$limit = ($now ?? time()) - self::STALE_AFTER_DAYS * 24 * 3600;
+		$pruned = 0;
+		foreach (@scandir(self::DIRECTORY) ?: [] as $name)
+		{
+			$path = self::DIRECTORY . DS . $name;
+			if (!preg_match(self::CHANNEL_PATTERN, $name) || !is_file($path))
+				continue;
+			$modified = @filemtime($path);
+			if ($modified !== false && $modified < $limit && @unlink($path))
+				$pruned++;
+		}
+		return $pruned;
+	}
+
 	public static function path(string $channel): string
 	{
 		return self::DIRECTORY . DS . $channel;

@@ -6,6 +6,7 @@ use App\Utility\AchievementId;
 use App\Model\Table\UserTable;
 use App\Utility\Auth;
 use App\Utility\Constants;
+use App\Utility\Live;
 use App\Utility\Util;
 
 class CronControllerTest extends IntegrationTestCase
@@ -25,6 +26,25 @@ class CronControllerTest extends IntegrationTestCase
 			$this->assertSame($context->reloadUser()[$name], 1);
 			$this->get('/cron/daily/' . CRON_SECRET);
 			$this->assertSame($context->reloadUser()[$name], 0);
+		}
+	}
+
+	//The daily run takes the change stamps of a week ago (Live::pruneStale())
+	public function testCronPrunesTheStaleChangeStamps()
+	{
+		new ContextPreparator(['user' => ['mode' => Constants::$LEVEL_MODE]]);
+		Live::bump('test-cron-stamp');
+		touch(Live::path('test-cron-stamp'), time() - (Live::STALE_AFTER_DAYS + 1) * 24 * 3600);
+		try
+		{
+			$this->get('/cron/daily/' . CRON_SECRET);
+
+			$this->assertResponseOk();
+			$this->assertFileDoesNotExist(Live::path('test-cron-stamp'));
+		}
+		finally
+		{
+			@unlink(Live::path('test-cron-stamp'));
 		}
 	}
 
