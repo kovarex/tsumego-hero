@@ -380,8 +380,8 @@ class AppController extends Controller
 		$this->resetStaleBrowserCache();
 
 		//Boards are drawn without a session: a list of a thousand players would otherwise
-		//pay for the login of a visitor who is not there.
-		if ($this instanceof AvatarsController)
+		//pay for the login of a visitor who is not there. The timings of the browsers need none either.
+		if ($this instanceof AvatarsController || $this instanceof RumController)
 			return null;
 
 		Auth::init();
