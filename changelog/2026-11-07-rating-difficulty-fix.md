@@ -1,0 +1,1 @@
+Fixed: Rating mode no longer sends you to the collections on every visit when no problem fits the difficulty you picked. It looks a bit further for a problem you haven't solved, then offers solved ones, and always gives you a problem, so you can change the difficulty again.
