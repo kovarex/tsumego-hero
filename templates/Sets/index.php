@@ -31,7 +31,7 @@ use App\Utility\ViteManifest;
 						<?php echo $this->element('filter_chevron'); ?>
 					</div>
 				</button>
-				<div class="legacy-left" id="dropdown-topics" class="dropdown__menu dropdown__menu--filters">
+				<div id="dropdown-topics" class="dropdown__menu dropdown__menu--filters legacy-left">
 					<?php
 						for($i = 0; $i < count($setTiles); $i++)
 							echo '<div class="dropdown__tile" id="tile-topics' . $i . '">' . h($setTiles[$i]) . '</div>';
@@ -54,7 +54,7 @@ use App\Utility\ViteManifest;
 						<?php echo $this->element('filter_chevron'); ?>
 					</div>
 				</button>
-				<div class="legacy-left" id="dropdown-difficulty" class="dropdown__menu dropdown__menu--filters">
+				<div id="dropdown-difficulty" class="dropdown__menu dropdown__menu--filters legacy-left">
 					<?php
 						for($i = 0; $i < count($difficultyTiles); $i++)
 							echo '<div class="dropdown__tile dropdown__tile--difficulty" id="tile-difficulty' . $i . '" style="--rank-color:' . Rating::rankColorVar($difficultyTiles[$i]) . '">' . h($difficultyTiles[$i]) . '</div>';
@@ -100,7 +100,7 @@ use App\Utility\ViteManifest;
 						<?php echo $this->element('filter_chevron'); ?>
 					</div>
 				</button>
-				<div class="legacy-left" id="dropdown-tags" class="dropdown__menu dropdown__menu--filters">
+				<div id="dropdown-tags" class="dropdown__menu dropdown__menu--filters legacy-left">
 					<?php
 						for($i = 0; $i < count($tagTiles); $i++)
 							echo '<div class="dropdown__tile" id="tile-tags' . $i . '">' . h($tagTiles[$i]) . '</div>';
