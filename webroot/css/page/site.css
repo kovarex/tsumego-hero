@@ -797,6 +797,111 @@ nav ul ul ul li {
   border: 1px solid;
 }
 
+/* ── Error page (templates/Error/error.php): the code faint and big behind the title ── */
+.error-page {
+  position: relative;
+  max-width: 800px;
+  margin: 100px auto;
+  padding: 40px;
+  text-align: center;
+}
+.error-page__heading {
+  position: relative;
+  z-index: 1;
+}
+.error-page__code {
+  font-size: 120px;
+  opacity: 0.15;
+  margin: 0;
+  line-height: 1;
+  position: absolute;
+  top: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.error-page__code--neutral { color: var(--error-code-neutral); }
+.error-page__code--warning { color: var(--error-code-warning); }
+.error-page__code--danger { color: var(--error-code-danger); }
+.error-page__title {
+  font-size: 36px;
+  color: var(--text-color);
+  margin: 60px 0 20px 0;
+  position: relative;
+  z-index: 2;
+}
+.error-page__address {
+  color: var(--color-green);
+}
+.error-page__message,
+.error-page__details {
+  color: var(--text-softer-color);
+  line-height: 1.6;
+  position: relative;
+  z-index: 2;
+}
+.error-page__message {
+  font-size: 18px;
+}
+.error-page__details {
+  font-size: 16px;
+  margin-top: 20px;
+}
+/* What a developer sees about the error (debug mode only) */
+.error-page__debug {
+  margin-top: 60px;
+  padding: 30px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  text-align: left;
+  position: relative;
+  z-index: 2;
+}
+.error-page__debug-title {
+  color: var(--text-color);
+  margin-top: 0;
+  margin-bottom: 20px;
+}
+.error-page__fact {
+  margin: 15px 0;
+  padding: 10px;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 4px;
+}
+.error-page__fact-name {
+  color: var(--text-color);
+}
+.error-page__fact-value {
+  color: var(--feedback-error);
+  background: rgba(0, 0, 0, 0.04);
+  padding: 4px 8px;
+  border-radius: 3px;
+  display: inline-block;
+  margin-top: 5px;
+}
+.error-page__trace {
+  margin-top: 20px;
+}
+.error-page__trace-title {
+  color: var(--text-color);
+  display: block;
+  padding: 10px;
+  background: rgba(0, 0, 0, 0.03);
+  border-radius: 4px;
+}
+.error-page__trace-lines {
+  overflow: auto;
+  max-height: 500px;
+  background: rgba(0, 0, 0, 0.8);
+  color: var(--color-white);
+  padding: 20px;
+  border-radius: 5px;
+  font-size: 13px;
+  line-height: 1.6;
+  margin-top: 10px;
+  font-family: var(--font-family-code);
+}
+
 /* Dark overrides */
 [data-theme="dark"] #status2 font font,
 [data-theme="dark"] .titleDescription1 font {
