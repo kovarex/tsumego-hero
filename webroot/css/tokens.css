@@ -168,8 +168,6 @@
 		--about-blue-gradient: linear-gradient(to left, #4348ac, #9799c0);
 		--comment-box-blue: #c8ebfb;
 		--comment-link-blue: #337ab7;
-		--comment-info-bg: #e6f0ff;
-		--comment-light-bg: #fafafa;
 		--comment-error-bg: #f2dede;
 		--comment-error-fg: #a94442;
 		--comment-success-bg: #dff0d8;
@@ -232,7 +230,6 @@
 		--surface-hover: #eee;
 		--surface-hover-strong: #ddd;
 		--surface-panel-light: #f0f0f0;
-		--issue-highlight-gradient: linear-gradient(#666, #555);
 
 		/* ── Spacing and radius ── */
 		--space-1: 4px;
