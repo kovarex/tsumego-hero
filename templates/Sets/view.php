@@ -115,6 +115,7 @@ if ($tsumegoFilters->query != 'topics')
 		<tr class="set-view__stats-toggle-row">
 			<td colspan="2"><button type="button" class="btn set-view__stats-toggle" aria-expanded="false">Stats &amp; display</button></td>
 		</tr>
+		<?php //The scores, each on one line with the best of a completed run beside it ?>
 		<tr class="set-view__stats">
 			<td>
 			<br>
@@ -122,7 +123,6 @@ if ($tsumegoFilters->query != 'topics')
 				<?php if(Auth::isLoggedIn())
 				{ ?>
 					<?php
-					//Each score on one line, the best of a completed run beside it
 					echo '<div class="setViewCompleted"><b>Completed: ' . $problemSolvedPercent . '%</b></div>';
 					echo '<div class="setViewAccuracy"><b>Accuracy: ' . $accuracy . '%</b>' . ($bestAccuracy !== null ? ' &middot; Best: ' . $bestAccuracy . '%' : '') . '</div>';
 					echo '<div class="setViewTime"><b>Avg. time: ' . $avgTime . 's</b>' . ($bestTime !== null && $bestTime != 60 ? ' &middot; Best: ' . $bestTime . 's' : '') . '</div>';
