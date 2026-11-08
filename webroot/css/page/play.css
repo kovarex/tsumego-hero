@@ -795,28 +795,23 @@ body:has(.play-screen) #footer {
   pointer-events: none;
 }
 
-/* Next sits at the end of the row of the messages and shows once the problem is solved */
-.play-message #besogo-next-button,
-.play-message #besogo-next-button-inactive {
-  display: none;
-  font-size: var(--text-md);
-  margin: 0 0 0 auto;
-  padding: 0 var(--space-4);
-  height: 34px;
-  line-height: 34px;
-  border: 0;
-  border-radius: var(--radius-md);
-  background: var(--color-green-dark);
-  color: var(--color-white);
-  text-transform: none;
+/* Review is red while the problem can be reviewed (an inactive one is dimmed, above); Next turns green once
+   the problem is solved */
+.play-actions__end #besogo-review-button {
+  border-color: var(--color-red) !important;
+  background: var(--color-red) !important;
+  color: var(--color-white) !important;
 }
-.play-message--solved #besogo-next-button {
-  display: inline-block;
+.play-actions__end #besogo-review-button:hover {
+  background: var(--color-red-dark) !important;
 }
-.play-message #besogo-next-button:hover,
-.play-message #besogo-next-button:focus-visible {
-  background: var(--color-green-btn-gradient);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+.play-screen:has(.play-message--solved) .play-actions__end #besogo-next-button {
+  border-color: var(--color-green-dark) !important;
+  background: var(--color-green-dark) !important;
+  color: var(--color-white) !important;
+}
+.play-screen:has(.play-message--solved) .play-actions__end #besogo-next-button:hover {
+  background: var(--color-green-btn-gradient) !important;
 }
 .play-message--solved {
   background: var(--color-surface-hover);

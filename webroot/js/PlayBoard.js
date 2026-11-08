@@ -209,11 +209,11 @@ redrawHearts();
 	besogo.create(div, options);
 })();
 
-//The buttons besogo makes under the board go where the page shows them (Tsumegos/play.php): Reset and
-//Review join the actions; Next goes to the row of the messages in the level mode and the training,
-//where it shows once the problem is solved (play-message--solved), and stays with the actions in the
-//other modes, where it skips; the review's tree goes under the actions; the board's own settings
-//(corner, rotation, colours, favourite, author) go to the info of the problem. They keep their ids, which the page's code renames as the state changes.
+//The buttons besogo makes under the board go where the page shows them (Tsumegos/play.php): Reset, Review
+//and Next join the actions, as one group in this order in every state (Next turns green once the problem
+//is solved, play-message--solved); the review's tree goes under the actions; the board's own settings
+//(corner, rotation, colours, favourite, author) go to the info of the problem. They keep their ids,
+//which the page's code renames as the state changes.
 (function arrangePlayControls()
 {
 	let row = document.querySelector(".besogo-tsumegoPlayTool");
@@ -223,29 +223,18 @@ redrawHearts();
 	let end = document.createElement("span");
 	end.className = "play-actions__end";
 	actions.appendChild(end);
-	let nextInMessages = mode == playPage.page.modes.level || mode == playPage.page.modes.mistakeTraining;
-	let message = document.querySelector(".play-message");
-	for (let id of ["besogo-pass-button", "history-button", "besogo-reset-button",
-		"besogo-reset-button-inactive", "besogo-review-button", "besogo-review-button-inactive", "besogo-next-button", "besogo-next-button-inactive"])
+	for (let id of ["besogo-pass-button", "history-button", "besogo-reset-button", "besogo-reset-button-inactive",
+		"besogo-review-button", "besogo-review-button-inactive", "besogo-next-button", "besogo-next-button-inactive"])
 	{
 		let button = row.querySelector("#" + id);
-		if (!button)
-			continue;
-		if (id.startsWith("besogo-next-button") && nextInMessages && message)
-		{
-			//Next beside "Correct!" says what it does, it needs no tooltip
-			button.removeAttribute("title");
-			message.appendChild(button);
-		}
-		else
+		if (button)
 			end.appendChild(button);
 	}
-	//Reset with its symbol, in the case of the other actions
-	let reset = end.querySelector("#besogo-reset-button, #besogo-reset-button-inactive");
-	if (reset && reset.tagName === "INPUT")
-		reset.value = "\u21BA Reset";
-	if (problemSolved && message)
-		message.classList.add("play-message--solved");
+	//Next of a problem (not the Skip of the time mode) says what it does, it needs no tooltip
+	if (mode == playPage.page.modes.level || mode == playPage.page.modes.mistakeTraining)
+		end.querySelectorAll("#besogo-next-button, #besogo-next-button-inactive").forEach(next => next.removeAttribute("title"));
+	if (problemSolved)
+		document.querySelector(".play-message")?.classList.add("play-message--solved");
 	//The review's tree goes to the panel too, where it shows beside the board with the comments under it
 	let reviewPanels = document.querySelector("#target .besogo-panels");
 	if (reviewPanels)

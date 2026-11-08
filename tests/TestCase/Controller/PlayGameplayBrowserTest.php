@@ -120,7 +120,7 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 		}
 	}
 
-	//Next leads to the following problem once the problem is solved; there is no Back, the problem buttons lead back
+	//Next leads to the following problem; there is no Back, the problem buttons lead back
 	public function testTheNavigationButtonsLeadToTheNeighbouringPuzzles(): void
 	{
 		$context = new ContextPreparator(['tsumegos' => [1, 2, 3]]);
@@ -135,8 +135,7 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 			$browser->find('#besogo-next-button')->getAttribute('href'),
 			'The next button points at the following problem');
 
-		$this->assertFalse($browser->find('#besogo-next-button')->isDisplayed(), 'Next shows only once the problem is solved');
-		$browser->driver->executeScript("document.querySelector('.play-message').classList.add('play-message--solved');");
+		$this->assertTrue($browser->find('#besogo-next-button')->isDisplayed(), 'Next is with Reset and Review in every state');
 		$browser->clickId('besogo-next-button');
 		$browser->waitUntilJs('location.href.includes("' . $urls[2] . '")');
 		$this->waitForBoard($browser);
