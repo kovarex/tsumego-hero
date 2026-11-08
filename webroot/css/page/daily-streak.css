@@ -8,7 +8,7 @@
 .daily-streak
 {
 	position: relative;
-	margin-top: 12px;
+	margin-top: 20px;
 	z-index: var(--layer-streak);
 	display: flex;
 	align-items: flex-start;
