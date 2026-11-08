@@ -116,6 +116,9 @@ class AccountWidget
 
 	hover()
 	{
+		//A phone has no menu here, and a tap is no hover: its bar keeps showing the level or the rank, a tap switches them
+		if (window.matchMedia("(width < 64rem)").matches)
+			return;
 		this.hovered = true;
 		this.setup();
 		this.menuItems.forEach(item => item.style.display = "inline-block");
