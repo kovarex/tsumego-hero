@@ -19,6 +19,16 @@
 {
   width: 220px;
 }
+/* On a phone the columns take only what their content needs (the table rules in components.css),
+   so the name column, which may wrap, gives up its width first */
+@media (width < 40rem)
+{
+  .highscore-table__place,
+  .highscore-table__name
+  {
+    width: auto;
+  }
+}
 /* The count of all players under a table */
 .highscore-table__total
 {
