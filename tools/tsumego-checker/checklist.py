@@ -1,8 +1,8 @@
 #the findings still to review as a table: problem, path with colours, what the tree says, what the solver says, its line
 import json, glob, subprocess, os
-confirmed = {'1703', '215', '528', '1807'}
+confirmed = {'1703', '215', '528', '1807', '2485'}
 #single findings kovarex confirmed in problems that still have others to review
-confirmed_findings = {('2485', 'correct-move-fails')}
+confirmed_findings = set()
 records = {}
 for pattern in ('dump_check_status.*.jsonl', 'dump_check_marker.*.jsonl'):
     for f in glob.glob(pattern):
