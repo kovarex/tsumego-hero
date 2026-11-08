@@ -27,17 +27,17 @@ class HighscoreHelper extends AppHelper
 	): string {
 		$totalColumns = 3 + count($valueColumns); // Place + Name + Premium + values
 
-		$html = '<table class="data-table" border="0">';
+		$html = '<table class="data-table">';
 
 		// Caption
-		$html .= '<caption><p class="title" style="margin-bottom: 16px;">' . $title . '</p>';
+		$html .= '<caption><p class="title highscore-table__title">' . $title . '</p>';
 		$html .= '</caption>';
 
 		// Header row
 		$html .= '<tr>';
-		$html .= '<th width="60px">Place</th>';
-		$html .= '<th width="220px" align="left">Name</th>';
-		$html .= '<th width="60px">Premium</th>';
+		$html .= '<th class="highscore-table__place">Place</th>';
+		$html .= '<th class="highscore-table__name legacy-left">Name</th>';
+		$html .= '<th class="highscore-table__premium">Premium</th>';
 		foreach ($valueColumns as $col)
 			$html .= '<th>' . $col['label'] . '</th>';
 
@@ -51,7 +51,7 @@ class HighscoreHelper extends AppHelper
 
 			// Gap separator for non-consecutive positions
 			if ($pos - $prevPosition > 1 && $prevPosition > 0)
-				$html .= '<tr class="data-table__row--separator"><td colspan="' . $totalColumns . '" align="center">⋮</td></tr>';
+				$html .= '<tr class="data-table__row--separator"><td colspan="' . $totalColumns . '" class="legacy-center">⋮</td></tr>';
 
 			// Medal colors for top 3
 			$medalClass = '';
@@ -75,11 +75,11 @@ class HighscoreHelper extends AppHelper
 			$name = UserTable::renderLink($row);
 
 			$html .= '<tr class="' . trim($selfClass . $medalClass) . '">';
-			$html .= '<td align="center">#' . $pos . '</td>';
-			$html .= '<td align="left">' . $name . '</td>';
-			$html .= '<td align="center">' . UserTable::renderPremium($row) . '</td>';
+			$html .= '<td class="legacy-center">#' . $pos . '</td>';
+			$html .= '<td class="legacy-left">' . $name . '</td>';
+			$html .= '<td class="legacy-center">' . UserTable::renderPremium($row) . '</td>';
 			foreach ($valueColumns as $col)
-				$html .= '<td align="center">' . $col['render']($row) . '</td>';
+				$html .= '<td class="legacy-center">' . $col['render']($row) . '</td>';
 
 			$html .= '</tr>';
 			$prevPosition = $pos;
@@ -87,7 +87,7 @@ class HighscoreHelper extends AppHelper
 
 		// Footer with total user count
 		if ($totalUsers !== null)
-			$html .= '<tr class="data-table__row--separator"><td colspan="' . $totalColumns . '" align="center" style="font-size:13px;color:#999;padding:8px 0;">' . $totalUsers . ' users total</td></tr>';
+			$html .= '<tr class="data-table__row--separator"><td colspan="' . $totalColumns . '" class="legacy-center highscore-table__total">' . $totalUsers . ' users total</td></tr>';
 
 		$html .= '</table>';
 		return $html;

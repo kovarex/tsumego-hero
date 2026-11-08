@@ -18,7 +18,7 @@ $props = json_encode([
 	'maxLength' => MessageTable::MAX_LENGTH,
 ]);
 ?>
-<div align="center">
+<div class="legacy-center">
 	<?php echo $this->element('user_header', ['user' => Auth::getUser(), 'activeTab' => 'messages']); ?>
 </div>
 
