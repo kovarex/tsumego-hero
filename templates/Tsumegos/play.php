@@ -90,6 +90,12 @@ use App\Utility\ViteManifest;
 				</div>
 			</div>
 		<?php endif; ?>
+		<?php //The hero powers: a row of their own on a wide screen, behind the ⚡ button on a phone (play.css) ?>
+		<?php if (!Auth::isInMistakeTrainingMode() && Auth::isLoggedIn()): ?>
+			<div id="heroPowersTray" class="play-powers" style="display: none;">
+				<?php HeroPowers::render(); ?>
+			</div>
+		<?php endif; ?>
 		<?php //The actions keep their places in every state, so no button moves under the finger ?>
 		<div class="play-actions">
 			<?php if (!Auth::isInMistakeTrainingMode() && Auth::isLoggedIn()): ?>
@@ -106,11 +112,6 @@ use App\Utility\ViteManifest;
 			<?php //Filters only when the problems are filtered ?>
 			<a id="showFilters" class="play-actions__button play-filters-toggle"<?php echo empty($tsumegoFilters->sets) && empty($tsumegoFilters->ranks) && empty($tsumegoFilters->tags) ? ' style="display: none;"' : ''; ?> href="#" data-toggle="msgFilters">Filters</a>
 		</div>
-		<?php if (!Auth::isInMistakeTrainingMode() && Auth::isLoggedIn()): ?>
-			<div id="heroPowersTray" class="play-powers" style="display: none;">
-				<?php HeroPowers::render(); ?>
-			</div>
-		<?php endif; ?>
 		<div class="filters-outer">
 			<div id="msgFilters" class="play-filters" style="display: none;">
 				<div class="active-tiles-container tiles-view"></div>

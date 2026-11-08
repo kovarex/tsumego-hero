@@ -865,7 +865,24 @@ body:has(.play-screen) #footer {
   display: none;
 }
 
-/* The hero powers open over the panel from their button */
+/* The hero powers: on a wide screen the panel has the room to show them in a row of their own under the
+   hearts, so there is no ⚡ button; on a phone they open from it */
+@media (width >= 64rem) {
+  #heroPowersTray {
+    display: flex !important;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    padding: var(--space-1) 0;
+    border: 0;
+  }
+  #heroPowersTray img {
+    width: 40px;
+    height: 40px;
+  }
+  #heroPowersToggle {
+    display: none;
+  }
+}
 .play-powers {
   padding: var(--space-2);
   border: 1px solid var(--surface-border-muted);
