@@ -25,12 +25,21 @@ use App\Utility\Util;
  * @var bool $hasDuplicates
  * @var array<int, array<string, mixed>> $setConnections
  * @var bool $solved
+ * @var string $tagEditorProps
  */
 
 $checked = fn(bool $isChecked): string => $isChecked ? 'checked="checked"' : '';
 $variantType = $tv ? (int) $tv->tsumego_variant_type_id : null;
 ?>
 <div id="editSection" class="play-edit" style="display: none;">
+	<?php //The tags of the problem first, with adding one under them ?>
+	<div class="tag-container">
+		<div data-tag-editor-root data-props="<?php echo htmlspecialchars($tagEditorProps); ?>"></div>
+		<?php if ($isAllowedToContribute): ?>
+			<?php //The adding of a tag, right under the tags (TagEditor.tsx renders it here) ?>
+			<div id="tag-adding" data-testid="tag-adding"></div>
+		<?php endif; ?>
+	</div>
 	<?php //The board's own settings, which PlayBoard.js moves here from under the board: the corner, the rotation, the colours, the favourite and the author ?>
 	<div id="boardSettings" class="play-board-settings"></div>
 	<p>
@@ -139,8 +148,5 @@ $variantType = $tv ? (int) $tv->tsumego_variant_type_id : null;
 			</table>
 			<input type="submit" value="Submit" id="tsumego-edit-submit">
 		</form>
-	<?php endif; ?>
-	<?php if ($isAllowedToContribute): ?>
-		<div id="tag-adding" class="play-edit__part" data-testid="tag-adding"></div>
 	<?php endif; ?>
 </div>

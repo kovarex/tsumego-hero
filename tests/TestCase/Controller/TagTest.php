@@ -28,6 +28,7 @@ class TagTest extends IntegrationTestCase
 			'tags' => [['name' => 'snapback']]]);
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		$browser->openPlayEditSection();
 
 		// Wait for React tag editor to mount
 		$browser->find('[data-testid="tag-editor"]');
@@ -37,6 +38,7 @@ class TagTest extends IntegrationTestCase
 		$browser->clickId('tag-snapback');
 		$browser->find('[data-testid="tag-snapback"]');
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		$browser->openPlayEditSection();
 
 		$this->assertSame(1, $this->fetchTable('TagConnection')->find()->count());
 		$this->assertCount(1, $browser->getElements('[data-testid="tag-snapback"]'));
@@ -50,6 +52,7 @@ class TagTest extends IntegrationTestCase
 			'tags' => [['name' => 'snapback']]]);
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		$browser->openPlayEditSection();
 
 		// atari is already added - shouldn't show in suggestions
 		$this->openEditorAndType($browser, 'ata');
@@ -64,6 +67,7 @@ class TagTest extends IntegrationTestCase
 			'tsumego' => ['set_order' => 1, 'status' => 'S', 'tags' => [['name' => 'snapback', 'approved' => 1]]]]);
 		$browser = Browser::instance();
 		$browser->get('/' . $contextNormal->tsumegos[0]['set-connections'][0]['id']);
+		$browser->openPlayEditSection();
 		$browser->find('[data-testid="tag-editor"]');
 		$this->assertGreaterThanOrEqual(1, $browser->getElements('[data-testid="tag-search-input"]'),
 			'Contributor sees the tag search input');
@@ -74,6 +78,7 @@ class TagTest extends IntegrationTestCase
 			'tsumego' => ['set_order' => 1, 'status' => 'S', 'tags' => [['name' => 'ko', 'approved' => 1]]]]);
 		$browser2 = Browser::instance();
 		$browser2->get('/' . $contextLow->tsumegos[0]['set-connections'][0]['id']);
+		$browser2->openPlayEditSection();
 		$browser2->find('[data-testid="tag-editor"]');
 
 		$this->assertCount(1, $browser2->getElements('[data-testid="tag-ko"]'));
@@ -90,6 +95,7 @@ class TagTest extends IntegrationTestCase
 			'tags' => [['name' => 'snapback']]]);
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		$browser->openPlayEditSection();
 		$browser->find('[data-testid="tag-solve-first"]');
 		$this->assertCount(0, $browser->getElements('[data-testid="tag-search-input"]'), 'No tag search before the problem is solved');
 
@@ -111,6 +117,7 @@ class TagTest extends IntegrationTestCase
 			'tags' => [['name' => 'snapback']]]);
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		$browser->openPlayEditSection();
 
 		$this->assertCount(1, $browser->getElements('[data-testid="tag-atari"]'));
 		$this->openEditorAndType($browser, 'ata');
@@ -128,6 +135,7 @@ class TagTest extends IntegrationTestCase
 			'tags' => [['name' => 'snapback']]]);
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		$browser->openPlayEditSection();
 
 		$this->openEditorAndType($browser, 'snap');
 		$this->assertCount(1, $browser->getElements('[data-testid="tag-adding"] [role="option"]'));
@@ -146,6 +154,7 @@ class TagTest extends IntegrationTestCase
 			'tags' => [['name' => 'snapback']]]);
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		$browser->openPlayEditSection();
 
 		$this->assertCount(0, $browser->getElements('[data-testid="tag-atari"]'));
 
@@ -175,6 +184,7 @@ class TagTest extends IntegrationTestCase
 			'tags' => [['name' => 'snapback']]]);
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		$browser->openPlayEditSection();
 		$browser->find('[data-testid="tag-editor"]');
 
 		$this->openEditorAndType($browser, 'atari');
@@ -218,6 +228,7 @@ class TagTest extends IntegrationTestCase
 			]]]);
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		$browser->openPlayEditSection();
 		$browser->find('[data-testid="tag-editor"]');
 
 		$this->assertFalse($this->tagListContains($browser, 'snapback'));
@@ -234,6 +245,7 @@ class TagTest extends IntegrationTestCase
 			]]]);
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		$browser->openPlayEditSection();
 		$browser->find('[data-testid="tag-editor"]');
 
 		$this->assertTrue($this->tagListContains($browser, 'snapback'));
@@ -249,6 +261,7 @@ class TagTest extends IntegrationTestCase
 			]]]);
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		$browser->openPlayEditSection();
 		$browser->find('[data-testid="tag-editor"]');
 
 		$this->assertTrue($this->tagListContains($browser, 'snapback'));
@@ -267,6 +280,7 @@ class TagTest extends IntegrationTestCase
 			]]]);
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		$browser->openPlayEditSection();
 		$browser->find('[data-testid="tag-editor"]');
 
 		$this->assertTrue($this->tagListContains($browser, 'atari'));
@@ -285,6 +299,7 @@ class TagTest extends IntegrationTestCase
 			]]]);
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		$browser->openPlayEditSection();
 		$browser->find('[data-testid="tag-editor"]');
 
 		$this->assertTrue($this->tagListContains($browser, 'atari'));
@@ -303,6 +318,7 @@ class TagTest extends IntegrationTestCase
 			]]]);
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		$browser->openPlayEditSection();
 		$browser->find('[data-testid="tag-editor"]');
 
 		// My hint (ko) is visible, other's hint (snapback) is hidden
@@ -320,6 +336,7 @@ class TagTest extends IntegrationTestCase
 			'tags' => [['name' => 'snapback', 'is_hint' => 1]]]);
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		$browser->openPlayEditSection();
 		$browser->find('[data-testid="tag-editor"]');
 
 		$this->openEditorAndType($browser, 'snap');
@@ -344,6 +361,7 @@ class TagTest extends IntegrationTestCase
 			'tags' => [['name' => 'snapback']]]);
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		$browser->openPlayEditSection();
 		$this->openEditorAndType($browser, 'snap');
 		$browser->driver->manage()->deleteAllCookies();
 		$this->clickAndWaitForError($browser, '#tag-snapback');
@@ -359,6 +377,7 @@ class TagTest extends IntegrationTestCase
 			'tags' => [['name' => 'snapback']]]);
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		$browser->openPlayEditSection();
 		$this->openEditorAndType($browser, 'snap');
 		$this->fetchTable('Tag')->deleteAll(['id' => $context->tags[0]->id]);
 		$this->clickAndWaitForError($browser, '#tag-snapback');
@@ -375,6 +394,7 @@ class TagTest extends IntegrationTestCase
 			'tags' => [['name' => 'snapback']]]);
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		$browser->openPlayEditSection();
 		$this->openEditorAndType($browser, 'snap');
 		$this->fetchTable('Tsumego')->deleteAll(['id' => $context->tsumegos[0]['id']]);
 		$this->clickAndWaitForError($browser, '#tag-snapback');
@@ -390,6 +410,7 @@ class TagTest extends IntegrationTestCase
 			'tags' => [['name' => 'snapback']]]);
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		$browser->openPlayEditSection();
 
 		$tagConnectionTable = $this->fetchTable('TagConnection');
 		$tagConnectionTable->saveOrFail($tagConnectionTable->newEntity([
@@ -411,6 +432,7 @@ class TagTest extends IntegrationTestCase
 			'tsumego' => ['set_order' => 1, 'tags' => [['name' => 'atari', 'approved' => 0]]]]);
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		$browser->openPlayEditSection();
 		$this->assertCount(1, $browser->getElements('[data-testid="tag-atari"]'));
 		$this->assertTrue($this->fetchTable('TagConnection')->exists(['tsumego_id' => $context->tsumegos[0]['id']]));
 
@@ -427,6 +449,7 @@ class TagTest extends IntegrationTestCase
 			'tsumego' => ['set_order' => 1, 'tags' => [['name' => 'snapback', 'user' => 'kovarex', 'approved' => 0]]]]);
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		$browser->openPlayEditSection();
 		$browser->driver->manage()->deleteAllCookies();
 		$this->clickAndWaitForError($browser, '#remove-snapback');
 		$error = $browser->find('[data-testid="tag-error"]')->getText();
@@ -440,6 +463,7 @@ class TagTest extends IntegrationTestCase
 			'tsumego' => ['set_order' => 1, 'tags' => [['name' => 'snapback', 'user' => 'kovarex', 'approved' => 0]]]]);
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		$browser->openPlayEditSection();
 		$this->fetchTable('Tag')->deleteAll(['id' => $context->tags[0]->id]);
 		$this->clickAndWaitForError($browser, '#remove-snapback');
 		$error = $browser->find('[data-testid="tag-error"]')->getText();
@@ -453,6 +477,7 @@ class TagTest extends IntegrationTestCase
 			'tsumego' => ['set_order' => 1, 'tags' => [['name' => 'snapback', 'user' => 'kovarex', 'approved' => 0]]]]);
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		$browser->openPlayEditSection();
 		$this->fetchTable('Tsumego')->deleteAll(['id' => $context->tsumegos[0]['id']]);
 		$this->clickAndWaitForError($browser, '#remove-snapback');
 		$error = $browser->find('[data-testid="tag-error"]')->getText();
@@ -466,6 +491,7 @@ class TagTest extends IntegrationTestCase
 			'tsumego' => ['set_order' => 1, 'tags' => [['name' => 'snapback', 'user' => 'kovarex', 'approved' => 0]]]]);
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		$browser->openPlayEditSection();
 		$this->fetchTable('TagConnection')->deleteAll([]);
 		$this->clickAndWaitForError($browser, '#remove-snapback');
 		$error = $browser->find('[data-testid="tag-error"]')->getText();
@@ -479,6 +505,7 @@ class TagTest extends IntegrationTestCase
 			'tsumego' => ['set_order' => 1, 'tags' => [['name' => 'snapback', 'user' => 'kovarex', 'approved' => 1]]]]);
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		$browser->openPlayEditSection();
 		$browser->find('[data-testid="tag-snapback"]');
 
 		$this->assertFalse($browser->idExists('remove-snapback'));
@@ -492,6 +519,7 @@ class TagTest extends IntegrationTestCase
 			'tsumego' => ['set_order' => 1, 'tags' => [['name' => 'snapback', 'approved' => 0, 'user' => 'Ivan Detkov']]]]);
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		$browser->openPlayEditSection();
 
 		// Others' unapproved tags are not visible in the tag list
 		$this->assertCount(0, $browser->getElements('[data-testid="tag-snapback"]'));
@@ -504,6 +532,7 @@ class TagTest extends IntegrationTestCase
 			$browser = Browser::instance();
 			$context = new ContextPreparator(['user' => ['admin' => true], 'tsumego' => ['set_order' => 1, 'status' => 'S']]);
 			$browser->get('/' . $context->setConnections[0]['id']);
+		$browser->openPlayEditSection();
 
 			$browser->openPlayEditSection();
 			$browser->clickId('create-new-tag');
@@ -540,6 +569,7 @@ class TagTest extends IntegrationTestCase
 			'user' => ['rating' => Constants::$MINIMUM_RATING_TO_CONTRIBUTE],
 			'tsumego' => ['set_order' => 1, 'status' => 'S']]);
 		$browser->get('/' . $context->setConnections[0]['id']);
+		$browser->openPlayEditSection();
 
 		$browser->openPlayEditSection();
 		$browser->clickId('create-new-tag');
@@ -869,6 +899,7 @@ class TagTest extends IntegrationTestCase
 		]);
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		$browser->openPlayEditSection();
 		$browser->find('[data-testid="tag-list"]');
 
 		// A hint tag is a spoiler and stays hidden until the player solves the problem.
@@ -898,6 +929,7 @@ class TagTest extends IntegrationTestCase
 		$browser->get('timeMode/start'
 			. '?categoryID=' . TimeModeCategoryTable::SLOW
 			. '&rankID=' . $context->timeModeRanks[0]['id']);
+		$browser->openPlayEditSection();
 		$browser->find('[data-testid="tag-editor"]');
 
 		// Even though the problem was solved before, time mode treats it as fresh, so

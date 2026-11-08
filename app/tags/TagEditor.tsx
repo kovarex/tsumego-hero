@@ -229,7 +229,7 @@ export function TagEditor({ tsumegoId, isTimeMode, problemSolved, canAddMoreTags
 		</>
 	);
 
-	//On the play page the adding goes to its edit section, so a player who only solves sees just the tags
+	//On the play page the adding goes to its own place under the tags, in the More panel
 	const addingTarget = document.getElementById('tag-adding');
 	return (
 		<div data-testid="tag-editor">

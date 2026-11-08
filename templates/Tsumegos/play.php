@@ -122,7 +122,6 @@ use App\Utility\ViteManifest;
 				<?php echo $this->element('TsumegoComments/section', ['tsumegoId' => $tsumego->id, 'solved' => $solved, 'counts' => $commentCounts]); ?>
 			</div>
 		<?php endif; ?>
-		<?php echo $this->element('Tsumegos/play_edit', ['hasDuplicates' => $hasDuplicates, 'commentCounts' => $commentCounts]); ?>
 		<?php
 			$tagEditorProps = json_encode([
 				'userId' => Auth::getUserID() ? (int) Auth::getUserID() : null,
@@ -143,9 +142,8 @@ use App\Utility\ViteManifest;
 				], $tagData),
 			]);
 		?>
-		<div class="tag-container">
-			<div data-tag-editor-root data-props="<?php echo htmlspecialchars($tagEditorProps); ?>"></div>
-		</div>
+		<?php //The More panel: the problem's tags first, then its info and settings ?>
+		<?php echo $this->element('Tsumegos/play_edit', ['hasDuplicates' => $hasDuplicates, 'commentCounts' => $commentCounts, 'tagEditorProps' => $tagEditorProps]); ?>
 	</aside>
 	<div class="play-screen__main">
 		<div class="play-head">
