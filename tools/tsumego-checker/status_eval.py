@@ -4,6 +4,8 @@ import json, sys, time, os
 #ids already done by an earlier run, one per line
 SKIP_IDS = set(open(os.environ['SKIP']).read().split()) if os.environ.get('SKIP') else set()
 from check_tree import *
+#also find who is ahead in each ko (KO+, KO-, KO+2, ...)
+KO_SIGN = os.environ.get('KO_SIGN', '1') == '1'
 
 def authored_class(text, goal):
     #DEAD / KO / ALIVE of the target, comparable with the solver's three outcomes
@@ -56,8 +58,14 @@ def main(budget, path, worker, workers):
                 if node.status_text and not node.children:
                     expected = authored_class(node.status_text, goal)
                     status, best = solver.status(node.board, node.to_move)
+                    raw = status
                     status = ko_taken_by(node.board, opponent(node.to_move) if node.move is not None else None, solver_color, status)
-                    result['leaves'].append({'line': ' '.join(line_moves), 'authored': node.status_text, 'expected': expected, 'engine': status})
+                    leaf = {'line': ' '.join(line_moves), 'authored': node.status_text, 'expected': expected, 'engine': status}
+                    if status == STATUS_KO and KO_SIGN:
+                        leaf['sign'] = solver.ko_sign(node.board, node.to_move)
+                        if leaf['sign'] is None and raw != STATUS_KO:
+                            leaf['sign'] = 'KO+' #the solver's ko capture ends the line: it took first (the convention)
+                    result['leaves'].append(leaf)
         except TimeoutError:
             result['timed_out'] = True
         except Exception as error:

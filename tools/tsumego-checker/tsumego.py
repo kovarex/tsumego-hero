@@ -280,6 +280,46 @@ class Solver:
         self.cache[key] = result
         return result
 
+    def solver_wins(self, board, to_move, solver_threats, opponent_threats):
+        #True / False / None (undecided): the solver's side reaches its goal when each side has that many ko threats
+        solver_color = self.solver_color
+        black, white = (solver_threats, opponent_threats) if solver_color == 'B' else (opponent_threats, solver_threats)
+        text = self.problem.board_text(board)
+        ko = self.problem.index(board.ko) if board.ko else -1
+        self.activate_engine()
+        answer = self.engine.command('solvecount %s %d %d %d %d %s' % (to_move, ko, self.budget, black, white, text))
+        fields = dict(item.split('=') for item in answer.split()[1:])
+        self.nodes += int(fields['nodes'])
+        if fields['N'] == 'U':
+            return None
+        return (fields['N'] == 'K') == (solver_color == self.attacker)
+
+    def ko_sign(self, board, to_move, limit=3):
+        #who is ahead in a direct ko, as besogo writes it: KO+ the solver takes first, KO+n the opponent needs n-1
+        #threats before it can start, KO- the opponent takes first, KO-n the solver needs n-1 threats to start.
+        #Found with counted threats: the solver wins when its threats minus the opponent's reach some balance k.
+        #None when a search is undecided or the balance is beyond the limit.
+        if Solver.deadline and time.time() > Solver.deadline:
+            raise TimeoutError('problem time limit')
+        even = self.solver_wins(board, to_move, 0, 0)
+        if even is None:
+            return None
+        if even:
+            for t in range(1, limit + 1):
+                result = self.solver_wins(board, to_move, 0, t)
+                if result is None:
+                    return None
+                if not result:
+                    return 'KO+' if t == 1 else 'KO+%d' % t
+            return None
+        for t in range(1, limit + 1):
+            result = self.solver_wins(board, to_move, t, 0)
+            if result is None:
+                return None
+            if result:
+                return 'KO-' if t == 1 else 'KO-%d' % t
+        return None
+
 def groups_of(board, color):
     #chains of one color joined when they share a liberty or touch diagonally, the largest first
     chains = chains_of(board, color, None)

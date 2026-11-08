@@ -13,7 +13,8 @@ typedef uint64_t u64;
 
 enum { EMPTY = 0, BLACK = 1, WHITE = 2, OUTSIDE = 3 };
 enum { UNKNOWN = 0, KILL = 1, NOKILL = 2 };
-enum { MODE_A = 0, MODE_D = 1, MODE_N = 2 }; // N: neither side has ko threats
+enum { MODE_A = 0, MODE_D = 1, MODE_N = 2 }; // N: each side has the counted ko threats of the state (none by default)
+int searchMode = 0; // the ko mode of the search running now
 
 int N, NN;
 int koFreeColor = 0; // the colour that may not capture in a ko (clean solving), 0 for none
@@ -23,7 +24,7 @@ int attacker, defender;
 vector<int> target;
 vector<int> active; // the points inside the region
 bool fringe[361]; // empty edge points, playable only while a chain next to them is short of liberties
-u64 zobrist[3][361], zobristKo[362], zobristSide, zobristPass;
+u64 zobrist[3][361], zobristKo[362], zobristSide, zobristPass, zobristThreats[3][16];
 
 struct State
 {
@@ -33,6 +34,7 @@ struct State
   int passes;
   u64 hash;
   int koBreaks; // recaptures made against the ko rule by the side with unlimited threats, not part of the hash
+  int threats[3]; // counted ko threats left per colour (mode N), part of the hash
 };
 
 static int markStamp = 1;
@@ -80,7 +82,8 @@ int chain(const State& s, int p, vector<int>* stones, int maxLiberties, bool* to
 
 u64 positionKey(const State& s)
 {
-  return s.hash ^ zobristKo[s.ko + 1] ^ (s.toMove == WHITE ? zobristSide : 0) ^ (s.passes ? zobristPass : 0);
+  return s.hash ^ zobristKo[s.ko + 1] ^ (s.toMove == WHITE ? zobristSide : 0) ^ (s.passes ? zobristPass : 0) ^
+         zobristThreats[BLACK][s.threats[BLACK]] ^ zobristThreats[WHITE][s.threats[WHITE]];
 }
 
 bool play(State& s, int p, bool ignoreKo, int* capturedOut = nullptr)
@@ -126,7 +129,12 @@ bool play(State& s, int p, bool ignoreKo, int* capturedOut = nullptr)
     return false;
   }
   if (p == s.ko && ignoreKo && captured == 1)
+  {
     ++s.koBreaks;
+    //counted threats: the retake stands for a threat, its answer and the retake
+    if (searchMode == MODE_N)
+      --s.threats[color];
+  }
   // with clean solving on, the solver's side may not capture in a ko: a result it needs a ko capture for is a ko
   if (color == koFreeColor && captured == 1)
   {
@@ -360,7 +368,6 @@ bool noTwoEyes(const State& s)
 }
 
 bool bentFourRule = false;
-int searchMode = 0; // the ko mode of the search running now
 struct Result;
 Result proofSearch(State& s, int mode);
 bool bentFourEnd(const State& s);
@@ -452,9 +459,11 @@ int terminalUncached(const State& s)
     for (int p : target)
       if (s.c[p] == defender && alive[p])
         return NOKILL;
-    for (int p : active)
-      if (s.c[p] == defender && chain(s, p, nullptr, 2) == 1)
-        return KILL;
+    //with counted threats left the defender could still retake, so the attacker has to play it out instead of passing
+    if (searchMode != MODE_N || s.threats[defender] == 0)
+      for (int p : active)
+        if (s.c[p] == defender && chain(s, p, nullptr, 2) == 1)
+          return KILL;
     return NOKILL;
   }
   bensonAlive(s);
@@ -729,7 +738,7 @@ void mid(State& s, u64 key, uint32_t thpn, uint32_t thdn, int mode)
     return;
   }
   bool orNode = s.toMove == attacker;
-  bool ignoreKo = mode != MODE_N && (mode == MODE_D) == orNode;
+  bool ignoreKo = mode == MODE_N ? s.threats[s.toMove] > 0 : (mode == MODE_D) == orNode;
   uint32_t pn, dn;
   int ttBest;
   lookup(mode, key, pn, dn, ttBest);
@@ -831,6 +840,7 @@ bool bentFourEnd(const State& s)
   State t = s;
   t.passes = 0;
   t.ko = -1;
+  t.threats[BLACK] = t.threats[WHITE] = 0;
   t.toMove = attacker;
   bool previousAborted = aborted;
   Result r = proofSearch(t, MODE_N);
@@ -862,6 +872,9 @@ int main()
     zobristKo[i] = random();
   zobristSide = random();
   zobristPass = random();
+  for (int c = 0; c < 3; ++c)
+    for (int i = 0; i < 16; ++i)
+      zobristThreats[c][i] = i ? random() : 0;
   ios::sync_with_stdio(false);
   string command;
   while (cin >> command)
@@ -922,6 +935,27 @@ int main()
       bentFourRule = value != 0;
       cout << "ok" << endl;
     }
+    else if (command == "solvecount")
+    {
+      // counted ko threats: <toMove> <ko> <budget> <black threats> <white threats> <board>
+      string side, board;
+      int ko, blackThreats, whiteThreats;
+      cin >> side >> ko >> budget >> blackThreats >> whiteThreats >> board;
+      ++generation;
+      State s;
+      parseBoard(board, s);
+      s.toMove = side == "B" ? BLACK : WHITE;
+      s.ko = ko;
+      s.passes = 0;
+      s.koBreaks = 0;
+      s.threats[0] = 0;
+      s.threats[BLACK] = min(15, blackThreats);
+      s.threats[WHITE] = min(15, whiteThreats);
+      nodes = 0;
+      aborted = false;
+      Result r = proofSearch(s, MODE_N);
+      cout << "result N=" << (r.result == KILL ? "K" : r.result == NOKILL ? "N" : "U") << " nodes=" << nodes << " best=" << r.best << endl;
+    }
     else if (command == "solveplain")
     {
       // neither side has ko threats: the plain ko rule for both
@@ -935,6 +969,7 @@ int main()
       s.ko = ko;
       s.passes = 0;
       s.koBreaks = 0;
+      s.threats[BLACK] = s.threats[WHITE] = s.threats[0] = 0;
       nodes = 0;
       aborted = false;
       Result r = proofSearch(s, MODE_N);
@@ -952,6 +987,7 @@ int main()
       s.ko = ko;
       s.passes = 0;
       s.koBreaks = 0;
+      s.threats[BLACK] = s.threats[WHITE] = s.threats[0] = 0;
       string out[2];
       int bests[2];
       long long total = 0;
