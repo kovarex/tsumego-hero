@@ -105,6 +105,8 @@ if (Auth::isLoggedIn())
 	$challengesWaiting = $headerCounts->challengesWaiting;
 	//Players asking to be friends: the Friends item of the account menu counts them.
 	$friendRequests = $headerCounts->friendRequests;
+	//Problems of the mistake training due for review: its icon in the menu bar counts them.
+	$mistakeTrainingDue = $headerCounts->mistakeTrainingDue;
 	$soundSetting = UserTable::soundIsOn(Auth::getUser()) ? 'on' : 'off';
 	$accountBar = AccountWidget::bar($timeMode);
 }
@@ -115,6 +117,7 @@ else
 	$challengesWaiting = 0;
 	$friendRequests = 0;
 	$accountBar = null;
+	$mistakeTrainingDue = 0;
 	$soundSetting = in_array(Util::cookie('sound'), ['on', 'off'], true) ? Util::cookie('sound') : null;
 }
 $classesBadge = $classesAwaitingAnswer > 0
@@ -135,8 +138,9 @@ $friendsBadge = $friendRequests > 0
 			</a>
 		</div>
 		<?php if (Auth::isLoggedIn()): ?>
-		<?php //The flame and the account bar share one row at the right, so they can't overlap ?>
+		<?php //The icons of the mistake training and the challenges, the flame and the account bar share one row at the right, so they can't overlap ?>
 		<div class="site-header-account">
+			<?php echo $this->element('header_icons', ['mistakeTrainingDue' => $mistakeTrainingDue, 'challengesWaiting' => $challengesWaiting]); ?>
 			<?php echo $this->element('daily_streak'); ?>
 			<?php echo $this->element('account_bar', ['bar' => $accountBar, 'unreadMessageCount' => $unreadMessageCount]); ?>
 		</div>

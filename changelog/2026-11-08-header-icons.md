@@ -1,0 +1,1 @@
+Added: The top bar shows icons for the mistake training and the challenges next to the daily streak, with a red count of the problems due for review and of the challenges waiting for you, so you see them on every page, the problem page included.

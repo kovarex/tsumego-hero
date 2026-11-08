@@ -1,0 +1,103 @@
+/* Page layer: header-icons.css - the icons of a signed in player in the menu bar
+   (templates/element/header_icons.php): the mistake training and the challenges, each with a red
+   count of what waits. On the desktop they open the row of the account (.site-header-account),
+   before the streak flame, and the menu buttons are a little narrower to make room for them; on
+   mobile they sit beside the hamburger, before the flame. */
+@layer page
+{
+.header-icons
+{
+	display: flex;
+	align-items: flex-start;
+	gap: var(--space-2);
+	margin-top: 12px;
+}
+
+.header-icons__link
+{
+	position: relative;
+	display: flex;
+	justify-content: center;
+	width: 32px;
+	color: var(--color-white);
+	opacity: 0.75;
+	text-decoration: none;
+}
+
+.header-icons__link:hover,
+.header-icons__link:focus-visible
+{
+	opacity: 1;
+}
+
+.header-icons__icon
+{
+	width: 26px;
+	height: 26px;
+	fill: currentColor;
+}
+
+/* The count, on the top right corner of the icon */
+.header-icons__badge
+{
+	position: absolute;
+	top: -6px;
+	right: -6px;
+	min-width: 16px;
+	padding: 0 4px;
+	box-sizing: border-box;
+	border-radius: 8px;
+	background: var(--color-red);
+	color: var(--color-white);
+	font-family: var(--font-family-account);
+	font-size: 11px;
+	font-weight: var(--weight-bold);
+	line-height: 16px;
+	text-align: center;
+}
+
+/* Room for the icons: the menu buttons are a little narrower */
+@media (width >= 64rem)
+{
+	/* As wide as its buttons, so they start right after the logo instead of centred in a fixed box */
+	.site-nav
+	{
+		width: auto;
+	}
+
+	nav > ul > li > a
+	{
+		padding-left: 9px;
+		padding-right: 9px;
+	}
+
+	.homeMenuLink
+	{
+		width: auto;
+	}
+
+	.menuIcons2,
+	#soundButton,
+	nav .board-picker
+	{
+		padding-left: 7px;
+		padding-right: 7px;
+	}
+}
+
+@media (width < 64rem)
+{
+	.header-icons
+	{
+		align-items: center;
+		gap: 14px;
+		margin: 0 14px 0 auto;
+	}
+
+	/* The icons push the row to the right instead of the flame */
+	.header-icons + .daily-streak
+	{
+		margin-left: 0;
+	}
+}
+}
