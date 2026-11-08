@@ -9,6 +9,7 @@ besogo.makeBoardDisplay = function(container, editor, corner)
       sizeX = editor.getCurrent().getSize().x,
       sizeY = editor.getCurrent().getSize().y,
 
+      autoRotated = false, // The board is rotated once, when it is first drawn, not again when the coordinates come or go
       svg, // Holds the overall board display SVG element
       stoneGroup, // Group for stones
       shadowGroup, // Group for the shadows of the stones, below them
@@ -237,8 +238,13 @@ besogo.makeBoardDisplay = function(container, editor, corner)
         'class': 'besogo-svg-lines'
     }) );
 
-    // Auto-rotate boards that are too tall to view without scrolling
-    besogo.editor.autoRotate();
+    // Auto-rotate boards that are too tall to view without scrolling, once: a redraw for the
+    // coordinates (shown while the comments of the play page are open) keeps the rotation
+    if (!autoRotated)
+    {
+      autoRotated = true;
+      besogo.editor.autoRotate();
+    }
 
     drawHoshi(); // Draw the hoshi points
 

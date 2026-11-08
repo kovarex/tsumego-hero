@@ -5,12 +5,14 @@
    second). No text-align: justify - it is a readability anti-pattern (creates
    uneven 'rivers' of whitespace, especially bad in narrow mobile columns) and
    it is a content style, so it does not belong on a layout object. */
+/* The four modes in one row, smaller than their pictures, on a PC and on a phone */
 .mode-select-box {
-  display: flex;
-  flex-direction: row;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 110px));
   align-items: center;
-  justify-content: center;
-  gap: var(--space-4);
+  justify-content: space-evenly;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-2) var(--space-1);
 }
 .chart-box {
   width: 100%;
@@ -77,6 +79,11 @@
    The modes box carries the left art, the news box carries the right. */
 .new-tsumego-box--modes {
   background-image: url("/img/mode-select-bg-left.png");
+  background-size: cover;
+  background-position: center;
+  min-height: 0;
+  height: auto;
+  overflow: hidden;
 }
 .new-tsumego-box--news {
   background-image: url("/img/mode-select-bg-right.png");
@@ -84,19 +91,6 @@
   min-height: 175px;
   height: auto;
   display: flow-root;
-}
-/* The way into the mistake training, under the mode buttons */
-.mistake-training-card {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  margin-top: 6px;
-  padding: var(--space-3) var(--space-4);
-  border: 1px solid var(--surface-border-muted);
-  border-radius: var(--radius-sm);
-  background: var(--info-box-background);
-  color: var(--text-color);
-  text-decoration: none;
 }
 /* What the friends of the player did lately (templates/element/friend_activity.php) */
 .friend-activity {
@@ -121,39 +115,6 @@
 .friend-activity__event time {
   margin-left: var(--space-1);
   white-space: nowrap;
-}
-.mistake-training-card:hover {
-  background: var(--surface-hover);
-  text-decoration: none;
-}
-.mistake-training-card__title {
-  font-size: var(--font-size-lg);
-  font-weight: var(--weight-bold);
-  white-space: nowrap;
-}
-.mistake-training-card__text {
-  flex: 1;
-  font-size: var(--font-size-md);
-}
-.mistake-training-card__count {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 26px;
-  height: 26px;
-  padding: 0 7px;
-  box-sizing: border-box;
-  border-radius: 13px;
-  background: var(--color-red);
-  color: var(--color-white);
-  font-size: var(--font-size-md);
-  font-weight: var(--weight-bold);
-  line-height: 1;
-}
-.mistake-training-card__go {
-  margin-left: auto;
-  font-size: 24px;
-  line-height: 1;
 }
 .achievement-quote-pick {
   width: 100%;
@@ -214,6 +175,8 @@
 	position: relative;
 	z-index: 1;
 	display: block;
+	width: 100%;
+	height: auto;
 	transition: filter 0.15s ease;
 }
 .mode-button:hover::before {
@@ -500,13 +463,6 @@
 	}
 	.new-tsumego-box {
 		height: auto;
-	}
-	.mode-select-box {
-		flex-wrap: wrap;
-	}
-	.mistake-training-card {
-		flex-wrap: wrap;
-		gap: var(--space-1) var(--space-3);
 	}
 	/* The achievements stream stays centered over the .achievement-quote-pick
 	   image (the panel is relative). Only the label flows. */

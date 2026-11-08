@@ -41,7 +41,7 @@ class MistakeTrainingControllerTest extends IntegrationTestCase
 
 		$this->get('/mistake-training');
 
-		$this->assertMatchesRegularExpression('/<div id="status2" class="legacy-center">\s*<span class="status-rating">\s*' . preg_quote(Rating::getReadableRankFromRating(1500), '/') . ' /',
+		$this->assertMatchesRegularExpression('/<div id="status2"[^>]*>\s*<span class="status-rating"[^>]*>\s*' . preg_quote(Rating::getReadableRankFromRating(1500), '/') . ' /',
 			$this->view, 'The rank shows as in the level mode');
 		$this->assertNull($this->playPage()['problem']['xpStatus'], 'The training gives no XP');
 	}
@@ -387,7 +387,8 @@ class MistakeTrainingControllerTest extends IntegrationTestCase
 		$browser->get('mistake-training');
 		$browser->playWithResult('F');
 
-		$this->assertStringContainsString('Press Reset to try again', $browser->find('#status')->getText());
+		$this->assertSame('Incorrect!', $browser->find('#status')->getText(), 'The row of the messages says only Incorrect!');
+		$this->assertTrue((bool) $browser->driver->executeScript('return document.activeElement?.id === "besogo-reset-button";'), 'Reset has the focus, to try again');
 		$this->assertSame(0, (int) MistakeTraining::getPoolRow($userId, $tsumegoId)['rung'], 'A mistake goes back to the bottom');
 		$this->assertTrue(MistakeTraining::isDue($userId, $tsumegoId), 'A mistake keeps the problem due today');
 		$this->assertSame('Rung 1 of 8, missed today',
@@ -400,8 +401,8 @@ class MistakeTrainingControllerTest extends IntegrationTestCase
 		$this->assertStringEndsWith(MistakeTraining::$PLAY_LINK_PREFIX . $context->tsumegos[0]['set-connections'][0]['id'], $browser->driver->getCurrentURL(),
 			'Reset opens the problem again on the training route');
 		$this->assertStringNotContainsString('Incorrect', $browser->find('#status')->getText(), 'Reset opens a fresh try');
-		$this->assertCount(1, $browser->driver->findElements(WebDriverBy::id('besogo-back-button-inactive')),
-			'The only problem of the day has nothing before it');
+		$this->assertCount(0, $browser->driver->findElements(WebDriverBy::id('besogo-back-button-inactive')),
+			'The training has no Back, the problem buttons lead back');
 		$this->assertCount(1, $browser->driver->findElements(WebDriverBy::id('besogo-next-button-inactive')),
 			'Nor anything after it until it is solved');
 
@@ -409,7 +410,8 @@ class MistakeTrainingControllerTest extends IntegrationTestCase
 		$browser->driver->wait(5)->until(fn() => count($browser->driver->findElements(WebDriverBy::id('besogo-next-button'))) === 1);
 		$this->assertStringEndsWith(MistakeTraining::$QUEUE_LINK, (string) $browser->find('#besogo-next-button')->getAttribute('href'),
 			'The solve turns Next on, to the page that says the day is done');
-		$this->assertNotEmpty($browser->find('#status .mistake-training-outcome')->getText(), 'And says what it did to the problem');
+		$this->assertSame('Correct!', $browser->find('#status')->getText(), 'The row of the messages says only Correct!');
+		$this->assertNotEmpty($browser->find('#xpDisplay')->getAttribute('title'), 'And the reward says what it did to the problem');
 
 		$row = MistakeTraining::getPoolRow($userId, $tsumegoId);
 		$this->assertSame(0, (int) $row['rung'], 'The solve after a mistake of the same day earns no rung');
@@ -564,7 +566,8 @@ class MistakeTrainingControllerTest extends IntegrationTestCase
 			'Premium players may play sandbox collections, so the training opens the problem');
 	}
 
-	public function testTheHomepageShowsWhatTheTrainingHasToday()
+	//The training is in the top bar of every page, so the homepage has no card of its own
+	public function testTheHomepageShowsWhatTheTrainingHasTodayInTheTopBar()
 	{
 		new ContextPreparator([
 			'user' => ['name' => 'testuser'],
@@ -577,10 +580,9 @@ class MistakeTrainingControllerTest extends IntegrationTestCase
 		$this->get('/sites/index');
 		$html = $this->view;
 
-		$this->assertStringContainsString('class="mistake-training-card" href="' . MistakeTraining::$OVERVIEW_LINK . '"', $html,
-			'The homepage opens the overview, which leads into the training');
-		$this->assertStringContainsString('class="mistake-training-card__count" role="img" title="2 problems to review today" aria-label="2 problems to review today">2</span>', $html);
-		$this->assertStringNotContainsString('Mistake<br>Training', $html, 'The training is on the homepage, not in the Play menu');
+		$this->assertMatchesRegularExpression('#<a id="header-mistake-training"[^>]*href="' . preg_quote(MistakeTraining::$OVERVIEW_LINK, '#') . '"[^>]*>.*?<span class="header-icons__badge" aria-hidden="true">2</span>#s', $html,
+			'The top bar opens the overview, with what is due today');
+		$this->assertStringNotContainsString('mistake-training-card', $html, 'The homepage has no card of the training');
 	}
 
 	public function testTheOverviewShowsWhatIsDueAndLeadsIntoTheTraining()
@@ -650,16 +652,6 @@ class MistakeTrainingControllerTest extends IntegrationTestCase
 		$this->assertStringContainsString('<a id="playTitleA" href="' . MistakeTraining::$OVERVIEW_LINK . '">Mistake Training 1/1</a>', $html);
 	}
 
-	public function testTheHomepageOffersPastMistakesEvenWithNothingToImport()
-	{
-		new ContextPreparator(['user' => ['name' => 'testuser']]);
-
-		$this->get('/sites/index');
-		$html = $this->view;
-
-		$this->assertStringContainsString('Nothing to review today. Add past mistakes to training.', $html);
-	}
-
 	public function testAGuestSeesNoTrainingOnTheHomepage()
 	{
 		new ContextPreparator(['user' => null]);
@@ -667,7 +659,7 @@ class MistakeTrainingControllerTest extends IntegrationTestCase
 		$this->get('/sites/index');
 		$html = $this->view;
 
-		$this->assertStringNotContainsString('mistake-training-card', $html);
+		$this->assertStringNotContainsString('header-mistake-training', $html);
 	}
 
 	public function testHelpPageDescribesTheTraining()
@@ -846,9 +838,10 @@ class MistakeTrainingControllerTest extends IntegrationTestCase
 
 			// a clean solve on the fourth rung brings the problem back after 15 days
 			$nextDue = MistakeTraining::getPoolRow((int) $context->user['id'], (int) $context->tsumegos[0]['id'])['next_due'];
-			$browser->waitUntil(fn() => str_contains($browser->find('#status')->getText(), 'next review'), context: 'the outcome of the solve');
-			$this->assertStringContainsString('next review ' . $format($nextDue) . '.', $browser->find('#status .mistake-training-outcome')->getText(),
-				"The line under Correct! in format $dateFormat");
+			$browser->waitUntil(fn() => str_contains((string) $browser->find('#xpDisplay')->getAttribute('title'), 'next review'), context: 'the outcome of the solve');
+			$this->assertStringContainsString('next review ' . $format($nextDue) . '.', (string) $browser->find('#xpDisplay')->getAttribute('title'),
+				"The title of the reward in format $dateFormat");
+			$this->assertMatchesRegularExpression('/^\+\d+ XP$/', trim((string) $browser->driver->executeScript('return document.getElementById("xpDisplayText").textContent;')), 'The XP of the solve shows where the XP of a problem shows');
 			$this->assertStringContainsString($format($nextDue), (string) $browser->driver->executeScript(
 				'return document.querySelector(".problem-nav__item--current .tooltip-desc").textContent;'), "And the tooltip of the button, in format $dateFormat");
 		}

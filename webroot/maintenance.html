@@ -83,6 +83,20 @@
 		font-size: 15px;
 		color: var(--text-softer-color);
 	}
+	/* A phone shows it from the top: centred in a tall screen it left a big gap above it */
+	@media (max-width: 600px)
+	{
+		body
+		{
+			justify-content: flex-start;
+			gap: 20px;
+			padding: 16px;
+		}
+		main
+		{
+			padding: 22px 20px;
+		}
+	}
 	/* Three stones, lit one after another, while it waits */
 	.stones
 	{

@@ -169,29 +169,6 @@ li a.menuLi.nav__link--active {
   padding: 2px;
   background-color: var(--color-sky);
 }
-#footer {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  margin-top: 5px;
-  padding: 10px;
-  font-size: var(--text-sm);
-  color: var(--color-white);
-}
-.footer-element {
-  margin: 2px;
-}
-.footer-space {
-  margin: 6px;
-}
-.footerLinks a {
-  color: var(--color-white);
-  text-decoration: none;
-}
-.footerLinks a:hover {
-  text-decoration: underline;
-}
 .titleDescription1 {
   font-size: 17px;
 }
@@ -277,7 +254,9 @@ li a.menuLi.nav__link--active {
   text-decoration: none;
   white-space: nowrap;
 }
+/* A click on the bar switches it between the level and the rank (AccountWidget.js) */
 #xp-bar {
+  cursor: pointer;
   position: absolute;
   left: 0;
   top: 23px;
@@ -1000,6 +979,56 @@ nav ul ul ul li {
 		width: auto;
 	}
 }
+/* On a phone the name as plain text instead of the logo, which takes more room than it gives */
+.site-logo-text {
+	display: none;
+}
+@media (width < 64rem) {
+	.whitebox1 #logo1 {
+		display: none;
+	}
+	.site-logo-text {
+		display: inline;
+		color: var(--color-purple-nav);
+		font-family: var(--font-family-account);
+		font-size: clamp(17px, 5.5vw, 22px);
+		font-weight: var(--weight-bold);
+		letter-spacing: 0.5px;
+		text-decoration: none;
+		white-space: nowrap;
+	}
+	.whitebox1 a:has(.site-logo-text) {
+		text-decoration: none;
+	}
+	/* Some room between the name and the icons beside it */
+	.whitebox1 > .legacy-left {
+		margin-right: var(--space-3);
+	}
+}
+/* The narrowest phones: less room around and between the header's items */
+@media (width < 360px) {
+	.whitebox1 {
+		padding-left: var(--space-2);
+		padding-right: var(--space-1);
+	}
+	.whitebox1 > .legacy-left {
+		margin-right: var(--space-2);
+	}
+	.whitebox1 .header-icons {
+		gap: 6px;
+	}
+	.whitebox1 .daily-streak {
+		margin-right: 2px;
+	}
+	.whitebox1 #account-bar-wrapper,
+	.whitebox1 #xp-bar,
+	.whitebox1 #account-bar-xp-wrapper {
+		width: 58px;
+	}
+	.whitebox1 #account-bar-xp {
+		font-size: 10px;
+	}
+}
 
 /* Mobile nav: a compact header bar (logo + hamburger) and a drawer that
    replaces the desktop absolute-positioned mega-menu. Hybrid pattern: core
@@ -1007,7 +1036,8 @@ nav ul ul ul li {
 .nav-toggle {
 	display: none;
 }
-.nav-toggle-btn {
+.nav-toggle-btn,
+.nav-backdrop {
 	display: none;
 }
 @media (width < 64rem) {
@@ -1031,6 +1061,7 @@ nav ul ul ul li {
 		display: flex;
 		flex-direction: column;
 		justify-content: center;
+		flex: none;
 		gap: 5px;
 		width: 40px;
 		height: 40px;
@@ -1050,7 +1081,7 @@ nav ul ul ul li {
 	.site-nav__signin {
 		display: none;
 	}
-	/* The flame stands beside the hamburger on its own, the account bar is hidden below */
+	/* The flame and the small account bar stand beside the hamburger (the account bar's rules are below) */
 	.site-header-account {
 		display: contents;
 	}
@@ -1083,6 +1114,14 @@ nav ul ul ul li {
 	}
 	.nav-toggle:checked ~ .site-nav {
 		transform: translateX(0);
+	}
+	/* Behind the open drawer, over the page: a tap on it closes the drawer and doesn't reach the board */
+	.nav-toggle:checked ~ .nav-backdrop {
+		display: block;
+		position: fixed;
+		inset: 0;
+		z-index: calc(var(--layer-popover) - 1);
+		background: rgba(0, 0, 0, 0.35);
 	}
 	/* Keep the hamburger above the drawer so it can be used to close it. */
 	.nav-toggle-btn {
@@ -1207,8 +1246,34 @@ nav ul ul ul li {
 		color: var(--color-purple-nav);
 		text-align: left;
 	}
-	/* Hide the desktop floating account bar + hover dropdowns on mobile. */
-	#account-bar-wrapper,
+	/* The account bar stays as a small level (or rating) bar beside the flame, without the name; a tap
+	   switches it between the level and the rank as on the desktop. The hover dropdowns are hidden. */
+	#account-bar-wrapper {
+		flex: none;
+		width: 66px;
+		height: 24px;
+		margin-right: 6px;
+	}
+	#account-bar-user,
+	#account-bar-messages {
+		display: none;
+	}
+	#xp-bar,
+	#account-bar-xp-wrapper {
+		top: 0;
+		width: 66px;
+		height: 24px;
+	}
+	#account-bar-xp-wrapper {
+		box-sizing: border-box;
+		pointer-events: none;
+		text-align: center;
+	}
+	#account-bar-xp {
+		margin-top: 4px;
+		font-size: 11px;
+		letter-spacing: 0;
+	}
 	#heroProfile,
 	#heroBar,
 	#heroAchievements,
@@ -1249,7 +1314,6 @@ nav ul ul ul li {
 {
 	.menuLi:hover,
 	.site-nav__signin a.menuLi:hover,
-	.footerLinks a:hover,
 	#logo1:hover,
 	#newMenu li:hover,
 	.btn:hover,

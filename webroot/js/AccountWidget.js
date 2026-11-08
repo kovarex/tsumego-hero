@@ -54,6 +54,8 @@ class AccountWidget
 		}
 		this.modeSelector.addEventListener('click', () => this.switchBarInMenu());
 		this.textBarInMenu?.addEventListener('click', () => this.switchBarInMenu());
+		//A click on the bar itself switches it between the level and the rank too
+		document.getElementById('xp-bar')?.addEventListener('click', () => this.switchBarInMenu());
 
 		this.bar.style.boxShadow = "";
 		window.addEventListener('pagehide', () => AccountWidget.markUnshownResultLeft());
@@ -114,6 +116,9 @@ class AccountWidget
 
 	hover()
 	{
+		//A phone has no menu here, and a tap is no hover: its bar keeps showing the level or the rank, a tap switches them
+		if (window.matchMedia("(width < 64rem)").matches)
+			return;
 		this.hovered = true;
 		this.setup();
 		this.menuItems.forEach(item => item.style.display = "inline-block");

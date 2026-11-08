@@ -24,4 +24,5 @@ import './page/auth.css';
 import './page/comments.css';
 import './page/messages.css';
 import './page/daily-streak.css';
+import './page/header-icons.css';
 import './page/tsumego.css';

@@ -305,13 +305,8 @@ besogo.makeToolPanel = function (container, editor) {
           "besogo-pass-button"
         );
       }
-      if (mode == 1 || mode == 5) {
-        // The first problem of the training has nothing before it
-        if (previousButtonLink)
-          makeHyperlinkText("Back","previous problem", previousButtonLink, "besogo-back-button");
-        else
-          makeHyperlinkText("Back","no previous problem", 0, "besogo-back-button-inactive");
-      } else if (mode == 2) {
+      // The level mode and the training have no Back: the problem buttons under the board lead back
+      if (mode == 2) {
         makeHyperlinkText(
           "History",
           "history of rating mode",
@@ -339,6 +334,7 @@ besogo.makeToolPanel = function (container, editor) {
 				toggleBoardLock(false);
 				besogo.editor.setReviewMode(false);
 				document.getElementById("status").innerHTML = "";
+				document.querySelector(".play-message")?.classList.remove("play-message--failed");
 				document.getElementById("theComment").style.cssText = "display:none;";
 				let customAlerts = document.getElementById("customAlerts");
 				if (customAlerts && getComputedStyle(customAlerts).display !== "none")
@@ -554,6 +550,7 @@ besogo.makeToolPanel = function (container, editor) {
             // mode: preserve the node the user navigated to so they don't lose
             // their place in the tree.
             document.getElementById("status").innerHTML = "";
+            document.querySelector(".play-message")?.classList.remove("play-message--failed");
             besogo.editor.notifyListeners({
               treeChange: true,
               navChange: true,
@@ -565,10 +562,7 @@ besogo.makeToolPanel = function (container, editor) {
       );
     } else if (besogo.multipleChoiceCustom === "multiple_choice") {
       toggleBoardLock(true);
-      let prevButtonId;
-      prevButtonId = "besogo-back-button";
-
-      makeHyperlinkText("Back","previous problem", previousButtonLink, prevButtonId);
+      // No Back: the problem buttons under the board lead back
 
       makeButtonText(
         besogo.multipleChoiceCustomSetup[0],
@@ -610,10 +604,7 @@ besogo.makeToolPanel = function (container, editor) {
       makeHyperlinkText("Next", "next problem", nextButtonLink, "besogo-next-button");
     } else {
       toggleBoardLock(true);
-      let prevButtonId;
-      prevButtonId = "besogo-back-button";
-
-      makeHyperlinkText("Back","previous problem", previousButtonLink, prevButtonId);
+      // No Back: the problem buttons under the board lead back
 
       makeButtonText(
         besogo.boardInverted ? "White is dead" : "Black is dead",
@@ -667,6 +658,13 @@ besogo.makeToolPanel = function (container, editor) {
         ["descriptionText", "hintText", "theComment"].forEach(function (id) {
           let el = document.getElementById(id);
           if (el) el.textContent = swapColorWords(el.textContent);
+        });
+        // The color to move, shown as a stone before the goal (Tsumegos/play.php)
+        document.querySelectorAll(".play-goal__stone").forEach(function (stone) {
+          let white = stone.classList.toggle("play-goal__stone--white");
+          stone.classList.toggle("play-goal__stone--black", !white);
+          stone.setAttribute("aria-label", white ? "White" : "Black");
+          stone.title = swapColorWords(stone.title);
         });
         // Multiple-choice answers (custom multiple-choice and semeai share these ids).
         ["besogo-multipleChoice1", "besogo-multipleChoice2", "besogo-multipleChoice3", "besogo-multipleChoice4"].forEach(function (id) {

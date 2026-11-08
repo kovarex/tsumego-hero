@@ -51,7 +51,7 @@ class TsumegosControllerTest extends IntegrationTestCase
 			$dom = $this->getStringDom();
 			$href = $dom->querySelector('#playTitleA');
 			$this->assertTextContains('test set', $href->textContent);
-			$this->assertTextContains('666', $href->textContent);
+			$this->assertSame('666', trim($dom->getElementById('currentNavigationButton')->textContent), 'The open problem button shows its place in the collection');
 		}
 	}
 
@@ -150,7 +150,7 @@ class TsumegosControllerTest extends IntegrationTestCase
 		$dom = $this->getStringDom();
 		$href = $dom->querySelector('#playTitleA');
 		$this->assertTextContains('tsumego set 1', $href->textContent);
-		$this->assertTextContains('666', $href->textContent);
+		$this->assertSame('666', trim($dom->getElementById('currentNavigationButton')->textContent), 'The open problem button shows its place in the collection');
 
 		$duplicateTable = $dom->querySelector('.duplicateTable');
 		$links = $duplicateTable->getElementsByTagName('a');
@@ -186,7 +186,7 @@ class TsumegosControllerTest extends IntegrationTestCase
 		$dom = $this->getStringDom();
 		$href = $dom->querySelector('#playTitleA');
 		$this->assertTextContains('tsumego set 2', $href->textContent);
-		$this->assertTextContains('777', $href->textContent);
+		$this->assertSame('777', trim($dom->getElementById('currentNavigationButton')->textContent), 'The open problem button shows its place in the collection');
 
 		// all of them are listed in duplicite locations
 		$this->assertTextContains("tsumego set 1", $this->view);
@@ -403,7 +403,7 @@ class TsumegosControllerTest extends IntegrationTestCase
 		$dom = $this->getStringDom();
 		$href = $dom->querySelector('#playTitleA');
 		$this->assertTextContains('test set', $href->textContent);
-		$this->assertTextContains('666', $href->textContent);
+		$this->assertSame('666', trim($dom->getElementById('currentNavigationButton')->textContent), 'The open problem button shows its place in the collection');
 	}
 
 	public function testClearFiltersReloadsCurrentPlayPage(): void
@@ -460,7 +460,7 @@ class TsumegosControllerTest extends IntegrationTestCase
 		$browser->get($context->tsumegos[0]['set-connections'][0]['id']);
 		$href = $browser->find('#playTitleA');
 		$this->assertTextContains('set 1', $href->getText());
-		$this->assertTextContains('666', $href->getText());
+		$this->assertSame('666', $browser->find('#currentNavigationButton')->getText(), 'The open problem button shows its place in the collection');
 	}
 
 	public function testMergeFormShowsPreviewsForSiblingTsumegos()
@@ -591,8 +591,7 @@ class TsumegosControllerTest extends IntegrationTestCase
 		]);
 		Auth::saveUserField('player_color_setting', UserTable::PLAYER_COLOR_SETTING_ORIGINAL);
 		$this->get('tsumegos/play/' . $context2->tsumegos[0]['id']);
-		$decoded = htmlspecialchars_decode(strip_tags($this->view));
-		$this->assertStringContainsString('White to play. Attack the black group.', $decoded);
+		$this->assertSame('White to play. Attack the black group.', $this->shownDescription());
 	}
 
 	//Controller test: When the edit form is shown with an inverted board it
@@ -939,10 +938,14 @@ class TsumegosControllerTest extends IntegrationTestCase
 		$this->assertSame('Black to play.', $this->shownDescription());
 	}
 
-	//The description the play page shows, which is the one the colour swap applies to.
+	//The description the play page shows, which is the one the colour swap applies to: the color to move is a
+	//stone (its label) before the rest of the goal
 	private function shownDescription(): string
 	{
-		return trim((string) $this->getStringDom()->querySelector('#descriptionText')->textContent);
+		$dom = $this->getStringDom();
+		$stone = $dom->querySelector('.play-goal__stone')?->getAttribute('aria-label');
+		$text = trim((string) $dom->querySelector('#descriptionText')->textContent);
+		return $stone !== null ? $stone . ' ' . $text : $text;
 	}
 
 	//When the player's color matches the SGF's first move the board is not inverted

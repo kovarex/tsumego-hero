@@ -66,7 +66,7 @@ class PlayLostLineBrowserTest extends IntegrationTestCase
 
 	private function emptyHearts(Browser $browser): int
 	{
-		return count($browser->getElements('img[title="Empty Heart"]'));
+		return count($browser->getElements('#health img.play-player__heart--empty'));
 	}
 
 	private function shownRating(Browser $browser): float

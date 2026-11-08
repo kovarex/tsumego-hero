@@ -120,6 +120,7 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 		}
 	}
 
+	//Next leads to the following problem; there is no Back, the problem buttons lead back
 	public function testTheNavigationButtonsLeadToTheNeighbouringPuzzles(): void
 	{
 		$context = new ContextPreparator(['tsumegos' => [1, 2, 3]]);
@@ -129,22 +130,16 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 		$browser->get($urls[1]);
 		$this->waitForBoard($browser);
 
-		$this->assertSame($urls[0],
-			$browser->find('#besogo-back-button')->getAttribute('href'),
-			'The back button points at the previous problem');
+		$this->assertFalse($browser->idExists('besogo-back-button'), 'There is no Back button');
 		$this->assertSame($urls[2],
 			$browser->find('#besogo-next-button')->getAttribute('href'),
 			'The next button points at the following problem');
 
+		$this->assertTrue($browser->find('#besogo-next-button')->isDisplayed(), 'Next is with Reset and Review in every state');
 		$browser->clickId('besogo-next-button');
 		$browser->waitUntilJs('location.href.includes("' . $urls[2] . '")');
 		$this->waitForBoard($browser);
 		$this->assertStringContainsString($urls[2], $browser->driver->getCurrentURL(), 'The next button moves on');
-
-		$browser->clickId('besogo-back-button');
-		$browser->waitUntilJs('location.href.includes("' . $urls[1] . '")');
-		$this->waitForBoard($browser);
-		$this->assertStringContainsString($urls[1], $browser->driver->getCurrentURL(), 'The back button moves back');
 	}
 
 	public function testMultipleChoiceAnswerClickShowsSolved(): void
@@ -234,6 +229,28 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 
 		$browser->waitUntilJs('document.getElementById("multipleChoiceText").innerText.includes("Semeai Type 1")');
 		$this->assertMatchesRegularExpression('/Black has \d+ libert/', $browser->find('#multipleChoiceText')->getText());
+	}
+
+	//After a mistake Reset keeps its look but gets a red outline and the keyboard focus, so Enter tries again
+	public function testResetIsFocusedAndOutlinedAfterAMistake(): void
+	{
+		$context = new ContextPreparator(['tsumego' => ['set_order' => 1]]);
+		$browser = Browser::instance();
+		$browser->get($this->playUrl($context));
+		$resetLook = 'const reset = document.getElementById("besogo-reset-button"); const style = getComputedStyle(reset);'
+			. ' return [document.activeElement === reset, style.borderTopColor, style.backgroundColor];';
+		[$focused, $plainBorder, $plainBackground] = $browser->driver->executeScript($resetLook);
+		$this->assertFalse($focused);
+
+		$browser->playWithResult('F');
+		[$focused, $border, $background] = $browser->driver->executeScript($resetLook);
+		$this->assertTrue($focused, 'Reset has the focus after a mistake');
+		$this->assertNotSame($plainBorder, $border, 'Reset is outlined after a mistake');
+		$this->assertSame($plainBackground, $background, 'Reset keeps its colour after a mistake');
+
+		$browser->driver->getKeyboard()->sendKeys(\Facebook\WebDriver\WebDriverKeys::ENTER);
+		$browser->waitUntilJs('!document.querySelector(".play-message").classList.contains("play-message--failed")');
+		$this->assertSame($plainBorder, $browser->driver->executeScript($resetLook)[1], 'The outline goes with the reset');
 	}
 
 	public function testPostSolveMistakesAreNotPenalized(): void
@@ -396,7 +413,7 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 
 		// and so should the XP display
 		$this->assertTrue($browser->driver->executeScript('return window.xpStatus !== undefined;'));
-		$this->assertNotEmpty($browser->findById('xpDisplayText')->getText(),
+		$this->assertNotEmpty($this->xpDisplayText($browser),
 			'The XP display shows the XP gained');
 	}
 
@@ -783,9 +800,9 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 		$theComment = $browser->findById('theComment');
 		$this->assertSame('Go Seigen 4p vs Kubomatsu 6p', $theComment->getText());
 		$this->assertTrue($theComment->isDisplayed(), 'Root comment should be visible on initial page load');
-		//Centered over the board, not at the left edge
-		$offCenter = $browser->driver->executeScript('const comment = document.getElementById("theComment").getBoundingClientRect(); const parent = document.getElementById("theComment").parentElement.getBoundingClientRect(); return Math.abs((comment.left + comment.right) - (parent.left + parent.right)) / 2;');
-		$this->assertLessThan(2, $offCenter, 'The comment is centered');
+		//In the row of the messages above the board, between the message and the buttons, its text centered there
+		$this->assertTrue($browser->driver->executeScript('return document.getElementById("theComment").parentElement.classList.contains("play-message");'), 'The comment is in the row of the messages');
+		$this->assertSame('center', $browser->driver->executeScript('return getComputedStyle(document.getElementById("theComment")).textAlign;'), 'The comment is centered');
 
 		$xpDisplayDiv = $browser->findById('xpDisplayDiv');
 		$this->assertTrue($xpDisplayDiv->isDisplayed(), 'xpDisplayDiv must be visible on initial page load');
@@ -802,8 +819,8 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 
 			$health = Util::getHealthBasedOnLevel(Auth::getUser()['level']);
 			$empty = min($damage, $health);
-			$this->assertCount($empty, $browser->getElements('img[title="Empty Heart"]'), $case . ' with ' . $damage . ' damage');
-			$this->assertCount($health - $empty, $browser->getElements('img[title="Heart"]'), $case . ' with ' . $damage . ' damage');
+			$this->assertCount($empty, $browser->getElements('#health img.play-player__heart--empty'), $case . ' with ' . $damage . ' damage');
+			$this->assertCount($health - $empty, $browser->getElements('#health img:not(.play-player__heart--empty)'), $case . ' with ' . $damage . ' damage');
 		}
 	}
 
@@ -936,7 +953,8 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 		$browser->driver->executeScript("document.getElementById('colorOrientation').click();");
 
 		$this->assertSame('Black is dead', $browser->find('#besogo-multipleChoice1')->getAttribute('value'));
-		$this->assertSame('White to play. What is the result?', $browser->find('#descriptionText')->getText());
+		$this->assertSame('White', $browser->find('.play-goal__stone')->getAttribute('aria-label'));
+		$this->assertSame('to play. What is the result?', $browser->find('#descriptionText')->getText());
 	}
 
 	//Browser test: the orientation button swaps the semeai "Black is dead" /
@@ -1014,11 +1032,13 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 		$browser->get($context->tsumegos[0]['set-connections'][0]['id'] . '?playercolor=white');
 		$browser->waitUntilJs('typeof besogo !== "undefined" && document.getElementById("colorOrientation") !== null');
 
-		$this->assertSame('White to kill.', $browser->find('#descriptionText')->getText());
+		$this->assertSame('White', $browser->find('.play-goal__stone')->getAttribute('aria-label'), 'The color to move is a stone');
+		$this->assertSame('to kill.', $browser->find('#descriptionText')->getText());
 		$this->assertSame('(Kill before Black can.)', $browser->find('#hintText')->getText());
 
 		$browser->driver->executeScript("document.getElementById('colorOrientation').click();");
-		$this->assertSame('Black to kill.', $browser->find('#descriptionText')->getText());
+		$this->assertSame('Black', $browser->find('.play-goal__stone')->getAttribute('aria-label'));
+		$this->assertSame('to kill.', $browser->find('#descriptionText')->getText());
 		$this->assertSame('(Kill before White can.)', $browser->find('#hintText')->getText());
 	}
 

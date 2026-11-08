@@ -8,7 +8,8 @@ use App\Utility\Trash;
 use App\Utility\Util;
 
 //What a player can do with the problem besides solving it, what they can propose for it and what an
-//admin can edit on it, under the board behind More, so a player who only solves sees none of it
+//admin can edit on it, behind the info button (⋯) of the play page, so a player who only solves sees none
+//of it. The comments have a button of their own (play.php).
 /**
  * @var \App\View\AppView $this
  * @var \App\Model\Entity\Tsumego $tsumego
@@ -23,14 +24,24 @@ use App\Utility\Util;
  * @var bool $isAllowedToContribute
  * @var bool $hasDuplicates
  * @var array<int, array<string, mixed>> $setConnections
- * @var array{total: int, comments: int, issues: int, openIssues: int}|null $commentCounts null for a guest, who has no comments
  * @var bool $solved
+ * @var string $tagEditorProps
  */
 
 $checked = fn(bool $isChecked): string => $isChecked ? 'checked="checked"' : '';
 $variantType = $tv ? (int) $tv->tsumego_variant_type_id : null;
 ?>
 <div id="editSection" class="play-edit" style="display: none;">
+	<?php //The tags of the problem first, with adding one under them ?>
+	<div class="tag-container">
+		<div data-tag-editor-root data-props="<?php echo htmlspecialchars($tagEditorProps); ?>"></div>
+		<?php if ($isAllowedToContribute): ?>
+			<?php //The adding of a tag, right under the tags (TagEditor.tsx renders it here) ?>
+			<div id="tag-adding" data-testid="tag-adding"></div>
+		<?php endif; ?>
+	</div>
+	<?php //The board's own settings, which PlayBoard.js moves here from under the board: the corner, the rotation, the colours, the favourite and the author ?>
+	<div id="boardSettings" class="play-board-settings"></div>
 	<p>
 		<?php //Opening the problem in the editor, or proposing a change in it, comes first ?>
 		<?php if (Auth::isAdmin()): ?>
@@ -137,11 +148,5 @@ $variantType = $tv ? (int) $tv->tsumego_variant_type_id : null;
 			</table>
 			<input type="submit" value="Submit" id="tsumego-edit-submit">
 		</form>
-	<?php endif; ?>
-	<?php if ($isAllowedToContribute): ?>
-		<div id="tag-adding" class="play-edit__part" data-testid="tag-adding"></div>
-	<?php endif; ?>
-	<?php if ($commentCounts !== null): ?>
-		<?php echo $this->element('TsumegoComments/section', ['tsumegoId' => $tsumego->id, 'solved' => $solved, 'counts' => $commentCounts]); ?>
 	<?php endif; ?>
 </div>

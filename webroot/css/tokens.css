@@ -435,7 +435,7 @@
 		--play-dark-text: currentColor;
 		--play-rating-bar-accent: var(--color-purple-3);
 		--xp-display: var(--color-black);
-		--xp-display-solved: var(--color-green);
+		--xp-display-solved: #2e8a3a; /* darker than the brand green, so the small text reads on white */
 		--xp-display-golden: var(--color-gold);
 		--xp-display-sprint: var(--color-blue);
 		/* In light the border of an alert has always been its text colour */

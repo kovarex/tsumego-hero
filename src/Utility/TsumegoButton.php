@@ -51,7 +51,7 @@ class TsumegoButton
 		// shows the rung of the review ladder under the number instead.
 		$details = $this->rung === null ? $num2 . $num3 : $this->renderRungBadge();
 
-		echo '<li class="problem-nav__item problem-nav__item--' . ($this->status ?: 'N') . ($this->isCurrentlyOpened ? ' problem-nav__item--current' : '') . '">';
+		echo '<li class="problem-nav__item problem-nav__item--' . ($this->status ?: 'N') . ($this->isCurrentlyOpened ? ' problem-nav__item--current' : '') . $this->distanceClasses() . '">';
 		$status = $this->status ?: 'N';
 		$label = $this->label ?? TsumegoStatusTable::label($status);
 		$descriptionHtml = $this->descriptionHtml ?? h($this->description ?? TsumegoStatusTable::description($status));
@@ -73,6 +73,14 @@ class TsumegoButton
 	//as one dan in Go; the tooltip says when the problem comes back. The name is an
 	//aria-label rather than a title, which would pop a second tooltip over the one
 	//of the button. The play page swaps the badge in once a result moves the rung.
+	//How far the button is from the open problem, for the narrower screens that show fewer buttons
+	//around it (play.css): beyond 1 and beyond 3 buttons away. The first and the last keep 0, they
+	//always show.
+	private function distanceClasses(): string
+	{
+		return ($this->distance > 1 ? ' problem-nav__item--beyond1' : '') . ($this->distance > 3 ? ' problem-nav__item--beyond3' : '');
+	}
+
 	public function renderRungBadge(): string
 	{
 		if ($this->graduated)
@@ -145,6 +153,9 @@ class TsumegoButton
 	public int $solvedAttempts = 0;
 	public int $failedAttempts = 0;
 	public bool $isCurrentlyOpened = false;
+	//The number of buttons between this one and the open problem's, 0 for the first and the last
+	//button of the row, which always show (see play.php)
+	public int $distance = 0;
 	//The SGF the preview is made from, null for a button of a collection, which gets the stored
 	//preview instead.
 	public ?string $sgf;

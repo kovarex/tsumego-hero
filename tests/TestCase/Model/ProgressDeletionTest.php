@@ -175,7 +175,7 @@ class ProgressDeletionTest extends IntegrationTestCase
 			'progress-deletions' => [['set' => 'set A', 'partition' => 0, 'created' => self::now()]]]);
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
-		$this->assertTextContains('unaffected (reset)', $browser->find('#xpDisplay')->getText());
+		$this->assertTextContains('unaffected (reset)', $this->xpDisplayText($browser));
 	}
 
 	public function testXpShownOnThePlayPageCountsTheResetsOfThePart(): void

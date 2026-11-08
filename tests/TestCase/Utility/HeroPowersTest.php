@@ -139,7 +139,7 @@ class HeroPowersTest extends IntegrationTestCase
 		// clicking next after solving, sprint is still visible:
 		$browser->clickId('besogo-next-button');
 		$this->assertSame($context->XPGained(), Constants::$SPRINT_MULTIPLIER * $originalTsumego0XPValue);
-		$this->assertTextContains('Sprint', $browser->find('#xpDisplay')->getText());
+		$this->assertTextContains('Sprint', $this->xpDisplayText($browser));
 		$browser->playWithResult('S'); // solve the problem
 
 		// clicking next after solving again, sprint is applied on xp still
@@ -256,6 +256,7 @@ class HeroPowersTest extends IntegrationTestCase
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		$this->checkPowerIsActive($browser, 'refinement');
 		$this->assertStringEndsWith('/img/hp4.png', $browser->find('#refinement')->getAttribute('src'));
+		$browser->openPlayPanelOf('refinement');
 		$browser->hover($browser->find('#refinement'));
 		$this->assertStringEndsWith('/img/hp4h.png', $browser->find('#refinement')->getAttribute('src'));
 
@@ -354,10 +355,7 @@ class HeroPowersTest extends IntegrationTestCase
 		$this->assertStringContainsString('This problem is locked until', $statusText);
 		$this->assertSame(1, $browser->driver->executeScript('return boardLockValue;'));
 		for ($i = 0; $i < $maxHealth; $i++)
-		{
-			$heartSrc = $browser->findById('heart' . $i)->getAttribute('src');
-			$this->assertStringContainsString('heart2small', $heartSrc, "heart$i should be empty after losing the last heart");
-		}
+			$this->assertStringContainsString('play-player__heart--empty', (string) $browser->findById('heart' . $i)->getAttribute('class'), "heart$i should be empty after losing the last heart");
 
 		// Rejuvenate to restore all hearts
 		$this->checkPowerIsActive($browser, 'rejuvenation');
@@ -373,18 +371,15 @@ class HeroPowersTest extends IntegrationTestCase
 		$this->assertFalse($browser->driver->executeScript('return tryAgainTomorrow;'));
 		$this->assertSame($maxHealth, $browser->driver->executeScript('return currentHealth;'));
 		for ($i = 0; $i < $maxHealth; $i++)
-		{
-			$heartSrc = $browser->findById('heart' . $i)->getAttribute('src');
-			$this->assertStringContainsString('heart1small', $heartSrc, "heart$i should be a full heart after rejuvenation");
-		}
+			$this->assertStringNotContainsString('play-player__heart--empty', (string) $browser->findById('heart' . $i)->getAttribute('class'), "heart$i should be a full heart after rejuvenation");
 
 		// Press Reset to clear freePlayMode, then verify a heart can be lost
 		$browser->clickId('besogo-reset-button');
 
 		$browser->driver->executeScript("displayResult('F')");
 		$browser->waitUntilJs('window.hadMisplay');
-		$lastHeartSrc = $browser->findById('heart' . ($maxHealth - 1))->getAttribute('src');
-		$this->assertStringContainsString('heart2small', $lastHeartSrc, "last heart should be lost after failing post-rejuvenation");
+		$lastHeartClass = (string) $browser->findById('heart' . ($maxHealth - 1))->getAttribute('class');
+		$this->assertStringContainsString('play-player__heart--empty', $lastHeartClass, "last heart should be lost after failing post-rejuvenation");
 	}
 
 	public function testRevelationAllowsReviewAfterRunningOutOfHearts()

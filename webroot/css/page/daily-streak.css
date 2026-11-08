@@ -1,6 +1,6 @@
 /* Page layer: daily-streak.css - the flame of the daily streak in the menu
    (templates/element/daily_streak.php). On the desktop it shares a row with the account bar
-   (.site-header-account), the number under the flame; on mobile it sits beside the hamburger. Hovering it, or tapping it (it takes the focus), shows the details. When a solve
+   (.site-header-account), the length on the top right of the flame like the counts of the icons beside it; on mobile it sits beside the hamburger. Hovering it, or tapping it (it takes the focus), shows the details. When a solve
    completes the day, webroot/js/DailyStreak.js adds daily-streak--ignite, which flares the flame up
    with a burst of light; with reduced motion it just lights. */
 @layer page
@@ -8,12 +8,12 @@
 .daily-streak
 {
 	position: relative;
-	margin-top: 12px;
+	margin-top: 20px;
 	z-index: var(--layer-streak);
 	display: flex;
-	flex-direction: column;
-	align-items: center;
-	width: 32px;
+	align-items: flex-start;
+	justify-content: center;
+	min-width: 32px;
 	cursor: default;
 	color: var(--color-streak-unlit);
 	font-family: var(--font-family-account);
@@ -25,6 +25,7 @@
 
 .daily-streak__flame
 {
+	flex: none;
 	width: 26px;
 	height: 26px;
 	fill: currentColor;
@@ -33,10 +34,21 @@
 	transform-origin: 50% 85%;
 }
 
+/* The length on the top right corner of the flame, where the icons beside it have their counts
+   (header-icons.css .header-icons__badge), in a dark chip instead of their red */
 .daily-streak__length
 {
-	margin-top: 2px;
+	flex: none;
+	min-width: 16px;
+	margin: -6px 0 0 -7px;
+	padding: 0 4px;
+	box-sizing: border-box;
+	border-radius: 8px;
+	background: var(--surface-near-black);
 	color: var(--color-white);
+	font-size: 11px;
+	line-height: 16px;
+	text-align: center;
 	opacity: 0.6;
 }
 
@@ -222,6 +234,13 @@
 	display: block;
 }
 
+/* A second tap closes the details (webroot/js/DailyStreak.js closeOnSecondTap()); on a touch screen the
+   hover stays on after a tap, so the class keeps them closed until the next tap */
+.daily-streak.daily-streak--closed .daily-streak__details
+{
+	display: none;
+}
+
 .daily-streak__title
 {
 	font-weight: var(--weight-bold);
@@ -283,16 +302,8 @@
 	.daily-streak
 	{
 		position: static;
-		flex-direction: row;
-		gap: var(--space-1);
-		width: auto;
-		margin: 0 14px 0 auto;
-	}
-
-	.daily-streak__length
-	{
-		margin-top: 0;
-		font-size: 16px;
+		width: 32px;
+		margin: 0 6px 0 auto;
 	}
 
 	.daily-streak__details

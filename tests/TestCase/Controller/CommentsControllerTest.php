@@ -447,10 +447,10 @@ class CommentsControllerTest extends IntegrationTestCase
 		$this->assertSame('none', $commentSpaceDisplay());
 		$this->assertFalse($browser->find('#moreCommentSummary')->isDisplayed(), 'More tells about the comments only once they may be read');
 		$browser->playWithResult('S');
-		// Wait for the summary on More to show after solving, then open More to the comments
+		// Wait for the summary on the comments button to show after solving, then open the comments
 		$browser->waitUntilCssSelectorDisplayed('#moreCommentSummary');
 		$this->assertSame('1 comment', $browser->find('#moreCommentSummary')->getText());
-		$browser->openPlayEditSection();
+		$browser->openPlayComments();
 		$browser->waitUntilCssSelectorDisplayed('#commentSpace');
 	}
 
@@ -483,7 +483,8 @@ class CommentsControllerTest extends IntegrationTestCase
 		$browser = Browser::instance();
 		$browser->get($context->tsumegos[0]['set-connections'][0]['id']);
 		$this->assertTrue($browser->find('#moreCommentSummary')->isDisplayed());
-		$browser->openPlayEditSection();
+		$browser->clickId('commentsToggle');
+		$browser->waitUntilCssSelectorDisplayed('#commentSpace');
 		$this->assertTrue($browser->getElements('#commentSpace')[0]->isDisplayed());
 	}
 
@@ -527,8 +528,8 @@ class CommentsControllerTest extends IntegrationTestCase
 		$content = $browser->findById('msg2x');
 		$this->assertFalse($content->isDisplayed(), 'Comments should be hidden by default');
 
-		// Opening More, which tells of the comment, opens the COMMENTS tab with it
-		$browser->openPlayEditSection();
+		// Opening the comments, which the button tells of, opens the COMMENTS tab with it
+		$browser->clickId('commentsToggle');
 		$commentsTab = $browser->find('.tsumego-comments__tab[data-filter="open"]');
 		$browser->waitUntilCssSelectorDisplayed('#msg2x');
 		$this->assertStringContainsString('active', $commentsTab->getAttribute('class'), 'COMMENTS tab should be active');
@@ -551,7 +552,7 @@ class CommentsControllerTest extends IntegrationTestCase
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 
-		$browser->openPlayEditSection();
+		$browser->openPlayComments();
 
 		$this->assertStringNotContainsString('active', $browser->find('.tsumego-comments__tab[data-filter="open"]')->getAttribute('class'));
 		$this->assertFalse($browser->findById('msg2x')->isDisplayed());
@@ -1330,7 +1331,7 @@ class CommentsControllerTest extends IntegrationTestCase
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 
 		// Click COMMENTS tab - form should be visible
-		$browser->openPlayEditSection();
+		$browser->openPlayComments();
 		$commentsTab = $browser->find('.tsumego-comments__tab[data-filter="open"]');
 		$commentsTab->click();
 		// Wait for form to become visible
@@ -1490,7 +1491,7 @@ class CommentsControllerTest extends IntegrationTestCase
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 
 		// Click CLOSED ISSUES tab to see the closed issue
-		$browser->openPlayEditSection();
+		$browser->openPlayComments();
 		$browser->find('.tsumego-comments__tab[data-filter="closed"]', 5)->click();
 
 		$browser->waitUntilJs('document.documentElement.outerHTML.includes("Issue to reopen")');
