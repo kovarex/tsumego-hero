@@ -6,7 +6,6 @@ use App\Model\Table\AchievementStatusTable;
 use App\Model\Table\UserTable;
 use App\Utility\Auth;
 use App\Utility\FriendActivity;
-use App\Utility\MistakeTraining;
 use App\Utility\SiteGrowth;
 use App\Utility\TsumegoButtons;
 use App\Utility\TsumegoFilters;
@@ -51,15 +50,9 @@ class SitesController extends AppController
 
 		$this->set('recentAchievements', AchievementStatusTable::getRecent());
 
-		// The way into the mistake training: what is due today. The offer to bring past
-		// mistakes in is on the card always, without a count: counting them reads the
-		// whole attempt history, far too much for a page this hot.
+		// The mistake training is in the top bar of every page (templates/element/header_icons.php)
 		if (Auth::isLoggedIn())
-		{
-			$userId = (int) Auth::getUserID();
-			$this->set('mistakeTrainingDue', MistakeTraining::dueCount($userId));
-			$this->set('friendActivity', FriendActivity::forUser($userId));
-		}
+			$this->set('friendActivity', FriendActivity::forUser((int) Auth::getUserID()));
 	}
 
 	#[HttpGet]

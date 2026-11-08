@@ -194,8 +194,12 @@ h1 {
   border-bottom: 1px dotted var(--color-black);
   cursor: pointer;
 }
+/* Out of the layout until hovered, and opened leftwards under the number, so at the right edge of a
+   phone it stays on the screen instead of widening the page */
 .eloTooltip .eloTooltiptext {
-  visibility: hidden;
+  display: none;
+  top: 100%;
+  right: 0;
   width: 120px;
   background-color: var(--surface-border-strong);
   color: var(--color-white);
@@ -206,7 +210,7 @@ h1 {
   z-index: 1;
 }
 .eloTooltip:hover .eloTooltiptext {
-  visibility: visible;
+  display: block;
 }
 .besogo-board {
   /* Do NOT force the width here: besogo's JS sets an inline width per
@@ -561,32 +565,453 @@ h1 {
 	background: var(--info-box-background);
 }
 
-/* The hearts, the title and the hero powers above the board, in three columns of the widths
-   and the spacing of the table they were in: 2px around and between the cells, cells padded as
-   the site pads table cells; the title over the description as narrow as they are, centered */
-.play-header {
+/* The play screen: the board column (where the problem is, its goal and stake, the one row of
+   messages, the board and the problem buttons) and beside it the panel of the player's hearts, the
+   actions and what they open. On a phone the panel goes under the board column. */
+.play-screen {
   display: grid;
-  grid-template-columns: minmax(0, 29fr) minmax(0, 42fr) minmax(0, 29fr);
-  align-items: center;
-  column-gap: 2px;
-  padding: 2px;
-  width: 100%;
-  box-sizing: border-box;
-  text-align: center;
+  grid-template-columns: minmax(0, 1fr) 430px;
+  align-items: stretch;
+  min-height: 700px;
+  text-align: left;
 }
-.play-header > div,
-.play-header__cell {
-  padding: 3px;
-}
-.play-header__title {
-  display: flex;
-  justify-content: center;
-}
-.play-header__stack {
+.play-screen__main {
+  grid-column: 1;
+  grid-row: 1;
   display: flex;
   flex-direction: column;
-  row-gap: 2px;
-  padding: 2px;
+  align-items: center;
+  min-width: 0;
+  padding: var(--space-3) var(--space-4) var(--space-4);
+}
+/* The board fills the width of its column; besogo caps it so it and its buttons fit in the window */
+.play-screen__main #target {
+  width: 100%;
+}
+.play-screen__main .besogo-board {
+  width: 100% !important;
+  margin: 0 auto !important;
+}
+.play-screen__panel {
+  grid-column: 2;
+  grid-row: 1;
+  min-width: 0;
+  padding: var(--space-3) var(--space-4);
+  border-left: 1px solid var(--surface-border-muted);
+}
+
+
+/* Where the problem is, a link to its collection, and under it the goal; at the right the stake,
+   as tall as the two lines, in a size that reads at a glance */
+.play-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  column-gap: var(--space-3);
+  align-items: center;
+  width: 100%;
+  max-width: 900px;
+}
+#playTitle {
+  grid-column: 1;
+  grid-row: 1;
+}
+.play-head__stake {
+  position: relative;
+  grid-column: 2;
+  grid-row: 1;
+}
+#playTitle {
+  text-align: left;
+  font-size: var(--text-lg);
+}
+/* The goal of the problem in the row of the messages, at most two lines, until Correct!, Incorrect! or the comment
+   of a move take its place */
+.play-message__goal {
+  flex: 1;
+  min-width: 0;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+  line-height: 1.25;
+  text-align: left;
+}
+.play-message__goal #titleDescription {
+  display: inline;
+  font-size: var(--text-md);
+}
+/* on the grey of the row: the goal in the colour of the text, its hint a little softer, the white stone outlined */
+.play-message__goal #descriptionText {
+  color: var(--text-color);
+}
+.play-message__goal #hintText {
+  color: var(--text-color);
+  opacity: 0.8;
+}
+.play-message__goal .play-goal__stone--white {
+  border-color: var(--text-color);
+}
+.play-message #theComment:empty {
+  flex: 0;
+  padding: 0;
+}
+.play-message:has(#status:not(:empty)) .play-message__goal,
+.play-message:has(#theComment:not(:empty)) .play-message__goal {
+  display: none;
+}
+/* The color to move, as a stone before the goal */
+.play-goal__stone {
+  display: inline-block;
+  width: 0.95em;
+  height: 0.95em;
+  border-radius: 50%;
+  vertical-align: -0.12em;
+  box-sizing: border-box;
+}
+.play-goal__stone--black {
+  background: radial-gradient(circle at 35% 30%, #666, #000 70%);
+}
+.play-goal__stone--white {
+  border: 1px solid #888;
+  background: radial-gradient(circle at 35% 30%, #fff, #ccc 80%);
+}
+.play-stake {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  color: var(--text-color);
+  font-size: var(--text-md);
+  text-align: right;
+}
+#xpDisplayDiv.play-stake {
+  height: auto;
+  margin: 0;
+}
+/* The rank of the problem alone; a click or a tap on it opens its rating and the reward of a solve under it */
+.play-stake .status-rating__number {
+  display: none;
+}
+.play-stake__rank {
+  cursor: pointer;
+  border-bottom: 1px dotted currentColor;
+}
+.play-stake__details {
+  display: none;
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: var(--layer-dropdown);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--surface-border-muted);
+  border-radius: var(--radius-md);
+  background: var(--info-box-background);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+  text-align: left;
+  white-space: nowrap;
+}
+.play-stake--open .play-stake__details {
+  display: block;
+}
+.play-stake__rating {
+  margin-bottom: var(--space-1);
+}
+.play-stake .status-rating {
+  font-size: var(--text-lg);
+  font-weight: var(--weight-bold);
+}
+
+/* The one row of the messages, right above the board: Correct! or Incorrect! at the left, the comment of a
+   move in the middle, Reset, Review and Next at the right. Its height is fixed, empty or full, so the board
+   never moves; a long comment of a move scrolls inside it. */
+.play-message {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  max-width: 900px;
+  height: 48px;
+  padding: 0 var(--space-2);
+  box-sizing: border-box;
+  overflow: hidden;
+}
+.play-message #theComment {
+  flex: 1;
+  width: auto;
+  min-width: 0;
+  max-height: 100%;
+  overflow-y: auto;
+  margin: 0;
+  padding: 2px var(--space-2);
+  border: 0;
+  background: none;
+  text-align: center;
+  font-size: var(--text-sm);
+  line-height: 1.25;
+  white-space: pre-line;
+}
+.play-message__status h2,
+.play-message__status h3 {
+  margin: 0;
+  font-size: var(--text-lg);
+}
+
+/* The hearts of the player, on their own line above the actions: a heart for each one the player can
+   have, full or empty, and the count. The more hearts, the more they overlap, so the row fits the width of
+   the panel whatever it is (a container query): each heart keeps at least a quarter of its width in sight,
+   so it can still be counted. */
+.play-player {
+  display: flex;
+  align-items: center;
+  min-height: 32px;
+  font-weight: var(--weight-bold);
+}
+.play-player #health {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+}
+.play-player__hearts {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  container-type: inline-size;
+  /* the hearts stack over each other (z-index) inside the row only, under the menus of the page */
+  isolation: isolate;
+}
+#health .play-player__hearts img {
+  display: block;
+  flex: none;
+  width: 24px;
+  height: 24px;
+  margin: 0;
+}
+#health .play-player__hearts img + img {
+  margin-left: clamp(-18px, calc((100cqw - var(--hearts) * 24px) / (var(--hearts) - 1)), 4px);
+}
+/* The icons alone show the hearts; the count is for screen readers, and in the title of the row ("Hearts 26/34") */
+.play-player .health-counter {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.play-player .health-counter::before {
+  content: none;
+}
+/* An empty heart is the full one greyed, as solid as the full ones it overlaps (PlayBoard.js redrawHearts()) */
+#health .play-player__hearts img.play-player__heart--empty {
+  filter: grayscale(1) brightness(3.2);
+}
+
+/* The actions: the same buttons in the same places in every state */
+.play-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: var(--space-2) 0;
+}
+.play-actions__button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+  min-width: 40px;
+  height: 40px;
+  padding: 0 var(--space-2);
+  box-sizing: border-box;
+  border: 1px solid var(--surface-border-muted);
+  border-radius: var(--radius-md);
+  background: var(--info-box-background);
+  color: var(--text-color);
+  font-size: var(--text-md);
+  font-weight: var(--weight-bold);
+  text-decoration: none;
+  cursor: pointer;
+}
+.play-actions__button:hover {
+  background: var(--surface-hover);
+}
+.play-actions__button[data-open="1"] {
+  background: var(--text-color);
+  color: var(--info-box-background);
+}
+.play-actions__button--disabled {
+  opacity: 0.4;
+  cursor: default;
+  pointer-events: none;
+}
+
+/* The buttons of the board (PlayBoard.js): Reset and Next at the right of the row of the messages, Review in
+   the panel after More, in the look of the actions; an inactive one is dimmed and can't be pressed */
+.play-actions__end {
+  display: flex;
+  flex: none;
+  gap: 6px;
+  margin-left: auto;
+}
+:is(.play-actions__end, .play-actions) > :is(#besogo-pass-button, #besogo-back-button, #besogo-back-button-inactive, #history-button, #besogo-reset-button, #besogo-reset-button-inactive, #besogo-review-button, #besogo-review-button-inactive, #besogo-next-button, #besogo-next-button-inactive) {
+  min-width: 40px;
+  height: 36px;
+  margin: 0;
+  padding: 0 var(--space-3);
+  box-sizing: border-box;
+  border: 1px solid var(--surface-border-muted) !important;
+  border-radius: var(--radius-md);
+  background: var(--info-box-background) !important;
+  color: var(--text-color) !important;
+  font-family: inherit;
+  font-size: var(--text-md);
+  font-weight: var(--weight-bold);
+  line-height: 34px;
+  text-transform: none;
+  text-decoration: none;
+  cursor: pointer;
+}
+:is(.play-actions__end, .play-actions) > :is(#besogo-pass-button, #besogo-back-button, #besogo-back-button-inactive, #history-button, #besogo-reset-button, #besogo-reset-button-inactive, #besogo-review-button, #besogo-review-button-inactive, #besogo-next-button, #besogo-next-button-inactive):hover {
+  background: var(--surface-hover) !important;
+}
+:is(.play-actions__end, .play-actions) > :is(#besogo-pass-button, #besogo-back-button, #besogo-back-button-inactive, #history-button, #besogo-reset-button, #besogo-reset-button-inactive, #besogo-review-button, #besogo-review-button-inactive, #besogo-next-button, #besogo-next-button-inactive)[id$="-inactive"] {
+  opacity: 0.4;
+  cursor: default;
+  pointer-events: none;
+}
+
+/* Review is red while the problem can be reviewed (an inactive one is dimmed, above); Next turns green once
+   the problem is solved */
+.play-actions > :is(#besogo-review-button, #besogo-review-button-inactive) {
+  height: 32px;
+  line-height: 30px;
+}
+/* The buttons of the panel are a little lower than those above the board, so they don't outweigh them; a
+   finger gets 40px */
+.play-actions__button {
+  height: 32px;
+}
+@media (pointer: coarse) {
+  .play-actions__button,
+  .play-actions > :is(#besogo-review-button, #besogo-review-button-inactive) {
+    height: 40px;
+    line-height: 38px;
+  }
+}
+.play-actions #besogo-review-button {
+  border-color: var(--color-red) !important;
+  background: var(--color-red) !important;
+  color: var(--color-white) !important;
+}
+.play-actions #besogo-review-button:hover {
+  background: var(--color-red-dark) !important;
+}
+.play-screen:has(.play-message--solved) .play-actions__end #besogo-next-button {
+  border-color: var(--color-green-dark) !important;
+  background: var(--color-green-dark) !important;
+  color: var(--color-white) !important;
+}
+.play-screen:has(.play-message--solved) .play-actions__end #besogo-next-button:hover {
+  background: var(--color-green-btn-gradient) !important;
+}
+.play-message--solved {
+  background: var(--color-surface-hover);
+}
+
+/* After a fail, Reset is the thing to do: it keeps its look, with a thin outline in the red of Incorrect! (and
+   the keyboard focus, PlayPage.js markFailed()) until the reset */
+.play-message--failed {
+  background: var(--color-danger-surface);
+}
+.play-screen:has(.play-message--failed) .play-actions__end #besogo-reset-button {
+  border-color: var(--feedback-error) !important;
+  box-shadow: 0 0 0 1px var(--feedback-error);
+}
+
+/* The board's own settings, moved into the info of the problem */
+.play-board-settings {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1);
+  margin-bottom: var(--space-2);
+}
+.play-board-settings #author-notice {
+  position: static;
+  flex-basis: 100%;
+  width: auto;
+  margin: var(--space-1) 0 0;
+  text-align: left;
+}
+
+/* The tree of the review, moved here from beside the board; Review shows it (besogo sets display) */
+.play-screen__panel > .besogo-panels {
+  display: none;
+  margin-top: var(--space-2);
+  align-items: flex-start;
+  justify-content: flex-start;
+}
+/* The root of the tree is always at the top left, whatever the width of the tree; a wider one scrolls from there */
+.play-screen__panel > .besogo-panels .besogo-tree {
+  align-self: flex-start;
+  max-width: 100%;
+  max-height: max(350px, var(--tree-height, 350px));
+  margin: 0;
+}
+/* The review moves by a click on the tree or on the board, so it shows no step buttons */
+.play-screen__panel > .besogo-panels .besogo-control {
+  display: none;
+}
+
+/* In the review on a PC the panel is as wide as the tree needs (PlayBoard.js fitReviewTree()): --review-panel is
+   its width, --review-grow how much the white box grows into the margins of the page, as much on each side */
+@media (width >= 64rem) {
+  .play-screen--review {
+    grid-template-columns: minmax(0, 1fr) var(--review-panel, 430px);
+  }
+  .whitebox2:has(.play-screen--review) {
+    width: calc(100% + var(--review-grow, 0px));
+    max-width: calc(1280px + var(--review-grow, 0px));
+    margin-left: calc((100% - min(100% + var(--review-grow, 0px), 1280px + var(--review-grow, 0px))) / 2);
+  }
+}
+
+/* The hero powers: on a wide screen the panel has the room to show them in a row of their own under the
+   hearts, so there is no ⚡ button; on a phone they open from it */
+@media (width >= 64rem) {
+  #heroPowersTray {
+    display: flex !important;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: var(--space-2);
+    margin-top: var(--space-2);
+    padding: 0;
+    border: 0;
+  }
+  #heroPowersTray img {
+    width: 40px;
+    height: 40px;
+  }
+  #heroPowersToggle {
+    display: none;
+  }
+  .play-player {
+    min-height: 0;
+  }
+}
+.play-powers {
+  padding: var(--space-2);
+  border: 1px solid var(--surface-border-muted);
+  border-radius: var(--radius-md);
+}
+.play-panel {
+  margin-top: var(--space-2);
+}
+
+/* The problem buttons: the first, the last and three on each side of the open problem; a phone
+   shows one on each side (below) */
+.problem-nav__item--beyond3 {
+  display: none;
 }
 
 /* Mobile: stack the besogo control/tool panels and let the board fill the
@@ -770,4 +1195,64 @@ h1 {
 }
 .play-filters-toggle {
   margin: var(--space-2) var(--space-1);
+}
+
+/* A phone: the panel goes under the board column, and fewer problem buttons show */
+@media (width < 64rem) {
+  .play-screen {
+    grid-template-columns: minmax(0, 1fr);
+    min-height: 0;
+  }
+  .play-screen__main {
+    padding: var(--space-2) 0 var(--space-2);
+  }
+  .play-head,
+  .play-message {
+    padding: 0 var(--space-3);
+    box-sizing: border-box;
+  }
+  /* A long name of a collection is cut short with its full name in the title; the part of the collection (#2)
+     always shows */
+  #playTitle {
+    min-width: 0;
+    font-size: var(--text-md);
+  }
+  .play-title__collection {
+    display: flex;
+    min-width: 0;
+    white-space: nowrap;
+  }
+  .play-title__name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .play-title__part {
+    flex: none;
+    white-space: pre;
+  }
+  .play-screen__main {
+    grid-row: 1;
+  }
+  .play-screen__panel {
+    grid-column: 1;
+    grid-row: 2;
+    padding: var(--space-2) var(--space-3) var(--space-4);
+    border-left: 0;
+    border-top: 1px solid var(--surface-border-muted);
+  }
+  .problem-nav__item--beyond1 {
+    display: none;
+  }
+  /* The row of the messages fits a phone: a smaller message and narrower buttons */
+  .play-message__status h2,
+  .play-message__status h3 {
+    font-size: var(--text-md);
+  }
+  .play-actions__end {
+    gap: 4px;
+  }
+  .play-actions__end :is(#history-button, #besogo-pass-button, #besogo-reset-button, #besogo-reset-button-inactive, #besogo-review-button, #besogo-review-button-inactive, #besogo-next-button, #besogo-next-button-inactive) {
+    padding: 0 var(--space-2);
+    font-size: var(--text-sm);
+  }
 }

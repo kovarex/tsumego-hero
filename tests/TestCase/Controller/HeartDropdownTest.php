@@ -67,7 +67,7 @@ class HeartDropdownTest extends IntegrationTestCase
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 
-		$browser->findById('favDropdownArrow')->click();
+		$browser->clickId('favDropdownArrow');
 
 		$dropdownText = $browser->findById('fav-dropdown')->getText();
 		$this->assertStringContainsString('First Set', $dropdownText);
@@ -100,7 +100,7 @@ class HeartDropdownTest extends IntegrationTestCase
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 
-		$browser->findById('favDropdownArrow')->click();
+		$browser->clickId('favDropdownArrow');
 		$browser->find('#fav-dropdown');
 
 		$targetRow = $browser->findBy(WebDriverBy::xpath("//div[@id='fav-dropdown']//*[input and contains(., 'Target Set')]"));
@@ -132,7 +132,7 @@ class HeartDropdownTest extends IntegrationTestCase
 
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
-		$browser->findById('favButton')->click();
+		$browser->clickId('favButton');
 		$browser->waitUntilCssSelectorExistsWithText('#favButton', '❤️');
 		$browser->waitUntilJs('window.userSets.find(s => s.id == ' . $setIDs['My Problems'] . ').contains === true');
 

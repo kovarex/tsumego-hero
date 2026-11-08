@@ -22,35 +22,36 @@ class TsumegoXPAndRating
 		$this->failsInARow = Auth::isLoggedIn() ? TsumegoAttemptTable::failsInARow(TsumegoAttemptTable::findLast((int) Auth::getUserID(), $tsumego->id)) : 0;
 	}
 
+	//The stake of the problem, at the right of its title: the rank of the problem and, in a popup the rank opens
+	//(webroot/js/PlayPage.js), its rating with the XP and the rating a solve brings or a fail costs (filled by
+	//webroot/js/XPStatus.js); the countdown of the time mode shows beside the rank
 	public function render(): void
 	{
-		echo '<div class="legacy-center" id="xpDisplayDiv">
-		<table class="xpDisplayTable">
-			<tr>
-			<td class="xpDisplayTable__third">';
-		echo '
-	<div id="xpDisplay">
-		<span id="xpDisplayText"></span>
-		<span id="ratingHeader"></span>
-		<div class="eloTooltip"><span id="ratingGainShort"></span><span class="eloTooltiptext" id="ratingGainLong"></span></div>
-		<span id="ratingSeparator"></span><div class="eloTooltip"><span id="ratingLossShort"></span><span class="eloTooltiptext" id="ratingLossLong"></span></div>
-	</div>';
+		echo '<div id="xpDisplayDiv" class="play-stake">';
 		if (Auth::isInTimeMode())
 			echo '<div id="time-mode-countdown">10.0</div><div id="plus2">+2</div>';
-		echo '</td>
-			<td class="xpDisplayTable__third">
-				<div id="status" class="legacy-center"></div>
-			</td>
-			<td class="xpDisplayTable__third">
-				<div id="status2" class="legacy-center">
-				<span class="status-rating">
-				' . Rating::getReadableRankFromRating($this->tsumegoRating) . ' <span class="status-rating__number">(' . $this->tsumegoRating . ')</span>
-				</span>
-				</div>
-			</td>
-			</tr>
-		</table>
-	</div>';
+		echo '<div id="status2" class="play-stake__rank" role="button" tabindex="0" aria-expanded="false" aria-controls="playStakeDetails" title="The rating and the reward of the problem">
+		<span class="status-rating">
+		' . Rating::getReadableRankFromRating($this->tsumegoRating) . ' <span class="status-rating__number">(' . $this->tsumegoRating . ')</span>
+		</span>
+	</div>
+	<div id="playStakeDetails" class="play-stake__details">
+		<div class="play-stake__rating">Problem rating: ' . round($this->tsumegoRating) . '</div>
+		<div id="xpDisplay">
+			<span id="xpDisplayText"></span>
+			<span id="ratingHeader"></span>
+			<div class="eloTooltip"><span id="ratingGainShort"></span><span class="eloTooltiptext" id="ratingGainLong"></span></div>
+			<span id="ratingSeparator"></span><div class="eloTooltip"><span id="ratingLossShort"></span><span class="eloTooltiptext" id="ratingLossLong"></span></div>
+		</div>
+	</div>
+</div>';
+	}
+
+	//The one place of the messages of the problem, right above the board: Correct!, Incorrect!, the lock
+	//of a problem failed today
+	public function renderStatus(): void
+	{
+		echo '<div id="status" class="play-message__status" role="status" aria-live="polite"></div>';
 	}
 
 	//What the page's XPStatus (webroot/js/XPStatus.js) needs to show the reward of a solve, null when

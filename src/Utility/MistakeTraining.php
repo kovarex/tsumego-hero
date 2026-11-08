@@ -406,12 +406,16 @@ class MistakeTraining
 	//serve, like todaysTraining(): a problem that is deleted or in no set is left out.
 	public static function dueCount(int $userId): int
 	{
-		$rows = Util::query(
-			'SELECT COUNT(*) AS total FROM mistake_training_pool p' . self::servableSql()
-			. ' AND p.next_due IS NOT NULL AND p.next_due <= ?',
-			[$userId, date('Y-m-d H:i:s')]
-		);
-		return (int) $rows[0]['total'];
+		[$sql, $params] = self::dueCountQuery($userId);
+		return (int) Util::query($sql, $params)[0]['total'];
+	}
+
+	//The query of dueCount(), which the menu asks together with its other counts (HeaderCounts)
+	/** @return array{string, list<mixed>} */
+	public static function dueCountQuery(int $userId): array
+	{
+		return ['SELECT COUNT(*) AS total FROM mistake_training_pool p' . self::servableSql()
+			. ' AND p.next_due IS NOT NULL AND p.next_due <= ?', [$userId, date('Y-m-d H:i:s')]];
 	}
 
 	//The join and conditions that keep the rows of the player's pool that the training

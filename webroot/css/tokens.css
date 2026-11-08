@@ -435,7 +435,7 @@
 		--play-dark-text: currentColor;
 		--play-rating-bar-accent: var(--color-purple-3);
 		--xp-display: var(--color-black);
-		--xp-display-solved: var(--color-green);
+		--xp-display-solved: #2e8a3a; /* darker than the brand green, so the small text reads on white */
 		--xp-display-golden: var(--color-gold);
 		--xp-display-sprint: var(--color-blue);
 		/* In light the border of an alert has always been its text colour */
@@ -552,7 +552,8 @@
 		--play-sandbox-background: var(--surface-button);
 		--play-dark-text: var(--color-black);
 		--play-rating-bar-accent: var(--color-mode-rating);
-		--xp-display: var(--link-color);
+		/* The XP of a problem is text, not a link: it keeps the near-white it had before links turned blue in dark */
+		--xp-display: #f0f0f0;
 		--xp-display-solved: var(--xp-solved);
 		--xp-display-golden: var(--xp-solved);
 		--xp-display-sprint: var(--xp-sprint);

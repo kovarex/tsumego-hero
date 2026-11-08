@@ -230,4 +230,17 @@ class IntegrationTestCase extends AppTestCase
 		$link = $button->findElement(WebDriverBy::tagName('a'));
 		$this->assertTextStartsWith('/' . $context->tsumegos[$index]['set-connections'][0]['id'], $link->getAttribute('href'));
 	}
+
+	//The XP and the rating of the problem as the popup of its rank says them (it opens from the rank, so the text is
+	//read even while it is closed), without the long explanations of its rating tooltips
+	protected function xpDisplayText($browser): string
+	{
+		return (string) $browser->driver->executeScript(<<<'JS'
+			const display = document.getElementById('xpDisplay')?.cloneNode(true);
+			if (!display)
+				return '';
+			display.querySelectorAll('.eloTooltiptext').forEach(tooltip => tooltip.remove());
+			return display.textContent.replace(/\s+/g, ' ').trim();
+			JS);
+	}
 }

@@ -4,7 +4,6 @@ use App\Model\Table\SetTable;
 use App\Model\Table\UserTable;
 use App\Utility\Auth;
 use App\Utility\ChartRenderer;
-use App\Utility\MistakeTraining;
 use App\Utility\TsumegoButtons;
 use App\Utility\TsumegoUtil;
 
@@ -16,7 +15,6 @@ use App\Utility\TsumegoUtil;
  * @var array $recentAchievements
  * @var TsumegoButtons $tsumegoButtonsOfPublishedTsumegos
  * @var array|null $userOfTheDay
- * @var int|null $mistakeTrainingDue Problems due in the mistake training, null when it is not offered
  * @var \App\Utility\FriendActivity|null $friendActivity What the friends did lately, null for a guest or a player without friends
  */
 
@@ -45,19 +43,6 @@ foreach ($tsumegoButtonsOfPublishedTsumegos as $tsumegoButton)
 				<?php endif; ?>
 			<?php endforeach; ?>
 		</div>
-
-		<?php if (isset($mistakeTrainingDue)): ?>
-			<a class="mistake-training-card" href="<?php echo MistakeTraining::$OVERVIEW_LINK; ?>">
-				<span class="mistake-training-card__title">Mistake Training</span>
-				<?php if ($mistakeTrainingDue > 0): ?>
-					<?php $mistakeTrainingDueLabel = $mistakeTrainingDue . ' problem' . ($mistakeTrainingDue === 1 ? '' : 's') . ' to review today'; ?>
-					<span class="mistake-training-card__count" role="img" title="<?php echo $mistakeTrainingDueLabel; ?>" aria-label="<?php echo $mistakeTrainingDueLabel; ?>"><?php echo $mistakeTrainingDue; ?></span>
-				<?php else: ?>
-					<span class="mistake-training-card__text">Nothing to review today. Add past mistakes to training.</span>
-				<?php endif; ?>
-				<span class="mistake-training-card__go" aria-hidden="true">&rsaquo;</span>
-			</a>
-		<?php endif; ?>
 
 		<?php if (isset($friendActivity)) echo $this->element('friend_activity', ['activity' => $friendActivity]); ?>
 

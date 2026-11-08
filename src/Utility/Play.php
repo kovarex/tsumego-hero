@@ -74,7 +74,8 @@ class Play
 					'rating' => Constants::$RATING_MODE,
 					'time' => Constants::$TIME_MODE,
 					'mistakeTraining' => Constants::$MISTAKE_TRAINING_MODE],
-				'userID' => Auth::getUserID(),
+				//null for a guest: the board's script tells a guest by it (no result sent, no favourite)
+				'userID' => Auth::isLoggedIn() ? Auth::getUserID() : null,
 				'isAdmin' => Auth::isAdmin(),
 				'canRequestSolution' => AdminPolicy::canRequestSolution(Auth::getIdentity()),
 				'accountBlocked' => $this->page['accountBlocked'],
@@ -327,6 +328,16 @@ class Play
 		$this->problem['tsumegoFilters'] = $tsumegoFilters;
 		$this->problem['amountOfOtherCollection'] = $amountOfOtherCollection;
 		$this->problem['tsumegoXPAndRating'] = new TsumegoXPAndRating($tsumego, $tsumegoStatus, (int) $setConnection->id);
+	}
+
+	//The goal of a problem that starts with the color to move ("White to kill."), split into that color and the
+	//rest ("to kill."), so the page shows the color as a stone; the color is null when the goal names none
+	/** @return array{color: ?string, rest: string} */
+	public static function splitGoalColor(string $description): array
+	{
+		if (preg_match('/^\s*(black|white)\s+(to\s.*)$/is', $description, $match))
+			return ['color' => strtolower($match[1]), 'rest' => $match[2]];
+		return ['color' => null, 'rest' => $description];
 	}
 
 	public static function swapColorWords(string $text): string

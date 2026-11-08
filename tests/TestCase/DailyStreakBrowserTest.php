@@ -70,7 +70,8 @@ class DailyStreakBrowserTest extends IntegrationTestCase
 		$browser->playWithResult('S');
 		$user = $context->reloadUser();
 		$xp = (int) $user['streak_day_xp'];
-		$required = DailyStreak::xpRequired((float) $user['rating']);
+		$required = DailyStreak::xpRequired(2500);
+		$this->assertSame($required, (int) $user['streak_day_xp_required'], 'The XP the day asks is of the rating before the solve');
 		$this->assertGreaterThan(0, $xp);
 		$browser->hover($browser->find('#daily-streak'));
 		$browser->waitUntilCssSelectorExistsWithText('#daily-streak [data-streak-count="xp"]', (string) $xp);
@@ -80,6 +81,44 @@ class DailyStreakBrowserTest extends IntegrationTestCase
 		$this->assertStringContainsString('To keep the streak today:', $details);
 		$progress = $browser->find('#daily-streak .daily-streak__progress');
 		$this->assertSame([(string) $xp, (string) $required], [$progress->getAttribute('value'), $progress->getAttribute('max')]);
+		$this->assertStringNotContainsString('daily-streak--done', $browser->find('#daily-streak')->getAttribute('class'));
+	}
+
+	//A player without a streak: the solve that completes today starts it, and the flame lights on the same page
+	public function testASolveThatStartsTheStreakLightsTheFlameWithoutAReload(): void
+	{
+		$context = new ContextPreparator(['tsumego' => ['set_order' => 1, 'status' => 'V']]);
+		$browser = Browser::instance();
+		$browser->get('sites/blank');
+		$browser->get('sites/blank');
+		$timeZone = $context->reloadUser()['time_zone'];
+		$required = DailyStreak::xpRequired((float) $context->reloadUser()['rating']);
+		Util::execute('UPDATE user SET streak_day = ?, streak_day_xp = ?, streak_day_xp_required = ?, streak_day_reviews_required = 0 WHERE id = ?',
+			[DailyStreak::today($timeZone, new DateTimeImmutable()), $required - 1, $required, $context->user['id']]);
+
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		$this->assertSame('0', $browser->find('#daily-streak .daily-streak__length')->getText());
+		$browser->driver->executeScript('window.samePage = true;');
+		$browser->playWithResult('S');
+		$browser->waitUntilCssSelectorExistsWithText('#daily-streak .daily-streak__length', '1');
+		$this->assertTrue($browser->driver->executeScript('return window.samePage === true;'), 'The page was not reloaded');
+		$class = $browser->find('#daily-streak')->getAttribute('class');
+		$this->assertStringContainsString('daily-streak--done', $class);
+		$this->assertStringContainsString('daily-streak--ignite', $class);
+		$this->assertSame(1, (int) Util::query('SELECT streak_length FROM user WHERE id = ?', [$context->user['id']])[0]['streak_length']);
+	}
+
+	//A solve that doesn't complete the day fills the dim flame partway, on the same page
+	public function testASolveShortOfTheDayFillsTheFlamePartway(): void
+	{
+		$context = new ContextPreparator(['user' => ['rating' => 1500], 'tsumego' => ['set_order' => 1, 'status' => 'V', 'rating' => 1500]]);
+		$browser = Browser::instance();
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		$share = fn(): string => (string) $browser->driver->executeScript("return document.getElementById('daily-streak').style.getPropertyValue('--streak-progress');");
+		$this->assertSame('0', $share());
+		$browser->playWithResult('S');
+		$browser->waitUntilJs("parseFloat(document.getElementById('daily-streak').style.getPropertyValue('--streak-progress')) > 0");
+		$this->assertEqualsWithDelta(1 / 3, (float) $share(), 0.01, 'One problem of the rating is a third of the day');
 		$this->assertStringNotContainsString('daily-streak--done', $browser->find('#daily-streak')->getAttribute('class'));
 	}
 

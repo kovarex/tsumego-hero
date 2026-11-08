@@ -154,12 +154,14 @@ function redrawHearts()
 	{
 		var full = i < currentHealth;
 		var el = document.getElementById("heart" + i);
-		el.src = "/img/" + (full ? fullHeart : emptyHeart) + ".png";
-		el.title = full ? "Heart" : "Empty Heart";
+		//an empty heart is the full one greyed (play.css), so it is as solid as the full ones it overlaps
+		el.src = "/img/" + fullHeart + ".png";
+		el.classList.toggle("play-player__heart--empty", !full);
 	}
 	var counter = document.getElementById("health-counter");
 	if (counter)
 		counter.textContent = currentHealth + " / " + maxHealth;
+	document.getElementById("health").title = "Hearts " + currentHealth + "/" + maxHealth;
 }
 redrawHearts();
 
@@ -188,7 +190,8 @@ redrawHearts();
 	options.rootPath = '/besogo/';
 	options.theme = playPage.problem.board.texture;
 	options.themeParameters = [playPage.problem.board.black, playPage.problem.board.white];
-	options.coord = 'western';
+	//No coordinates while solving, the board gets their room; they show while the comments are open (PlayPage.js)
+	options.coord = 'none';
 	options.sgf = '/placeholder.sgf';
 	options.sgf2 = playPage.problem.sgf;
 	options.light = playPage.page.light;
@@ -202,3 +205,110 @@ redrawHearts();
 	options.reviewEnabled = mode != playPage.page.modes.time && (playPage.problem.solved || playPage.problem.requestSolution || authorProblem);
 	besogo.create(div, options);
 })();
+
+//The buttons besogo makes under the board go where the page shows them (Tsumegos/play.php): Reset, Review
+//and Next (History and Skip in the rating and the time mode) go to the right of the row of the messages
+//above the board, as one group in this order in every state (Next turns green once the problem is solved,
+//play-message--solved); the review's tree goes under the actions in the panel; the board's own settings
+//(corner, rotation, colours, favourite, author) go to the info of the problem. They keep their ids,
+//which the page's code renames as the state changes.
+(function arrangePlayControls()
+{
+	let row = document.querySelector(".besogo-tsumegoPlayTool");
+	let actions = document.querySelector(".play-actions");
+	if (!row || !actions)
+		return;
+	let end = document.createElement("span");
+	end.className = "play-actions__end";
+	(document.querySelector(".play-message") ?? actions).appendChild(end);
+	for (let id of ["besogo-pass-button", "history-button", "besogo-reset-button", "besogo-reset-button-inactive",
+		"besogo-next-button", "besogo-next-button-inactive"])
+	{
+		let button = row.querySelector("#" + id);
+		if (button)
+			end.appendChild(button);
+	}
+	//Review goes to the panel, right after More
+	let more = document.getElementById("editToggle");
+	for (let review of row.querySelectorAll("#besogo-review-button, #besogo-review-button-inactive"))
+		more ? more.after(review) : actions.appendChild(review);
+	//Next of a problem (not the Skip of the time mode) says what it does, it needs no tooltip
+	if (mode == playPage.page.modes.level || mode == playPage.page.modes.mistakeTraining)
+		end.querySelectorAll("#besogo-next-button, #besogo-next-button-inactive").forEach(next => next.removeAttribute("title"));
+	if (problemSolved)
+		document.querySelector(".play-message")?.classList.add("play-message--solved");
+	//The review's tree goes to the panel too, where it shows beside the board with the comments under it
+	let reviewPanels = document.querySelector("#target .besogo-panels");
+	if (reviewPanels)
+	{
+		actions.after(reviewPanels);
+		fitReviewTree(reviewPanels);
+	}
+	let settings = document.getElementById("boardSettings");
+	if (settings)
+		while (row.firstChild)
+			settings.appendChild(row.firstChild);
+})();
+
+//On a PC the review's tree gets room. The panel widens to show the whole tree, taking first the room the board
+//leaves unused in its column (a board as tall as the window is narrower than its column), then the empty margins
+//of the page; the board never shrinks, and a tree wider than all that scrolls sideways from its root. While the
+//comments are closed the tree also takes the panel's height down to the bottom of the board column, so the page gets no
+//taller; with the comments open it keeps its usual height (play.css) and shares the panel with them.
+function fitReviewTree(reviewPanels)
+{
+	let tree = reviewPanels.querySelector(".besogo-tree");
+	let comments = document.getElementById("commentsPanel");
+	let screen = document.querySelector(".play-screen");
+	if (!tree || !screen)
+		return;
+	const PANEL = 430;
+	let reset = () =>
+	{
+		screen.classList.remove("play-screen--review");
+		screen.style.removeProperty("--review-panel");
+		document.documentElement.style.removeProperty("--review-grow");
+		tree.style.removeProperty("--tree-height");
+	};
+	let fit = () =>
+	{
+		let scroll = [tree.scrollLeft, tree.scrollTop];
+		reset();
+		let board = document.querySelector(".play-screen__main .besogo-board");
+		let main = document.querySelector(".play-screen__main");
+		let box = document.querySelector(".whitebox2");
+		let svg = tree.querySelector("svg");
+		if (getComputedStyle(reviewPanels).display === "none" || !board || !main || !box || !svg || !window.matchMedia("(width >= 64rem)").matches)
+			return;
+		screen.classList.add("play-screen--review");
+		let commentsOpen = comments && getComputedStyle(comments).display !== "none";
+		//down to the bottom of what the board column shows: the board and the problem buttons under it
+		let bottom = Math.max(...[...main.children].map(child => child.getBoundingClientRect().bottom));
+		let height = Math.floor(bottom - tree.getBoundingClientRect().top);
+		let svgBox = svg.getBoundingClientRect();
+		//the panel's padding, and the width of a scrollbar when the tree is taller than its box
+		let room = 34 + (svgBox.height > (commentsOpen ? 350 : Math.max(350, height)) ? 16 : 0);
+		let extra = Math.ceil(svgBox.width) + room - PANEL;
+		if (extra > 0)
+		{
+			let mainStyle = getComputedStyle(main);
+			let unused = main.clientWidth - parseFloat(mainStyle.paddingLeft) - parseFloat(mainStyle.paddingRight) - board.getBoundingClientRect().width;
+			let fromMain = Math.max(0, Math.min(extra, Math.floor(unused)));
+			let margins = document.documentElement.clientWidth - box.getBoundingClientRect().width - 32;
+			let grow = Math.max(0, Math.min(extra - fromMain, Math.floor(margins)));
+			screen.style.setProperty("--review-panel", (PANEL + fromMain + grow) + "px");
+			document.documentElement.style.setProperty("--review-grow", grow + "px");
+		}
+		if (!commentsOpen)
+			tree.style.setProperty("--tree-height", height + "px");
+		[tree.scrollLeft, tree.scrollTop] = scroll;
+	};
+	let observer = new MutationObserver(fit);
+	observer.observe(reviewPanels, { attributes: true, attributeFilter: ["style"] });
+	if (comments)
+		observer.observe(comments, { attributes: true, attributeFilter: ["style"] });
+	//besogo draws the tree again when it changes (the review shows the whole of it), as a new svg
+	observer.observe(tree, { childList: true });
+	window.addEventListener("resize", fit);
+	fit();
+}

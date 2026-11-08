@@ -867,12 +867,20 @@ class SetsControllerTest extends IntegrationTestCase
 		return $buttons;
 	}
 
+	//$title is the name with the place of the problem, "test set 2/3". The title of a collection names it
+	//alone, its place is the open problem button; a title through a filter still names the place.
 	private function checkPlayTitle($browser, string $title)
 	{
 		$browser->find('#playTitle');
 		$collectionTopDivs = $browser->getElements('#playTitle');
 		$this->assertCount(1, $collectionTopDivs);
-		$this->assertTextStartsWith($title, $collectionTopDivs[0]->getText());
+		$text = $collectionTopDivs[0]->getText();
+		if (str_starts_with($text, $title))
+			return;
+		$this->assertMatchesRegularExpression('#^(.*) (\d+)/\d+$#', $title);
+		preg_match('#^(.*) (\d+)/\d+$#', $title, $parts);
+		$this->assertTextStartsWith($parts[1], $text);
+		$this->assertSame($parts[2], $browser->find('#currentNavigationButton')->getText(), 'The open problem button shows the place of the problem');
 	}
 
 	public function testDifficultyRangeSelectionShowsOneMergedBox(): void

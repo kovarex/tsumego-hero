@@ -32,24 +32,35 @@ function updateMistakeTrainingButton(button, xp)
 	description.innerHTML = button.description;
 	window.localizeTimeElements?.(description);
 
-	// A solve says under "Correct!" what it did to the problem: its next review, or its graduation
-	let status = document.getElementById("status");
-	status.querySelectorAll(".mistake-training-outcome").forEach(old => old.remove());
-	let outcome;
+	// A solve shows only "Correct!" in the row of the messages; the XP it earned and what it did to the problem (its
+	// next review, or its graduation) are in the popup of the rank (and the title of that XP) and in the tooltip of
+	// the problem's button
+	let reward = document.getElementById("xpDisplay");
+	let rewardText = document.getElementById("xpDisplayText");
 	if (button.status === 'S' && problemSolved)
 	{
-		outcome = document.createElement("p");
-		outcome.className = "mistake-training-outcome";
-		let earned = xp ? xp.review + xp.graduation : 0;
-		outcome.innerHTML = (earned > 0 ? "+" + Number(earned) + " XP \u00b7 " : "") + button.description;
-		window.localizeTimeElements?.(outcome);
-		status.appendChild(outcome);
-		if (xp && xp.clear > 0)
+		let earned = xp ? (xp.review || 0) + (xp.graduation || 0) + (xp.clear || 0) : 0;
+		if (rewardText)
 		{
-			let clear = document.createElement("p");
-			clear.className = "mistake-training-outcome mistake-training-outcome--clear";
-			clear.textContent = "All clear today: +" + xp.clear + " XP";
-			outcome.after(clear);
+			rewardText.className = "xpDisplay solvedXpDisplay";
+			rewardText.textContent = earned > 0 ? "+" + Number(earned) + " XP" : "";
+		}
+		if (reward)
+		{
+			let outcome = document.createElement("div");
+			outcome.innerHTML = button.description;
+			window.localizeTimeElements?.(outcome);
+			reward.title = outcome.textContent.trim() + (xp && xp.clear > 0 ? " All clear today: +" + xp.clear + " XP." : "");
+			//and as a line of the popup of the rank, which a phone opens with a tap
+			let details = document.getElementById("playStakeDetails");
+			if (details)
+			{
+				details.querySelector(".play-stake__outcome")?.remove();
+				let line = document.createElement("div");
+				line.className = "play-stake__outcome";
+				line.textContent = reward.title;
+				details.appendChild(line);
+			}
 		}
 
 		// The last problem of the day is solved, so Next leads to the end of the training
@@ -61,11 +72,38 @@ function updateMistakeTrainingButton(button, xp)
 			{
 				next.id = "besogo-next-button";
 				next.href = nextButtonLink;
-				next.title = "next problem";
 			}
 		}
 	}
 }
+
+//The rank of the problem opens its rating and the reward of a solve in a popup under it; a click or a tap
+//elsewhere, or Escape, closes it
+(function() {
+	let rank = document.getElementById("status2");
+	let stake = document.getElementById("xpDisplayDiv");
+	if (!rank || !stake)
+		return;
+	let open = shown => {
+		stake.classList.toggle("play-stake--open", shown);
+		rank.setAttribute("aria-expanded", shown ? "true" : "false");
+	};
+	rank.addEventListener("click", () => open(!stake.classList.contains("play-stake--open")));
+	rank.addEventListener("keydown", event => {
+		if (event.key === "Enter" || event.key === " ") {
+			event.preventDefault();
+			open(!stake.classList.contains("play-stake--open"));
+		}
+	});
+	document.addEventListener("click", event => {
+		if (!stake.contains(event.target))
+			open(false);
+	});
+	document.addEventListener("keydown", event => {
+		if (event.key === "Escape")
+			open(false);
+	});
+})();
 
 //A link with data-toggle shows and hides the element it names, its arrow points down while it is open
 document.querySelectorAll("[data-toggle]").forEach(toggle => toggle.addEventListener("click", event => {
@@ -74,9 +112,12 @@ document.querySelectorAll("[data-toggle]").forEach(toggle => toggle.addEventList
 	toggle.dataset.open = open ? "1" : "";
 	Display[open ? "fadeIn" : "fadeOut"](document.getElementById(toggle.dataset.toggle), 250);
 	toggle.querySelectorAll(".toggle-arrow").forEach(arrow => arrow.setAttribute("src", open ? "/img/greyArrow2.png" : "/img/greyArrow1.png"));
-	//More that tells of comments or open issues opens them too (CommentSection listens)
+	//The comments name points by their coordinates, so the board shows them while the comments are open
+	if (toggle.id === "commentsToggle" && typeof besogo !== "undefined" && besogo.editor)
+		besogo.editor.setCoordStyle(open ? "western" : "none");
+	//The comments button that tells of comments or open issues opens them too (CommentSection listens)
 	let summary = document.getElementById("moreCommentSummary");
-	if (open && toggle.id === "editToggle" && summary && getComputedStyle(summary).visibility === "visible")
+	if (open && toggle.id === "commentsToggle" && summary && getComputedStyle(summary).visibility === "visible")
 		window.dispatchEvent(new Event("comments-open"));
 }));
 
@@ -168,7 +209,7 @@ function setUpPageEnd()
 		document.getElementById("status").style.color = "var(--feedback-error)";
 		document.querySelectorAll(".besogo-board").forEach(board => board.classList.add("besogo-board-red-glow"));
 		var resetBtn = document.getElementById("besogo-reset-button");
-		if (resetBtn) { resetBtn.id = "besogo-reset-button-inactive"; }
+		if (resetBtn) { resetBtn.id = "besogo-reset-button-inactive"; resetBtn.blur(); }
 	}
 	if (playPage.problem.solved)
 		reviewEnabled = true;
@@ -234,6 +275,7 @@ function rejuvenation(){
 		locked = false;
 		toggleBoardLock(false);
 		document.getElementById("status").innerHTML = '';
+		document.querySelector(".play-message")?.classList.remove("play-message--failed");
 		document.querySelectorAll(".besogo-board").forEach(board => board.classList.remove("besogo-board-red-glow"));
 		var resetBtn = document.getElementById("besogo-reset-button-inactive");
 		if (resetBtn) { resetBtn.id = "besogo-reset-button"; resetBtn.onclick = function() { window.location.reload(); }; }
@@ -609,6 +651,7 @@ function displayResult(result)
 		}
 		updateCurrentNavigationButton('S');
 		document.getElementById("status").innerHTML = "<h2>Correct!</h2>";
+		document.querySelector(".play-message")?.classList.add("play-message--solved");
 		let glow = light ? "0 2px 14px 0 rgba(67, 255, 40, 0.7), 0 6px 20px 0 rgba(0, 0, 0, 0.2)" : "0 2px 14px 0 rgba(67, 255, 40, 0.7), 0 6px 20px 0 rgba(80, 255, 0, 0.2)";
 		document.querySelectorAll(".besogo-board").forEach(board => board.style.boxShadow = glow);
 		enableReview();
@@ -617,6 +660,13 @@ function displayResult(result)
 		let summary = document.getElementById("moreCommentSummary");
 		if (summary)
 			summary.style.visibility = "visible";
+		let commentsToggle = document.getElementById("commentsToggle");
+		if (commentsToggle)
+		{
+			commentsToggle.classList.remove("play-actions__button--disabled");
+			commentsToggle.removeAttribute("aria-disabled");
+			commentsToggle.title = "Comments";
+		}
 
 		if (mode == playPage.page.modes.time)
 			setCountdownColor(playGreenColor);
@@ -642,6 +692,7 @@ function displayResult(result)
 		{
 			document.getElementById("status").style.color = "var(--feedback-error)";
 			document.getElementById("status").innerHTML = "<h2>Incorrect!</h2>";
+			markFailed();
 			document.querySelectorAll(".besogo-board").forEach(board => board.classList.add("besogo-board-red-glow"));
 			if (mode==3)
 			{
@@ -653,7 +704,8 @@ function displayResult(result)
 			{
 				// The board locks, but the problem stays in today's training until it is solved
 				toggleBoardLock(true);
-				document.getElementById("status").innerHTML = '<h2>Incorrect!</h2><p class="mistake-training-note">Press Reset to try again.</p>';
+				document.getElementById("status").innerHTML = "<h2>Incorrect!</h2>";
+				markFailed();
 			}
 			if (!noXP)
 			{
@@ -669,7 +721,7 @@ function displayResult(result)
 						tryAgainTomorrow = true;
 						toggleBoardLock(true);
 						var resetBtn = document.getElementById("besogo-reset-button");
-						if (resetBtn) { resetBtn.id = "besogo-reset-button-inactive"; }
+						if (resetBtn) { resetBtn.id = "besogo-reset-button-inactive"; resetBtn.blur(); }
 					}
 				}
 				// leaving for the plain problem page would drop the player out of the training
@@ -686,6 +738,7 @@ function displayResult(result)
 		{//mode 2 incorrect
 			document.getElementById("status").style.color = "var(--feedback-error)";
 			document.getElementById("status").innerHTML = "<h2>Incorrect!</h2>";
+			markFailed();
 			document.querySelectorAll(".besogo-board").forEach(board => board.classList.add("besogo-board-red-glow"));
 			if (!noXP)
 				freePlayMode = true;
@@ -706,6 +759,14 @@ function displayMessage(message='text', topic='Message', color='red')
 		banner.classList.toggle("toast__banner--success", color !== 'red');
 		banner.innerHTML = topic + '<span class="toast__close">x</span>';
 	});
+}
+
+//After a fail the message row turns red, and Reset gets a red outline (play.css) and the keyboard focus, so
+//Enter or Space tries again
+function markFailed()
+{
+	document.querySelector(".play-message")?.classList.add("play-message--failed");
+	document.getElementById("besogo-reset-button")?.focus({ preventScroll: true, focusVisible: true });
 }
 
 //Review shows the solution, so it opens once the problem is answered: solved, and in time mode failed or out of time too
@@ -758,7 +819,7 @@ function resetParameters(isAtStart)
 
 //The board is created by PlayBoard.js; it gets the page's callbacks, now that they are all defined
 (function() {
-if (tryAgainTomorrow) { var resetBtn = document.getElementById("besogo-reset-button"); if (resetBtn) { resetBtn.id = "besogo-reset-button-inactive"; } }
+if (tryAgainTomorrow) { var resetBtn = document.getElementById("besogo-reset-button"); if (resetBtn) { resetBtn.id = "besogo-reset-button-inactive"; resetBtn.blur(); } }
 besogo.editor.setAutoPlay(true);
 besogo.editor.registerAddTimeForMovePlayed(addTimeForMovePlayed);
 besogo.editor.registerDisplayResult(displayResult);

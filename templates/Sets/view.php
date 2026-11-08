@@ -47,12 +47,14 @@ use App\Utility\ViteManifest;
 				'restoreAction' => '/trash/restore-set/' . (int) $set->id]);
 		?>
 		<div class="new1">
-		<table class="set-view__table">
-		<tr>
+		<?php //On a phone the description is cut to its beginning and More opens it with the cover; the stats and the views of the scores open from their button (sets.css, SetsViewPage.js), so the problems are in sight at once ?>
+		<table class="set-view__table set-view__info">
+		<tr class="set-view__intro">
 			<td class="valign-top">
-				<?php
+				<div class="set-view__description"><?php
 echo HtmlSanitizer::sanitize((string) ($set->description ?? ''));
-?>
+?></div>
+				<button type="button" class="set-view__expand" aria-expanded="false">More</button>
 			</td>
 				<?php
 // an empty collection has no problem to start with, so its cover and Start lead nowhere
@@ -73,7 +75,7 @@ else
 	echo '<td class="set-view__cover-cell valign-top"><div class="legacy-center"></div></td>';
 ?>
 		</tr>
-		<tr>
+		<tr class="set-view__summary">
 			<td class="valign-top">
 				<table class="set-view__table">
 					<tr>
@@ -108,28 +110,25 @@ if ($tsumegoFilters->query != 'topics')
 				</div>
 			</td>
 		</tr>
-		<tr>
-		<?php if($tsumegoFilters->query == 'topics')
-		{ ?>
+		<?php if ($tsumegoFilters->query == 'topics'): ?>
+		<tr class="set-view__stats-toggle-row">
+			<td colspan="2"><button type="button" class="btn set-view__stats-toggle" aria-expanded="false">Stats &amp; display</button></td>
+		</tr>
+		<?php //The scores, each on one line with the best of a completed run beside it ?>
+		<tr class="set-view__stats">
 			<td>
 			<br>
 			<div class="legacy-center">
 				<?php if(Auth::isLoggedIn())
 				{ ?>
 					<?php
-					echo '<table><tr><td><div class="setViewCompleted"><b>Completed: ' . $problemSolvedPercent . '%</b></div></td><td></td></tr></table>
-					<table><tr><td><div class="setViewAccuracy"><b>Accuracy: ' . $accuracy . '%</b></div></td><td>';
-					if($bestAccuracy !== null) echo '<span class="setViewAccuracy">Best completion: ' . $bestAccuracy . '%</span>';
-					echo '</td></tr></table>
-					<table><tr><td><div class="setViewTime"><b>Avg. time: ' . $avgTime . 's</b></div></td><td>';
-					if($bestTime !== null && $bestTime != 60) echo '<span class="setViewTime">Best completion: ' . $bestTime . 's</span>';
-					echo '</td></tr></table>';
+					echo '<div class="setViewCompleted"><b>Completed: ' . $problemSolvedPercent . '%</b></div>';
+					echo '<div class="setViewAccuracy"><b>Accuracy: ' . $accuracy . '%</b>' . ($bestAccuracy !== null ? ' &middot; Best: ' . $bestAccuracy . '%' : '') . '</div>';
+					echo '<div class="setViewTime"><b>Avg. time: ' . $avgTime . 's</b>' . ($bestTime !== null && $bestTime != 60 ? ' &middot; Best: ' . $bestTime . 's' : '') . '</div>';
 				} ?>
 			</div>
-
-			</td>
-
-			<td>
+			<?php //The reset of the progress under the scores, its form opening right under its link ?>
+			<div class="legacy-center set-view__reset">
 			<?php
 			if (Auth::isLoggedIn())
 			{
@@ -157,12 +156,23 @@ if ($tsumegoFilters->query != 'topics')
 				elseif ($problemSolvedPercent < 50)
 					echo '<br><span class="text-muted">You need to complete 50% to reset.</span>';
 				else
-					echo '<div id="msg1x"><a id="showx">Reset<img id="greyArrow1" src="/img/greyArrow1.png"></a></div><br>';
+				{
+					echo '<div id="msg1x"><a id="showx">Reset<img id="greyArrow1" src="/img/greyArrow1.png"></a></div>';
+					echo '<div id="msg2x">';
+					echo 'Type "reset" to remove all your progress on this collection.<br><br>';
+					echo '<form action="/sets/resetProgress/' . $set->id . '/' . ($partition + 1) . '" method="post">';
+					echo '<input type="text" name="reset-check" id="reset-textfield" placeholder="reset">';
+					echo '<input type="submit" value="submit" id="reset-submit">';
+					echo '</form>';
+					echo '</div>';
+				}
 			}
 			?>
+			</div>
 			</td>
+			<td></td>
 			</tr>
-			<tr>
+			<tr class="set-view__stats">
 			<td>
 			<?php if($scoring)
 			{ ?>
@@ -187,19 +197,7 @@ if ($tsumegoFilters->query != 'topics')
 			<br>
 			<?php } ?>
 			</td>
-			<td>
-			<?php
-			if ($problemSolvedPercent >= 50 && $tsumegoFilters->collectionSize == ProgressDeletionTable::$PARTITION_SIZE && !$tsumegoFilters->hasProblemFilters())
-			{
-				echo '<div id="msg2x">';
-				echo 'Type "reset" to remove all your progress on this collection.<br><br>';
-				echo '<form action="/sets/resetProgress/' . $set->id . '/' . ($partition + 1) . '" method="post">';
-				echo '<input type="text" name="reset-check" id="reset-textfield" placeholder="reset">';
-				echo '<input type="submit" value="submit" id="reset-submit">';
-				echo '</form>';
-				echo '</div>';
-			} ?>
-			</td>
+			<td></td>
 			</tr>
 			<?php if (isset($canEdit) && $canEdit): ?>
 				<tr>
@@ -225,12 +223,11 @@ if ($tsumegoFilters->query != 'topics')
 					</td>
 				</tr>
 			<?php endif; ?>
-		<?php } ?>
+		<?php endif; ?>
 
 		</table>
 		</div>
-		<br><br><br><br><br>
-		<br><br>
+		<div class="set-view__gap"><br><br><br><br><br><br><br></div>
 	</div>
 	<div class="set-view-problems">
 		<p class="title4">Problems</p>
