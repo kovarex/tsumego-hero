@@ -882,6 +882,16 @@ body:has(.play-screen) #footer {
   #heroPowersToggle {
     display: none;
   }
+  /* The icons alone show the hearts on a wide screen; the count stays for screen readers and in the
+     title. A phone keeps it: it has no hover for the title, and many overlapping hearts are hard to count */
+  .play-player .health-counter {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
 }
 .play-powers {
   padding: var(--space-2);
