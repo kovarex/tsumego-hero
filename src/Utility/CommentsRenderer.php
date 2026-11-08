@@ -34,14 +34,12 @@ class CommentsRenderer
 		echo '<div class="' . $commentColor . '">';
 		echo h(UserTable::displayName(['id' => $comment['from_id'], 'display_name' => $comment['from_display_name']])) . ':<br>';
 		echo '</div>';
-		echo '<div ';
-		if($comment['from_admin'])
-			echo 'class="commentBox2" ';
-		echo 'id="comment_' . $comment['id'] . '"';
-		if (TsumegoUtil::isSolvedStatus($comment['status']) || Auth::isAdmin())
-			echo '>' . nl2br(h($comment['message'])) . '</div>';
-		else
-			echo ' class="text-muted">[You need to solve this problem to see the comment]</div>';
+		// one class attribute: a browser keeps only the first of two, so a hidden admin comment wasn't muted
+		$visible = TsumegoUtil::isSolvedStatus($comment['status']) || Auth::isAdmin();
+		$classes = array_filter([$comment['from_admin'] ? 'commentBox2' : '', $visible ? '' : 'text-muted']);
+		echo '<div' . ($classes ? ' class="' . implode(' ', $classes) . '"' : '') . ' id="comment_' . $comment['id'] . '">';
+		echo $visible ? nl2br(h($comment['message'])) : '[You need to solve this problem to see the comment]';
+		echo '</div>';
 		echo '</td><td class="sandboxTable2time" align="right"><time datetime="' . Util::toIso8601($comment['created']) . '" data-format="date">' . h($comment['created']) . '</time><br><time datetime="' . Util::toIso8601($comment['created']) . '" data-format="time">' . h($comment['created']) . '</time></td>';
 		echo '</tr>';
 		echo '<tr><td colspan="2"><div width="100%"><div align="center">';
