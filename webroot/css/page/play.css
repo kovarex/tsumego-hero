@@ -875,6 +875,14 @@ body:has(.play-screen) #footer {
 .play-screen__panel > .besogo-panels {
   display: none;
   margin-top: var(--space-2);
+  align-items: flex-start;
+  justify-content: flex-start;
+}
+/* The root of the tree is always at the top left, whatever the width of the tree; a wider one scrolls from there */
+.play-screen__panel > .besogo-panels .besogo-tree {
+  align-self: flex-start;
+  max-width: 100%;
+  margin: 0;
 }
 /* The review moves by a click on the tree or on the board, so it shows no step buttons */
 .play-screen__panel > .besogo-panels .besogo-control {
