@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">83.33% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/6</span>
+                <span class='fraction'>5/6</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">87.5% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/16</span>
+                <span class='fraction'>14/16</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/3</span>
+                <span class='fraction'>3/3</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">83.33% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/6</span>
+                <span class='fraction'>5/6</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line low'></div>
+    <div class='status-line high'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -126,30 +126,30 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">17x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -174,17 +174,17 @@ interface ProblemButtonProps
 }
 &nbsp;
 //A click with a modifier key opens the link the way the browser does, in a new tab or window.
-function <span class="fstat-no" title="function not covered" >opensElsewhere(e</span>vent: MouseEvent): boolean
+function opensElsewhere(event: MouseEvent): boolean
 {
-<span class="cstat-no" title="statement not covered" >	return event.ctrlKey || event.metaKey || event.shiftKey || event.altKey || event.button !== 0;</span>
+	return event.ctrlKey || event.metaKey || event.shiftKey || event.altKey || event.button !== 0;
 }
 &nbsp;
 //A problem button like the ones of a collection page (TsumegoButton::render()): the number, and
 //the board in the tooltip, drawn by previewBoard.js on hover. A click picks the problem or takes
 //it out; a click with Ctrl or the middle button opens the problem in a new tab to look at it.
-export function <span class="fstat-no" title="function not covered" >ProblemButton({</span> problem, picked, onToggle }: ProblemButtonProps)
+export function ProblemButton({ problem, picked, onToggle }: ProblemButtonProps)
 {
-<span class="cstat-no" title="statement not covered" >	return (</span>
+	return (
 		&lt;li className={'problem-nav__item ' + (picked ? 'classes__problem--picked' : 'problem-nav__item--N')}&gt;
 			&lt;a
 				className="tooltip"
@@ -193,13 +193,13 @@ export function <span class="fstat-no" title="function not covered" >ProblemButt
 				rel="noopener"
 				aria-pressed={picked}
 				data-tsumego-id={problem.tsumegoId}
-				data-sgf-preview={problem.preview ? JSON.stringify(problem.preview) : undefined}
-				onClick={<span class="fstat-no" title="function not covered" >event =&gt;</span>
+				data-sgf-preview={problem.preview ? JSON.stringify(problem.preview) : <span class="branch-1 cbranch-no" title="branch not covered" >undefined}</span>
+				onClick={event =&gt;
 				{
-<span class="cstat-no" title="statement not covered" >					<span class="missing-if-branch" title="if path not taken" >I</span>if (opensElsewhere(event))</span>
+					<span class="missing-if-branch" title="if path not taken" >I</span>if (opensElsewhere(event))
 <span class="cstat-no" title="statement not covered" >						return;</span>
-<span class="cstat-no" title="statement not covered" >					event.preventDefault();</span>
-<span class="cstat-no" title="statement not covered" >					onToggle(problem);</span>
+					event.preventDefault();
+					onToggle(problem);
 				}}
 			&gt;
 				&lt;div className="problem-nav__number"&gt;{problem.number}&lt;/div&gt;
@@ -220,7 +220,7 @@ export function <span class="fstat-no" title="function not covered" >ProblemButt
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-11-08T20:39:44.111Z
+                at 2026-11-08T21:21:32.657Z
             </div>
         <script src="../../prettify.js"></script>
         <script>
