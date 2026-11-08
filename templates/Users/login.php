@@ -26,7 +26,7 @@ use App\Utility\CookieFlash;
 				<input name="password" type="password" id="password" autocomplete="current-password" required="required"/>
 				<button type="button" class="password-toggle" data-target="password">Show</button>
 			</div>
-			<button type="submit" class="btn">Sign in</button>
+			<button type="submit" class="btn btn--primary">Sign in</button>
 			</form>
 			<p class="hint">Need an account? <a href="/users/add">Sign up</a></p>
 			<p class="hint">Forgot password? <a href="/users/resetpassword">Reset it</a></p>

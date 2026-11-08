@@ -162,15 +162,6 @@
   align-items: center;
   padding-right: var(--space-1);
 }
-.btn.set-search {
-  display: flex;
-  font-weight: 800;
-  padding: 6px 10px;
-  margin: 5px;
-  border-radius: 5px;
-  background: var(--set-filter-background);
-  color: var(--set-filter-text);
-}
 /* Active filter accent: the set-search-menu gets query-{filter} (from the
    query cookie) and the matching button text/icon + border is colored. */
 .set-search-menu.query-topics #topics-button .set-button-text,
