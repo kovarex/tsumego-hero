@@ -454,6 +454,20 @@
 	border-bottom-color: var(--color-green);
 }
 
+/* On a phone the tabs wrap to more rows and take less padding, so every tab stays on the screen */
+@media (width < 40rem)
+{
+	.subnav
+	{
+		flex-wrap: wrap;
+	}
+
+	.subnav__link
+	{
+		padding: var(--space-2) var(--space-3);
+	}
+}
+
 /* ── Badge ── */
 .badge
 {
