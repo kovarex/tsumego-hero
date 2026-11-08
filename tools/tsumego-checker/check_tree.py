@@ -241,6 +241,27 @@ def check(text, engine, budget, scan_missing=True, description=None, missing_dep
         report['issues'].append(issue)
         positions.append((issue, node))
 
+    def is_detour(board, correct):
+        #the move only makes an exchange before the tree's own answer: after every opponent answer that still leaves the
+        #solver winning, one of the tree's correct moves from the same node wins too
+        if not correct:
+            return False
+        for p in sorted(problem.region) + [None]:
+            child = board.copy()
+            if (p is not None and p in child.stones) or not child.play(opponent(solver_color), p):
+                continue
+            if rank(solver.status(child, solver_color)[0], goal) != 2:
+                continue
+            wins = False
+            for c in correct:
+                grand = child.copy()
+                if c not in grand.stones and grand.play(solver_color, c) and rank(solver.status(grand, opponent(solver_color))[0], goal) == 2:
+                    wins = True
+                    break
+            if not wins:
+                return False
+        return True
+
     def engine_rank(node):
         status, best_move = solver.status(node.board, node.to_move)
         return rank(status, goal), status, best_move
@@ -307,7 +328,12 @@ def check(text, engine, budget, scan_missing=True, description=None, missing_dep
                         fake = TreeNode(node.sgf, child_board, opponent(solver_color), node.depth + 1)
                         r, status, _ = engine_rank(fake)
                         if r == 2:
-                            add_issue({'kind': 'missing-correct-move', 'line': (path(chain) + ' ' + point_name(p, size)).strip(), 'engine': status}, fake)
+                            issue = {'kind': 'missing-correct-move', 'line': (path(chain) + ' ' + point_name(p, size)).strip(), 'engine': status}
+                            correct = [child.move for child in node.children if child.label == 2]
+                            if is_detour(child_board, correct):
+                                report['notes'].append(dict(issue, kind='detour'))
+                            else:
+                                add_issue(issue, fake)
             else:
                 #opponent's replies: in a wrong line each should refute, in a correct line none should
                 for child in node.children:
