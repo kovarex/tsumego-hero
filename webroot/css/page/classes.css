@@ -467,4 +467,25 @@ a[href="/sets"]
 {
 	width: 5em;
 }
+
+/* The options of a sheet of problems to print (app/print/PrintSelection.tsx) */
+.print-options__fields
+{
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: var(--space-2) var(--space-4);
+}
+
+.print-options__field
+{
+	display: inline-flex;
+	align-items: center;
+	gap: var(--space-1);
+}
+
+.print-options__field select
+{
+	width: auto;
+}
 }

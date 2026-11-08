@@ -204,39 +204,70 @@ class ClassroomAssignmentTable extends AppTable
 		return array_map(self::problemPayload(...), $rows);
 	}
 
-	//Puts the problems in the assignment in place of the ones it had, in the given order. A
-	//problem from a collection the teacher can't give, one in the trash and one already in the
-	//assignment from another collection are left out.
+	//The problems of the given set connections a player can pick, for an assignment or to print, in
+	//the given order: a problem from a collection they can't pick from (canAssignSet()), one in the
+	//trash and one already given from another collection are left out. With the current SGF of each,
+	//its correct first moves and the color to move first, and the description of the problem.
+	/**
+	 * @param list<int> $setConnectionIds
+	 * @return list<array<string, mixed>> Rows with PROBLEM_COLUMNS, sgf, correct_moves, first_move_color and description
+	 */
+	public static function pickable(array $setConnectionIds, int $userId): array
+	{
+		if (empty($setConnectionIds))
+			return [];
+		$rows = Util::query('SELECT ' . self::PROBLEM_COLUMNS . self::PREVIEW_COLUMN . ', sgf.correct_moves, sgf.first_move_color,
+				t.description, s.public, s.user_id, s.deleted
+			FROM set_connection sc
+			JOIN tsumego t ON t.id = sc.tsumego_id AND t.deleted IS NULL
+			JOIN `set` s ON s.id = sc.set_id
+			' . self::previewJoin() . '
+			WHERE sc.id IN (' . implode(',', array_fill(0, count($setConnectionIds), '?')) . ')',
+			$setConnectionIds);
+		$bySetConnectionId = [];
+		foreach ($rows as $row)
+			if (self::canAssignSet($row, $userId))
+				$bySetConnectionId[(int) $row['set_connection_id']] = $row;
+
+		$problems = [];
+		$tsumegoIds = [];
+		foreach ($setConnectionIds as $setConnectionId)
+		{
+			$row = $bySetConnectionId[$setConnectionId] ?? null;
+			if ($row === null || isset($tsumegoIds[$row['tsumego_id']]))
+				continue;
+			$tsumegoIds[$row['tsumego_id']] = true;
+			$problems[] = $row;
+		}
+		return $problems;
+	}
+
+	//The problems pickable() keeps, as the problem buttons show them
+	/**
+	 * @param list<int> $setConnectionIds
+	 * @return list<array<string, mixed>> What problemPayload() makes of each
+	 */
+	public static function pickablePayload(array $setConnectionIds, int $userId): array
+	{
+		return array_map(self::problemPayload(...), self::pickable($setConnectionIds, $userId));
+	}
+
+	//Puts the problems in the assignment in place of the ones it had, in the given order, the ones
+	//pickable() keeps.
 	//Returns how many problems the assignment has now
 	/** @param list<int> $setConnectionIds */
 	public static function replaceProblems(int $assignmentId, array $setConnectionIds, int $teacherId): int
 	{
-		$rows = empty($setConnectionIds) ? [] : Util::query('SELECT sc.id, sc.tsumego_id, s.public, s.user_id, s.deleted
-			FROM set_connection sc
-			JOIN tsumego t ON t.id = sc.tsumego_id AND t.deleted IS NULL
-			JOIN `set` s ON s.id = sc.set_id
-			WHERE sc.id IN (' . implode(',', array_fill(0, count($setConnectionIds), '?')) . ')',
-			$setConnectionIds);
-		$problems = [];
-		foreach ($rows as $row)
-			if (self::canAssignSet($row, $teacherId))
-				$problems[(int) $row['id']] = (int) $row['tsumego_id'];
+		$problems = self::pickable($setConnectionIds, $teacherId);
 
 		$connection = Util::connection();
 		$connection->beginTransaction();
 		try
 		{
 			Util::execute('DELETE FROM classroom_assignment_problem WHERE classroom_assignment_id = ?', [$assignmentId]);
-			$tsumegoIds = [];
-			foreach ($setConnectionIds as $setConnectionId)
-			{
-				$tsumegoId = $problems[$setConnectionId] ?? null;
-				if ($tsumegoId === null || isset($tsumegoIds[$tsumegoId]))
-					continue;
-				$tsumegoIds[$tsumegoId] = true;
+			foreach ($problems as $position => $problem)
 				Util::execute('INSERT INTO classroom_assignment_problem (classroom_assignment_id, set_connection_id, position) VALUES (?, ?, ?)',
-					[$assignmentId, $setConnectionId, count($tsumegoIds)]);
-			}
+					[$assignmentId, (int) $problem['set_connection_id'], $position + 1]);
 			$connection->commit();
 		}
 		catch (Throwable $exception)
@@ -244,7 +275,7 @@ class ClassroomAssignmentTable extends AppTable
 			$connection->rollBack();
 			throw $exception;
 		}
-		return count($tsumegoIds);
+		return count($problems);
 	}
 
 	//The address where a pupil plays the assignment as one row of problems, at the problem when

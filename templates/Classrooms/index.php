@@ -79,4 +79,12 @@ $classes = $memberships[ClassroomMemberStatusTable::ACCEPTED];
 			<p class="hint">Then invite your pupils on the page of the class, or send them its link so they ask to join. Give them problems from one of your collections or of the site, and see who solved what.</p>
 		</form>
 	</section>
+
+	<section class="card classes__section" id="classes-print">
+		<div class="classes__section-header">
+			<h2 class="classes__heading">Problems on paper</h2>
+			<a class="btn btn--neutral" href="/print">Print problems</a>
+		</div>
+		<p class="hint">Pick problems the same way as for a class and print them, with an answer key if you like.</p>
+	</section>
 </div>
