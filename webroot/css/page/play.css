@@ -810,8 +810,20 @@ body:has(.play-screen) #footer {
 /* Review is red while the problem can be reviewed (an inactive one is dimmed, above); Next turns green once
    the problem is solved */
 .play-actions > :is(#besogo-review-button, #besogo-review-button-inactive) {
-  height: 40px;
-  line-height: 38px;
+  height: 32px;
+  line-height: 30px;
+}
+/* The buttons of the panel are a little lower than those above the board, so they don't outweigh them; a
+   finger gets 40px */
+.play-actions__button {
+  height: 32px;
+}
+@media (pointer: coarse) {
+  .play-actions__button,
+  .play-actions > :is(#besogo-review-button, #besogo-review-button-inactive) {
+    height: 40px;
+    line-height: 38px;
+  }
 }
 .play-actions #besogo-review-button {
   border-color: var(--color-red) !important;
