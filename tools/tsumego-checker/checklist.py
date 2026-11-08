@@ -1,6 +1,6 @@
 #the findings still to review as a table: problem, path with colours, what the tree says, what the solver says, its line
 import json, glob, subprocess, os
-confirmed = {'1703', '215', '528', '1807', '2485', '5832', '13169'}
+confirmed = {'1703', '215', '528', '1807', '2485', '5832', '13169', '14119'}
 #single findings kovarex confirmed in problems that still have others to review
 confirmed_findings = set()
 #findings kovarex reviewed and chose to leave out of the tree: (problem, line)

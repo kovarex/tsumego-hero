@@ -3,7 +3,7 @@ import json, glob, collections, re, subprocess, html, os
 
 #the folder with the run results and these scripts, and the folder the report and the questions go to
 proto = os.environ.get('RESULTS', '.') + '/'
-CONFIRMED = {'215', '528', '1807', '2485', '5832', '13169'} #findings kovarex confirmed (1703 has its own row)
+CONFIRMED = {'215', '528', '1807', '2485', '5832', '13169', '14119'} #findings kovarex confirmed (1703 has its own row)
 scratch = os.environ.get('REPORT_DIR', '.') + '/'
 
 def load(pattern):
