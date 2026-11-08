@@ -1,0 +1,5 @@
+# the built solver and run results stay local
+engine
+*.jsonl
+*.jsonl.gz
+__pycache__/

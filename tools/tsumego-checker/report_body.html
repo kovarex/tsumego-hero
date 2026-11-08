@@ -1,0 +1,156 @@
+<div class="page">
+<header>
+  <div class="eyebrow">Research for kovarex · tsumego.com · 29 Oct 2026 · version 2</div>
+  <h1>Tsumego Correctness Checker</h1>
+  <p class="lede">How far we can automate finding wrong refutations, missing correct moves and wrong statuses in the site's problems. This version runs on your export of all 12,574 problems and includes the fixes from your reviews.</p>
+</header>
+
+<section class="summary" aria-labelledby="summary">
+  <h2 id="summary">Summary</h2>
+  <ul>
+    <li><b>Four real errors confirmed, one near miss.</b> <a href="https://tsumego.com/1703">tsumego.com/1703</a>: the tree's correct line ends with black C19, but white answers B19 instead of A19 and lives. <a href="https://tsumego.com/215">tsumego.com/215</a>: two leaves (after E19 A19 and C19 A19) say ALIVE, but black can still fight a ko at A18/A19. <a href="https://tsumego.com/1807">tsumego.com/1807</a>: the leaf after A16 B18 says DEAD, but black A18 gives KO-. <a href="https://tsumego.com/528">tsumego.com/528</a>: the leaf after C18 B19 is bent four in the corner, not plain DEAD. You confirmed all of these.</li>
+    <li><b>Status problems are the best test set.</b> Every authored <code>S[]</code> leaf is a test case. On the site's 307 status problems the solver agrees with the author on <b>STATUS_RATE</b> of the leaves it decides (STATUS_AGREE of STATUS_DECIDED); it leaves STATUS_UNDECIDED_SHARE of the leaves undecided.</li>
+    <li><b>Precision comes first.</b> The checker now reports a finding only when it holds in two independent solves (normal region, then a wider region with 5× the budget) and the problem is proven unsettled. On the status problems that leaves CHECK_FLAGGED flagged problems out of CHECK_DONE, all listed below for your review.</li>
+    <li><b>Your reviews fixed the solver, not the trees.</b> Of the earlier "findings" you looked at, 1814, 15405 and 7543 were solver errors. Each one exposed a modelling bug, now fixed (list below). The biggest single gain came from your dynamic-region idea: 2.4× more hard positions decided, in half the time.</li>
+    <li><b>Still weak:</b> many positions stay undecided within the budget, and problems without a stated goal ("Black to play", 6,586 of them) can't be checked yet.</li>
+  </ul>
+</section>
+
+<section aria-labelledby="review">
+  <h2 id="review">Problems to review</h2>
+  <p>Every line is the solver's, checked twice. "Ko" means: with unlimited ko threats the defender lives, with none it dies, and it is not a ko the defender can never win (your rule).</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Problem</th><th>Finding</th><th>Solver's line</th><th>State</th></tr></thead>
+    <tbody>
+      <tr><td><a href="https://tsumego.com/1703">1703</a><br><span class="small">Life &amp; Death Elementary 308, kill</span></td><td><span class="pill bad">correct move fails</span></td><td>B A18, W A17, B B18, W C17, B C19 is marked correct; W B19 (instead of the tree's A19) lives</td><td><span class="pill good">confirmed by you</span></td></tr>
+      REVIEW_ROWS
+    </tbody>
+  </table></div>
+</section>
+
+<section aria-labelledby="fixes">
+  <h2 id="fixes">What your reviews changed</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Problem</th><th>Solver bug</th><th>Fix</th></tr></thead>
+    <tbody>
+      <tr><td><a href="https://tsumego.com/1814">1814</a></td><td>F19 lay outside the region, so black's D19–E19 had a liberty nobody could fill and looked immortal.</td><td>The region always includes the empty points bordering it.</td></tr>
+      <tr><td><a href="https://tsumego.com/1814">1814</a> (ko)</td><td>A ko the defender can never turn into life counted as a ko, not as death.</td><td>Your rule: at the end of the game a target chain still in atari is taken, so it is dead. A cycle that runs through a ko recapture also counts as dead.</td></tr>
+      <tr><td><a href="https://tsumego.com/1808">1808</a></td><td>The first version of the cycle rule killed a seki made of legal captures ("sending two, returning one").</td><td>Only a cycle through a ko recapture is dead; one of legal captures counts as a seki.</td></tr>
+      <tr><td><a href="https://tsumego.com/15405">15405</a></td><td>E19, the last liberty of black's B19–D19, was outside the region, so white could never capture those stones.</td><td>Your idea, made general: <b>dynamic region</b>. The empty points around the region are a fringe. They always count as liberties, and become playable once a chain next to them has two or fewer liberties. The attacker may also always take the defender's fringe liberties.</td></tr>
+      <tr><td><a href="https://tsumego.com/7543">7543</a></td><td>The target picked was the lone stone A18, not the white group; a point whose stone was captured became a wall.</td><td>The target is the largest group of the colour (single chains only for "capture" goals); start-position stone points stay playable.</td></tr>
+      <tr><td>(all)</td><td>With repetitions, proofs depend on the path, and the transposition table carried them from one query to the next.</td><td>Each query sees only its own table entries (a generation counter); the cache of end-of-line results is still shared.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section aria-labelledby="results">
+  <h2 id="results">Results on your export</h2>
+  <h3>Status problems: authored status against the solver, per leaf</h3>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Authored</th><th>Solver</th><th class="num">Leaves</th></tr></thead>
+    <tbody>STATUS_ROWS</tbody>
+  </table></div>
+  <p class="small">STATUS_PROBLEMS problems, STATUS_LEAVES leaves, STATUS_SECONDS s in total on one core. "?" = undecided within 200,000 nodes per ko mode. Bent four counts as dead even though the solver sees a ko.</p>
+
+  <h3>Full check</h3>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Sample</th><th class="num">Problems</th><th class="num">Clean</th><th class="num">Flagged</th><th class="num">Goal not proven</th><th class="num">Time limit</th><th class="num">Median time</th></tr></thead>
+    <tbody>CHECK_ROWS</tbody>
+  </table></div>
+  <ul>
+    <li>"Clean" means no finding survived both solves; it does not mean the tree is proven complete. "Goal not proven" means the solver couldn't show that the opponent moving first refutes, so it reports nothing for that problem.</li>
+    <li>Goal-stated marker problems are a random 400 of the 5,371 marker problems whose description says kill or live.</li>
+  </ul>
+
+  <h3>Speed</h3>
+  <ul>
+    <li>The engine runs about 360,000 nodes per second per core. Caching end-of-line tests (Benson, eye space) by position made it 7.5× faster.</li>
+    <li>On 40 hard leaves (undecided before), the dynamic region decides 15–17 at 300,000 nodes in about 40 s; the static region decided 7 in 82 s.</li>
+    <li>A 5× bigger budget (1,000,000 nodes per ko mode) barely helps: on the status problems the solver decides 60% of the leaves instead of 57%, and agreement goes from 94% to 95%; 20 problems then hit the 2-minute limit. The undecided leaves need a smarter search (move ordering, relevance zones), not more nodes.</li>
+    <li>Your C++ question: on the solver's inner loops PHP 8.3 is 5× slower at liberty counting (3× with JIT) and 30× slower at node expansion with hashing.</li>
+  </ul>
+</section>
+
+<section aria-labelledby="site">
+  <h2 id="site">How the site's problems work (for reference)</h2>
+  <ul>
+    <li><b>Two marking systems.</b> Marker problems: a leaf whose comment starts with <code>+</code> is correct; on the solver's move one correct child is enough, on the opponent's every child must be correct. Status problems: <code>G[KILL]</code>/<code>G[LIVE]</code> on the root and <code>S[]</code> on the leaves; the moves keeping the best status are correct. <code>SKD[]</code> makes super ko count as dead.</li>
+    <li>besogo follows transpositions (a move reaching a position already in the tree) and fails any other move off the tree. The checker does the same.</li>
+    <li>Current version: latest <code>sgf</code> row with <code>sgf_status_id = 2</code> per problem. Of 12,574 problems, 307 are status-based, 5,371 marker problems state kill or live, 310 say capture, 6,586 only say "Black to play".</li>
+  </ul>
+</section>
+
+<section aria-labelledby="architecture">
+  <h2 id="architecture">Architecture</h2>
+<pre class="mermaid">
+flowchart LR
+  S[SGF version] --> A[A: goal, target, region]
+  A --> B[B: df-pn solver C++]
+  B <--> C[C: Benson, eye space, ko rules]
+  B --> V[Second solve: wider region, 5x budget]
+  V --> F[Findings]
+  F --> Q[Admin review queue]
+  Q --> P[SGF proposal with the fix]
+</pre>
+  <div class="layers">
+    <div class="layer">
+      <div class="tag">A · goal</div>
+      <ul>
+        <li><code>G[]</code>, else the description (kill, live, capture).</li>
+        <li>Target: the largest group of that colour; chains for capture goals.</li>
+        <li>Proven unsettled (solver first wins, opponent first loses) before anything is reported.</li>
+        <li>Region: the defender's area plus the tree's moves, with a dynamic fringe around it.</li>
+      </ul>
+    </div>
+    <div class="layer">
+      <div class="tag">B · search</div>
+      <ul>
+        <li>df-pn with the 1+ε trick; 24-byte table entries with Zobrist keys; transpositions merged.</li>
+        <li>Two ko modes (unlimited threats for either side).</li>
+        <li>Fringe moves only once a neighbouring chain is short of liberties.</li>
+      </ul>
+    </div>
+    <div class="layer">
+      <div class="tag">C · end positions</div>
+      <ul>
+        <li>Benson's unconditional life; a sound "no two eyes possible" test.</li>
+        <li>Game end: a target chain in atari is taken. A cycle through a ko is dead; a cycle of legal captures is a seki.</li>
+        <li>Bent four in the corner: when the game ends with the defender relying on ko threats, the attacker removes them and starts the ko when it likes; if that kills, the status is BENT4. A ko the defender can start itself (1807) stays KO.</li>
+        <li>Not yet: seki vs alive, ten thousand years ko, approach and threat counts for ko (besogo's <code>KO+n</code>, <code>A+n</code>).</li>
+      </ul>
+    </div>
+  </div>
+  <h3>Where it runs and how results reach admins</h3>
+  <ul>
+    <li><b>Batch:</b> a command-line run over your export on your PC or a VPS (a full run is a few CPU-hours), producing a JSON file of findings for an admin to upload.</li>
+    <li><b>Editor:</b> the same C++ compiled to WebAssembly, checking an SGF in the uploader's browser with a small budget. No server CPU needed.</li>
+    <li><b>Queue:</b> <code>sgf_check</code> and <code>sgf_check_finding</code> tables (finding types as a lookup table with constants), an admin page listing open findings with the line, <i>dismiss</i> (kept per SGF version so it doesn't come back) and <i>make proposal</i> (a normal SGF proposal for review).</li>
+  </ul>
+</section>
+
+<section class="plan" aria-labelledby="plan">
+  <h2 id="plan">Plan</h2>
+  <ol>
+    <li><b>Your review of the list above</b>: each true or false finding sharpens the solver, as today.</li>
+    <li><b>Undecided positions:</b> move ordering and initial proof numbers (a small policy net trained on your trees, as you suggested), relevance zones. Goal: under 10% undecided on status problems.</li>
+    <li><b>Ko and seki detail</b>: approach count and threat balance of kos, seki in sente vs gote, so status problems can be filled and compared exactly.</li>
+    <li><b>Review queue PR</b>: migrations, admin page, JSON import, dismiss and make-proposal. About a week.</li>
+    <li><b>Editor PR</b>: WebAssembly build, check on upload. About a week.</li>
+  </ol>
+</section>
+
+<section aria-labelledby="questions">
+  <h2 id="questions">Open questions</h2>
+  <ol>QUESTION_ITEMS</ol>
+</section>
+
+<section aria-labelledby="sources">
+  <h2 id="sources">Sources</h2>
+  <ul class="small">
+    <li>Kishimoto, Müller: <a href="https://webdocs.cs.ualberta.ca/~mmueller/ps/aaai05-tsumego.pdf">Search versus Knowledge for Solving Life and Death Problems in Go</a>, AAAI 2005.</li>
+    <li>Shih, Wu et al.: <a href="https://arxiv.org/abs/2112.02563">A Novel Approach to Solving Goal-Achieving Problems for Board Games</a> (relevance zones), 2021; <a href="https://arxiv.org/html/2512.21365v1">study on Cho Chikun's dictionary</a>, 2025.</li>
+    <li><a href="https://arxiv.org/abs/2608.13221">TsuGO benchmark</a>, 2026; <a href="https://github.com/sanderland/tsumego">sanderland/tsumego</a> data.</li>
+    <li>Version 1 of this report (first prototype, Cho Chikun first-move data) is superseded by this page.</li>
+  </ul>
+</section>
+</div>
