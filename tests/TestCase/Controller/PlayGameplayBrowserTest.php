@@ -120,6 +120,7 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 		}
 	}
 
+	//Next leads to the following problem once the problem is solved; there is no Back, the problem buttons lead back
 	public function testTheNavigationButtonsLeadToTheNeighbouringPuzzles(): void
 	{
 		$context = new ContextPreparator(['tsumegos' => [1, 2, 3]]);
@@ -129,9 +130,7 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 		$browser->get($urls[1]);
 		$this->waitForBoard($browser);
 
-		$this->assertSame($urls[0],
-			$browser->find('#besogo-back-button')->getAttribute('href'),
-			'The back button points at the previous problem');
+		$this->assertFalse($browser->idExists('besogo-back-button'), 'There is no Back button');
 		$this->assertSame($urls[2],
 			$browser->find('#besogo-next-button')->getAttribute('href'),
 			'The next button points at the following problem');
@@ -142,11 +141,6 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 		$browser->waitUntilJs('location.href.includes("' . $urls[2] . '")');
 		$this->waitForBoard($browser);
 		$this->assertStringContainsString($urls[2], $browser->driver->getCurrentURL(), 'The next button moves on');
-
-		$browser->clickId('besogo-back-button');
-		$browser->waitUntilJs('location.href.includes("' . $urls[1] . '")');
-		$this->waitForBoard($browser);
-		$this->assertStringContainsString($urls[1], $browser->driver->getCurrentURL(), 'The back button moves back');
 	}
 
 	public function testMultipleChoiceAnswerClickShowsSolved(): void

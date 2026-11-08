@@ -209,8 +209,8 @@ redrawHearts();
 	besogo.create(div, options);
 })();
 
-//The buttons besogo makes under the board go where the page shows them (Tsumegos/play.php): Back, Reset
-//and Review join the actions; Next goes to the row of the messages in the level mode and the training,
+//The buttons besogo makes under the board go where the page shows them (Tsumegos/play.php): Reset and
+//Review join the actions; Next goes to the row of the messages in the level mode and the training,
 //where it shows once the problem is solved (play-message--solved), and stays with the actions in the
 //other modes, where it skips; the review's tree goes under the actions; the board's own settings
 //(corner, rotation, colours, favourite, author) go to the info of the problem. They keep their ids, which the page's code renames as the state changes.
@@ -225,7 +225,7 @@ redrawHearts();
 	actions.appendChild(end);
 	let nextInMessages = mode == playPage.page.modes.level || mode == playPage.page.modes.mistakeTraining;
 	let message = document.querySelector(".play-message");
-	for (let id of ["besogo-pass-button", "besogo-back-button", "besogo-back-button-inactive", "history-button", "besogo-reset-button",
+	for (let id of ["besogo-pass-button", "history-button", "besogo-reset-button",
 		"besogo-reset-button-inactive", "besogo-review-button", "besogo-review-button-inactive", "besogo-next-button", "besogo-next-button-inactive"])
 	{
 		let button = row.querySelector("#" + id);
@@ -236,19 +236,10 @@ redrawHearts();
 		else
 			end.appendChild(button);
 	}
-	//Back and Reset are short symbols, so the actions fit in one row; what they do is in their titles
-	let back = end.querySelector("#besogo-back-button, #besogo-back-button-inactive");
-	if (back)
-	{
-		back.textContent = "\u2039";
-		back.setAttribute("aria-label", "Back");
-	}
+	//Reset with its symbol, in the case of the other actions
 	let reset = end.querySelector("#besogo-reset-button, #besogo-reset-button-inactive");
 	if (reset && reset.tagName === "INPUT")
-	{
-		reset.value = "\u21BA";
-		reset.setAttribute("aria-label", "Reset");
-	}
+		reset.value = "\u21BA Reset";
 	if (problemSolved && message)
 		message.classList.add("play-message--solved");
 	//The review's tree goes to the panel too, where it shows beside the board with the comments under it

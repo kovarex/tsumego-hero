@@ -305,13 +305,8 @@ besogo.makeToolPanel = function (container, editor) {
           "besogo-pass-button"
         );
       }
-      if (mode == 1 || mode == 5) {
-        // The first problem of the training has nothing before it
-        if (previousButtonLink)
-          makeHyperlinkText("Back","previous problem", previousButtonLink, "besogo-back-button");
-        else
-          makeHyperlinkText("Back","no previous problem", 0, "besogo-back-button-inactive");
-      } else if (mode == 2) {
+      // The level mode and the training have no Back: the problem buttons under the board lead back
+      if (mode == 2) {
         makeHyperlinkText(
           "History",
           "history of rating mode",
@@ -567,10 +562,7 @@ besogo.makeToolPanel = function (container, editor) {
       );
     } else if (besogo.multipleChoiceCustom === "multiple_choice") {
       toggleBoardLock(true);
-      let prevButtonId;
-      prevButtonId = "besogo-back-button";
-
-      makeHyperlinkText("Back","previous problem", previousButtonLink, prevButtonId);
+      // No Back: the problem buttons under the board lead back
 
       makeButtonText(
         besogo.multipleChoiceCustomSetup[0],
@@ -612,10 +604,7 @@ besogo.makeToolPanel = function (container, editor) {
       makeHyperlinkText("Next", "next problem", nextButtonLink, "besogo-next-button");
     } else {
       toggleBoardLock(true);
-      let prevButtonId;
-      prevButtonId = "besogo-back-button";
-
-      makeHyperlinkText("Back","previous problem", previousButtonLink, prevButtonId);
+      // No Back: the problem buttons under the board lead back
 
       makeButtonText(
         besogo.boardInverted ? "White is dead" : "Black is dead",

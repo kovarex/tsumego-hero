@@ -157,20 +157,19 @@ use App\Utility\ViteManifest;
 						<span id="hintText" class="hint italic">(<?php echo h($displayHint); ?>)</span>
 					<?php endif; ?>
 				</div>
-				<?php // The XP of the training shows under "Correct!", so it stays empty, but the rank of the problem shows as in the level mode ?>
-				<div class="play-head__stake<?php echo Auth::isInMistakeTrainingMode() ? ' play-status--training' : ''; ?>">
-					<?php $tsumegoXPAndRating->render(); ?>
-				</div>
+			</div>
+			<?php // The XP of the training shows under "Correct!", so it stays empty, but the rank of the problem shows as in the level mode ?>
+			<div class="play-head__stake<?php echo Auth::isInMistakeTrainingMode() ? ' play-status--training' : ''; ?>">
+				<?php $tsumegoXPAndRating->render(); ?>
 			</div>
 		</div>
 		<?php if (Auth::isInMistakeTrainingMode() && !empty($mistakeTrainingReplay)): ?>
 			<div class="alert alert-info mistake-training-replay" role="status">Already solved today. This try does not count.</div>
 		<?php endif; ?>
-		<?php //Every message of the problem has one place, right above the board: Correct, Incorrect, what a status problem adds ?>
+		<?php //Every message of the problem has one place, right above the board: Correct, Incorrect, what a status problem adds, the comment of a move ?>
+		<?php //The comment of the move played ("Correct, but what about this answer?") shares the row, so it doesn't move the board either ?>
 		<div class="play-message">
 			<?php $tsumegoXPAndRating->renderStatus(); ?>
-		</div>
-		<div class="text-center">
 			<div id="theComment"></div>
 		</div>
 

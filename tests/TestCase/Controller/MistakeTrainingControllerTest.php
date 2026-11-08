@@ -400,8 +400,8 @@ class MistakeTrainingControllerTest extends IntegrationTestCase
 		$this->assertStringEndsWith(MistakeTraining::$PLAY_LINK_PREFIX . $context->tsumegos[0]['set-connections'][0]['id'], $browser->driver->getCurrentURL(),
 			'Reset opens the problem again on the training route');
 		$this->assertStringNotContainsString('Incorrect', $browser->find('#status')->getText(), 'Reset opens a fresh try');
-		$this->assertCount(1, $browser->driver->findElements(WebDriverBy::id('besogo-back-button-inactive')),
-			'The only problem of the day has nothing before it');
+		$this->assertCount(0, $browser->driver->findElements(WebDriverBy::id('besogo-back-button-inactive')),
+			'The training has no Back, the problem buttons lead back');
 		$this->assertCount(1, $browser->driver->findElements(WebDriverBy::id('besogo-next-button-inactive')),
 			'Nor anything after it until it is solved');
 

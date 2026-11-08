@@ -194,8 +194,12 @@ h1 {
   border-bottom: 1px dotted var(--color-black);
   cursor: pointer;
 }
+/* Out of the layout until hovered, and opened leftwards under the number, so at the right edge of a
+   phone it stays on the screen instead of widening the page */
 .eloTooltip .eloTooltiptext {
-  visibility: hidden;
+  display: none;
+  top: 100%;
+  right: 0;
   width: 120px;
   background-color: var(--surface-border-strong);
   color: var(--color-white);
@@ -206,7 +210,7 @@ h1 {
   z-index: 1;
 }
 .eloTooltip:hover .eloTooltiptext {
-  visibility: visible;
+  display: block;
 }
 .besogo-board {
   /* Do NOT force the width here: besogo's JS sets an inline width per
@@ -596,10 +600,33 @@ h1 {
   border-left: 1px solid var(--surface-border-muted);
 }
 
-/* Where the problem is, a link to its collection, and under it the goal and the stake */
+/* The problem page has no footer: nothing under the board and the panel draws the eye away. The other
+   pages keep it, with the legal notice and About. */
+body:has(.play-screen) #footer {
+  display: none;
+}
+
+/* Where the problem is, a link to its collection, and under it the goal; at the right the stake,
+   as tall as the two lines, in a size that reads at a glance */
 .play-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  column-gap: var(--space-3);
+  align-items: center;
   width: 100%;
   max-width: 900px;
+}
+#playTitle {
+  grid-column: 1;
+  grid-row: 1;
+}
+.play-head__goal {
+  grid-column: 1;
+  grid-row: 2;
+}
+.play-head__stake {
+  grid-column: 2;
+  grid-row: 1 / span 2;
 }
 #playTitle {
   text-align: left;
@@ -615,26 +642,46 @@ h1 {
 }
 .play-stake {
   display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  color: var(--text-softer-color);
-  font-size: var(--text-sm);
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  color: var(--text-color);
+  font-size: var(--text-md);
+  text-align: right;
 }
 #xpDisplayDiv.play-stake {
   height: auto;
   margin: 0;
 }
 .play-stake .status-rating {
-  font-size: var(--text-sm);
+  font-size: var(--text-lg);
+  font-weight: var(--weight-bold);
 }
 
-/* The one row of the messages, right above the board; its height is kept while empty, so the board never moves */
+/* The one row of the messages, right above the board. Its height is fixed, empty or full, so the board
+   never moves; a long comment of a move scrolls inside it. */
 .play-message {
   display: flex;
   align-items: center;
   width: 100%;
   max-width: 900px;
-  min-height: 40px;
+  height: 48px;
+  box-sizing: border-box;
+  overflow-y: auto;
+}
+.play-message #theComment {
+  flex: 1;
+  width: auto;
+  min-width: 0;
+  max-height: 100%;
+  margin: 0;
+  padding: 2px var(--space-2);
+  border: 0;
+  background: none;
+  text-align: center;
+  font-size: var(--text-sm);
+  line-height: 1.25;
+  white-space: pre-line;
 }
 .play-message__status h2,
 .play-message__status h3 {
