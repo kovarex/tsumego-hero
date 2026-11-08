@@ -19,7 +19,7 @@
 .signin h1 {
 	margin-bottom: var(--space-5);
 	font-size: 26px;
-	font-weight: 400;
+	font-weight: var(--weight-normal);
 }
 .signin .input label {
 	display: block;
@@ -39,7 +39,7 @@
 	border-bottom: 1px solid var(--text-softer-color);
 	color: var(--text-color);
 	font-family: var(--font-family-display);
-	font-weight: 400;
+	font-weight: var(--weight-normal);
 	font-size: 15px;
 	transition: 0.2s ease;
 }

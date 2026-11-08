@@ -87,7 +87,7 @@
 
 .messages-list__item--unread .messages-list__name
 {
-	font-weight: var(--font-weight-bold);
+	font-weight: var(--weight-bold);
 }
 
 .messages-list__date
@@ -113,7 +113,7 @@
 	min-width: 16px;
 	padding: 0 var(--space-1);
 	font-size: var(--font-size-xs);
-	font-weight: var(--font-weight-bold);
+	font-weight: var(--weight-bold);
 	line-height: 16px;
 	text-align: center;
 	color: var(--color-white);
@@ -213,7 +213,7 @@
 	gap: var(--space-3);
 	padding: var(--space-2) var(--space-3);
 	border-bottom: 1px solid var(--current-border-color);
-	font-weight: var(--font-weight-bold);
+	font-weight: var(--weight-bold);
 }
 
 /* The list is next to the conversation, the way back is only needed on a phone. */

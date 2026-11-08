@@ -2,7 +2,7 @@
 {
 body {
 	font-family: var(--font-family-body);
-	font-size: clamp(15px, 0.9rem + 0.5vw, 16px);
+	font-size: var(--text-md);
 	margin: 0;
 	text-align: justify;
 	background: var(--body-background-gradient);
@@ -33,7 +33,7 @@ body {
   position: relative;
   margin: auto;
   color: var(--color-white);
-  font-weight: bold;
+  font-weight: var(--weight-bold);
   /* Reserve header space so the absolutely-positioned logo/nav don't overlap
      the content below. The old outerMenu2 (height:65px) did this implicitly. */
   height: 65px;
@@ -113,7 +113,7 @@ li a.menuLi {
   font-size: 24px;
   font-style: normal;
   font-variant: normal;
-  font-weight: 700;
+  font-weight: var(--weight-bold);
   line-height: 20px;
   cursor: pointer;
 }
@@ -140,7 +140,7 @@ li a.menuLi.nav__link--active {
   font-family: var(--font-family-display);
   letter-spacing: 1px;
   font-size: 24px;
-  font-weight: 700;
+  font-weight: var(--weight-bold);
   line-height: 20px;
   color: var(--color-purple-bright);
   text-decoration: none;
@@ -159,7 +159,7 @@ li a.menuLi.nav__link--active {
   font-size: 24px;
   font-style: normal;
   font-variant: normal;
-  font-weight: 800;
+  font-weight: var(--weight-heavy);
   line-height: 22px;
   text-decoration: underline;
 }
@@ -175,7 +175,7 @@ li a.menuLi.nav__link--active {
   align-items: center;
   margin-top: 5px;
   padding: 10px;
-  font-size: 13px;
+  font-size: var(--text-sm);
   color: var(--color-white);
 }
 .footer-element {
@@ -236,7 +236,7 @@ li a.menuLi.nav__link--active {
   font-size: 14px;
   font-style: normal;
   font-variant: normal;
-  font-weight: 600;
+  font-weight: var(--weight-medium);
   letter-spacing: 1px;
   white-space: nowrap;
   border: 1px solid var(--color-gold);
@@ -252,7 +252,7 @@ li a.menuLi.nav__link--active {
   font-size: 14px;
   font-style: normal;
   font-variant: normal;
-  font-weight: 600;
+  font-weight: var(--weight-medium);
   letter-spacing: 1px;
   white-space: nowrap;
 }
@@ -266,7 +266,7 @@ li a.menuLi.nav__link--active {
   left: 15px;
   display: inline-block;
   font-size: 17px;
-  font-weight: 700;
+  font-weight: var(--weight-bold);
   font-style: normal;
   font-variant: normal;
 }
@@ -364,7 +364,7 @@ li a.menuLi.nav__link--active {
 	font-size: 24px;
 	font-style: normal;
 	font-variant: normal;
-	font-weight: 400;
+	font-weight: var(--weight-normal);
 	line-height: 1.2;
 	text-wrap: balance;
 	text-decoration: none;
@@ -380,7 +380,7 @@ li a.menuLi.nav__link--active {
   font-size: 24px;
   font-style: normal;
   font-variant: normal;
-  font-weight: 400;
+  font-weight: var(--weight-normal);
   line-height: 20px;
   text-decoration: none;
   position: absolute;
@@ -404,7 +404,7 @@ li a.menuLi.nav__link--active {
   font-size: 16px;
   font-style: normal;
   font-variant: normal;
-  font-weight: 600;
+  font-weight: var(--weight-medium);
   line-height: 23px;
   padding: 8px 15px 0px;
   cursor: pointer;
@@ -457,7 +457,7 @@ input.newCheck {
   font-family: var(--font-family-display);
   letter-spacing: 1px;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: var(--weight-medium);
   z-index: var(--layer-account-menu);
   cursor: pointer;
   border-radius: var(--radius-sm) var(--radius-sm) 0 0;
@@ -478,7 +478,7 @@ input.newCheck {
   font-family: var(--font-family-display);
   letter-spacing: 1px;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: var(--weight-medium);
   z-index: var(--layer-account-menu);
   cursor: pointer;
   border-top: 1px solid var(--surface-ink);
@@ -499,7 +499,7 @@ input.newCheck {
   font-family: var(--font-family-display);
   letter-spacing: 1px;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: var(--weight-medium);
   z-index: var(--layer-account-menu);
   border-top: 1px solid var(--surface-ink);
   cursor: pointer;
@@ -520,7 +520,7 @@ input.newCheck {
   font-family: var(--font-family-display);
   letter-spacing: 1px;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: var(--weight-medium);
   z-index: var(--layer-account-menu);
   border-top: 1px solid var(--surface-ink);
   cursor: pointer;
@@ -541,7 +541,7 @@ input.newCheck {
   font-family: var(--font-family-display);
   letter-spacing: 1px;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: var(--weight-medium);
   z-index: var(--layer-account-menu);
   border-top: 1px solid var(--surface-ink);
   cursor: pointer;
@@ -562,7 +562,7 @@ input.newCheck {
   font-family: var(--font-family-display);
   letter-spacing: 1px;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: var(--weight-medium);
   z-index: var(--layer-account-menu);
   border-top: 1px solid var(--surface-ink);
   cursor: pointer;
@@ -583,7 +583,7 @@ input.newCheck {
   font-family: var(--font-family-display);
   letter-spacing: 1px;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: var(--weight-medium);
   z-index: var(--layer-account-menu);
   cursor: pointer;
   border-top: 1px solid var(--surface-ink);
@@ -602,7 +602,7 @@ input.newCheck {
 }
 #time-mode-countdown {
   font-size: 21px;
-  font-weight: 800;
+  font-weight: var(--weight-heavy);
 }
 .clear1 {
   clear: both;
@@ -617,7 +617,7 @@ input.newCheck {
   top: 111px;
   left: 440px;
   font-size: 21px;
-  font-weight: 800;
+  font-weight: var(--weight-heavy);
   color: var(--color-blue-accent);
 }
 /* The legacy menu is set in its own wide sans, not in the body serif. */
@@ -638,7 +638,7 @@ nav ul li {
   background: var(--color-title-gradient);
   color: var(--color-purple-nav);
   float: left;
-  font-weight: 800;
+  font-weight: var(--weight-heavy);
   text-align: center;
   border-top: 2px solid var(--surface-border-light);
   border-right: 2px solid var(--color-black);
@@ -710,18 +710,18 @@ nav ul ul ul li {
   width: 159px;
 }
 .newMenuLi3 a {
-  font-weight: 400;
+  font-weight: var(--weight-normal);
   font-size: 19px;
 }
 .newMenuLi4 li {
   width: 159px;
 }
 .newMenuLi4 a {
-  font-weight: 400;
+  font-weight: var(--weight-normal);
   font-size: 19px;
 }
 .adminLink {
-  font-weight: 400;
+  font-weight: var(--weight-normal);
   font-size: 19px;
   color: var(--color-red-light);
 }
@@ -736,7 +736,7 @@ nav ul ul ul li {
   padding: 40px;
   margin: 120px;
   color: var(--color-red);
-  font-weight: bold;
+  font-weight: var(--weight-bold);
   background-color: var(--surface-panel-light);
   border-radius: var(--radius-lg);
   border: 1px solid var(--color-red);
@@ -863,7 +863,7 @@ nav ul ul ul li {
   z-index: 2;
 }
 .error-page__message {
-  font-size: 18px;
+  font-size: var(--text-lg);
 }
 .error-page__details {
   font-size: 16px;
@@ -922,7 +922,7 @@ nav ul ul ul li {
   color: var(--color-white);
   padding: 20px;
   border-radius: 5px;
-  font-size: 13px;
+  font-size: var(--text-sm);
   line-height: 1.6;
   margin-top: 10px;
   font-family: var(--font-family-code);
@@ -1088,7 +1088,7 @@ nav ul ul ul li {
 	}
 	.site-nav nav a {
 		padding: 10px 8px;
-		font-size: 18px;
+		font-size: var(--text-lg);
 		color: var(--color-purple-nav);
 		display: block;
 		width: 100%;
@@ -1185,7 +1185,7 @@ nav ul ul ul li {
 		width: 100%;
 		box-sizing: border-box;
 		padding: 10px 8px;
-		font-size: 18px;
+		font-size: var(--text-lg);
 		color: var(--color-purple-nav);
 		text-align: left;
 	}

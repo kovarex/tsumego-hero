@@ -47,7 +47,7 @@
 
 .challenges__settings
 {
-	font-weight: var(--font-weight-bold);
+	font-weight: var(--weight-bold);
 }
 
 .challenges__section
@@ -183,7 +183,7 @@
 .challenge-standings-popup__title
 {
 	grid-column: 1 / -1;
-	font-weight: bold;
+	font-weight: var(--weight-bold);
 }
 
 /* Each run lays its place, player and points in the columns of the panel */
@@ -275,7 +275,7 @@
 .challenges__table th
 {
 	color: var(--text-softer-color);
-	font-weight: normal;
+	font-weight: var(--weight-normal);
 }
 
 .challenges__table a
@@ -313,7 +313,7 @@
 .challenges__place,
 .challenges__points
 {
-	font-weight: var(--font-weight-bold);
+	font-weight: var(--weight-bold);
 }
 
 .challenges__standing--me
@@ -339,7 +339,7 @@
 {
 	background: var(--color-green);
 	color: #fff;
-	font-weight: var(--font-weight-bold);
+	font-weight: var(--weight-bold);
 }
 
 .challenges__cell--failed,
@@ -427,7 +427,7 @@ a[href="/challenges"],
 	border: 2px solid currentColor;
 	border-radius: 11px;
 	font-size: 12px;
-	font-weight: var(--font-weight-bold);
+	font-weight: var(--weight-bold);
 	opacity: 0.75;
 }
 }

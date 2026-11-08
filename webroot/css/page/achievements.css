@@ -236,10 +236,10 @@
 }
 .acTitle h1 {
   padding: 12px 6px;
-  font-weight: bold;
+  font-weight: var(--weight-bold);
 }
 .acTitle .acTitleLong {
-  font-weight: normal;
+  font-weight: var(--weight-normal);
   font-size: 17px;
 }
 .acTitle2 b {
@@ -247,7 +247,7 @@
 }
 .acTitle2 h1 {
   padding: 12px 6px;
-  font-weight: bold;
+  font-weight: var(--weight-bold);
   color: inherit !important;
 }
 .achievementSmall .acTitle2 {
@@ -265,7 +265,7 @@
 .acImgXp {
   position: relative;
   top: -8px;
-  font-size: 13px;
+  font-size: var(--text-sm);
 }
 .achievementEarnedCount {
   position: absolute;
@@ -274,7 +274,7 @@
   padding: 1px 7px;
   border-radius: var(--radius-full);
   font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-heavy);
+  font-weight: var(--weight-heavy);
   color: var(--color-white);
   background: var(--color-gray-dark);
 }
@@ -285,7 +285,7 @@
 .acDesc {
   padding: 15px 5px;
   height: 64px;
-  font-weight: bold;
+  font-weight: var(--weight-bold);
 }
 .acDate {
   font-style: italic;
@@ -305,7 +305,7 @@
 	padding: 2px 8px;
 	border-radius: var(--radius-full);
 	font-size: var(--font-size-sm);
-	font-weight: var(--font-weight-heavy);
+	font-weight: var(--weight-heavy);
 	text-transform: uppercase;
 	letter-spacing: 0.5px;
 }
@@ -391,7 +391,7 @@
 }
 .acCollections__link--earned {
 	color: inherit;
-	font-weight: var(--font-weight-heavy);
+	font-weight: var(--weight-heavy);
 }
 .acCollections__percent {
 	margin-left: 0.4em;

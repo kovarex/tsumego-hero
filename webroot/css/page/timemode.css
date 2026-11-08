@@ -56,7 +56,7 @@
 }
 /* The best run and the current one in the history */
 .time-result__shown {
-  font-weight: bold;
+  font-weight: var(--weight-bold);
 }
 .time-mode__rank-link {
   text-decoration: none;
