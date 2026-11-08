@@ -37,6 +37,13 @@
 	text-align: -webkit-left;
 }
 
+/* What align="right" did */
+.legacy-right
+{
+	text-align: -moz-right;
+	text-align: -webkit-right;
+}
+
 /* A form that sits in a line of text */
 .inline-form
 {
