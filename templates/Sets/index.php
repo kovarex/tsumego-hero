@@ -23,7 +23,7 @@ use App\Utility\ViteManifest;
 	<div class="legacy-center set-search-menu query-<?php echo h($tsumegoFilters->query); ?>">
 		<div class="set-buttons-left">
 			<div class="set-buttons">
-				<button id="topics-button" class="btn btn-link collapsed set-search" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+				<button id="topics-button" class="btn btn--filter btn-link collapsed set-search" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
 					<div class="set-button-text">
 							Topics
 					</div>
@@ -46,7 +46,7 @@ use App\Utility\ViteManifest;
 				</div>
 			</div>
 			<div class="set-buttons">
-				<button id="difficulty-button" class="btn btn-link collapsed set-search" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+				<button id="difficulty-button" class="btn btn--filter btn-link collapsed set-search" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
 					<div class="set-button-text">
 							Difficulty
 					</div>
@@ -92,7 +92,7 @@ use App\Utility\ViteManifest;
 				</div>
 			</div>
 			<div class="set-buttons">
-				<button id="tags-button" class="btn btn-link collapsed set-search" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+				<button id="tags-button" class="btn btn--filter btn-link collapsed set-search" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
 					<div class="set-button-text">
 							Tags
 					</div>
@@ -124,7 +124,7 @@ use App\Utility\ViteManifest;
 				<input id="set-size-input" type="number" value="<?php echo $tsumegoFilters->collectionSize; ?>" step="<?php echo Constants::$COLLECTION_SIZE_STEP; ?>" min="<?php echo Constants::$MIN_COLLECTION_SIZE; ?>" max="<?php echo Constants::$MAX_COLLECTION_SIZE; ?>" name="collection_size">
 			</div>
 			<div class="set-buttons">
-			<input type="submit" id="submit-size-button" class="btn btn-link collapsed set-search set-search__submit" value="Submit">
+			<input type="submit" id="submit-size-button" class="btn btn--filter btn-link collapsed set-search set-search__submit" value="Submit">
 			</div>
 		</div>
 		</form>

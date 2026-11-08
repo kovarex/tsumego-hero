@@ -275,8 +275,15 @@
 }
 
 /* ── Button ── */
-/* Unified on the site's dominant button look (the green-text grey box that was
-   new-button-time) so the whole site has ONE button style. */
+/* The one button. Default: the grey box with green text. Variants by role:
+   --primary   filled green, the one main action of a page (alias: --success)
+   --secondary the neutral grey gradient (alias: --neutral)
+   --danger    red text, for deleting and leaving
+   --link      blue, goes somewhere rather than doing something (alias: --navigation)
+   --small     less padding and text, for buttons in rows and tables
+   --filter    the filter toggles of the collections page
+   --inactive  the current tab of a row of buttons
+   Disabled through the disabled attribute or aria-disabled="true" (alias: --disabled). */
 .btn
 {
 	display: inline-block;
@@ -291,7 +298,7 @@
 	border: 1px solid var(--surface-border-strong);
 	border-top-color: var(--surface-border-light);
 	border-left-color: var(--surface-border-light);
-	border-radius: 9px;
+	border-radius: var(--radius-md);
 	cursor: pointer;
 	transition: background 0.2s;
 }
@@ -304,30 +311,62 @@
 	cursor: pointer;
 }
 
+/* On touch a button is at least 40px tall, its text centred */
+@media (pointer: coarse)
+{
+	.btn
+	{
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		min-height: 40px;
+	}
+}
+
+.btn:disabled,
+.btn[aria-disabled="true"],
 .btn--disabled
 {
 	opacity: 0.5;
 	cursor: not-allowed;
 }
 
+.btn:disabled:hover,
+.btn[aria-disabled="true"]:hover,
 .btn--disabled:hover
 {
 	background-color: var(--surface-button);
 	cursor: not-allowed;
 }
 
-.btn--inactive
+.btn--primary,
+.btn--success
 {
-	background-color: var(--surface-button-inactive);
-	background-image: none;
-	color: var(--text-button-inactive);
+	background: var(--color-green-dark);
+	border-color: var(--color-green-dark);
+	color: var(--color-white);
 }
 
-.btn--inactive:hover
+.btn--primary:hover,
+.btn--success:hover
 {
-	background-color: var(--surface-button-inactive);
-	background-image: none;
-	color: var(--text-button-inactive);
+	background: var(--color-green);
+	color: var(--color-white);
+}
+
+.btn--secondary,
+.btn--neutral
+{
+	background: var(--new1-gradient);
+	color: var(--color-text);
+	border: 1px solid var(--color-black);
+	border-radius: 5px;
+}
+
+.btn--secondary:hover,
+.btn--neutral:hover
+{
+	background: var(--surface-button-neutral-hover);
 }
 
 .btn--danger
@@ -341,40 +380,7 @@
 	background: var(--color-red-darker);
 }
 
-.btn--small
-{
-	padding: 3px 8px;
-	font-size: var(--text-xs);
-}
-
-.btn--success
-{
-	background: var(--color-green-dark);
-	border-color: var(--color-green-dark);
-	color: var(--color-white);
-}
-
-.btn--success:hover
-{
-	background: var(--color-green);
-	color: var(--color-white);
-}
-
-.btn--warning
-{
-	background: var(--color-warning);
-	border-color: var(--color-warning);
-	color: var(--color-white);
-}
-
-.btn--warning:hover
-{
-	background: var(--color-warning);
-	color: var(--color-white);
-}
-
-/* Goes somewhere (open, compare) rather than doing something: blue like a link,
-   white text readable in both themes. */
+.btn--link,
 .btn--navigation
 {
 	background: var(--color-blue-dark);
@@ -382,41 +388,41 @@
 	color: var(--color-white);
 }
 
+.btn--link:hover,
 .btn--navigation:hover
 {
 	background: var(--color-blue-darker);
 }
 
-.btn--navigation.btn--disabled:hover
+.btn--link:is(:disabled, [aria-disabled="true"], .btn--disabled):hover,
+.btn--navigation:is(:disabled, [aria-disabled="true"], .btn--disabled):hover
 {
 	background: var(--color-blue-dark);
 }
 
-/* Grey box + white text + wider padding: the pre-refactor .new-button look. */
-.btn--primary
+.btn--small
 {
-	color: var(--color-white);
-	padding: 10px 13px;
+	padding: 3px 8px;
+	font-size: var(--text-xs);
+}
+
+/* A toggle that opens a filter menu (collections page): a flatter box in the filter colours */
+.btn--filter
+{
+	display: flex;
+	padding: 6px 10px;
 	margin: 5px;
-}
-
-.btn--primary:hover
-{
-	color: var(--color-white);
-}
-
-/* Neutral grey-gradient button: pre-refactor .new-button-default look. */
-.btn--neutral
-{
-	background: var(--new1-gradient);
-	color: var(--color-text);
-	border: 1px solid var(--color-black);
 	border-radius: 5px;
+	background: var(--set-filter-background);
+	color: var(--set-filter-text);
 }
 
-.btn--neutral:hover
+.btn--inactive,
+.btn--inactive:hover
 {
-	background: var(--surface-button-neutral-hover);
+	background-color: var(--surface-button-inactive);
+	background-image: none;
+	color: var(--text-button-inactive);
 }
 
 /* ── Sub-navigation ── */

@@ -31,7 +31,7 @@ use App\Utility\Constants;
 			<input name="password2" autocomplete="new-password" type="password" id="UserPassword2"/>
 		</div>
 		<p class="hint">At least <?php echo Constants::$MINIMUM_PASSWORD_LENGTH; ?> characters.</p>
-		<button type="submit" class="btn">Sign up</button>
+		<button type="submit" class="btn btn--primary">Sign up</button>
 		</form>
 		<p class="hint">Already have an account? <a href="/users/login">Sign in</a></p>
 

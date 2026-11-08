@@ -204,7 +204,7 @@ if ($tsumegoFilters->query != 'topics')
 			<?php if (isset($canEdit) && $canEdit): ?>
 				<tr>
 					<td colspan="2" class="set-view__edit-row">
-						<a class="btn btn--primary" href="/sets/edit/<?php echo (int) $set->id; ?>">Edit Set</a>
+						<a class="btn" href="/sets/edit/<?php echo (int) $set->id; ?>">Edit Set</a>
 						<?php if (!empty($canShare)): ?>
 							<form method="post" action="/sets/share/<?php echo (int) $set->id; ?>" class="set-view__share">
 								<label class="set-view__share-toggle">

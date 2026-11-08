@@ -27,7 +27,7 @@ use App\Utility\CookieFlash;
                         <input name="password2" maxlength="50" type="password" id="password2" autocomplete="new-password" required="required"/>
                 </div>
                 <div class="hint">At least <?php echo Constants::$MINIMUM_PASSWORD_LENGTH; ?> characters.</div>
-                <button type="submit" class="btn" id="newpassword-submit">Submit</button>
+                <button type="submit" class="btn btn--primary" id="newpassword-submit">Submit</button>
 	</div>
 	<div class="right">
 	</div>

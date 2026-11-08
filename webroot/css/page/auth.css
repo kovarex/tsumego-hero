@@ -55,7 +55,6 @@
 	margin-top: var(--space-5);
 	min-height: 44px;
 	min-width: 120px;
-	color: var(--color-white);
 }
 /* Sits in the gap under the password field, so it reads as part of that field. */
 .signin .password-toggle {

@@ -24,8 +24,8 @@ foreach ($timeModeCategories as $timeModeCategory)
 <br>
 <div class="legacy-center">
 	<a class="btn btn--inactive" href="#">Select</a>
-	<a class="btn<?php echo $hasFinishedSesssion ? ' btn--primary' : ' btn--inactive'; ?>" href="<?php echo $hasFinishedSesssion ? '/timeMode/result' : '#'; ?>">Results</a>
-	<a class="btn btn--primary" href="/challenges">Challenge a friend</a>
+	<a class="btn<?php echo $hasFinishedSesssion ? '' : ' btn--inactive'; ?>" href="<?php echo $hasFinishedSesssion ? '/timeMode/result' : '#'; ?>">Results</a>
+	<a class="btn" href="/challenges">Challenge a friend</a>
 </div>
 <?php if ($challengeInProgressID): ?>
 <p class="hint legacy-center" id="challenge-in-progress">

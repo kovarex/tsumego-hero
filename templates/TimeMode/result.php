@@ -16,7 +16,7 @@ use App\Utility\ViteManifest;
 	<h2>Time Mode Results</h2>
 	<br>
 	<div class="legacy-center">
-		<a class="btn btn--primary" href="/timeMode/overview">Select</a>
+		<a class="btn" href="/timeMode/overview">Select</a>
 		<a class="btn btn--inactive" href="#">Results</a>
 	</div>
 	<br><br>

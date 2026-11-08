@@ -435,16 +435,6 @@ input.newCheck {
   color: var(--color-green);
   padding: 5px;
 }
-/* Board picker Save button: restore green button look inside the nav
-   (nav a overrides the .btn color/padding otherwise). */
-#dropdowntable2 .btn {
-  display: inline-block;
-  font-size: 16px;
-  padding: 10px 13px;
-  color: var(--color-green);
-  border-left: 1px solid var(--surface-ink);
-  border-top: 1px solid var(--surface-ink);
-}
 #heroProfile {
   color: var(--color-green);
   position: absolute;
@@ -658,7 +648,8 @@ nav ul .menuIcons1 {
   color: var(--color-red-light) !important;
 }
 
-nav a {
+/* :where keeps the specificity of nav a, a button in the menu keeps its own look */
+nav a:not(:where(.btn)) {
   display: block;
   font-size: 22px;
   padding: 5px 16px;

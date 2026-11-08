@@ -20,7 +20,7 @@ use App\Utility\CookieFlash;
 			<label for="UserEmail">E-Mail</label>
 			<input name="email" maxlength="<?php echo UserTable::EMAIL_MAX_LENGTH; ?>" type="text" id="UserEmail" autocomplete="email" required="required"/>
 		</div>
-		<button type="submit" class="btn">Send reset link</button>
+		<button type="submit" class="btn btn--primary">Send reset link</button>
 		</form>
 		<p class="hint">Remembered it? <a href="/users/login">Sign in</a></p>
 		<p class="hint">Signed up with Google? Sign in there instead:</p>
