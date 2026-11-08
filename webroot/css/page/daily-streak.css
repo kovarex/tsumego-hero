@@ -1,16 +1,14 @@
 /* Page layer: daily-streak.css - the flame of the daily streak in the menu
-   (templates/element/daily_streak.php). On the desktop it stands right after the icons of the
-   menu, next to the account bar, the number under the flame; on mobile it sits beside the
-   hamburger. Hovering it, or tapping it (it takes the focus), shows the details. When a solve
+   (templates/element/daily_streak.php). On the desktop it shares a row with the account bar
+   (.site-header-account), the number under the flame; on mobile it sits beside the hamburger. Hovering it, or tapping it (it takes the focus), shows the details. When a solve
    completes the day, webroot/js/DailyStreak.js adds daily-streak--ignite, which flares the flame up
    with a burst of light; with reduced motion it just lights. */
 @layer page
 {
 .daily-streak
 {
-	position: absolute;
-	left: 1120px;
-	top: 12px;
+	position: relative;
+	margin-top: 12px;
 	z-index: var(--layer-streak);
 	display: flex;
 	flex-direction: column;
@@ -251,8 +249,7 @@
 		flex-direction: row;
 		gap: var(--space-1);
 		width: auto;
-		margin-left: auto;
-		margin-right: 14px;
+		margin: 0 14px 0 auto;
 	}
 
 	.daily-streak__length
