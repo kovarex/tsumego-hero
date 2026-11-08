@@ -286,8 +286,11 @@ function fitReviewTree(reviewPanels)
 		let bottom = Math.max(...[...main.children].map(child => child.getBoundingClientRect().bottom));
 		let height = Math.floor(bottom - tree.getBoundingClientRect().top);
 		let svgBox = svg.getBoundingClientRect();
+		//the box's border and padding around the tree, as its max-height includes them (play.css)
+		let treeStyle = getComputedStyle(tree);
+		let around = ["paddingTop", "paddingBottom", "borderTopWidth", "borderBottomWidth"].reduce((sum, side) => sum + parseFloat(treeStyle[side]), 0);
 		//the panel's padding, and the width of a scrollbar when the tree is taller than its box
-		let room = 34 + (svgBox.height > (commentsOpen ? 350 : Math.max(350, height)) ? 16 : 0);
+		let room = 34 + (svgBox.height + around > (commentsOpen ? 350 : Math.max(350, height)) ? 16 : 0);
 		let extra = Math.ceil(svgBox.width) + room - PANEL;
 		if (extra > 0)
 		{
