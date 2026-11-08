@@ -63,10 +63,10 @@
 
 	h2
 	{
-		font-size: clamp(22px, 1.1rem + 1vw, 28px);
+		font-size: var(--text-2xl);
 		font-style: normal;
 		font-variant: normal;
-		font-weight: 600;
+		font-weight: var(--weight-medium);
 		line-height: 1.2;
 	}
 
@@ -75,21 +75,21 @@
 		font-size: clamp(16px, 0.9rem + 0.6vw, 20px);
 		font-style: normal;
 		font-variant: normal;
-		font-weight: 400;
+		font-weight: var(--weight-normal);
 		line-height: 1.2;
 	}
 
 	h4
 	{
-		font-size: clamp(17px, 1rem + 0.5vw, 21px);
-		font-weight: 600;
+		font-size: var(--text-xl);
+		font-weight: var(--weight-medium);
 		margin-bottom: 10px;
 		margin-top: 0px;
 	}
 
 	pre
 	{
-		font-size: 18px;
+		font-size: var(--text-lg);
 		color: var(--color-white);
 	}
 
@@ -168,7 +168,7 @@
 
 	legend
 	{
-		font-weight: var(--font-weight-bold);
+		font-weight: var(--weight-bold);
 		padding: 0 var(--space-1);
 		color: var(--color-text);
 	}
@@ -176,7 +176,7 @@
 	label
 	{
 		display: block;
-		font-weight: var(--font-weight-bold);
+		font-weight: var(--weight-bold);
 		margin-bottom: var(--space-1);
 		color: var(--color-text);
 	}

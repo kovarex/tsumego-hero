@@ -50,6 +50,17 @@
 	display: inline;
 }
 
+/* A wide table that scrolls inside itself on a phone, instead of the page scrolling sideways */
+@media (width < 40rem)
+{
+	.phone-scroll-x
+	{
+		display: block;
+		max-width: 100%;
+		overflow-x: auto;
+	}
+}
+
 /* An empty block that ends the floats above it */
 .clear-both
 {

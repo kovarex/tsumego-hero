@@ -75,7 +75,7 @@
 
 .card__title
 {
-	font-weight: var(--font-weight-heavy);
+	font-weight: var(--weight-heavy);
 	color: var(--color-text-muted);
 	text-transform: uppercase;
 	font-size: var(--font-size-base);
@@ -118,8 +118,8 @@
 
 .info-box__title
 {
-	font-size: 18px;
-	font-weight: var(--font-weight-bold);
+	font-size: var(--text-lg);
+	font-weight: var(--weight-bold);
 	margin: 0 0 var(--space-2);
 }
 
@@ -184,7 +184,7 @@
 	align-items: center;
 	justify-content: center;
 	font-size: var(--font-size-sm);
-	font-weight: var(--font-weight-heavy);
+	font-weight: var(--weight-heavy);
 	color: var(--color-white);
 	text-shadow: 0 0 3px rgba(0, 0, 0, 0.8);
 	pointer-events: none;
@@ -226,7 +226,7 @@
 {
 	position: static;
 	font-size: 14px;
-	font-weight: 600;
+	font-weight: var(--weight-medium);
 	animation: progress-number-in 0.6s ease-out;
 }
 
@@ -288,7 +288,7 @@
 {
 	display: inline-block;
 	font-size: 16px;
-	font-weight: 800;
+	font-weight: var(--weight-heavy);
 	text-decoration: none;
 	text-transform: uppercase;
 	background-color: var(--surface-button);
@@ -403,7 +403,7 @@
 .btn--small
 {
 	padding: 3px 8px;
-	font-size: 11px;
+	font-size: var(--text-xs);
 }
 
 /* A toggle that opens a filter menu (collections page): a flatter box in the filter colours */
@@ -439,7 +439,7 @@
 	padding: var(--space-3) var(--space-5);
 	color: var(--color-text-muted);
 	text-decoration: none;
-	font-weight: var(--font-weight-bold);
+	font-weight: var(--weight-bold);
 	font-size: var(--font-size-lg);
 	text-transform: uppercase;
 	letter-spacing: 0.03em;
@@ -481,7 +481,7 @@
 	margin-top: var(--space-1);
 	padding: 1px var(--space-1);
 	font-size: var(--font-size-xs);
-	font-weight: var(--font-weight-bold);
+	font-weight: var(--weight-bold);
 	text-transform: uppercase;
 	letter-spacing: 0.04em;
 	border: 1px solid var(--color-border);
@@ -502,7 +502,7 @@
 {
 	padding: 4px 14px;
 	font-size: 14px;
-	font-weight: 800;
+	font-weight: var(--weight-heavy);
 	border-radius: var(--radius-sm);
 	text-align: center;
 	min-width: 100px;
@@ -551,7 +551,7 @@
 	margin: 0 6px 4px 0;
 	padding: 2px 8px;
 	border-radius: var(--radius-lg);
-	font-size: 13px;
+	font-size: var(--text-sm);
 	background: var(--color-surface);
 	color: var(--color-text);
 	border: 1px solid var(--color-border);
@@ -597,7 +597,7 @@
 
 .field__label
 {
-	font-weight: var(--font-weight-bold);
+	font-weight: var(--weight-bold);
 	color: var(--color-text);
 }
 
@@ -618,7 +618,7 @@
 .form-field__label
 {
 	display: block;
-	font-weight: var(--font-weight-bold);
+	font-weight: var(--weight-bold);
 	margin-bottom: var(--space-1);
 	color: var(--color-text);
 }
@@ -810,7 +810,7 @@
 	color: var(--rank-color, var(--color-white));
 	color: color-mix(in srgb, var(--rank-color, var(--color-white)) 70%, #fff);
 	border: 1px solid var(--rank-color, transparent);
-	font-weight: 700;
+	font-weight: var(--weight-bold);
 	box-shadow: none;
 	text-shadow: none;
 	transition: background-color 0.12s ease, transform 0.12s ease;
@@ -856,14 +856,14 @@
 .dropdown__tile-actions__select
 {
 	float: left;
-	font-weight: 800;
+	font-weight: var(--weight-heavy);
 	padding: 5px 9px;
 }
 
 .dropdown__tile-actions__submit
 {
 	float: right;
-	font-weight: 800;
+	font-weight: var(--weight-heavy);
 	padding: 5px 9px;
 	color: var(--color-white);
 }
@@ -959,7 +959,7 @@
 	border-bottom: 1px solid var(--color-border);
 	background: var(--color-surface);
 	color: var(--color-text);
-	font-weight: normal;
+	font-weight: var(--weight-normal);
 }
 
 .data-table td:first-child
@@ -977,6 +977,27 @@
 .data-table tr:nth-child(even) td
 {
 	background: var(--color-surface-sunken);
+}
+
+/* On a phone a table fits the screen: body-size text, no fixed column widths, less padding (compact tables keep their cell padding) */
+@media (width < 40rem)
+{
+	.data-table th,
+	.data-table td
+	{
+		font-size: 1rem;
+	}
+
+	.data-table th
+	{
+		width: auto;
+		padding: var(--space-1);
+	}
+
+	.data-table td
+	{
+		padding: var(--space-2) var(--space-1);
+	}
 }
 
 .data-table--compact td
@@ -1007,7 +1028,7 @@
 
 .data-table__row--self td
 {
-	font-weight: bold;
+	font-weight: var(--weight-bold);
 }
 
 .data-table__row--self td:first-child
@@ -1116,7 +1137,7 @@
 {
 	margin: 0 0 10px 0;
 	color: var(--color-danger);
-	font-size: 18px;
+	font-size: var(--text-lg);
 }
 
 .error-boundary__content p
@@ -1152,7 +1173,7 @@
 	border: 1px solid var(--color-surface-hover-strong);
 	border-radius: var(--radius-sm);
 	overflow-x: auto;
-	font-size: 11px;
+	font-size: var(--text-xs);
 	color: var(--color-danger);
 }
 
@@ -1174,7 +1195,7 @@
 	line-height: 1.8;
 	border-radius: var(--radius-md);
 	cursor: pointer;
-	font-weight: 400;
+	font-weight: var(--weight-normal);
 	display: none;
 	z-index: var(--layer-overlay);
 	background: linear-gradient(
@@ -1219,7 +1240,7 @@
 	color: white;
 	height: 31px;
 	width: 100%;
-	font-weight: 800;
+	font-weight: var(--weight-heavy);
 }
 
 .toast__banner--error
@@ -1279,7 +1300,7 @@
 	font-size: var(--font-size-base);
 }
 .chart__title {
-	font-weight: bold;
+	font-weight: var(--weight-bold);
 	text-align: left;
 	color: var(--color-text);
 	padding: var(--space-1) var(--space-2);
@@ -1327,7 +1348,7 @@
 	pointer-events: none;
 }
 .chart__tooltip-title {
-	font-weight: bold;
+	font-weight: var(--weight-bold);
 	margin-bottom: var(--space-1);
 }
 .line-chart__plot {
@@ -1376,14 +1397,14 @@
 	height: 70%;
 	overflow: hidden;
 	color: var(--chart-tooltip-text-color);
-	font-weight: bold;
+	font-weight: var(--weight-bold);
 	text-align: center;
 	line-height: 1.6;
 	box-shadow: inset -1px 0 0 var(--chart-separator-color);
 }
 .bar-chart__total {
 	padding-left: var(--space-1);
-	font-weight: bold;
+	font-weight: var(--weight-bold);
 	color: var(--color-text);
 }
 .bar-chart__grid,

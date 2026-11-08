@@ -41,7 +41,7 @@
 	cursor: pointer;
 	border-radius: var(--radius-sm);
 	font-family: var(--font-family-display);
-	font-size: 13px;
+	font-size: var(--text-sm);
 }
 .tsumego-comments__tab.active {
 	background: var(--comment-tab-active-background);
@@ -96,7 +96,7 @@
 .tsumego-comments__anchor-empty {
 	margin: 0 14px 12px 14px;
 	color: var(--text-softer-color);
-	font-size: 13px;
+	font-size: var(--text-sm);
 	font-style: italic;
 }
 /* Standalone comment styling */
@@ -115,7 +115,7 @@
 	margin-bottom: var(--space-2);
 }
 .tsumego-comment__author {
-	font-weight: bold;
+	font-weight: var(--weight-bold);
 	display: inline; /* Don't break onto new line, let br handle it */
 }
 /* Comment text content - ensure consistent spacing */
@@ -125,7 +125,7 @@
 	line-height: 1.5;
 }
 .tsumego-comment__date {
-	font-size: 11px;
+	font-size: var(--text-xs);
 	color: var(--text-softer-color);
 }
 /* Position-anchored comment "Move N" chip (clickable -> jumps to position) */
@@ -138,7 +138,7 @@
 	border-radius: 10px;
 	background: var(--info-box-background);
 	color: var(--text-softer-color);
-	font-size: 11px;
+	font-size: var(--text-xs);
 	white-space: nowrap;
 	cursor: pointer;
 	font-family: inherit;
@@ -203,7 +203,7 @@
 .deleteComment {
 	background: transparent;
 	border: 1px solid var(--feedback-error);
-	font-size: 11px;
+	font-size: var(--text-xs);
 	cursor: pointer;
 	padding: 2px 6px;
 	margin-top: 3px;
@@ -247,12 +247,12 @@
 	border: 1px solid var(--comment-textarea-border);
 	border-radius: var(--radius-sm);
 	resize: vertical;
-	font-size: 13px;
+	font-size: var(--text-sm);
 	box-sizing: border-box;
 }
 .tsumego-comments__char-counter {
 	text-align: right;
-	font-size: 11px;
+	font-size: var(--text-xs);
 	color: var(--text-softer-color);
 	margin-top: 2px;
 	margin-bottom: var(--space-2);
@@ -361,7 +361,7 @@
 }
 .tsumego-issue__drop-overlay span {
 	color: var(--color-white);
-	font-weight: bold;
+	font-weight: var(--weight-bold);
 	font-size: 14px;
 	text-shadow: 0 1px 2px rgba(0,0,0,0.3);
 }
@@ -421,7 +421,7 @@
 	border-bottom: 1px solid var(--current-border-color);
 }
 .tsumego-issue__title {
-	font-weight: bold;
+	font-weight: var(--weight-bold);
 	font-size: 14px;
 	color: var(--text-color);
 }
@@ -437,7 +437,7 @@
 	padding: 3px 8px;
 	border-radius: var(--radius-sm);
 	font-size: 12px;
-	font-weight: bold;
+	font-weight: var(--weight-bold);
 }
 .tsumego-issue__badge.status--opened {
 	background: var(--issue-opened-background);
@@ -491,7 +491,7 @@
 	color: var(--text-color);
 	border: 1px solid var(--comment-textarea-border);
 	border-radius: var(--radius-sm);
-	font-size: 13px;
+	font-size: var(--text-sm);
 	resize: vertical;
 	min-height: 50px;
 	box-sizing: border-box;
@@ -547,8 +547,8 @@
 	padding: 8px 14px;
 	margin: 15px 0 0 0;
 	border-radius: 6px 6px 0 0;
-	font-size: 13px;
-	font-weight: bold;
+	font-size: var(--text-sm);
+	font-weight: var(--weight-bold);
 }
 .issues-list__problem-ref a {
 	color: var(--color-blue-accent);

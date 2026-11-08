@@ -21,7 +21,7 @@
   line-height: 1.4;
   letter-spacing: 1.5px;
   text-transform: uppercase;
-  font-weight: 600;
+  font-weight: var(--weight-medium);
   background: var(--gradient-heading);
   color: transparent;
   -webkit-background-clip: text;
@@ -128,7 +128,7 @@
 }
 .mistake-training-card__title {
   font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-bold);
+  font-weight: var(--weight-bold);
   white-space: nowrap;
 }
 .mistake-training-card__text {
@@ -147,7 +147,7 @@
   background: var(--color-red);
   color: var(--color-white);
   font-size: var(--font-size-md);
-  font-weight: var(--font-weight-bold);
+  font-weight: var(--weight-bold);
   line-height: 1;
 }
 .mistake-training-card__go {
@@ -365,7 +365,7 @@
   color: var(--color-white) !important;
   left: 316px;
   top: 189px;
-  font-weight: bold;
+  font-weight: var(--weight-bold);
   font-family: Baskerville, Times New Roman, verdana;
 }
 
@@ -374,7 +374,7 @@
   left: 316px;
   top: 121px;
   font-size: 22px !important;
-  font-weight: bold;
+  font-weight: var(--weight-bold);
   font-family: Geneva, Times New Roman, verdana;
 }
 
@@ -382,7 +382,7 @@
   color: var(--stat-brown) !important;
   left: 316px;
   top: 151px;
-  font-weight: bold;
+  font-weight: var(--weight-bold);
   font-family: Comic Sans MS, Times New Roman, verdana;
 }
 
@@ -390,7 +390,7 @@
   color: var(--stat-peach) !important;
   left: 342px;
   top: 113px;
-  font-weight: bold;
+  font-weight: var(--weight-bold);
   font-family: Comic Sans MS, Times New Roman, verdana;
 }
 
@@ -398,7 +398,7 @@
   color: var(--color-black) !important;
   left: 300px;
   top: 22px;
-  font-weight: bold;
+  font-weight: var(--weight-bold);
   font-family: Garamond, Times New Roman, verdana;
 }
 
@@ -413,7 +413,7 @@
   color: var(--stat-gold) !important;
   left: 317px;
   top: 153px;
-  font-weight: bold;
+  font-weight: var(--weight-bold);
   font-family: Helvetica, Times New Roman, verdana;
 }
 

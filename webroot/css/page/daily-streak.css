@@ -19,8 +19,8 @@
 	cursor: default;
 	color: var(--color-streak-unlit);
 	font-family: var(--font-family-account);
-	font-size: 13px;
-	font-weight: 700;
+	font-size: var(--text-sm);
+	font-weight: var(--weight-bold);
 	line-height: 1;
 	outline: none;
 }
@@ -174,7 +174,7 @@
 	color: var(--color-white);
 	font-family: var(--font-family-body);
 	font-size: 14px;
-	font-weight: normal;
+	font-weight: var(--weight-normal);
 	line-height: 1.4;
 	text-align: left;
 	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
@@ -189,7 +189,7 @@
 
 .daily-streak__title
 {
-	font-weight: 700;
+	font-weight: var(--weight-bold);
 	margin-bottom: var(--space-1);
 	color: var(--color-streak-flame);
 }

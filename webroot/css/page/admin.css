@@ -47,14 +47,14 @@
 .proposal-description { /* see SgfDescription, a long one is cut to fit in about three lines */
 	min-width: 16em;
 	max-width: 20em;
-	font-size: 13px;
+	font-size: var(--text-sm);
 }
 .rejected-proposals { /* RejectedSGFProposalsRenderer, folded under the waiting proposals */
 	margin-top: var(--space-2);
 }
 .rejected-proposals > summary {
 	cursor: pointer;
-	font-weight: bold;
+	font-weight: var(--weight-bold);
 }
 .trash {
   text-align: left;
@@ -102,7 +102,7 @@
   border-radius: 6px;
   background: var(--info-box-background);
   color: var(--text-color); /* not the white of the menu links (li a in base.css) */
-  font-size: 18px;
+  font-size: var(--text-lg);
   text-decoration: none;
 }
 .admin-area__link:hover {
@@ -118,7 +118,7 @@
   padding: 1px 6px;
   border-radius: var(--radius-full);
   font-size: 14px;
-  font-weight: bold;
+  font-weight: var(--weight-bold);
   line-height: 1.4;
   text-align: center;
 }
@@ -151,7 +151,7 @@
   background: transparent;
   color: var(--current-border-color);
   font-size: 16px;
-  font-weight: bold;
+  font-weight: var(--weight-bold);
   line-height: 1;
   vertical-align: middle;
   cursor: pointer;
@@ -187,7 +187,7 @@
 }
 /* What others did since the admin looked the time before, see AdminOverviewTypeTable::markSeen */
 .data-table tr.data-table__row--new td {
-  font-weight: bold;
+  font-weight: var(--weight-bold);
 }
 .data-table tr.data-table__row--new td:first-child {
   box-shadow: inset 3px 0 0 var(--color-red);
@@ -219,8 +219,8 @@
 }
 .schedule-page__column-toggle {
   cursor: pointer;
-  font-weight: normal;
-  font-size: 11px;
+  font-weight: var(--weight-normal);
+  font-size: var(--text-xs);
   color: #888;
   margin-left: 4px;
 }
