@@ -297,6 +297,11 @@
     besogo.boardDisplay = boardDisplay;
   };
 
+  // How many lines the cut board shows beyond the farthest stone or move, and how few lines of the board
+  // it leaves out before it shows them too, up to the edge
+  const CROP_MARGIN = 2;
+  const CROP_SNAP = 2;
+
   // The board can't be smaller than this, however low the window is
   const MINIMUM_BOARD_HEIGHT = 260;
   // so the buttons don't touch the bottom of the window
@@ -653,13 +658,13 @@
       besogo.editor.applyTransformation(transformation);
       besogo.scaleParameters.orientation = "top-left";
 
-      //enlarge area based on places stones
-      if (besogo.scaleParameters.highest.x >= 10)
-        besogo.scaleParameters.highest.x = 19;
-      else besogo.scaleParameters.highest.x += 3;
-      if (besogo.scaleParameters.highest.y >= 14)
-        besogo.scaleParameters.highest.y = 19;
-      else besogo.scaleParameters.highest.y += 3;
+      //Around the stones and the moves the board shows CROP_MARGIN lines more, and reaches the edge when it
+      //would leave out only CROP_SNAP lines of it or fewer
+      for (let axis of ["x", "y"]) {
+        let size = besogo.scaleParameters.size[axis];
+        let shown = besogo.scaleParameters.highest[axis] + CROP_MARGIN;
+        besogo.scaleParameters.highest[axis] = shown >= size - CROP_SNAP ? size : shown;
+      }
 
       if (besogo.scaleParameters.highest.x === 19 && besogo.scaleParameters.highest.y !== 19)
         besogo.scaleParameters.boardCanvasSize = "horizontal half board";
