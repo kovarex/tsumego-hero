@@ -5,7 +5,7 @@ use App\Utility\DailyStreak;
 
 /**
  * The flame of the daily streak in the menu of a signed in player: lit once today counted, dimmed
- * while it is still to do. Hovering or tapping it shows the streak and, until the day is done, what
+ * while it is still to do, and filled from the bottom as far as today got. Hovering or tapping it shows the streak and, until the day is done, what
  * today still asks, the XP as a bar (daily-streak--done hides it). It is read from the row Auth
  * loaded, so it costs no query; webroot/js/DailyStreak.js redraws it from the result of a solve, with
  * the same data (DailyStreak::view()) and the texts of the data- attributes, lights it with a burst
@@ -19,10 +19,11 @@ $days = fn(int $count): string => $count . ' ' . ($count == 1 ? 'day' : 'days');
 $doneText = 'Today is done.';
 $todoText = 'To keep the streak today:';
 ?>
-<div id="daily-streak" class="daily-streak<?php echo $streak['done_today'] ? ' daily-streak--done' : ''; ?>" tabindex="0"
+<div id="daily-streak" class="daily-streak<?php echo $streak['done_today'] ? ' daily-streak--done' : ''; ?>" tabindex="0" style="--streak-progress: <?php echo $streak['progress']; ?>"
 	data-time-zone="<?php echo h(Auth::getUser()['time_zone'] ?? ''); ?>" aria-describedby="daily-streak-details">
 	<svg class="daily-streak__flame" viewBox="0 0 24 24" aria-hidden="true">
 		<path d="M12.6 1.8c.5 3.3-1.2 5.3-3 7.3C8 10.9 6.6 12.6 6.6 15.2a5.4 5.4 0 0 0 10.8 0c0-2.4-1.1-4.2-2.4-5.6.1 1.7-.6 2.9-1.6 3.4.5-3.5-.4-8-1.8-11.2z"/>
+		<path class="daily-streak__fill" d="M12.6 1.8c.5 3.3-1.2 5.3-3 7.3C8 10.9 6.6 12.6 6.6 15.2a5.4 5.4 0 0 0 10.8 0c0-2.4-1.1-4.2-2.4-5.6.1 1.7-.6 2.9-1.6 3.4.5-3.5-.4-8-1.8-11.2z"/>
 		<path class="daily-streak__spark" d="M18.5 2.5l.7 1.8 1.8.7-1.8.7-.7 1.8-.7-1.8-1.8-.7 1.8-.7z"/>
 		<circle class="daily-streak__burst" cx="12" cy="14" r="9"/>
 	</svg>

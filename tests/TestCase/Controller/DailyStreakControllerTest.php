@@ -68,10 +68,10 @@ class DailyStreakControllerTest extends IntegrationTestCase
 		$this->assertFalse($streak['done_today'], 'One problem is not a day');
 		$this->assertGreaterThan(0, (int) $response['xp_gained']);
 		$this->assertSame((int) $response['xp_gained'], $streak['xp']);
-		$this->assertSame(DailyStreak::xpRequired((float) $context->reloadUser()['rating']), $streak['xp_required'], 'Of the rating after the solve');
+		$this->assertSame(DailyStreak::xpRequired(2500), $streak['xp_required'], 'Of the rating before the solve, which the solve raised');
 		$this->assertSame(0, $streak['reviews_required'], 'Nothing is due in the training');
-		$stored = Util::query('SELECT streak_day, streak_day_xp FROM user WHERE id = ?', [$context->user['id']])[0];
-		$this->assertSame([self::today(), (int) $response['xp_gained']], [(string) $stored['streak_day'], (int) $stored['streak_day_xp']]);
+		$stored = Util::query('SELECT streak_day, streak_day_xp, streak_day_xp_required FROM user WHERE id = ?', [$context->user['id']])[0];
+		$this->assertSame([self::today(), (int) $response['xp_gained'], DailyStreak::xpRequired(2500)], [(string) $stored['streak_day'], (int) $stored['streak_day_xp'], (int) $stored['streak_day_xp_required']], 'The XP the day asks is fixed');
 		$this->assertSame(0, $this->storedLength($context));
 	}
 
