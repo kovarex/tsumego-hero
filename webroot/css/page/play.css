@@ -890,6 +890,19 @@ body:has(.play-screen) #footer {
   display: none;
 }
 
+/* In the review on a PC the panel is as wide as the tree needs (PlayBoard.js fitReviewTree()): --review-panel is
+   its width, --review-grow how much the white box grows into the margins of the page, as much on each side */
+@media (width >= 64rem) {
+  .play-screen--review {
+    grid-template-columns: minmax(0, 1fr) var(--review-panel, 430px);
+  }
+  .whitebox2:has(.play-screen--review) {
+    width: calc(100% + var(--review-grow, 0px));
+    max-width: calc(1280px + var(--review-grow, 0px));
+    margin-left: calc((100% - min(100% + var(--review-grow, 0px), 1280px + var(--review-grow, 0px))) / 2);
+  }
+}
+
 /* The hero powers: on a wide screen the panel has the room to show them in a row of their own under the
    hearts, so there is no ⚡ button; on a phone they open from it */
 @media (width >= 64rem) {

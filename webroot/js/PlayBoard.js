@@ -249,27 +249,54 @@ redrawHearts();
 			settings.appendChild(row.firstChild);
 })();
 
-//On a PC, while the comments are closed, the tree of the review takes the height of the panel down to the bottom
-//of the board, so a big tree has room and the page gets no taller; with the comments open it keeps its
-//usual height (play.css) and shares the panel with them
+//On a PC the review's tree gets room. The panel widens to show the whole tree, taking first the room the board
+//leaves unused in its column (a board as tall as the window is narrower than its column), then the empty margins
+//of the page; the board never shrinks, and a tree wider than all that scrolls sideways from its root. While the
+//comments are closed the tree also takes the panel's height down to the bottom of the board, so the page gets no
+//taller; with the comments open it keeps its usual height (play.css) and shares the panel with them.
 function fitReviewTree(reviewPanels)
 {
 	let tree = reviewPanels.querySelector(".besogo-tree");
 	let comments = document.getElementById("commentsPanel");
-	if (!tree)
+	let screen = document.querySelector(".play-screen");
+	if (!tree || !screen)
 		return;
+	const PANEL = 430;
+	let reset = () =>
+	{
+		screen.classList.remove("play-screen--review");
+		screen.style.removeProperty("--review-panel");
+		document.documentElement.style.removeProperty("--review-grow");
+		tree.style.removeProperty("--tree-height");
+	};
 	let fit = () =>
 	{
+		reset();
 		let board = document.querySelector(".play-screen__main .besogo-board");
-		let open = getComputedStyle(reviewPanels).display !== "none";
-		let commentsOpen = comments && getComputedStyle(comments).display !== "none";
-		if (!open || commentsOpen || !board || !window.matchMedia("(width >= 64rem)").matches)
-		{
-			tree.style.removeProperty("--tree-height");
+		let main = document.querySelector(".play-screen__main");
+		let box = document.querySelector(".whitebox2");
+		let svg = tree.querySelector("svg");
+		if (getComputedStyle(reviewPanels).display === "none" || !board || !main || !box || !svg || !window.matchMedia("(width >= 64rem)").matches)
 			return;
-		}
+		screen.classList.add("play-screen--review");
+		let commentsOpen = comments && getComputedStyle(comments).display !== "none";
 		let height = Math.floor(board.getBoundingClientRect().bottom - tree.getBoundingClientRect().top);
-		tree.style.setProperty("--tree-height", height + "px");
+		let svgBox = svg.getBoundingClientRect();
+		//the panel's padding, and the width of a scrollbar when the tree is taller than its box
+		let room = 34 + (svgBox.height > (commentsOpen ? 350 : Math.max(350, height)) ? 16 : 0);
+		let extra = Math.ceil(svgBox.width) + room - PANEL;
+		if (extra > 0)
+		{
+			let mainStyle = getComputedStyle(main);
+			let unused = main.clientWidth - parseFloat(mainStyle.paddingLeft) - parseFloat(mainStyle.paddingRight) - board.getBoundingClientRect().width;
+			let fromMain = Math.max(0, Math.min(extra, Math.floor(unused)));
+			let margins = document.documentElement.clientWidth - box.getBoundingClientRect().width - 32;
+			let grow = Math.max(0, Math.min(extra - fromMain, Math.floor(margins)));
+			screen.style.setProperty("--review-panel", (PANEL + fromMain + grow) + "px");
+			document.documentElement.style.setProperty("--review-grow", grow + "px");
+		}
+		if (!commentsOpen)
+			tree.style.setProperty("--tree-height", height + "px");
 	};
 	let observer = new MutationObserver(fit);
 	observer.observe(reviewPanels, { attributes: true, attributeFilter: ["style"] });
