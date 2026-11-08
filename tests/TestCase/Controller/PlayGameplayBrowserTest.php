@@ -953,7 +953,8 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 		$browser->driver->executeScript("document.getElementById('colorOrientation').click();");
 
 		$this->assertSame('Black is dead', $browser->find('#besogo-multipleChoice1')->getAttribute('value'));
-		$this->assertSame('White to play. What is the result?', $browser->find('#descriptionText')->getText());
+		$this->assertSame('White', $browser->find('.play-goal__stone')->getAttribute('aria-label'));
+		$this->assertSame('to play. What is the result?', $browser->find('#descriptionText')->getText());
 	}
 
 	//Browser test: the orientation button swaps the semeai "Black is dead" /
@@ -1031,11 +1032,13 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 		$browser->get($context->tsumegos[0]['set-connections'][0]['id'] . '?playercolor=white');
 		$browser->waitUntilJs('typeof besogo !== "undefined" && document.getElementById("colorOrientation") !== null');
 
-		$this->assertSame('White to kill.', $browser->find('#descriptionText')->getText());
+		$this->assertSame('White', $browser->find('.play-goal__stone')->getAttribute('aria-label'), 'The color to move is a stone');
+		$this->assertSame('to kill.', $browser->find('#descriptionText')->getText());
 		$this->assertSame('(Kill before Black can.)', $browser->find('#hintText')->getText());
 
 		$browser->driver->executeScript("document.getElementById('colorOrientation').click();");
-		$this->assertSame('Black to kill.', $browser->find('#descriptionText')->getText());
+		$this->assertSame('Black', $browser->find('.play-goal__stone')->getAttribute('aria-label'));
+		$this->assertSame('to kill.', $browser->find('#descriptionText')->getText());
 		$this->assertSame('(Kill before White can.)', $browser->find('#hintText')->getText());
 	}
 

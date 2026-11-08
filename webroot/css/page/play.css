@@ -640,6 +640,22 @@ body:has(.play-screen) #footer {
   gap: var(--space-1) var(--space-3);
   min-height: 32px;
 }
+/* The color to move, as a stone before the goal */
+.play-goal__stone {
+  display: inline-block;
+  width: 0.95em;
+  height: 0.95em;
+  border-radius: 50%;
+  vertical-align: -0.12em;
+  box-sizing: border-box;
+}
+.play-goal__stone--black {
+  background: radial-gradient(circle at 35% 30%, #666, #000 70%);
+}
+.play-goal__stone--white {
+  border: 1px solid #888;
+  background: radial-gradient(circle at 35% 30%, #fff, #ccc 80%);
+}
 .play-stake {
   display: flex;
   flex-direction: column;

@@ -659,6 +659,13 @@ besogo.makeToolPanel = function (container, editor) {
           let el = document.getElementById(id);
           if (el) el.textContent = swapColorWords(el.textContent);
         });
+        // The color to move, shown as a stone before the goal (Tsumegos/play.php)
+        document.querySelectorAll(".play-goal__stone").forEach(function (stone) {
+          let white = stone.classList.toggle("play-goal__stone--white");
+          stone.classList.toggle("play-goal__stone--black", !white);
+          stone.setAttribute("aria-label", white ? "White" : "Black");
+          stone.title = swapColorWords(stone.title);
+        });
         // Multiple-choice answers (custom multiple-choice and semeai share these ids).
         ["besogo-multipleChoice1", "besogo-multipleChoice2", "besogo-multipleChoice3", "besogo-multipleChoice4"].forEach(function (id) {
           let el = document.getElementById(id);

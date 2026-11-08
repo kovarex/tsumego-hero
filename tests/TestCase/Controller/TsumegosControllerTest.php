@@ -582,8 +582,7 @@ class TsumegosControllerTest extends IntegrationTestCase
 		]);
 		Auth::saveUserField('player_color_setting', UserTable::PLAYER_COLOR_SETTING_ORIGINAL);
 		$this->get('tsumegos/play/' . $context2->tsumegos[0]['id']);
-		$decoded = htmlspecialchars_decode(strip_tags($this->view));
-		$this->assertStringContainsString('White to play. Attack the black group.', $decoded);
+		$this->assertSame('White to play. Attack the black group.', $this->shownDescription());
 	}
 
 	//Controller test: When the edit form is shown with an inverted board it
@@ -930,10 +929,14 @@ class TsumegosControllerTest extends IntegrationTestCase
 		$this->assertSame('Black to play.', $this->shownDescription());
 	}
 
-	//The description the play page shows, which is the one the colour swap applies to.
+	//The description the play page shows, which is the one the colour swap applies to: the color to move is a
+	//stone (its label) before the rest of the goal
 	private function shownDescription(): string
 	{
-		return trim((string) $this->getStringDom()->querySelector('#descriptionText')->textContent);
+		$dom = $this->getStringDom();
+		$stone = $dom->querySelector('.play-goal__stone')?->getAttribute('aria-label');
+		$text = trim((string) $dom->querySelector('#descriptionText')->textContent);
+		return $stone !== null ? $stone . ' ' . $text : $text;
 	}
 
 	//When the player's color matches the SGF's first move the board is not inverted

@@ -329,6 +329,16 @@ class Play
 		$this->problem['tsumegoXPAndRating'] = new TsumegoXPAndRating($tsumego, $tsumegoStatus, (int) $setConnection->id);
 	}
 
+	//The goal of a problem that starts with the color to move ("White to kill."), split into that color and the
+	//rest ("to kill."), so the page shows the color as a stone; the color is null when the goal names none
+	/** @return array{color: ?string, rest: string} */
+	public static function splitGoalColor(string $description): array
+	{
+		if (preg_match('/^\s*(black|white)\s+(to\s.*)$/is', $description, $match))
+			return ['color' => strtolower($match[1]), 'rest' => $match[2]];
+		return ['color' => null, 'rest' => $description];
+	}
+
 	public static function swapColorWords(string $text): string
 	{
 		return preg_replace_callback(

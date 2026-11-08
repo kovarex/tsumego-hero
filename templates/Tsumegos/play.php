@@ -152,7 +152,12 @@ use App\Utility\ViteManifest;
 			</div>
 			<div class="play-head__goal">
 				<div id="titleDescription" class="<?php echo Auth::isInRatingMode() || Auth::isInTimeMode() ? 'titleDescription2' : 'titleDescription1'; ?>">
-					<a id="descriptionText"><?php echo h($displayDescription); ?></a>
+					<?php //The color to move as a stone instead of its name: "White to kill." shows a white stone and "to kill." ?>
+					<?php $goal = Play::splitGoalColor($displayDescription); ?>
+					<?php if ($goal['color'] !== null): ?>
+						<span class="play-goal__stone play-goal__stone--<?php echo $goal['color']; ?>" role="img" aria-label="<?php echo ucfirst($goal['color']); ?>" title="<?php echo h($displayDescription); ?>"></span>
+					<?php endif; ?>
+					<a id="descriptionText"><?php echo h($goal['rest']); ?></a>
 					<?php if ($displayHint !== ''): ?>
 						<span id="hintText" class="hint italic">(<?php echo h($displayHint); ?>)</span>
 					<?php endif; ?>
