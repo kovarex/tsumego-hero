@@ -552,7 +552,8 @@
 		--play-sandbox-background: var(--surface-button);
 		--play-dark-text: var(--color-black);
 		--play-rating-bar-accent: var(--color-mode-rating);
-		--xp-display: var(--link-color);
+		/* The XP of a problem is text, not a link: it keeps the near-white it had before links turned blue in dark */
+		--xp-display: #f0f0f0;
 		--xp-display-solved: var(--xp-solved);
 		--xp-display-golden: var(--xp-solved);
 		--xp-display-sprint: var(--xp-sprint);
