@@ -77,7 +77,9 @@ class BoardFitsWindowTest extends IntegrationTestCase
 		}
 	}
 
-	public function testAWindowHighEnoughLeavesTheBoardAsWideAsItsColumn(): void
+	//A high window leaves the board as wide as its column, unless its lines would be further apart than the
+	//largest spacing (besogo.js MAX_LINE_SPACING, 56px; 88 is a line in the board's own units)
+	public function testAWindowHighEnoughLeavesTheBoardAsWideAsItsColumnOrItsLargestStones(): void
 	{
 		$browser = Browser::instance();
 		$window = $browser->driver->manage()->window();
@@ -87,7 +89,10 @@ class BoardFitsWindowTest extends IntegrationTestCase
 			$this->openProblem($browser, 1400, 2000);
 			$layout = $this->layout($browser);
 			$targetWidth = $browser->driver->executeScript('return document.getElementById("target").getBoundingClientRect().width;');
-			$this->assertEqualsWithDelta($targetWidth, $layout['boardWidth'], 1, 'The board takes the width of its column');
+			$largestWidth = $browser->driver->executeScript('return Math.floor(56 * besogo.boardCanvasSvg.viewBox.baseVal.width / 88);');
+			$this->assertEqualsWithDelta(min($targetWidth, $largestWidth), $layout['boardWidth'], 1, 'The board takes the width of its column, or of its largest stones');
+			$spacing = $browser->driver->executeScript('return 88 * besogo.boardCanvasSvg.getBoundingClientRect().width / besogo.boardCanvasSvg.viewBox.baseVal.width;');
+			$this->assertLessThanOrEqual(56.5, $spacing, 'The lines are never further apart than 56px');
 		}
 		finally
 		{

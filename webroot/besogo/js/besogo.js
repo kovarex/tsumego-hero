@@ -302,6 +302,59 @@
   const CROP_MARGIN = 2;
   const CROP_SNAP = 2;
 
+  // The largest distance between two lines of the board, in CSS pixels, which are about the same size on
+  // every screen (a phone draws one with several of its pixels): about 15 mm on a usual screen. A cut board
+  // that would draw its lines further apart shows a few more lines of the board, and then is drawn smaller.
+  const MAX_LINE_SPACING = 56;
+
+  // How far apart the lines of a cut board of these many columns and rows would be in the room of the board:
+  // the width of its column and the height of the window under its top, less what has to stay in sight under it
+  // (besogo.js keepBoardInWindowHeight()); a board much taller than wide is turned (boardDisplay.js autoRotate())
+  function lineSpacing(columns, rows, room) {
+    if (rows - columns > 4)
+      [columns, rows] = [rows, columns];
+    return Math.min(room.width / columns, room.height / rows);
+  }
+
+  // At most this many lines of the board are added to a cut for the room (growCropToLimitLineSpacing())
+  const CROP_GROW_MAX = 3;
+
+  // A small problem in a big room would have huge stones: the cut grows, a line at a time on the side that
+  // makes them big, by CROP_GROW_MAX lines at most each way, until they are at most MAX_LINE_SPACING apart;
+  // what is still too big is drawn smaller (keepBoardInWindowHeight()), rather than with more empty board
+  function growCropToLimitLineSpacing(scale) {
+    let target = document.getElementById("target");
+    if (!target || !target.clientWidth)
+      return;
+    let top = target.getBoundingClientRect();
+    let below = 0;
+    for (let keep of document.querySelectorAll("[data-keep-in-view]"))
+      if (window.matchMedia(keep.dataset.keepInView).matches && keep.getClientRects().length)
+        below = Math.max(below, keep.getBoundingClientRect().bottom - top.bottom);
+    let room = {
+      width: target.clientWidth,
+      height: Math.max(window.innerHeight - top.top - below - SPACE_UNDER_BUTTONS, MINIMUM_BOARD_HEIGHT),
+    };
+    // a line more on a side, or up to the edge when only CROP_SNAP lines or fewer would be left out
+    let limit = { x: scale.highest.x + CROP_GROW_MAX, y: scale.highest.y + CROP_GROW_MAX };
+    let grown = axis => {
+      let value = scale.highest[axis] + 1;
+      return value >= scale.size[axis] - CROP_SNAP ? scale.size[axis] : value;
+    };
+    while (lineSpacing(scale.highest.x, scale.highest.y, room) > MAX_LINE_SPACING) {
+      let canWiden = scale.highest.x < Math.min(limit.x, scale.size.x);
+      let canHeighten = scale.highest.y < Math.min(limit.y, scale.size.y);
+      if (!canWiden && !canHeighten)
+        return;
+      let wider = canWiden ? lineSpacing(grown("x"), scale.highest.y, room) : Infinity;
+      let taller = canHeighten ? lineSpacing(scale.highest.x, grown("y"), room) : Infinity;
+      if (wider <= taller)
+        scale.highest.x = grown("x");
+      else
+        scale.highest.y = grown("y");
+    }
+  }
+
   // The board can't be smaller than this, however low the window is
   const MINIMUM_BOARD_HEIGHT = 260;
   // so the buttons don't touch the bottom of the window
@@ -326,7 +379,9 @@
           belowBoard = Math.max(belowBoard, keep.getBoundingClientRect().bottom - board.bottom);
       let top = board.top + window.scrollY;
       let height = Math.max(window.innerHeight - top - belowBoard - SPACE_UNDER_BUTTONS, MINIMUM_BOARD_HEIGHT);
-      boardDiv.style.maxWidth = "min(100%, " + Math.floor((height * viewBox.width) / viewBox.height) + "px)";
+      // and its lines no further apart than MAX_LINE_SPACING (88 is a line in the board's own units, boardDisplay.js)
+      let widest = Math.floor((MAX_LINE_SPACING * viewBox.width) / 88);
+      boardDiv.style.maxWidth = "min(100%, " + Math.min(Math.floor((height * viewBox.width) / viewBox.height), widest) + "px)";
     };
     new MutationObserver(fit).observe(svg, { attributes: true, attributeFilter: ["viewBox"] });
     window.addEventListener("resize", fit);
@@ -665,6 +720,7 @@
         let shown = besogo.scaleParameters.highest[axis] + CROP_MARGIN;
         besogo.scaleParameters.highest[axis] = shown >= size - CROP_SNAP ? size : shown;
       }
+      growCropToLimitLineSpacing(besogo.scaleParameters);
 
       if (besogo.scaleParameters.highest.x === 19 && besogo.scaleParameters.highest.y !== 19)
         besogo.scaleParameters.boardCanvasSize = "horizontal half board";
