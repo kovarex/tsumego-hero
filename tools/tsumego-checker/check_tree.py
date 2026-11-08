@@ -327,6 +327,10 @@ def check(text, engine, budget, scan_missing=True, description=None, missing_dep
                             continue #a transposition into the tree, besogo follows it
                         fake = TreeNode(node.sgf, child_board, opponent(solver_color), node.depth + 1)
                         r, status, _ = engine_rank(fake)
+                        if r == 2 and ko_taken_by(child_board, solver_color, solver_color, status) == STATUS_KO:
+                            #the move captures a ko: the opponent retakes after a threat, so it is no clean answer (rule 2)
+                            report['notes'].append({'kind': 'ko-capture-alternative', 'line': (path(chain) + ' ' + point_name(p, size)).strip()})
+                            continue
                         if r == 2:
                             issue = {'kind': 'missing-correct-move', 'line': (path(chain) + ' ' + point_name(p, size)).strip(), 'engine': status}
                             correct = [child.move for child in node.children if child.label == 2]
