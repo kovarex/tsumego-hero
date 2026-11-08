@@ -1,6 +1,8 @@
 #the findings still to review as a table: problem, path with colours, what the tree says, what the solver says, its line
 import json, glob, subprocess, os
 confirmed = {'1703', '215', '528', '1807'}
+#single findings kovarex confirmed in problems that still have others to review
+confirmed_findings = {('2485', 'correct-move-fails')}
 records = {}
 for pattern in ('dump_check_status.*.jsonl', 'dump_check_marker.*.jsonl'):
     for f in glob.glob(pattern):
@@ -24,6 +26,8 @@ for sc, r in sorted(records.items(), key=lambda kv: int(kv[0])):
     first = 'W' if 'W[' in (problems[sc]['sgf'] or '')[:0] else 'B'
     for issue in r['issues']:
         kind = issue['kind']
+        if (sc, kind) in confirmed_findings:
+            continue
         if kind in ('status-mismatch', 'status-almost'):
             tree, solver = issue['authored'], issue['engine']
         else:
