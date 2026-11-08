@@ -19,7 +19,7 @@ use App\Utility\ViteManifest;
 		Similar problem search:
 	<p>Search took: <?php echo round($result->elapsed, 1); ?> seconds</p>
 </div>
-<table class="duplicate-search__table">
+<table class="phone-scroll-x">
 	<thead><th>Difference</th><th>Preview</th><th>Moves</th><th>Merge</th></th><th>Problem</th></thead>
 	<tr>
 		<td><b>Source</b></td>
