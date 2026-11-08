@@ -1,11 +1,8 @@
 /* Page layer: daily-streak.css - the flame of the daily streak in the menu
    (templates/element/daily_streak.php). On the desktop it shares a row with the account bar
-   (.site-header-account), the number under the flame; on mobile it sits beside the hamburger. Hovering it, or tapping it (it takes the focus), shows the details.
-   Until today counts, the dim flame fills from the bottom as far as today got (--streak-progress,
-   0 to 1, from App\Utility\DailyStreak::view()), and webroot/js/DailyStreak.js pulses it with
-   daily-streak--grow when a solve moved it. When a solve completes the day it adds
-   daily-streak--ignite: the flame flares up to twice its size with a burst of light for 1.5 s, and
-   the number ticks up at its height. With reduced motion it just fills and lights. */
+   (.site-header-account), the number under the flame; on mobile it sits beside the hamburger. Hovering it, or tapping it (it takes the focus), shows the details. When a solve
+   completes the day, webroot/js/DailyStreak.js adds daily-streak--ignite, which flares the flame up
+   with a burst of light; with reduced motion it just lights. */
 @layer page
 {
 .daily-streak
@@ -36,28 +33,6 @@
 	transform-origin: 50% 85%;
 }
 
-/* The lit part of the dim flame, clipped from the top down to as far as today got */
-.daily-streak__fill
-{
-	fill: var(--color-streak-flame);
-	clip-path: inset(calc((1 - var(--streak-progress, 0)) * 100%) 0 0 0);
-	transition: clip-path 0.6s ease-out;
-}
-
-.daily-streak--grow .daily-streak__flame
-{
-	animation: daily-streak-grow 0.6s ease-out;
-}
-
-@keyframes daily-streak-grow
-{
-	40%
-	{
-		transform: scale(1.25);
-		filter: drop-shadow(0 0 4px var(--color-streak-flame-glow));
-	}
-}
-
 .daily-streak__length
 {
 	margin-top: 2px;
@@ -79,6 +54,31 @@
 .daily-streak--done .daily-streak__length
 {
 	opacity: 1;
+}
+
+/* Until today counts, the dim flame fills from the bottom as far as today got (--streak-progress, 0 to 1,
+   from App\Utility\DailyStreak::view()), and webroot/js/DailyStreak.js pulses it with daily-streak--grow
+   when a solve moved it. The ignite below flares it to twice its size for 1.5 s, and the number ticks up
+   at its height. The lit part of the dim flame is clipped from the top down to as far as today got. */
+.daily-streak__fill
+{
+	fill: var(--color-streak-flame);
+	clip-path: inset(calc((1 - var(--streak-progress, 0)) * 100%) 0 0 0);
+	transition: clip-path 0.6s ease-out;
+}
+
+.daily-streak--grow .daily-streak__flame
+{
+	animation: daily-streak-grow 0.6s ease-out;
+}
+
+@keyframes daily-streak-grow
+{
+	40%
+	{
+		transform: scale(1.25);
+		filter: drop-shadow(0 0 4px var(--color-streak-flame-glow));
+	}
 }
 
 /* The ring of light the burst sends out from the flame */
