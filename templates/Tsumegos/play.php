@@ -39,6 +39,7 @@ use App\Utility\ViteManifest;
  * @var TsumegoVariant|null $tv
  * @var array{page: array<string, mixed>, problem: array<string, mixed>} $playPage What the page's script reads, see Play::clientData()
  * @var string $displayDescription The description in the colors the player sees
+ * @var string $displayHint The hint in the colors the player sees
  * @var bool $solved Solved for the current mode
  * @var string $resetLink
  */
@@ -89,8 +90,8 @@ use App\Utility\ViteManifest;
 				<div class="play-header__cell">
 					<div id="titleDescription" class="<?php echo Auth::isInRatingMode() || Auth::isInTimeMode() ? 'titleDescription2' : 'titleDescription1'; ?>">
 						<a id="descriptionText"><?php echo h($displayDescription); ?></a>
-						<?php if (isset($tsumego->hint) && $tsumego->hint != ''): ?>
-							<span class="hint italic">(<?php echo h($tsumego->hint); ?>)</span>
+						<?php if ($displayHint !== ''): ?>
+							<span id="hintText" class="hint italic">(<?php echo h($displayHint); ?>)</span>
 						<?php endif; ?>
 					</div>
 				</div>

@@ -664,7 +664,7 @@ besogo.makeToolPanel = function (container, editor) {
         let transformation = besogo.makeTransformation();
         transformation.invertColors = true;
         // Any true-color text shown to the player must follow the board's colors.
-        ["descriptionText", "theComment"].forEach(function (id) {
+        ["descriptionText", "hintText", "theComment"].forEach(function (id) {
           let el = document.getElementById(id);
           if (el) el.textContent = swapColorWords(el.textContent);
         });
