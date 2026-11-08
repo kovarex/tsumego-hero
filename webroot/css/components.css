@@ -959,6 +959,20 @@
 	background: var(--color-surface-sunken);
 }
 
+/* On a phone a table fits the screen: no fixed column widths, and less padding (compact tables keep theirs) */
+@media (width < 40rem)
+{
+	.data-table th
+	{
+		width: auto;
+	}
+
+	.data-table td
+	{
+		padding: var(--space-2) var(--space-1);
+	}
+}
+
 .data-table--compact td
 {
 	padding: 6px;
