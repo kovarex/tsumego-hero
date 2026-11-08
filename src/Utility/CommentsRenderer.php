@@ -20,8 +20,8 @@ class CommentsRenderer
 	{
 		echo '<div class="sandboxComment">';
 		$commentColor = $comment['from_admin'] ? 'admin-text' : '';
-		echo '<table class="sandboxTable2" width="100%" border="0">';
-		echo '<tr><td width="73%"><div style="padding-bottom:7px;"><b>#' . ($index + 1) . '</b> | ';
+		echo '<table class="sandboxTable2">';
+		echo '<tr><td class="sandboxTable2__comment"><div class="sandboxTable2__heading"><b>#' . ($index + 1) . '</b> | ';
 		if ($comment['set_connection_id'])
 		{
 			echo '<a href="/' . (int) $comment['set_connection_id'] . '?search=topics">';
@@ -42,9 +42,9 @@ class CommentsRenderer
 			echo '>' . nl2br(h($comment['message'])) . '</div>';
 		else
 			echo ' class="text-muted">[You need to solve this problem to see the comment]</div>';
-		echo '</td><td class="sandboxTable2time" align="right"><time datetime="' . Util::toIso8601($comment['created']) . '" data-format="date">' . h($comment['created']) . '</time><br><time datetime="' . Util::toIso8601($comment['created']) . '" data-format="time">' . h($comment['created']) . '</time></td>';
+		echo '</td><td class="sandboxTable2time legacy-right"><time datetime="' . Util::toIso8601($comment['created']) . '" data-format="date">' . h($comment['created']) . '</time><br><time datetime="' . Util::toIso8601($comment['created']) . '" data-format="time">' . h($comment['created']) . '</time></td>';
 		echo '</tr>';
-		echo '<tr><td colspan="2"><div width="100%"><div align="center">';
+		echo '<tr><td colspan="2"><div><div class="legacy-center">';
 
 		if ($comment['set_connection_id'])
 			new TsumegoButton($comment['tsumego_id'], $comment['set_connection_id'], $comment['set_num'], $comment['status'] ?: 'N', 0, $comment['sgf'])->render();

@@ -10,7 +10,7 @@ use App\Utility\AchievementId;
  */
 
 ?>
-<div align="center" class="highscore">
+<div class="legacy-center highscore">
 <?php echo $this->element('highscore_nav', ['activeTab' => 'achievements']); ?>
 
 <?php echo HighscoreHelper::renderTable(
