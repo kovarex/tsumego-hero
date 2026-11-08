@@ -46,6 +46,21 @@ class CommentsRendererTest extends IntegrationTestCase
 		$this->assertStringNotContainsString('older comment', $own);
 	}
 
+	//An admin's comment on a problem the player hasn't solved is both an admin comment and muted, in one class attribute.
+	public function testAHiddenAdminCommentIsMuted(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'kovarex'],
+			'other-users' => [['name' => 'an admin', 'admin' => true]],
+			'tsumego' => ['set_order' => 1, 'comments' => [['message' => 'admin comment', 'created' => '2026-01-01 10:00:00']]]]);
+		Util::execute("UPDATE tsumego_comment SET user_id = ? WHERE message = 'admin comment'", [$context->otherUsers[0]['id']]);
+		$this->login('kovarex');
+
+		$all = $this->render(null);
+		$this->assertMatchesRegularExpression('/<div class="commentBox2 text-muted" id="comment_\d+">\[You need to solve this problem to see the comment\]<\/div>/', $all);
+		$this->assertStringNotContainsString('admin comment', $all);
+	}
+
 	//Ten comments a page, the next page starts where the previous ended.
 	public function testTheListIsPaged(): void
 	{
