@@ -61,7 +61,6 @@ function updateMistakeTrainingButton(button, xp)
 			{
 				next.id = "besogo-next-button";
 				next.href = nextButtonLink;
-				next.title = "next problem";
 			}
 		}
 	}

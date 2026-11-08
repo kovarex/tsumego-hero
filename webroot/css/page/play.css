@@ -813,6 +813,11 @@ body:has(.play-screen) #footer {
 .play-message--solved #besogo-next-button {
   display: inline-block;
 }
+.play-message #besogo-next-button:hover,
+.play-message #besogo-next-button:focus-visible {
+  background: var(--color-green-btn-gradient);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+}
 .play-message--solved {
   background: var(--color-surface-hover);
 }

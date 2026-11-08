@@ -232,7 +232,11 @@ redrawHearts();
 		if (!button)
 			continue;
 		if (id.startsWith("besogo-next-button") && nextInMessages && message)
+		{
+			//Next beside "Correct!" says what it does, it needs no tooltip
+			button.removeAttribute("title");
 			message.appendChild(button);
+		}
 		else
 			end.appendChild(button);
 	}
