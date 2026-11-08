@@ -298,7 +298,7 @@
   };
 
   // The board can't be smaller than this, however low the window is
-  const MINIMUM_BOARD_HEIGHT = 300;
+  const MINIMUM_BOARD_HEIGHT = 260;
   // so the buttons don't touch the bottom of the window
   const SPACE_UNDER_BUTTONS = 10;
 
