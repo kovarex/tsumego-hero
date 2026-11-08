@@ -122,13 +122,10 @@ if ($tsumegoFilters->query != 'topics')
 				<?php if(Auth::isLoggedIn())
 				{ ?>
 					<?php
-					echo '<table><tr><td><div class="setViewCompleted"><b>Completed: ' . $problemSolvedPercent . '%</b></div></td><td></td></tr></table>
-					<table><tr><td><div class="setViewAccuracy"><b>Accuracy: ' . $accuracy . '%</b></div></td><td>';
-					if($bestAccuracy !== null) echo '<span class="setViewAccuracy">Best completion: ' . $bestAccuracy . '%</span>';
-					echo '</td></tr></table>
-					<table><tr><td><div class="setViewTime"><b>Avg. time: ' . $avgTime . 's</b></div></td><td>';
-					if($bestTime !== null && $bestTime != 60) echo '<span class="setViewTime">Best completion: ' . $bestTime . 's</span>';
-					echo '</td></tr></table>';
+					//Each score on one line, the best of a completed run beside it
+					echo '<div class="setViewCompleted"><b>Completed: ' . $problemSolvedPercent . '%</b></div>';
+					echo '<div class="setViewAccuracy"><b>Accuracy: ' . $accuracy . '%</b>' . ($bestAccuracy !== null ? ' &middot; Best: ' . $bestAccuracy . '%' : '') . '</div>';
+					echo '<div class="setViewTime"><b>Avg. time: ' . $avgTime . 's</b>' . ($bestTime !== null && $bestTime != 60 ? ' &middot; Best: ' . $bestTime . 's' : '') . '</div>';
 				} ?>
 			</div>
 

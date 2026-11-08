@@ -38,6 +38,12 @@
   padding: 3px;
   display: inline-block;
 }
+/* The scores of a collection, each on its own line (a score with its best), as wide as its text */
+.set-view__stats :is(.setViewCompleted, .setViewAccuracy, .setViewTime) {
+  display: table;
+  margin: 4px auto;
+  white-space: nowrap;
+}
 #dropdown-difficulty {
   display: none;
   position: absolute;
