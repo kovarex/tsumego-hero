@@ -160,11 +160,7 @@ function redrawHearts()
 	var counter = document.getElementById("health-counter");
 	if (counter)
 		counter.textContent = currentHealth + " / " + maxHealth;
-	//The hearts in the menu bar (header_icons.php)
-	document.querySelectorAll("[data-health-counter]").forEach(count => count.textContent = currentHealth);
-	let hearts = document.getElementById("header-hearts");
-	if (hearts)
-		hearts.title = "Hearts: " + currentHealth + " of " + maxHealth;
+	document.getElementById("health").title = "Hearts: " + currentHealth + " of " + maxHealth;
 }
 redrawHearts();
 
@@ -210,8 +206,9 @@ redrawHearts();
 })();
 
 //The buttons besogo makes under the board go where the page shows them (Tsumegos/play.php): Reset, Review
-//and Next join the actions, as one group in this order in every state (Next turns green once the problem
-//is solved, play-message--solved); the review's tree goes under the actions; the board's own settings
+//and Next (History and Skip in the rating and the time mode) go to the right of the row of the messages
+//above the board, as one group in this order in every state (Next turns green once the problem is solved,
+//play-message--solved); the review's tree goes under the actions in the panel; the board's own settings
 //(corner, rotation, colours, favourite, author) go to the info of the problem. They keep their ids,
 //which the page's code renames as the state changes.
 (function arrangePlayControls()
@@ -222,7 +219,7 @@ redrawHearts();
 		return;
 	let end = document.createElement("span");
 	end.className = "play-actions__end";
-	actions.appendChild(end);
+	(document.querySelector(".play-message") ?? actions).appendChild(end);
 	for (let id of ["besogo-pass-button", "history-button", "besogo-reset-button", "besogo-reset-button-inactive",
 		"besogo-review-button", "besogo-review-button-inactive", "besogo-next-button", "besogo-next-button-inactive"])
 	{

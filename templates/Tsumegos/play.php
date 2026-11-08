@@ -82,10 +82,11 @@ use App\Utility\ViteManifest;
 	<?php //First in the page, so the hearts and the hero powers exist when the board's script sets them up; the grid shows it beside the board, or under it on a phone ?>
 	<aside class="play-screen__panel">
 		<?php if (!Auth::isInMistakeTrainingMode() && Auth::isLoggedIn()): ?>
+			<?php //A heart for each one the player can have, full or empty (PlayBoard.js redrawHearts()); they overlap more the more there are, so the row fits the panel (play.css) ?>
 			<div class="play-player">
-				<div id="health">
+				<div id="health" title="Hearts: <?php echo (int) Auth::getRemainingHealth() . ' of ' . (int) $maxHealth; ?>" style="--hearts: <?php echo (int) $maxHealth; ?>">
+					<span class="play-player__hearts"><?php for ($i = 0; $i < $maxHealth; $i++): ?><img title="Heart" id="heart<?php echo $i; ?>" alt=""><?php endfor; ?></span>
 					<span id="health-counter" class="health-counter"><?php echo (int) Auth::getRemainingHealth() . ' / ' . (int) $maxHealth; ?></span>
-					<?php for ($i = 0; $i < $maxHealth; $i++): ?><img title="Heart" id="heart<?php echo $i; ?>" alt=""><?php endfor; ?>
 				</div>
 			</div>
 		<?php endif; ?>

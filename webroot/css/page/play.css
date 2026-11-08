@@ -658,7 +658,8 @@ body:has(.play-screen) #footer {
   font-weight: var(--weight-bold);
 }
 
-/* The one row of the messages, right above the board. Its height is fixed, empty or full, so the board
+/* The one row of the messages, right above the board: Correct! or Incorrect! at the left, the comment of a
+   move in the middle, Reset, Review and Next at the right. Its height is fixed, empty or full, so the board
    never moves; a long comment of a move scrolls inside it. */
 .play-message {
   display: flex;
@@ -667,13 +668,14 @@ body:has(.play-screen) #footer {
   max-width: 900px;
   height: 48px;
   box-sizing: border-box;
-  overflow-y: auto;
+  overflow: hidden;
 }
 .play-message #theComment {
   flex: 1;
   width: auto;
   min-width: 0;
   max-height: 100%;
+  overflow-y: auto;
   margin: 0;
   padding: 2px var(--space-2);
   border: 0;
@@ -689,16 +691,12 @@ body:has(.play-screen) #footer {
   font-size: var(--text-lg);
 }
 
-/* The hearts of the player: on a wide screen they are in the menu bar (header_icons.php), on a phone here */
+/* The hearts of the player, on their own line above the actions: a heart for each one the player can
+   have, full or empty, and the count. The more hearts, the more they overlap, so the row fits the width of
+   the panel whatever it is (a container query): each heart keeps at least a quarter of its width in sight,
+   so it can still be counted. */
 .play-player {
-  display: none;
-}
-@media (width < 64rem) {
-  .play-player {
-    display: flex;
-  }
-}
-.play-player {
+  display: flex;
   align-items: center;
   min-height: 32px;
   font-weight: var(--weight-bold);
@@ -706,21 +704,34 @@ body:has(.play-screen) #footer {
 .play-player #health {
   display: flex;
   align-items: center;
-  gap: var(--space-1);
+  gap: var(--space-2);
+  width: 100%;
 }
-.play-player #health img {
-  display: none;
+.play-player__hearts {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  container-type: inline-size;
+}
+#health .play-player__hearts img {
+  display: block;
+  flex: none;
+  width: 24px;
+  height: 24px;
+  margin: 0;
+}
+#health .play-player__hearts img + img {
+  margin-left: clamp(-18px, calc((100cqw - var(--hearts) * 24px) / (var(--hearts) - 1)), 4px);
 }
 .play-player .health-counter {
   display: inline-block;
+  flex: none;
   font-weight: var(--weight-heavy);
   font-size: var(--text-lg);
   color: var(--text-color);
 }
 .play-player .health-counter::before {
-  content: "\2665";
-  margin-right: 5px;
-  color: var(--feedback-error);
+  content: none;
 }
 
 /* The actions: the same buttons in the same places in every state */
@@ -761,16 +772,17 @@ body:has(.play-screen) #footer {
   pointer-events: none;
 }
 
-/* The buttons of the board joined the actions (PlayBoard.js): Back, Reset and Review at the end of the row,
+/* The buttons of the board (PlayBoard.js): Reset, Review and Next at the right of the row of the messages,
    in the look of the actions; an inactive one is dimmed and can't be pressed */
 .play-actions__end {
   display: flex;
+  flex: none;
   gap: 6px;
   margin-left: auto;
 }
 .play-actions__end :is(#besogo-pass-button, #besogo-back-button, #besogo-back-button-inactive, #history-button, #besogo-reset-button, #besogo-reset-button-inactive, #besogo-review-button, #besogo-review-button-inactive, #besogo-next-button, #besogo-next-button-inactive) {
   min-width: 40px;
-  height: 40px;
+  height: 36px;
   margin: 0;
   padding: 0 var(--space-3);
   box-sizing: border-box;
@@ -781,7 +793,7 @@ body:has(.play-screen) #footer {
   font-family: inherit;
   font-size: var(--text-md);
   font-weight: var(--weight-bold);
-  line-height: 38px;
+  line-height: 34px;
   text-transform: none;
   text-decoration: none;
   cursor: pointer;
@@ -1078,5 +1090,17 @@ body:has(.play-screen) #footer {
   }
   .problem-nav__item--beyond1 {
     display: none;
+  }
+  /* The row of the messages fits a phone: a smaller message and narrower buttons */
+  .play-message__status h2,
+  .play-message__status h3 {
+    font-size: var(--text-md);
+  }
+  .play-actions__end {
+    gap: 4px;
+  }
+  .play-actions__end :is(#history-button, #besogo-pass-button, #besogo-reset-button, #besogo-reset-button-inactive, #besogo-review-button, #besogo-review-button-inactive, #besogo-next-button, #besogo-next-button-inactive) {
+    padding: 0 var(--space-2);
+    font-size: var(--text-sm);
   }
 }
