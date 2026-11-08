@@ -979,13 +979,20 @@
 	background: var(--color-surface-sunken);
 }
 
-/* On a phone a table fits the screen: body-size text, no fixed column widths, less padding (compact tables keep their cell padding) */
+/* On a phone a table fits the screen: small text that may wrap, no fixed column widths, less padding
+   (compact tables keep their cell padding), and the columns marked optional are left out */
 @media (width < 40rem)
 {
 	.data-table th,
 	.data-table td
 	{
-		font-size: 1rem;
+		font-size: var(--text-sm);
+		overflow-wrap: anywhere;
+	}
+
+	.data-table .data-table__optional
+	{
+		display: none;
 	}
 
 	.data-table th

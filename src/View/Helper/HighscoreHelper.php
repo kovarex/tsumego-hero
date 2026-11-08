@@ -37,7 +37,7 @@ class HighscoreHelper extends AppHelper
 		$html .= '<tr>';
 		$html .= '<th class="highscore-table__place">Place</th>';
 		$html .= '<th class="highscore-table__name legacy-left">Name</th>';
-		$html .= '<th class="highscore-table__premium">Premium</th>';
+		$html .= '<th class="highscore-table__premium data-table__optional">Premium</th>';
 		foreach ($valueColumns as $col)
 			$html .= '<th>' . $col['label'] . '</th>';
 
@@ -77,7 +77,7 @@ class HighscoreHelper extends AppHelper
 			$html .= '<tr class="' . trim($selfClass . $medalClass) . '">';
 			$html .= '<td class="legacy-center">#' . $pos . '</td>';
 			$html .= '<td class="legacy-left">' . $name . '</td>';
-			$html .= '<td class="legacy-center">' . UserTable::renderPremium($row) . '</td>';
+			$html .= '<td class="legacy-center data-table__optional">' . UserTable::renderPremium($row) . '</td>';
 			foreach ($valueColumns as $col)
 				$html .= '<td class="legacy-center">' . $col['render']($row) . '</td>';
 
