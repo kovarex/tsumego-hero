@@ -139,7 +139,7 @@ class HeroPowersTest extends IntegrationTestCase
 		// clicking next after solving, sprint is still visible:
 		$browser->clickId('besogo-next-button');
 		$this->assertSame($context->XPGained(), Constants::$SPRINT_MULTIPLIER * $originalTsumego0XPValue);
-		$this->assertTextContains('Sprint', $browser->find('#xpDisplay')->getText());
+		$this->assertTextContains('Sprint', $this->xpDisplayText($browser));
 		$browser->playWithResult('S'); // solve the problem
 
 		// clicking next after solving again, sprint is applied on xp still

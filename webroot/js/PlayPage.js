@@ -32,9 +32,9 @@ function updateMistakeTrainingButton(button, xp)
 	description.innerHTML = button.description;
 	window.localizeTimeElements?.(description);
 
-	// A solve shows only "Correct!" in the row of the messages; the XP it earned shows where the XP of a problem
-	// shows (the top right of the head), and what it did to the problem (its next review, or its graduation) is in
-	// the title of that XP and in the tooltip of the problem's button
+	// A solve shows only "Correct!" in the row of the messages; the XP it earned and what it did to the problem (its
+	// next review, or its graduation) are in the popup of the rank (and the title of that XP) and in the tooltip of
+	// the problem's button
 	let reward = document.getElementById("xpDisplay");
 	let rewardText = document.getElementById("xpDisplayText");
 	if (button.status === 'S' && problemSolved)
@@ -51,6 +51,16 @@ function updateMistakeTrainingButton(button, xp)
 			outcome.innerHTML = button.description;
 			window.localizeTimeElements?.(outcome);
 			reward.title = outcome.textContent.trim() + (xp && xp.clear > 0 ? " All clear today: +" + xp.clear + " XP." : "");
+			//and as a line of the popup of the rank, which a phone opens with a tap
+			let details = document.getElementById("playStakeDetails");
+			if (details)
+			{
+				details.querySelector(".play-stake__outcome")?.remove();
+				let line = document.createElement("div");
+				line.className = "play-stake__outcome";
+				line.textContent = reward.title;
+				details.appendChild(line);
+			}
 		}
 
 		// The last problem of the day is solved, so Next leads to the end of the training
@@ -66,6 +76,34 @@ function updateMistakeTrainingButton(button, xp)
 		}
 	}
 }
+
+//The rank of the problem opens its rating and the reward of a solve in a popup under it; a click or a tap
+//elsewhere, or Escape, closes it
+(function() {
+	let rank = document.getElementById("status2");
+	let stake = document.getElementById("xpDisplayDiv");
+	if (!rank || !stake)
+		return;
+	let open = shown => {
+		stake.classList.toggle("play-stake--open", shown);
+		rank.setAttribute("aria-expanded", shown ? "true" : "false");
+	};
+	rank.addEventListener("click", () => open(!stake.classList.contains("play-stake--open")));
+	rank.addEventListener("keydown", event => {
+		if (event.key === "Enter" || event.key === " ") {
+			event.preventDefault();
+			open(!stake.classList.contains("play-stake--open"));
+		}
+	});
+	document.addEventListener("click", event => {
+		if (!stake.contains(event.target))
+			open(false);
+	});
+	document.addEventListener("keydown", event => {
+		if (event.key === "Escape")
+			open(false);
+	});
+})();
 
 //A link with data-toggle shows and hides the element it names, its arrow points down while it is open
 document.querySelectorAll("[data-toggle]").forEach(toggle => toggle.addEventListener("click", event => {

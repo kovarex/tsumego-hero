@@ -413,7 +413,7 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 
 		// and so should the XP display
 		$this->assertTrue($browser->driver->executeScript('return window.xpStatus !== undefined;'));
-		$this->assertNotEmpty($browser->findById('xpDisplayText')->getText(),
+		$this->assertNotEmpty($this->xpDisplayText($browser),
 			'The XP display shows the XP gained');
 	}
 

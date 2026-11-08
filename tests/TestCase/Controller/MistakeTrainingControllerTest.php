@@ -41,7 +41,7 @@ class MistakeTrainingControllerTest extends IntegrationTestCase
 
 		$this->get('/mistake-training');
 
-		$this->assertMatchesRegularExpression('/<div id="status2">\s*<span class="status-rating"[^>]*>\s*' . preg_quote(Rating::getReadableRankFromRating(1500), '/') . ' /',
+		$this->assertMatchesRegularExpression('/<div id="status2"[^>]*>\s*<span class="status-rating"[^>]*>\s*' . preg_quote(Rating::getReadableRankFromRating(1500), '/') . ' /',
 			$this->view, 'The rank shows as in the level mode');
 		$this->assertNull($this->playPage()['problem']['xpStatus'], 'The training gives no XP');
 	}
@@ -841,7 +841,7 @@ class MistakeTrainingControllerTest extends IntegrationTestCase
 			$browser->waitUntil(fn() => str_contains((string) $browser->find('#xpDisplay')->getAttribute('title'), 'next review'), context: 'the outcome of the solve');
 			$this->assertStringContainsString('next review ' . $format($nextDue) . '.', (string) $browser->find('#xpDisplay')->getAttribute('title'),
 				"The title of the reward in format $dateFormat");
-			$this->assertMatchesRegularExpression('/^\+\d+ XP$/', $browser->find('#xpDisplayText')->getText(), 'The XP of the solve shows where the XP of a problem shows');
+			$this->assertMatchesRegularExpression('/^\+\d+ XP$/', trim((string) $browser->driver->executeScript('return document.getElementById("xpDisplayText").textContent;')), 'The XP of the solve shows where the XP of a problem shows');
 			$this->assertStringContainsString($format($nextDue), (string) $browser->driver->executeScript(
 				'return document.querySelector(".problem-nav__item--current .tooltip-desc").textContent;'), "And the tooltip of the button, in format $dateFormat");
 		}

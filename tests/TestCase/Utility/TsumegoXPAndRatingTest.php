@@ -14,7 +14,7 @@ class TsumegoXPAndRatingTest extends IntegrationTestCase
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		// the reported xp is normal
-		$this->assertTextContains(strval(TsumegoUtil::getXpValue($context->tsumegos[0])) . ' XP', $browser->find('#xpDisplay')->getText());
+		$this->assertTextContains(strval(TsumegoUtil::getXpValue($context->tsumegos[0])) . ' XP', $this->xpDisplayText($browser));
 	}
 
 	public function testShowingGoldenXP(): void
@@ -23,8 +23,8 @@ class TsumegoXPAndRatingTest extends IntegrationTestCase
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		// the reported xp is golden
-		$this->assertTextContains(TsumegoUtil::getXpValue($context->tsumegos[0], Constants::$GOLDEN_TSUMEGO_XP_MULTIPLIER) . ' XP', $browser->find('#xpDisplay')->getText());
-		$this->assertTextContains('Golden', $browser->find('#xpDisplay')->getText());
+		$this->assertTextContains(TsumegoUtil::getXpValue($context->tsumegos[0], Constants::$GOLDEN_TSUMEGO_XP_MULTIPLIER) . ' XP', $this->xpDisplayText($browser));
+		$this->assertTextContains('Golden', $this->xpDisplayText($browser));
 	}
 
 	public function testProgressDeletionsDontAffectGoldenXPShown(): void
@@ -41,7 +41,7 @@ class TsumegoXPAndRatingTest extends IntegrationTestCase
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		// golden uses the base value, not the progress-deletion reduced value
-		$this->assertTextContains(TsumegoUtil::getXpValue($context->tsumegos[0], Constants::$GOLDEN_TSUMEGO_XP_MULTIPLIER) . ' XP', $browser->find('#xpDisplay')->getText());
+		$this->assertTextContains(TsumegoUtil::getXpValue($context->tsumegos[0], Constants::$GOLDEN_TSUMEGO_XP_MULTIPLIER) . ' XP', $this->xpDisplayText($browser));
 	}
 
 	public function testShowingNormalStatusAndUpdatingToSolved(): void
@@ -50,10 +50,10 @@ class TsumegoXPAndRatingTest extends IntegrationTestCase
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		// the reported xp is normal
-		$this->assertTextContains(strval(TsumegoUtil::getXpValue($context->tsumegos[0])) . ' XP', $browser->find('#xpDisplay')->getText());
+		$this->assertTextContains(strval(TsumegoUtil::getXpValue($context->tsumegos[0])) . ' XP', $this->xpDisplayText($browser));
 		$browser->playWithResult('S'); // solve the problem
-		$this->assertTextContains(strval(TsumegoUtil::getXpValue($context->tsumegos[0])) . ' XP', $browser->find('#xpDisplay')->getText());
-		$this->assertTextContains('Solved', $browser->find('#xpDisplay')->getText());
+		$this->assertTextContains(strval(TsumegoUtil::getXpValue($context->tsumegos[0])) . ' XP', $this->xpDisplayText($browser));
+		$this->assertTextContains('Solved', $this->xpDisplayText($browser));
 	}
 
 	public function testShowingSolvedOnOpenedSolvedProblem(): void
@@ -63,8 +63,8 @@ class TsumegoXPAndRatingTest extends IntegrationTestCase
 			'tsumegos' => [['set_order' => 1, 'status' => 'S']]]);
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
-		$this->assertTextContains(strval(TsumegoUtil::getXpValue($context->tsumegos[0])) . ' XP', $browser->find('#xpDisplay')->getText());
-		$this->assertTextContains('Solved', $browser->find('#xpDisplay')->getText());
+		$this->assertTextContains(strval(TsumegoUtil::getXpValue($context->tsumegos[0])) . ' XP', $this->xpDisplayText($browser));
+		$this->assertTextContains('Solved', $this->xpDisplayText($browser));
 	}
 
 	public function testShowingNormalXPOn30kProblem(): void
@@ -74,16 +74,16 @@ class TsumegoXPAndRatingTest extends IntegrationTestCase
 			'tsumegos' => [['rating' => Rating::getRankMiddleRatingFromReadableRank('30k'), 'set_order' => 1, 'status' => 'S']]]);
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
-		$this->assertTextContains(strval(TsumegoUtil::getXpValue($context->tsumegos[0])) . ' XP', $browser->find('#xpDisplay')->getText());
+		$this->assertTextContains(strval(TsumegoUtil::getXpValue($context->tsumegos[0])) . ' XP', $this->xpDisplayText($browser));
 
-		$xpDisplayText = $browser->find('#xpDisplay')->getText();
+		$xpDisplayText = $this->xpDisplayText($browser);
 		$this->assertTextContains('Solved', $xpDisplayText);
 		$this->assertTextContains('1 XP', $xpDisplayText);
 	}
 
 	public function checkSprintInXpAndTimeInStatus2($browser)
 	{
-		$this->assertTextContains('Sprint', $browser->find('#xpDisplay')->getText());
+		$this->assertTextContains('Sprint', $this->xpDisplayText($browser));
 		$status = $browser->find('#status2')->getText();
 		$this->assertSame(preg_match('/(\d+):([0-5]\d)/', $status, $matches), 1, 'The status should contain time in format m:s, but it wasn\'t found in the string: "' . $status . "'");
 	}
@@ -95,7 +95,7 @@ class TsumegoXPAndRatingTest extends IntegrationTestCase
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		// the reported xp is normal
-		$this->assertTextStartsNotWith($browser->find('#xpDisplay')->getText(), strval(TsumegoUtil::getXpValue($context->tsumegos[0])) . ' XP');
+		$this->assertTextStartsNotWith($this->xpDisplayText($browser), strval(TsumegoUtil::getXpValue($context->tsumegos[0])) . ' XP');
 		$browser->clickId('sprint');
 		$xpText = strval(TsumegoUtil::getXpValue($context->tsumegos[0], Constants::$SPRINT_MULTIPLIER)) . ' XP';
 		$browser->waitUntilJs('document.querySelector("#xpDisplay").textContent.includes("' . $xpText . '")');
@@ -108,7 +108,7 @@ class TsumegoXPAndRatingTest extends IntegrationTestCase
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		// the sprint is active from the start
-		$this->assertTextContains(strval(TsumegoUtil::getXpValue($context->tsumegos[0], Constants::$SPRINT_MULTIPLIER)) . ' XP', $browser->find('#xpDisplay')->getText());
+		$this->assertTextContains(strval(TsumegoUtil::getXpValue($context->tsumegos[0], Constants::$SPRINT_MULTIPLIER)) . ' XP', $this->xpDisplayText($browser));
 		$this->checkSprintInXpAndTimeInStatus2($browser);
 	}
 
@@ -130,7 +130,7 @@ class TsumegoXPAndRatingTest extends IntegrationTestCase
 		$originalTsumegoXpValue = TsumegoUtil::getXpValue($context->tsumegos[0], TsumegoXPAndRating::getProgressDeletionMultiplier(1));
 		$browser->waitUntilJs('document.querySelector("#xpDisplay") !== null && document.querySelector("#xpDisplay").textContent.includes("'
 			. $originalTsumegoXpValue . ' XP")');
-		$this->assertTextContains(strval($originalTsumegoXpValue) . ' XP', $browser->find('#xpDisplay')->getText());
+		$this->assertTextContains(strval($originalTsumegoXpValue) . ' XP', $this->xpDisplayText($browser));
 
 		$browser->driver->executeScript("displayResult('S')"); // solve the problem
 		$browser->find('#besogo-next-button')->click();
