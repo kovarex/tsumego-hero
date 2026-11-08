@@ -600,11 +600,6 @@ h1 {
   border-left: 1px solid var(--surface-border-muted);
 }
 
-/* The problem page has no footer: nothing under the board and the panel draws the eye away. The other
-   pages keep it, with the legal notice and About. */
-body:has(.play-screen) #footer {
-  display: none;
-}
 
 /* Where the problem is, a link to its collection, and under it the goal; at the right the stake,
    as tall as the two lines, in a size that reads at a glance */

@@ -100,8 +100,7 @@ if (Auth::isLoggedIn())
 	//Invitations to a class and requests to join one wait for the player's answer, which
 	//the Classes item counts, and so does Collections, where the item is hidden.
 	$classesAwaitingAnswer = $headerCounts->classesAwaitingAnswer;
-	//Challenges the player is in and hasn't played yet: the Challenges item counts them,
-	//and so does Play, where the item is hidden.
+	//Challenges the player is in and hasn't played yet: their icon in the menu bar counts them.
 	$challengesWaiting = $headerCounts->challengesWaiting;
 	//Players asking to be friends: the Friends item of the account menu counts them.
 	$friendRequests = $headerCounts->friendRequests;
@@ -122,9 +121,6 @@ else
 }
 $classesBadge = $classesAwaitingAnswer > 0
 	? '<span class="nav__new-badge nav__new-badge--visible" title="Waiting for your answer in Classes">' . $classesAwaitingAnswer . '</span>'
-	: '';
-$challengesBadge = $challengesWaiting > 0
-	? '<span class="nav__new-badge nav__new-badge--visible" title="Challenges waiting for you to play them">' . $challengesWaiting . '</span>'
 	: '';
 $friendsBadge = $friendRequests > 0
 	? ' <span class="messages-unread-count" title="Players asking to be your friend">' . $friendRequests . '</span>'
@@ -186,6 +182,8 @@ $friendsBadge = $friendRequests > 0
 								<li class="newMenuLi1-forum"><a href="/forums">Forums</a></li>
 								<li><a class="<?php echo $active('changelog'); ?>" href="/changelog">What's new<span class="nav__new-badge"></span></a></li>
 								<li><a class="<?php echo $active('about'); ?>" href="/sites/about">About</a></li>
+								<?php //The legal notice, which the footer of every page carried until it went ?>
+								<li><a href="/sites/impressum">Legal notice</a></li>
 							</ul>
 						</li>
 						<li><a class="<?php echo $active('set'); ?>" href="/sets">Collections<?php echo $classesBadge; ?></a>
@@ -204,13 +202,13 @@ $friendsBadge = $friendRequests > 0
 							</ul>
 							<?php endif; ?>
 						</li>
-						<li><a class="homeMenuLink nav__play-link" href="<?php echo $playUrl; ?>">Play<?php echo $challengesBadge; ?></a>
+						<li><a class="homeMenuLink nav__play-link" href="<?php echo $playUrl; ?>">Play</a>
 							<ul class="newMenuLi3">
 								<li><a class="<?php echo $active('level mode'); ?>" href="<?php echo $playUrl; ?>?mode=1">Level</a></li>
 								<?php if (Auth::isLoggedIn()): ?>
 								<li><a class="<?php echo $active('rating mode'); ?>" href="/ratingMode">Rating</a></li>
 								<li><a class="<?php echo $active('time mode'); ?>" href="/timeMode/overview">Time</a></li>
-								<li><a class="<?php echo $active('challenges'); ?>" href="/challenges">Challenges<?php echo $challengesBadge; ?></a></li>
+								<?php //The challenges are in the top bar of every page (templates/element/header_icons.php) ?>
 								<?php endif; ?>
 							</ul>
 						</li>
@@ -271,20 +269,6 @@ $friendsBadge = $friendRequests > 0
 			?>
 		</div>
 	</div>
-</div>
-<div id="footer" class="footerLinks">
-	<div class="footer-space"></div>
-	<div class="footer-space"></div>
-	<div class="footer-element">Supported by Wube Software</div>
-	<div class="footer-element">
-		<a href="https://www.factorio.com"><img src="/img/wube-software-logo.png" title="Wube Software" alt="Wube Software"></a>
-	</div>
-	<div class="footer-space"></div>
-	<div class="footer-element">Tsumego Hero © <?php echo date('Y'); ?></div>
-	<div class="footer-element"><a href="mailto:kovarex@gmail.com">kovarex@gmail.com</a></div>
-	<div class="footer-element"><a href="/sites/impressum">Legal notice</a></div>
-	<div class="footer-element"><a href="/sites/about">About</a></div>
-	<br><br><br>
 </div>
 <script>
 	<?php AccountWidget::renderJS($timeMode); ?>

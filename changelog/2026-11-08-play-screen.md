@@ -4,3 +4,5 @@ Changed: "Correct, but what about this answer?" and the comments of the moves sh
 Changed: Comments open from their own button once the problem is solved, and the board shows its coordinates only while they are open.
 Changed: The corner, rotation, colour and favourite settings of the board, and the author of the problem, are in the problem's info (⋯).
 Changed: A click on the level bar in the top bar switches it between the level and the rank.
+
+Changed: The front page shows the four modes in one smaller row; the mistake training and the challenges are in the top bar of every page instead of a card on the front page and an item of the Play menu. The footer is gone; the legal notice is in the Home menu next to About.

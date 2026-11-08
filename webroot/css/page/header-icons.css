@@ -94,15 +94,6 @@
 		margin: 0 6px 0 auto;
 	}
 
-	/* The narrowest phones keep the challenges in the menu only */
-	@media (width < 360px)
-	{
-		#header-challenges
-		{
-			display: none;
-		}
-	}
-
 	/* The icons push the row to the right instead of the flame */
 	.header-icons + .daily-streak
 	{

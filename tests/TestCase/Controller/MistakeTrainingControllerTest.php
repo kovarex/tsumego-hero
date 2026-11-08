@@ -566,7 +566,8 @@ class MistakeTrainingControllerTest extends IntegrationTestCase
 			'Premium players may play sandbox collections, so the training opens the problem');
 	}
 
-	public function testTheHomepageShowsWhatTheTrainingHasToday()
+	//The training is in the top bar of every page, so the homepage has no card of its own
+	public function testTheHomepageShowsWhatTheTrainingHasTodayInTheTopBar()
 	{
 		new ContextPreparator([
 			'user' => ['name' => 'testuser'],
@@ -579,10 +580,9 @@ class MistakeTrainingControllerTest extends IntegrationTestCase
 		$this->get('/sites/index');
 		$html = $this->view;
 
-		$this->assertStringContainsString('class="mistake-training-card" href="' . MistakeTraining::$OVERVIEW_LINK . '"', $html,
-			'The homepage opens the overview, which leads into the training');
-		$this->assertStringContainsString('class="mistake-training-card__count" role="img" title="2 problems to review today" aria-label="2 problems to review today">2</span>', $html);
-		$this->assertStringNotContainsString('Mistake<br>Training', $html, 'The training is on the homepage, not in the Play menu');
+		$this->assertMatchesRegularExpression('#<a id="header-mistake-training"[^>]*href="' . preg_quote(MistakeTraining::$OVERVIEW_LINK, '#') . '"[^>]*>.*?<span class="header-icons__badge" aria-hidden="true">2</span>#s', $html,
+			'The top bar opens the overview, with what is due today');
+		$this->assertStringNotContainsString('mistake-training-card', $html, 'The homepage has no card of the training');
 	}
 
 	public function testTheOverviewShowsWhatIsDueAndLeadsIntoTheTraining()
@@ -652,16 +652,6 @@ class MistakeTrainingControllerTest extends IntegrationTestCase
 		$this->assertStringContainsString('<a id="playTitleA" href="' . MistakeTraining::$OVERVIEW_LINK . '">Mistake Training 1/1</a>', $html);
 	}
 
-	public function testTheHomepageOffersPastMistakesEvenWithNothingToImport()
-	{
-		new ContextPreparator(['user' => ['name' => 'testuser']]);
-
-		$this->get('/sites/index');
-		$html = $this->view;
-
-		$this->assertStringContainsString('Nothing to review today. Add past mistakes to training.', $html);
-	}
-
 	public function testAGuestSeesNoTrainingOnTheHomepage()
 	{
 		new ContextPreparator(['user' => null]);
@@ -669,7 +659,7 @@ class MistakeTrainingControllerTest extends IntegrationTestCase
 		$this->get('/sites/index');
 		$html = $this->view;
 
-		$this->assertStringNotContainsString('mistake-training-card', $html);
+		$this->assertStringNotContainsString('header-mistake-training', $html);
 	}
 
 	public function testHelpPageDescribesTheTraining()
