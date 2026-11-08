@@ -20,8 +20,8 @@ class CommentsRenderer
 	{
 		echo '<div class="sandboxComment">';
 		$commentColor = $comment['from_admin'] ? 'admin-text' : '';
-		echo '<table class="sandboxTable2" width="100%" border="0">';
-		echo '<tr><td width="73%"><div style="padding-bottom:7px;"><b>#' . ($index + 1) . '</b> | ';
+		echo '<table class="sandboxTable2">';
+		echo '<tr><td class="sandboxTable2__comment"><div class="sandboxTable2__heading"><b>#' . ($index + 1) . '</b> | ';
 		if ($comment['set_connection_id'])
 		{
 			echo '<a href="/' . (int) $comment['set_connection_id'] . '?search=topics">';
@@ -34,15 +34,15 @@ class CommentsRenderer
 		echo '<div class="' . $commentColor . '">';
 		echo h(UserTable::displayName(['id' => $comment['from_id'], 'display_name' => $comment['from_display_name']])) . ':<br>';
 		echo '</div>';
-		// one class attribute: a browser keeps only the first of two, so a hidden admin comment wasn't muted
+		//One class attribute: a browser keeps only the first of two, so a hidden admin comment wasn't muted
 		$visible = TsumegoUtil::isSolvedStatus($comment['status']) || Auth::isAdmin();
 		$classes = array_filter([$comment['from_admin'] ? 'commentBox2' : '', $visible ? '' : 'text-muted']);
 		echo '<div' . ($classes ? ' class="' . implode(' ', $classes) . '"' : '') . ' id="comment_' . $comment['id'] . '">';
 		echo $visible ? nl2br(h($comment['message'])) : '[You need to solve this problem to see the comment]';
 		echo '</div>';
-		echo '</td><td class="sandboxTable2time" align="right"><time datetime="' . Util::toIso8601($comment['created']) . '" data-format="date">' . h($comment['created']) . '</time><br><time datetime="' . Util::toIso8601($comment['created']) . '" data-format="time">' . h($comment['created']) . '</time></td>';
+		echo '</td><td class="sandboxTable2time legacy-right"><time datetime="' . Util::toIso8601($comment['created']) . '" data-format="date">' . h($comment['created']) . '</time><br><time datetime="' . Util::toIso8601($comment['created']) . '" data-format="time">' . h($comment['created']) . '</time></td>';
 		echo '</tr>';
-		echo '<tr><td colspan="2"><div width="100%"><div align="center">';
+		echo '<tr><td colspan="2"><div><div class="legacy-center">';
 
 		if ($comment['set_connection_id'])
 			new TsumegoButton($comment['tsumego_id'], $comment['set_connection_id'], $comment['set_num'], $comment['status'] ?: 'N', 0, $comment['sgf'])->render();
