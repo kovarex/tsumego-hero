@@ -16,8 +16,7 @@ function showAchievementPopup(achievement)
 	popup.className = 'toast toast--achievement ' + achievement.color + '3';
 
 	var banner = document.createElement('div');
-	banner.className = 'toast__banner';
-	banner.setAttribute('align', 'center');
+	banner.className = 'toast__banner legacy-center';
 	banner.appendChild(document.createTextNode('Achievement Completed '));
 	var close = document.createElement('span');
 	close.className = 'toast__close';
