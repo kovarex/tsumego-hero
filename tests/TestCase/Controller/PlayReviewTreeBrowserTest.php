@@ -60,6 +60,44 @@ class PlayReviewTreeBrowserTest extends IntegrationTestCase
 		}
 	}
 
+	//On a PC the tree box takes the whole width of the panel, not just the width of the tree. A tree that fits the
+	//panel's width but not the height of the box scrolls only down: its vertical scrollbar takes no width from it.
+	public function testTallTreeFillsThePanelWithoutScrollingSideways(): void
+	{
+		$variations = '';
+		for ($i = 0; $i < 30; $i++)
+			$variations .= '(;B[' . 'abcdefghijklmnopqrs'[$i % 19] . 'sr'[intdiv($i, 19)] . '];W[ab];B[ba];W[bb];B[ca];W[cb];B[da];W[db];B[ea])';
+		$context = new ContextPreparator(['tsumego' => ['set_order' => 1, 'status' => 'S', 'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[jj]' . $variations . ')']]);
+		$browser = Browser::instance();
+		$window = $browser->driver->manage()->window();
+		$originalSize = $window->getSize();
+		try
+		{
+			foreach ([new WebDriverDimension(1450, 900), new WebDriverDimension(1280, 800), new WebDriverDimension(1920, 1080)] as $size)
+			{
+				$window->setSize($size);
+				$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+				$browser->clickId('besogo-review-button');
+				$browser->waitUntilJs('document.querySelector(".besogo-tree svg") !== null');
+				$sizes = $browser->driver->executeScript(<<<'JS'
+					const tree = document.querySelector('.play-screen__panel .besogo-tree');
+					const panel = document.querySelector('.play-screen__panel');
+					const panelStyle = getComputedStyle(panel);
+					return {tree: tree.getBoundingClientRect().width, panel: panel.clientWidth - parseFloat(panelStyle.paddingLeft) - parseFloat(panelStyle.paddingRight),
+						scrollWidth: tree.scrollWidth, clientWidth: tree.clientWidth, scrollHeight: tree.scrollHeight, clientHeight: tree.clientHeight};
+					JS);
+				$this->assertGreaterThan($sizes['clientHeight'], $sizes['scrollHeight'], 'The tree overflows vertically at ' . $size->getWidth());
+				$this->assertEqualsWithDelta($sizes['panel'], $sizes['tree'], 1, 'The tree box is as wide as the panel at ' . $size->getWidth());
+				$this->assertLessThanOrEqual($sizes['clientWidth'], $sizes['scrollWidth'], 'The tree does not scroll sideways at ' . $size->getWidth());
+			}
+			$browser->assertNoJsErrors();
+		}
+		finally
+		{
+			$window->setSize($originalSize);
+		}
+	}
+
 	//The tree scrolls in its own box both ways, so its horizontal scrollbar is on screen wherever the tree is
 	//scrolled to. The play page shows no back/forward buttons under it: the review moves by a click on the
 	//tree or on the board.

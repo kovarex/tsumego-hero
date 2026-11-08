@@ -951,12 +951,23 @@ h1 {
   align-items: flex-start;
   justify-content: flex-start;
 }
-/* The root of the tree is always at the top left, whatever the width of the tree; a wider one scrolls from there */
+/* The root of the tree is always at the top left, whatever the width of the tree; a wider one scrolls from there.
+   The box takes the whole width of the panel, not the width of the tree: sized to the tree, it lost the width of its
+   vertical scrollbar to the tree when that showed later, and scrolled sideways for nothing. */
+.play-screen__panel > .besogo-panels {
+  width: 100%;
+}
 .play-screen__panel > .besogo-panels .besogo-tree {
   align-self: flex-start;
+  width: 100% !important;
   max-width: 100%;
+  box-sizing: border-box;
   max-height: max(350px, var(--tree-height, 350px));
   margin: 0;
+}
+/* A block, so no gap for the descent of a line under it makes the box taller than the tree */
+.play-screen__panel > .besogo-panels .besogo-tree svg {
+  display: block;
 }
 /* The review moves by a click on the tree or on the board, so it shows no step buttons */
 .play-screen__panel > .besogo-panels .besogo-control {
