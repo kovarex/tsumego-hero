@@ -22,7 +22,7 @@
 /* The count of all players under a table */
 .highscore-table__total
 {
-  font-size: 13px;
+  font-size: var(--text-sm);
   color: #999;
   padding: 8px 0;
 }
@@ -43,12 +43,12 @@
 {
   display: inline-block;
   margin-top: 4px;
-  font-weight: normal;
+  font-weight: var(--weight-normal);
   text-decoration: none;
 }
 .highscore__note
 {
-  font-weight: 400;
+  font-weight: var(--weight-normal);
   font-style: italic;
 }
 /* The time mode board: its categories, then its ranks */
@@ -63,7 +63,7 @@
 .highscore
 {
   font-size: 20px;
-  font-weight: 600;
+  font-weight: var(--weight-medium);
   margin-bottom: 40px;
 }
 }

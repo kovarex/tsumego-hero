@@ -51,7 +51,7 @@
 	align-items: stretch;
 	justify-content: center;
 	float: none;
-	font-weight: 700;
+	font-weight: var(--weight-bold);
 	text-align: center;
 	text-decoration: none;
 	border: 1px solid var(--surface-border-strong);
@@ -352,7 +352,7 @@
 	opacity: 0;
 	padding: 3px 8px;
 	font-size: 12px;
-	font-weight: 800;
+	font-weight: var(--weight-heavy);
 	text-align: center;
 	border-radius: 3px;
 	transition: opacity 0.2s ease;
@@ -444,7 +444,7 @@ a[data-tsumego-id]:hover .tooltip-desc
 /* The bonus for clearing the day, under the outcome */
 .mistake-training-outcome--clear
 {
-	font-weight: var(--font-weight-bold);
+	font-weight: var(--weight-bold);
 }
 
 /* Mistake training: the status keeps room for its two lines, so the board does not
@@ -506,7 +506,7 @@ a[data-tsumego-id]:hover .tooltip-desc
 .mistake-training-pool summary
 {
 	cursor: pointer;
-	font-weight: var(--font-weight-bold);
+	font-weight: var(--weight-bold);
 	margin-bottom: var(--space-2);
 }
 

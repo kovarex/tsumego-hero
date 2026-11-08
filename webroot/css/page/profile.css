@@ -12,7 +12,7 @@
   width: 95%;
 }
 .acTitle2__long {
-  font-weight: normal;
+  font-weight: var(--weight-normal);
   font-size: 17px;
 }
 /* Settings: the fields of a new e-mail and password */
@@ -22,9 +22,9 @@
 /* Solve history */
 .solve-history__preview-toggle {
   cursor: pointer;
-  font-size: 11px;
+  font-size: var(--text-xs);
   color: var(--text-softer-color);
-  font-weight: normal;
+  font-weight: var(--weight-normal);
   text-transform: none;
 }
 .solve-history__preview-toggle input {
@@ -67,7 +67,7 @@
 	height: 76px;
 	font-family: var(--font-family-cond);
 	font-size: 44px;
-	font-weight: bold;
+	font-weight: var(--weight-bold);
 	line-height: 76px;
 	text-align: center;
 	letter-spacing: -1px;
@@ -122,8 +122,8 @@
 
 .profile-username
 {
-	font-size: 32px;
-	font-weight: 800;
+	font-size: var(--text-3xl);
+	font-weight: var(--weight-heavy);
 	margin: 0;
 	padding: 10px 0 8px;
 	text-align: center;
@@ -146,7 +146,7 @@
 
 .profile-header__friend-state
 {
-	font-weight: 600;
+	font-weight: var(--weight-medium);
 }
 
 /* ── Rank display ── */
@@ -167,8 +167,8 @@
 
 .rank__label
 {
-	font-size: 11px;
-	font-weight: 700;
+	font-size: var(--text-xs);
+	font-weight: var(--weight-bold);
 	text-transform: uppercase;
 	letter-spacing: 0.12em;
 	color: var(--text-softer-color);
@@ -185,7 +185,7 @@
 
 .hero-powers__title
 {
-	font-weight: 800;
+	font-weight: var(--weight-heavy);
 	color: var(--color-blue);
 	font-size: 14px;
 	margin-bottom: 10px;
@@ -276,7 +276,7 @@
 {
 	margin: 0 0 10px;
 	font-size: 14px;
-	font-weight: 800;
+	font-weight: var(--weight-heavy);
 	color: var(--training-title);
 }
 
@@ -298,7 +298,7 @@
 .training-overview__value
 {
 	font-size: var(--font-size-lg);
-	font-weight: var(--font-weight-bold);
+	font-weight: var(--weight-bold);
 }
 
 .training-overview__label
@@ -353,7 +353,7 @@
 .training-overview__count
 {
 	font-size: var(--font-size-md);
-	font-weight: var(--font-weight-bold);
+	font-weight: var(--weight-bold);
 }
 
 /* The calendar scrolls in its own box on a narrow screen, never the page */

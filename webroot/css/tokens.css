@@ -330,8 +330,23 @@
 		--font-size-md: clamp(12px, 0.7rem + 0.5vw, 13px);
 		--font-size-lg: clamp(14px, 0.8rem + 0.6vw, 15px);
 		--font-size-xl: clamp(17px, 1rem + 0.8vw, 20px);
-		--font-weight-bold: 700;
-		--font-weight-heavy: 800;
+		/* The type scale. Each size is one in use today: xs, sm, lg and 3xl are fixed, md, xl and 2xl are
+		   the fluid sizes of the body, h4 and h2 */
+		--text-xs: 11px;
+		--text-sm: 13px;
+		--text-md: clamp(15px, 0.9rem + 0.5vw, 16px);
+		--text-lg: 18px;
+		--text-xl: clamp(17px, 1rem + 0.5vw, 21px);
+		--text-2xl: clamp(22px, 1.1rem + 1vw, 28px);
+		--text-3xl: 32px;
+		--weight-normal: 400;
+		--weight-medium: 600;
+		--weight-bold: 700;
+		--weight-heavy: 800;
+		/* Older names: the weights are aliases; no --text-* size equals a --font-size-* above, so those
+		   keep their values until moving them is decided */
+		--font-weight-bold: var(--weight-bold);
+		--font-weight-heavy: var(--weight-heavy);
 
 		/* ── Neutral colors ── */
 		--color-white: #fff;
