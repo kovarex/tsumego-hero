@@ -819,8 +819,8 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 
 			$health = Util::getHealthBasedOnLevel(Auth::getUser()['level']);
 			$empty = min($damage, $health);
-			$this->assertCount($empty, $browser->getElements('img[title="Empty Heart"]'), $case . ' with ' . $damage . ' damage');
-			$this->assertCount($health - $empty, $browser->getElements('img[title="Heart"]'), $case . ' with ' . $damage . ' damage');
+			$this->assertCount($empty, $browser->getElements('#health img.play-player__heart--empty'), $case . ' with ' . $damage . ' damage');
+			$this->assertCount($health - $empty, $browser->getElements('#health img:not(.play-player__heart--empty)'), $case . ' with ' . $damage . ' damage');
 		}
 	}
 

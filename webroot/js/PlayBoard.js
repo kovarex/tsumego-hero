@@ -154,13 +154,14 @@ function redrawHearts()
 	{
 		var full = i < currentHealth;
 		var el = document.getElementById("heart" + i);
-		el.src = "/img/" + (full ? fullHeart : emptyHeart) + ".png";
-		el.title = full ? "Heart" : "Empty Heart";
+		//an empty heart is the full one greyed (play.css), so it is as solid as the full ones it overlaps
+		el.src = "/img/" + fullHeart + ".png";
+		el.classList.toggle("play-player__heart--empty", !full);
 	}
 	var counter = document.getElementById("health-counter");
 	if (counter)
 		counter.textContent = currentHealth + " / " + maxHealth;
-	document.getElementById("health").title = "Hearts: " + currentHealth + " of " + maxHealth;
+	document.getElementById("health").title = "Hearts " + currentHealth + "/" + maxHealth;
 }
 redrawHearts();
 

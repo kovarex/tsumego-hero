@@ -84,8 +84,8 @@ use App\Utility\ViteManifest;
 		<?php if (!Auth::isInMistakeTrainingMode() && Auth::isLoggedIn()): ?>
 			<?php //A heart for each one the player can have, full or empty (PlayBoard.js redrawHearts()); they overlap more the more there are, so the row fits the panel (play.css), each one on top of the one to its right ?>
 			<div class="play-player">
-				<div id="health" title="Hearts: <?php echo (int) Auth::getRemainingHealth() . ' of ' . (int) $maxHealth; ?>" style="--hearts: <?php echo (int) $maxHealth; ?>">
-					<span class="play-player__hearts"><?php for ($i = 0; $i < $maxHealth; $i++): ?><img title="Heart" id="heart<?php echo $i; ?>" alt="" style="z-index: <?php echo $maxHealth - $i; ?>"><?php endfor; ?></span>
+				<div id="health" title="Hearts <?php echo (int) Auth::getRemainingHealth() . '/' . (int) $maxHealth; ?>" style="--hearts: <?php echo (int) $maxHealth; ?>">
+					<span class="play-player__hearts"><?php for ($i = 0; $i < $maxHealth; $i++): ?><img id="heart<?php echo $i; ?>" alt="" style="z-index: <?php echo $maxHealth - $i; ?>"><?php endfor; ?></span>
 					<span id="health-counter" class="health-counter"><?php echo (int) Auth::getRemainingHealth() . ' / ' . (int) $maxHealth; ?></span>
 				</div>
 			</div>

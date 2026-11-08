@@ -677,6 +677,10 @@ h1 {
   height: auto;
   margin: 0;
 }
+/* The rank of the problem first, the reward under it, as on a phone (the head's grid below) */
+.play-stake #status2 {
+  order: -1;
+}
 .play-stake .status-rating {
   font-size: var(--text-lg);
   font-weight: var(--weight-bold);
@@ -749,15 +753,21 @@ h1 {
 #health .play-player__hearts img + img {
   margin-left: clamp(-18px, calc((100cqw - var(--hearts) * 24px) / (var(--hearts) - 1)), 4px);
 }
+/* The icons alone show the hearts; the count is for screen readers, and in the title of the row ("Hearts 26/34") */
 .play-player .health-counter {
-  display: inline-block;
-  flex: none;
-  font-weight: var(--weight-heavy);
-  font-size: var(--text-lg);
-  color: var(--text-color);
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 .play-player .health-counter::before {
   content: none;
+}
+/* An empty heart is the full one greyed, as solid as the full ones it overlaps (PlayBoard.js redrawHearts()) */
+#health .play-player__hearts img.play-player__heart--empty {
+  filter: grayscale(1) brightness(3.2);
 }
 
 /* The actions: the same buttons in the same places in every state */
@@ -948,18 +958,8 @@ h1 {
   #heroPowersToggle {
     display: none;
   }
-  /* The icons alone show the hearts on a wide screen; the count stays for screen readers and in the
-     title. A phone keeps it: it has no hover for the title, and many overlapping hearts are hard to count */
   .play-player {
     min-height: 0;
-  }
-  .play-player .health-counter {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip-path: inset(50%);
-    white-space: nowrap;
   }
 }
 .play-powers {
