@@ -110,8 +110,7 @@ if ($tsumegoFilters->query != 'topics')
 				</div>
 			</td>
 		</tr>
-		<?php if($tsumegoFilters->query == 'topics')
-		{ ?>
+		<?php if ($tsumegoFilters->query == 'topics'): ?>
 		<tr class="set-view__stats-toggle-row">
 			<td colspan="2"><button type="button" class="btn set-view__stats-toggle" aria-expanded="false">Stats &amp; display</button></td>
 		</tr>
@@ -227,7 +226,7 @@ if ($tsumegoFilters->query != 'topics')
 					</td>
 				</tr>
 			<?php endif; ?>
-		<?php } ?>
+		<?php endif; ?>
 
 		</table>
 		</div>
