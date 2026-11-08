@@ -3,6 +3,7 @@
 use App\Model\Table\SgfTable;
 use App\Model\Table\TsumegoVariantTable;
 use App\Utility\Auth;
+use App\Utility\ProblemGoal;
 use App\Utility\Rating;
 use App\Utility\Trash;
 use App\Utility\Util;
@@ -74,7 +75,8 @@ $variantType = $tv ? (int) $tv->tsumego_variant_type_id : null;
 				<tr>
 					<td><label for="description">Description:</label></td>
 					<td>
-						<textarea name="description" id="description" rows="3" class="play-edit__field"><?php echo h($displayDescription); ?></textarea>
+						<?php //an empty description is the default goal, shown as the placeholder; saving that default stores it empty again ?>
+						<textarea name="description" id="description" rows="3" class="play-edit__field" placeholder="<?php echo h(ProblemGoal::default($playerColor)); ?>"><?php echo h($displayDescription); ?></textarea>
 						<br><small class="play-edit__note">Describe the problem. <?php echo ($playerColor === 'white') ? 'White' : 'Black'; ?> is to move.</small>
 					</td>
 				</tr>

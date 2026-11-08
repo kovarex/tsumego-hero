@@ -75,14 +75,7 @@ class PrintSheet
 	public static function goal(string $description, ?string $firstMoveColor): string
 	{
 		$description = trim(preg_replace('/\s+/u', ' ', strip_tags($description)));
-		if ($description !== '')
-			return $description;
-		return match ($firstMoveColor)
-		{
-			'B' => 'Black to play',
-			'W' => 'White to play',
-			default => '',
-		};
+		return ProblemGoal::orDefault($description, $firstMoveColor);
 	}
 
 	//The columns and rows of a page of the given number of problems: 2 × 2, 2 × 3, 3 × 3 or 3 × 4

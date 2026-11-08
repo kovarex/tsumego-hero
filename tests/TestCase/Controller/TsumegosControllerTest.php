@@ -1010,6 +1010,57 @@ class TsumegosControllerTest extends IntegrationTestCase
 		$this->assertStringContainsString('white stones attack Black stones.', $this->view);
 	}
 
+	//A problem without a description has the default goal, "<color> to play" for the color to move: a stone of
+	//that color and "to play", in the color the player moves with, so it follows the swap of the colors
+	public function testAnEmptyDescriptionIsTheColorToPlay(): void
+	{
+		$blackFirst = '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19];B[aa];W[ab];B[ba]C[+])';
+		$whiteFirst = '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19];W[aa];B[ab];W[ba]C[+])';
+		foreach ([[$blackFirst, 'black', 'Black to play'], [$blackFirst, 'white', 'White to play'], [$whiteFirst, 'white', 'White to play'], [$whiteFirst, 'black', 'Black to play']] as $i => [$sgf, $playerColor, $goal])
+		{
+			$context = new ContextPreparator(['user' => ['name' => 'emptyGoal' . $i], 'tsumego' => ['set_order' => 1, 'description' => '', 'sgf' => $sgf]]);
+			Auth::saveUserField('player_color_setting', UserTable::PLAYER_COLOR_SETTING_ORIGINAL);
+			$this->get('tsumegos/play/' . $context->tsumegos[0]['id'] . '?playercolor=' . $playerColor);
+			$this->assertSame($goal, $this->shownDescription(), 'An SGF case ' . $i . ' played as ' . $playerColor);
+		}
+	}
+
+	//A multiple choice problem has no move to play, so it gets no default goal
+	public function testAMultipleChoiceProblemWithoutADescriptionHasNoGoal(): void
+	{
+		$context = new ContextPreparator(['tsumego' => ['set_order' => 1, 'description' => '', 'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[aa];B[ba]C[+])',
+			'variants' => [['tsumego_variant_type_id' => TsumegoVariantTable::TYPE_MULTIPLE_CHOICE, 'answer1' => 'Black is dead', 'answer2' => 'White is dead', 'answer3' => 'Ko', 'answer4' => 'Seki', 'correct_answer' => 1]]]]);
+		$this->get('tsumegos/play/' . $context->tsumegos[0]['id']);
+		$this->assertSame('', $this->shownDescription());
+	}
+
+	//The admin's description field is empty for a problem with the default goal, which it shows as its placeholder
+	public function testTheEditFormShowsTheDefaultGoalAsThePlaceholder(): void
+	{
+		$context = new ContextPreparator(['user' => ['admin' => true], 'tsumego' => ['set_order' => 1, 'description' => '', 'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19];W[aa];B[ab];W[ba]C[+])']]);
+		Auth::saveUserField('player_color_setting', UserTable::PLAYER_COLOR_SETTING_ORIGINAL);
+		$this->get('tsumegos/play/' . $context->tsumegos[0]['id'] . '?playercolor=white');
+		$field = $this->getStringDom()->querySelector('textarea#description');
+		$this->assertSame('', $field->textContent);
+		$this->assertSame('White to play', $field->getAttribute('placeholder'));
+	}
+
+	//Saving the default goal of the problem stores an empty description, which means it; any other goal is stored
+	//as written. The form sends the colors the admin saw, so on a swapped board "White to play" is Black's default.
+	public function testSavingTheDefaultGoalStoresAnEmptyDescription(): void
+	{
+		$context = new ContextPreparator(['user' => ['admin' => true], 'tsumego' => ['set_order' => 1, 'description' => 'Black to kill',
+			'sgf' => ['data' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19];B[aa];W[ab];B[ba]C[+])', 'first_move_color' => 'B']]]);
+		$tsumegoID = $context->tsumegos[0]['id'];
+		$saved = [];
+		foreach ([['Black to play', '0'], ['black to play.', '0'], ['White to play', '1'], ['White to play', '0'], ['Black to play and live', '0']] as [$description, $swapped])
+		{
+			$this->postEditForm($tsumegoID, ['description' => $description, 'color_swapped' => $swapped]);
+			$saved[] = (string) $this->fetchTable('Tsumego')->get($tsumegoID)->description;
+		}
+		$this->assertSame(['', '', '', 'White to play', 'Black to play and live'], $saved);
+	}
+
 	//A White-first problem in a collection that forces the player to black (small
 	//board) inverts the board and swaps the description automatically, without any
 	//URL override. This is the reported "Problems from Professional Games" case.
