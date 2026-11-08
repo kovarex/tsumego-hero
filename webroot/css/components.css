@@ -883,7 +883,7 @@
 /* ── Link (green text link) ── */
 .link
 {
-	color: var(--color-green);
+	color: var(--color-action-link);
 	cursor: pointer;
 	background: none;
 	border: 0;
