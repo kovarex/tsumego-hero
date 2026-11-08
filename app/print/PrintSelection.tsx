@@ -22,6 +22,8 @@ export function PrintSelection(props: PrintSelectionProps)
 	const [problemsPerPage, setProblemsPerPage] = useState(props.defaultProblemsPerPage);
 	const [withAnswers, setWithAnswers] = useState(false);
 	const [withNotes, setWithNotes] = useState(false);
+	const [withOrigin, setWithOrigin] = useState(true);
+	const [withGoal, setWithGoal] = useState(true);
 
 	const setConnectionIds = useMemo(() => orderedProblems(problems).map(problem => problem.setConnectionId).join(','), [problems]);
 
@@ -31,7 +33,8 @@ export function PrintSelection(props: PrintSelectionProps)
 	}, [setConnectionIds]);
 
 	// the ids are digits and commas, nothing to escape
-	const sheetUrl = `/print/sheet?problems=${setConnectionIds}&perPage=${problemsPerPage}` + (withAnswers ? '&answers=1' : '') + (withNotes ? '&notes=1' : '');
+	const sheetUrl = `/print/sheet?problems=${setConnectionIds}&perPage=${problemsPerPage}` + (withAnswers ? '&answers=1' : '') + (withNotes ? '&notes=1' : '')
+		+ (withOrigin ? '' : '&origin=0') + (withGoal ? '' : '&goal=0');
 	const canPrint = problems.length > 0 && problems.length <= props.maximumProblems;
 
 	return (
@@ -58,6 +61,14 @@ export function PrintSelection(props: PrintSelectionProps)
 						>
 							{props.problemsPerPageChoices.map(choice => <option key={choice} value={choice}>{choice}</option>)}
 						</select>
+					</label>
+					<label className="print-options__field">
+						<input type="checkbox" name="origin" checked={withOrigin} onChange={event => setWithOrigin(event.target.checked)} />
+						Collection and number
+					</label>
+					<label className="print-options__field">
+						<input type="checkbox" name="goal" checked={withGoal} onChange={event => setWithGoal(event.target.checked)} />
+						Goal
 					</label>
 					<label className="print-options__field">
 						<input type="checkbox" name="answers" checked={withAnswers} onChange={event => setWithAnswers(event.target.checked)} />

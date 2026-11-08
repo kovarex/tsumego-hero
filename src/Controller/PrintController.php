@@ -27,7 +27,7 @@ class PrintController extends AppController
 	}
 
 	//The sheet itself, a page of its own without the site's layout:
-	//?problems=<set connection ids>&perPage=<4, 6, 9 or 12>&answers=1&notes=1
+	//?problems=<set connection ids>&perPage=<4, 6, 9 or 12>&answers=1&notes=1&origin=0&goal=0
 	#[HttpGet]
 	public function sheet(): mixed
 	{
@@ -39,6 +39,8 @@ class PrintController extends AppController
 			'perPage' => $this->query('perPage'),
 			'answers' => $this->query('answers'),
 			'notes' => $this->query('notes'),
+			'origin' => $this->query('origin'),
+			'goal' => $this->query('goal'),
 		]));
 		return null;
 	}

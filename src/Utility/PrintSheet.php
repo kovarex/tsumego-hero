@@ -23,10 +23,12 @@ class PrintSheet
 		public readonly array $problems,
 		public readonly int $problemsPerPage = self::DEFAULT_PROBLEMS_PER_PAGE,
 		public readonly bool $withAnswers = false,
-		public readonly bool $withNotes = false) {}
+		public readonly bool $withNotes = false,
+		public readonly bool $withOrigin = true,
+		public readonly bool $withGoal = true) {}
 
 	//The sheet of the problems with the set connection ids the player can see, the options as the
-	//address of the sheet has them
+	//address of the sheet has them: answers=1 and notes=1 add, origin=0 and goal=0 leave out
 	/**
 	 * @param list<int> $setConnectionIds
 	 * @param array<string, mixed> $query
@@ -51,7 +53,9 @@ class PrintSheet
 			$problems,
 			in_array($perPage, self::PROBLEMS_PER_PAGE, true) ? $perPage : self::DEFAULT_PROBLEMS_PER_PAGE,
 			!empty($query['answers']),
-			!empty($query['notes']));
+			!empty($query['notes']),
+			($query['origin'] ?? null) !== '0',
+			($query['goal'] ?? null) !== '0');
 	}
 
 	//The ids of an address like ?problems=12,15,40, the ones that aren't numbers left out

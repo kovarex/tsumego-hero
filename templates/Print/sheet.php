@@ -16,6 +16,7 @@ use App\Utility\PrintSheet;
 $problemCount = count($sheet->problems);
 $pageCount = count($sheet->problemPages()) + count($sheet->answerPages());
 $selectionLink = '/print?problems=' . implode(',', array_column($sheet->problems, 'setConnectionId'));
+//The problem number stays whatever is left out, so the answers still match the problems
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -72,10 +73,12 @@ $selectionLink = '/print?problems=' . implode(',', array_column($sheet->problems
 		<figure class="print-problem" data-set-connection-id="<?= $problem['setConnectionId'] ?>">
 			<figcaption class="print-problem__caption">
 				<span class="print-problem__number"><?= $problem['number'] ?>.</span>
-				<?php if ($problem['goal'] !== ''): ?>
+				<?php if ($sheet->withGoal && $problem['goal'] !== ''): ?>
 				<span class="print-problem__goal"><?= h($problem['goal']) ?></span>
 				<?php endif; ?>
+				<?php if ($sheet->withOrigin): ?>
 				<span class="print-problem__origin"><?= h(PrintSheet::origin($problem)) ?></span>
+				<?php endif; ?>
 			</figcaption>
 			<div class="print-problem__board">
 				<?= $problem['diagram'] ? $problem['diagram']->problemSvg('Problem ' . $problem['number']) : '' ?>
@@ -98,7 +101,9 @@ $selectionLink = '/print?problems=' . implode(',', array_column($sheet->problems
 		<figure class="print-problem" data-set-connection-id="<?= $problem['setConnectionId'] ?>">
 			<figcaption class="print-problem__caption">
 				<span class="print-problem__number"><?= $problem['number'] ?>.</span>
+				<?php if ($sheet->withOrigin): ?>
 				<span class="print-problem__origin"><?= h(PrintSheet::origin($problem)) ?></span>
+				<?php endif; ?>
 			</figcaption>
 			<?php if ($problem['diagram']?->hasAnswer()): ?>
 			<div class="print-problem__board">

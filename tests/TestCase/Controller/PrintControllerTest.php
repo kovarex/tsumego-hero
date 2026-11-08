@@ -67,6 +67,28 @@ class PrintControllerTest extends IntegrationTestCase
 		$this->assertSame(['Site basics #7', 'Homework #1', 'Homework #2'], array_map(fn($node) => $node->textContent, iterator_to_array($dom->querySelectorAll('.print-problem__origin'))));
 	}
 
+	//Without the collection and the goal each problem keeps its number, so the answers still match
+	public function testTheCollectionAndTheGoalCanBeLeftOut(): void
+	{
+		$this->prepare();
+
+		$this->get($this->sheetUrl([2, 0], '&answers=1&origin=0&goal=0'));
+
+		$dom = $this->getStringDom();
+		$this->assertSame(0, $dom->querySelectorAll('.print-problem__goal')->length);
+		$this->assertSame(0, $dom->querySelectorAll('.print-problem__origin')->length);
+		$this->assertSame(['1.', '2.', '1.', '2.'], array_map(fn($node) => $node->textContent, iterator_to_array($dom->querySelectorAll('.print-problem__number'))));
+		$this->assertSame(2, $dom->querySelectorAll('.print-page:not(.print-page--answers) svg.print-board')->length);
+
+		// either one alone
+		$this->get($this->sheetUrl([2, 0], '&goal=0'));
+		$this->assertSame(0, $this->getStringDom()->querySelectorAll('.print-problem__goal')->length);
+		$this->assertSame(2, $this->getStringDom()->querySelectorAll('.print-problem__origin')->length);
+		$this->get($this->sheetUrl([2, 0], '&origin=0'));
+		$this->assertSame(2, $this->getStringDom()->querySelectorAll('.print-problem__goal')->length);
+		$this->assertSame(0, $this->getStringDom()->querySelectorAll('.print-problem__origin')->length);
+	}
+
 	//A plain page for the printer: no header, no menu, the Print button, and the styles for paper
 	public function testTheSheetIsAPlainPage(): void
 	{
@@ -204,19 +226,22 @@ class PrintControllerTest extends IntegrationTestCase
 		$browser->clickCssSelect('.classes__picker-footer button');
 		$browser->waitUntilCssSelectorExistsWithText('#print-problems .classes__count', '2');
 		$browser->clickCssSelect('input[name="answers"]');
+		$browser->clickCssSelect('input[name="goal"]');
 		$browser->find('select[name="per_page"] option[value="4"]')->click();
 
 		$link = $browser->find('#open-print-sheet');
 		$this->assertSame('_blank', $link->getAttribute('target'));
 		$sheetUrl = $link->getAttribute('href');
 		// in the order of their numbers, as an assignment has them
-		$this->assertStringEndsWith($this->sheetUrl([0, 1], '&perPage=4&answers=1'), $sheetUrl);
+		$this->assertStringEndsWith($this->sheetUrl([0, 1], '&perPage=4&answers=1&goal=0'), $sheetUrl);
 
 		$browser->get(parse_url($sheetUrl, PHP_URL_PATH) . '?' . parse_url($sheetUrl, PHP_URL_QUERY));
 		$browser->waitUntilCssSelectorDisplayed('#print-button');
 		$this->assertCount(2, $browser->getElements('.print-page:not(.print-page--answers) svg.print-board'));
 		$this->assertCount(2, $browser->getElements('.print-page--answers svg.print-board'));
 		$this->assertCount(0, $browser->getElements('.site-nav'));
+		$this->assertCount(0, $browser->getElements('.print-problem__goal'));
+		$this->assertCount(4, $browser->getElements('.print-problem__origin'));
 		$browser->assertNoJsErrors();
 	}
 }
