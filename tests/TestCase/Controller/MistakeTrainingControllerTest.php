@@ -41,7 +41,7 @@ class MistakeTrainingControllerTest extends IntegrationTestCase
 
 		$this->get('/mistake-training');
 
-		$this->assertMatchesRegularExpression('/<div id="status2" class="legacy-center">\s*<span class="status-rating">\s*' . preg_quote(Rating::getReadableRankFromRating(1500), '/') . ' /',
+		$this->assertMatchesRegularExpression('/<div id="status2">\s*<span class="status-rating">\s*' . preg_quote(Rating::getReadableRankFromRating(1500), '/') . ' /',
 			$this->view, 'The rank shows as in the level mode');
 		$this->assertNull($this->playPage()['problem']['xpStatus'], 'The training gives no XP');
 	}

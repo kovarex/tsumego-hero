@@ -256,6 +256,7 @@ class HeroPowersTest extends IntegrationTestCase
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		$this->checkPowerIsActive($browser, 'refinement');
 		$this->assertStringEndsWith('/img/hp4.png', $browser->find('#refinement')->getAttribute('src'));
+		$browser->openPlayPanelOf('refinement');
 		$browser->hover($browser->find('#refinement'));
 		$this->assertStringEndsWith('/img/hp4h.png', $browser->find('#refinement')->getAttribute('src'));
 
