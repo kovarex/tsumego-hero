@@ -3,6 +3,8 @@ import json, glob, subprocess, os
 confirmed = {'1703', '215', '528', '1807', '2485'}
 #single findings kovarex confirmed in problems that still have others to review
 confirmed_findings = set()
+#findings kovarex reviewed and chose to leave out of the tree: (problem, line)
+dismissed = {('5244', 'E1 D2 C2'), ('5244', 'E1 D2 C1')}
 records = {}
 for pattern in ('dump_check_status.*.jsonl', 'dump_check_marker.*.jsonl'):
     for f in glob.glob(pattern):
@@ -26,7 +28,7 @@ for sc, r in sorted(records.items(), key=lambda kv: int(kv[0])):
     first = 'W' if 'W[' in (problems[sc]['sgf'] or '')[:0] else 'B'
     for issue in r['issues']:
         kind = issue['kind']
-        if (sc, kind) in confirmed_findings:
+        if (sc, kind) in confirmed_findings or (sc, issue.get('line')) in dismissed:
             continue
         if kind in ('status-mismatch', 'status-almost'):
             tree, solver = issue['authored'], issue['engine']
