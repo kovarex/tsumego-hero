@@ -89,6 +89,8 @@ return [
 		'/friends/add/5' => ['Friends', 'add', ['5']],
 		'/friends/accept/5' => ['Friends', 'accept', ['5']],
 		'/friends/remove/5' => ['Friends', 'remove', ['5']],
+		'/print' => ['Print', 'index', []],
+		'/print/sheet' => ['Print', 'sheet', []],
 		'/classes' => ['Classrooms', 'index', []],
 		'/classes/create' => ['Classrooms', 'create', []],
 		'/classes/collections' => ['Classrooms', 'collections', []],
@@ -298,6 +300,9 @@ return [
 		'/mistakeTraining/play' => ['MistakeTraining', 'play', []],
 		'/mistakeTraining/play/7' => ['MistakeTraining', 'play', ['7']],
 
+		'/print/index' => ['Print', 'index', []],
+		'/print/index/7' => ['Print', 'index', ['7']],
+		'/print/sheet/7' => ['Print', 'sheet', ['7']],
 		'/proposals/acceptSgf' => ['Proposals', 'acceptSgf', []],
 		'/proposals/acceptSgf/7' => ['Proposals', 'acceptSgf', ['7']],
 		'/proposals/acceptTag' => ['Proposals', 'acceptTag', []],
