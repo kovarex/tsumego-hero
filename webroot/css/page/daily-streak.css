@@ -197,6 +197,13 @@
 	display: block;
 }
 
+/* A second tap closes the details (webroot/js/DailyStreak.js closeOnSecondTap()); on a touch screen the
+   hover stays on after a tap, so the class keeps them closed until the next tap */
+.daily-streak.daily-streak--closed .daily-streak__details
+{
+	display: none;
+}
+
 .daily-streak__title
 {
 	font-weight: var(--weight-bold);

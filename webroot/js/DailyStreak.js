@@ -54,9 +54,36 @@ class DailyStreak
 		if (element && timeZone && timeZone !== element.dataset.timeZone)
 			setCookie('time_zone', timeZone);
 	}
+
+	//A tap opens the details (the flame takes the focus, and a touch screen keeps the hover on) and a second tap
+	//closes them; a mouse opens them by hovering (daily-streak.css)
+	static closeOnSecondTap()
+	{
+		let element = DailyStreak.element();
+		let details = element?.querySelector('.daily-streak__details');
+		if (!details)
+			return;
+		let wasOpen = false;
+		element.addEventListener('pointerdown', event =>
+			wasOpen = event.pointerType !== 'mouse' && getComputedStyle(details).display !== 'none');
+		element.addEventListener('click', event =>
+		{
+			if (event.target.closest('.daily-streak__details'))
+				return;
+			element.classList.toggle('daily-streak--closed', wasOpen);
+			if (wasOpen)
+				document.activeElement?.blur();
+		});
+	}
+
+	static start()
+	{
+		DailyStreak.syncTimeZone();
+		DailyStreak.closeOnSecondTap();
+	}
 }
 
 if (document.readyState === 'loading')
-	document.addEventListener('DOMContentLoaded', () => DailyStreak.syncTimeZone());
+	document.addEventListener('DOMContentLoaded', () => DailyStreak.start());
 else
-	DailyStreak.syncTimeZone();
+	DailyStreak.start();
