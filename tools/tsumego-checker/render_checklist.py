@@ -50,7 +50,7 @@ def figure(board, moves, frame, caption):
     notes = []
     for number, (colour, p) in enumerate(moves, 1):
         if p is None:
-            notes.append('%d pass' % number)
+            notes.append('%d plays elsewhere (pass or a ko threat)' % number)
             continue
         before = dict(current.stones)
         current.play(colour, p)
