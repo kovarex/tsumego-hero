@@ -77,7 +77,7 @@ class BoardFitsWindowTest extends IntegrationTestCase
 		}
 	}
 
-	public function testAWindowHighEnoughLeavesTheBoardAsWideAsBefore(): void
+	public function testAWindowHighEnoughLeavesTheBoardAsWideAsItsColumn(): void
 	{
 		$browser = Browser::instance();
 		$window = $browser->driver->manage()->window();
@@ -87,7 +87,7 @@ class BoardFitsWindowTest extends IntegrationTestCase
 			$this->openProblem($browser, 1400, 2000);
 			$layout = $this->layout($browser);
 			$targetWidth = $browser->driver->executeScript('return document.getElementById("target").getBoundingClientRect().width;');
-			$this->assertEqualsWithDelta($targetWidth / 2, $layout['boardWidth'], 1, 'A regular board takes half of the width');
+			$this->assertEqualsWithDelta($targetWidth, $layout['boardWidth'], 1, 'The board takes the width of its column');
 		}
 		finally
 		{
