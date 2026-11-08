@@ -34,7 +34,8 @@ the export is; `RESULTS` and `REPORT_DIR` do the same for `build_report.py`.
   over a wider region with a bigger budget and kept only if that agrees.
 - `status_eval.py`, `status_summary.py`: accuracy on the status problems, leaf by leaf.
 - `first_moves.py`: the first-move check used on public collections (sanderland/tsumego).
-- `line.py`, `moves.py`, `recheck.py`, `checklist.py`: inspection of single problems and the review checklist.
+- `line.py`, `moves.py`, `recheck.py`: inspection of single problems.
+- `checklist.py`, `render_checklist.py`: the review checklist, as a table and as a page of go diagrams.
 - `gen_trees.py`, `gen_status.py`, `inject_eval.py`: trees with planted errors, to test the pipeline.
 - `build_report.py`, `report_body.html`, `report_style.html`: the research report.
 - `export-problems.sh`: the read-only export of the current version of every problem.
