@@ -979,15 +979,26 @@
 	background: var(--color-surface-sunken);
 }
 
-/* On a phone a table fits the screen: small text that may wrap, no fixed column widths, less padding
-   (compact tables keep their cell padding), and the columns marked optional are left out */
+/* On a phone a table fits the screen: small text, no fixed column widths, less padding (compact tables keep
+   their cell padding) and the columns marked optional left out. Headers and numbers stay on one line; a name
+   wraps between its words, so the name column gives up its width first */
 @media (width < 40rem)
 {
 	.data-table th,
 	.data-table td
 	{
 		font-size: var(--text-sm);
-		overflow-wrap: anywhere;
+	}
+
+	.data-table th,
+	.data-table .data-table__num
+	{
+		white-space: nowrap;
+	}
+
+	.data-table .data-table__name
+	{
+		overflow-wrap: break-word;
 	}
 
 	.data-table .data-table__optional
