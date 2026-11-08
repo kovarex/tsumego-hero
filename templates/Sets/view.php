@@ -127,10 +127,8 @@ if ($tsumegoFilters->query != 'topics')
 					echo '<div class="setViewTime"><b>Avg. time: ' . $avgTime . 's</b>' . ($bestTime !== null && $bestTime != 60 ? ' &middot; Best: ' . $bestTime . 's' : '') . '</div>';
 				} ?>
 			</div>
-
-			</td>
-
-			<td>
+			<?php //The reset of the progress under the scores, its form opening right under its link ?>
+			<div class="legacy-center set-view__reset">
 			<?php
 			if (Auth::isLoggedIn())
 			{
@@ -158,10 +156,21 @@ if ($tsumegoFilters->query != 'topics')
 				elseif ($problemSolvedPercent < 50)
 					echo '<br><span class="text-muted">You need to complete 50% to reset.</span>';
 				else
-					echo '<div id="msg1x"><a id="showx">Reset<img id="greyArrow1" src="/img/greyArrow1.png"></a></div><br>';
+				{
+					echo '<div id="msg1x"><a id="showx">Reset<img id="greyArrow1" src="/img/greyArrow1.png"></a></div>';
+					echo '<div id="msg2x">';
+					echo 'Type "reset" to remove all your progress on this collection.<br><br>';
+					echo '<form action="/sets/resetProgress/' . $set->id . '/' . ($partition + 1) . '" method="post">';
+					echo '<input type="text" name="reset-check" id="reset-textfield" placeholder="reset">';
+					echo '<input type="submit" value="submit" id="reset-submit">';
+					echo '</form>';
+					echo '</div>';
+				}
 			}
 			?>
+			</div>
 			</td>
+			<td></td>
 			</tr>
 			<tr class="set-view__stats">
 			<td>
@@ -188,19 +197,7 @@ if ($tsumegoFilters->query != 'topics')
 			<br>
 			<?php } ?>
 			</td>
-			<td>
-			<?php
-			if ($problemSolvedPercent >= 50 && $tsumegoFilters->collectionSize == ProgressDeletionTable::$PARTITION_SIZE && !$tsumegoFilters->hasProblemFilters())
-			{
-				echo '<div id="msg2x">';
-				echo 'Type "reset" to remove all your progress on this collection.<br><br>';
-				echo '<form action="/sets/resetProgress/' . $set->id . '/' . ($partition + 1) . '" method="post">';
-				echo '<input type="text" name="reset-check" id="reset-textfield" placeholder="reset">';
-				echo '<input type="submit" value="submit" id="reset-submit">';
-				echo '</form>';
-				echo '</div>';
-			} ?>
-			</td>
+			<td></td>
 			</tr>
 			<?php if (isset($canEdit) && $canEdit): ?>
 				<tr>
