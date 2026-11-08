@@ -1147,6 +1147,46 @@ body:has(.play-screen) #footer {
     padding: 0 var(--space-3);
     box-sizing: border-box;
   }
+  /* The head in two lines: the collection and the rank of the problem, then the goal and the reward. A long name
+     of a collection is cut short with its full name in the title; the part of the collection (#2) always shows. */
+  /* The rank's column is as wide as the rank; the reward under it may reach left into the column between, which
+     the collection's name may use too */
+  .play-head:not(:has(#time-mode-countdown)) {
+    grid-template-columns: minmax(0, 1fr) auto auto;
+  }
+  .play-head:not(:has(#time-mode-countdown)) :is(.play-head__stake, .play-stake) {
+    display: contents;
+  }
+  .play-head:not(:has(#time-mode-countdown)) #playTitle {
+    grid-column: 1 / span 2;
+  }
+  .play-head:not(:has(#time-mode-countdown)) #status2 {
+    grid-column: 3;
+    grid-row: 1;
+    justify-self: end;
+  }
+  .play-head:not(:has(#time-mode-countdown)) #xpDisplay {
+    grid-column: 2 / span 2;
+    grid-row: 2;
+    justify-self: end;
+  }
+  #playTitle {
+    min-width: 0;
+    font-size: var(--text-md);
+  }
+  .play-title__collection {
+    display: flex;
+    min-width: 0;
+    white-space: nowrap;
+  }
+  .play-title__name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .play-title__part {
+    flex: none;
+    white-space: pre;
+  }
   .play-screen__main {
     grid-row: 1;
   }

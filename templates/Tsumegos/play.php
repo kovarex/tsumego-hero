@@ -96,8 +96,8 @@ use App\Utility\ViteManifest;
 				<?php HeroPowers::render(); ?>
 			</div>
 		<?php endif; ?>
-		<?php //The actions keep their places in every state, so no button moves under the finger ?>
-		<div class="play-actions">
+		<?php //The actions keep their places in every state, so no button moves under the finger; on a phone the board leaves room for them under it (besogo.js keepBoardInWindowHeight()) ?>
+		<div class="play-actions" data-keep-in-view="(width < 64rem)">
 			<?php if (!Auth::isInMistakeTrainingMode() && Auth::isLoggedIn()): ?>
 				<a id="heroPowersToggle" class="play-actions__button" href="#" data-toggle="heroPowersTray" title="Hero powers" aria-label="Hero powers">&#9889;</a>
 			<?php endif; ?>

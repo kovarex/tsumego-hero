@@ -315,6 +315,10 @@
       let board = boardDiv.getBoundingClientRect();
       let buttons = document.querySelector(".besogo-tsumegoPlayTool");
       let belowBoard = buttons ? Math.max(buttons.getBoundingClientRect().bottom - board.bottom, 0) : 0;
+      // what the page wants in sight under the board too (on a phone the hearts and the actions of the play page)
+      for (let keep of document.querySelectorAll("[data-keep-in-view]"))
+        if (window.matchMedia(keep.dataset.keepInView).matches && keep.getClientRects().length)
+          belowBoard = Math.max(belowBoard, keep.getBoundingClientRect().bottom - board.bottom);
       let top = board.top + window.scrollY;
       let height = Math.max(window.innerHeight - top - belowBoard - SPACE_UNDER_BUTTONS, MINIMUM_BOARD_HEIGHT);
       boardDiv.style.maxWidth = "min(100%, " + Math.floor((height * viewBox.width) / viewBox.height) + "px)";

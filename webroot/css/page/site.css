@@ -1052,7 +1052,7 @@ nav ul ul ul li {
 	.site-nav__signin {
 		display: none;
 	}
-	/* The flame stands beside the hamburger on its own, the account bar is hidden below */
+	/* The flame and the small account bar stand beside the hamburger (the account bar's rules are below) */
 	.site-header-account {
 		display: contents;
 	}
@@ -1209,8 +1209,34 @@ nav ul ul ul li {
 		color: var(--color-purple-nav);
 		text-align: left;
 	}
-	/* Hide the desktop floating account bar + hover dropdowns on mobile. */
-	#account-bar-wrapper,
+	/* The account bar stays as a small level (or rating) bar beside the flame, without the name; a tap
+	   switches it between the level and the rank as on the desktop. The hover dropdowns are hidden. */
+	#account-bar-wrapper {
+		flex: none;
+		width: 84px;
+		height: 24px;
+		margin-right: 12px;
+	}
+	#account-bar-user,
+	#account-bar-messages {
+		display: none;
+	}
+	#xp-bar,
+	#account-bar-xp-wrapper {
+		top: 0;
+		width: 84px;
+		height: 24px;
+	}
+	#account-bar-xp-wrapper {
+		box-sizing: border-box;
+		pointer-events: none;
+		text-align: center;
+	}
+	#account-bar-xp {
+		margin-top: 3px;
+		font-size: 12px;
+		letter-spacing: 0;
+	}
 	#heroProfile,
 	#heroBar,
 	#heroAchievements,
