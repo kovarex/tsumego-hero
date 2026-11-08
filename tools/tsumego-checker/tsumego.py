@@ -107,12 +107,12 @@ class Board:
                     todo.append(r)
         return stones, liberties
 
-    def play(self, color, p):
-        #returns False on an illegal move
+    def play(self, color, p, ignore_ko=False):
+        #returns False on an illegal move; ignore_ko: a retake after a ko threat
         if p is None:
             self.ko = None
             return True
-        if p in self.stones or p == self.ko:
+        if p in self.stones or (p == self.ko and not ignore_ko):
             return False #occupied, or retaking a ko at once
         opponent = 'W' if color == 'B' else 'B'
         self.stones[p] = color
@@ -197,6 +197,9 @@ ENCLOSED_LIMIT = int(os.environ.get("ENCLOSED_LIMIT", "30"))
 DISTANCE = int(os.environ.get("REGION_DISTANCE", "1"))
 STATUS_DEAD, STATUS_KO, STATUS_ALIVE, STATUS_UNKNOWN = 'DEAD', 'KO', 'ALIVE', '?'
 STATUS_BENT4 = 'BENT4'
+
+def other_colour(color):
+    return 'W' if color == 'B' else 'B'
 
 class Solver:
     #one formulation: attacker color + target stones
@@ -290,9 +293,60 @@ class Solver:
         answer = self.engine.command('solvecount %s %d %d %d %d %s' % (to_move, ko, self.budget, black, white, text))
         fields = dict(item.split('=') for item in answer.split()[1:])
         self.nodes += int(fields['nodes'])
+        self.last_best = self.problem.from_index(int(fields['best'])) if int(fields['best']) >= 0 else None
         if fields['N'] == 'U':
             return None
         return (fields['N'] == 'K') == (solver_color == self.attacker)
+
+    def counted_line(self, board, to_move, solver_threats, opponent_threats, plies=10):
+        #the line the counted-threat search follows: [(colour, point or None, note)], each move keeps the result;
+        #a retake against the ko ban uses one of the mover's threats
+        threats = {self.solver_color: solver_threats, other_colour(self.solver_color): opponent_threats}
+        expected = self.solver_wins(board, to_move, solver_threats, opponent_threats)
+        if expected is None:
+            return None, []
+        line, passes = [], 0
+        board = board.copy()
+        for ply in range(plies):
+            #the ko is over once the position is clean life or death whoever has the threats
+            if ply > 0 and self.status(board, to_move)[0] != STATUS_KO:
+                break
+            self.solver_wins(board, to_move, threats[self.solver_color], threats[other_colour(self.solver_color)])
+            #the ko first (a retake, if a threat is left), then the search's own move, then captures, then the rest
+            captures = []
+            for p in sorted(self.problem.region):
+                if p not in board.stones and p != board.ko:
+                    child = board.copy()
+                    if child.play(to_move, p) and len(child.stones) <= len(board.stones):
+                        captures.append(p)
+            candidates = [board.ko, self.last_best] + captures + sorted(self.problem.region) + [None]
+            chosen = None
+            for p in candidates:
+                if p is not None and p in board.stones:
+                    continue
+                if p is None and board.ko is not None and p in candidates[:1]:
+                    continue
+                retake = p is not None and p == board.ko
+                if retake and threats[to_move] == 0:
+                    continue
+                child = board.copy()
+                if not child.play(to_move, p, ignore_ko=retake):
+                    continue
+                left = dict(threats)
+                if retake:
+                    left[to_move] -= 1
+                if self.solver_wins(child, other_colour(to_move), left[self.solver_color], left[other_colour(self.solver_color)]) == expected:
+                    chosen = (p, child, left, retake)
+                    break
+            if chosen is None:
+                break
+            p, board, threats, retake = chosen
+            line.append((to_move, p, 'retakes after a ko threat' if retake else ''))
+            passes = passes + 1 if p is None else 0
+            to_move = other_colour(to_move)
+            if passes >= 2 or not any(q in board.stones for q in self.target):
+                break
+        return expected, line
 
     def ko_sign(self, board, to_move, limit=3):
         #who is ahead in a direct ko, as besogo writes it: KO+ the solver takes first, KO+n the opponent needs n-1
