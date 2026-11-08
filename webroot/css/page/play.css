@@ -772,15 +772,15 @@ body:has(.play-screen) #footer {
   pointer-events: none;
 }
 
-/* The buttons of the board (PlayBoard.js): Reset, Review and Next at the right of the row of the messages,
-   in the look of the actions; an inactive one is dimmed and can't be pressed */
+/* The buttons of the board (PlayBoard.js): Reset and Next at the right of the row of the messages, Review in
+   the panel after More, in the look of the actions; an inactive one is dimmed and can't be pressed */
 .play-actions__end {
   display: flex;
   flex: none;
   gap: 6px;
   margin-left: auto;
 }
-.play-actions__end :is(#besogo-pass-button, #besogo-back-button, #besogo-back-button-inactive, #history-button, #besogo-reset-button, #besogo-reset-button-inactive, #besogo-review-button, #besogo-review-button-inactive, #besogo-next-button, #besogo-next-button-inactive) {
+:is(.play-actions__end, .play-actions) > :is(#besogo-pass-button, #besogo-back-button, #besogo-back-button-inactive, #history-button, #besogo-reset-button, #besogo-reset-button-inactive, #besogo-review-button, #besogo-review-button-inactive, #besogo-next-button, #besogo-next-button-inactive) {
   min-width: 40px;
   height: 36px;
   margin: 0;
@@ -798,10 +798,10 @@ body:has(.play-screen) #footer {
   text-decoration: none;
   cursor: pointer;
 }
-.play-actions__end :is(#besogo-pass-button, #besogo-back-button, #besogo-back-button-inactive, #history-button, #besogo-reset-button, #besogo-reset-button-inactive, #besogo-review-button, #besogo-review-button-inactive, #besogo-next-button, #besogo-next-button-inactive):hover {
+:is(.play-actions__end, .play-actions) > :is(#besogo-pass-button, #besogo-back-button, #besogo-back-button-inactive, #history-button, #besogo-reset-button, #besogo-reset-button-inactive, #besogo-review-button, #besogo-review-button-inactive, #besogo-next-button, #besogo-next-button-inactive):hover {
   background: var(--surface-hover) !important;
 }
-.play-actions__end :is(#besogo-pass-button, #besogo-back-button, #besogo-back-button-inactive, #history-button, #besogo-reset-button, #besogo-reset-button-inactive, #besogo-review-button, #besogo-review-button-inactive, #besogo-next-button, #besogo-next-button-inactive)[id$="-inactive"] {
+:is(.play-actions__end, .play-actions) > :is(#besogo-pass-button, #besogo-back-button, #besogo-back-button-inactive, #history-button, #besogo-reset-button, #besogo-reset-button-inactive, #besogo-review-button, #besogo-review-button-inactive, #besogo-next-button, #besogo-next-button-inactive)[id$="-inactive"] {
   opacity: 0.4;
   cursor: default;
   pointer-events: none;
@@ -809,12 +809,16 @@ body:has(.play-screen) #footer {
 
 /* Review is red while the problem can be reviewed (an inactive one is dimmed, above); Next turns green once
    the problem is solved */
-.play-actions__end #besogo-review-button {
+.play-actions > :is(#besogo-review-button, #besogo-review-button-inactive) {
+  height: 40px;
+  line-height: 38px;
+}
+.play-actions #besogo-review-button {
   border-color: var(--color-red) !important;
   background: var(--color-red) !important;
   color: var(--color-white) !important;
 }
-.play-actions__end #besogo-review-button:hover {
+.play-actions #besogo-review-button:hover {
   background: var(--color-red-dark) !important;
 }
 .play-screen:has(.play-message--solved) .play-actions__end #besogo-next-button {

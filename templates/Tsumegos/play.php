@@ -108,7 +108,7 @@ use App\Utility\ViteManifest;
 						echo '<span id="moreCommentSummary" class="play-more__summary"' . ($commentsVisible ? '' : ' style="visibility: hidden;"') . '>' . h($summary) . '</span>';
 				?></a>
 			<?php endif; ?>
-			<a id="editToggle" class="play-actions__button" href="#" data-toggle="editSection" title="The problem: info, tags, similar problems" aria-label="Info">&#8943;</a>
+			<a id="editToggle" class="play-actions__button" href="#" data-toggle="editSection" title="The problem: info, tags, similar problems" >More</a>
 			<?php //Filters only when the problems are filtered ?>
 			<a id="showFilters" class="play-actions__button play-filters-toggle"<?php echo empty($tsumegoFilters->sets) && empty($tsumegoFilters->ranks) && empty($tsumegoFilters->tags) ? ' style="display: none;"' : ''; ?> href="#" data-toggle="msgFilters">Filters</a>
 		</div>

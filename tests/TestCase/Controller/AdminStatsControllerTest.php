@@ -296,7 +296,7 @@ class AdminStatsControllerTest extends IntegrationTestCase
 			'user' => ['admin' => false, 'rating' => Constants::$MINIMUM_RATING_TO_CONTRIBUTE],
 			'tsumego' => ['sgf' => $sgfVersion1, 'status' => 'S', 'set_order' => 1]]);
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
-		$this->assertSame('Info', $browser->find('#editToggle')->getAttribute('aria-label'));
+		$this->assertSame('More', $browser->find('#editToggle')->getText());
 		$browser->openPlayEditSection();
 		$makeProposalLink = $browser->find('#openSgfLink');
 		$this->assertSame('Make Proposal', $makeProposalLink->getText());

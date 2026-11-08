@@ -221,12 +221,16 @@ redrawHearts();
 	end.className = "play-actions__end";
 	(document.querySelector(".play-message") ?? actions).appendChild(end);
 	for (let id of ["besogo-pass-button", "history-button", "besogo-reset-button", "besogo-reset-button-inactive",
-		"besogo-review-button", "besogo-review-button-inactive", "besogo-next-button", "besogo-next-button-inactive"])
+		"besogo-next-button", "besogo-next-button-inactive"])
 	{
 		let button = row.querySelector("#" + id);
 		if (button)
 			end.appendChild(button);
 	}
+	//Review goes to the panel, right after More
+	let more = document.getElementById("editToggle");
+	for (let review of row.querySelectorAll("#besogo-review-button, #besogo-review-button-inactive"))
+		more ? more.after(review) : actions.appendChild(review);
 	//Next of a problem (not the Skip of the time mode) says what it does, it needs no tooltip
 	if (mode == playPage.page.modes.level || mode == playPage.page.modes.mistakeTraining)
 		end.querySelectorAll("#besogo-next-button, #besogo-next-button-inactive").forEach(next => next.removeAttribute("title"));
