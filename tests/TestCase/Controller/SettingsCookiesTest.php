@@ -95,6 +95,18 @@ class SettingsCookiesTest extends IntegrationTestCase
 		$this->assertSame('light', $browser->driver->executeScript('return document.documentElement.dataset.theme;'));
 	}
 
+	//A guest who picked no boards plays on one board, so it doesn't change from problem to problem
+	public function testAGuestWithoutAChoiceOfBoardsAlwaysPlaysOnTheSameBoard(): void
+	{
+		$context = new ContextPreparator(['user' => null, 'tsumego' => ['set_order' => 1]]);
+		unset($_COOKIE['boards_bitmask']);
+		foreach ([1, 2, 3] as $load)
+		{
+			$this->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+			$this->assertSame('Pine', $this->viewVariable('playPage')['problem']['board']['name']);
+		}
+	}
+
 	//A guest has no account to keep the choice of boards in, so it stays in the cookie of the board
 	//menu, as the theme does, and the board of a problem is one of them
 	public function testTheBoardsOfAGuestComeFromTheCookieOfTheBoardMenu(): void
