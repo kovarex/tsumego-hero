@@ -24,11 +24,12 @@ def parse_moves(text):
     return moves
 
 def figure(board, moves, frame, caption):
-    #board: position the figure starts from; moves: numbered on top of it, captures are not removed
+    #board: position before the moves; drawn as it stands after them, captured stones as faint outlines
     x1, x2, y1, y2 = frame
     cell, margin = 26, 30
     width, height = margin * 2 + cell * (x2 - x1), margin * 2 + cell * (y2 - y1)
     size = board.size
+    name = lambda p: LETTERS[p[0]] + str(size - p[1])
     out = ['<svg class="board" viewBox="0 0 %d %d" role="img" aria-label="%s">' % (width, height, html.escape(caption))]
     out.append('<rect class="wood" x="0" y="0" width="%d" height="%d" rx="4"/>' % (width, height))
     px = lambda x: margin + (x - x1) * cell
@@ -43,25 +44,42 @@ def figure(board, moves, frame, caption):
         right = px(x2) if x2 == size - 1 else px(x2) + cell / 2
         out.append('<line class="grid%s" x1="%d" y1="%d" x2="%d" y2="%d"/>' % (' edge' if y in (0, size - 1) else '', left, py(y), right, py(y)))
         out.append('<text class="coord" x="%d" y="%d">%d</text>' % (11, py(y) + 4, size - y))
-    for (x, y), colour in board.stones.items():
-        if x1 <= x <= x2 and y1 <= y <= y2:
-            out.append('<circle class="%s" cx="%d" cy="%d" r="11.5"/>' % ('black' if colour == 'B' else 'white', px(x), py(y)))
-    first = {}
+    current = board.copy()
+    numbers = {} #point -> number of the move whose stone stands there
+    ghosts = {} #captured point -> (colour, number or None)
     notes = []
     for number, (colour, p) in enumerate(moves, 1):
         if p is None:
             notes.append('%d pass' % number)
             continue
-        if p in first or p in board.stones:
-            notes.append('%d at %s' % (number, first.get(p) or LETTERS[p[0]] + str(size - p[1])))
-            continue
-        first[p] = str(number)
-        x, y = p
-        out.append('<circle class="%s" cx="%d" cy="%d" r="11.5"/>' % ('black' if colour == 'B' else 'white', px(x), py(y)))
-        out.append('<text class="number %s" x="%d" y="%d">%d</text>' % ('on-black' if colour == 'B' else 'on-white', px(x), py(y) + 4, number))
+        before = dict(current.stones)
+        current.play(colour, p)
+        if p in ghosts:
+            if ghosts[p][1]:
+                notes.append('%d at %s was captured, %d is played there again' % (ghosts[p][1], name(p), number))
+            del ghosts[p]
+        numbers[p] = number
+        captured = [q for q in before if q not in current.stones]
+        for q in captured:
+            ghosts[q] = (before[q], numbers.pop(q, None))
+        if captured:
+            notes.append('%d captures %s' % (number, ' '.join(name(q) for q in sorted(captured))))
+    inside = lambda q: x1 <= q[0] <= x2 and y1 <= q[1] <= y2
+    for q, (colour, number) in ghosts.items():
+        if inside(q):
+            out.append('<circle class="ghost %s" cx="%d" cy="%d" r="11.5"/>' % ('black' if colour == 'B' else 'white', px(q[0]), py(q[1])))
+            if number:
+                out.append('<text class="number ghost-number" x="%d" y="%d">%d</text>' % (px(q[0]), py(q[1]) + 4, number))
+    for q, colour in current.stones.items():
+        if inside(q):
+            out.append('<circle class="%s" cx="%d" cy="%d" r="11.5"/>' % ('black' if colour == 'B' else 'white', px(q[0]), py(q[1])))
+            if q in numbers:
+                out.append('<text class="number %s" x="%d" y="%d">%d</text>' % ('on-black' if colour == 'B' else 'on-white', px(q[0]), py(q[1]) + 4, numbers[q]))
     out.append('</svg>')
-    note = ('<div class="notes">%s</div>' % html.escape(', '.join(notes))) if notes else ''
+    note = ('<div class="notes">%s</div>' % html.escape('; '.join(notes))) if notes else ''
     return '<figure>%s<figcaption>%s</figcaption>%s</figure>' % (''.join(out), html.escape(caption), note)
+
+first_name = lambda moves: 'black first' if not moves or moves[0][0] == 'B' else 'white first'
 
 cards = {}
 for sc, title, goal, path_text, tree, solver, pv_text, kind in rows:
@@ -84,9 +102,9 @@ for sc, title, goal, path_text, tree, solver, pv_text, kind in rows:
   <div class="verdict"><span class="pill %s">%s</span> <span class="said">Tree: <b>%s</b></span> <span class="said">Solver: <b>%s</b></span></div>
   <div class="figures">%s%s</div>
 </div>''' % (severity, what, html.escape(tree), html.escape(solver),
-             figure(start, path, frame, 'Tree path, black first: the tree says %s here' % tree if kind.startswith('status') else
-                    'Tree path, black first: %s' % ('the last move is not in the tree' if kind == 'missing-correct-move' else 'the tree says ' + tree)),
-             figure(leaf, line, frame, "Solver's line from there" + (' (ko fight goes on)' if '…' in pv_text else '')))
+             figure(start, path, frame, 'Tree path, %s: the tree says %s here' % (first_name(path), tree) if kind.startswith('status') else
+                    'Tree path, %s: %s' % (first_name(path), 'the last move is not in the tree' if kind == 'missing-correct-move' else 'the tree says ' + tree)),
+             figure(leaf, line, frame, "Solver's line from there, " + first_name(line) + (' (ko fight goes on)' if '…' in pv_text else '')))
     card = cards.setdefault(sc, {'title': title, 'goal': goal, 'findings': []})
     card['findings'].append(finding)
 
@@ -139,13 +157,13 @@ figcaption { font-size: 0.85rem; color: var(--muted); }
 .board .black { fill: #16191c; stroke: #16191c; }
 .board .white { fill: #f5f5f1; stroke: #3b3a35; stroke-width: 1; }
 .board .number { font: 600 11px var(--mono); text-anchor: middle; }
-.board .on-black { fill: #f5f5f1; } .board .on-white { fill: #16191c; }
+.board .on-black { fill: #f5f5f1; } .board .on-white { fill: #16191c; }\n.board .ghost { opacity: 0.35; stroke-dasharray: 3 2; } .board .ghost-number { fill: var(--wood-line); }
 .done:checked + a { text-decoration: line-through; }
 input.done { width: 18px; height: 18px; }
 </style>
 <div class="page">
   <h1>Tsumego Review Checklist</h1>
-  <p class="intro">Findings from the solver that wait for your review. Left: the tree's path from the start position, black first. Right: how the solver continues from the end of that path. Repeated moves on one point are listed under each figure. Tick a problem off when you have looked at it; the ticks stay in this browser only.</p>
+  <p class="intro">Findings from the solver that wait for your review. Left: the tree's path from the start position. Right: how the solver continues from the position at the end of that path. Each figure shows the position after its moves: captured stones are faint dashed outlines, and captures and moves played again on a captured point are listed under the figure. Tick a problem off when you have looked at it; the ticks stay in this browser only.</p>
   ''' + '\n'.join(body) + '''
 </div>
 <script>
