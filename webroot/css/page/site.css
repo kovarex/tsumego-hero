@@ -1042,7 +1042,8 @@ nav ul ul ul li {
 .nav-toggle {
 	display: none;
 }
-.nav-toggle-btn {
+.nav-toggle-btn,
+.nav-backdrop {
 	display: none;
 }
 @media (width < 64rem) {
@@ -1119,6 +1120,14 @@ nav ul ul ul li {
 	}
 	.nav-toggle:checked ~ .site-nav {
 		transform: translateX(0);
+	}
+	/* Behind the open drawer, over the page: a tap on it closes the drawer and doesn't reach the board */
+	.nav-toggle:checked ~ .nav-backdrop {
+		display: block;
+		position: fixed;
+		inset: 0;
+		z-index: calc(var(--layer-popover) - 1);
+		background: rgba(0, 0, 0, 0.35);
 	}
 	/* Keep the hamburger above the drawer so it can be used to close it. */
 	.nav-toggle-btn {

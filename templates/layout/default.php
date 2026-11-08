@@ -151,6 +151,8 @@ $friendsBadge = $friendRequests > 0
 		<label for="nav-toggle" class="nav-toggle-btn" aria-label="Menu">
 			<span></span><span></span><span></span>
 		</label>
+		<?php //Behind the open menu on a phone: a tap beside the menu closes it, instead of reaching the page under it ?>
+		<label for="nav-toggle" class="nav-backdrop" aria-hidden="true"></label>
 		<div class="site-nav">
 			<?php if (Auth::isLoggedIn()): ?>
 			<?php //Account access at the top of the drawer: the name links to the profile, the actions follow ?>
