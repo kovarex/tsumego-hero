@@ -214,7 +214,8 @@
 		/* ── Surface chrome (theme-independent greys used by buttons, etc.) ── */
 		--surface-border-strong: #333;
 		--surface-border-light: #a2a2a2;
-		--surface-button: #5b5d60;
+		/* Darker than it was (#5b5d60), so the green button text reaches 4.5:1 */
+		--surface-button: #4a4c4f;
 		--surface-button-hover: #737477;
 		--surface-button-pressed: #36383b;
 		--surface-button-inactive: #8f9092;
@@ -368,8 +369,11 @@
 	:root
 	{
 		--color-text: #222;
-		--color-text-muted: grey;
+		/* The muted grey reaches 4.5:1 on white (grey was 3.95:1) */
+		--color-text-muted: #767676;
 		--color-link: #0000EE;
+		/* The green of a text action ("change") on white: the green of the site at 1.9:1 is darkened to 4.5:1 */
+		--color-action-link: #408622;
 		--color-border: #ccc;
 		--chart-text-color: #999;
 		--chart-grid-color: rgba(0, 0, 0, 0.08);
@@ -491,8 +495,11 @@
 	[data-theme="dark"]
 	{
 		--color-text: #ddd;
-		--color-text-muted: grey;
-		--color-link: #f0f0f0;
+		/* The muted grey reaches 4.5:1 on the dark surface (grey was 3.6:1) */
+		--color-text-muted: #9a9a9a;
+		/* Links are blue in dark too, not near-white like the text around them */
+		--color-link: var(--color-blue);
+		--color-action-link: var(--color-green);
 		--color-border: #444;
 		--chart-grid-color: rgba(255, 255, 255, 0.08);
 		--chart-background: #2a2a2a;
