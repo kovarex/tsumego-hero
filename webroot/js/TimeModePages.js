@@ -27,7 +27,8 @@ function initTimeModeOverview(page)
 		for (const id of page.categoryIDs)
 		{
 			document.getElementById('timeMode' + id).src = '/img/timeMode' + id + (id === categoryID ? '' : 'inactive') + '2.png';
-			document.getElementById('time-mode' + id).style.display = id === categoryID ? 'block' : 'none';
+			// shown with the stylesheet's display (flow-root, which holds the floated rank buttons), not an inline block
+			document.getElementById('time-mode' + id).style.display = id === categoryID ? '' : 'none';
 		}
 		showTimeModeAccountBar(page.bestSolvedRankByCategory[categoryID] ?? 'no rank');
 	}

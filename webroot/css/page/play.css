@@ -337,11 +337,6 @@ h1 {
   font-size: 15px;
   text-decoration: none;
 }
-#time-mode1,
-#time-mode2,
-#time-mode3 {
-  height: 900px;
-}
 .besogo-container {
   flex-wrap: wrap;
   max-width: 100%;
