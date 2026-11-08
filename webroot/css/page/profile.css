@@ -19,6 +19,10 @@
 .settings-account__field {
   width: 150px;
 }
+/* A long e-mail address breaks instead of pushing the card wider than a phone */
+#name-and-email-table td {
+  overflow-wrap: anywhere;
+}
 /* Solve history */
 .solve-history__preview-toggle {
   cursor: pointer;

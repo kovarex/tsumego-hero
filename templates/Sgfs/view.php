@@ -38,7 +38,7 @@ else
 			<a href="/sgfs/view/<?php echo $id; ?>">back</a>
 		<?php } ?>
 	</div>
-	<table class="data-table">
+	<table class="data-table phone-scroll-x">
 	<tbody>
 	<tr>
 		<th>Date</th>

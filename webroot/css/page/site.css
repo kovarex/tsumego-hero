@@ -901,6 +901,9 @@ nav ul ul ul li {
   border-radius: 3px;
   display: inline-block;
   margin-top: 5px;
+  /* A long class name or path breaks instead of widening the page */
+  max-width: 100%;
+  overflow-wrap: anywhere;
 }
 .error-page__trace {
   margin-top: 20px;
