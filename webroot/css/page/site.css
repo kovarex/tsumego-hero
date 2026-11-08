@@ -87,7 +87,8 @@ body {
   display: table;
   margin: 18px;
   position: absolute;
-  left: 214px;
+  /* Its icons end where the row of the account starts at 1280px wide */
+  left: 194px;
   top: -8px;
   z-index: var(--layer-drawer);
   width: 900px;
@@ -201,21 +202,23 @@ li a.menuLi.nav__link--active {
   font-size: 16pt;
   font-weight: bold;
 }
+/* The flame of the daily streak and the account bar, side by side at the right of the header */
+.site-header-account {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 3px;
+}
 #account-bar {
-  max-width: 966px;
   height: 100%;
-  margin: 0px auto;
 }
 #account-bar-wrapper {
-  position: absolute;
-  top: -31px;
-  /* Right-anchor to the container instead of a hard-coded left:1130px, so the
-     widget no longer overflows on narrower windows. */
-  right: 0;
-  left: auto;
-  width: 160px;
+  position: relative;
+  width: 145px;
+  height: 54px;
   cursor: context-menu;
-  background-color: var(--color-white);
 }
 /* The account bar reads as a display label, so it keeps its heavy face instead
    of the body serif. */
@@ -227,11 +230,10 @@ li a.menuLi.nav__link--active {
 }
 #account-bar-xp-wrapper {
   position: absolute;
-  left: 0px;
-  top: 59px;
+  left: 0;
+  top: 23px;
   width: 144px;
   height: 26px;
-  margin: 0px 0px 0px 15px;
   color: var(--color-white);
   font-size: 14px;
   font-style: normal;
@@ -262,8 +264,8 @@ li a.menuLi.nav__link--active {
 #account-bar-user {
   letter-spacing: 1px;
   position: absolute;
-  top: 36px;
-  left: 15px;
+  top: 0;
+  left: 0;
   display: inline-block;
   font-size: 17px;
   font-weight: 700;
@@ -277,12 +279,11 @@ li a.menuLi.nav__link--active {
 }
 #xp-bar {
   position: absolute;
-  left: 0px;
-  top: 59px;
+  left: 0;
+  top: 23px;
   height: 26px;
   width: 144px;
   background: var(--surface-ink);
-  margin: 0px 0px 0px 15px;
   display: inline-block;
   vertical-align: left;
 }
@@ -1032,6 +1033,10 @@ nav ul ul ul li {
 	}
 	.site-nav__signin {
 		display: none;
+	}
+	/* The flame stands beside the hamburger on its own, the account bar is hidden below */
+	.site-header-account {
+		display: contents;
 	}
 	/* Sign In for logged-out users appears at the top of the drawer (like the
 	   logged-in account block). The absolute desktop .site-nav__signin is hidden

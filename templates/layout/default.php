@@ -106,6 +106,7 @@ if (Auth::isLoggedIn())
 	//Players asking to be friends: the Friends item of the account menu counts them.
 	$friendRequests = $headerCounts->friendRequests;
 	$soundSetting = UserTable::soundIsOn(Auth::getUser()) ? 'on' : 'off';
+	$accountBar = AccountWidget::bar($timeMode);
 }
 else
 {
@@ -113,6 +114,7 @@ else
 	$classesAwaitingAnswer = 0;
 	$challengesWaiting = 0;
 	$friendRequests = 0;
+	$accountBar = null;
 	$soundSetting = in_array(Util::cookie('sound'), ['on', 'off'], true) ? Util::cookie('sound') : null;
 }
 $classesBadge = $classesAwaitingAnswer > 0
@@ -132,7 +134,13 @@ $friendsBadge = $friendRequests > 0
 				<img id="logo1" alt="Tsumego Hero" title="Tsumego Hero" src="/img/tsumegoHero1.png" onmouseover="this.src='/img/tsumegoHero2.png'" onmouseout="this.src='/img/tsumegoHero1.png'" height="55px">
 			</a>
 		</div>
-		<?php if (Auth::isLoggedIn()) echo $this->element('daily_streak'); ?>
+		<?php if (Auth::isLoggedIn()): ?>
+		<?php //The flame and the account bar share one row at the right, so they can't overlap ?>
+		<div class="site-header-account">
+			<?php echo $this->element('daily_streak'); ?>
+			<?php echo $this->element('account_bar', ['bar' => $accountBar, 'unreadMessageCount' => $unreadMessageCount]); ?>
+		</div>
+		<?php endif; ?>
 		<input type="checkbox" id="nav-toggle" class="nav-toggle" aria-hidden="true">
 		<label for="nav-toggle" class="nav-toggle-btn" aria-label="Menu">
 			<span></span><span></span><span></span>
@@ -245,7 +253,7 @@ $friendsBadge = $friendRequests > 0
 		<?php endif; ?>
 	</div>
 	<?php if (Auth::isLoggedIn()): ?>
-		<?php echo $this->element('account_widget', ['bar' => AccountWidget::bar($timeMode), 'unreadMessageCount' => $unreadMessageCount, 'friendsBadge' => $friendsBadge]); ?>
+		<?php echo $this->element('account_widget', ['bar' => $accountBar, 'unreadMessageCount' => $unreadMessageCount, 'friendsBadge' => $friendsBadge]); ?>
 	<?php endif; ?>
 	<div class="legacy-left whitebox2">
 		<div id="content">

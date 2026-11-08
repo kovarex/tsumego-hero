@@ -2,6 +2,7 @@
 
 use App\Utility\DailyStreak;
 use App\Utility\Util;
+use Facebook\WebDriver\WebDriverDimension;
 
 //The flame of the daily streak in the menu
 #[RetryOnBrowserFailure]
@@ -80,6 +81,36 @@ class DailyStreakBrowserTest extends IntegrationTestCase
 		$progress = $browser->find('#daily-streak .daily-streak__progress');
 		$this->assertSame([(string) $xp, (string) $required], [$progress->getAttribute('value'), $progress->getAttribute('max')]);
 		$this->assertStringNotContainsString('daily-streak--done', $browser->find('#daily-streak')->getAttribute('class'));
+	}
+
+	//At 1280 px the flame stands beside the account bar, not on the name or the level bar
+	public function testTheFlameDoesNotOverlapTheAccountBar(): void
+	{
+		new ContextPreparator(['user' => ['display_name' => 'LongPlayerName', 'streak_length' => 12, 'streak_best' => 20]]);
+		$browser = Browser::instance();
+		$window = $browser->driver->manage()->window();
+		$originalSize = $window->getSize();
+		try
+		{
+			$window->setSize(new WebDriverDimension(1280, 900));
+			$browser->get('sites/blank');
+			$boxes = $browser->driver->executeScript(<<<'JS'
+				const box = selector => { const r = document.querySelector(selector).getBoundingClientRect(); return {left: r.left, right: r.right, top: r.top, bottom: r.bottom}; };
+				return {flame: box('#daily-streak'), name: box('#account-bar-user a'), bar: box('#xp-bar')};
+				JS);
+			$flame = $boxes['flame'];
+			foreach (['name', 'bar'] as $part)
+			{
+				$box = $boxes[$part];
+				$intersects = $flame['left'] < $box['right'] && $box['left'] < $flame['right'] && $flame['top'] < $box['bottom'] && $box['top'] < $flame['bottom'];
+				$this->assertFalse($intersects, 'The flame ' . json_encode($flame) . ' overlaps the ' . $part . ' ' . json_encode($box));
+			}
+			$this->assertLessThanOrEqual($boxes['name']['left'], $flame['right'], 'The flame stands left of the name');
+		}
+		finally
+		{
+			$window->setSize($originalSize);
+		}
 	}
 
 	public function testAGuestHasNoFlame(): void
