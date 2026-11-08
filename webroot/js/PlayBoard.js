@@ -252,7 +252,7 @@ redrawHearts();
 //On a PC the review's tree gets room. The panel widens to show the whole tree, taking first the room the board
 //leaves unused in its column (a board as tall as the window is narrower than its column), then the empty margins
 //of the page; the board never shrinks, and a tree wider than all that scrolls sideways from its root. While the
-//comments are closed the tree also takes the panel's height down to the bottom of the board, so the page gets no
+//comments are closed the tree also takes the panel's height down to the bottom of the board column, so the page gets no
 //taller; with the comments open it keeps its usual height (play.css) and shares the panel with them.
 function fitReviewTree(reviewPanels)
 {
@@ -271,6 +271,7 @@ function fitReviewTree(reviewPanels)
 	};
 	let fit = () =>
 	{
+		let scroll = [tree.scrollLeft, tree.scrollTop];
 		reset();
 		let board = document.querySelector(".play-screen__main .besogo-board");
 		let main = document.querySelector(".play-screen__main");
@@ -280,7 +281,9 @@ function fitReviewTree(reviewPanels)
 			return;
 		screen.classList.add("play-screen--review");
 		let commentsOpen = comments && getComputedStyle(comments).display !== "none";
-		let height = Math.floor(board.getBoundingClientRect().bottom - tree.getBoundingClientRect().top);
+		//down to the bottom of what the board column shows: the board and the problem buttons under it
+		let bottom = Math.max(...[...main.children].map(child => child.getBoundingClientRect().bottom));
+		let height = Math.floor(bottom - tree.getBoundingClientRect().top);
 		let svgBox = svg.getBoundingClientRect();
 		//the panel's padding, and the width of a scrollbar when the tree is taller than its box
 		let room = 34 + (svgBox.height > (commentsOpen ? 350 : Math.max(350, height)) ? 16 : 0);
@@ -297,11 +300,14 @@ function fitReviewTree(reviewPanels)
 		}
 		if (!commentsOpen)
 			tree.style.setProperty("--tree-height", height + "px");
+		[tree.scrollLeft, tree.scrollTop] = scroll;
 	};
 	let observer = new MutationObserver(fit);
 	observer.observe(reviewPanels, { attributes: true, attributeFilter: ["style"] });
 	if (comments)
 		observer.observe(comments, { attributes: true, attributeFilter: ["style"] });
+	//besogo draws the tree again when it changes (the review shows the whole of it), as a new svg
+	observer.observe(tree, { childList: true });
 	window.addEventListener("resize", fit);
 	fit();
 }
