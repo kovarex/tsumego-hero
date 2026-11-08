@@ -738,7 +738,7 @@ body:has(.play-screen) #footer {
 .play-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: var(--space-2);
   margin: var(--space-2) 0;
 }
 .play-actions__button {
@@ -896,7 +896,8 @@ body:has(.play-screen) #footer {
     display: flex !important;
     flex-wrap: wrap;
     gap: var(--space-2);
-    padding: var(--space-1) 0;
+    margin-top: var(--space-2);
+    padding: 0;
     border: 0;
   }
   #heroPowersTray img {
@@ -908,6 +909,9 @@ body:has(.play-screen) #footer {
   }
   /* The icons alone show the hearts on a wide screen; the count stays for screen readers and in the
      title. A phone keeps it: it has no hover for the title, and many overlapping hearts are hard to count */
+  .play-player {
+    min-height: 0;
+  }
   .play-player .health-counter {
     position: absolute;
     width: 1px;
