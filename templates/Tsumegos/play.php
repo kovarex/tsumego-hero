@@ -150,7 +150,19 @@ use App\Utility\ViteManifest;
 			<div id="playTitle">
 				<?php echo $this->element('Tsumegos/play_title'); ?>
 			</div>
-			<div class="play-head__goal">
+			<?php // In the training the XP of a solve shows here when it is earned (PlayPage.js), with what it did to the problem in its title; the rank of the problem shows as in the level mode ?>
+			<div class="play-head__stake<?php echo Auth::isInMistakeTrainingMode() ? ' play-status--training' : ''; ?>">
+				<?php $tsumegoXPAndRating->render(); ?>
+			</div>
+		</div>
+		<?php if (Auth::isInMistakeTrainingMode() && !empty($mistakeTrainingReplay)): ?>
+			<div class="alert alert-info mistake-training-replay" role="status">Already solved today. This try does not count.</div>
+		<?php endif; ?>
+		<?php //Every message of the problem has one place, right above the board: Correct, Incorrect, what a status problem adds, the comment of a move ?>
+		<?php //The comment of the move played ("Correct, but what about this answer?") shares the row, so it doesn't move the board either ?>
+		<?php //The goal of the problem shows here until the problem says Correct! or Incorrect! (or a move its comment), which take its place (play.css) ?>
+		<div class="play-message">
+			<div class="play-message__goal">
 				<div id="titleDescription" class="<?php echo Auth::isInRatingMode() || Auth::isInTimeMode() ? 'titleDescription2' : 'titleDescription1'; ?>">
 					<?php //The color to move as a stone instead of its name: "White to kill." shows a white stone and "to kill." ?>
 					<?php $goal = Play::splitGoalColor($displayDescription); ?>
@@ -163,17 +175,6 @@ use App\Utility\ViteManifest;
 					<?php endif; ?>
 				</div>
 			</div>
-			<?php // In the training the XP of a solve shows here when it is earned (PlayPage.js), with what it did to the problem in its title; the rank of the problem shows as in the level mode ?>
-			<div class="play-head__stake<?php echo Auth::isInMistakeTrainingMode() ? ' play-status--training' : ''; ?>">
-				<?php $tsumegoXPAndRating->render(); ?>
-			</div>
-		</div>
-		<?php if (Auth::isInMistakeTrainingMode() && !empty($mistakeTrainingReplay)): ?>
-			<div class="alert alert-info mistake-training-replay" role="status">Already solved today. This try does not count.</div>
-		<?php endif; ?>
-		<?php //Every message of the problem has one place, right above the board: Correct, Incorrect, what a status problem adds, the comment of a move ?>
-		<?php //The comment of the move played ("Correct, but what about this answer?") shares the row, so it doesn't move the board either ?>
-		<div class="play-message">
 			<?php $tsumegoXPAndRating->renderStatus(); ?>
 			<div id="theComment"></div>
 		</div>

@@ -615,10 +615,6 @@ h1 {
   grid-column: 1;
   grid-row: 1;
 }
-.play-head__goal {
-  grid-column: 1;
-  grid-row: 2;
-}
 .play-head__stake {
   grid-column: 2;
   grid-row: 1 / span 2;
@@ -627,13 +623,30 @@ h1 {
   text-align: left;
   font-size: var(--text-lg);
 }
-.play-head__goal {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: var(--space-1) var(--space-3);
-  min-height: 32px;
+/* The goal of the problem in the row of the messages, at most two lines, until Correct!, Incorrect! or the comment
+   of a move take its place */
+.play-message__goal {
+  flex: 1;
+  min-width: 0;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+  line-height: 1.25;
+  text-align: left;
+}
+.play-message__goal #titleDescription {
+  display: inline;
+  font-size: var(--text-md);
+}
+.play-message #theComment:empty {
+  flex: 0;
+  padding: 0;
+}
+.play-message:has(#status:not(:empty)) .play-message__goal,
+.play-message:has(#theComment:not(:empty)) .play-message__goal {
+  display: none;
 }
 /* The color to move, as a stone before the goal */
 .play-goal__stone {
