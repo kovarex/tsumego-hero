@@ -358,8 +358,8 @@
 .achievement-view__back {
   text-decoration: none;
 }
-/* The progress bar of a counter achievement */
-#achievementWrapper .progress {
+/* The progress bar of a counter achievement, under its card (the list has its bars inside the cards) */
+#achievementWrapper > .progress {
   width: 220px;
   margin: 0 auto;
 }

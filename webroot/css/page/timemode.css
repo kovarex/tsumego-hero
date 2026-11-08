@@ -20,9 +20,6 @@
 .timeModeTable2 {
   color: var(--time-mode-table-text);
 }
-.versionColor a {
-  color: var(--time-mode-version-link);
-}
 .timeModeTable2,
 .time-result__runs {
   width: 100%;
@@ -119,4 +116,8 @@
 }
 
 /* Dark overrides */
+/* Dark only: in light the links keep the colour they get from the rest of the page */
+[data-theme="dark"] .versionColor a {
+  color: var(--color-blue-accent);
+}
 }

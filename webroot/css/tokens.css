@@ -419,10 +419,11 @@
 		--xp-display-solved: var(--color-green);
 		--xp-display-golden: var(--color-gold);
 		--xp-display-sprint: var(--color-blue);
-		--alert-success-border: var(--color-green-light);
-		--alert-error-border: var(--color-red);
-		--alert-warning-border: var(--color-yellow);
-		--alert-info-border: var(--color-blue);
+		/* In light the border of an alert has always been its text colour */
+		--alert-success-border: currentColor;
+		--alert-error-border: currentColor;
+		--alert-warning-border: currentColor;
+		--alert-info-border: currentColor;
 		--title-text: var(--color-black);
 		--set-accuracy: var(--set-accent-purple);
 		--set-time: var(--set-accent-orange);
@@ -434,7 +435,6 @@
 		--training-title: var(--color-green-dark);
 		--profile-name: black;
 		--time-mode-table-text: currentColor;
-		--time-mode-version-link: var(--link-color);
 		--signin-background: transparent;
 		--schedule-link: var(--color-white);
 		--dropdown-tile-muted: #33333388;
@@ -549,7 +549,6 @@
 		--training-title: var(--color-green);
 		--profile-name: var(--color-white);
 		--time-mode-table-text: var(--color-black);
-		--time-mode-version-link: var(--color-blue-accent);
 		--signin-background: var(--surface-dark);
 		--schedule-link: var(--link-color);
 		--dropdown-tile-muted: var(--surface-translucent);
