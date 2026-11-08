@@ -244,6 +244,5 @@ use App\Utility\ViteManifest;
 			<div class="loader-text">searching...</div>
 		</div>
 	</div>
-	<audio><source src="/sounds/newStone.ogg"></audio>
 
 	<?php echo ViteManifest::legacyScript('play'); ?>

@@ -257,3 +257,56 @@ besogo.addTest("Editor", "SaveKeepsTheStatusAsWritten", function()
 	end.setStatusSource(besogo.loadStatusFromString("DEAD"));
 	CHECK(besogo.composeSgf(editor).includes("S[DEAD]"));
 });
+
+besogo.addTest("Editor", "ReviewCancelsTheOpponentsPendingReply", function()
+{
+	let root = besogo.makeGameRoot();
+	root.goal = GOAL_KILL;
+	let move = root.registerMove(1, 1);
+	let killed = move.registerMove(1, 2);
+	killed.statusSource = besogo.makeStatusSimple(STATUS_DEAD);
+
+	withPlayEditor(root, function(editor, flush)
+	{
+		editor.click(1, 1, false, false);
+		CHECK(editor.isPerformingAutoPlay());
+		editor.setReviewMode(true);
+		flush();
+		CHECK(editor.getCurrent() == move);
+		CHECK(!editor.isPerformingAutoPlay());
+	});
+});
+
+besogo.addTest("Editor", "TheEndOfALinePlaysOneSound", function()
+{
+	let root = besogo.makeGameRoot();
+	root.goal = GOAL_KILL;
+	let killed = root.registerMove(1, 1).registerMove(1, 2);
+	killed.statusSource = besogo.makeStatusSimple(STATUS_DEAD);
+
+	let originalPlay = besogo.stoneSound.play;
+	let originalEmbedded = besogo.isEmbedded;
+	let originalSoundsEnabled = window.soundsEnabled;
+	let sounds = 0;
+	besogo.stoneSound.play = () => sounds++;
+	besogo.isEmbedded = true;
+	window.soundsEnabled = true;
+	try
+	{
+		withPlayEditor(root, function(editor, flush)
+		{
+			editor.click(1, 1, false, false);
+			CHECK_EQUALS(sounds, 1);
+			flush(); // the opponent's reply, which ends the line
+			CHECK(editor.getCurrent() == killed);
+			CHECK_EQUALS(sounds, 2);
+		});
+	}
+	finally
+	{
+		besogo.stoneSound.play = originalPlay;
+		besogo.isEmbedded = originalEmbedded;
+		window.soundsEnabled = originalSoundsEnabled;
+		besogo.soundsEnabled = false;
+	}
+});
