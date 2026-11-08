@@ -42,7 +42,7 @@ class TsumegosControllerTest extends IntegrationTestCase
 			$dom = $this->getStringDom();
 			$href = $dom->querySelector('#playTitleA');
 			$this->assertTextContains('test set', $href->textContent);
-			$this->assertTextContains('666', $href->textContent);
+			$this->assertSame('666', trim($dom->getElementById('currentNavigationButton')->textContent), 'The open problem button shows its place in the collection');
 		}
 	}
 
@@ -141,7 +141,7 @@ class TsumegosControllerTest extends IntegrationTestCase
 		$dom = $this->getStringDom();
 		$href = $dom->querySelector('#playTitleA');
 		$this->assertTextContains('tsumego set 1', $href->textContent);
-		$this->assertTextContains('666', $href->textContent);
+		$this->assertSame('666', trim($dom->getElementById('currentNavigationButton')->textContent), 'The open problem button shows its place in the collection');
 
 		$duplicateTable = $dom->querySelector('.duplicateTable');
 		$links = $duplicateTable->getElementsByTagName('a');
@@ -177,7 +177,7 @@ class TsumegosControllerTest extends IntegrationTestCase
 		$dom = $this->getStringDom();
 		$href = $dom->querySelector('#playTitleA');
 		$this->assertTextContains('tsumego set 2', $href->textContent);
-		$this->assertTextContains('777', $href->textContent);
+		$this->assertSame('777', trim($dom->getElementById('currentNavigationButton')->textContent), 'The open problem button shows its place in the collection');
 
 		// all of them are listed in duplicite locations
 		$this->assertTextContains("tsumego set 1", $this->view);
@@ -394,7 +394,7 @@ class TsumegosControllerTest extends IntegrationTestCase
 		$dom = $this->getStringDom();
 		$href = $dom->querySelector('#playTitleA');
 		$this->assertTextContains('test set', $href->textContent);
-		$this->assertTextContains('666', $href->textContent);
+		$this->assertSame('666', trim($dom->getElementById('currentNavigationButton')->textContent), 'The open problem button shows its place in the collection');
 	}
 
 	public function testClearFiltersReloadsCurrentPlayPage(): void
@@ -451,7 +451,7 @@ class TsumegosControllerTest extends IntegrationTestCase
 		$browser->get($context->tsumegos[0]['set-connections'][0]['id']);
 		$href = $browser->find('#playTitleA');
 		$this->assertTextContains('set 1', $href->getText());
-		$this->assertTextContains('666', $href->getText());
+		$this->assertSame('666', $browser->find('#currentNavigationButton')->getText(), 'The open problem button shows its place in the collection');
 	}
 
 	public function testMergeFormShowsPreviewsForSiblingTsumegos()
