@@ -203,6 +203,16 @@ return function (RouteBuilder $routes): void
 		['pass' => ['id'], 'id' => '[0-9]+']
 	);
 
+	//Problems on paper: the picker and the options, then the sheet that opens in a new tab.
+	$routes->connect(
+		'/print',
+		['controller' => 'Print', 'action' => 'index']
+	);
+	$routes->connect(
+		'/print/sheet',
+		['controller' => 'Print', 'action' => 'sheet']
+	);
+
 	$routes->connect(
 		'/sets/mine',
 		['controller' => 'Sets', 'action' => 'mine']

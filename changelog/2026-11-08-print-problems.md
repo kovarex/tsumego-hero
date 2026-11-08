@@ -1,0 +1,1 @@
+Added: [Print problems](/print): pick problems from your collections or the ones of the site, the same way as for a class, and print them on a clean black-and-white sheet, 4 to 12 to a page, with an optional answer key and room for notes. An assignment of a class has a Print button too.
