@@ -1,13 +1,17 @@
 //The flame of the daily streak in the menu (templates/element/daily_streak.php). It redraws from what
-//the server says about the streak (App\Utility\DailyStreak::view(), in the result of a solve), lights
-//up with a burst when that solve completed the day, and hands the server the browser's time zone when
-//it differs from the stored one.
+//the server says about the streak (App\Utility\DailyStreak::view(), in the result of a solve): the dim
+//flame fills as far as today got, with a little pulse when a solve moved it, and when that solve
+//completed the day it lights up with a burst and the number ticks up. It also hands the server the
+//browser's time zone when it differs from the stored one.
 class DailyStreak
 {
 	static element()
 	{
 		return document.getElementById('daily-streak');
 	}
+
+	//How long the number under the flame waits in the burst before it ticks up (daily-streak-count in daily-streak.css)
+	static TICK_DELAY_MS = 600;
 
 	//streak: App\Utility\DailyStreak::view(), as templates/element/daily_streak.php draws it
 	static update(streak)
@@ -16,12 +20,26 @@ class DailyStreak
 		if (!element || !streak)
 			return;
 		let days = count => count + ' ' + (count == 1 ? 'day' : 'days');
+		let ignites = streak.done_today && !element.classList.contains('daily-streak--done');
+		let share = Number(streak.progress) || 0;
+		let moved = !ignites && !streak.done_today && share > (parseFloat(element.style.getPropertyValue('--streak-progress')) || 0);
+		element.style.setProperty('--streak-progress', String(share));
 		//The burst plays once, when the day gets done on this page; daily-streak.css has it, and drops it for reduced motion
-		if (streak.done_today && !element.classList.contains('daily-streak--done'))
+		if (ignites)
 			element.classList.add('daily-streak--ignite');
+		else if (moved)
+			DailyStreak.restartClass(element, 'daily-streak--grow');
 		element.classList.toggle('daily-streak--done', !!streak.done_today);
 		element.querySelectorAll('[data-streak-days]').forEach(node => node.textContent = days(streak[node.dataset.streakDays]));
-		element.querySelectorAll('[data-streak-count]').forEach(node => node.textContent = streak[node.dataset.streakCount]);
+		//In the burst the number under the flame ticks up at its height; with reduced motion at once
+		let tickLater = ignites && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+		element.querySelectorAll('[data-streak-count]').forEach(node =>
+		{
+			if (tickLater && node.classList.contains('daily-streak__length'))
+				setTimeout(() => node.textContent = streak[node.dataset.streakCount], DailyStreak.TICK_DELAY_MS);
+			else
+				node.textContent = streak[node.dataset.streakCount];
+		});
 		let progress = element.querySelector('.daily-streak__progress');
 		if (progress)
 		{
@@ -31,6 +49,14 @@ class DailyStreak
 		let today = element.querySelector('[data-streak-today]');
 		if (today)
 			today.textContent = streak.done_today ? today.dataset.doneText : today.dataset.todoText;
+	}
+
+	//Plays the animation of $className again, also when the last one is still on
+	static restartClass(element, className)
+	{
+		element.classList.remove(className);
+		void element.offsetWidth;
+		element.classList.add(className);
 	}
 
 	static browserTimeZone()

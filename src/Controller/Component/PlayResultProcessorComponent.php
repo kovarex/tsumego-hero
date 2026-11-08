@@ -84,6 +84,8 @@ class PlayResultProcessorComponent extends Component
 	private function processResultInPlayMode(int $tsumegoID, PlayOutcome $outcome, float $seconds, ?int $setConnectionID, ?ChallengeFailedLine $challengeFailedLine): array
 	{
 		$seconds = max(0.01, $seconds);
+		//The first result of the day fixes the XP the daily streak asks by the rating before it
+		$ratingBefore = (float) Auth::getUser()['rating'];
 		$result = new PlayResult($outcome === PlayOutcome::SolvedClean || $outcome === PlayOutcome::SolvedAfterMistake);
 
 		$tsumego = TableRegistry::getTableLocator()->get('Tsumego')->find()->where(['id' => $tsumegoID])->first();
@@ -131,7 +133,7 @@ class PlayResultProcessorComponent extends Component
 		$this->processErrorAchievement($previousStatusValue, $outcome);
 		$this->processSolveConditions($tsumego, $result, $previousStatusValue);
 		$this->processGoldenRun($result, $previousStatusValue);
-		$this->processDailyStreak($result, $review, $trainingXp);
+		$this->processDailyStreak($result, $review, $trainingXp, $ratingBefore);
 		$this->writeUserChanges();
 
 		// Check solve-dependent achievements right away (not only on the next page
@@ -467,17 +469,18 @@ class PlayResultProcessorComponent extends Component
 	//What the result does for the daily streak (DailyStreak::afterResult): the XP it gave, and in the
 	//mistake training every review the training counts as solved, even a retry that earns nothing.
 	//A replay of a problem solved today is no review, and the time mode gives no XP, so neither counts.
+	//The XP the day asks is that of $ratingBefore, the rating before this result changed it.
 	//The changes go with the other fields of the player, in the one UPDATE of the result.
 	/**
 	 * @param array{id: int, result: int, climbed: bool, clear_bonus: bool}|null $review
 	 * @param array{review: int, graduation: int, clear: int}|null $trainingXp
 	 */
-	private function processDailyStreak(PlayResult $result, ?array $review, ?array $trainingXp): void
+	private function processDailyStreak(PlayResult $result, ?array $review, ?array $trainingXp, float $ratingBefore): void
 	{
 		$solvedReview = Auth::isInMistakeTrainingMode() && $review !== null && $review['result'] !== MistakeTraining::REVIEW_MISSED;
 		$xp = (int) $result->xpGained + ($trainingXp !== null ? array_sum($trainingXp) : 0);
 		$userId = (int) Auth::getUserID();
-		$this->setUserFields(DailyStreak::afterResult(Auth::getUser(), $xp, $solvedReview, fn() => MistakeTraining::dueCount($userId)));
+		$this->setUserFields(DailyStreak::afterResult(['rating' => $ratingBefore] + Auth::getUser(), $xp, $solvedReview, fn() => MistakeTraining::dueCount($userId)));
 	}
 
 	//The Gold Digger run counts the golden tsumego solved in a row. A golden tsumego is a
