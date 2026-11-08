@@ -74,7 +74,6 @@ use App\Utility\ViteManifest;
 	//its place kept until then so the buttons don't move at the solve
 	$commentCounts = Auth::isLoggedIn() ? TsumegoIssueTable::getCommentSectionCounts((int) $tsumego->id) : null;
 	$commentsVisible = Auth::isAdmin() || $solved;
-	$commentTotal = $commentCounts === null ? 0 : $commentCounts['comments'] + $commentCounts['openIssues'];
 	?>
 	<?php //The board column: where the problem is, its goal and stake, the one row of messages, the board and the
 	//problem buttons. Beside it on a wide screen, under it on a phone: the player's hearts, the actions and what
@@ -98,8 +97,8 @@ use App\Utility\ViteManifest;
 			<?php if ($commentCounts !== null): ?>
 				<a id="commentsToggle" class="play-actions__button<?php echo $commentsVisible ? '' : ' play-actions__button--disabled'; ?>" href="#" data-toggle="commentsPanel"
 					title="<?php echo $commentsVisible ? 'Comments' : 'The comments open once the problem is solved'; ?>" aria-label="Comments"<?php echo $commentsVisible ? '' : ' aria-disabled="true"'; ?>>&#128172;<?php
-					if (TsumegoIssueTable::commentSummary($commentCounts) !== '')
-						echo ' <span id="moreCommentSummary" class="play-more__summary" title="' . h(TsumegoIssueTable::commentSummary($commentCounts)) . '"' . ($commentsVisible ? '' : ' style="visibility: hidden;"') . '>' . $commentTotal . '</span>';
+					if (($summary = TsumegoIssueTable::commentSummary($commentCounts)) !== '')
+						echo '<span id="moreCommentSummary" class="play-more__summary"' . ($commentsVisible ? '' : ' style="visibility: hidden;"') . '>' . h($summary) . '</span>';
 				?></a>
 			<?php endif; ?>
 			<a id="editToggle" class="play-actions__button" href="#" data-toggle="editSection" title="The problem: info, tags, similar problems" aria-label="Info">&#8943;</a>

@@ -317,6 +317,15 @@ class Browser
 		$this->waitUntilCssSelectorDisplayed('#editSection');
 	}
 
+	//Opens the comments of the play page from their button
+	public function openPlayComments(): void
+	{
+		if ($this->driver->executeScript('return document.getElementById("commentsToggle")?.dataset.open === "1";'))
+			return;
+		$this->clickId('commentsToggle');
+		$this->waitUntilCssSelectorDisplayed('#commentsPanel');
+	}
+
 	// Click an element and accept any confirm() dialog it opens.
 	public function clickIdAndAcceptAlert($id)
 	{
@@ -851,11 +860,8 @@ class Browser
 	public function expandComments()
 	{
 		//The comments of the play page open from their own button
-		if ($this->idExists('commentsToggle') && !$this->driver->executeScript('return document.getElementById("commentsToggle").dataset.open === "1";'))
-		{
-			$this->clickId('commentsToggle');
-			$this->waitUntilCssSelectorDisplayed('#commentsPanel');
-		}
+		if ($this->idExists('commentsToggle'))
+			$this->openPlayComments();
 		//Opening More opens the COMMENTS tab already when it holds something; a click on the active tab
 		//would close it again
 		$tab = $this->find('.tsumego-comments__tab[data-filter="open"]', 5);

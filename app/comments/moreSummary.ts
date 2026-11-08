@@ -13,12 +13,12 @@ export function commentSummary(counts: CommentCounts): string
 	return parts.join(', ');
 }
 
-//Keeps the summary on the More toggle of the play page (templates/Tsumegos/play.php) in step with
+//Keeps the summary on the comments button of the play page (templates/Tsumegos/play.php) in step with
 //the counts of the comment section: it appears when the comments hold something and goes when they
 //hold nothing. The counts change only in a section the player can use, so a new summary shows.
 export function updateMoreSummary(counts: CommentCounts): void
 {
-	const toggle = document.getElementById('editToggle');
+	const toggle = document.getElementById('commentsToggle');
 	if (!toggle)
 		return;
 	const text = commentSummary(counts);
