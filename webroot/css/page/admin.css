@@ -248,6 +248,14 @@
   vertical-align: middle;
   margin-right: 4px;
 }
+/* Duplicate search: on a phone the table of board previews scrolls inside itself */
+@media (width < 40rem) {
+  .duplicate-search__table {
+    display: block;
+    max-width: 100%;
+    overflow-x: auto;
+  }
+}
 /* Duplicate search: a problem's button and its name in one line */
 .duplicate-search__problem {
   display: flex;
