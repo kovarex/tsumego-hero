@@ -5,6 +5,27 @@
    (they are site chrome, not highscore-page styles). */
 @layer page
 {
+/* The highscore tables (HighscoreHelper) */
+.highscore-table__title
+{
+  margin-bottom: 16px;
+}
+.highscore-table__place,
+.highscore-table__premium
+{
+  width: 60px;
+}
+.highscore-table__name
+{
+  width: 220px;
+}
+/* The count of all players under a table */
+.highscore-table__total
+{
+  font-size: 13px;
+  color: #999;
+  padding: 8px 0;
+}
 .highscore-nav
 {
   width: 100%;
