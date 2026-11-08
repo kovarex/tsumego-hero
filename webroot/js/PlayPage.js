@@ -170,7 +170,7 @@ function setUpPageEnd()
 		document.getElementById("status").style.color = "var(--feedback-error)";
 		document.querySelectorAll(".besogo-board").forEach(board => board.classList.add("besogo-board-red-glow"));
 		var resetBtn = document.getElementById("besogo-reset-button");
-		if (resetBtn) { resetBtn.id = "besogo-reset-button-inactive"; }
+		if (resetBtn) { resetBtn.id = "besogo-reset-button-inactive"; resetBtn.blur(); }
 	}
 	if (playPage.problem.solved)
 		reviewEnabled = true;
@@ -653,7 +653,7 @@ function displayResult(result)
 		{
 			document.getElementById("status").style.color = "var(--feedback-error)";
 			document.getElementById("status").innerHTML = "<h2>Incorrect!</h2>";
-			document.querySelector(".play-message")?.classList.add("play-message--failed");
+			markFailed();
 			document.querySelectorAll(".besogo-board").forEach(board => board.classList.add("besogo-board-red-glow"));
 			if (mode==3)
 			{
@@ -666,7 +666,7 @@ function displayResult(result)
 				// The board locks, but the problem stays in today's training until it is solved
 				toggleBoardLock(true);
 				document.getElementById("status").innerHTML = '<h2>Incorrect!</h2><p class="mistake-training-note">Press Reset to try again.</p>';
-				document.querySelector(".play-message")?.classList.add("play-message--failed");
+				markFailed();
 			}
 			if (!noXP)
 			{
@@ -682,7 +682,7 @@ function displayResult(result)
 						tryAgainTomorrow = true;
 						toggleBoardLock(true);
 						var resetBtn = document.getElementById("besogo-reset-button");
-						if (resetBtn) { resetBtn.id = "besogo-reset-button-inactive"; }
+						if (resetBtn) { resetBtn.id = "besogo-reset-button-inactive"; resetBtn.blur(); }
 					}
 				}
 				// leaving for the plain problem page would drop the player out of the training
@@ -699,7 +699,7 @@ function displayResult(result)
 		{//mode 2 incorrect
 			document.getElementById("status").style.color = "var(--feedback-error)";
 			document.getElementById("status").innerHTML = "<h2>Incorrect!</h2>";
-			document.querySelector(".play-message")?.classList.add("play-message--failed");
+			markFailed();
 			document.querySelectorAll(".besogo-board").forEach(board => board.classList.add("besogo-board-red-glow"));
 			if (!noXP)
 				freePlayMode = true;
@@ -720,6 +720,14 @@ function displayMessage(message='text', topic='Message', color='red')
 		banner.classList.toggle("toast__banner--success", color !== 'red');
 		banner.innerHTML = topic + '<span class="toast__close">x</span>';
 	});
+}
+
+//After a fail the message row turns red, and Reset gets a red outline (play.css) and the keyboard focus, so
+//Enter or Space tries again
+function markFailed()
+{
+	document.querySelector(".play-message")?.classList.add("play-message--failed");
+	document.getElementById("besogo-reset-button")?.focus({ preventScroll: true, focusVisible: true });
 }
 
 //Review shows the solution, so it opens once the problem is answered: solved, and in time mode failed or out of time too
@@ -772,7 +780,7 @@ function resetParameters(isAtStart)
 
 //The board is created by PlayBoard.js; it gets the page's callbacks, now that they are all defined
 (function() {
-if (tryAgainTomorrow) { var resetBtn = document.getElementById("besogo-reset-button"); if (resetBtn) { resetBtn.id = "besogo-reset-button-inactive"; } }
+if (tryAgainTomorrow) { var resetBtn = document.getElementById("besogo-reset-button"); if (resetBtn) { resetBtn.id = "besogo-reset-button-inactive"; resetBtn.blur(); } }
 besogo.editor.setAutoPlay(true);
 besogo.editor.registerAddTimeForMovePlayed(addTimeForMovePlayed);
 besogo.editor.registerDisplayResult(displayResult);

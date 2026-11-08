@@ -845,14 +845,14 @@ body:has(.play-screen) #footer {
   background: var(--color-surface-hover);
 }
 
-/* After a fail, Reset is the thing to do */
+/* After a fail, Reset is the thing to do: it keeps its look, with a thin outline in the red of Incorrect! (and
+   the keyboard focus, PlayPage.js markFailed()) until the reset */
 .play-message--failed {
   background: var(--color-danger-surface);
 }
 .play-screen:has(.play-message--failed) .play-actions__end #besogo-reset-button {
-  border-color: var(--color-green-dark) !important;
-  background: var(--color-green-dark) !important;
-  color: var(--color-white) !important;
+  border-color: var(--feedback-error) !important;
+  box-shadow: 0 0 0 1px var(--feedback-error);
 }
 
 /* The board's own settings, moved into the info of the problem */

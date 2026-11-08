@@ -231,6 +231,28 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 		$this->assertMatchesRegularExpression('/Black has \d+ libert/', $browser->find('#multipleChoiceText')->getText());
 	}
 
+	//After a mistake Reset keeps its look but gets a red outline and the keyboard focus, so Enter tries again
+	public function testResetIsFocusedAndOutlinedAfterAMistake(): void
+	{
+		$context = new ContextPreparator(['tsumego' => ['set_order' => 1]]);
+		$browser = Browser::instance();
+		$browser->get($this->playUrl($context));
+		$resetLook = 'const reset = document.getElementById("besogo-reset-button"); const style = getComputedStyle(reset);'
+			. ' return [document.activeElement === reset, style.borderTopColor, style.backgroundColor];';
+		[$focused, $plainBorder, $plainBackground] = $browser->driver->executeScript($resetLook);
+		$this->assertFalse($focused);
+
+		$browser->playWithResult('F');
+		[$focused, $border, $background] = $browser->driver->executeScript($resetLook);
+		$this->assertTrue($focused, 'Reset has the focus after a mistake');
+		$this->assertNotSame($plainBorder, $border, 'Reset is outlined after a mistake');
+		$this->assertSame($plainBackground, $background, 'Reset keeps its colour after a mistake');
+
+		$browser->driver->getKeyboard()->sendKeys(\Facebook\WebDriver\WebDriverKeys::ENTER);
+		$browser->waitUntilJs('!document.querySelector(".play-message").classList.contains("play-message--failed")');
+		$this->assertSame($plainBorder, $browser->driver->executeScript($resetLook)[1], 'The outline goes with the reset');
+	}
+
 	public function testPostSolveMistakesAreNotPenalized(): void
 	{
 		$context = new ContextPreparator([

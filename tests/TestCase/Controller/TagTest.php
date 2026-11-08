@@ -532,7 +532,6 @@ class TagTest extends IntegrationTestCase
 			$browser = Browser::instance();
 			$context = new ContextPreparator(['user' => ['admin' => true], 'tsumego' => ['set_order' => 1, 'status' => 'S']]);
 			$browser->get('/' . $context->setConnections[0]['id']);
-		$browser->openPlayEditSection();
 
 			$browser->openPlayEditSection();
 			$browser->clickId('create-new-tag');
@@ -569,7 +568,6 @@ class TagTest extends IntegrationTestCase
 			'user' => ['rating' => Constants::$MINIMUM_RATING_TO_CONTRIBUTE],
 			'tsumego' => ['set_order' => 1, 'status' => 'S']]);
 		$browser->get('/' . $context->setConnections[0]['id']);
-		$browser->openPlayEditSection();
 
 		$browser->openPlayEditSection();
 		$browser->clickId('create-new-tag');
