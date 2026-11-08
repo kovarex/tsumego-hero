@@ -1002,6 +1002,39 @@ nav ul ul ul li {
 		width: auto;
 	}
 }
+/* On a phone the name as plain text instead of the logo, which takes more room than it gives */
+.site-logo-text {
+	display: none;
+}
+@media (width < 64rem) {
+	.whitebox1 #logo1 {
+		display: none;
+	}
+	.site-logo-text {
+		display: inline;
+		color: var(--color-purple-nav);
+		font-family: var(--font-family-account);
+		font-size: clamp(17px, 5.5vw, 22px);
+		font-weight: var(--weight-bold);
+		letter-spacing: 0.5px;
+		text-decoration: none;
+		white-space: nowrap;
+	}
+	.whitebox1 a:has(.site-logo-text) {
+		text-decoration: none;
+	}
+	/* Some room between the name and the icons beside it */
+	.whitebox1 > .legacy-left {
+		margin-right: var(--space-3);
+	}
+}
+/* The narrowest phones: less room around the header */
+@media (width < 360px) {
+	.whitebox1 {
+		padding-left: var(--space-2);
+		padding-right: var(--space-1);
+	}
+}
 
 /* Mobile nav: a compact header bar (logo + hamburger) and a drawer that
    replaces the desktop absolute-positioned mega-menu. Hybrid pattern: core
@@ -1033,6 +1066,7 @@ nav ul ul ul li {
 		display: flex;
 		flex-direction: column;
 		justify-content: center;
+		flex: none;
 		gap: 5px;
 		width: 40px;
 		height: 40px;
@@ -1213,9 +1247,9 @@ nav ul ul ul li {
 	   switches it between the level and the rank as on the desktop. The hover dropdowns are hidden. */
 	#account-bar-wrapper {
 		flex: none;
-		width: 84px;
+		width: 66px;
 		height: 24px;
-		margin-right: 12px;
+		margin-right: 6px;
 	}
 	#account-bar-user,
 	#account-bar-messages {
@@ -1224,7 +1258,7 @@ nav ul ul ul li {
 	#xp-bar,
 	#account-bar-xp-wrapper {
 		top: 0;
-		width: 84px;
+		width: 66px;
 		height: 24px;
 	}
 	#account-bar-xp-wrapper {
@@ -1233,8 +1267,8 @@ nav ul ul ul li {
 		text-align: center;
 	}
 	#account-bar-xp {
-		margin-top: 3px;
-		font-size: 12px;
+		margin-top: 4px;
+		font-size: 11px;
 		letter-spacing: 0;
 	}
 	#heroProfile,

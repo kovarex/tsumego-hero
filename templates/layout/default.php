@@ -135,6 +135,8 @@ $friendsBadge = $friendRequests > 0
 		<div class="legacy-left">
 			<a href="/">
 				<img id="logo1" alt="Tsumego Hero" title="Tsumego Hero" src="/img/tsumegoHero1.png" onmouseover="this.src='/img/tsumegoHero2.png'" onmouseout="this.src='/img/tsumegoHero1.png'" height="55px">
+				<?php //A phone shows the name as plain text, shorter than the logo ?>
+				<span class="site-logo-text">Tsumego</span>
 			</a>
 		</div>
 		<?php if (Auth::isLoggedIn()): ?>
