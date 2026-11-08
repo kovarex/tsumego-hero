@@ -2,6 +2,7 @@
 #threat counts the two disagree on. usage: ko_examples.py '<status results glob>' <problems.jsonl> <out.html>
 import glob, html, json, os, re, sys
 from check_tree import *
+from tsumego import add_wide
 from go_figure import figure, LETTERS
 
 def balance(sign):
@@ -25,6 +26,7 @@ for path in glob.glob(sys.argv[1]):
 
 groups = {'taken': [], 'threats': [], 'other': []}
 totals = {}
+unsettled = []
 PER_GROUP = int(os.environ.get('PER_GROUP', '5')) #the first few cases of each kind
 engine = Engine()
 for number, (sc, goal, line_text, authored, sign) in enumerate(sorted(cases, key=lambda c: (int(c[0]), c[2]))):
@@ -38,6 +40,10 @@ for number, (sc, goal, line_text, authored, sign) in enumerate(sorted(cases, key
     problem = Problem(root.board, focused_region(root.board, box, stones, tree_points))
     solver = Solver(engine, problem, attacker, stones, 200000)
     solver.solver_color = solver_color
+    #the lines come from the wider region, as the signs do
+    add_wide(solver, root.board, list(root.board.stones) + tree_points, stones, tree_points)
+    solver.wide.solver_color = solver_color
+    solver = solver.wide
     board, to_move, path = root.board.copy(), solver_color, []
     for text in line_text.split():
         p = (LETTERS.index(text[0]), size - int(text[1:]))
@@ -48,12 +54,17 @@ for number, (sc, goal, line_text, authored, sign) in enumerate(sorted(cases, key
     a, s = balance(authored), balance(sign)
     group = 'taken' if last_took_ko and a <= 0 < s else 'threats' if (a <= 0) == (s <= 0) else 'other'
     totals[group] = totals.get(group, 0) + 1
-    if len(groups[group]) >= PER_GROUP:
-        continue
     #the disputed balance: the solver wins there by one reading and loses by the other
     disputed = min(a, s)
     x, y = max(disputed, 0), max(-disputed, 0)
     wins, line = solver.counted_line(board, to_move, x, y)
+    if wins is None or wins != (s <= a):
+        #the wider region does not back the sign at the disputed balance: the sign is not settled, leave it out
+        unsettled.append((sc, line_text, authored, sign))
+        totals[group] -= 1
+        continue
+    if len(groups[group]) >= PER_GROUP:
+        continue #confirmed and counted, but not drawn
     while line and line[-1][1] is None:
         line.pop() #passes that only end the game
     points = list(root.board.stones) + [p for _, p in path] + [m[1] for m in line if m[1]]
@@ -85,6 +96,6 @@ for key in ('taken', 'threats', 'other'):
     if groups[key]:
         title, text = intro[key]
         body += '<h2>%s <span class="count">%d of %d shown</span></h2><p class="intro">%s</p>%s' % (title, len(groups[key]), totals[key], text, '\n'.join(groups[key]))
-page = style.replace('BODY', body).replace('TOTAL', str(len(cases)))
+page = style.replace('BODY', body).replace('TOTAL', str(sum(totals.values()))).replace('UNSETTLED', str(len(unsettled)))
 open(sys.argv[3], 'w').write(page)
-print(len(cases), 'cases', totals)
+print(len(cases), 'cases', totals, 'not settled by the wider region', len(unsettled))

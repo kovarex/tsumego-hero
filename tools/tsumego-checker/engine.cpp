@@ -849,6 +849,20 @@ bool bentFourEnd(const State& s)
   return result;
 }
 
+// Move ordering learned in earlier queries usually helps, but it can also send a search into endless cycling.
+// An undecided search gets one more try with fresh ordering, a new table generation and the same budget.
+Result retryFresh(State& s, int mode)
+{
+  memset(history, 0, sizeof(history));
+  ++generation;
+  long long spent = nodes;
+  nodes = 0;
+  aborted = false;
+  Result r = proofSearch(s, mode);
+  nodes += spent;
+  return r;
+}
+
 void parseBoard(const string& text, State& s)
 {
   for (int i = 0; i < NN; ++i)
@@ -954,6 +968,8 @@ int main()
       nodes = 0;
       aborted = false;
       Result r = proofSearch(s, MODE_N);
+      if (r.result == UNKNOWN)
+        r = retryFresh(s, MODE_N);
       cout << "result N=" << (r.result == KILL ? "K" : r.result == NOKILL ? "N" : "U") << " nodes=" << nodes << " best=" << r.best << endl;
     }
     else if (command == "solveplain")
@@ -999,6 +1015,8 @@ int main()
         aborted = false;
         Result r{UNKNOWN, false, -2};
         r = proofSearch(s, mode);
+        if (r.result == UNKNOWN)
+          r = retryFresh(s, mode);
         total += nodes;
         out[mode] = r.result == KILL ? "K" : r.result == NOKILL ? "N" : "U";
         bests[mode] = r.best;

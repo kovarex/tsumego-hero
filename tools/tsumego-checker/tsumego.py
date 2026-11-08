@@ -197,6 +197,8 @@ ENCLOSED_LIMIT = int(os.environ.get("ENCLOSED_LIMIT", "30"))
 DISTANCE = int(os.environ.get("REGION_DISTANCE", "1"))
 STATUS_DEAD, STATUS_KO, STATUS_ALIVE, STATUS_UNKNOWN = 'DEAD', 'KO', 'ALIVE', '?'
 STATUS_BENT4 = 'BENT4'
+#counted-threat searches are bigger than the plain ones: they get this many times the budget
+KO_BUDGET_FACTOR = int(os.environ.get('KO_BUDGET_FACTOR', '5'))
 
 def other_colour(color):
     return 'W' if color == 'B' else 'B'
@@ -290,7 +292,7 @@ class Solver:
         text = self.problem.board_text(board)
         ko = self.problem.index(board.ko) if board.ko else -1
         self.activate_engine()
-        answer = self.engine.command('solvecount %s %d %d %d %d %s' % (to_move, ko, self.budget, black, white, text))
+        answer = self.engine.command('solvecount %s %d %d %d %d %s' % (to_move, ko, self.budget * KO_BUDGET_FACTOR, black, white, text))
         fields = dict(item.split('=') for item in answer.split()[1:])
         self.nodes += int(fields['nodes'])
         self.last_best = self.problem.from_index(int(fields['best'])) if int(fields['best']) >= 0 else None
@@ -355,6 +357,11 @@ class Solver:
         #None when a search is undecided or the balance is beyond the limit.
         if Solver.deadline and time.time() > Solver.deadline:
             raise TimeoutError('problem time limit')
+        if self.wide is not None:
+            #who is ahead in a ko often turns on an approach move at the region's edge: the wider region decides
+            wide = self.wide.ko_sign(board, to_move, limit)
+            if wide is not None:
+                return wide
         even = self.solver_wins(board, to_move, 0, 0)
         if even is None:
             return None
