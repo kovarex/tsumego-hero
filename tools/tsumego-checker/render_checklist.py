@@ -104,7 +104,7 @@ for sc, title, goal, path_text, tree, solver, pv_text, kind in rows:
 </div>''' % (severity, what, html.escape(tree), html.escape(solver),
              figure(start, path, frame, 'Tree path, %s: the tree says %s here' % (first_name(path), tree) if kind.startswith('status') else
                     'Tree path, %s: %s' % (first_name(path), 'the last move is not in the tree' if kind == 'missing-correct-move' else 'the tree says ' + tree)),
-             figure(leaf, line, frame, "Solver's line from there, " + first_name(line) + (' (ko fight goes on)' if '…' in pv_text else '')))
+             figure(leaf, line, frame, "Solver's line from there, " + first_name(line) + (' (the line goes on)' if '…' in pv_text else '')))
     card = cards.setdefault(sc, {'title': title, 'goal': goal, 'findings': []})
     card['findings'].append(finding)
 

@@ -112,8 +112,8 @@ class Board:
         if p is None:
             self.ko = None
             return True
-        if p in self.stones:
-            return False
+        if p in self.stones or p == self.ko:
+            return False #occupied, or retaking a ko at once
         opponent = 'W' if color == 'B' else 'B'
         self.stones[p] = color
         captured = []

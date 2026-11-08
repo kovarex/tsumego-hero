@@ -37,7 +37,7 @@ for sc, r in sorted(records.items(), key=lambda kv: int(kv[0])):
         try:
             out = subprocess.run(['python3', 'line.py', sc, issue['line'], r['goal'], '300000'], capture_output=True, text=True, timeout=300).stdout.split('\n')[0]
             moves = out.split(':', 1)[1].replace('(status changed)', '').split()
-            pv = ', '.join(m[0] + ' ' + m[1:] for m in moves[:6]) + (', … (ko fight)' if len(moves) > 6 else '')
+            pv = ', '.join(m[0] + ' ' + m[1:] for m in moves[:6]) + (', …' if len(moves) > 6 else '')
         except Exception:
             pv = ''
         rows.append((sc, r['title'], r.get('goal', ''), coloured(issue['line']), tree, solver, pv, kind))
