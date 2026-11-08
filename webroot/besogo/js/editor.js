@@ -1,3 +1,6 @@
+//How long the opponent waits before its reply, so the player sees their own move first
+besogo.OPPONENT_REPLY_DELAY = 240;
+
 besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
   // Creates an associated game state tree
   var root = besogo.makeGameRoot(sizeX, sizeY),
@@ -299,15 +302,13 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
     reportIfLineIsLost(current);
 
     if (besogo.soundsEnabled && !reviewMode)
-      document.getElementsByTagName("audio")[0].play();
+      besogo.stoneSound.play();
     // Notify listeners of navigation (with no tree edits)
     notifyListeners({ navChange: true }, true); // Preserve history
 
-    //opponent move and end of variant
+    //opponent move and end of variant, its sound was played above
     if (besogo.isEmbedded && !current.hasNonLocalChildIncludingVirtual()) {
       besogo.soundsEnabled = soundsEnabled;
-      if (besogo.soundsEnabled && !reviewMode)
-        document.getElementsByTagName("audio")[0].play();
       tryToFinish(current);
     }
   }
@@ -527,7 +528,7 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
     if (besogo.isEmbedded) besogo.soundsEnabled = soundsEnabled;
 
     if (byClicking && besogo.soundsEnabled && !reviewMode)
-      document.getElementsByTagName("audio")[0].play();
+      besogo.stoneSound.play();
     current = node; // Navigate to child if found
     current.visited = true;
 	if (autoPlay &&
@@ -558,7 +559,7 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
             if (i + current.children.length !== selectOpponentMove)
               addToRequired(current.virtualChildren[i].target, current);
         nextNode(1, selectOpponentMove, true /* autoplay move*/);
-      }, 240);
+      }, besogo.OPPONENT_REPLY_DELAY);
     }
     notifyListeners({ navChange: true }); // Notify navigation (with no tree edits)
     reportIfLineIsLost(node);
@@ -658,7 +659,7 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
 
         if (besogo.isEmbedded) {
           if (besogo.soundsEnabled && !reviewMode)
-            document.getElementsByTagName("audio")[0].play();
+            besogo.stoneSound.play();
           tryToFinish(current);
         }
       }
@@ -794,6 +795,8 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
 
   function setAutoPlay(value) {
     autoPlay = value;
+    if (autoPlay)
+      besogo.stoneSound.load(); // so the first move's sound starts at once
   }
 
   function getReviewMode() {
@@ -802,6 +805,9 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
 
   function setReviewMode(value) {
     reviewMode = value;
+    //The opponent's reply still waiting doesn't come into the review
+    if (reviewMode)
+      pendingAutoPlay = null;
   }
 
   function getReviewEnabled() {
@@ -1297,3 +1303,72 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
     besogo.setStyle(".besogo-board", "margin", style.margin);
   }
 };
+
+//The stone sound, decoded once into a Web Audio buffer: each move starts its own copy at once, so a sound
+//never waits, cuts off the one before or is swallowed by it. Without Web Audio, a small pool of <audio> elements.
+besogo.stoneSound = (function ()
+{
+  const SOUND_PATH = "/sounds/newStone.ogg";
+  const POOL_SIZE = 4;
+  let context = null;
+  let buffer = null;
+  let pool = null;
+  let nextInPool = 0;
+  let loading = false;
+
+  function makePool()
+  {
+    pool = [];
+    for (let i = 0; i < POOL_SIZE; i++)
+    {
+      let audio = new Audio(SOUND_PATH);
+      audio.preload = "auto";
+      pool.push(audio);
+    }
+  }
+
+  function load()
+  {
+    if (loading || typeof window === "undefined")
+      return;
+    loading = true;
+    let AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContextClass || !window.fetch)
+    {
+      makePool();
+      return;
+    }
+    context = new AudioContextClass();
+    fetch(SOUND_PATH)
+      .then(response => response.arrayBuffer())
+      .then(data => new Promise((resolve, reject) => context.decodeAudioData(data, resolve, reject)))
+      .then(decoded => { buffer = decoded; })
+      .catch(() => { context = null; makePool(); });
+  }
+
+  function play()
+  {
+    load();
+    if (context && buffer)
+    {
+      //A browser starts the context suspended until the first click, which is the one playing this
+      if (context.state === "suspended")
+        context.resume();
+      let source = context.createBufferSource();
+      source.buffer = buffer;
+      source.connect(context.destination);
+      source.start();
+      return;
+    }
+    if (!pool)
+      makePool(); // the buffer is still loading: the first sound comes from an element
+    let audio = pool[nextInPool];
+    nextInPool = (nextInPool + 1) % POOL_SIZE;
+    audio.currentTime = 0;
+    let playing = audio.play();
+    if (playing)
+      playing.catch(() => {}); // a sound the browser refuses before the first click is just not heard
+  }
+
+  return { load: load, play: play };
+})();

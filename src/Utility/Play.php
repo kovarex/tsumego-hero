@@ -74,7 +74,8 @@ class Play
 					'rating' => Constants::$RATING_MODE,
 					'time' => Constants::$TIME_MODE,
 					'mistakeTraining' => Constants::$MISTAKE_TRAINING_MODE],
-				'userID' => Auth::getUserID(),
+				//null for a guest: the board's script tells a guest by it (no result sent, no favourite)
+				'userID' => Auth::isLoggedIn() ? Auth::getUserID() : null,
 				'isAdmin' => Auth::isAdmin(),
 				'canRequestSolution' => AdminPolicy::canRequestSolution(Auth::getIdentity()),
 				'accountBlocked' => $this->page['accountBlocked'],

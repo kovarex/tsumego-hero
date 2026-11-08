@@ -29,6 +29,15 @@ class TsumegosControllerTest extends IntegrationTestCase
 		$this->assertSame((int) $context->user['id'], $playPage['page']['userID']);
 	}
 
+	//A guest has no user ID in the page data, so the board's script doesn't send a result for them
+	//and shows no signed-in controls
+	public function testAGuestHasNoUserIDInThePlayPageData(): void
+	{
+		$context = new ContextPreparator(['user' => null, 'tsumego' => ['set_order' => 1]]);
+		$this->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		$this->assertNull($this->viewVariable('playPage')['page']['userID']);
+	}
+
 	public function testSetNameAndNumIsVisible()
 	{
 		foreach ([false, true] as $openBySetConnectionID)

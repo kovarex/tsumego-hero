@@ -101,7 +101,8 @@ class BoardSelector
 		return self::getBoardInfo($indexes[array_rand($indexes)]);
 	}
 
-	public static int $DEFAULT_BOARDS_BITMASK = 0b11111111;
+	//One board (Pine) until the player picks more, so the board doesn't change from problem to problem
+	public static int $DEFAULT_BOARDS_BITMASK = 0b1;
 
 	//The boards the player picked: an account keeps them in its settings, a guest in the cookie of the board menu
 	public static function playerBitmask(): int
