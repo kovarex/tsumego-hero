@@ -423,6 +423,28 @@ input.newCheck {
   width: 15px;
   height: 15px;
 }
+/* The cells of one board in the board picker (BoardSelector.js): its checkbox, its preview and its name */
+#dropdowntable .board-picker__check {
+  width: 19px;
+  text-align: -moz-right;
+  text-align: -webkit-right;
+  position: relative;
+  top: 1px;
+  padding: 4px;
+}
+#dropdowntable .board-picker__preview {
+  width: 19px;
+  text-align: -moz-center;
+  text-align: -webkit-center;
+  position: relative;
+  top: 3px;
+  padding: 2px;
+}
+#dropdowntable .board-picker__name {
+  width: 115px;
+  padding: 0;
+  text-align: left;
+}
 /* The board choice is a page of its own opened from the menu, so it is set in
    the page face rather than the menu's. */
 #dropdowntable,

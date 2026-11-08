@@ -74,13 +74,13 @@ class BoardSelector
 
 		BoardSelector.boards.forEach(board => {
 			const checked = this.isChecked(board.index) ? "checked" : "";
-			html += `<td width="19px" align="right" style="position:relative;top:1px;padding:4px;">
+			html += `<td class="board-picker__check">
 						<input type="checkbox" class="newCheck" id="newCheck${board.index}" ${checked} onclick="boardSelector.selectAndSave(${board.index}, this.checked);">
 					</td>
-					<td width="19px" align="center" style="position:relative;top:3px;padding:2px;">
+					<td class="board-picker__preview">
 						<div class="img-${board.index}small"></div>
 					</td>
-					<td width="115px" style="padding:0px;text-align:left;">${board.name}</td>`;
+					<td class="board-picker__name">${board.name}</td>`;
 			count++;
 			if (count % 4 === 0)
 				html += "</tr><tr>";
