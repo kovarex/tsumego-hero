@@ -445,9 +445,14 @@ int terminalUncached(const State& s)
     // ko threats first and then starts the ko
     if (bentFourRule && searchMode == MODE_A && bentFourEnd(s))
       return KILL;
-    // the game ends: a target chain still in atari is taken at the end, the defender has no threats left to retake
-    // a ko it can never turn into life, so only a group no stone of which can be taken (seki or life) survives
+    // the game ends: a defender chain still in atari (a target chain, or a stone the defender's eye shape depends on,
+    // like a ko stone making a false eye) is taken at the end, and the defender has no threats left to retake. So
+    // unless the target is unconditionally alive, only a group where nothing can be taken (seki or life) survives
+    bensonAlive(s);
     for (int p : target)
+      if (s.c[p] == defender && alive[p])
+        return NOKILL;
+    for (int p : active)
       if (s.c[p] == defender && chain(s, p, nullptr, 2) == 1)
         return KILL;
     return NOKILL;
