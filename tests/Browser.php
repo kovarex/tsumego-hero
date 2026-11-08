@@ -774,7 +774,7 @@ class Browser
 	public function clickBoard($x, $y)
 	{
 		$boardSize = $this->waitForBoard();
-		$clickableRects = $this->getElements('rect');
+		$clickableRects = $this->getElements('.besogo-board rect'); //the board's own, the review's tree has rectangles too
 		$corner = $this->driver->executeScript('return window.besogo.boardParameters["corner"];');
 		if ($corner == 'top-right' || $corner == 'bottom-right')
 			$x = $boardSize - $x + 1;

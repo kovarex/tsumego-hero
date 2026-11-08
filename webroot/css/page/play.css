@@ -571,7 +571,7 @@ h1 {
    actions and what they open. On a phone the panel goes under the board column. */
 .play-screen {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 380px;
+  grid-template-columns: minmax(0, 1fr) 430px;
   align-items: stretch;
   min-height: 700px;
   text-align: left;
@@ -591,6 +591,7 @@ h1 {
 }
 .play-screen__main .besogo-board {
   width: 100% !important;
+  margin: 0 auto !important;
 }
 .play-screen__panel {
   grid-column: 2;
@@ -798,6 +799,16 @@ h1 {
   width: auto;
   margin: var(--space-1) 0 0;
   text-align: left;
+}
+
+/* The tree of the review, moved here from beside the board; Review shows it (besogo sets display) */
+.play-screen__panel > .besogo-panels {
+  display: none;
+  margin-top: var(--space-2);
+}
+/* The review moves by a click on the tree or on the board, so it shows no step buttons */
+.play-screen__panel > .besogo-panels .besogo-control {
+  display: none;
 }
 
 /* The hero powers open over the panel from their button */

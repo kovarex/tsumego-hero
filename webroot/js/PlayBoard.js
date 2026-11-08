@@ -212,8 +212,8 @@ redrawHearts();
 //The buttons besogo makes under the board go where the page shows them (Tsumegos/play.php): Back, Reset
 //and Review join the actions; Next goes to the row of the messages in the level mode and the training,
 //where it shows once the problem is solved (play-message--solved), and stays with the actions in the
-//other modes, where it skips; the board's own settings (corner, rotation, colours, favourite, author)
-//go to the info of the problem. They keep their ids, which the page's code renames as the state changes.
+//other modes, where it skips; the review's tree goes under the actions; the board's own settings
+//(corner, rotation, colours, favourite, author) go to the info of the problem. They keep their ids, which the page's code renames as the state changes.
 (function arrangePlayControls()
 {
 	let row = document.querySelector(".besogo-tsumegoPlayTool");
@@ -251,6 +251,10 @@ redrawHearts();
 	}
 	if (problemSolved && message)
 		message.classList.add("play-message--solved");
+	//The review's tree goes to the panel too, where it shows beside the board with the comments under it
+	let reviewPanels = document.querySelector("#target .besogo-panels");
+	if (reviewPanels)
+		actions.after(reviewPanels);
 	let settings = document.getElementById("boardSettings");
 	if (settings)
 		while (row.firstChild)

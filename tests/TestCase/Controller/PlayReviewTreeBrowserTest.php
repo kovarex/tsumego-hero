@@ -23,11 +23,10 @@ class PlayReviewTreeBrowserTest extends IntegrationTestCase
 		return $browser->driver->executeScript(<<<'JS'
 			const rect = (element) => { const box = element.getBoundingClientRect(); return {top: box.top, bottom: box.bottom, left: box.left, right: box.right}; };
 			const tree = document.querySelector('.besogo-tree');
-			const buttons = document.querySelector('.besogo-control');
 			return {
 				tree: rect(tree),
 				treeScroll: {top: tree.scrollTop, height: tree.scrollHeight, clientHeight: tree.clientHeight, width: tree.scrollWidth, clientWidth: tree.clientWidth, horizontalBar: tree.offsetHeight - tree.clientHeight},
-				buttons: rect(buttons),
+				buttonsShown: document.querySelector('.besogo-control').checkVisibility(),
 				viewportHeight: window.innerHeight,
 				pageScroll: window.scrollY};
 			JS);
@@ -61,9 +60,10 @@ class PlayReviewTreeBrowserTest extends IntegrationTestCase
 		}
 	}
 
-	//The tree scrolls in its own box both ways, so its horizontal scrollbar and the back/forward buttons
-	//under it are on screen at once, wherever the tree is scrolled to.
-	public function testBigTreeScrollsInsideItsBoxWithButtonsVisible(): void
+	//The tree scrolls in its own box both ways, so its horizontal scrollbar is on screen wherever the tree is
+	//scrolled to. The play page shows no back/forward buttons under it: the review moves by a click on the
+	//tree or on the board.
+	public function testBigTreeScrollsInsideItsBoxWithoutButtons(): void
 	{
 		$context = new ContextPreparator(['tsumego' => ['set_order' => 1, 'status' => 'S', 'sgf' => self::bigTreeSgf()]]);
 		$browser = Browser::instance();
@@ -84,15 +84,13 @@ class PlayReviewTreeBrowserTest extends IntegrationTestCase
 				$this->assertGreaterThan($scroll['clientWidth'], $scroll['width'], 'The tree overflows horizontally');
 				$this->assertGreaterThan(0, $scroll['horizontalBar'], 'The tree box has its own horizontal scrollbar');
 				$this->assertLessThanOrEqual($before['viewportHeight'], $before['tree']['bottom'], 'The whole tree box, with its horizontal scrollbar, is on screen');
-				$this->assertGreaterThanOrEqual($before['tree']['bottom'], $before['buttons']['top'], 'The buttons are under the tree box, not in it');
-				$this->assertLessThanOrEqual($before['viewportHeight'], $before['buttons']['bottom'], 'The buttons are on screen');
+				$this->assertFalse($before['buttonsShown'], 'The review has no back/forward buttons');
 
 				$browser->driver->executeScript('document.querySelector(".besogo-tree").scrollTop = 1000000;');
 				$after = $this->rectangles($browser);
 				$this->assertGreaterThan(0, $after['treeScroll']['top'], 'The tree box scrolled');
 				$this->assertSame($before['pageScroll'], $after['pageScroll'], 'Scrolling the tree does not scroll the page');
 				$this->assertEquals($before['tree'], $after['tree'], 'Scrolling the tree does not move its box');
-				$this->assertEquals($before['buttons'], $after['buttons'], 'Scrolling the tree does not move the buttons');
 			}
 			$browser->assertNoJsErrors();
 		}
