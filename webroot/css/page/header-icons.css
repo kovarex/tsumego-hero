@@ -37,6 +37,27 @@
 	fill: currentColor;
 }
 
+/* The hearts: a heart with the number left under it, as the streak shows its days */
+.header-icons__hearts
+{
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	width: 32px;
+	color: var(--color-red);
+	font-family: var(--font-family-account);
+	font-size: var(--text-sm);
+	font-weight: var(--weight-bold);
+	line-height: 1;
+	cursor: default;
+}
+
+.header-icons__count
+{
+	margin-top: 2px;
+	color: var(--color-white);
+}
+
 /* The count, on the top right corner of the icon */
 .header-icons__badge
 {
@@ -92,6 +113,12 @@
 		align-items: center;
 		gap: 14px;
 		margin: 0 14px 0 auto;
+	}
+
+	/* A phone has no room for the hearts in the bar; the play page shows them under the board */
+	.header-icons__hearts
+	{
+		display: none;
 	}
 
 	/* The icons push the row to the right instead of the flame */

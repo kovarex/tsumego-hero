@@ -339,6 +339,7 @@ besogo.makeToolPanel = function (container, editor) {
 				toggleBoardLock(false);
 				besogo.editor.setReviewMode(false);
 				document.getElementById("status").innerHTML = "";
+				document.querySelector(".play-message")?.classList.remove("play-message--failed");
 				document.getElementById("theComment").style.cssText = "display:none;";
 				let customAlerts = document.getElementById("customAlerts");
 				if (customAlerts && getComputedStyle(customAlerts).display !== "none")
@@ -554,6 +555,7 @@ besogo.makeToolPanel = function (container, editor) {
             // mode: preserve the node the user navigated to so they don't lose
             // their place in the tree.
             document.getElementById("status").innerHTML = "";
+            document.querySelector(".play-message")?.classList.remove("play-message--failed");
             besogo.editor.notifyListeners({
               treeChange: true,
               navChange: true,

@@ -277,7 +277,9 @@ li a.menuLi.nav__link--active {
   text-decoration: none;
   white-space: nowrap;
 }
+/* A click on the bar switches it between the level and the rank (AccountWidget.js) */
 #xp-bar {
+  cursor: pointer;
   position: absolute;
   left: 0;
   top: 23px;

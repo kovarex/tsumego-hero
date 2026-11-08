@@ -160,6 +160,11 @@ function redrawHearts()
 	var counter = document.getElementById("health-counter");
 	if (counter)
 		counter.textContent = currentHealth + " / " + maxHealth;
+	//The hearts in the menu bar (header_icons.php)
+	document.querySelectorAll("[data-health-counter]").forEach(count => count.textContent = currentHealth);
+	let hearts = document.getElementById("header-hearts");
+	if (hearts)
+		hearts.title = "Hearts: " + currentHealth + " of " + maxHealth;
 }
 redrawHearts();
 
@@ -188,7 +193,8 @@ redrawHearts();
 	options.rootPath = '/besogo/';
 	options.theme = playPage.problem.board.texture;
 	options.themeParameters = [playPage.problem.board.black, playPage.problem.board.white];
-	options.coord = 'western';
+	//No coordinates while solving, the board gets their room; they show while the comments are open (PlayPage.js)
+	options.coord = 'none';
 	options.sgf = '/placeholder.sgf';
 	options.sgf2 = playPage.problem.sgf;
 	options.light = playPage.page.light;
@@ -202,3 +208,52 @@ redrawHearts();
 	options.reviewEnabled = mode != playPage.page.modes.time && (playPage.problem.solved || playPage.problem.requestSolution || authorProblem);
 	besogo.create(div, options);
 })();
+
+//The buttons besogo makes under the board go where the page shows them (Tsumegos/play.php): Back, Reset
+//and Review join the actions; Next goes to the row of the messages in the level mode and the training,
+//where it shows once the problem is solved (play-message--solved), and stays with the actions in the
+//other modes, where it skips; the board's own settings (corner, rotation, colours, favourite, author)
+//go to the info of the problem. They keep their ids, which the page's code renames as the state changes.
+(function arrangePlayControls()
+{
+	let row = document.querySelector(".besogo-tsumegoPlayTool");
+	let actions = document.querySelector(".play-actions");
+	if (!row || !actions)
+		return;
+	let end = document.createElement("span");
+	end.className = "play-actions__end";
+	actions.appendChild(end);
+	let nextInMessages = mode == playPage.page.modes.level || mode == playPage.page.modes.mistakeTraining;
+	let message = document.querySelector(".play-message");
+	for (let id of ["besogo-pass-button", "besogo-back-button", "besogo-back-button-inactive", "history-button", "besogo-reset-button",
+		"besogo-reset-button-inactive", "besogo-review-button", "besogo-review-button-inactive", "besogo-next-button", "besogo-next-button-inactive"])
+	{
+		let button = row.querySelector("#" + id);
+		if (!button)
+			continue;
+		if (id.startsWith("besogo-next-button") && nextInMessages && message)
+			message.appendChild(button);
+		else
+			end.appendChild(button);
+	}
+	//Back and Reset are short symbols, so the actions fit in one row; what they do is in their titles
+	let back = end.querySelector("#besogo-back-button, #besogo-back-button-inactive");
+	if (back)
+	{
+		back.textContent = "\u2039";
+		back.setAttribute("aria-label", "Back");
+	}
+	let reset = end.querySelector("#besogo-reset-button, #besogo-reset-button-inactive");
+	if (reset && reset.tagName === "INPUT")
+	{
+		reset.value = "\u21BA";
+		reset.setAttribute("aria-label", "Reset");
+	}
+	if (problemSolved && message)
+		message.classList.add("play-message--solved");
+	let settings = document.getElementById("boardSettings");
+	if (settings)
+		while (row.firstChild)
+			settings.appendChild(row.firstChild);
+})();
+

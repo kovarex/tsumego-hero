@@ -74,9 +74,12 @@ document.querySelectorAll("[data-toggle]").forEach(toggle => toggle.addEventList
 	toggle.dataset.open = open ? "1" : "";
 	Display[open ? "fadeIn" : "fadeOut"](document.getElementById(toggle.dataset.toggle), 250);
 	toggle.querySelectorAll(".toggle-arrow").forEach(arrow => arrow.setAttribute("src", open ? "/img/greyArrow2.png" : "/img/greyArrow1.png"));
-	//More that tells of comments or open issues opens them too (CommentSection listens)
+	//The comments name points by their coordinates, so the board shows them while the comments are open
+	if (toggle.id === "commentsToggle" && typeof besogo !== "undefined" && besogo.editor)
+		besogo.editor.setCoordStyle(open ? "western" : "none");
+	//The comments button that tells of comments or open issues opens them too (CommentSection listens)
 	let summary = document.getElementById("moreCommentSummary");
-	if (open && toggle.id === "editToggle" && summary && getComputedStyle(summary).visibility === "visible")
+	if (open && toggle.id === "commentsToggle" && summary && getComputedStyle(summary).visibility === "visible")
 		window.dispatchEvent(new Event("comments-open"));
 }));
 
@@ -234,6 +237,7 @@ function rejuvenation(){
 		locked = false;
 		toggleBoardLock(false);
 		document.getElementById("status").innerHTML = '';
+		document.querySelector(".play-message")?.classList.remove("play-message--failed");
 		document.querySelectorAll(".besogo-board").forEach(board => board.classList.remove("besogo-board-red-glow"));
 		var resetBtn = document.getElementById("besogo-reset-button-inactive");
 		if (resetBtn) { resetBtn.id = "besogo-reset-button"; resetBtn.onclick = function() { window.location.reload(); }; }
@@ -609,6 +613,7 @@ function displayResult(result)
 		}
 		updateCurrentNavigationButton('S');
 		document.getElementById("status").innerHTML = "<h2>Correct!</h2>";
+		document.querySelector(".play-message")?.classList.add("play-message--solved");
 		let glow = light ? "0 2px 14px 0 rgba(67, 255, 40, 0.7), 0 6px 20px 0 rgba(0, 0, 0, 0.2)" : "0 2px 14px 0 rgba(67, 255, 40, 0.7), 0 6px 20px 0 rgba(80, 255, 0, 0.2)";
 		document.querySelectorAll(".besogo-board").forEach(board => board.style.boxShadow = glow);
 		enableReview();
@@ -617,6 +622,13 @@ function displayResult(result)
 		let summary = document.getElementById("moreCommentSummary");
 		if (summary)
 			summary.style.visibility = "visible";
+		let commentsToggle = document.getElementById("commentsToggle");
+		if (commentsToggle)
+		{
+			commentsToggle.classList.remove("play-actions__button--disabled");
+			commentsToggle.removeAttribute("aria-disabled");
+			commentsToggle.title = "Comments";
+		}
 
 		if (mode == playPage.page.modes.time)
 			setCountdownColor(playGreenColor);
@@ -642,6 +654,7 @@ function displayResult(result)
 		{
 			document.getElementById("status").style.color = "var(--feedback-error)";
 			document.getElementById("status").innerHTML = "<h2>Incorrect!</h2>";
+			document.querySelector(".play-message")?.classList.add("play-message--failed");
 			document.querySelectorAll(".besogo-board").forEach(board => board.classList.add("besogo-board-red-glow"));
 			if (mode==3)
 			{
@@ -654,6 +667,7 @@ function displayResult(result)
 				// The board locks, but the problem stays in today's training until it is solved
 				toggleBoardLock(true);
 				document.getElementById("status").innerHTML = '<h2>Incorrect!</h2><p class="mistake-training-note">Press Reset to try again.</p>';
+				document.querySelector(".play-message")?.classList.add("play-message--failed");
 			}
 			if (!noXP)
 			{
@@ -686,6 +700,7 @@ function displayResult(result)
 		{//mode 2 incorrect
 			document.getElementById("status").style.color = "var(--feedback-error)";
 			document.getElementById("status").innerHTML = "<h2>Incorrect!</h2>";
+			document.querySelector(".play-message")?.classList.add("play-message--failed");
 			document.querySelectorAll(".besogo-board").forEach(board => board.classList.add("besogo-board-red-glow"));
 			if (!noXP)
 				freePlayMode = true;

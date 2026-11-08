@@ -284,8 +284,27 @@ class Browser
 
 	public function clickId($id)
 	{
-		$this->findById($id)->click();
+		$element = $this->findById($id);
+		$this->openPlayPanelOf($id);
+		$element->click();
 		$this->assertNoErrors();
+	}
+
+	//On the play page the hero powers and the info of the problem (the board's settings among it)
+	//are behind their buttons, as a player reaches them: an element in a closed one opens it first.
+	public function openPlayPanelOf(string $id): void
+	{
+		$toggle = $this->driver->executeScript(<<<'JS'
+			const element = document.getElementById(arguments[0]);
+			const panel = element?.closest('#heroPowersTray, #editSection');
+			if (!panel || getComputedStyle(panel).display !== 'none')
+				return null;
+			return document.querySelector('[data-toggle="' + panel.id + '"]')?.id ?? null;
+			JS, [$id]);
+		if ($toggle === null)
+			return;
+		$this->findById($toggle)->click();
+		$this->waitUntilJs('getComputedStyle(document.getElementById(' . json_encode($id) . ')).visibility !== "hidden" && document.getElementById(' . json_encode($id) . ').checkVisibility()');
 	}
 
 	//Opens the section of the play page with what an admin edits or a player proposes (Edit /
@@ -831,8 +850,12 @@ class Browser
 	//On the play page the comments are in More, which is opened first.
 	public function expandComments()
 	{
-		if ($this->idExists('editToggle'))
-			$this->openPlayEditSection();
+		//The comments of the play page open from their own button
+		if ($this->idExists('commentsToggle') && !$this->driver->executeScript('return document.getElementById("commentsToggle").dataset.open === "1";'))
+		{
+			$this->clickId('commentsToggle');
+			$this->waitUntilCssSelectorDisplayed('#commentsPanel');
+		}
 		//Opening More opens the COMMENTS tab already when it holds something; a click on the active tab
 		//would close it again
 		$tab = $this->find('.tsumego-comments__tab[data-filter="open"]', 5);

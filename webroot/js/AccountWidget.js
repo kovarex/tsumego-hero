@@ -54,6 +54,8 @@ class AccountWidget
 		}
 		this.modeSelector.addEventListener('click', () => this.switchBarInMenu());
 		this.textBarInMenu?.addEventListener('click', () => this.switchBarInMenu());
+		//A click on the bar itself switches it between the level and the rank too
+		document.getElementById('xp-bar')?.addEventListener('click', () => this.switchBarInMenu());
 
 		this.bar.style.boxShadow = "";
 		window.addEventListener('pagehide', () => AccountWidget.markUnshownResultLeft());

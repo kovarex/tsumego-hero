@@ -22,13 +22,12 @@ class TsumegoXPAndRating
 		$this->failsInARow = Auth::isLoggedIn() ? TsumegoAttemptTable::failsInARow(TsumegoAttemptTable::findLast((int) Auth::getUserID(), $tsumego->id)) : 0;
 	}
 
+	//The stake of the problem, on the line of its goal: the XP and the rating a solve brings or a
+	//fail costs (filled by webroot/js/XPStatus.js), the countdown of the time mode, and the rank of
+	//the problem
 	public function render(): void
 	{
-		echo '<div class="legacy-center" id="xpDisplayDiv">
-		<table class="xpDisplayTable">
-			<tr>
-			<td class="xpDisplayTable__third">';
-		echo '
+		echo '<div id="xpDisplayDiv" class="play-stake">
 	<div id="xpDisplay">
 		<span id="xpDisplayText"></span>
 		<span id="ratingHeader"></span>
@@ -37,20 +36,19 @@ class TsumegoXPAndRating
 	</div>';
 		if (Auth::isInTimeMode())
 			echo '<div id="time-mode-countdown">10.0</div><div id="plus2">+2</div>';
-		echo '</td>
-			<td class="xpDisplayTable__third">
-				<div id="status" class="legacy-center"></div>
-			</td>
-			<td class="xpDisplayTable__third">
-				<div id="status2" class="legacy-center">
-				<span class="status-rating">
-				' . Rating::getReadableRankFromRating($this->tsumegoRating) . ' <span class="status-rating__number">(' . $this->tsumegoRating . ')</span>
-				</span>
-				</div>
-			</td>
-			</tr>
-		</table>
-	</div>';
+		echo '<div id="status2">
+		<span class="status-rating">
+		' . Rating::getReadableRankFromRating($this->tsumegoRating) . ' <span class="status-rating__number">(' . $this->tsumegoRating . ')</span>
+		</span>
+	</div>
+</div>';
+	}
+
+	//The one place of the messages of the problem, right above the board: Correct!, Incorrect!, the lock
+	//of a problem failed today
+	public function renderStatus(): void
+	{
+		echo '<div id="status" class="play-message__status" role="status" aria-live="polite"></div>';
 	}
 
 	//What the page's XPStatus (webroot/js/XPStatus.js) needs to show the reward of a solve, null when

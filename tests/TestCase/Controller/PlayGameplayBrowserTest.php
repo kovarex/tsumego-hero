@@ -136,6 +136,8 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 			$browser->find('#besogo-next-button')->getAttribute('href'),
 			'The next button points at the following problem');
 
+		$this->assertFalse($browser->find('#besogo-next-button')->isDisplayed(), 'Next shows only once the problem is solved');
+		$browser->driver->executeScript("document.querySelector('.play-message').classList.add('play-message--solved');");
 		$browser->clickId('besogo-next-button');
 		$browser->waitUntilJs('location.href.includes("' . $urls[2] . '")');
 		$this->waitForBoard($browser);
