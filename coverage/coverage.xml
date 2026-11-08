@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1794098172">
-  <project timestamp="1794098172">
+<coverage generated="1794099811">
+  <project timestamp="1794099811">
     <package name="App">
       <file name="/home/runner/work/tsumego-hero/tsumego-hero/src/Application.php">
         <class name="App\Application" namespace="App">
@@ -8207,7 +8207,7 @@
         <line num="181" type="method" name="isValidTimeZone" visibility="public" complexity="5" crap="5" count="1593"/>
         <line num="183" type="stmt" count="1593"/>
         <line num="184" type="stmt" count="1466"/>
-        <line num="187" type="stmt" count="369"/>
+        <line num="187" type="stmt" count="368"/>
         <line num="189" type="stmt" count="3"/>
         <line num="191" type="stmt" count="3"/>
         <line num="202" type="method" name="timeZoneChange" visibility="public" complexity="3" crap="3" count="1582"/>
@@ -8917,19 +8917,19 @@
         <line num="277" type="stmt" count="71"/>
         <line num="278" type="stmt" count="71"/>
         <line num="279" type="stmt" count="71"/>
-        <line num="280" type="stmt" count="20"/>
-        <line num="281" type="stmt" count="53"/>
-        <line num="282" type="stmt" count="53"/>
-        <line num="283" type="stmt" count="53"/>
-        <line num="284" type="stmt" count="53"/>
-        <line num="285" type="stmt" count="53"/>
-        <line num="286" type="stmt" count="20"/>
-        <line num="287" type="stmt" count="53"/>
-        <line num="288" type="stmt" count="53"/>
-        <line num="289" type="stmt" count="53"/>
-        <line num="290" type="stmt" count="53"/>
-        <line num="291" type="stmt" count="53"/>
-        <line num="292" type="stmt" count="53"/>
+        <line num="280" type="stmt" count="36"/>
+        <line num="281" type="stmt" count="40"/>
+        <line num="282" type="stmt" count="40"/>
+        <line num="283" type="stmt" count="40"/>
+        <line num="284" type="stmt" count="40"/>
+        <line num="285" type="stmt" count="40"/>
+        <line num="286" type="stmt" count="12"/>
+        <line num="287" type="stmt" count="40"/>
+        <line num="288" type="stmt" count="40"/>
+        <line num="289" type="stmt" count="40"/>
+        <line num="290" type="stmt" count="40"/>
+        <line num="291" type="stmt" count="40"/>
+        <line num="292" type="stmt" count="40"/>
         <line num="302" type="method" name="awardXp" visibility="public" complexity="6" crap="6" count="24"/>
         <line num="304" type="stmt" count="24"/>
         <line num="305" type="stmt" count="24"/>
@@ -9049,10 +9049,10 @@
         <line num="541" type="stmt" count="50"/>
         <line num="542" type="stmt" count="50"/>
         <line num="543" type="stmt" count="50"/>
-        <line num="544" type="stmt" count="3"/>
+        <line num="544" type="stmt" count="1"/>
         <line num="548" type="stmt" count="50"/>
-        <line num="549" type="stmt" count="5"/>
-        <line num="550" type="stmt" count="5"/>
+        <line num="549" type="stmt" count="3"/>
+        <line num="550" type="stmt" count="3"/>
         <line num="551" type="stmt" count="50"/>
         <line num="553" type="stmt" count="50"/>
         <line num="554" type="stmt" count="50"/>
@@ -9485,11 +9485,11 @@
         <line num="327" type="stmt" count="368"/>
         <line num="328" type="stmt" count="368"/>
         <line num="329" type="stmt" count="368"/>
-        <line num="332" type="method" name="swapColorWords" visibility="public" complexity="1" crap="1" count="51"/>
-        <line num="334" type="stmt" count="51"/>
-        <line num="335" type="stmt" count="51"/>
-        <line num="336" type="stmt" count="51"/>
-        <line num="337" type="stmt" count="51"/>
+        <line num="332" type="method" name="swapColorWords" visibility="public" complexity="1" crap="1" count="61"/>
+        <line num="334" type="stmt" count="61"/>
+        <line num="335" type="stmt" count="61"/>
+        <line num="336" type="stmt" count="61"/>
+        <line num="337" type="stmt" count="61"/>
         <line num="342" type="method" name="tsumegoStatus" visibility="private" complexity="5" crap="5" count="370"/>
         <line num="344" type="stmt" count="370"/>
         <line num="345" type="stmt" count="8"/>
@@ -11917,7 +11917,7 @@
         <line num="241" type="stmt" count="315"/>
         <line num="242" type="stmt" count="42"/>
         <line num="243" type="stmt" count="315"/>
-        <line num="244" type="stmt" count="64"/>
+        <line num="244" type="stmt" count="63"/>
         <line num="245" type="stmt" count="315"/>
         <line num="246" type="stmt" count="315"/>
         <line num="247" type="stmt" count="315"/>
