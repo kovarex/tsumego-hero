@@ -723,6 +723,8 @@ h1 {
   flex: 1;
   min-width: 0;
   container-type: inline-size;
+  /* the hearts stack over each other (z-index) inside the row only, under the menus of the page */
+  isolation: isolate;
 }
 #health .play-player__hearts img {
   display: block;
