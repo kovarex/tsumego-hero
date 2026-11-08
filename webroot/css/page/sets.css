@@ -230,7 +230,8 @@
 }
 .active-tiles-container {
   margin-left: var(--space-5);
-  width: 100%;
+  /* The width left after the margin: 100% and the margin made it wider than the page */
+  width: calc(100% - var(--space-5));
 }
 .tiles-view {
   margin: 0;
@@ -683,6 +684,7 @@
 	}
 	.active-tiles-container {
 		margin-left: var(--space-3);
+		width: calc(100% - var(--space-3));
 	}
 	.set-index {
 		padding: 0 var(--space-3);

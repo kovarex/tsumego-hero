@@ -323,6 +323,8 @@ h1 {
   position: relative;
   top: -48px;
   left: 75px;
+  /* As wide as its text: a full-width block moved 75px right stuck out of the rank button */
+  width: fit-content;
   color: var(--color-white);
   font-weight: 800;
   font-size: 15px;
