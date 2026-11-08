@@ -239,10 +239,42 @@ redrawHearts();
 	//The review's tree goes to the panel too, where it shows beside the board with the comments under it
 	let reviewPanels = document.querySelector("#target .besogo-panels");
 	if (reviewPanels)
+	{
 		actions.after(reviewPanels);
+		fitReviewTree(reviewPanels);
+	}
 	let settings = document.getElementById("boardSettings");
 	if (settings)
 		while (row.firstChild)
 			settings.appendChild(row.firstChild);
 })();
 
+//On a PC, while the comments are closed, the tree of the review takes the height of the panel down to the bottom
+//of the board, so a big tree has room and the page gets no taller; with the comments open it keeps its
+//usual height (play.css) and shares the panel with them
+function fitReviewTree(reviewPanels)
+{
+	let tree = reviewPanels.querySelector(".besogo-tree");
+	let comments = document.getElementById("commentsPanel");
+	if (!tree)
+		return;
+	let fit = () =>
+	{
+		let board = document.querySelector(".play-screen__main .besogo-board");
+		let open = getComputedStyle(reviewPanels).display !== "none";
+		let commentsOpen = comments && getComputedStyle(comments).display !== "none";
+		if (!open || commentsOpen || !board || !window.matchMedia("(width >= 64rem)").matches)
+		{
+			tree.style.removeProperty("--tree-height");
+			return;
+		}
+		let height = Math.floor(board.getBoundingClientRect().bottom - tree.getBoundingClientRect().top);
+		tree.style.setProperty("--tree-height", height + "px");
+	};
+	let observer = new MutationObserver(fit);
+	observer.observe(reviewPanels, { attributes: true, attributeFilter: ["style"] });
+	if (comments)
+		observer.observe(comments, { attributes: true, attributeFilter: ["style"] });
+	window.addEventListener("resize", fit);
+	fit();
+}
