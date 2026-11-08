@@ -997,6 +997,31 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 		$this->assertStringContainsString('White to play', $comment->getText());
 	}
 
+	//Browser test: the hint follows the board's colours, both when the page opens inverted and when the player swaps them.
+	public function testHintFollowsColorSwap(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['player_color_setting' => UserTable::PLAYER_COLOR_SETTING_ORIGINAL],
+			'tsumego' => [
+				'set_order' => 1,
+				'description' => 'Black to kill.',
+				'hint' => 'Kill before White can.',
+				'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19];B[aa];W[ab];B[ba]C[+])',
+			],
+		]);
+
+		$browser = Browser::instance();
+		$browser->get($context->tsumegos[0]['set-connections'][0]['id'] . '?playercolor=white');
+		$browser->waitUntilJs('typeof besogo !== "undefined" && document.getElementById("colorOrientation") !== null');
+
+		$this->assertSame('White to kill.', $browser->find('#descriptionText')->getText());
+		$this->assertSame('(Kill before Black can.)', $browser->find('#hintText')->getText());
+
+		$browser->driver->executeScript("document.getElementById('colorOrientation').click();");
+		$this->assertSame('Black to kill.', $browser->find('#descriptionText')->getText());
+		$this->assertSame('(Kill before White can.)', $browser->find('#hintText')->getText());
+	}
+
 	//Keeps the requests that record a solve inside the browser, so the problem that was
 	//just played is still unrecorded while the player moves on, the way a slow request does.
 	private function holdSolveResultsInTheBrowser(Browser $browser): void
