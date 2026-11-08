@@ -35,11 +35,11 @@ class HighscoreHelper extends AppHelper
 
 		// Header row
 		$html .= '<tr>';
-		$html .= '<th class="highscore-table__place">Place</th>';
-		$html .= '<th class="highscore-table__name legacy-left">Name</th>';
-		$html .= '<th class="highscore-table__premium">Premium</th>';
+		$html .= '<th class="highscore-table__place data-table__num">Place</th>';
+		$html .= '<th class="highscore-table__name data-table__name legacy-left">Name</th>';
+		$html .= '<th class="highscore-table__premium data-table__optional">Premium</th>';
 		foreach ($valueColumns as $col)
-			$html .= '<th>' . $col['label'] . '</th>';
+			$html .= '<th class="data-table__num">' . $col['label'] . '</th>';
 
 		$html .= '</tr>';
 
@@ -75,11 +75,11 @@ class HighscoreHelper extends AppHelper
 			$name = UserTable::renderLink($row);
 
 			$html .= '<tr class="' . trim($selfClass . $medalClass) . '">';
-			$html .= '<td class="legacy-center">#' . $pos . '</td>';
-			$html .= '<td class="legacy-left">' . $name . '</td>';
-			$html .= '<td class="legacy-center">' . UserTable::renderPremium($row) . '</td>';
+			$html .= '<td class="legacy-center data-table__num">#' . $pos . '</td>';
+			$html .= '<td class="legacy-left data-table__name">' . $name . '</td>';
+			$html .= '<td class="legacy-center data-table__optional">' . UserTable::renderPremium($row) . '</td>';
 			foreach ($valueColumns as $col)
-				$html .= '<td class="legacy-center">' . $col['render']($row) . '</td>';
+				$html .= '<td class="legacy-center data-table__num">' . $col['render']($row) . '</td>';
 
 			$html .= '</tr>';
 			$prevPosition = $pos;
