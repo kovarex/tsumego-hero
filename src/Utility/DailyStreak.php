@@ -9,7 +9,8 @@ use Exception;
 
 //The daily streak: the days in a row on which the player did what the day asks, which is the XP of
 //PROBLEMS_A_DAY problems of the player's rating (solves and the mistake training's XP together) and
-//REVIEWS_A_DAY reviews the mistake training counts as solved, or as many as were due.
+//REVIEWS_A_DAY reviews the mistake training counts as solved, or as many as were due. Both are fixed by
+//the day's first result, so the solves that raise the rating during the day don't raise what it asks.
 //A missed day takes a freeze, and without one it ends the streak.
 //A player's day ends at DAY_START_HOUR in their own time zone (user.time_zone, from the browser,
 //UTC until it is known). The row keeps the streak as it was at the last day that counted
@@ -91,8 +92,9 @@ class DailyStreak
 
 	//What a result changes of the streak (PlayResultProcessorComponent::processDailyStreak), as fields of
 	//the user row: the solve gave $xp XP, and $solvedReview says the mistake training counted it as a
-	//solved review. $reviewsDue gives how many reviews are due now; it is asked once a day, by the first
-	//result that adds to it, which fixes the reviews the day asks. Nothing changes for a result that gives neither.
+	//solved review. The first result of the day that adds to it fixes what the day asks: the XP of the
+	//rating in $user, and the reviews $reviewsDue gives, which is asked then only. Nothing changes for a
+	//result that gives neither.
 	/**
 	 * @param UserRow $user
 	 * @param callable(): int $reviewsDue
@@ -110,9 +112,10 @@ class DailyStreak
 			'streak_day_xp' => $progress['xp'] + max(0, $xp),
 			'streak_day_reviews' => $reviews,
 			'streak_day_reviews_required' => $progress['reviews_required'] ?? min(self::REVIEWS_A_DAY, $reviews + $reviewsDue()),
+			'streak_day_xp_required' => $progress['xp_required'] ?? self::xpRequired((float) ($user['rating'] ?? 0)),
 		];
 		$streak = self::stored($user)->asOf($today);
-		$met = $fields['streak_day_xp'] >= self::xpRequired((float) ($user['rating'] ?? 0)) && $fields['streak_day_reviews'] >= $fields['streak_day_reviews_required'];
+		$met = $fields['streak_day_xp'] >= $fields['streak_day_xp_required'] && $fields['streak_day_reviews'] >= $fields['streak_day_reviews_required'];
 		if ($streak->doneToday || !$met)
 			return $fields;
 		$streak = $streak->countDay($today);
@@ -124,41 +127,59 @@ class DailyStreak
 		];
 	}
 
-	//What $today did so far: the XP of its solves and the reviews solved, and the reviews it asks, null
-	//until its first result worked it out. Counters of an earlier day are today's zero.
+	//What $today did so far: the XP of its solves and the reviews solved, and the XP and the reviews it
+	//asks, null until its first result fixed them. Counters of an earlier day are today's zero.
 	/**
 	 * @param UserRow $user
-	 * @return array{xp: int, reviews: int, reviews_required: int|null}
+	 * @return array{xp: int, reviews: int, xp_required: int|null, reviews_required: int|null}
 	 */
 	public static function progressOf(array $user, string $today): array
 	{
 		if (self::dayOf($user['streak_day'] ?? null) !== $today)
-			return ['xp' => 0, 'reviews' => 0, 'reviews_required' => null];
-		$required = $user['streak_day_reviews_required'] ?? null;
-		return ['xp' => (int) ($user['streak_day_xp'] ?? 0), 'reviews' => (int) ($user['streak_day_reviews'] ?? 0), 'reviews_required' => $required === null ? null : (int) $required];
+			return ['xp' => 0, 'reviews' => 0, 'xp_required' => null, 'reviews_required' => null];
+		$xpRequired = $user['streak_day_xp_required'] ?? null;
+		$reviewsRequired = $user['streak_day_reviews_required'] ?? null;
+		return [
+			'xp' => (int) ($user['streak_day_xp'] ?? 0),
+			'reviews' => (int) ($user['streak_day_reviews'] ?? 0),
+			'xp_required' => $xpRequired === null ? null : (int) $xpRequired,
+			'reviews_required' => $reviewsRequired === null ? null : (int) $reviewsRequired];
+	}
+
+	//How far today is towards what it asks, from 0 to 1: the share of the XP, averaged with the share
+	//of the reviews when it asks any. The dim flame fills this far (webroot/js/DailyStreak.js).
+	public static function progressShare(int $xp, int $xpRequired, int $reviews, int $reviewsRequired): float
+	{
+		$share = fn(int $done, int $required): float => $required <= 0 ? 1.0 : min(1.0, $done / $required);
+		if ($reviewsRequired <= 0)
+			return $share($xp, $xpRequired);
+		return ($share($xp, $xpRequired) + $share($reviews, $reviewsRequired)) / 2;
 	}
 
 	//What the page shows and the result of a solve returns (webroot/js/DailyStreak.js): the streak, the
-	//freezes, whether today is done, and what today did towards it. Until the first result of the day
-	//the reviews asked are the most a day can ask.
+	//freezes, whether today is done, and what today did towards it, also as a share. Until the first
+	//result of the day the XP asked is that of the rating now, and the reviews the most a day can ask.
 	/**
 	 * @param UserRow $user
-	 * @return array{length: int, best: int, freezes: int, done_today: bool, xp: int, xp_required: int, reviews: int, reviews_required: int}
+	 * @return array{length: int, best: int, freezes: int, done_today: bool, xp: int, xp_required: int, reviews: int, reviews_required: int, progress: float}
 	 */
 	public static function view(array $user, ?DateTimeImmutable $now = null): array
 	{
 		$now ??= new DateTimeImmutable();
 		$streak = self::ofUser($user, $now);
 		$progress = self::progressOf($user, self::today($user['time_zone'] ?? null, $now));
+		$xpRequired = $progress['xp_required'] ?? self::xpRequired((float) ($user['rating'] ?? 0));
+		$reviewsRequired = $progress['reviews_required'] ?? self::REVIEWS_A_DAY;
 		return [
 			'length' => $streak->length,
 			'best' => $streak->best,
 			'freezes' => $streak->freezes,
 			'done_today' => $streak->doneToday,
 			'xp' => $progress['xp'],
-			'xp_required' => self::xpRequired((float) ($user['rating'] ?? 0)),
+			'xp_required' => $xpRequired,
 			'reviews' => $progress['reviews'],
-			'reviews_required' => $progress['reviews_required'] ?? self::REVIEWS_A_DAY,
+			'reviews_required' => $reviewsRequired,
+			'progress' => $streak->doneToday ? 1.0 : round(self::progressShare($progress['xp'], $xpRequired, $progress['reviews'], $reviewsRequired), 3),
 		];
 	}
 

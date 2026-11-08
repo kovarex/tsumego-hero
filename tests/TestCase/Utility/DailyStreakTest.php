@@ -32,7 +32,7 @@ class DailyStreakTest extends AppTestCase
 	{
 		return $fields + ['id' => 1, 'rating' => 1500, 'time_zone' => 'Europe/Prague',
 			'streak_length' => 0, 'streak_best' => 0, 'streak_freezes' => 0, 'streak_last_day' => null,
-			'streak_day' => null, 'streak_day_xp' => 0, 'streak_day_reviews' => 0, 'streak_day_reviews_required' => null];
+			'streak_day' => null, 'streak_day_xp' => 0, 'streak_day_reviews' => 0, 'streak_day_reviews_required' => null, 'streak_day_xp_required' => null];
 	}
 
 	public function testTheDayEndsAtThreeInTheMorningLocalTime(): void
@@ -197,7 +197,7 @@ class DailyStreakTest extends AppTestCase
 
 		//A solve after the day counted, before 3 AM of the next one, only adds its XP to the day
 		$fields = DailyStreak::afterResult($user, 15, false, fn() => 0, self::at('2026-11-05 02:00:00', 'Europe/Prague'));
-		$this->assertSame(['streak_day' => '2026-11-04', 'streak_day_xp' => 150, 'streak_day_reviews' => 0, 'streak_day_reviews_required' => 0], $fields);
+		$this->assertSame(['streak_day' => '2026-11-04', 'streak_day_xp' => 150, 'streak_day_reviews' => 0, 'streak_day_reviews_required' => 0, 'streak_day_xp_required' => 135], $fields);
 
 		//The next day starts from no XP
 		self::solve($user, '2026-11-05 03:00:00', 100);
@@ -262,12 +262,41 @@ class DailyStreakTest extends AppTestCase
 		$this->assertSame([4, 0], [$streak->length, $streak->freezes], 'The freeze covers the day');
 	}
 
+	//The first result of the day fixes the XP it asks; solves that raise the rating later that day don't raise it
+	public function testTheXPADayAsksIsAskedOnce(): void
+	{
+		$user = self::player();
+		foreach (['10:00', '11:00'] as $time)
+		{
+			self::solve($user, '2026-11-04 ' . $time . ':00', 45);
+			$user['rating'] += 9;
+		}
+		$this->assertSame([135, 0], [$user['streak_day_xp_required'], $user['streak_length']]);
+		$this->assertSame(135, DailyStreak::view($user, self::at('2026-11-04 12:00:00', 'Europe/Prague'))['xp_required']);
+		self::solve($user, '2026-11-04 12:00:00', 45);
+		$this->assertSame(1, $user['streak_length'], 'Three problems of the rating the day started with do the day');
+
+		//The next day asks the XP of the rating it starts with
+		self::solve($user, '2026-11-05 10:00:00', 45);
+		$this->assertSame(DailyStreak::xpRequired($user['rating']), $user['streak_day_xp_required']);
+	}
+
+	//The dim flame fills by the share of the XP, averaged with the share of the reviews when the day asks any
+	public function testTheProgressIsTheShareOfWhatTheDayAsks(): void
+	{
+		$this->assertSame(0.0, DailyStreak::progressShare(0, 135, 0, 0));
+		$this->assertSame(1 / 3, DailyStreak::progressShare(45, 135, 0, 0));
+		$this->assertSame(1.0, DailyStreak::progressShare(500, 135, 0, 0));
+		$this->assertSame(0.75, DailyStreak::progressShare(135, 135, 1, 2));
+		$this->assertSame(0.5, DailyStreak::progressShare(0, 135, 3, 3));
+	}
+
 	public function testTheProgressOfADayStartsOverTheNextDay(): void
 	{
 		$user = self::player();
 		self::solve($user, '2026-11-04 10:00:00', 90, true, 2);
 		$view = DailyStreak::view($user, self::at('2026-11-04 12:00:00', 'Europe/Prague'));
-		$this->assertSame(['length' => 0, 'best' => 0, 'freezes' => 0, 'done_today' => false, 'xp' => 90, 'xp_required' => 135, 'reviews' => 1, 'reviews_required' => 3], $view);
+		$this->assertSame(['length' => 0, 'best' => 0, 'freezes' => 0, 'done_today' => false, 'xp' => 90, 'xp_required' => 135, 'reviews' => 1, 'reviews_required' => 3, 'progress' => 0.5], $view);
 
 		$view = DailyStreak::view($user, self::at('2026-11-05 12:00:00', 'Europe/Prague'));
 		$this->assertSame([0, 0, DailyStreak::REVIEWS_A_DAY], [$view['xp'], $view['reviews'], $view['reviews_required']]);

@@ -73,5 +73,6 @@ use DateTimeImmutable;
  * @property int $streak_day_xp
  * @property int $streak_day_reviews
  * @property int|null $streak_day_reviews_required
+ * @property int|null $streak_day_xp_required
  */
 class User extends AppEntity {}
