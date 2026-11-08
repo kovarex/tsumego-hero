@@ -754,6 +754,12 @@ h1 {
   display: none;
   flex-basis: 50%;
 }
+/* On a phone the panels wrap under the board, so the review tree gets the whole row instead of half of it */
+@media (width < 64rem) {
+  .play-board .besogo-panels {
+    flex-basis: 100%;
+  }
+}
 .play-filters {
   display: inline-block;
   margin: 0 var(--space-1) var(--space-2);

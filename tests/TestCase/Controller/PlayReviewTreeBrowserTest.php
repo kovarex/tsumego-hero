@@ -33,6 +33,34 @@ class PlayReviewTreeBrowserTest extends IntegrationTestCase
 			JS);
 	}
 
+	//On a phone the panels sit under the board, so the tree box takes the board's whole width and a small tree fits in it.
+	public function testTreeTakesTheWholeWidthOnAPhone(): void
+	{
+		$sgf = '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[jj](;B[aa];W[ab];B[ba];W[bb];B[ca]C[+])(;B[ac];W[ab];B[ba];W[bb])(;B[ad];W[ab];B[ba];W[bb];B[ca];W[cb]))';
+		$context = new ContextPreparator(['tsumego' => ['set_order' => 1, 'status' => 'S', 'sgf' => $sgf]]);
+		$browser = Browser::instance();
+		$window = $browser->driver->manage()->window();
+		$originalSize = $window->getSize();
+		try
+		{
+			$window->setSize(new WebDriverDimension(390, 844));
+			$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+			$browser->clickId('besogo-review-button');
+			$browser->waitUntilJs('document.querySelector(".besogo-tree svg") !== null');
+			$sizes = $browser->driver->executeScript(<<<'JS'
+				const tree = document.querySelector('.besogo-tree');
+				return {tree: tree.getBoundingClientRect().width, board: document.querySelector('#target').getBoundingClientRect().width, scrollWidth: tree.scrollWidth, clientWidth: tree.clientWidth};
+				JS);
+			$this->assertGreaterThan($sizes['board'] * 0.9, $sizes['tree'], 'The tree box is as wide as the board');
+			$this->assertLessThanOrEqual($sizes['clientWidth'], $sizes['scrollWidth'], 'A small tree fits without scrolling');
+			$browser->assertNoJsErrors();
+		}
+		finally
+		{
+			$window->setSize($originalSize);
+		}
+	}
+
 	//The tree scrolls in its own box both ways, so its horizontal scrollbar and the back/forward buttons
 	//under it are on screen at once, wherever the tree is scrolled to.
 	public function testBigTreeScrollsInsideItsBoxWithButtonsVisible(): void
