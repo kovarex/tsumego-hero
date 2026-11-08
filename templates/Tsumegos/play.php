@@ -158,7 +158,7 @@ use App\Utility\ViteManifest;
 					<?php endif; ?>
 				</div>
 			</div>
-			<?php // The XP of the training shows under "Correct!", so it stays empty, but the rank of the problem shows as in the level mode ?>
+			<?php // In the training the XP of a solve shows here when it is earned (PlayPage.js), with what it did to the problem in its title; the rank of the problem shows as in the level mode ?>
 			<div class="play-head__stake<?php echo Auth::isInMistakeTrainingMode() ? ' play-status--training' : ''; ?>">
 				<?php $tsumegoXPAndRating->render(); ?>
 			</div>

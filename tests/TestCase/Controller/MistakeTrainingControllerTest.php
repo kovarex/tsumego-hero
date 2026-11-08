@@ -387,7 +387,8 @@ class MistakeTrainingControllerTest extends IntegrationTestCase
 		$browser->get('mistake-training');
 		$browser->playWithResult('F');
 
-		$this->assertStringContainsString('Press Reset to try again', $browser->find('#status')->getText());
+		$this->assertSame('Incorrect!', $browser->find('#status')->getText(), 'The row of the messages says only Incorrect!');
+		$this->assertTrue((bool) $browser->driver->executeScript('return document.activeElement?.id === "besogo-reset-button";'), 'Reset has the focus, to try again');
 		$this->assertSame(0, (int) MistakeTraining::getPoolRow($userId, $tsumegoId)['rung'], 'A mistake goes back to the bottom');
 		$this->assertTrue(MistakeTraining::isDue($userId, $tsumegoId), 'A mistake keeps the problem due today');
 		$this->assertSame('Rung 1 of 8, missed today',
@@ -409,7 +410,8 @@ class MistakeTrainingControllerTest extends IntegrationTestCase
 		$browser->driver->wait(5)->until(fn() => count($browser->driver->findElements(WebDriverBy::id('besogo-next-button'))) === 1);
 		$this->assertStringEndsWith(MistakeTraining::$QUEUE_LINK, (string) $browser->find('#besogo-next-button')->getAttribute('href'),
 			'The solve turns Next on, to the page that says the day is done');
-		$this->assertNotEmpty($browser->find('#status .mistake-training-outcome')->getText(), 'And says what it did to the problem');
+		$this->assertSame('Correct!', $browser->find('#status')->getText(), 'The row of the messages says only Correct!');
+		$this->assertNotEmpty($browser->find('#xpDisplay')->getAttribute('title'), 'And the reward says what it did to the problem');
 
 		$row = MistakeTraining::getPoolRow($userId, $tsumegoId);
 		$this->assertSame(0, (int) $row['rung'], 'The solve after a mistake of the same day earns no rung');
@@ -846,9 +848,10 @@ class MistakeTrainingControllerTest extends IntegrationTestCase
 
 			// a clean solve on the fourth rung brings the problem back after 15 days
 			$nextDue = MistakeTraining::getPoolRow((int) $context->user['id'], (int) $context->tsumegos[0]['id'])['next_due'];
-			$browser->waitUntil(fn() => str_contains($browser->find('#status')->getText(), 'next review'), context: 'the outcome of the solve');
-			$this->assertStringContainsString('next review ' . $format($nextDue) . '.', $browser->find('#status .mistake-training-outcome')->getText(),
-				"The line under Correct! in format $dateFormat");
+			$browser->waitUntil(fn() => str_contains((string) $browser->find('#xpDisplay')->getAttribute('title'), 'next review'), context: 'the outcome of the solve');
+			$this->assertStringContainsString('next review ' . $format($nextDue) . '.', (string) $browser->find('#xpDisplay')->getAttribute('title'),
+				"The title of the reward in format $dateFormat");
+			$this->assertMatchesRegularExpression('/^\+\d+ XP$/', $browser->find('#xpDisplayText')->getText(), 'The XP of the solve shows where the XP of a problem shows');
 			$this->assertStringContainsString($format($nextDue), (string) $browser->driver->executeScript(
 				'return document.querySelector(".problem-nav__item--current .tooltip-desc").textContent;'), "And the tooltip of the button, in format $dateFormat");
 		}

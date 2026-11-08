@@ -32,24 +32,25 @@ function updateMistakeTrainingButton(button, xp)
 	description.innerHTML = button.description;
 	window.localizeTimeElements?.(description);
 
-	// A solve says under "Correct!" what it did to the problem: its next review, or its graduation
-	let status = document.getElementById("status");
-	status.querySelectorAll(".mistake-training-outcome").forEach(old => old.remove());
-	let outcome;
+	// A solve shows only "Correct!" in the row of the messages; the XP it earned shows where the XP of a problem
+	// shows (the top right of the head), and what it did to the problem (its next review, or its graduation) is in
+	// the title of that XP and in the tooltip of the problem's button
+	let reward = document.getElementById("xpDisplay");
+	let rewardText = document.getElementById("xpDisplayText");
 	if (button.status === 'S' && problemSolved)
 	{
-		outcome = document.createElement("p");
-		outcome.className = "mistake-training-outcome";
-		let earned = xp ? xp.review + xp.graduation : 0;
-		outcome.innerHTML = (earned > 0 ? "+" + Number(earned) + " XP \u00b7 " : "") + button.description;
-		window.localizeTimeElements?.(outcome);
-		status.appendChild(outcome);
-		if (xp && xp.clear > 0)
+		let earned = xp ? (xp.review || 0) + (xp.graduation || 0) + (xp.clear || 0) : 0;
+		if (rewardText)
 		{
-			let clear = document.createElement("p");
-			clear.className = "mistake-training-outcome mistake-training-outcome--clear";
-			clear.textContent = "All clear today: +" + xp.clear + " XP";
-			outcome.after(clear);
+			rewardText.className = "xpDisplay solvedXpDisplay";
+			rewardText.textContent = earned > 0 ? "+" + Number(earned) + " XP" : "";
+		}
+		if (reward)
+		{
+			let outcome = document.createElement("div");
+			outcome.innerHTML = button.description;
+			window.localizeTimeElements?.(outcome);
+			reward.title = outcome.textContent.trim() + (xp && xp.clear > 0 ? " All clear today: +" + xp.clear + " XP." : "");
 		}
 
 		// The last problem of the day is solved, so Next leads to the end of the training
@@ -665,7 +666,7 @@ function displayResult(result)
 			{
 				// The board locks, but the problem stays in today's training until it is solved
 				toggleBoardLock(true);
-				document.getElementById("status").innerHTML = '<h2>Incorrect!</h2><p class="mistake-training-note">Press Reset to try again.</p>';
+				document.getElementById("status").innerHTML = "<h2>Incorrect!</h2>";
 				markFailed();
 			}
 			if (!noXP)
