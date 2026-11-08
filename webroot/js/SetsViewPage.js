@@ -49,6 +49,17 @@ function foldingPanel(link, panel, arrow) {
 	}));
 }
 
+//On a phone the head of the collection is short: More opens the whole description with its cover, the
+//stats and the views of the scores open from their own button (sets.css)
+for (let [button, openClass] of [[".set-view__expand", "set-view--expanded"], [".set-view__stats-toggle", "set-view--stats-open"]])
+	document.querySelectorAll(button).forEach(element => element.addEventListener("click", () => {
+		let info = element.closest(".set-view__info");
+		let open = info.classList.toggle(openClass);
+		element.setAttribute("aria-expanded", open ? "true" : "false");
+		if (element.classList.contains("set-view__expand"))
+			element.textContent = open ? "Less" : "More";
+	}));
+
 Display.hide("#msg2x");
 foldingPanel("#showx", "#msg2x", "greyArrow1");
 foldingPanel("#showFilters", "#msgFilters", "greyArrowFilter");

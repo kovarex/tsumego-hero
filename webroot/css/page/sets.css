@@ -663,6 +663,126 @@
 	text-shadow: 0 0 0.08em rgba(229, 229, 229, 0.7);
 }
 
+/* The head of a collection: the buttons of the phone are hidden on a PC */
+.set-view__expand,
+.set-view__stats-toggle-row {
+	display: none;
+}
+
+/* A phone shows the problems at once: the description cut to its beginning beside a small cover (More opens
+   both), the count, the difficulty and Start on one line, and the stats with the views of the scores behind
+   their button (SetsViewPage.js) */
+@media (width < 64rem)
+{
+	.set-view__info,
+	.set-view__info > tbody,
+	.set-view__info > tbody > tr,
+	.set-view__info > tbody > tr > td {
+		display: block;
+		width: auto;
+	}
+	.set-view__info > tbody > tr.set-view__intro {
+		display: flex;
+		align-items: flex-start;
+		gap: var(--space-3);
+	}
+	.set-view__intro > td:first-child {
+		flex: 1;
+		min-width: 0;
+	}
+	.set-view__intro > .set-view__cover-cell {
+		flex: none;
+		width: 64px;
+		padding: 0;
+	}
+	.set-view__intro .set-view__cover img {
+		width: 64px;
+		height: auto;
+	}
+	.set-view__intro .rank-icon-large {
+		transform: scale(0.5);
+		transform-origin: top right;
+	}
+	.set-view__description {
+		display: -webkit-box;
+		-webkit-box-orient: vertical;
+		-webkit-line-clamp: 3;
+		line-clamp: 3;
+		overflow: hidden;
+	}
+	.set-view__expand {
+		display: inline;
+		margin: var(--space-1) 0 0;
+		padding: 0;
+		border: 0;
+		background: none;
+		color: var(--link-color, inherit);
+		font: inherit;
+		text-decoration: underline;
+		cursor: pointer;
+	}
+	/* Opened: the whole description under the cover at its size */
+	.set-view--expanded > tbody > tr.set-view__intro {
+		flex-direction: column-reverse;
+		align-items: center;
+	}
+	.set-view--expanded .set-view__intro > .set-view__cover-cell {
+		width: auto;
+	}
+	.set-view--expanded .set-view__intro .set-view__cover img {
+		width: 182px;
+	}
+	.set-view--expanded .set-view__intro .rank-icon-large {
+		transform: none;
+	}
+	.set-view--expanded .set-view__description {
+		display: block;
+	}
+	.set-view__info > tbody > tr.set-view__summary {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-3);
+		margin-top: var(--space-2);
+	}
+	.set-view__summary br {
+		display: none;
+	}
+	.set-view__summary .set-view__table,
+	.set-view__summary .set-view__table > tbody,
+	.set-view__summary .set-view__table > tbody > tr {
+		display: flex;
+		gap: var(--space-3);
+		width: auto;
+	}
+	.set-view__summary .set-view__half {
+		width: auto;
+	}
+	.set-view__summary b {
+		margin-right: 0.4em;
+	}
+	.set-view__start {
+		top: 0;
+	}
+	.set-view__info > tbody > tr.set-view__stats-toggle-row {
+		display: block;
+		margin-top: var(--space-2);
+		text-align: center;
+	}
+	.set-view__info > tbody > tr.set-view__stats {
+		display: none;
+	}
+	.set-view--stats-open > tbody > tr.set-view__stats {
+		display: block;
+	}
+	.set-view__stats br {
+		display: none;
+	}
+	.set-view__gap {
+		display: none;
+	}
+}
+
 /* Mobile: the set filter/search menu wraps and the tile dropdowns no longer
    rely on absolute-left positions relative to a fixed-width container. */
 @media (width < 64rem)

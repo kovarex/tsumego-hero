@@ -47,12 +47,14 @@ use App\Utility\ViteManifest;
 				'restoreAction' => '/trash/restore-set/' . (int) $set->id]);
 		?>
 		<div class="new1">
-		<table class="set-view__table">
-		<tr>
+		<?php //On a phone the description is cut to its beginning and More opens it with the cover; the stats and the views of the scores open from their button (sets.css, SetsViewPage.js), so the problems are in sight at once ?>
+		<table class="set-view__table set-view__info">
+		<tr class="set-view__intro">
 			<td class="valign-top">
-				<?php
+				<div class="set-view__description"><?php
 echo HtmlSanitizer::sanitize((string) ($set->description ?? ''));
-?>
+?></div>
+				<button type="button" class="set-view__expand" aria-expanded="false">More</button>
 			</td>
 				<?php
 // an empty collection has no problem to start with, so its cover and Start lead nowhere
@@ -73,7 +75,7 @@ else
 	echo '<td class="set-view__cover-cell valign-top"><div class="legacy-center"></div></td>';
 ?>
 		</tr>
-		<tr>
+		<tr class="set-view__summary">
 			<td class="valign-top">
 				<table class="set-view__table">
 					<tr>
@@ -108,9 +110,12 @@ if ($tsumegoFilters->query != 'topics')
 				</div>
 			</td>
 		</tr>
-		<tr>
 		<?php if($tsumegoFilters->query == 'topics')
 		{ ?>
+		<tr class="set-view__stats-toggle-row">
+			<td colspan="2"><button type="button" class="btn set-view__stats-toggle" aria-expanded="false">Stats &amp; display</button></td>
+		</tr>
+		<tr class="set-view__stats">
 			<td>
 			<br>
 			<div class="legacy-center">
@@ -162,7 +167,7 @@ if ($tsumegoFilters->query != 'topics')
 			?>
 			</td>
 			</tr>
-			<tr>
+			<tr class="set-view__stats">
 			<td>
 			<?php if($scoring)
 			{ ?>
@@ -229,8 +234,7 @@ if ($tsumegoFilters->query != 'topics')
 
 		</table>
 		</div>
-		<br><br><br><br><br>
-		<br><br>
+		<div class="set-view__gap"><br><br><br><br><br><br><br></div>
 	</div>
 	<div class="set-view-problems">
 		<p class="title4">Problems</p>

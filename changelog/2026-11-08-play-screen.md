@@ -5,4 +5,4 @@ Changed: Comments open from their own button once the problem is solved, and the
 Changed: The corner, rotation, colour and favourite settings of the board, and the author of the problem, are in the problem's info (⋯).
 Changed: A click on the level bar in the top bar switches it between the level and the rank.
 
-Changed: The front page shows the four modes in one smaller row; the mistake training and the challenges are in the top bar of every page instead of a card on the front page and an item of the Play menu. The footer is gone; the legal notice is in the Home menu next to About.
+Changed: The front page shows the four modes in one smaller row; the mistake training and the challenges are in the top bar of every page instead of a card on the front page and an item of the Play menu. The footer is gone; the legal notice is in the Home menu next to About. On a phone the page of a collection shows its problems at once: the beginning of the description beside a small cover (More opens both), the count, the difficulty and Start on one line, and the stats with the Numbers, Accuracy and Time views behind a button.
