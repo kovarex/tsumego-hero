@@ -37,7 +37,7 @@ class TsumegoXPAndRating
 		if (Auth::isInTimeMode())
 			echo '<div id="time-mode-countdown">10.0</div><div id="plus2">+2</div>';
 		echo '<div id="status2">
-		<span class="status-rating">
+		<span class="status-rating" title="Problem rating: ' . round($this->tsumegoRating) . '">
 		' . Rating::getReadableRankFromRating($this->tsumegoRating) . ' <span class="status-rating__number">(' . $this->tsumegoRating . ')</span>
 		</span>
 	</div>

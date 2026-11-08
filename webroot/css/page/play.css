@@ -640,6 +640,17 @@ h1 {
   display: inline;
   font-size: var(--text-md);
 }
+/* on the grey of the row: the goal in the colour of the text, its hint a little softer, the white stone outlined */
+.play-message__goal #descriptionText {
+  color: var(--text-color);
+}
+.play-message__goal #hintText {
+  color: var(--text-color);
+  opacity: 0.8;
+}
+.play-message__goal .play-goal__stone--white {
+  border-color: var(--text-color);
+}
 .play-message #theComment:empty {
   flex: 0;
   padding: 0;
@@ -677,9 +688,13 @@ h1 {
   height: auto;
   margin: 0;
 }
-/* The rank of the problem first, the reward under it, as on a phone (the head's grid below) */
+/* The rank of the problem first, the reward under it, as on a phone (the head's grid below); the rating of the
+   problem is in the rank's tooltip, not beside it */
 .play-stake #status2 {
   order: -1;
+}
+.play-stake .status-rating__number {
+  display: none;
 }
 .play-stake .status-rating {
   font-size: var(--text-lg);
