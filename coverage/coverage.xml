@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1794199783">
-  <project timestamp="1794199783">
+<coverage generated="1794221822">
+  <project timestamp="1794221822">
     <package name="App">
       <file name="/home/runner/work/tsumego-hero/tsumego-hero/src/Application.php">
         <class name="App\Application" namespace="App">
@@ -3852,11 +3852,11 @@
         <line num="191" type="stmt" count="1"/>
         <line num="195" type="stmt" count="28"/>
         <line num="196" type="stmt" count="28"/>
-        <line num="197" type="stmt" count="7"/>
-        <line num="198" type="stmt" count="7"/>
-        <line num="199" type="stmt" count="7"/>
-        <line num="200" type="stmt" count="7"/>
-        <line num="201" type="stmt" count="7"/>
+        <line num="197" type="stmt" count="4"/>
+        <line num="198" type="stmt" count="4"/>
+        <line num="199" type="stmt" count="4"/>
+        <line num="200" type="stmt" count="4"/>
+        <line num="201" type="stmt" count="4"/>
         <line num="204" type="stmt" count="28"/>
         <line num="205" type="stmt" count="28"/>
         <line num="206" type="stmt" count="28"/>
@@ -4260,7 +4260,7 @@
       </file>
       <file name="/home/runner/work/tsumego-hero/tsumego-hero/src/Controller/Component/PlayResultProcessorComponent.php">
         <class name="App\Controller\Component\PlayResultProcessorComponent" namespace="App\Controller\Component">
-          <metrics complexity="103" methods="19" coveredmethods="17" conditionals="0" coveredconditionals="0" statements="249" coveredstatements="247" elements="268" coveredelements="264"/>
+          <metrics complexity="103" methods="19" coveredmethods="16" conditionals="0" coveredconditionals="0" statements="249" coveredstatements="246" elements="268" coveredelements="262"/>
         </class>
         <line num="45" type="method" name="processResult" visibility="public" complexity="1" crap="1" count="145"/>
         <line num="47" type="stmt" count="145"/>
@@ -4283,7 +4283,7 @@
         <line num="89" type="stmt" count="145"/>
         <line num="91" type="stmt" count="145"/>
         <line num="92" type="stmt" count="145"/>
-        <line num="93" type="stmt" count="1"/>
+        <line num="93" type="stmt" count="0"/>
         <line num="95" type="stmt" count="145"/>
         <line num="96" type="stmt" count="29"/>
         <line num="99" type="stmt" count="145"/>
@@ -4530,7 +4530,7 @@
         <line num="494" type="stmt" count="7"/>
         <line num="495" type="stmt" count="4"/>
         <line num="497" type="stmt" count="4"/>
-        <metrics loc="500" ncloc="428" classes="1" methods="19" coveredmethods="17" conditionals="0" coveredconditionals="0" statements="249" coveredstatements="247" elements="268" coveredelements="264"/>
+        <metrics loc="500" ncloc="428" classes="1" methods="19" coveredmethods="16" conditionals="0" coveredconditionals="0" statements="249" coveredstatements="246" elements="268" coveredelements="262"/>
       </file>
     </package>
     <package name="App\Database">
@@ -9545,11 +9545,11 @@
         <line num="342" type="stmt" count="381"/>
         <line num="343" type="stmt" count="21"/>
         <line num="344" type="stmt" count="363"/>
-        <line num="347" type="method" name="swapColorWords" visibility="public" complexity="1" crap="1" count="61"/>
-        <line num="349" type="stmt" count="61"/>
-        <line num="350" type="stmt" count="61"/>
-        <line num="351" type="stmt" count="61"/>
-        <line num="352" type="stmt" count="61"/>
+        <line num="347" type="method" name="swapColorWords" visibility="public" complexity="1" crap="1" count="63"/>
+        <line num="349" type="stmt" count="63"/>
+        <line num="350" type="stmt" count="63"/>
+        <line num="351" type="stmt" count="63"/>
+        <line num="352" type="stmt" count="63"/>
         <line num="357" type="method" name="tsumegoStatus" visibility="private" complexity="5" crap="5" count="383"/>
         <line num="359" type="stmt" count="383"/>
         <line num="360" type="stmt" count="10"/>
@@ -9942,7 +9942,7 @@
         <line num="11" type="method" name="default" visibility="public" complexity="4" crap="4" count="115"/>
         <line num="13" type="stmt" count="115"/>
         <line num="14" type="stmt" count="115"/>
-        <line num="15" type="stmt" count="66"/>
+        <line num="15" type="stmt" count="68"/>
         <line num="16" type="stmt" count="44"/>
         <line num="17" type="stmt" count="115"/>
         <line num="18" type="stmt" count="115"/>
@@ -13520,6 +13520,6 @@
         <metrics loc="70" ncloc="54" classes="1" methods="1" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="30" coveredstatements="28" elements="31" coveredelements="28"/>
       </file>
     </package>
-    <metrics files="251" loc="27796" ncloc="23357" classes="188" methods="1427" coveredmethods="1167" conditionals="0" coveredconditionals="0" statements="10568" coveredstatements="10091" elements="11995" coveredelements="11258"/>
+    <metrics files="251" loc="27796" ncloc="23357" classes="188" methods="1427" coveredmethods="1166" conditionals="0" coveredconditionals="0" statements="10568" coveredstatements="10090" elements="11995" coveredelements="11256"/>
   </project>
 </coverage>
