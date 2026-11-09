@@ -257,19 +257,6 @@ use App\Utility\ViteManifest;
 				</span>
 			</div>
 		</label>
-		<label>
-			<input type="checkbox" class="toast__toggle" id="customAlertCheckbox" autocomplete="off" />
-			<div class="toast" id="customAlerts">
-				<div class="toast__banner">
-					Message
-					<span class="toast__close">x</span>
-				</div>
-				<span class="toast__body toast__body--wide">
-					<div id="customText"></div>
-					<div class="clear1"></div>
-				</span>
-			</div>
-		</label>
 	<?php endif; ?>
 
 	<div class="loader-container">

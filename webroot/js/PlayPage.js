@@ -211,9 +211,9 @@ function setUpPageEnd()
 {
 	if (lockedUntilTomorrow && mode != playPage.page.modes.time)
 	{
-		document.getElementById("status").innerHTML = '<b class="message--locked">This problem is locked until ' + heartResetTime + '</b>';
+		document.getElementById("status").innerHTML = '<h2>This problem is locked until ' + heartResetTime + '</h2>';
 		tryAgainTomorrow = true;
-		document.getElementById("status").style.color = "var(--feedback-error)";
+		document.getElementById("status").style.color = "var(--play-message-incorrect)";
 		document.querySelectorAll(".besogo-board").forEach(board => board.classList.add("besogo-board-red-glow"));
 		var resetBtn = document.getElementById("besogo-reset-button");
 		if (resetBtn) { resetBtn.id = "besogo-reset-button-inactive"; resetBtn.blur(); }
@@ -243,7 +243,6 @@ function setUpPageEnd()
 		});
 	}
 
-	document.getElementById("customAlertCheckbox")?.addEventListener("change", () => Display.fadeOut("#customAlerts", 500));
 	document.getElementById("potionAlertCheckbox")?.addEventListener("change", () => Display.fadeOut("#potionAlerts", 500));
 	document.getElementById("findSimilarProblems")?.addEventListener("click", () => {
 		document.querySelectorAll(".loader-container").forEach(loader => loader.style.display = "flex");
@@ -648,10 +647,12 @@ function sendWholeFailedLine(failResponse)
 	}).catch(err => console.error('sending the failed line failed:', err)));
 }
 
-function displayResult(result)
+//$incorrectDetail: What a wrong line ends in, for a status based problem ("it is KO-, but it should be KO+"), told after
+//Incorrect in the row of the messages
+function displayResult(result, incorrectDetail = '')
 {
 	let success = result == 'S';
-	document.getElementById("status").style.color = playGreenColor;
+	document.getElementById("status").style.color = "var(--play-message-correct)";
 	if (timeModeTimer)
 		timeModeTimer.stop();
 
@@ -711,8 +712,8 @@ function displayResult(result)
 		// Don't lock board - let user keep trying
 		if (mode != 2)
 		{
-			document.getElementById("status").style.color = "var(--feedback-error)";
-			document.getElementById("status").innerHTML = "<h2>Incorrect!</h2>";
+			document.getElementById("status").style.color = "var(--play-message-incorrect)";
+			showIncorrect(incorrectDetail);
 			markFailed();
 			document.querySelectorAll(".besogo-board").forEach(board => board.classList.add("besogo-board-red-glow"));
 			if (mode==3)
@@ -725,7 +726,7 @@ function displayResult(result)
 			{
 				// The board locks, but the problem stays in today's training until it is solved
 				toggleBoardLock(true);
-				document.getElementById("status").innerHTML = "<h2>Incorrect!</h2>";
+				showIncorrect(incorrectDetail);
 				markFailed();
 			}
 			if (!noXP)
@@ -738,7 +739,7 @@ function displayResult(result)
 					if (currentHealth < 0)
 					{
 						updateCurrentNavigationButton('F');
-						document.getElementById("status").innerHTML = '<b class="message--locked">This problem is locked until ' + heartResetTime + '</b>';
+						document.getElementById("status").innerHTML = '<h2>This problem is locked until ' + heartResetTime + '</h2>';
 						tryAgainTomorrow = true;
 						toggleBoardLock(true);
 						var resetBtn = document.getElementById("besogo-reset-button");
@@ -757,8 +758,8 @@ function displayResult(result)
 		}
 		else
 		{//mode 2 incorrect
-			document.getElementById("status").style.color = "var(--feedback-error)";
-			document.getElementById("status").innerHTML = "<h2>Incorrect!</h2>";
+			document.getElementById("status").style.color = "var(--play-message-incorrect)";
+			showIncorrect(incorrectDetail);
 			markFailed();
 			document.querySelectorAll(".besogo-board").forEach(board => board.classList.add("besogo-board-red-glow"));
 			if (!noXP)
@@ -768,21 +769,16 @@ function displayResult(result)
 }
 
 
-//Only the banner of the message box: the potion and the achievement boxes keep their own
-function displayMessage(message='text', topic='Message', color='red')
+//Incorrect in the row of the messages, with what the line ends in when there is something to tell: "Incorrect, it is
+//KO-, but it should be KO+"
+function showIncorrect(detail = '')
 {
-	let text = document.getElementById("customText");
-	if (text)
-		text.innerHTML = message;
-	Display.fadeIn("#customAlerts", 500);
-	document.querySelectorAll("#customAlerts .toast__banner").forEach(banner => {
-		banner.classList.toggle("toast__banner--error", color === 'red');
-		banner.classList.toggle("toast__banner--success", color !== 'red');
-		banner.innerHTML = topic + '<span class="toast__close">x</span>';
-	});
+	let heading = document.createElement("h2");
+	heading.textContent = detail ? "Incorrect, " + detail : "Incorrect!";
+	document.getElementById("status").replaceChildren(heading);
 }
 
-//After a fail the message row turns red, and Reset gets a red outline (play.css) and the keyboard focus, so
+//After a fail Reset gets a red outline (play.css) and the keyboard focus, so
 //Enter or Space tries again
 function markFailed()
 {
@@ -862,6 +858,7 @@ var showComment = function(commentText)
 		if (!comment)
 			return;
 		comment.style.display = commentText.length == 0 ? "none" : "block";
+		comment.classList.remove("play-message__error");
 		comment.textContent = besogo.boardInverted ? besogo.swapColorWords(commentText) : commentText;
 	};
 besogo.editor.registerShowComment(showComment);

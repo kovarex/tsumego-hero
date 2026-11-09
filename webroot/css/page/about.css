@@ -3,9 +3,6 @@
 .privacy-policy-list li {
   width: 100%;
 }
-#customText a {
-  color: black;
-}
 .timeline {
   display: flex;
   flex-direction: column;

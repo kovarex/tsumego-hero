@@ -149,7 +149,7 @@ function revelation()
 		{
 			tryAgainTomorrow = false;
 			locked = false;
-			document.getElementById("status").style.color = playGreenColor;
+			document.getElementById("status").style.color = "var(--play-message-correct)";
 			document.getElementById("status").innerHTML = "<h2>Correct!</h2>";
 			let boxShadow = light
 				? "0 2px 14px 0 rgba(67, 255, 40, 0.7), 0 6px 20px 0 rgba(0, 0, 0, 0.2)"
