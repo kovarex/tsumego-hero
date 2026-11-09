@@ -111,7 +111,7 @@ class PrintControllerTest extends IntegrationTestCase
 		$this->get($this->sheetUrl([0]));
 
 		$svg = $this->getStringDom()->querySelector('.print-problem svg.print-board');
-		$this->assertSame('0 0 146 106', $svg->getAttribute('viewBox'));
+		$this->assertSame('0 0 126 86', $svg->getAttribute('viewBox'));
 		$this->assertSame(3, $svg->querySelectorAll('.print-board__stone--black')->length);
 		$this->assertSame(5, $svg->querySelectorAll('.print-board__stone--white')->length);
 	}

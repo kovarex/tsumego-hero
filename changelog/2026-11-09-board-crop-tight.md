@@ -1,0 +1,1 @@
+Changed: The board of a problem shows one line around its stones instead of two, so on a phone the stones are bigger; an edge of the board two lines away or closer still shows. The printed problems are cut the same way.

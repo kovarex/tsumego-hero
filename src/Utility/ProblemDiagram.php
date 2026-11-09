@@ -10,7 +10,7 @@ namespace App\Utility;
 class ProblemDiagram
 {
 	//The lines shown around the stones, and the gap to the edge of the board that is closed up
-	private const int PADDING = 2;
+	private const int PADDING = 1;
 	private const int SNAP = 2;
 	//The longest line of the answer that is drawn
 	private const int MAXIMUM_ANSWER_MOVES = 30;
