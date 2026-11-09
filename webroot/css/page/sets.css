@@ -735,6 +735,12 @@
 	overflow: visible;
 	pointer-events: none;
 }
+/* A card finished with 100% accuracy is lifted off the page: 3px higher, a deeper shadow, and a warm golden
+   glow around it, outside only, so nothing on the card itself changes */
+.set-card--perfect {
+	transform: translateY(-3px);
+	box-shadow: 3px 6px 6px rgba(0, 0, 0, 0.7), 0 0 14px 3px rgba(255, 205, 70, 0.8), 0 0 4px 1px rgba(255, 235, 160, 0.9);
+}
 
 /* A phone shows three cards a row, each a third of the row (about 110 x 100px at 390), the text a step smaller;
    setCardFrame.js draws a thinner frame for a card that narrow */
