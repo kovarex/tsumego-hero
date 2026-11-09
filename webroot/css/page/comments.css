@@ -153,9 +153,11 @@
 .tsumego-comment__content {
 	min-width: 0;
 }
+/* anywhere rather than break-word, so a long word or link also lets the column narrow, and the card
+   stays inside the panel instead of pushing its date and buttons out of it */
 .comment__text {
 	white-space: pre-wrap;
-	overflow-wrap: break-word;
+	overflow-wrap: anywhere;
 }
 /* Comments section container (id="msg2x") */
 
@@ -164,7 +166,9 @@
 }
 /* Go coordinate styling - hover to highlight on board */
 
+/* A coordinate never breaks, the text wraps between them */
 .go-coord {
+	white-space: nowrap;
 	color: var(--color-blue-accent);
 	cursor: help;
 	border-bottom: 1px dotted var(--color-blue-accent);
@@ -187,13 +191,13 @@
 }
 /* Coordinates grouped into a sequence or alternative */
 
-.go-coord-group {
-	white-space: nowrap;
-}
+/* A long sequence wraps between its moves like the rest of the text; each line keeps its background */
 .go-coord-group--sequence {
 	background: rgba(109, 179, 242, 0.12);
 	border-radius: 3px;
 	padding: 0 2px;
+	box-decoration-break: clone;
+	-webkit-box-decoration-break: clone;
 }
 .go-coord-group--alternative {
 	font-style: italic;
