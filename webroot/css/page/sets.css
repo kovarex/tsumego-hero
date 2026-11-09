@@ -703,6 +703,28 @@
 .set-card--perfect {
 	padding: 14px 13px 11px;
 }
+/* The part of a split collection, a tab in the top left corner, inside the frame's band */
+.set-card__part {
+	position: absolute;
+	top: 6px;
+	left: 7px;
+	z-index: 1;
+	padding: 1px 5px;
+	border-radius: 6px;
+	background: rgba(0, 0, 0, 0.32);
+	font-size: 12px;
+	font-weight: var(--weight-heavy);
+	line-height: 1.3;
+	font-variant-numeric: tabular-nums;
+}
+.set-card--finished .set-card__part {
+	top: 10px;
+	left: 10px;
+}
+.set-card--perfect .set-card__part {
+	top: 13px;
+	left: 11px;
+}
 .set-card__frame {
 	position: absolute;
 	inset: 0;
@@ -739,6 +761,20 @@
 	}
 	.set-card__percent {
 		font-size: 18px;
+	}
+	.set-card__part {
+		top: 5px;
+		left: 5px;
+		padding: 0 4px;
+		font-size: 10px;
+	}
+	.set-card--finished .set-card__part {
+		top: 7px;
+		left: 7px;
+	}
+	.set-card--perfect .set-card__part {
+		top: 10px;
+		left: 8px;
 	}
 	.set-card--finished {
 		padding: 8px 9px;

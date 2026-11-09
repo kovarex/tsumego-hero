@@ -309,8 +309,13 @@ class SetsControllerTest extends IntegrationTestCase
 		$dom = $this->getStringDom();
 		$collectionTopDivs = $dom->querySelectorAll('.set-card__title');
 		$this->assertCount(2, $collectionTopDivs);
-		$this->assertSame('partitioned set #1', $collectionTopDivs[0]->textContent);
-		$this->assertSame('partitioned set #2', $collectionTopDivs[1]->textContent);
+		$this->assertSame('partitioned set', $collectionTopDivs[0]->textContent);
+		$this->assertSame('partitioned set', $collectionTopDivs[1]->textContent);
+		// the part is the tab in the card's corner, not part of the name
+		$parts = $dom->querySelectorAll('.set-card__part');
+		$this->assertCount(2, $parts);
+		$this->assertSame('1/2', $parts[0]->textContent);
+		$this->assertSame('2/2', $parts[1]->textContent);
 
 		$collectionMiddleLeft = $dom->querySelectorAll('.set-card__count');
 		$this->assertSame('10 problems', $collectionMiddleLeft[0]->textContent);
@@ -629,8 +634,13 @@ class SetsControllerTest extends IntegrationTestCase
 		$dom = $this->getStringDom();
 		$collectionTopDivs = $dom->querySelectorAll('.set-card__title');
 		$this->assertCount(2, $collectionTopDivs);
-		$this->assertSame('15k #1', $collectionTopDivs[0]->textContent);
-		$this->assertSame('15k #2', $collectionTopDivs[1]->textContent);
+		$this->assertSame('15k', $collectionTopDivs[0]->textContent);
+		$this->assertSame('15k', $collectionTopDivs[1]->textContent);
+		// the part is the tab in the card's corner, not part of the name
+		$parts = $dom->querySelectorAll('.set-card__part');
+		$this->assertCount(2, $parts);
+		$this->assertSame('1/2', $parts[0]->textContent);
+		$this->assertSame('2/2', $parts[1]->textContent);
 
 		$collectionMiddleLeft = $dom->querySelectorAll('.set-card__count');
 		$this->assertSame('10 problems', $collectionMiddleLeft[0]->textContent);
@@ -651,8 +661,13 @@ class SetsControllerTest extends IntegrationTestCase
 		$dom = $this->getStringDom();
 		$collectionTopDivs = $dom->querySelectorAll('.set-card__title');
 		$this->assertCount(2, $collectionTopDivs);
-		$this->assertSame('atari #1', $collectionTopDivs[0]->textContent);
-		$this->assertSame('atari #2', $collectionTopDivs[1]->textContent);
+		$this->assertSame('atari', $collectionTopDivs[0]->textContent);
+		$this->assertSame('atari', $collectionTopDivs[1]->textContent);
+		// the part is the tab in the card's corner, not part of the name
+		$parts = $dom->querySelectorAll('.set-card__part');
+		$this->assertCount(2, $parts);
+		$this->assertSame('1/2', $parts[0]->textContent);
+		$this->assertSame('2/2', $parts[1]->textContent);
 
 		$collectionMiddleLeft = $dom->querySelectorAll('.set-card__count');
 		$this->assertSame('10 problems', $collectionMiddleLeft[0]->textContent);
@@ -1105,8 +1120,11 @@ class SetsControllerTest extends IntegrationTestCase
 		// we check the set card and clicking
 		$collectionTopDivs = $browser->getElements('.set-card__title');
 		$this->assertCount(2, $collectionTopDivs); // 2 partitions of 10 and 1 problems
-		$this->assertSame($collectionTopDivs[0]->getText(), 'test set #1');
-		$this->assertSame($collectionTopDivs[1]->getText(), 'test set #2');
+		$this->assertSame($collectionTopDivs[0]->getText(), 'test set');
+		$this->assertSame($collectionTopDivs[1]->getText(), 'test set');
+		$parts = $browser->getElements('.set-card__part');
+		$this->assertSame($parts[0]->getText(), '1/2');
+		$this->assertSame($parts[1]->getText(), '2/2');
 		$collectionTopDivs[0]->click();
 		$this->assertSame(Util::getMyAddress() . '/sets/' . $context->tsumegos[0]['sets'][0]['id'], $browser->driver->getCurrentURL());
 

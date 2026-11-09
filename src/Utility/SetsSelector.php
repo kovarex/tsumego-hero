@@ -233,7 +233,7 @@ class SetsSelector
 	 * @param array<int|string, array{name: string, color: string, order: mixed}>|null $collectionInfo The name, color
 	 *   and order of each collection by its id, in place of the row fields.
 	 * @return array[] Collection chunks, each with id, name, color, order, partition, total_count,
-	 *   usage_count, rating_sum, solved_count and perfect.
+	 *   usage_count, rating_sum, solved_count, perfect and part_count (0 for a collection not split).
 	 */
 	private function buildPartitionedSets(array $rows, string $idField, ?string $nameField, ?string $colorField, ?string $orderField = null, array $itemSortKeys = [], ?array $collectionInfo = null): array
 	{
@@ -275,6 +275,7 @@ class SetsSelector
 				ksort($collectionItems);
 			$total = count($collectionItems);
 			$partition = $total <= $size ? -1 : 0;
+			$partCount = $partition === -1 ? 0 : (int) ceil($total / $size);
 			$count = $ratingSum = $solvedCount = 0;
 			$cardTsumegoIDs = [];
 			foreach ($collectionItems as [$rating, $tsumegoID])
@@ -288,7 +289,7 @@ class SetsSelector
 				{
 					if ($solvedCount === $count)
 						$finished[count($sets)] = $cardTsumegoIDs;
-					$sets[] = self::partitionCard($id, $collection, $partition, $total, $count, $ratingSum, $solvedCount);
+					$sets[] = self::partitionCard($id, $collection, $partition, $partCount, $total, $count, $ratingSum, $solvedCount);
 					$partition++;
 					$count = $ratingSum = $solvedCount = 0;
 					$cardTsumegoIDs = [];
@@ -298,7 +299,7 @@ class SetsSelector
 			{
 				if ($solvedCount === $count)
 					$finished[count($sets)] = $cardTsumegoIDs;
-				$sets[] = self::partitionCard($id, $collection, $partition, $total, $count, $ratingSum, $solvedCount);
+				$sets[] = self::partitionCard($id, $collection, $partition, $partCount, $total, $count, $ratingSum, $solvedCount);
 			}
 		}
 
@@ -327,6 +328,7 @@ class SetsSelector
 			'solved_percent' => Util::getPercentButAvoid100UntilComplete($set['solved_count'], $set['usage_count']),
 			'perfect' => $set['perfect'],
 			'partition' => $set['partition'],
+			'part_count' => $set['part_count'],
 		];
 		if ($withDifficulty)
 			$card['difficulty'] = Rating::getReadableRankFromRating($set['rating_sum'] / $set['usage_count']);
@@ -334,7 +336,7 @@ class SetsSelector
 	}
 
 	/** @param array{name: string, color: string, order: mixed} $collection */
-	private static function partitionCard(int|string $id, array $collection, int $partition, int $total, int $count, float $ratingSum, int $solvedCount): array
+	private static function partitionCard(int|string $id, array $collection, int $partition, int $partCount, int $total, int $count, float $ratingSum, int $solvedCount): array
 	{
 		return [
 			'id' => $id,
@@ -342,6 +344,7 @@ class SetsSelector
 			'color' => $collection['color'],
 			'order' => $collection['order'],
 			'partition' => $partition,
+			'part_count' => $partCount,
 			'total_count' => $total,
 			'usage_count' => $count,
 			'rating_sum' => $ratingSum,

@@ -162,6 +162,7 @@ use App\Utility\ViteManifest;
 			'solved' => $set['solved_percent'],
 			'perfect' => $set['perfect'],
 			'partition' => $set['partition'],
+			'partCount' => $set['part_count'],
 		], $backgroundImage);
 	} ?>
 	</div>
