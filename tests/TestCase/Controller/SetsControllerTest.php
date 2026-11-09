@@ -535,13 +535,18 @@ class SetsControllerTest extends IntegrationTestCase
 	//a single failed attempt, even one followed by a solve, takes that away from its card only
 	public function testTopicsIndexMarksCardsFinishedWithoutMistakes(): void
 	{
-		$contextParams = ['user' => ['collection_size' => 2]];
+		// two parts of ten (the smallest collection size): the first all solved without a miss, some more than once,
+		// the second with one problem failed before it was solved
+		$contextParams = ['user' => ['collection_size' => 10]];
 		$contextParams['tsumegos'] = [];
-		$attempts = [
-			[['solved' => true]],
-			[['solved' => true], ['solved' => true]],
-			[['solved' => true]],
-			[['solved' => false], ['solved' => true]]];
+		$attempts = [];
+		for ($i = 0; $i < 20; $i++)
+			$attempts[] = match ($i)
+			{
+				3 => [['solved' => true], ['solved' => true]],
+				15 => [['solved' => false], ['solved' => true]],
+				default => [['solved' => true]],
+			};
 		foreach ($attempts as $i => $problemAttempts)
 			$contextParams['tsumegos'] [] = [
 				'sets' => [['name' => 'accuracy set', 'num' => $i + 1]],
