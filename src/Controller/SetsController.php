@@ -668,7 +668,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 		$accuracy = 0;
 		if ($scoring)
 		{
-			$tsumegoButtons->loadAttempts(Auth::getUserID());
+			$tsumegoButtons->loadAttempts(Auth::getUserID(), (int) $set->id);
 			$avgTime = $tsumegoButtons->getAverageSolveTime();
 			$accuracy = $tsumegoButtons->getAccuracy();
 			if ($problemSolvedPercent >= 100)

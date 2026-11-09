@@ -2422,7 +2422,8 @@ class SetsControllerTest extends IntegrationTestCase
 	}
 
 	//Each attempt that solved a problem counts as a solve, each misplay as a fail and an attempt that
-	//failed without one as one fail. A solved problem without an attempt counts as one fail.
+	//failed without one as one fail. A solved problem without an attempt counts as one fail, and a problem not solved
+	//yet doesn't count in the accuracy.
 	public function testSetViewCountsTheAttemptsOfEachProblemAndTheAccuracy(): void
 	{
 		$context = new ContextPreparator([
@@ -2442,7 +2443,7 @@ class SetsControllerTest extends IntegrationTestCase
 		$this->assertSame([2, 0, 0, 0], array_map(fn($button) => $button->solvedAttempts, (array) $buttons));
 		$this->assertSame([3, 0, 3, 0], array_map(fn($button) => $button->failedAttempts, (array) $buttons));
 		$this->assertEquals([12, 0, 0, 0], array_map(fn($button) => $button->seconds, (array) $buttons), 'the best solve time');
-		$this->assertEquals(22.22, $this->viewVariable('accuracy'), '2 solves against 3 + 1 + 3 fails');
+		$this->assertEquals(33.33, $this->viewVariable('accuracy'), '2 solves against 3 + 1 fails, the failed problem not solved yet');
 		$this->assertEquals(36, $this->viewVariable('avgTime'), '(12 + 60) / 2');
 		$this->assertTextContains('<div class="problem-nav__ratio">2/3</div>', (string) $this->_response->getBody());
 	}
@@ -2603,6 +2604,47 @@ class SetsControllerTest extends IntegrationTestCase
 
 		$this->assertSame(1, $this->viewVariable('pdCounter'));
 		$this->assertTextContains('1 reset in the last month', (string) $this->_response->getBody());
+	}
+
+	//On a phone each score stays on one line with its best, inside the page, with long values
+	public function testTheScoresWithTheirBestsFitAPhoneOnOneLineEach(): void
+	{
+		$attempts = array_fill(0, 29, ['solved' => true, 'seconds' => 123]);
+		$attempts[] = ['solved' => true, 'seconds' => 124, 'misplays' => 1];
+		$context = new ContextPreparator([
+			'user' => ['name' => 'player', 'collection_size' => 200],
+			'tsumegos' => [['sets' => [['name' => 'phone set', 'num' => 1]], 'status' => 'S', 'attempts' => $attempts]],
+			'achievement-conditions' => [
+				['category' => AchievementConditionTable::CATEGORY_SET_ACCURACY, 'set' => 'phone set', 'partition' => 0, 'value' => 100],
+				['category' => AchievementConditionTable::CATEGORY_SET_TIME, 'set' => 'phone set', 'partition' => 0, 'value' => 99.5]]]);
+
+		$browser = Browser::instance();
+		$window = $browser->driver->manage()->window();
+		$originalSize = $window->getSize();
+		try
+		{
+			$window->setSize(new Facebook\WebDriver\WebDriverDimension(390, 844));
+			$browser->get('sets/' . $context->tsumegos[0]['sets'][0]['id']);
+			$browser->driver->executeScript('const toggle = document.querySelector(".set-view__stats-toggle"); if (toggle && toggle.offsetParent) toggle.click();');
+			$layout = $browser->driver->executeScript(<<<'JS'
+				const width = document.documentElement.clientWidth;
+				return {
+					scores: ['.setViewAccuracy', '.setViewTime'].map(selector => {
+						const element = document.querySelector(selector);
+						const rect = element.getBoundingClientRect();
+						const lineHeight = parseFloat(getComputedStyle(element).lineHeight) || parseFloat(getComputedStyle(element).fontSize) * 1.5;
+						return {text: element.textContent, oneLine: rect.height < lineHeight * 1.8 + 8, inside: rect.left >= 0 && rect.right <= width};
+					}),
+				};
+				JS);
+			$this->assertEquals(['scores' => [
+				['text' => 'Accuracy: 96.77% · Best: 100%', 'oneLine' => true, 'inside' => true],
+				['text' => 'Avg. time: 123s · Best: 99.5s', 'oneLine' => true, 'inside' => true]]], $layout);
+		}
+		finally
+		{
+			$window->setSize($originalSize);
+		}
 	}
 
 	public function testGuestSeesNoScoresOnASet(): void

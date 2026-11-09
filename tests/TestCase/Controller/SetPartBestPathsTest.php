@@ -355,4 +355,43 @@ class SetPartBestPathsTest extends IntegrationTestCase
 		$this->assertSame('S', Util::query('SELECT status FROM tsumego_status WHERE tsumego_id = ?', [$context->tsumegos[9]['id']])[0]['status']);
 		$this->assertEquals(90, self::accuracy($context, 0), 'kept by the solve in the time mode, which counts as one fail');
 	}
+
+	//Path 15: the live accuracy and time of the page follow the run the bests are kept of: a reset hides the attempts
+	//before it, and while the run goes on, only its solved problems count
+	public function testAResetHidesTheOldMistakesFromTheLiveScores(): void
+	{
+		$context = self::collection(10);
+		for ($i = 0; $i < 10; $i++)
+			$this->solveAfterAMiss($context, $i, 40);
+		self::anHourPasses();
+		$this->reset($context, 1);
+
+		$this->solveCleanly($context, 0, 4, 10);
+		$this->play($context, 5, PlayOutcome::Failed);
+		$this->get('sets/' . self::setID($context));
+
+		$this->assertEquals(100, $this->viewVariable('accuracy'), 'five problems solved cleanly since the reset, the one failed not solved yet');
+		$this->assertEquals(10, $this->viewVariable('avgTime'));
+		$this->assertEquals(50, $this->viewVariable('bestAccuracy'), 'the best of the run before');
+		$this->assertTextContains('Accuracy: 100%</b> &middot; Best: 50%', $this->view);
+	}
+
+	//At another collection size the live scores follow the run of the part of each problem: a page of twenty shows
+	//the first part's old mistakes and not the second part's, which was reset
+	public function testTheLiveScoresFollowThePartOfEachProblemAtAnySize(): void
+	{
+		$context = self::collection(20, options: ['user' => ['name' => 'player', 'collection_size' => 20]]);
+		$this->solveAfterAMiss($context, 0, 20);
+		$this->solveAfterAMiss($context, 10, 20);
+		self::anHourPasses();
+		Util::execute('INSERT INTO progress_deletion (user_id, set_id, set_partition, created) VALUES (?, ?, 1, NOW() - INTERVAL 1 MINUTE)', [$context->user['id'], self::setID($context)]);
+		Util::execute('DELETE FROM tsumego_status WHERE tsumego_id = ?', [$context->tsumegos[10]['id']]);
+
+		$this->solveCleanly($context, 10, 10, 10);
+		$this->get('sets/' . self::setID($context));
+
+		$this->assertEquals(66.67, $this->viewVariable('accuracy'), 'the miss of the first problem counts, not the one of the eleventh');
+		$this->assertEquals(25, $this->viewVariable('avgTime'), '(40 + 10) / 2: the attempt with the miss took 20 + 20 seconds');
+		$this->assertNull($this->viewVariable('bestAccuracy'));
+	}
 }

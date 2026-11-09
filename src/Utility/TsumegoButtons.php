@@ -3,6 +3,7 @@
 namespace App\Utility;
 
 use App\Model\Entity\Set;
+use App\Model\Table\ProgressDeletionTable;
 use App\Model\Table\SgfTable;
 use ArrayObject;
 use App\Model\Table\SetTable;
@@ -267,25 +268,48 @@ class TsumegoButtons extends ArrayObject
 	}
 
 	//Loads the attempts of the player on the problems of the buttons: the solves and fails of each and
-	//its best (shortest) solve time. They are read in one query, newest first, and sorted out by
-	//problem, as a player who trains a set has dozens of attempts on each of its problems.
-	public function loadAttempts(int $userID): void
+	//its best (shortest) solve time. They are read in one query and sorted out by problem, as a player who
+	//trains a set has dozens of attempts on each of its problems.
+	//$setID: The collection of the buttons, whose resets start a new run: only the attempts since the latest
+	//reset of the part a problem is in count (ProgressDeletionTable::$PARTITION_SIZE, the part whatever the
+	//page's size; a reset without a part is of every part), the same run the bests are kept of (SetPartBestScores)
+	public function loadAttempts(int $userID, ?int $setID = null): void
 	{
 		$tsumegoIDs = array_map(fn(TsumegoButton $tsumegoButton) => $tsumegoButton->tsumegoID, (array) $this);
 		if (empty($tsumegoIDs))
 			return;
 		$attemptsByTsumego = [];
-		foreach (Util::query('SELECT tsumego_id, solved, seconds, misplays FROM tsumego_attempt
+		foreach (Util::query('SELECT tsumego_id, solved, seconds, misplays, created FROM tsumego_attempt
 			WHERE user_id = ? AND tsumego_id IN (' . implode(',', array_fill(0, count($tsumegoIDs), '?')) . ')', [$userID, ...$tsumegoIDs]) as $attempt)
 			$attemptsByTsumego[(int) $attempt['tsumego_id']][] = $attempt;
+
+		// when each problem's run started, by its set connection
+		$runStart = [];
+		if ($setID !== null)
+		{
+			$resetOfPart = [];
+			$resetOfAll = '';
+			foreach (Util::query('SELECT set_partition, MAX(created) AS created FROM progress_deletion WHERE user_id = ? AND set_id = ? GROUP BY set_partition',
+				[$userID, $setID]) as $row)
+					if ($row['set_partition'] === null)
+						$resetOfAll = (string) $row['created'];
+					else
+						$resetOfPart[(int) $row['set_partition']] = (string) $row['created'];
+			if ($resetOfPart || $resetOfAll !== '')
+				foreach (ProgressDeletionTable::partitionsOfSet($setID) as $setConnectionID => $part)
+					$runStart[$setConnectionID] = max($resetOfPart[$part] ?? '', $resetOfAll);
+		}
 
 		foreach ($this as $tsumegoButton)
 		{
 			$tsumegoButton->seconds = 0;
 			$tsumegoButton->solvedAttempts = 0;
 			$tsumegoButton->failedAttempts = 0;
+			$since = $runStart[$tsumegoButton->setConnectionID] ?? '';
 			foreach ($attemptsByTsumego[$tsumegoButton->tsumegoID] ?? [] as $attempt)
 			{
+				if ((string) $attempt['created'] < $since)
+					continue;
 				$seconds = (int) $attempt['seconds'];
 				if ($attempt['solved'])
 				{
@@ -314,23 +338,25 @@ class TsumegoButtons extends ArrayObject
 		return $solvedCount == 0 ? 0 : round($secondsSum / $solvedCount, 2);
 	}
 
-	//The share of the attempts of the player that solved the problem, in percent. A solved problem
-	//without a recorded attempt counts as one fail.
+	//The share of the attempts of the player that solved the problem, in percent, over the problems solved so far:
+	//a problem not solved yet doesn't count, so a run solved cleanly so far is 100%. A solved problem without a
+	//loaded attempt counts as one fail.
 	public function getAccuracy(): float
 	{
 		$solvedSum = 0;
 		$failedSum = 0;
 		foreach ($this as $tsumegoButton)
+		{
+			if (!TsumegoUtil::isSolvedStatus($tsumegoButton->status))
+				continue;
 			if ($tsumegoButton->solvedAttempts == 0 && $tsumegoButton->failedAttempts == 0)
-			{
-				if (TsumegoUtil::isSolvedStatus($tsumegoButton->status))
-					$failedSum++;
-			}
+				$failedSum++;
 			else
 			{
 				$solvedSum += $tsumegoButton->solvedAttempts;
 				$failedSum += $tsumegoButton->failedAttempts;
 			}
+		}
 		return $solvedSum + $failedSum == 0 ? 0 : round($solvedSum / ($solvedSum + $failedSum) * 100, 2);
 	}
 
