@@ -20,6 +20,8 @@ use App\Model\Table\ChallengeTable;
  * @var array<int, App\Utility\TsumegoButton> $problemButtons What ChallengeTable::problemButtons() returned, when $showResults
  * @var array $attemptsByRun What ChallengeTable::attemptsByRun() returned, when $showResults
  * @var int|null $otherChallengeInProgressID Another challenge whose run the viewer is in the middle of
+ * @var string|null $otherChallengeInProgressTitle Its title, ChallengeTable::title()
+ * @var bool $isCreator The viewer created the challenge, and can rename it
  * @var bool $wasRemoved The creator removed the viewer from the challenge
  * @var bool $isFinished Every player still in the challenge finished their run, so it has places
  * @var list<int> $removableUserIDs The players the viewer, its creator, can remove now
@@ -37,7 +39,18 @@ $finishedCount = count(array_filter($standings, fn(array $row) => $row['run'] ==
 <div class="challenges">
 	<div class="challenges__header">
 		<p class="challenges__crumb"><a href="/challenges">Challenges</a></p>
-		<h1 class="challenges__title"><?= h(ChallengeTable::title($challenge)) ?></h1>
+		<h1 class="challenges__title" id="challenge-title"><?= h(ChallengeTable::title($challenge)) ?></h1>
+		<?php if ($isCreator): ?>
+		<details class="challenges__rename" id="challenge-rename">
+			<summary class="hint">Rename</summary>
+			<form class="challenges__inline-form" method="post" action="/challenges/rename/<?= $challengeId ?>">
+				<label class="visually-hidden" for="challenge-rename-name">Name of the challenge</label>
+				<input class="form-field__control" type="text" id="challenge-rename-name" name="name" value="<?= h((string) ($challenge['name'] ?? '')) ?>"
+					maxlength="<?= ChallengeTable::NAME_MAXIMUM_LENGTH ?>" placeholder="Challenge #<?= $challengeId ?>" autocomplete="off">
+				<button class="btn btn--small" type="submit" id="challenge-rename-save">Save</button>
+			</form>
+		</details>
+		<?php endif; ?>
 		<p class="challenges__settings" id="challenge-settings"><?= h(ChallengeTable::describe($challenge)) ?></p>
 		<p class="hint">by <?= UserTable::renderLink($challenge) ?>,
 			<time datetime="<?= Util::toIso8601($challenge['created']) ?>" data-format="datetime"><?= h($challenge['created']) ?></time></p>
@@ -57,7 +70,7 @@ $finishedCount = count(array_filter($standings, fn(array $row) => $row['run'] ==
 		<p>Every problem has <?= (int) $challenge['seconds_per_problem'] ?> seconds, and the faster you solve it, the more points you get.
 			The clock of a problem starts when it is shown, and you can play your run only once.</p>
 		<?php if ($otherChallengeInProgressID): ?>
-		<p class="hint" id="challenge-other-in-progress">You are in the middle of <a href="/challenges/<?= $otherChallengeInProgressID ?>">Challenge #<?= $otherChallengeInProgressID ?></a>,
+		<p class="hint" id="challenge-other-in-progress">You are in the middle of <a href="/challenges/<?= $otherChallengeInProgressID ?>"><?= h((string) $otherChallengeInProgressTitle) ?></a>,
 			playing this one ends it, and the problems you didn't play there get no points.</p>
 		<?php endif; ?>
 		<span class="challenges__actions">

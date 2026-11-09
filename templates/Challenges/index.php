@@ -25,6 +25,10 @@ use App\Utility\ViteManifest;
 	<section class="card card--purple challenges__section" id="challenges-create">
 		<h2 class="challenges__heading">New challenge</h2>
 		<form method="post" action="/challenges/create">
+			<div class="form-field">
+				<label class="form-field__label" for="challenge-name">Name <span class="hint">(optional)</span></label>
+				<input class="form-field__control" type="text" id="challenge-name" name="name" maxlength="<?= ChallengeTable::NAME_MAXIMUM_LENGTH ?>" placeholder="Like Tea house or At home, otherwise it gets a number" autocomplete="off">
+			</div>
 			<div class="challenges__form-row">
 				<div class="form-field">
 					<label class="form-field__label" for="challenge-minimum-rank">Problems from</label>

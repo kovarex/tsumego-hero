@@ -1361,4 +1361,98 @@ class ChallengesControllerTest extends IntegrationTestCase
 			$window->setSize($originalSize);
 		}
 	}
+
+	public function testTheNameOfAChallengeIsTrimmedAndShowsInsteadOfItsNumber(): void
+	{
+		$this->prepare();
+		$challengeId = $this->create(['name' => "  Čajovna \t u  Hradu  ", 'problem_count' => 5]);
+
+		$this->assertSame('Čajovna u Hradu', ChallengeTable::withDetails($challengeId)['name']);
+		$this->get('/challenges');
+		$this->assertTextContains('<a href="/challenges/' . $challengeId . '">Čajovna u Hradu</a>', $this->view);
+		$this->get('/challenges/' . $challengeId);
+		$this->assertMatchesRegularExpression('/id="challenge-title"[^>]*>\s*Čajovna u Hradu\s*</', $this->view);
+		$this->assertTextNotContains('Challenge #' . $challengeId . '<', $this->view);
+
+		$this->post('/challenges/play/' . $challengeId);
+		$this->get('/timeMode/overview');
+		$this->assertTextContains('Čajovna u Hradu', $this->view);
+	}
+
+	public function testAChallengeWithoutANameIsNamedByItsNumber(): void
+	{
+		$this->prepare();
+		$challengeId = $this->create(['name' => '   ']);
+
+		$this->assertNull(ChallengeTable::withDetails($challengeId)['name']);
+		$this->assertSame('Challenge #' . $challengeId, ChallengeTable::titleOf($challengeId));
+		$this->get('/challenges');
+		$this->assertTextContains('<a href="/challenges/' . $challengeId . '">Challenge #' . $challengeId . '</a>', $this->view);
+	}
+
+	public function testATooLongNameIsRefused(): void
+	{
+		$this->prepare();
+		$this->create(['name' => str_repeat('ž', ChallengeTable::NAME_MAXIMUM_LENGTH + 1)]);
+
+		$this->assertResponseCode(400);
+		$this->assertSame(0, (int) Util::query('SELECT COUNT(*) AS count FROM challenge')[0]['count']);
+
+		$challengeId = $this->create(['name' => str_repeat('ž', ChallengeTable::NAME_MAXIMUM_LENGTH)]);
+		$this->assertSame(str_repeat('ž', ChallengeTable::NAME_MAXIMUM_LENGTH), ChallengeTable::withDetails($challengeId)['name']);
+	}
+
+	public function testTheNameIsEscaped(): void
+	{
+		$this->prepare();
+		$challengeId = $this->create(['name' => '<b>Doma</b>']);
+
+		$this->get('/challenges');
+		$this->assertTextContains('&lt;b&gt;Doma&lt;/b&gt;', $this->view);
+		$this->assertTextNotContains('<b>Doma</b>', $this->view);
+		$this->get('/challenges/' . $challengeId);
+		$this->assertTextContains('&lt;b&gt;Doma&lt;/b&gt;', $this->view);
+		$this->assertTextNotContains('<b>Doma</b>', $this->view);
+	}
+
+	public function testTheCreatorRenamesTheChallengeAndCanRemoveTheName(): void
+	{
+		$this->prepare();
+		$challengeId = $this->create(['name' => 'Doma', 'players' => 'DN_friend']);
+		$this->get('/challenges/' . $challengeId);
+		$this->assertTextContains('id="challenge-rename"', $this->view);
+
+		$this->post('/challenges/rename/' . $challengeId, ['name' => ' Čajovna ']);
+		$this->assertRedirect('/challenges/' . $challengeId);
+		$this->assertSame('Čajovna', ChallengeTable::withDetails($challengeId)['name']);
+		$this->assertSame('Renamed the challenge to Čajovna.', CookieFlash::get());
+
+		$this->post('/challenges/rename/' . $challengeId, ['name' => '']);
+		$this->assertNull(ChallengeTable::withDetails($challengeId)['name']);
+		$this->assertSame('Challenge #' . $challengeId, ChallengeTable::titleOf($challengeId));
+	}
+
+	public function testOnlyTheCreatorRenamesTheChallenge(): void
+	{
+		$this->prepare();
+		$challengeId = $this->create(['name' => 'Doma', 'players' => 'DN_friend']);
+		$this->login('friend');
+		$this->get('/challenges/' . $challengeId);
+		$this->assertTextNotContains('id="challenge-rename"', $this->view);
+
+		$this->post('/challenges/rename/' . $challengeId, ['name' => 'Mine']);
+
+		$this->assertResponseCode(403);
+		$this->assertSame('Doma', ChallengeTable::withDetails($challengeId)['name']);
+	}
+
+	public function testARematchKeepsTheName(): void
+	{
+		$this->prepare();
+		$challengeId = $this->create(['name' => 'Čajovna', 'problem_count' => 5, 'players' => 'DN_friend']);
+
+		$rematch = ChallengeTable::rematch(ChallengeTable::withDetails($challengeId), $this->userId('challenger'));
+
+		$this->assertSame('Čajovna', ChallengeTable::withDetails($rematch['id'])['name']);
+	}
 }

@@ -10,6 +10,7 @@ use App\Utility\ViteManifest;
  * @var array<\App\Model\Entity\TimeModeCategory> $timeModeCategories
  * @var array $timeModeRanks
  * @var int|null $challengeInProgressID The challenge whose run the player is in the middle of
+ * @var string|null $challengeInProgressTitle Its title, ChallengeTable::title()
  */
 
 //The best rank the player passed in each category, which the account bar shows
@@ -29,7 +30,7 @@ foreach ($timeModeCategories as $timeModeCategory)
 </div>
 <?php if ($challengeInProgressID): ?>
 <p class="hint legacy-center" id="challenge-in-progress">
-	You are in the middle of <a href="/challenges/<?= $challengeInProgressID ?>">Challenge #<?= $challengeInProgressID ?></a>:
+	You are in the middle of <a href="/challenges/<?= $challengeInProgressID ?>"><?= h((string) $challengeInProgressTitle) ?></a>:
 	<a href="/timeMode/play">continue it</a>. Starting a time mode run ends it, and the problems you didn't play get no points.
 </p>
 <?php endif; ?>

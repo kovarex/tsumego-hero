@@ -6,6 +6,7 @@ use Cake\Datasource\Exception\RecordNotFoundException;
 use Cake\Http\Exception\BadRequestException;
 use Cake\Http\Exception\NotFoundException;
 use Exception;
+use App\Model\Table\ChallengeTable;
 use App\Model\Table\SetConnectionTable;
 use App\Attribute\HttpGet;
 use App\Attribute\HttpPost;
@@ -151,6 +152,7 @@ class TimeModeController extends AppController
 			'time_mode_session_status_id' => TimeModeSessionStatusTable::IN_PROGRESS,
 			'challenge_id IS NOT' => null])->first();
 		$this->set('challengeInProgressID', $challengeRun?->challenge_id);
+		$this->set('challengeInProgressTitle', $challengeRun ? ChallengeTable::titleOf((int) $challengeRun->challenge_id) : null);
 		return null;
 	}
 
