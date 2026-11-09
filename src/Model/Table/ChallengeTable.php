@@ -40,6 +40,9 @@ class ChallengeTable extends AppTable
 	//More players than this can't be in one challenge, so its invitations can't be used to message everyone.
 	public const MAXIMUM_PARTICIPANTS = 50;
 
+	//The longest name a challenge can have, the length of challenge.name
+	public const NAME_MAXIMUM_LENGTH = 100;
+
 	//Where a player is with their run, see standings().
 	public const RUN_NOT_STARTED = 'not started';
 	public const RUN_PLAYING = 'playing';
@@ -50,7 +53,7 @@ class ChallengeTable extends AppTable
 	//Draws the problems and creates the challenge, with its creator as its first participant.
 	//Returns the id of the new challenge, null when there is no problem of these ranks
 	/** @param list<int> $avoidTsumegoIds Problems drawn only when there are not enough others, like the ones of the challenge a rematch repeats */
-	public static function start(int $creatorUserId, int $minimumTimeModeRankId, int $maximumTimeModeRankId, int $secondsPerProblem, int $problemCount, array $avoidTsumegoIds = [], ?int $rematchOfChallengeId = null): ?int
+	public static function start(int $creatorUserId, int $minimumTimeModeRankId, int $maximumTimeModeRankId, int $secondsPerProblem, int $problemCount, array $avoidTsumegoIds = [], ?int $rematchOfChallengeId = null, ?string $name = null): ?int
 	{
 		$tsumegos = TimeMode::getTsumegosOfRanks($minimumTimeModeRankId, $maximumTimeModeRankId);
 		if (empty($tsumegos))
@@ -63,6 +66,7 @@ class ChallengeTable extends AppTable
 		$challengeTable = TableRegistry::getTableLocator()->get('Challenge');
 		$challenge = $challengeTable->saveOrFail($challengeTable->newEntity([
 			'created_by_user_id' => $creatorUserId,
+			'name' => $name,
 			'minimum_time_mode_rank_id' => $minimumTimeModeRankId,
 			'maximum_time_mode_rank_id' => $maximumTimeModeRankId,
 			'seconds_per_problem' => $secondsPerProblem,
@@ -77,7 +81,7 @@ class ChallengeTable extends AppTable
 		return $challengeId;
 	}
 
-	//The rematch of the challenge: a new challenge with its settings, started by the player, with the other
+	//The rematch of the challenge: a new challenge with its settings and its name, started by the player, with the other
 	//players of the challenge invited (the ones who declined it, were removed or deleted their account are left out). New
 	//problems are drawn, the ones of the challenge only when the ranks have too few others.
 	//A challenge has one rematch at most, which the unique key of rematch_of_challenge_id keeps even when two
@@ -100,7 +104,8 @@ class ChallengeTable extends AppTable
 				(int) $challenge['seconds_per_problem'],
 				(int) $challenge['problem_count'],
 				self::problemIDs($challengeId),
-				$challengeId);
+				$challengeId,
+				$challenge['name'] ?? null);
 		}
 		catch (QueryException $exception)
 		{
@@ -200,12 +205,37 @@ class ChallengeTable extends AppTable
 		return $minutes . ':' . str_pad(number_format($seconds - $minutes * 60, 1, '.', ''), 4, '0', STR_PAD_LEFT);
 	}
 
+	//What a challenge is called: the name its creator gave it, or "Challenge #<id>" when it has none.
+	//Plain text, escaped where it is shown
+	/** @param array<string, mixed> $challenge With id, and name when it has one */
 	public static function title(array $challenge): string
 	{
-		return 'Challenge #' . (int) $challenge['id'];
+		$name = $challenge['name'] ?? null;
+		return $name !== null && $name !== '' ? (string) $name : 'Challenge #' . (int) $challenge['id'];
 	}
 
-	//What is played in a challenge, like "10 problems, 5k to 1d, 1 minute each".
+	//The title of a challenge by its id, for the places that know only the id
+	public static function titleOf(int $challengeId): string
+	{
+		$name = Util::query('SELECT name FROM challenge WHERE id = ?', [$challengeId])[0]['name'] ?? null;
+		return self::title(['id' => $challengeId, 'name' => $name]);
+	}
+
+	//The name a player typed for a challenge as it is stored: without the spaces around it, inner runs of them
+	//made one, NULL when nothing is left
+	public static function normalizeName(?string $name): ?string
+	{
+		$name = trim((string) preg_replace('/\s+/u', ' ', (string) $name));
+		return $name === '' ? null : $name;
+	}
+
+	//The creator gives the challenge another name, or none (NULL)
+	public static function rename(int $challengeId, ?string $name): void
+	{
+		Util::execute('UPDATE challenge SET name = ? WHERE id = ?', [$name, $challengeId]);
+	}
+
+	//What is played in a challenge, like "10 problems, 5k to 1d, 1 minute".
 	/** @param array<string, mixed> $challenge With problem_count, minimum_rank and maximum_rank, see withDetails() */
 	public static function describe(array $challenge): string
 	{
@@ -213,7 +243,7 @@ class ChallengeTable extends AppTable
 			? $challenge['minimum_rank']
 			: $challenge['minimum_rank'] . ' to ' . $challenge['maximum_rank'];
 		return $challenge['problem_count'] . ' problem' . ($challenge['problem_count'] == 1 ? '' : 's') . ', '
-			. $ranks . ', ' . self::formatTimeForAProblem((int) $challenge['seconds_per_problem']) . ' each';
+			. $ranks . ', ' . self::formatTimeForAProblem((int) $challenge['seconds_per_problem']);
 	}
 
 	//The time for a problem in words, like "45 seconds", "1 minute" or "1.5 minutes".
@@ -264,7 +294,7 @@ class ChallengeTable extends AppTable
 	//$extraColumns: Columns the caller joins in, each followed by a comma
 	private static function selectSql(string $extraColumns = ''): string
 	{
-		return 'SELECT c.id, c.created_by_user_id, c.minimum_time_mode_rank_id, c.maximum_time_mode_rank_id,
+		return 'SELECT c.id, c.name, c.created_by_user_id, c.minimum_time_mode_rank_id, c.maximum_time_mode_rank_id,
 				c.seconds_per_problem, c.created, minimum_rank.name AS minimum_rank, maximum_rank.name AS maximum_rank, ' . $extraColumns . '
 				(SELECT COUNT(*) FROM challenge_problem p WHERE p.challenge_id = c.id) AS problem_count,
 				(SELECT COUNT(*) FROM challenge_participant p JOIN user pu ON pu.id = p.user_id AND pu.deleted IS NULL

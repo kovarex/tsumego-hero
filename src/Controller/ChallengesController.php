@@ -73,7 +73,8 @@ class ChallengesController extends AppController
 		if ($minimumRankID > $maximumRankID)
 			[$minimumRankID, $maximumRankID] = [$maximumRankID, $minimumRankID];
 
-		$challengeID = ChallengeTable::start(Auth::getUserID(), $minimumRankID, $maximumRankID, $secondsPerProblem, $problemCount);
+		$name = self::nameFromInput($data['name'] ?? null);
+		$challengeID = ChallengeTable::start(Auth::getUserID(), $minimumRankID, $maximumRankID, $secondsPerProblem, $problemCount, [], null, $name);
 		if ($challengeID === null)
 		{
 			CookieFlash::set('There are no problems of these ranks, pick other ones.', 'error');
@@ -81,6 +82,21 @@ class ChallengesController extends AppController
 		}
 		$this->inviteByNames($challengeID, (string) ($data['players'] ?? ''));
 		return $this->redirect(self::challengeUrl($challengeID));
+	}
+
+	//The creator gives the challenge another name, or takes its name away with an empty one. The name only
+	//labels the challenge, so it can change at any time, also after the players finished.
+	//name: The new name
+	#[HttpPost]
+	public function rename(string $id): mixed
+	{
+		$challenge = $this->findChallenge($id);
+		if (!Auth::isLoggedIn() || (int) $challenge['created_by_user_id'] !== Auth::getUserID())
+			throw new ForbiddenException('Only the creator of the challenge can rename it.');
+		$name = self::nameFromInput($this->input('name'));
+		ChallengeTable::rename((int) $challenge['id'], $name);
+		CookieFlash::set($name === null ? 'The challenge has no name now.' : 'Renamed the challenge to ' . $name . '.', 'success');
+		return $this->redirect(self::challengeUrl((int) $challenge['id']));
 	}
 
 	//The page of a challenge: what is played, the table of the players, and a way in for the
@@ -115,6 +131,8 @@ class ChallengesController extends AppController
 			'challenge_id IS NOT' => null,
 			'challenge_id !=' => $challengeID])->first() : null;
 		$this->set('otherChallengeInProgressID', $otherRun?->challenge_id);
+		$this->set('otherChallengeInProgressTitle', $otherRun ? ChallengeTable::titleOf((int) $otherRun->challenge_id) : null);
+		$this->set('isCreator', Auth::isLoggedIn() && (int) $challenge['created_by_user_id'] === Auth::getUserID());
 		return null;
 	}
 
@@ -373,6 +391,15 @@ class ChallengesController extends AppController
 			if ($rank->name === $playerRank)
 				return $rank->id;
 		return $ranks[0]->id;
+	}
+
+	//The name of a challenge from the form, as ChallengeTable::normalizeName() stores it
+	private static function nameFromInput(mixed $name): ?string
+	{
+		$name = ChallengeTable::normalizeName(is_string($name) ? $name : null);
+		if ($name !== null && mb_strlen($name) > ChallengeTable::NAME_MAXIMUM_LENGTH)
+			throw new BadRequestException('The name of a challenge can have at most ' . ChallengeTable::NAME_MAXIMUM_LENGTH . ' characters.');
+		return $name;
 	}
 
 	private static function challengeUrl(int $challengeID): string

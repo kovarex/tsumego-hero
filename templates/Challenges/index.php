@@ -1,7 +1,6 @@
 <?php
 
 use App\Model\Table\ChallengeTable;
-use App\Model\Table\UserTable;
 use App\Utility\Util;
 use App\Utility\ViteManifest;
 
@@ -25,6 +24,10 @@ use App\Utility\ViteManifest;
 	<section class="card card--purple challenges__section" id="challenges-create">
 		<h2 class="challenges__heading">New challenge</h2>
 		<form method="post" action="/challenges/create">
+			<div class="form-field">
+				<label class="form-field__label" for="challenge-name">Name <span class="hint">(optional)</span></label>
+				<input class="form-field__control" type="text" id="challenge-name" name="name" maxlength="<?= ChallengeTable::NAME_MAXIMUM_LENGTH ?>" placeholder="Like Tea house or At home, otherwise it gets a number" autocomplete="off">
+			</div>
 			<div class="challenges__form-row">
 				<div class="form-field">
 					<label class="form-field__label" for="challenge-minimum-rank">Problems from</label>
@@ -72,56 +75,76 @@ use App\Utility\ViteManifest;
 		<h2 class="challenges__heading">Your challenges</h2>
 		<?php if (empty($challenges)): ?>
 		<p class="hint">None yet.</p>
+		<?php else: ?>
+		<?php // a table on a computer; on a phone each row stacks into a few lines, with the words of the headers it hides (.challenges__list-label) ?>
+		<table class="challenges__list">
+			<thead>
+				<tr>
+					<th scope="col">Challenge</th>
+					<th scope="col">Place</th>
+					<th scope="col">Points</th>
+					<th scope="col">Problems</th>
+					<th scope="col">Players</th>
+					<th scope="col">Finished</th>
+				</tr>
+			</thead>
+			<tbody>
+				<?php foreach ($challenges as $challenge): ?>
+				<?php
+					$challengeId = (int) $challenge['id'];
+					$canDecline = $challenge['my_run_status_id'] === null && $challenge['my_declined'] === null && $challenge['my_removed'] === null;
+					// a challenge in progress has no places yet: its standings list who finished, without the places
+					$isFinished = ChallengeTable::isFinished($challenge);
+					$placing = $places[$challengeId] ?? null;
+					$standings = $placing === null ? '' : $this->element('Challenges/standings_popup', ['challengeId' => $challengeId, 'standings' => $placing['standings'], 'showPlaces' => $isFinished]);
+					$finishedOf = $standings . ($isFinished ? '' : ' of ' . (int) $challenge['participant_count']) . ' finished';
+					$myRunFinished = $placing !== null && $placing['myPlace'] !== null;
+				?>
+				<tr class="challenges__row">
+					<td class="challenges__list-title"><a href="/challenges/<?= $challengeId ?>"><?= h(ChallengeTable::title($challenge)) ?></a></td>
+					<td class="challenges__list-place">
+						<?php if ($myRunFinished && $isFinished): ?>
+						<span class="challenges__my-place"><?= $this->element('Challenges/placement', ['place' => $placing['myPlace']]) ?> <?= Util::ordinal($placing['myPlace']) ?></span> of <?= $standings ?>
+						<?php else: ?>
+						<?php if ($challenge['my_removed'] !== null): ?>
+						<span class="challenges__status">Removed by the creator</span>
+						<?php elseif ($challenge['my_declined'] !== null && $challenge['my_run_status_id'] === null): ?>
+						<span class="challenges__status">Declined</span>
+						<?php elseif ($challenge['my_run_status_id'] === null): ?>
+						<strong class="challenges__status">Not played yet</strong>
+						<?php elseif (!$myRunFinished): ?>
+						<strong class="challenges__status">Playing</strong>
+						<?php endif; ?>
+						<?php if ($placing !== null): ?>
+						<span class="hint challenges__finished-of"><?= $finishedOf ?></span>
+						<?php endif; ?>
+						<?php if ($canDecline): ?>
+						<form class="challenges__inline-form" method="post" action="/challenges/decline/<?= $challengeId ?>" onsubmit="return confirm('Decline the challenge?');"><button class="btn btn--small btn--neutral" type="submit">Decline</button></form>
+						<?php endif; ?>
+						<?php endif; ?>
+					</td>
+					<?php if ($myRunFinished): ?>
+					<?php $points = (float) $challenge['my_points']; ?>
+					<td class="challenges__list-points"><strong><?= ChallengeTable::formatPoints($points) ?></strong><span class="challenges__list-label"> points</span> (<?= ChallengeTable::percentOfMaximum($points, (int) $challenge['problem_count']) ?>%)</td>
+					<?php else: ?>
+					<td class="challenges__list-points challenges__list-points--none"><span class="hint">–</span></td>
+					<?php endif; ?>
+					<td class="challenges__list-problems hint"><?= h(ChallengeTable::describe($challenge)) ?></td>
+					<?php // who finished it, the best first ?>
+					<td class="challenges__list-players"><?= $placing === null ? '' : $this->element('Challenges/player_avatars', ['runs' => $placing['standings']]) ?></td>
+					<td class="challenges__list-when hint">
+						<?php if ($isFinished && $placing !== null): ?>
+						<?php // when the last player finished ?>
+						<span class="challenges__list-label">finished </span><?= $this->element('Challenges/list_time', ['time' => max(array_column($placing['standings'], 'finished'))]) ?>
+						<?php else: ?>
+						in progress, started <?= $this->element('Challenges/list_time', ['time' => $challenge['created']]) ?>
+						<?php endif; ?>
+					</td>
+				</tr>
+				<?php endforeach; ?>
+			</tbody>
+		</table>
 		<?php endif; ?>
-		<?php foreach ($challenges as $challenge): ?>
-		<?php
-			$challengeId = (int) $challenge['id'];
-			$canDecline = $challenge['my_run_status_id'] === null && $challenge['my_declined'] === null && $challenge['my_removed'] === null;
-			// a challenge in progress has no places yet: its standings list who finished, without the places
-			$isFinished = ChallengeTable::isFinished($challenge);
-			$placing = $places[$challengeId] ?? null;
-			$link = '<a href="/challenges/' . $challengeId . '">' . h(ChallengeTable::title($challenge)) . '</a>';
-			$standings = $placing === null ? '' : $this->element('Challenges/standings_popup', ['challengeId' => $challengeId, 'standings' => $placing['standings'], 'showPlaces' => $isFinished]);
-			$finishedOf = $standings . ($isFinished ? '' : ' of ' . (int) $challenge['participant_count']) . ' finished';
-			// when the last player finished, or when the challenge started while it is in progress
-			$when = $isFinished && $placing !== null ? max(array_column($placing['standings'], 'finished')) : $challenge['created'];
-		?>
-		<div class="challenges__row">
-			<div class="challenges__row-main">
-				<?php if ($placing !== null && $placing['myPlace'] !== null): ?>
-				<?php $points = (float) $challenge['my_points']; ?>
-				<?php $myPoints = '<strong>' . ChallengeTable::formatPoints($points) . ' points</strong> (' . ChallengeTable::percentOfMaximum($points, (int) $challenge['problem_count']) . '%)'; ?>
-				<?php if ($isFinished): ?>
-				<span class="challenges__my-place"><?= $this->element('Challenges/placement', ['place' => $placing['myPlace']]) ?> <?= Util::ordinal($placing['myPlace']) ?></span>
-				of <?= $standings ?> with <?= $myPoints ?> in <?= $link ?>
-				<?php else: ?>
-				<?= $myPoints ?> in <?= $link ?> · <?= $finishedOf ?>
-				<?php endif; ?>
-				<?php else: ?>
-				<?php if ($challenge['my_removed'] !== null): ?>
-				Removed by the creator: <?= $link ?>
-				<?php elseif ($challenge['my_declined'] !== null && $challenge['my_run_status_id'] === null): ?>
-				Declined: <?= $link ?>
-				<?php elseif ($challenge['my_run_status_id'] === null): ?>
-				<strong>Not played yet:</strong> <?= $link ?>
-				<?php else: ?>
-				<strong>Playing:</strong> <?= $link ?>
-				<?php endif; ?>
-				<?php if ($placing !== null): ?>
-				· <?= $finishedOf ?>
-				<?php endif; ?>
-				<?php endif; ?>
-				<span class="hint challenges__when"><?= $isFinished ? '' : 'started ' ?><time datetime="<?= Util::toIso8601($when) ?>" data-format="relative"><?= date('Y-m-d H:i', (int) strtotime($when)) ?></time></span>
-			</div>
-			<span class="hint challenges__row-details">
-				<?= h(ChallengeTable::describe($challenge)) ?>
-				· by <?= UserTable::renderLink($challenge) ?>
-				<?php if ($canDecline): ?>
-				<form class="challenges__inline-form" method="post" action="/challenges/decline/<?= $challengeId ?>" onsubmit="return confirm('Decline the challenge?');"><button class="btn btn--small btn--neutral" type="submit">Decline</button></form>
-				<?php endif; ?>
-			</span>
-		</div>
-		<?php endforeach; ?>
 	</section>
 </div>
 <?= ViteManifest::legacyScript('challenges') ?>

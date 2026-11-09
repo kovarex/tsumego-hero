@@ -35,7 +35,7 @@ if (\Cake\Core\Configure::read('debug'))
 ?>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>
-<?php echo $_title ?? 'Tsumego Hero'; ?>
+<?= h($_title ?? 'Tsumego Hero') ?>
 </title>
 <meta name="description" content="Interactive tsumego database. Solve go problems, get stronger, level up, have fun.">
 <meta name="keywords" content="tsumego, problems, puzzles, baduk, weiqi, tesuji, life and death, solve, solving, hero, go, in-seong, level" >
