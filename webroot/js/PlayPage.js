@@ -78,7 +78,8 @@ function updateMistakeTrainingButton(button, xp)
 }
 
 //The rank of the problem opens its rating and the reward of a solve in a popup under it; a click or a tap
-//elsewhere, or Escape, closes it
+//elsewhere, or Escape, closes it. A click on the board that closes it only closes it: it would otherwise
+//play a stone the player didn't mean to play
 (function() {
 	let rank = document.getElementById("status2");
 	let stake = document.getElementById("xpDisplayDiv");
@@ -95,10 +96,16 @@ function updateMistakeTrainingButton(button, xp)
 			open(!stake.classList.contains("play-stake--open"));
 		}
 	});
+	// in the capturing phase, so it comes before the board's own click on the point
 	document.addEventListener("click", event => {
-		if (!stake.contains(event.target))
-			open(false);
-	});
+		if (!stake.classList.contains("play-stake--open") || stake.contains(event.target))
+			return;
+		open(false);
+		if (event.target.closest(".besogo-board")) {
+			event.preventDefault();
+			event.stopPropagation();
+		}
+	}, true);
 	document.addEventListener("keydown", event => {
 		if (event.key === "Escape")
 			open(false);
