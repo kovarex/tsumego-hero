@@ -2778,7 +2778,7 @@ class SetsControllerTest extends IntegrationTestCase
 		$this->assertTrue($browser->idExists('showx'), "Reset button should be shown at 51%");
 	}
 
-	//On a phone the set page, with its Reset link, doesn't scroll sideways
+	//On a phone the set page, with its scores and its Reset link opened, doesn't scroll sideways
 	public function testTheSetPageWithItsResetFitsAPhone(): void
 	{
 		$context = new ContextPreparator([
@@ -2794,7 +2794,9 @@ class SetsControllerTest extends IntegrationTestCase
 		{
 			$window->setSize(new Facebook\WebDriver\WebDriverDimension(390, 844));
 			$browser->get('sets/' . $context->tsumegos[0]['sets'][0]['id']);
-			$this->assertTrue($browser->idExists('showx'), 'the Reset link is there');
+			// on a phone the scores and the reset are folded under their toggle
+			$browser->find('.set-view__stats-toggle')->click();
+			$this->assertTrue($browser->find('#showx')->isDisplayed(), 'the Reset link is shown');
 			$this->assertSame(0, $browser->driver->executeScript('return document.documentElement.scrollWidth - document.documentElement.clientWidth;'));
 		}
 		finally
