@@ -233,7 +233,7 @@ class SetsSelector
 	 * @param array<int|string, array{name: string, color: string, order: mixed}>|null $collectionInfo The name, color
 	 *   and order of each collection by its id, in place of the row fields.
 	 * @return array[] Collection chunks, each with id, name, color, order, partition, total_count,
-	 *   usage_count, rating_sum and solved_count.
+	 *   usage_count, rating_sum, solved_count and perfect.
 	 */
 	private function buildPartitionedSets(array $rows, string $idField, ?string $nameField, ?string $colorField, ?string $orderField = null, array $itemSortKeys = [], ?array $collectionInfo = null): array
 	{
@@ -265,6 +265,9 @@ class SetsSelector
 		$solved = $this->getSolvedTsumegoIDs();
 
 		$sets = [];
+		// the problems of each finished card, by the card's index in $sets, to see which were finished
+		// without a mistake
+		$finished = [];
 		foreach ($collections as $id => $collection)
 		{
 			$collectionItems = $items[$id];
@@ -273,21 +276,42 @@ class SetsSelector
 			$total = count($collectionItems);
 			$partition = $total <= $size ? -1 : 0;
 			$count = $ratingSum = $solvedCount = 0;
+			$cardTsumegoIDs = [];
 			foreach ($collectionItems as [$rating, $tsumegoID])
 			{
 				$count++;
 				$ratingSum += $rating;
+				$cardTsumegoIDs[] = $tsumegoID;
 				if (isset($solved[$tsumegoID]))
 					$solvedCount++;
 				if ($count === $size || $partition === -1 && $count === $total)
 				{
+					if ($solvedCount === $count)
+						$finished[count($sets)] = $cardTsumegoIDs;
 					$sets[] = self::partitionCard($id, $collection, $partition, $total, $count, $ratingSum, $solvedCount);
 					$partition++;
 					$count = $ratingSum = $solvedCount = 0;
+					$cardTsumegoIDs = [];
 				}
 			}
 			if ($count > 0)
+			{
+				if ($solvedCount === $count)
+					$finished[count($sets)] = $cardTsumegoIDs;
 				$sets[] = self::partitionCard($id, $collection, $partition, $total, $count, $ratingSum, $solvedCount);
+			}
+		}
+
+		$perfect = $this->getPerfectTsumegoIDs(array_merge(...array_values($finished)));
+		foreach ($finished as $index => $tsumegoIDs)
+		{
+			$sets[$index]['perfect'] = true;
+			foreach ($tsumegoIDs as $tsumegoID)
+				if (!isset($perfect[$tsumegoID]))
+				{
+					$sets[$index]['perfect'] = false;
+					break;
+				}
 		}
 		return $sets;
 	}
@@ -301,6 +325,7 @@ class SetsSelector
 			'amount' => $set['usage_count'],
 			'color' => $color,
 			'solved_percent' => Util::getPercentButAvoid100UntilComplete($set['solved_count'], $set['usage_count']),
+			'perfect' => $set['perfect'],
 			'partition' => $set['partition'],
 		];
 		if ($withDifficulty)
@@ -321,7 +346,32 @@ class SetsSelector
 			'usage_count' => $count,
 			'rating_sum' => $ratingSum,
 			'solved_count' => $solvedCount,
+			'perfect' => false,
 		];
+	}
+
+	//Of the given problems, those the current user solved without a mistake: attempted, and never failed.
+	//A card is finished with 100% accuracy when all its problems are, the same accuracy the collection's
+	//page shows (TsumegoButtons::getAccuracy), where a problem solved without a recorded attempt counts as
+	//a miss. Only the problems of finished cards are asked for, through the (user_id, tsumego_id) index.
+	/**
+	 * @param int[] $tsumegoIDs
+	 * @return array<int, true>
+	 */
+	private function getPerfectTsumegoIDs(array $tsumegoIDs): array
+	{
+		if (!Auth::isLoggedIn() || empty($tsumegoIDs))
+			return [];
+		$perfect = [];
+		foreach (array_chunk(array_values(array_unique($tsumegoIDs)), 1000) as $chunk)
+		{
+			$rows = Util::query('SELECT tsumego_id FROM tsumego_attempt WHERE user_id = ? AND tsumego_id IN ('
+				. implode(',', array_fill(0, count($chunk), '?')) . ') GROUP BY tsumego_id HAVING MIN(solved) = 1',
+				[Auth::getUserID(), ...$chunk]);
+			foreach ($rows as $row)
+				$perfect[(int) $row['tsumego_id']] = true;
+		}
+		return $perfect;
 	}
 
 	//The tsumego IDs the current user has solved (status S, W or C), or an empty array for guests.

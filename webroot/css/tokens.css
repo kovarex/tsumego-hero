@@ -207,8 +207,6 @@
 		--medal-gold-fg: #3d1f00;
 		--medal-silver-fg: #222;
 		--medal-bronze-fg: #2d1400;
-		--progress-thin-fill: #bbbbbb;
-		--progress-thin-gradient: linear-gradient(#f5f5f5, #9b9b9b);
 		--ach-silver-gradient: linear-gradient(#dfdfdf, #979797);
 
 		/* ── Surface chrome (theme-independent greys used by buttons, etc.) ── */
@@ -451,6 +449,8 @@
 		--set-filter-text: var(--color-white);
 		--set-filter-hover-background: var(--surface-dark);
 		--set-card-hover-shade: linear-gradient(rgba(200, 200, 200, 0.6), rgba(33, 33, 33, 0.65));
+		/* the gold of a finished set card's frame and percent, the same in both themes */
+		--set-card-gold-text: #ffe08a;
 		--training-title: var(--color-green-dark);
 		--profile-name: black;
 		--time-mode-table-text: currentColor;

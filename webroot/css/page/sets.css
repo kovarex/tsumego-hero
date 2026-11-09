@@ -607,6 +607,11 @@
 
 
 /* ── Set card (set collection tiles) ──*/
+/* The title with the rank under it, and at the bottom the count of problems (a stone and the number) and
+   the percent solved. A finished card gets a gold frame of dragon scales, one finished with 100%
+   accuracy the richer frame with spikes and the pearl; webroot/js/setCardFrame.js draws both to the
+   card's size. The frame takes only its band from the inside: the spikes and the pearl reach out past the
+   card's edge, so the cards keep room between them. */
 .set-card__link {
 	text-decoration: none;
 }
@@ -620,53 +625,127 @@
 	color: white;
 	font-size: var(--text-lg);
 	display: grid;
-	grid-template-columns: 1fr 1fr;
-	grid-template-rows: 1fr 1fr 1fr;
-	grid-template-areas:
-		"collection-top collection-top"
-		"collection-middle-left collection-middle-right"
-		"collection-bottom collection-bottom";
-	gap: 5px;
+	grid-template-rows: 1fr auto;
+	gap: 4px;
 	position: relative;
 	box-shadow: var(--shadow-card);
 }
 .set-card:hover {
 	background-image: var(--set-card-hover-shade) !important;
 }
-.set-card__top {
-	grid-area: collection-top;
+.set-card__head {
+	align-self: center;
 	display: flex;
-	justify-content: center;
+	flex-direction: column;
 	align-items: center;
+	gap: 3px;
+	min-width: 0;
+	text-align: center;
+	position: relative;
+	z-index: 1;
+}
+.set-card__title {
 	font-weight: var(--weight-heavy);
+	line-height: 1.15;
+	display: -webkit-box;
+	-webkit-box-orient: vertical;
+	-webkit-line-clamp: 3;
+	line-clamp: 3;
+	overflow: hidden;
+	overflow-wrap: break-word;
 }
-.set-card__middle-left {
-	margin-top: 2px;
-	grid-area: collection-middle-left;
-}
-.set-card__middle-right {
-	margin-top: 2px;
-	grid-area: collection-middle-right;
-}
-.set-card__bottom {
-	font-size: 14px;
-	grid-area: collection-bottom;
-	align-self: end;
-}
-.set-card__completed {
-	animation: fadeIn2 1s ease-in-out;
-	position: absolute;
-	top: 87px;
-	left: 0;
-	right: 0;
-	margin-inline: auto;
-	width: fit-content;
-	text-transform: uppercase;
-	font-size: 15px;
+.set-card__rank {
+	font-size: var(--text-sm);
 	font-weight: var(--weight-heavy);
 	letter-spacing: 0.06em;
-	color: transparent;
-	text-shadow: 0 0 0.08em rgba(229, 229, 229, 0.7);
+	opacity: 0.85;
+	line-height: 1;
+}
+.set-card__foot {
+	display: flex;
+	align-items: flex-end;
+	justify-content: space-between;
+	gap: var(--space-2);
+	line-height: 1.2;
+	font-variant-numeric: tabular-nums;
+	position: relative;
+	z-index: 1;
+}
+.set-card__count {
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+}
+/* A white go stone: the count is of problems */
+.set-card__stone {
+	width: 0.72em;
+	height: 0.72em;
+	flex: none;
+	border-radius: 50%;
+	background: radial-gradient(circle at 35% 30%, #ffffff, #e2e2e2 55%, #a9a9a9);
+	box-shadow: 0 1px 1.5px rgba(0, 0, 0, 0.55);
+}
+.set-card__percent {
+	font-size: 22px;
+	font-weight: var(--weight-heavy);
+	line-height: 1;
+}
+.set-card--untouched .set-card__percent {
+	opacity: 0.55;
+}
+.set-card--finished .set-card__percent {
+	color: var(--set-card-gold-text);
+}
+/* the text sits just inside the frame's band */
+.set-card--finished {
+	padding: 11px 12px;
+}
+.set-card--perfect {
+	padding: 14px 13px 11px;
+}
+.set-card__frame {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	overflow: visible;
+	pointer-events: none;
+}
+
+/* A phone shows two cards a row: the card takes half the row, lower, its text a step smaller */
+@media (width < 40rem)
+{
+	.set-index {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 22px 18px;
+		margin-block: var(--space-4);
+	}
+	.set-index > .set-index-empty {
+		grid-column: 1 / -1;
+	}
+	.set-card {
+		width: auto;
+		height: 124px;
+		margin: 0;
+		padding: 8px;
+		font-size: 15px;
+	}
+	.set-card__rank {
+		font-size: 11px;
+	}
+	.set-card__foot {
+		font-size: var(--text-sm);
+	}
+	.set-card__percent {
+		font-size: 18px;
+	}
+	.set-card--finished {
+		padding: 8px 9px;
+	}
+	.set-card--perfect {
+		padding: 11px 10px 8px;
+	}
 }
 
 /* The head of a collection: the buttons of the phone are hidden on a PC */

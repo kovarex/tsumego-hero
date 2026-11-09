@@ -120,18 +120,18 @@ class SetsControllerTest extends IntegrationTestCase
 		$_COOKIE['filtered_ranks'] = '15k';
 		$this->get('sets');
 		$dom = $this->getStringDom();
-		$collectionTopDivs = $dom->querySelectorAll('.set-card__top');
+		$collectionTopDivs = $dom->querySelectorAll('.set-card__title');
 		$this->assertCount(1, $collectionTopDivs);
 		$this->assertSame($collectionTopDivs[0]->textContent, '15k');
 
-		$collectionMiddleLeft = $dom->querySelectorAll('.set-card__middle-left');
+		$collectionMiddleLeft = $dom->querySelectorAll('.set-card__count');
 		$this->assertCount(1, $collectionMiddleLeft);
 		$this->assertSame($collectionMiddleLeft[0]->textContent, '1 problem'); // the sandbox problem isn't included
 
 		$_COOKIE['filtered_ranks'] = '10k';
 		$this->get('sets');
 		$dom = $this->getStringDom();
-		$collectionTopDivs = $dom->querySelectorAll('.set-card__top');
+		$collectionTopDivs = $dom->querySelectorAll('.set-card__title');
 		$this->assertCount(1, $collectionTopDivs);
 		$this->assertSame($collectionTopDivs[0]->textContent, '10k');
 	}
@@ -149,7 +149,7 @@ class SetsControllerTest extends IntegrationTestCase
 		$this->get('sets');
 
 		$boxTitles = [];
-		foreach ($this->getStringDom()->querySelectorAll('.set-card__top') as $boxTitle)
+		foreach ($this->getStringDom()->querySelectorAll('.set-card__title') as $boxTitle)
 			$boxTitles[] = $boxTitle->textContent;
 
 		$this->assertSame($ranks, $boxTitles);
@@ -164,7 +164,7 @@ class SetsControllerTest extends IntegrationTestCase
 		$this->get('sets');
 
 		$boxTitles = [];
-		foreach ($this->getStringDom()->querySelectorAll('.set-card__top') as $boxTitle)
+		foreach ($this->getStringDom()->querySelectorAll('.set-card__title') as $boxTitle)
 			$boxTitles[] = $boxTitle->textContent;
 
 		$this->assertSame(['30k'], $boxTitles);
@@ -182,10 +182,10 @@ class SetsControllerTest extends IntegrationTestCase
 
 		$this->assertTextContains('Problems found: 1', $this->view);
 		$dom = $this->getStringDom();
-		$collectionTopDivs = $dom->querySelectorAll('.set-card__top');
+		$collectionTopDivs = $dom->querySelectorAll('.set-card__title');
 		$this->assertCount(1, $collectionTopDivs);
 		$this->assertSame('15k', $collectionTopDivs[0]->textContent);
-		$this->assertSame('1 problem', $dom->querySelectorAll('.set-card__middle-left')[0]->textContent);
+		$this->assertSame('1 problem', $dom->querySelectorAll('.set-card__count')[0]->textContent);
 	}
 
 	public function testDifficultyIndexShowsTheOnlyPickedRankInTheRangeSelects(): void
@@ -231,7 +231,7 @@ class SetsControllerTest extends IntegrationTestCase
 		$this->assertTextContains('Problems found: 2', $this->view);
 		$dom = $this->getStringDom();
 		$boxTitles = [];
-		foreach ($dom->querySelectorAll('.set-card__top') as $boxTitle)
+		foreach ($dom->querySelectorAll('.set-card__title') as $boxTitle)
 			$boxTitles[] = $boxTitle->textContent;
 
 		$this->assertSame(['17k', '16k'], $boxTitles);
@@ -251,11 +251,11 @@ class SetsControllerTest extends IntegrationTestCase
 		$this->assertTextContains('Problems found: 2', $this->view);
 		$dom = $this->getStringDom();
 		$boxTitles = [];
-		foreach ($dom->querySelectorAll('.set-card__top') as $boxTitle)
+		foreach ($dom->querySelectorAll('.set-card__title') as $boxTitle)
 			$boxTitles[] = $boxTitle->textContent;
 
 		$this->assertSame(['17k-16k'], $boxTitles);
-		$this->assertSame('2 problems', $dom->querySelectorAll('.set-card__middle-left')[0]->textContent);
+		$this->assertSame('2 problems', $dom->querySelectorAll('.set-card__count')[0]->textContent);
 	}
 
 	public function testDifficultyIndexCombinesPickedRanksWithAPickedRange(): void
@@ -272,7 +272,7 @@ class SetsControllerTest extends IntegrationTestCase
 
 		$this->assertTextContains('Problems found: 3', $this->view);
 		$boxTitles = [];
-		foreach ($this->getStringDom()->querySelectorAll('.set-card__top') as $boxTitle)
+		foreach ($this->getStringDom()->querySelectorAll('.set-card__title') as $boxTitle)
 			$boxTitles[] = $boxTitle->textContent;
 
 		$this->assertSame(['20k', '10k-9k'], $boxTitles);
@@ -290,7 +290,7 @@ class SetsControllerTest extends IntegrationTestCase
 		$this->get('sets');
 
 		$boxTitles = [];
-		foreach ($this->getStringDom()->querySelectorAll('.set-card__top') as $boxTitle)
+		foreach ($this->getStringDom()->querySelectorAll('.set-card__title') as $boxTitle)
 			$boxTitles[] = $boxTitle->textContent;
 
 		$this->assertSame(['17k', '10k'], $boxTitles);
@@ -307,12 +307,12 @@ class SetsControllerTest extends IntegrationTestCase
 		$this->get('sets');
 
 		$dom = $this->getStringDom();
-		$collectionTopDivs = $dom->querySelectorAll('.set-card__top');
+		$collectionTopDivs = $dom->querySelectorAll('.set-card__title');
 		$this->assertCount(2, $collectionTopDivs);
 		$this->assertSame('partitioned set #1', $collectionTopDivs[0]->textContent);
 		$this->assertSame('partitioned set #2', $collectionTopDivs[1]->textContent);
 
-		$collectionMiddleLeft = $dom->querySelectorAll('.set-card__middle-left');
+		$collectionMiddleLeft = $dom->querySelectorAll('.set-card__count');
 		$this->assertSame('10 problems', $collectionMiddleLeft[0]->textContent);
 		$this->assertSame('1 problem', $collectionMiddleLeft[1]->textContent);
 
@@ -333,11 +333,11 @@ class SetsControllerTest extends IntegrationTestCase
 		$this->get('sets');
 
 		$dom = $this->getStringDom();
-		$collectionTopDivs = $dom->querySelectorAll('.set-card__top');
+		$collectionTopDivs = $dom->querySelectorAll('.set-card__title');
 		$this->assertCount(1, $collectionTopDivs);
 		$this->assertSame('small set', $collectionTopDivs[0]->textContent);
 
-		$collectionMiddleLeft = $dom->querySelectorAll('.set-card__middle-left');
+		$collectionMiddleLeft = $dom->querySelectorAll('.set-card__count');
 		$this->assertSame('3 problems', $collectionMiddleLeft[0]->textContent);
 
 		$boxLinks = $dom->querySelectorAll('.set-card__link');
@@ -358,7 +358,7 @@ class SetsControllerTest extends IntegrationTestCase
 		$this->get('sets');
 
 		$dom = $this->getStringDom();
-		$collectionTopDivs = $dom->querySelectorAll('.set-card__top');
+		$collectionTopDivs = $dom->querySelectorAll('.set-card__title');
 		$this->assertCount(2, $collectionTopDivs);
 		$this->assertSame('ordered set', $collectionTopDivs[0]->textContent);
 		$this->assertSame('unordered set', $collectionTopDivs[1]->textContent);
@@ -413,8 +413,8 @@ class SetsControllerTest extends IntegrationTestCase
 
 		$this->assertTextContains('Problems found: 1', $this->view);
 		$dom = $this->getStringDom();
-		$this->assertCount(1, $dom->querySelectorAll('.set-card__top'));
-		$this->assertSame('1 problem', $dom->querySelectorAll('.set-card__middle-left')[0]->textContent);
+		$this->assertCount(1, $dom->querySelectorAll('.set-card__title'));
+		$this->assertSame('1 problem', $dom->querySelectorAll('.set-card__count')[0]->textContent);
 	}
 
 	public function testTagsIndexExcludesDeletedProblems(): void
@@ -429,8 +429,8 @@ class SetsControllerTest extends IntegrationTestCase
 
 		$this->assertTextContains('Problems found: 1', $this->view);
 		$dom = $this->getStringDom();
-		$this->assertCount(1, $dom->querySelectorAll('.set-card__top'));
-		$this->assertSame('1 problem', $dom->querySelectorAll('.set-card__middle-left')[0]->textContent);
+		$this->assertCount(1, $dom->querySelectorAll('.set-card__title'));
+		$this->assertSame('1 problem', $dom->querySelectorAll('.set-card__count')[0]->textContent);
 	}
 
 	//A tag a player proposed is not on the problem until an admin accepts it, so its collection counts
@@ -445,7 +445,7 @@ class SetsControllerTest extends IntegrationTestCase
 
 		$this->get('sets');
 		$this->assertTextContains('Problems found: 2', $this->view);
-		$this->assertSame('2 problems', $this->getStringDom()->querySelectorAll('.set-card__middle-left')[0]->textContent);
+		$this->assertSame('2 problems', $this->getStringDom()->querySelectorAll('.set-card__count')[0]->textContent);
 
 		$this->get('sets/atari');
 		$shown = array_map(fn($button) => $button->tsumegoID, (array) $this->viewVariable('tsumegoButtons'));
@@ -517,11 +517,60 @@ class SetsControllerTest extends IntegrationTestCase
 		$this->assertTextContains('Problems found: 12', $this->view);
 
 		$dom = $this->getStringDom();
-		$fills = $dom->querySelectorAll('.progress__fill');
-		$this->assertCount(2, $fills);
-		$this->assertTextContains('width: 100%', $fills[0]->getAttribute('style'));
-		$this->assertTextContains('width: 50%', $fills[1]->getAttribute('style'));
-		$this->assertCount(1, $dom->querySelectorAll('.set-card__completed'));
+		$percents = $dom->querySelectorAll('.set-card__percent');
+		$this->assertCount(2, $percents);
+		$this->assertSame('100%', $percents[0]->textContent);
+		$this->assertSame('50%', $percents[1]->textContent);
+		$this->assertCount(1, $dom->querySelectorAll('.set-card--finished'));
+		// solved without any attempt recorded, which the collection's accuracy counts as a miss
+		$this->assertCount(0, $dom->querySelectorAll('.set-card--perfect'));
+	}
+
+	//A finished card whose problems were all solved without a failed attempt is finished with 100% accuracy;
+	//a single failed attempt, even one followed by a solve, takes that away from its card only
+	public function testTopicsIndexMarksCardsFinishedWithoutMistakes(): void
+	{
+		$contextParams = ['user' => ['collection_size' => 2]];
+		$contextParams['tsumegos'] = [];
+		$attempts = [
+			[['solved' => true]],
+			[['solved' => true], ['solved' => true]],
+			[['solved' => true]],
+			[['solved' => false], ['solved' => true]]];
+		foreach ($attempts as $i => $problemAttempts)
+			$contextParams['tsumegos'] [] = [
+				'sets' => [['name' => 'accuracy set', 'num' => $i + 1]],
+				'status' => 'S',
+				'attempts' => $problemAttempts];
+		new ContextPreparator($contextParams);
+		$this->get('sets');
+
+		$dom = $this->getStringDom();
+		$cards = $dom->querySelectorAll('.set-card');
+		$this->assertCount(2, $cards);
+		$this->assertStringContainsString('set-card--finished', $cards[0]->getAttribute('class'));
+		$this->assertStringContainsString('set-card--perfect', $cards[0]->getAttribute('class'));
+		$this->assertStringContainsString('set-card--finished', $cards[1]->getAttribute('class'));
+		$this->assertStringNotContainsString('set-card--perfect', $cards[1]->getAttribute('class'));
+	}
+
+	//A card not finished is not marked, however clean its attempts
+	public function testTopicsIndexMarksNoUnfinishedCardAsPerfect(): void
+	{
+		$contextParams = ['user' => ['collection_size' => 10]];
+		$contextParams['tsumegos'] = [];
+		foreach (['S', 'N'] as $i => $status)
+			$contextParams['tsumegos'] [] = [
+				'sets' => [['name' => 'half set', 'num' => $i + 1]],
+				'status' => $status,
+				'attempts' => $status === 'S' ? [['solved' => true]] : []];
+		new ContextPreparator($contextParams);
+		$this->get('sets');
+
+		$dom = $this->getStringDom();
+		$this->assertSame('50%', $dom->querySelectorAll('.set-card__percent')[0]->textContent);
+		$this->assertCount(0, $dom->querySelectorAll('.set-card--finished'));
+		$this->assertCount(0, $dom->querySelectorAll('.set-card--perfect'));
 	}
 
 	public function testTopicsIndexShowsDifficultyPerPartition(): void
@@ -542,10 +591,10 @@ class SetsControllerTest extends IntegrationTestCase
 		// difficulty must be computed per partition, not per whole set:
 		// partition 1 (ten 15k problems) shows 15k, partition 2 (two 5k) shows 5k.
 		$dom = $this->getStringDom();
-		$difficulties = $dom->querySelectorAll('.set-card__middle-right');
+		$difficulties = $dom->querySelectorAll('.set-card__rank');
 		$this->assertCount(2, $difficulties);
-		$this->assertSame('~15k', $difficulties[0]->textContent);
-		$this->assertSame('~5k', $difficulties[1]->textContent);
+		$this->assertSame('15k', $difficulties[0]->textContent);
+		$this->assertSame('5k', $difficulties[1]->textContent);
 	}
 
 	public function testTopicsIndexGuestShowsNoSolvedProgress(): void
@@ -559,11 +608,11 @@ class SetsControllerTest extends IntegrationTestCase
 		$this->get('sets');
 
 		$dom = $this->getStringDom();
-		$fills = $dom->querySelectorAll('.progress__fill');
-		$this->assertCount(1, $fills);
-		$this->assertTextContains('width: 0%', $fills[0]->getAttribute('style'));
-		$this->assertCount(1, $dom->querySelectorAll('.set-card__top'));
-		$this->assertCount(0, $dom->querySelectorAll('.set-card__completed'));
+		$percents = $dom->querySelectorAll('.set-card__percent');
+		$this->assertCount(1, $percents);
+		$this->assertSame('0%', $percents[0]->textContent);
+		$this->assertCount(1, $dom->querySelectorAll('.set-card__title'));
+		$this->assertCount(0, $dom->querySelectorAll('.set-card--finished'));
 	}
 
 	public function testDifficultyIndexSplitsRankIntoPartitionBoxes(): void
@@ -578,12 +627,12 @@ class SetsControllerTest extends IntegrationTestCase
 		$this->get('sets');
 
 		$dom = $this->getStringDom();
-		$collectionTopDivs = $dom->querySelectorAll('.set-card__top');
+		$collectionTopDivs = $dom->querySelectorAll('.set-card__title');
 		$this->assertCount(2, $collectionTopDivs);
 		$this->assertSame('15k #1', $collectionTopDivs[0]->textContent);
 		$this->assertSame('15k #2', $collectionTopDivs[1]->textContent);
 
-		$collectionMiddleLeft = $dom->querySelectorAll('.set-card__middle-left');
+		$collectionMiddleLeft = $dom->querySelectorAll('.set-card__count');
 		$this->assertSame('10 problems', $collectionMiddleLeft[0]->textContent);
 		$this->assertSame('1 problem', $collectionMiddleLeft[1]->textContent);
 	}
@@ -600,12 +649,12 @@ class SetsControllerTest extends IntegrationTestCase
 		$this->get('sets');
 
 		$dom = $this->getStringDom();
-		$collectionTopDivs = $dom->querySelectorAll('.set-card__top');
+		$collectionTopDivs = $dom->querySelectorAll('.set-card__title');
 		$this->assertCount(2, $collectionTopDivs);
 		$this->assertSame('atari #1', $collectionTopDivs[0]->textContent);
 		$this->assertSame('atari #2', $collectionTopDivs[1]->textContent);
 
-		$collectionMiddleLeft = $dom->querySelectorAll('.set-card__middle-left');
+		$collectionMiddleLeft = $dom->querySelectorAll('.set-card__count');
 		$this->assertSame('10 problems', $collectionMiddleLeft[0]->textContent);
 		$this->assertSame('1 problem', $collectionMiddleLeft[1]->textContent);
 	}
@@ -900,7 +949,7 @@ class SetsControllerTest extends IntegrationTestCase
 		$browser->findById('tile-difficulty-submit')->click();
 
 		$this->assertSame('17k-16k', urldecode($browser->driver->manage()->getCookieNamed('filtered_ranks')->getValue()));
-		$boxes = $browser->getElements('.set-card__top');
+		$boxes = $browser->getElements('.set-card__title');
 		$this->assertCount(1, $boxes);
 		$this->assertSame('17k-16k', $boxes[0]->getText());
 	}
@@ -922,7 +971,7 @@ class SetsControllerTest extends IntegrationTestCase
 		$browser->findById('tile-difficulty-submit')->click();
 
 		$this->assertSame('17k@16k', urldecode($browser->driver->manage()->getCookieNamed('filtered_ranks')->getValue()));
-		$boxes = $browser->getElements('.set-card__top');
+		$boxes = $browser->getElements('.set-card__title');
 		$this->assertCount(2, $boxes);
 		$this->assertSame('17k', $boxes[0]->getText());
 		$this->assertSame('16k', $boxes[1]->getText());
@@ -998,7 +1047,7 @@ class SetsControllerTest extends IntegrationTestCase
 		$this->assertSame($browser->driver->manage()->getCookieNamed('filtered_ranks')->getValue(), '15k');
 
 		// we check the set card and clicking
-		$collectionTopDivs = $browser->getElements('.set-card__top');
+		$collectionTopDivs = $browser->getElements('.set-card__title');
 		$this->assertCount(1, $collectionTopDivs);
 		$this->assertSame($collectionTopDivs[0]->getText(), '15k');
 		$collectionTopDivs[0]->click();
@@ -1054,7 +1103,7 @@ class SetsControllerTest extends IntegrationTestCase
 		$browser->get("sets");
 
 		// we check the set card and clicking
-		$collectionTopDivs = $browser->getElements('.set-card__top');
+		$collectionTopDivs = $browser->getElements('.set-card__title');
 		$this->assertCount(2, $collectionTopDivs); // 2 partitions of 10 and 1 problems
 		$this->assertSame($collectionTopDivs[0]->getText(), 'test set #1');
 		$this->assertSame($collectionTopDivs[1]->getText(), 'test set #2');
@@ -1093,7 +1142,7 @@ class SetsControllerTest extends IntegrationTestCase
 
 		// now we go back to the sets selection and we visit the second partition of the set
 		$browser->get('sets');
-		$collectionTopDivs = $browser->getElements('.set-card__top');
+		$collectionTopDivs = $browser->getElements('.set-card__title');
 		$this->assertCount(2, $collectionTopDivs); // 2 partitions of 10 and 1 problems
 		$collectionTopDivs[1]->click();
 
@@ -1175,7 +1224,7 @@ class SetsControllerTest extends IntegrationTestCase
 
 		// we open sets, and since we filtered 15k and 1d, this is the sets we should see
 		$browser->get("sets");
-		$collectionTopDivs = $browser->getElements('.set-card__top');
+		$collectionTopDivs = $browser->getElements('.set-card__title');
 		$this->assertCount(2, $collectionTopDivs);
 		$this->assertSame($collectionTopDivs[0]->getText(), '15k');
 		$this->assertSame($collectionTopDivs[1]->getText(), '1d');
@@ -1216,7 +1265,7 @@ class SetsControllerTest extends IntegrationTestCase
 
 		// now we go to visit the 1d section, so back to sets
 		$browser->get("sets");
-		$collectionTopDivs = $browser->getElements('.set-card__top');
+		$collectionTopDivs = $browser->getElements('.set-card__title');
 		$this->assertCount(2, $collectionTopDivs);
 		$this->assertSame($collectionTopDivs[0]->getText(), '15k');
 		$this->assertSame($collectionTopDivs[1]->getText(), '1d');
@@ -1271,18 +1320,18 @@ class SetsControllerTest extends IntegrationTestCase
 		// we open sets, we filtered 15k and 1d, but query by sets, so we should see:
 		// all 3 sets with
 		$browser->get("sets");
-		$collectionTopDivs = $browser->getElements('.set-card__top');
+		$collectionTopDivs = $browser->getElements('.set-card__title');
 		$this->assertCount(3, $collectionTopDivs);
 		$this->assertSame($collectionTopDivs[0]->getText(), 'set 1');
 		$this->assertSame($collectionTopDivs[1]->getText(), 'set 2');
 		$this->assertSame($collectionTopDivs[2]->getText(), 'set 3');
 
 		// with 2 problems each as the 5d problems should be already filtered out
-		$collectionMiddleLeftDivs = $browser->getElements('.set-card__middle-left');
+		$collectionMiddleLeftDivs = $browser->getElements('.set-card__count');
 		$this->assertCount(3, $collectionMiddleLeftDivs);
-		$this->assertSame($collectionMiddleLeftDivs[0]->getText(), '2 problems');
-		$this->assertSame($collectionMiddleLeftDivs[1]->getText(), '2 problems');
-		$this->assertSame($collectionMiddleLeftDivs[2]->getText(), '2 problems');
+		$this->assertSame($collectionMiddleLeftDivs[0]->getAttribute('title'), '2 problems');
+		$this->assertSame($collectionMiddleLeftDivs[1]->getAttribute('title'), '2 problems');
+		$this->assertSame($collectionMiddleLeftDivs[2]->getAttribute('title'), '2 problems');
 
 		// first visit the 'set 1'
 		$collectionTopDivs[0]->click();
@@ -1356,18 +1405,18 @@ class SetsControllerTest extends IntegrationTestCase
 
 		// all 3 ranks with
 		$browser->get("sets");
-		$collectionTopDivs = $browser->getElements('.set-card__top');
+		$collectionTopDivs = $browser->getElements('.set-card__title');
 		$this->assertCount(3, $collectionTopDivs);
 		$this->assertSame($collectionTopDivs[0]->getText(), '15k');
 		$this->assertSame($collectionTopDivs[1]->getText(), '1d');
 		$this->assertSame($collectionTopDivs[2]->getText(), '5d');
 
 		// with 2 problems each as the set 1 problems should already be filtered out
-		$collectionMiddleLeftDivs = $browser->getElements('.set-card__middle-left');
+		$collectionMiddleLeftDivs = $browser->getElements('.set-card__count');
 		$this->assertCount(3, $collectionMiddleLeftDivs);
-		$this->assertSame($collectionMiddleLeftDivs[0]->getText(), '2 problems');
-		$this->assertSame($collectionMiddleLeftDivs[1]->getText(), '2 problems');
-		$this->assertSame($collectionMiddleLeftDivs[2]->getText(), '2 problems');
+		$this->assertSame($collectionMiddleLeftDivs[0]->getAttribute('title'), '2 problems');
+		$this->assertSame($collectionMiddleLeftDivs[1]->getAttribute('title'), '2 problems');
+		$this->assertSame($collectionMiddleLeftDivs[2]->getAttribute('title'), '2 problems');
 
 		// first visit the 'set 15k'
 		$collectionTopDivs[0]->click();
@@ -1669,14 +1718,14 @@ class SetsControllerTest extends IntegrationTestCase
 
 		$browser->get('sets');
 
-		$collectionTopDivs = $browser->getElements('.set-card__top');
+		$collectionTopDivs = $browser->getElements('.set-card__title');
 		$this->assertCount(1, $collectionTopDivs);
 		$this->assertSame($collectionTopDivs[0]->getText(), '10k');
 
 		// the problem is in 2 sets, but it shouldn't matter in this view and should show just 1 problem
-		$collectionMiddleLeftDivs = $browser->getElements('.set-card__middle-left');
+		$collectionMiddleLeftDivs = $browser->getElements('.set-card__count');
 		$this->assertCount(1, $collectionMiddleLeftDivs);
-		$this->assertSame($collectionMiddleLeftDivs[0]->getText(), '1 problem');
+		$this->assertSame($collectionMiddleLeftDivs[0]->getAttribute('title'), '1 problem');
 
 		$collectionTopDivs[0]->click();
 		$this->assertSame(Util::getMyAddress() . '/sets/10k', $browser->driver->getCurrentURL());
@@ -1762,7 +1811,7 @@ class SetsControllerTest extends IntegrationTestCase
 
 		$context = new ContextPreparator($contextParams);
 		$browser->get("sets");
-		$collectionTopDivs = $browser->getElements('.set-card__top');
+		$collectionTopDivs = $browser->getElements('.set-card__title');
 		$this->assertCount(3, $collectionTopDivs);
 		$this->assertSame($collectionTopDivs[0]->getText(), 'snapback');
 		$this->assertSame($collectionTopDivs[1]->getText(), 'atari');
@@ -1791,7 +1840,7 @@ class SetsControllerTest extends IntegrationTestCase
 		$context = new ContextPreparator($contextParams);
 		$browser = Browser::instance();
 		$browser->get("sets");
-		$collectionTopDivs = $browser->getElements('.set-card__top');
+		$collectionTopDivs = $browser->getElements('.set-card__title');
 		$this->assertCount(2, $collectionTopDivs);
 		$this->assertSame($collectionTopDivs[0]->getText(), 'atari');
 		$this->assertSame($collectionTopDivs[1]->getText(), 'empty triangle');
@@ -1856,15 +1905,15 @@ class SetsControllerTest extends IntegrationTestCase
 		$context = new ContextPreparator($contextParams);
 		$browser = Browser::instance();
 		$browser->get("sets");
-		$collectionTopDivs = $browser->getElements('.set-card__top');
+		$collectionTopDivs = $browser->getElements('.set-card__title');
 		$this->assertCount(2, $collectionTopDivs);
 		$this->assertSame($collectionTopDivs[0]->getText(), 'set 1');
 		$this->assertSame($collectionTopDivs[1]->getText(), 'set 2');
 
-		$collectionMiddleLeftDivs = $browser->getElements('.set-card__middle-left');
+		$collectionMiddleLeftDivs = $browser->getElements('.set-card__count');
 		$this->assertCount(2, $collectionMiddleLeftDivs);
-		$this->assertSame($collectionMiddleLeftDivs[0]->getText(), '2 problems');
-		$this->assertSame($collectionMiddleLeftDivs[1]->getText(), '1 problem');
+		$this->assertSame($collectionMiddleLeftDivs[0]->getAttribute('title'), '2 problems');
+		$this->assertSame($collectionMiddleLeftDivs[1]->getAttribute('title'), '1 problem');
 		$this->assertSame('Problems found: 3', $browser->find('#problems-found')->getText());
 
 		// going into the 'set 1'
@@ -1907,13 +1956,8 @@ class SetsControllerTest extends IntegrationTestCase
 
 	private function checkSetFinishedPercent($browser, $index, $title, $percent): void
 	{
-		$this->assertSame($browser->getElements('.set-card__top')[$index]->getText(), $title);
-		$this->assertSame($browser->getElements('.progress__label')[$index]->getAttribute('data-target') . '%', $percent);
-		// setProgress.js counts every label up from 0% on its first frame, which can come after the page has loaded,
-		// so a label read once may be mid-way; it shows only lower numbers until it ends on the percent
-		$browser->waitUntilJs('document.querySelectorAll(".progress__label")[' . $index . '].textContent.trim() === "' . $percent . '"');
-		$barStyle = $browser->getElements('.progress__fill')[$index]->getAttribute('style');
-		$this->assertTextContains('width: ' . $percent, $barStyle);
+		$this->assertSame($browser->getElements('.set-card__title')[$index]->getText(), $title);
+		$this->assertSame($browser->getElements('.set-card__percent')[$index]->getText(), $percent);
 	}
 
 	public function testTopicBasedSetViewShowsSolvedPercentProperly(): void
@@ -1938,9 +1982,9 @@ class SetsControllerTest extends IntegrationTestCase
 		$browser = Browser::instance();
 		$browser->get("sets");
 
-		$browser->waitUntilJs('document.querySelectorAll(".progress__label")[4]?.textContent.trim() === "100%"');
+		$browser->waitUntilJs('document.querySelectorAll(".set-card__percent")[4]?.textContent.trim() === "100%"');
 
-		$collectionTopDivs = $browser->getElements('.set-card__top');
+		$collectionTopDivs = $browser->getElements('.set-card__title');
 		$this->assertCount(5, $collectionTopDivs);
 		$this->checkSetFinishedPercent($browser, 0, 'set 1', '0%');
 		$this->checkSetFinishedPercent($browser, 1, 'set 2', '25%');
@@ -1968,9 +2012,9 @@ class SetsControllerTest extends IntegrationTestCase
 		new ContextPreparator($contextParams);
 		$browser->get("sets");
 
-		$browser->waitUntilJs('document.querySelectorAll(".progress__label")[0]?.textContent.trim() === "33%"');
+		$browser->waitUntilJs('document.querySelectorAll(".set-card__percent")[0]?.textContent.trim() === "33%"');
 
-		$collectionTopDivs = $browser->getElements('.set-card__top');
+		$collectionTopDivs = $browser->getElements('.set-card__title');
 		$this->assertCount(2, $collectionTopDivs);
 		$this->checkSetFinishedPercent($browser, 0, 'partitioned set #1', '33%');
 		$this->checkSetFinishedPercent($browser, 1, 'partitioned set #2', '66%');
@@ -2000,9 +2044,9 @@ class SetsControllerTest extends IntegrationTestCase
 		$browser = Browser::instance();
 		$browser->get("sets");
 
-		$browser->waitUntilJs('document.querySelectorAll(".progress__label")[4]?.textContent.trim() === "100%"');
+		$browser->waitUntilJs('document.querySelectorAll(".set-card__percent")[4]?.textContent.trim() === "100%"');
 
-		$collectionTopDivs = $browser->getElements('.set-card__top');
+		$collectionTopDivs = $browser->getElements('.set-card__title');
 		$this->assertCount(5, $collectionTopDivs);
 		$this->checkSetFinishedPercent($browser, 0, 'atari', '0%');
 		$this->checkSetFinishedPercent($browser, 1, 'bambule', '25%');
@@ -2034,9 +2078,9 @@ class SetsControllerTest extends IntegrationTestCase
 		$browser = Browser::instance();
 		$browser->get("sets");
 
-		$browser->waitUntilJs('document.querySelectorAll(".progress__label")[4]?.textContent.trim() === "100%"');
+		$browser->waitUntilJs('document.querySelectorAll(".set-card__percent")[4]?.textContent.trim() === "100%"');
 
-		$collectionTopDivs = $browser->getElements('.set-card__top');
+		$collectionTopDivs = $browser->getElements('.set-card__title');
 		$this->assertCount(5, $collectionTopDivs);
 		$this->checkSetFinishedPercent($browser, 0, '15k', '0%');
 		$this->checkSetFinishedPercent($browser, 1, '10k', '25%');
@@ -2058,7 +2102,7 @@ class SetsControllerTest extends IntegrationTestCase
 
 		$browser = Browser::instance();
 		$browser->get('sets');
-		$collectionTopDivs = $browser->getElements('.set-card__top');
+		$collectionTopDivs = $browser->getElements('.set-card__title');
 		$this->assertCount(1, $collectionTopDivs);
 		$this->assertSame($collectionTopDivs[0]->getText(), 'public set');
 		$this->assertSame('Problems found: 1', $browser->find('#problems-found')->getText());
@@ -2073,7 +2117,7 @@ class SetsControllerTest extends IntegrationTestCase
 				['sets' => [['name' => 'private set', 'public' => 0, 'num' => '777']]]]]);
 		$browser = Browser::instance();
 		$browser->get('sets/sandbox');
-		$collectionTopDivs = $browser->getElements('.set-card__top');
+		$collectionTopDivs = $browser->getElements('.set-card__title');
 		$this->assertCount(1, $collectionTopDivs);
 		$this->assertSame($collectionTopDivs[0]->getText(), 'private set');
 		$collectionTopDivs[0]->click();

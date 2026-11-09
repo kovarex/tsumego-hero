@@ -160,6 +160,7 @@ use App\Utility\ViteManifest;
 			'color' => $set['color'],
 			'difficulty' => $set['difficulty'] ?? null, // the collections of a tag have none
 			'solved' => $set['solved_percent'],
+			'perfect' => $set['perfect'],
 			'partition' => $set['partition'],
 		], $backgroundImage);
 	} ?>
