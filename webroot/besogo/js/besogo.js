@@ -299,8 +299,19 @@
 
   // How many lines the cut board shows beyond the farthest stone or move, and how few lines of the board
   // it leaves out before it shows them too, up to the edge
-  const CROP_MARGIN = 2;
+  const CROP_MARGIN = 1;
   const CROP_SNAP = 2;
+
+  // The part of the board a problem shows, its stones and moves turned to the top left corner (scaleParameters
+  // normalizeToTopLeft()): from that corner to CROP_MARGIN lines past the farthest stone or move each way, and up to
+  // the far edge when that would leave out only CROP_SNAP lines of the board or fewer. Sets scale.highest.
+  besogo.cropToStones = function (scale) {
+    for (let axis of ["x", "y"]) {
+      let size = scale.size[axis];
+      let shown = scale.highest[axis] + CROP_MARGIN;
+      scale.highest[axis] = shown >= size - CROP_SNAP ? size : shown;
+    }
+  };
 
   // The largest distance between two lines of the board, in CSS pixels, which are about the same size on
   // every screen (a phone draws one with several of its pixels): about 15 mm on a usual screen. A cut board
@@ -713,13 +724,7 @@
       besogo.editor.applyTransformation(transformation);
       besogo.scaleParameters.orientation = "top-left";
 
-      //Around the stones and the moves the board shows CROP_MARGIN lines more, and reaches the edge when it
-      //would leave out only CROP_SNAP lines of it or fewer
-      for (let axis of ["x", "y"]) {
-        let size = besogo.scaleParameters.size[axis];
-        let shown = besogo.scaleParameters.highest[axis] + CROP_MARGIN;
-        besogo.scaleParameters.highest[axis] = shown >= size - CROP_SNAP ? size : shown;
-      }
+      besogo.cropToStones(besogo.scaleParameters);
       growCropToLimitLineSpacing(besogo.scaleParameters);
 
       if (besogo.scaleParameters.highest.x === 19 && besogo.scaleParameters.highest.y !== 19)

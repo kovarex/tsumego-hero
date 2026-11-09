@@ -38,29 +38,44 @@ class ProblemDiagramTest extends AppTestCase
 		$this->assertStringContainsString('<rect width="', $svg);
 	}
 
-	//The stones reach column d and row c; two lines are added around them, and the board's edge is
+	//The stones and the answer reach column e and row c; a line is added around them, and the board's edge is
 	//close enough on the top and the left to be shown, so the picture starts at the corner
 	public function testThePictureIsCroppedToTheStonesAndSnappedToTheEdges(): void
 	{
 		$svg = ProblemDiagram::fromSgf(self::CORNER, 'ca')->problemSvg('Problem 1');
 
-		// columns a to g (6 gaps) and rows 1 to 5 (4 gaps) of 20 units, with 13 around
-		$this->assertStringContainsString('viewBox="0 0 146 106"', $svg);
+		// columns a to f (5 gaps) and rows 1 to 4 (3 gaps) of 20 units, with 13 around
+		$this->assertStringContainsString('viewBox="0 0 126 86"', $svg);
 		// the stone in the corner (a2 of the SGF, ab) sits on the edge lines
 		$this->assertContains(['#000', 13.0, 33.0], self::stones($svg));
 		// the top and the left edge are thick, the lines run out of the picture on the other sides
-		$this->assertStringContainsString('<line x1="13" y1="13" x2="13" y2="106" stroke-width="2.5"/>', $svg);
-		$this->assertStringContainsString('<line x1="13" y1="13" x2="146" y2="13" stroke-width="2.5"/>', $svg);
+		$this->assertStringContainsString('<line x1="13" y1="13" x2="13" y2="86" stroke-width="2.5"/>', $svg);
+		$this->assertStringContainsString('<line x1="13" y1="13" x2="126" y2="13" stroke-width="2.5"/>', $svg);
 	}
 
+	//The stones on the 10th and the 11th lines show with a line around them on every side: 4 lines each way, no edge
 	public function testAProblemInTheMiddleOfTheBoardKeepsItsSides(): void
 	{
 		$svg = ProblemDiagram::fromSgf('(;SZ[19]AB[jj][kj]AW[jk];B[kk])', 'kk')->problemSvg('Problem 1');
 
-		$this->assertStringContainsString('viewBox="0 0 126 126"', $svg);
+		$this->assertStringContainsString('viewBox="0 0 86 86"', $svg);
 		$this->assertStringNotContainsString('stroke-width="2.5"', $svg);
 		// the star point in the middle of the board, j10, is under a stone and so not drawn
 		$this->assertStringNotContainsString('r="2.5"', $svg);
+	}
+
+	//Beyond the line around the stones, a side three lines away is left out; one two lines away or closer is shown,
+	//as its edge matters
+	public function testAnEdgeTwoLinesOrCloserIsShown(): void
+	{
+		// the stones reach column o: the picture ends at column p, leaving out q, r and s
+		$cut = ProblemDiagram::fromSgf('(;SZ[19]AB[nj][oj]AW[nk];B[ok])', 'ok')->problemSvg('Problem 1');
+		$this->assertStringContainsString('viewBox="0 0 86 86"', $cut);
+		$this->assertStringNotContainsString('stroke-width="2.5"', $cut);
+		// the stones reach column p: the picture goes on to the edge, column s, which is drawn thick
+		$edge = ProblemDiagram::fromSgf('(;SZ[19]AB[oj][pj]AW[ok];B[pk])', 'pk')->problemSvg('Problem 1');
+		$this->assertStringContainsString('viewBox="0 0 126 86"', $edge);
+		$this->assertStringContainsString('stroke-width="2.5"', $edge);
 	}
 
 	//The answer is the first correct move, then the first variation at every move after it
