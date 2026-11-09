@@ -1,0 +1,12 @@
+# DDEV takes the server version from this line of its entrypoint, writes it into the volume and
+# compares it with `database.version`, which it accepts only from the versions it ships. The image
+# runs the 11.7.2 of production under the 11.4 DDEV is told to expect.
+RUN set -eu; \
+    entrypoint=/docker-entrypoint.sh; \
+    if ! grep -qF 'server_db_version=$(awk' "$entrypoint"; then \
+        echo "the dbserver image no longer computes server_db_version; this patch needs updating" >&2; \
+        exit 1; \
+    fi; \
+    awk -v version=mariadb_11.4 'index($0,"server_db_version=$(")==1{print;print "server_db_version=" version;found=1;next}{print}END{if(!found)exit 1}' "$entrypoint" > "$entrypoint.new"; \
+    mv "$entrypoint.new" "$entrypoint"; \
+    chmod +x "$entrypoint"
