@@ -12,7 +12,14 @@ additional_hostnames:
 additional_fqdns: []
 database:
     type: mariadb
+    # Not what the image runs (11.7.2), but what it reports: DDEV compares this with the volume.
     version: "11.4"
+# The server production runs, which DDEV has no image for. .github/workflows/db-image.yml builds
+# DDEV's own dbserver recipe with the 11.7 of production and publishes it, so `ddev start` only
+# pulls it, and .ddev/mysql/prod-parity.cnf brings back the stock values that recipe overrides.
+dbimage: ghcr.io/kovarex/tsumego-hero/mariadb:11.7.2
+# dbimage needs 1.25.4 or newer, and 1.25.5 brings PHP 8.4.27, the version production runs.
+ddev_version_constraint: ">=1.25.5"
 use_dns_when_possible: true
 disable_upload_dirs_warning: true
 
