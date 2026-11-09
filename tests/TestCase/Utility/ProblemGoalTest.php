@@ -26,11 +26,11 @@ class ProblemGoalTest extends TestCase
 			[PrintSheet::goal('', 'B'), PrintSheet::goal('<p></p>', 'W'), PrintSheet::goal('<b>White</b> to live', 'W')]);
 	}
 
-	//Only the default of the color to move is stored as empty, any case, with or without its full stop
-	public function testTheDefaultOfTheColorToMoveIsStoredEmpty(): void
+	//An empty goal and the default of the color to move (any case, with or without its full stop) are stored as none
+	public function testTheDefaultOfTheColorToMoveIsStoredAsNone(): void
 	{
-		$this->assertSame(['', '', '', 'White to play', 'Black to play and live', 'Black to play'],
-			[ProblemGoal::forStorage('Black to play', 'B'), ProblemGoal::forStorage(' black to play. ', 'B'), ProblemGoal::forStorage('White to play', 'W'),
+		$this->assertSame([null, null, null, null, null, 'White to play', 'Black to play and live', 'Black to play'],
+			[ProblemGoal::forStorage('', 'B'), ProblemGoal::forStorage(' <p></p> ', 'W'), ProblemGoal::forStorage('Black to play', 'B'), ProblemGoal::forStorage(' black to play. ', 'B'), ProblemGoal::forStorage('White to play', 'W'),
 				ProblemGoal::forStorage('White to play', 'B'), ProblemGoal::forStorage('Black to play and live', 'B'), ProblemGoal::forStorage('Black to play', null)]);
 	}
 }

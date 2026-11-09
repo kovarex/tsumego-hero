@@ -1045,9 +1045,9 @@ class TsumegosControllerTest extends IntegrationTestCase
 		$this->assertSame('White to play', $field->getAttribute('placeholder'));
 	}
 
-	//Saving the default goal of the problem stores an empty description, which means it; any other goal is stored
+	//Saving the default goal of the problem stores no description (NULL), which means it; any other goal is stored
 	//as written. The form sends the colors the admin saw, so on a swapped board "White to play" is Black's default.
-	public function testSavingTheDefaultGoalStoresAnEmptyDescription(): void
+	public function testSavingTheDefaultGoalStoresNoDescription(): void
 	{
 		$context = new ContextPreparator(['user' => ['admin' => true], 'tsumego' => ['set_order' => 1, 'description' => 'Black to kill',
 			'sgf' => ['data' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19];B[aa];W[ab];B[ba]C[+])', 'first_move_color' => 'B']]]);
@@ -1056,9 +1056,9 @@ class TsumegosControllerTest extends IntegrationTestCase
 		foreach ([['Black to play', '0'], ['black to play.', '0'], ['White to play', '1'], ['White to play', '0'], ['Black to play and live', '0']] as [$description, $swapped])
 		{
 			$this->postEditForm($tsumegoID, ['description' => $description, 'color_swapped' => $swapped]);
-			$saved[] = (string) $this->fetchTable('Tsumego')->get($tsumegoID)->description;
+			$saved[] = $this->fetchTable('Tsumego')->get($tsumegoID)->description;
 		}
-		$this->assertSame(['', '', '', 'White to play', 'Black to play and live'], $saved);
+		$this->assertSame([null, null, null, 'White to play', 'Black to play and live'], $saved);
 	}
 
 	//A White-first problem in a collection that forces the player to black (small

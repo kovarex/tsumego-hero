@@ -3,7 +3,7 @@
 namespace App\Utility;
 
 //The goal of a problem (tsumego.description, "Black to kill"). A problem without one is "<color> to play", the color
-//to move: an empty description means exactly that, so that default is never stored.
+//to move: no description (NULL) means exactly that, so that default is never stored.
 class ProblemGoal
 {
 	//The goal shown for a problem with no description of its own, for the color to move ('B', 'W', 'black' or 'white');
@@ -29,14 +29,15 @@ class ProblemGoal
 		return self::isEmpty($description) ? self::default($colorToMove) : (string) $description;
 	}
 
-	//The description to store: the default goal of the color to move ("Black to play", with or without a full stop,
-	//in any case) is stored as empty, any other description as it is
-	public static function forStorage(?string $description, ?string $colorToMove): string
+	//The description to store: none (NULL) for an empty one or the default goal of the color to move ("Black to
+	//play", with or without a full stop, in any case), any other description as it is
+	public static function forStorage(?string $description, ?string $colorToMove): ?string
 	{
-		$description = (string) $description;
+		if (self::isEmpty($description))
+			return null;
 		$default = self::default($colorToMove);
-		if ($default !== '' && strcasecmp(rtrim(trim($description), '.'), $default) === 0)
-			return '';
+		if ($default !== '' && strcasecmp(rtrim(trim((string) $description), '.'), $default) === 0)
+			return null;
 		return $description;
 	}
 }
