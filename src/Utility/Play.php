@@ -282,7 +282,11 @@ class Play
 		//The description, the hint and the answers are stored in the true colors of the stones; when the
 		//board is inverted, they swap Black and White to match what the player sees
 		$swapColors = $this->problem['swapColors'];
-		$this->problem['displayDescription'] = $swapColors ? self::swapColorWords($tsumego->description) : $tsumego->description;
+		$this->problem['displayDescription'] = $swapColors ? self::swapColorWords((string) $tsumego->description) : (string) $tsumego->description;
+		//The goal over the board: a problem without a description is "<color> to play", in the color the player moves
+		//with, which is already the color they see. A multiple choice problem or a semeai has no move to play.
+		$playable = $tsumegoVariant === null && $semeai === null;
+		$this->problem['displayGoal'] = $playable ? ProblemGoal::orDefault($this->problem['displayDescription'], $this->problem['playerColor']) : $this->problem['displayDescription'];
 		$hint = (string) $tsumego->hint;
 		$this->problem['displayHint'] = $swapColors ? self::swapColorWords($hint) : $hint;
 		$displayAnswers = $tsumegoVariant?->extract(['answer1', 'answer2', 'answer3', 'answer4']);

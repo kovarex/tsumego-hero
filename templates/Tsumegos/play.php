@@ -39,6 +39,7 @@ use App\Utility\ViteManifest;
  * @var TsumegoVariant|null $tv
  * @var array{page: array<string, mixed>, problem: array<string, mixed>} $playPage What the page's script reads, see Play::clientData()
  * @var string $displayDescription The description in the colors the player sees
+ * @var string $displayGoal The goal over the board: the description, "<color> to play" when it has none (ProblemGoal)
  * @var string $displayHint The hint in the colors the player sees
  * @var bool $solved Solved for the current mode
  * @var string $resetLink
@@ -165,9 +166,9 @@ use App\Utility\ViteManifest;
 			<div class="play-message__goal">
 				<div id="titleDescription" class="<?php echo Auth::isInRatingMode() || Auth::isInTimeMode() ? 'titleDescription2' : 'titleDescription1'; ?>">
 					<?php //The color to move as a stone instead of its name: "White to kill." shows a white stone and "to kill." ?>
-					<?php $goal = Play::splitGoalColor($displayDescription); ?>
+					<?php $goal = Play::splitGoalColor($displayGoal); ?>
 					<?php if ($goal['color'] !== null): ?>
-						<span class="play-goal__stone play-goal__stone--<?php echo $goal['color']; ?>" role="img" aria-label="<?php echo ucfirst($goal['color']); ?>" title="<?php echo h($displayDescription); ?>"></span>
+						<span class="play-goal__stone play-goal__stone--<?php echo $goal['color']; ?>" role="img" aria-label="<?php echo ucfirst($goal['color']); ?>" title="<?php echo h($displayGoal); ?>"></span>
 					<?php endif; ?>
 					<a id="descriptionText"><?php echo h($goal['rest']); ?></a>
 					<?php if ($displayHint !== ''): ?>

@@ -22,6 +22,7 @@ use App\Utility\DailyStreak;
 use App\Utility\ChallengeFailedLine;
 use App\Utility\CookieFlash;
 use App\Utility\PlayOutcome;
+use App\Utility\ProblemGoal;
 use App\Utility\Rating;
 use App\Utility\RatingParseException;
 use App\Utility\SgfParser;
@@ -198,6 +199,14 @@ class TsumegosController extends AppController
 				fn($match) => ['Black' => 'White', 'black' => 'white', 'White' => 'Black', 'white' => 'black'][$match[1]],
 				$newDescription
 			);
+
+		// "Black to play" for a problem Black starts is its default goal, which an empty description means (ProblemGoal)
+		$firstMoveColor = $this->fetchTable('Sgf')->find()
+			->select(['first_move_color'])
+			->where(['tsumego_id' => $tsumego->id, 'sgf_status_id' => SgfTable::STATUS_ACCEPTED])
+			->orderByDesc('id')
+			->first()?->first_move_color;
+		$newDescription = ProblemGoal::forStorage($newDescription, $firstMoveColor);
 
 		$this->changeField($tsumego, 'description', $newDescription, AdminActivityTypeTable::DESCRIPTION_EDIT);
 		$this->changeField($tsumego, 'hint', $this->input('hint'), AdminActivityTypeTable::HINT_EDIT);

@@ -250,7 +250,7 @@ class ContextPreparator
 			return $this->prepareTsumego(['set_order' => $tsumegoInput]);
 
 		$tsumego = [];
-		$tsumego['description'] = Util::extract('description', $tsumegoInput) ?: 'test-tsumego';
+		$tsumego['description'] = Util::extract('description', $tsumegoInput) ?? 'test-tsumego';
 		$tsumego['hint'] = Util::extract('hint', $tsumegoInput) ?: '';
 		$tsumego['rating'] = Util::extract('rating', $tsumegoInput) ?: 1000;
 		$tsumego['minimum_rating'] = Util::extract('minimum_rating', $tsumegoInput) ?: null;
