@@ -165,4 +165,61 @@ class PlayMessageRowBrowserTest extends IntegrationTestCase
 		$this->assertSame([true, true, true], [$goal['grey'], $incorrect['grey'], $correct['grey']], 'the grey of the row');
 		$this->assertSame([true, true, true], [$goal['color'], $incorrect['color'], $correct['color']], 'the colour of each');
 	}
+
+	//Black (3,1) is answered by white at (3,2) or (1,2), both of which black has to answer: (3,3) and (1,1)
+	private const TWO_ANSWERS = '(;GM[1]FF[4]SZ[19]AW[bb]AB[dd];B[ca](;W[cb];B[cc]C[+])(;W[ab];B[aa]C[+]))';
+
+	//The answer to the white reply on the board: to the first of the SGF (3,2) at (3,3), to the second (1,2) at (1,1). The
+	//board may show the problem turned, so the reply is told by its place in the tree, not by its coordinates.
+	private static function answerTo(Browser $browser): array
+	{
+		$index = $browser->driver->executeScript('const node = besogo.editor.getCurrent(); return node.parent.children.indexOf(node);');
+		return $index === 0 ? [3, 3] : [1, 1];
+	}
+
+	private static function verdict(Browser $browser): array
+	{
+		return $browser->driver->executeScript(<<<'JS'
+			const next = document.getElementById('besogo-next-button');
+			return {
+				status: document.getElementById('status').textContent,
+				comment: document.getElementById('theComment').textContent,
+				solved: document.querySelector('.play-message').classList.contains('play-message--solved'),
+				greenNext: next !== null && getComputedStyle(next).backgroundColor === (() => { const probe = document.createElement('div'); probe.style.background = 'var(--color-green-dark)'; document.body.append(probe); const color = getComputedStyle(probe).backgroundColor; probe.remove(); return color; })(),
+				greenGlow: [...document.querySelectorAll('.besogo-board')].some(board => getComputedStyle(board).boxShadow.includes('67, 255, 40')),
+			};
+			JS);
+	}
+
+	//A problem with two answers to give is not solved by the first: the row says only "Correct, but what about this
+	//answer?" in the colour of the text, without Correct!, and Next isn't green. The second answer solves it.
+	public function testCorrectIsSaidOnlyWhenEveryAnswerIsGiven(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['mode' => Constants::$LEVEL_MODE],
+			'tsumego' => ['set_order' => 1, 'sgf' => ['data' => self::TWO_ANSWERS, 'first_move_color' => 'B']]]);
+		$browser = Browser::instance();
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		$browser->waitForBoard();
+
+		$browser->clickBoard(3, 1);
+		$browser->waitUntilJs('besogo.editor.getCurrent().moveNumber >= 2');
+		$browser->clickBoard(...self::answerTo($browser));
+		$browser->waitUntilJs('document.getElementById("theComment").textContent.includes("what about this answer")');
+		$browser->waitUntilJs('besogo.editor.getCurrent().moveNumber == 2');
+		$first = self::verdict($browser);
+		$this->assertSame('', $first['status'], 'no Correct! yet');
+		$this->assertSame('Correct, but what about this answer?', trim($first['comment']));
+		$this->assertFalse($first['solved']);
+		$this->assertFalse($first['greenNext'], 'Next is not green yet');
+		$this->assertFalse($first['greenGlow'], 'the board does not glow green yet');
+		$this->assertSame(true, $browser->driver->executeScript('const probe = document.createElement("div"); probe.style.color = "var(--text-color)"; document.body.append(probe); const color = getComputedStyle(probe).color; probe.remove(); return getComputedStyle(document.getElementById("theComment")).color === color;'), 'the comment in the colour of the text');
+
+		$browser->clickBoard(...self::answerTo($browser));
+		$browser->waitUntilJs('document.getElementById("status").textContent.includes("Correct!")');
+		$second = self::verdict($browser);
+		$this->assertTrue($second['solved']);
+		$this->assertTrue($second['greenNext'], 'Next is green');
+		$this->assertTrue($second['greenGlow'], 'the board glows green');
+	}
 }
