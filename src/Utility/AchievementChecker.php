@@ -51,7 +51,11 @@ class AchievementChecker
 		// unlocked from now on, so a second reason to gain it in the same check does not insert it again
 		$this->existingStatuses[$achievementID->value] = true;
 
-		$this->updated[] = $this->fetchTable('Achievement')->get($achievementID->value);
+		$achievement = $this->fetchTable('Achievement')->get($achievementID->value);
+		// one taken back from the player, who kept its XP, pays none when earned again
+		if (Util::query('SELECT 1 FROM achievement_reset WHERE user_id = ? AND achievement_id = ?', [Auth::getUserID(), $achievementID->value]))
+			$achievement->xp = 0;
+		$this->updated[] = $achievement;
 	}
 
 	//Unlocks a repeatable achievement and records how often it was earned. Earning
@@ -239,7 +243,7 @@ WHERE rn = 1;", [Auth::getUserID(), TimeModeSessionStatusTable::SOLVED]);
 		$accuracy = AchievementConditionTable::value(Auth::getUserID(), AchievementConditionTable::CATEGORY_SET_ACCURACY, $sid, $partition);
 		if ($accuracy === null)
 			return $this;
-		if (self::partSize(TsumegoUtil::countTsumegosFromSet($sid), $partition) < SetConnectionTable::ACHIEVEMENT_MINIMUM_PROBLEMS)
+		if (ProgressDeletionTable::partSize(TsumegoUtil::countTsumegosFromSet($sid), $partition) < SetConnectionTable::ACHIEVEMENT_MINIMUM_PROBLEMS)
 			return $this;
 		$time = AchievementConditionTable::value(Auth::getUserID(), AchievementConditionTable::CATEGORY_SET_TIME, $sid, $partition);
 
@@ -273,13 +277,7 @@ WHERE rn = 1;", [Auth::getUserID(), TimeModeSessionStatusTable::SOLVED]);
 			. 'GROUP BY ac.id, ac.set_partition_or_zero',
 			[Auth::getUserID(), AchievementConditionTable::CATEGORY_SET_ACCURACY, 100]
 		);
-		return count(array_filter($rows, fn(array $row) => self::partSize((int) $row['problems'], (int) $row['part']) >= SetConnectionTable::ACHIEVEMENT_MINIMUM_PROBLEMS));
-	}
-
-	//How many problems of a collection of the given count are in the part
-	private static function partSize(int $problemCount, int $partition): int
-	{
-		return max(0, min(ProgressDeletionTable::$PARTITION_SIZE, $problemCount - $partition * ProgressDeletionTable::$PARTITION_SIZE));
+		return count(array_filter($rows, fn(array $row) => ProgressDeletionTable::partSize((int) $row['problems'], (int) $row['part']) >= SetConnectionTable::ACHIEVEMENT_MINIMUM_PROBLEMS));
 	}
 
 	public function checkFavoritesAchievement(int $setId): AchievementChecker

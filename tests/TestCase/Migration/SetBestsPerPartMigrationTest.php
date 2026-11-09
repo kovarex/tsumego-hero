@@ -1,17 +1,18 @@
 <?php
 
 use App\Model\Table\AchievementConditionTable;
+use App\Utility\AchievementId;
 use App\Utility\Util;
 use Phinx\Db\Adapter\AdapterFactory;
 use Symfony\Component\Console\Output\BufferedOutput;
 
 require_once ROOT . '/db/migrations/20261109221207_set_bests_per_part.php';
 
-//Every kept best time and accuracy of a collection is deleted, the other conditions and the unlocked achievements stay,
-//and the bests are kept per part from then on
+//Every kept best time and accuracy of a collection is deleted with the achievements they unlocked, which are remembered;
+//the other conditions and achievements, the attempts and the resets stay, and the bests are kept per part from then on
 class SetBestsPerPartMigrationTest extends AppTestCase
 {
-	public function testTheBestsOfCollectionsAreDeletedAndKeptPerPartAfter(): void
+	public function testTheBestsAndTheirAchievementsAreDeletedAndKeptPerPartAfter(): void
 	{
 		$context = new ContextPreparator(['tsumegos' => [['sets' => [['name' => 'old set', 'num' => 1]]]]]);
 		$userID = $context->user['id'];
@@ -21,17 +22,30 @@ class SetBestsPerPartMigrationTest extends AppTestCase
 		foreach ([[AchievementConditionTable::CATEGORY_SET_ACCURACY, $setID, 100], [AchievementConditionTable::CATEGORY_SET_TIME, $setID, 12],
 			[AchievementConditionTable::CATEGORY_COMPLETED_SETS, null, 4]] as [$category, $set, $value])
 				Util::execute('INSERT INTO achievement_condition (user_id, achievement_condition_category_id, set_id, value) VALUES (?, ?, ?, ?)', [$userID, $category, $set, $value]);
-		Util::execute('INSERT INTO achievement_status (user_id, achievement_id, created) VALUES (?, 1, NOW())', [$userID]);
+		foreach ([[1, 1], [AchievementId::ACCURACY_I->value, 1], [AchievementId::SPEED_XII->value, 1], [AchievementId::SUPERIOR_ACCURACY->value, 3]] as [$achievement, $value])
+			Util::execute('INSERT INTO achievement_status (user_id, achievement_id, value) VALUES (?, ?, ?)', [$userID, $achievement, $value]);
+		Util::execute('INSERT INTO tsumego_attempt (user_id, tsumego_id, solved, seconds, misplays, gain, user_rating, tsumego_rating, created) VALUES (?, ?, 1, 3, 0, 0, 1000, 1000, NOW())',
+			[$userID, $context->tsumegos[0]['id']]);
+		Util::execute('INSERT INTO progress_deletion (user_id, set_id, set_partition, created) VALUES (?, ?, 0, NOW())', [$userID, $setID]);
 		$output = new BufferedOutput();
 		$migration->setOutput($output);
 
 		$migration->up();
 
-		$this->assertStringContainsString('Deleted 2 best times and accuracies', $output->fetch());
+		$printed = $output->fetch();
+		$this->assertStringContainsString('Deleted 2 best times and accuracies', $printed);
+		foreach ([AchievementId::ACCURACY_I, AchievementId::SPEED_XII, AchievementId::SUPERIOR_ACCURACY] as $achievement)
+			$this->assertStringContainsString("Achievement {$achievement->value} taken back from 1 players", $printed);
 		$this->assertSame([['category' => AchievementConditionTable::CATEGORY_COMPLETED_SETS, 'value' => 4.0]],
 			array_map(fn($row) => ['category' => (int) $row['category'], 'value' => (float) $row['value']],
 				Util::query('SELECT achievement_condition_category_id AS category, value FROM achievement_condition WHERE user_id = ?', [$userID])));
-		$this->assertCount(1, Util::query('SELECT id FROM achievement_status WHERE user_id = ?', [$userID]), 'the unlocked achievement stays');
+		$this->assertSame([1], array_map(fn($row) => (int) $row['achievement_id'], Util::query('SELECT achievement_id FROM achievement_status WHERE user_id = ?', [$userID])),
+			'the achievements of the bests are taken back, the others stay');
+		$this->assertSame([[AchievementId::ACCURACY_I->value, 1], [AchievementId::SPEED_XII->value, 1], [AchievementId::SUPERIOR_ACCURACY->value, 3]],
+			array_map(fn($row) => [(int) $row['achievement_id'], (int) $row['value']], Util::query('SELECT achievement_id, value FROM achievement_reset WHERE user_id = ? ORDER BY achievement_id', [$userID])),
+			'remembered, with the count, so that earning them again pays no XP');
+		$this->assertCount(1, Util::query('SELECT id FROM tsumego_attempt WHERE user_id = ?', [$userID]), 'the attempts stay');
+		$this->assertCount(1, Util::query('SELECT id FROM progress_deletion WHERE user_id = ?', [$userID]), 'the resets stay');
 
 		// each part has a row of its own
 		foreach ([0 => 90, 1 => 100] as $part => $value)

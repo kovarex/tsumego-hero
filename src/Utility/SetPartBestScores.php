@@ -39,7 +39,7 @@ final class SetPartBestScores
 
 		$solved = $failed = $bestSeconds = [];
 		foreach (Util::query('SELECT tsumego_id, solved, seconds, misplays FROM tsumego_attempt
-			WHERE user_id = ? AND tsumego_id IN (' . $in . ') AND created > ?', [$userID, $since === '' ? '1000-01-01' : $since]) as $attempt)
+			WHERE user_id = ? AND tsumego_id IN (' . $in . ') AND created >= ?', [$userID, $since === '' ? '1000-01-01' : $since]) as $attempt)
 		{
 			$tsumegoID = (int) $attempt['tsumego_id'];
 			$seconds = (int) $attempt['seconds'];

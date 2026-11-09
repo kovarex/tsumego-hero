@@ -11,7 +11,9 @@ use App\Utility\AchievementId;
 use App\Utility\Auth;
 use App\Utility\Util;
 use App\Attribute\HttpGet;
+use App\Model\Table\ProgressDeletionTable;
 use App\Model\Table\SetConnectionTable;
+use App\Model\Table\SetTable;
 
 /** @phpstan-import-type UserRow from \App\Utility\RowTypes */
 class AchievementsController extends AppController
@@ -182,30 +184,37 @@ class AchievementsController extends AppController
 		if ($achievement->id !== AchievementId::SUPERIOR_ACCURACY->value)
 			return [];
 
+		// the bests are per part of a collection (ProgressDeletionTable::$PARTITION_SIZE): each part of enough problems
+		// is listed, numbered when the collection has more than one
 		$rows = Util::query(
-			'SELECT s.id, s.title FROM `set` s WHERE s.id IN ('
-			. SetConnectionTable::publicCollectionsWithMinimumProblemsSql() . ') '
-			. 'ORDER BY ' . SetConnectionTable::displayOrderForSetSql('s')
+			'SELECT s.id, s.title, COUNT(*) AS problems FROM `set` s'
+			. ' JOIN set_connection sc ON sc.set_id = s.id'
+			. ' JOIN tsumego t ON t.id = sc.tsumego_id AND t.deleted IS NULL'
+			. ' WHERE ' . SetTable::officialCondition('s')
+			. ' GROUP BY s.id HAVING problems >= ' . SetConnectionTable::ACHIEVEMENT_MINIMUM_PROBLEMS
+			. ' ORDER BY ' . SetConnectionTable::displayOrderForSetSql('s')
 		);
 
-		// the bests are per part of a collection: a collection shows its best part
-		$bestAccuracy = [];
-		if ($userID)
-			foreach (Util::query(
-				'SELECT set_id, MAX(value) AS accuracy FROM achievement_condition WHERE user_id = ? AND achievement_condition_category_id = ? GROUP BY set_id',
-				[$userID, AchievementConditionTable::CATEGORY_SET_ACCURACY]) as $row)
-					$bestAccuracy[(int) $row['set_id']] = (float) $row['accuracy'];
+		$bestAccuracy = $userID ? AchievementConditionTable::bestAccuracies($userID, array_map(fn($row) => (int) $row['id'], $rows)) : [];
 
 		$collections = [];
 		foreach ($rows as $row)
 		{
-			$accuracy = $bestAccuracy[(int) $row['id']] ?? 0;
-			$collections[] = [
-				'id' => (int) $row['id'],
-				'title' => $row['title'],
-				'accuracy' => $accuracy,
-				'earned' => $accuracy >= 100,
-			];
+			$problems = (int) $row['problems'];
+			$partCount = (int) ceil($problems / ProgressDeletionTable::$PARTITION_SIZE);
+			for ($part = 0; $part < $partCount; $part++)
+			{
+				if (ProgressDeletionTable::partSize($problems, $part) < SetConnectionTable::ACHIEVEMENT_MINIMUM_PROBLEMS)
+					continue;
+				$accuracy = $bestAccuracy[(int) $row['id']][$part] ?? 0;
+				$collections[] = [
+					'id' => (int) $row['id'],
+					'partition' => $part,
+					'title' => $row['title'] . ($partCount > 1 ? ' #' . ($part + 1) : ''),
+					'accuracy' => $accuracy,
+					'earned' => $accuracy >= 100,
+				];
+			}
 		}
 		return $collections;
 	}

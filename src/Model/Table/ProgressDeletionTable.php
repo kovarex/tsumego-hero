@@ -33,6 +33,12 @@ WHERE sc.id = ?', [$setConnectionID]);
 		return ['set_id' => (int) $rows[0]['set_id'], 'partition' => intdiv((int) $rows[0]['position'], self::$PARTITION_SIZE)];
 	}
 
+	//How many problems of a set of the given count are in the part
+	public static function partSize(int $problemCount, int $partition): int
+	{
+		return max(0, min(self::$PARTITION_SIZE, $problemCount - $partition * self::$PARTITION_SIZE));
+	}
+
 	//The part of each set connection of the set, by the order partitionOf() uses
 	/** @return array<int, int> By set connection */
 	public static function partitionsOfSet(int $setID): array
