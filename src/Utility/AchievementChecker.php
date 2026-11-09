@@ -51,11 +51,7 @@ class AchievementChecker
 		// unlocked from now on, so a second reason to gain it in the same check does not insert it again
 		$this->existingStatuses[$achievementID->value] = true;
 
-		$achievement = $this->fetchTable('Achievement')->get($achievementID->value);
-		// one taken back from the player, who kept its XP, pays none when earned again
-		if (Util::query('SELECT 1 FROM achievement_reset WHERE user_id = ? AND achievement_id = ?', [Auth::getUserID(), $achievementID->value]))
-			$achievement->xp = 0;
-		$this->updated[] = $achievement;
+		$this->updated[] = $this->fetchTable('Achievement')->get($achievementID->value);
 	}
 
 	//Unlocks a repeatable achievement and records how often it was earned. Earning

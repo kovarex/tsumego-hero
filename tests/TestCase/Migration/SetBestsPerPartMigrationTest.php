@@ -8,8 +8,7 @@ use Symfony\Component\Console\Output\BufferedOutput;
 
 require_once ROOT . '/db/migrations/20261109221207_set_bests_per_part.php';
 
-//Every kept best time and accuracy of a collection is deleted with the achievements they unlocked, which are remembered;
-//the other conditions and achievements, the attempts and the resets stay, and the bests are kept per part from then on
+//Every kept best time and accuracy of a collection is deleted with the achievements they unlocked; the other conditions and achievements, the attempts and the resets stay, and the bests are kept per part from then on
 class SetBestsPerPartMigrationTest extends AppTestCase
 {
 	public function testTheBestsAndTheirAchievementsAreDeletedAndKeptPerPartAfter(): void
@@ -41,9 +40,6 @@ class SetBestsPerPartMigrationTest extends AppTestCase
 				Util::query('SELECT achievement_condition_category_id AS category, value FROM achievement_condition WHERE user_id = ?', [$userID])));
 		$this->assertSame([1], array_map(fn($row) => (int) $row['achievement_id'], Util::query('SELECT achievement_id FROM achievement_status WHERE user_id = ?', [$userID])),
 			'the achievements of the bests are taken back, the others stay');
-		$this->assertSame([[AchievementId::ACCURACY_I->value, 1], [AchievementId::SPEED_XII->value, 1], [AchievementId::SUPERIOR_ACCURACY->value, 3]],
-			array_map(fn($row) => [(int) $row['achievement_id'], (int) $row['value']], Util::query('SELECT achievement_id, value FROM achievement_reset WHERE user_id = ? ORDER BY achievement_id', [$userID])),
-			'remembered, with the count, so that earning them again pays no XP');
 		$this->assertCount(1, Util::query('SELECT id FROM tsumego_attempt WHERE user_id = ?', [$userID]), 'the attempts stay');
 		$this->assertCount(1, Util::query('SELECT id FROM progress_deletion WHERE user_id = ?', [$userID]), 'the resets stay');
 

@@ -130,40 +130,34 @@ class SetPartAchievementPathsTest extends IntegrationTestCase
 		$this->assertSame([], self::unlocked($context));
 	}
 
-	//An achievement taken back from the player by the migration, who kept its XP, pays none when earned again; one never
-	//had pays as always
-	public function testAnAchievementTakenBackPaysNoXpAgain(): void
+	//The achievements the migration took back are earned again as any achievement is, with their XP and their popups:
+	//the player who had them keeps the XP they gave, and gets it again
+	public function testAnAchievementTakenBackIsEarnedAgainNormally(): void
 	{
 		$context = new ContextPreparator(['user' => ['name' => 'player']]);
-		foreach ([AchievementId::ACCURACY_I, AchievementId::ACCURACY_II, AchievementId::SPEED_I, AchievementId::SUPERIOR_ACCURACY] as $achievement)
-			Util::execute('INSERT INTO achievement_reset (user_id, achievement_id, value) VALUES (?, ?, 1)', [$context->user['id'], $achievement->value]);
+		foreach ([...self::BAND_ACHIEVEMENTS, AchievementId::SUPERIOR_ACCURACY] as $achievement)
+			Util::execute('INSERT INTO achievement_status (user_id, achievement_id, value) VALUES (?, ?, 3)', [$context->user['id'], $achievement->value]);
+		self::migration()->up();
+		$this->assertSame([], self::unlocked($context), 'taken back');
 		$collection = self::collection($context, 100);
 		$context->XPGained();
 
 		$response = $this->finish($context, $collection, 0);
 
-		$this->assertSame([...self::BAND_ACHIEVEMENTS, AchievementId::SUPERIOR_ACCURACY], self::unlocked($context), 'earned again');
-		$xpByAchievement = array_column($response['achievement_updates'], 'xp', 'id');
-		$this->assertSame(0, $xpByAchievement[AchievementId::ACCURACY_I->value]);
-		$this->assertSame(0, $xpByAchievement[AchievementId::SUPERIOR_ACCURACY->value]);
-		$this->assertGreaterThan(0, $xpByAchievement[AchievementId::ACCURACY_III->value], 'never had');
-		$paid = self::achievementXp($response);
-		$this->assertSame(16000, $paid, 'ACCURACY_III, SPEED_II and SPEED_III');
-		$this->assertSame($paid + (int) $response['xp_gained'], $context->XPGained(), 'the XP added is the solve\'s and the new achievements\'');
+		$this->assertSame([...self::BAND_ACHIEVEMENTS, AchievementId::SUPERIOR_ACCURACY], self::unlocked($context));
+		$this->assertSame(1, self::superiorAccuracyCount($context), 'counted from the parts at 100% now');
+		$this->assertSame(31000, self::achievementXp($response));
+		$this->assertSame(31000 + (int) $response['xp_gained'], $context->XPGained());
 	}
 
-	//Superior Accuracy taken back at a count of 2 pays nothing up to it, and nothing beyond, as a further part never did
-	public function testSuperiorAccuracyTakenBackPaysNothingAtAnyCount(): void
+	//The migration of the test database, run again: back down, then up
+	private static function migration(): SetBestsPerPart
 	{
-		$context = new ContextPreparator(['user' => ['name' => 'player']]);
-		Util::execute('INSERT INTO achievement_reset (user_id, achievement_id, value) VALUES (?, ?, 2)', [$context->user['id'], AchievementId::SUPERIOR_ACCURACY->value]);
-		$collection = self::collection($context, 600);
-
-		$xp = [];
-		foreach ([0, 1, 2] as $part)
-			$xp[] = array_column($this->finish($context, $collection, $part)['achievement_updates'] ?? [], 'xp', 'id')[AchievementId::SUPERIOR_ACCURACY->value] ?? null;
-
-		$this->assertSame(3, self::superiorAccuracyCount($context));
-		$this->assertSame([0, null, null], $xp, 'unlocked again without XP, then only counted');
+		require_once ROOT . '/db/migrations/20261109221207_set_bests_per_part.php';
+		$config = require ROOT . '/phinx.php';
+		$migration = new SetBestsPerPart('test', 20261109221207);
+		$migration->setAdapter(Phinx\Db\Adapter\AdapterFactory::instance()->getAdapter('mysql', $config['environments']['test']));
+		$migration->down();
+		return $migration;
 	}
 }
