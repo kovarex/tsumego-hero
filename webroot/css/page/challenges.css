@@ -39,6 +39,31 @@
 	text-align: center;
 }
 
+/* The creator's rename of the challenge, folded under its title */
+.challenges__rename
+{
+	margin-bottom: var(--space-2);
+}
+
+.challenges__rename summary
+{
+	cursor: pointer;
+	display: inline;
+}
+
+.challenges__rename .challenges__inline-form
+{
+	display: inline-flex;
+	gap: var(--space-2);
+	align-items: center;
+	margin: var(--space-2) 0 0;
+}
+
+.challenges__rename .form-field__control
+{
+	width: min(20rem, 70vw);
+}
+
 .challenges__intro
 {
 	text-align: center;
@@ -80,34 +105,180 @@
 	}
 }
 
-.challenges__row
+/* The player's challenges (Challenges/index.php): a table on a computer, a few lines for each
+   challenge on a phone. */
+.challenges__list
 {
-	display: flex;
-	flex-wrap: wrap;
-	align-items: center;
-	justify-content: space-between;
-	gap: var(--space-2);
-	padding: var(--space-2) 0;
+	width: 100%;
+	border-collapse: collapse;
+}
+
+.challenges__list th,
+.challenges__list td
+{
+	padding: var(--space-2);
+	text-align: left;
+	vertical-align: middle;
 	border-bottom: 1px solid var(--current-border-color);
 }
 
-/* A challenge in the list: the place, the challenge and the result first, what is played and who
-   started it on the right. */
-.challenges__row-main
+.challenges__list th
 {
-	line-height: 1.8;
-}
-
-.challenges__when
-{
-	margin-left: var(--space-2);
+	color: var(--text-softer-color);
+	font-size: var(--font-size-sm);
+	font-weight: var(--weight-normal);
 	white-space: nowrap;
 }
 
-.challenges__row-details
+.challenges__list-title
 {
-	margin-left: auto;
+	min-width: 10em;
+	font-weight: var(--weight-bold);
+	overflow-wrap: anywhere;
+}
+
+.challenges__list-place,
+.challenges__list-points,
+.challenges__list-players,
+.challenges__list-when
+{
+	white-space: nowrap;
+}
+
+.challenges__list-points
+{
 	text-align: right;
+}
+
+.challenges__list-label
+{
+	display: none;
+}
+
+/* The players who finished a challenge, overlapping a little, each ringed in the colour of the card so
+   the one below shows where it ends */
+.challenges__avatars
+{
+	display: inline-flex;
+	align-items: center;
+	vertical-align: middle;
+}
+
+.challenges__avatar
+{
+	display: inline-flex;
+	flex-shrink: 0;
+	line-height: 0;
+}
+
+.challenges__avatar + .challenges__avatar,
+.challenges__avatar + .challenges__avatars-rest
+{
+	margin-left: -6px;
+}
+
+.challenges__avatars .user-avatar
+{
+	width: 24px;
+	max-width: none;
+	height: 24px;
+	margin: 0;
+	border: 2px solid var(--color-surface);
+	box-sizing: content-box;
+}
+
+.challenges__avatars-rest
+{
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 24px;
+	height: 24px;
+	padding: 0 var(--space-1);
+	border: 2px solid var(--color-surface);
+	border-radius: 999px;
+	background: var(--current-border-color);
+	color: var(--text-color);
+	font-size: var(--font-size-sm);
+	box-sizing: content-box;
+}
+
+.challenges__finished-of
+{
+	display: inline-block;
+}
+
+@media (width < 40rem)
+{
+	.challenges__list,
+	.challenges__list tbody
+	{
+		display: block;
+	}
+
+	.challenges__list thead
+	{
+		display: none;
+	}
+
+	/* The challenge on its own line, the place and the points under it, and then the hints: what is
+	   played and who started it, and when on a line of its own. The empty ::before breaks the line before the hints. */
+	.challenges__list tr
+	{
+		display: flex;
+		flex-wrap: wrap;
+		align-items: baseline;
+		gap: var(--space-1) var(--space-2);
+		padding: var(--space-2) 0;
+		border-bottom: 1px solid var(--current-border-color);
+	}
+
+	.challenges__list tr::before
+	{
+		content: "";
+		flex-basis: 100%;
+		order: 1;
+	}
+
+	.challenges__list td
+	{
+		padding: 0;
+		border: none;
+	}
+
+	.challenges__list-title
+	{
+		flex-basis: 100%;
+	}
+
+	.challenges__list-place
+	{
+		white-space: normal;
+	}
+
+	.challenges__list-points--none
+	{
+		display: none;
+	}
+
+	.challenges__list-problems,
+	.challenges__list-players,
+	.challenges__list-when
+	{
+		order: 2;
+		font-size: var(--font-size-sm);
+	}
+
+	.challenges__list-when
+	{
+		flex-basis: 100%;
+	}
+
+
+	.challenges__list-label
+	{
+		display: inline;
+	}
 }
 
 /* The medal of the player's place sits on the line of the phrase, as high as its letters */

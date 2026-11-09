@@ -54,7 +54,7 @@ class FriendActivity
 				'friend' => $friendsById[$row['user_id']],
 				'happened' => $row['happened'],
 				'subject_id' => (int) $row['subject_id'],
-				'subject_name' => $row['kind'] === self::CHALLENGE ? ChallengeTable::title(['id' => $row['subject_id']]) : (string) $row['subject_name'],
+				'subject_name' => $row['kind'] === self::CHALLENGE ? ChallengeTable::title(['id' => $row['subject_id'], 'name' => $row['subject_name']]) : (string) $row['subject_name'],
 				'points' => $row['points'] === null ? null : (float) $row['points']];
 		foreach ($friends as $friend)
 			if (self::isStreakMilestone((int) $friend['streak_length']) && $friend['streak_last_day'] !== null && $friend['streak_last_day'] >= $since)
@@ -97,8 +97,9 @@ class FriendActivity
 				WHERE s.user_id IN ($in) AND s.created >= ?
 				ORDER BY s.created DESC LIMIT $limit)
 			UNION ALL
-			(SELECT '" . self::CHALLENGE . "', t.user_id, t.created, t.challenge_id, NULL, t.points
+			(SELECT '" . self::CHALLENGE . "', t.user_id, t.created, t.challenge_id, c.name, t.points
 				FROM time_mode_session t
+				JOIN challenge c ON c.id = t.challenge_id
 				WHERE t.user_id IN ($in) AND t.challenge_id IS NOT NULL AND t.time_mode_session_status_id <> ? AND t.created >= ?
 				ORDER BY t.created DESC LIMIT $limit)
 			ORDER BY happened DESC
