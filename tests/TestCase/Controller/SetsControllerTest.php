@@ -2567,6 +2567,31 @@ class SetsControllerTest extends IntegrationTestCase
 		$this->assertTrue($browser->idExists('showx'), "Reset button should be shown at 51%");
 	}
 
+	//On a phone the set page, with its Reset link, doesn't scroll sideways
+	public function testTheSetPageWithItsResetFitsAPhone(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'player', 'collection_size' => 200],
+			'tsumegos' => [
+				['sets' => [['name' => 'phone set', 'num' => 1]], 'status' => 'S'],
+				['sets' => [['name' => 'phone set', 'num' => 2]], 'status' => 'S']]]);
+
+		$browser = Browser::instance();
+		$window = $browser->driver->manage()->window();
+		$originalSize = $window->getSize();
+		try
+		{
+			$window->setSize(new Facebook\WebDriver\WebDriverDimension(390, 844));
+			$browser->get('sets/' . $context->tsumegos[0]['sets'][0]['id']);
+			$this->assertTrue($browser->idExists('showx'), 'the Reset link is there');
+			$this->assertSame(0, $browser->driver->executeScript('return document.documentElement.scrollWidth - document.documentElement.clientWidth;'));
+		}
+		finally
+		{
+			$window->setSize($originalSize);
+		}
+	}
+
 	public function testSetProgressDeletionOfPartitionedSet()
 	{
 		foreach ([1, 2] as $partition)
