@@ -69,7 +69,7 @@ class TsumegosController extends AppController
 	}
 
 	//The whole line of a failed problem of a challenge, sent when the player has played it out after the fail
-	//(ChallengeFailedLine::extend())
+	//(ChallengeFailedLine::extend()), to /tsumegos/failedLine
 	#[HttpPost]
 	public function failedLine(): Response
 	{

@@ -640,7 +640,7 @@ function sendWholeFailedLine(failResponse)
 	if (!failResponse || mode != playPage.page.modes.time || !playPage.page.challengeRun)
 		return;
 	let line = playedLineInSgf();
-	failResponse.catch(() => {}).finally(() => fetch('/tsumegos/failed-line', {
+	failResponse.catch(() => {}).finally(() => fetch('/tsumegos/failedLine', {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
 		body: JSON.stringify({ tsumego_id: tsumegoID, sgf_id: playPage.problem.sgfID, challenge_failed_line: line }),

@@ -281,11 +281,6 @@ return function (RouteBuilder $routes): void
 		['controller' => 'Sets', 'action' => 'view'],
 		['pass' => ['id'], 'id' => '[^/]+', 'routeClass' => SetViewRoute::class]
 	);
-	//The whole line of a failed problem of a challenge, see TsumegosController::failedLine()
-	$routes->connect(
-		'/tsumegos/failed-line',
-		['controller' => 'Tsumegos', 'action' => 'failedLine']
-	);
 	//Challenges between players, see ChallengesController. The address of a challenge is the link
 	//its players send to the ones who should join.
 	$routes->connect(

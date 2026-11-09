@@ -802,7 +802,7 @@ class ChallengesControllerTest extends IntegrationTestCase
 		$sgfID = $this->sgfID($problemIDs[0]);
 		$this->playRun($challengeId, [[PlayOutcome::Failed, 10, ['challenge_failed_line' => 'eaab', 'sgf_id' => $sgfID]]]);
 		$sendLine = function (string $moves, ?int $sgf = null) use ($problemIDs, $sgfID): void {
-			$this->post('/tsumegos/failed-line', ['tsumego_id' => $problemIDs[0], 'sgf_id' => $sgf ?? $sgfID, 'challenge_failed_line' => $moves]);
+			$this->post('/tsumegos/failedLine', ['tsumego_id' => $problemIDs[0], 'sgf_id' => $sgf ?? $sgfID, 'challenge_failed_line' => $moves]);
 			$this->assertResponseOk();
 		};
 		$kept = fn(): ?string => $this->runAttempts($challengeId, 'challenger')[0]['line_moves'];

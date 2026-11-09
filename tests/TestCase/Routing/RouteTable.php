@@ -472,6 +472,8 @@ return [
 		'/tsumegos/duplicatesearch/7' => ['Tsumegos', 'duplicatesearch', ['7']],
 		'/tsumegos/edit' => ['Tsumegos', 'edit', []],
 		'/tsumegos/edit/7' => ['Tsumegos', 'edit', ['7']],
+		'/tsumegos/failedLine' => ['Tsumegos', 'failedLine', []],
+		'/tsumegos/failedLine/7' => ['Tsumegos', 'failedLine', ['7']],
 		'/tsumegos/history' => ['Tsumegos', 'history', []],
 		'/tsumegos/history/7' => ['Tsumegos', 'history', ['7']],
 		'/tsumegos/mergeFinalForm' => ['Tsumegos', 'mergeFinalForm', []],
