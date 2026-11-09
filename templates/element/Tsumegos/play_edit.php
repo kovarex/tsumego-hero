@@ -77,7 +77,7 @@ $variantType = $tv ? (int) $tv->tsumego_variant_type_id : null;
 					<td>
 						<?php //an empty description is the default goal, shown as the placeholder; saving that default stores it empty again ?>
 						<textarea name="description" id="description" rows="3" class="play-edit__field" placeholder="<?php echo h(ProblemGoal::default($playerColor)); ?>"><?php echo h($displayDescription); ?></textarea>
-						<br><small class="play-edit__note">Describe the problem. <?php echo ($playerColor === 'white') ? 'White' : 'Black'; ?> is to move.</small>
+						<br><small class="play-edit__note" id="description-note">Describe the problem. <?php echo ($playerColor === 'white') ? 'White' : 'Black'; ?> is to move.</small>
 					</td>
 				</tr>
 				<tr>
