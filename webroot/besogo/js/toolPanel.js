@@ -666,6 +666,18 @@ besogo.makeToolPanel = function (container, editor) {
           stone.setAttribute("aria-label", white ? "White" : "Black");
           stone.title = swapColorWords(stone.title);
         });
+        // The admin's goal field (Tsumegos/play_edit.php) shows the goal in the colors seen too: its text, its
+        // placeholder (the default goal) and the note of the color to move swap, and the form says the colors
+        // are now swapped or not, so saving stores the true colors however many times they were swapped.
+        let goalField = document.getElementById("description");
+        if (goalField && goalField.form && goalField.form.elements.color_swapped) {
+          goalField.value = swapColorWords(goalField.value);
+          goalField.placeholder = swapColorWords(goalField.placeholder);
+          let swapped = goalField.form.elements.color_swapped;
+          swapped.value = swapped.value === "1" ? "0" : "1";
+          let note = document.getElementById("description-note");
+          if (note) note.textContent = swapColorWords(note.textContent);
+        }
         // Multiple-choice answers (custom multiple-choice and semeai share these ids).
         ["besogo-multipleChoice1", "besogo-multipleChoice2", "besogo-multipleChoice3", "besogo-multipleChoice4"].forEach(function (id) {
           let el = document.getElementById(id);

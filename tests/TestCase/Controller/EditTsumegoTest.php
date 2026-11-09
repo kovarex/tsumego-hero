@@ -210,4 +210,49 @@ class EditTsumegoTest extends IntegrationTestCase
 		$this->assertSame($browser->getElements("#minimum-rating")[0]->getAttribute("value"), "5k");
 		$this->assertSame($browser->getElements("#maximum-rating")[0]->getAttribute("value"), "15k");
 	}
+
+	//The admin's goal field shows the goal in the colors the player sees and follows the color button, its placeholder
+	//(the default goal) too; saving stores the true colors, by the colors seen when the form is sent
+	public function testTheGoalFieldFollowsTheColorButtonAndSavesTheTrueColors(): void
+	{
+		$sgf = ['data' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19];B[aa];W[ab];B[ba]C[+])', 'first_move_color' => 'B'];
+		$context = new ContextPreparator([
+			'user' => ['admin' => true, 'player_color_setting' => UserTable::PLAYER_COLOR_SETTING_ORIGINAL],
+			'tsumegos' => [['set_order' => 1, 'description' => 'Black to kill', 'sgf' => $sgf], ['set_order' => 2, 'description' => '', 'sgf' => $sgf]]]);
+		$browser = Browser::instance();
+		$field = fn() => $browser->driver->executeScript('const field = document.getElementById("description");
+			return [field.value, field.placeholder, field.form.elements.color_swapped.value, document.getElementById("description-note").textContent];');
+
+		// the second problem has the default goal: its placeholder follows the colors
+		$browser->get($context->tsumegos[1]['set-connections'][0]['id'] . '?playercolor=white');
+		$this->assertSame(['', 'White to play', '1', 'Describe the problem. White is to move.'], $field());
+		$browser->driver->executeScript("document.getElementById('colorOrientation').click();");
+		$this->assertSame(['', 'Black to play', '0', 'Describe the problem. Black is to move.'], $field());
+
+		// the first one, opened in swapped colors, swapped back and forth, and saved in the colors it was opened in
+		$browser->get($context->tsumegos[0]['set-connections'][0]['id'] . '?playercolor=white');
+		$browser->openPlayEditSection();
+		$this->assertSame('White to kill', $field()[0]);
+		$browser->driver->executeScript("document.getElementById('colorOrientation').click();");
+		$this->assertSame(['Black to kill', '0'], [$field()[0], $field()[2]]);
+		$browser->driver->executeScript("document.getElementById('colorOrientation').click();");
+		$this->assertSame(['White to kill', '1'], [$field()[0], $field()[2]]);
+		$browser->clickCssSelect('#description');
+		$browser->driver->getKeyboard()->sendKeys([WebDriverKeys::CONTROL, 'a']);
+		$browser->driver->getKeyboard()->sendKeys('White to live');
+		$browser->clickId('tsumego-edit-submit');
+		$this->assertSame('Black to live', $this->fetchTable('Tsumego')->get($context->tsumegos[0]['id'])->description);
+
+		// saved after one swap, in the true colors seen then
+		$browser->get($context->tsumegos[0]['set-connections'][0]['id'] . '?playercolor=white');
+		$browser->openPlayEditSection();
+		$browser->driver->executeScript("document.getElementById('colorOrientation').click();");
+		$this->assertSame('Black to live', $field()[0]);
+		$browser->clickCssSelect('#description');
+		$browser->driver->getKeyboard()->sendKeys([WebDriverKeys::CONTROL, 'a']);
+		$browser->driver->getKeyboard()->sendKeys('Black to kill');
+		$browser->clickId('tsumego-edit-submit');
+		$this->assertSame('Black to kill', $this->fetchTable('Tsumego')->get($context->tsumegos[0]['id'])->description);
+		$browser->assertNoJsErrors();
+	}
 }
