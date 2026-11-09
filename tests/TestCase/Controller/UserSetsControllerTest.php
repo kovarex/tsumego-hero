@@ -566,7 +566,9 @@ class UserSetsControllerTest extends IntegrationTestCase
 		$this->assertSame('11k', $set['difficulty']);
 	}
 
-	public function testMineShowsVisibleProgressBar(): void
+	//A set of the player's own that they finished shows 100% and the gold frame, drawn to the card's size by
+	//setCardFrame.js (the same card as the collections page, without the 100% accuracy of the site's collections)
+	public function testMineShowsTheFrameOfAFinishedSet(): void
 	{
 		new ContextPreparator([
 			'user' => ['name' => 'alice'],
@@ -578,10 +580,14 @@ class UserSetsControllerTest extends IntegrationTestCase
 		$browser = Browser::instance();
 		$browser->get('sets/mine');
 
-		// The colored fill must actually be visible (not a 0px transparent div)
-		$fill = $browser->find('.progress__fill');
-		$this->assertSame('5px', $fill->getCSSValue('height'));
-		$this->assertTextContains('width: 100%', $fill->getAttribute('style'));
+		$this->assertSame('100%', $browser->find('.set-card__percent')->getText());
+		$card = $browser->find('.set-card');
+		$this->assertStringContainsString('set-card--finished', $card->getAttribute('class'));
+		$this->assertStringNotContainsString('set-card--perfect', $card->getAttribute('class'));
+		// the frame is drawn, as wide as the card
+		$browser->waitUntilJs('document.querySelector(".set-card__frame path") !== null');
+		$frame = $browser->find('.set-card__frame');
+		$this->assertSame($card->getSize()->getWidth(), $frame->getSize()->getWidth());
 	}
 
 	// ── Description sanitization ────────────────────────────────────────

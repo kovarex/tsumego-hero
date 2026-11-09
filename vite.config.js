@@ -30,7 +30,7 @@ const LEGACY_APP_FILES = [
 	'webroot/js/multipleChoice.js',
 	'webroot/js/multipleChoiceCustom.js',
 	'webroot/js/imageZoom.js',
-	'webroot/js/setProgress.js',
+	'webroot/js/setCardFrame.js',
 	'webroot/js/siteMenu.js',
 	'webroot/js/keepAlive.js',
 	'webroot/js/Live.js',
