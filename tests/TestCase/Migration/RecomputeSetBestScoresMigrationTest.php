@@ -35,6 +35,22 @@ class RecomputeSetBestScoresMigrationTest extends AppTestCase
 		$this->assertNull(AchievementConditionTable::value($userID, AchievementConditionTable::CATEGORY_SET_TIME, $halfSolved));
 	}
 
+	//Until #291 (2026-08-22) the set page left out the misplays of an attempt that ended solved: a fail followed by a
+	//solve is one attempt, solved with its misplays, and counted as a clean solve. The 100% it kept is worked out again.
+	public function testA100KeptFromAFailThenASolveIsWorkedOutAgain(): void
+	{
+		$context = new ContextPreparator(['user' => ['name' => 'old player'], 'tsumegos' => [
+			['sets' => [['name' => 'old best', 'num' => 1]], 'status' => 'S', 'attempts' => [['solved' => true, 'seconds' => 20, 'misplays' => 1]]],
+			['sets' => [['name' => 'old best', 'num' => 2]], 'status' => 'S', 'attempts' => [['solved' => true, 'seconds' => 20]]]]]);
+		$userID = (int) $context->user['id'];
+		$setID = (int) $context->tsumegos[0]['sets'][0]['id'];
+		AchievementConditionTable::keepHighest($userID, AchievementConditionTable::CATEGORY_SET_ACCURACY, 100, $setID);
+
+		self::migration()->up();
+
+		$this->assertEquals(66.67, AchievementConditionTable::value($userID, AchievementConditionTable::CATEGORY_SET_ACCURACY, $setID), '2 solves against the misplay');
+	}
+
 	private static function migration(): RecomputeSetBestScores
 	{
 		$config = require ROOT . '/phinx.php';
