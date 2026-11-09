@@ -734,13 +734,14 @@
 	pointer-events: none;
 }
 
-/* A phone shows two cards a row: the card takes half the row, lower, its text a step smaller */
+/* TEST ONLY (3 a row): a phone shows three cards a row, each a third of the row (about 114 x 100px at 390),
+   the text and the frame a step smaller */
 @media (width < 40rem)
 {
 	.set-index {
 		display: grid;
-		grid-template-columns: 1fr 1fr;
-		gap: 22px 18px;
+		grid-template-columns: repeat(3, 1fr);
+		gap: 16px 12px;
 		margin-block: var(--space-4);
 	}
 	.set-index > .set-index-empty {
@@ -748,39 +749,52 @@
 	}
 	.set-card {
 		width: auto;
-		height: 124px;
+		height: 100px;
 		margin: 0;
-		padding: 8px;
-		font-size: 15px;
+		padding: 6px;
+		font-size: 12.5px;
+		gap: 2px;
+	}
+	.set-card__title {
+		line-height: 1.12;
+	}
+	.set-card__head {
+		gap: 2px;
 	}
 	.set-card__rank {
-		font-size: 11px;
+		font-size: 9.5px;
+		letter-spacing: 0.04em;
 	}
 	.set-card__foot {
-		font-size: var(--text-sm);
+		font-size: 11px;
+		gap: 4px;
+	}
+	.set-card__count {
+		gap: 3px;
 	}
 	.set-card__percent {
-		font-size: 18px;
+		font-size: 14px;
 	}
 	.set-card__part {
-		top: 5px;
-		left: 5px;
-		padding: 0 4px;
-		font-size: 10px;
+		top: 4px;
+		left: 4px;
+		padding: 0 3px;
+		font-size: 9px;
+		border-radius: 4px;
 	}
 	.set-card--finished .set-card__part {
-		top: 7px;
-		left: 7px;
+		top: 5px;
+		left: 5px;
 	}
 	.set-card--perfect .set-card__part {
-		top: 10px;
-		left: 8px;
+		top: 7px;
+		left: 6px;
 	}
 	.set-card--finished {
-		padding: 8px 9px;
+		padding: 6px 7px;
 	}
 	.set-card--perfect {
-		padding: 11px 10px 8px;
+		padding: 8px 8px 6px;
 	}
 }
 

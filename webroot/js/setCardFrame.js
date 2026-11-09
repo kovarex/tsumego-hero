@@ -106,7 +106,7 @@
 
 	// The spikes of the 100% accuracy frame
 	function spikes(w, h, band, phone) {
-		var k = phone ? 0.62 : 1, widen = phone ? 1.15 : 1, all = [];
+		var tiny = w < 140, k = tiny ? 0.42 : phone ? 0.62 : 1, widen = phone ? 1.15 : 1, all = [];
 		// a fan at each corner, smaller at the bottom
 		[[0, 0, 1, 1], [w, 0, -1, 1], [w, h, -1, -1], [0, h, 1, -1]].forEach(function (corner) {
 			var ix = corner[2], iy = corner[3], width = iy > 0 ? band[0] : band[2], g = iy > 0 ? 1 : 0.85;
@@ -120,11 +120,11 @@
 		// a crest over the pearl
 		[[0, 19, 0], [9, 15, 14], [17, 10, 28]].forEach(function (crest) {
 			(crest[0] ? [-1, 1] : [0]).forEach(function (sign) {
-				all.push(spike(w / 2 + sign * crest[0] * (phone ? 0.62 : 0.85) * 1.4, band[0] * 0.3, -90 + sign * crest[2], crest[1] * k, 6.5 * k * widen, sign * crest[1] * 0.12 * k));
+				all.push(spike(w / 2 + sign * crest[0] * (tiny ? 0.45 : phone ? 0.62 : 0.85) * 1.4, band[0] * 0.3, -90 + sign * crest[2], crest[1] * k, 6.5 * k * widen, sign * crest[1] * 0.12 * k));
 			});
 		});
 		// a row along every side, long and short in turn, between the corner fans and clear of the crest
-		var step = phone ? 13 : 17, cornerZone = phone ? 20 : 30, crestZone = phone ? 26 : 38;
+		var step = tiny ? 11 : phone ? 13 : 17, cornerZone = tiny ? 14 : phone ? 20 : 30, crestZone = tiny ? 18 : phone ? 26 : 38;
 		[
 			[cornerZone, 0, w - cornerZone, 0, -90, band[0]],
 			[w, cornerZone, w, h - cornerZone, 0, band[1]],
@@ -163,8 +163,8 @@
 
 	// The band's width at the top, the sides and the bottom
 	var FRAMES = {
-		finished: { pc: [7, 7, 7], phone: [5, 5, 5], scale: 0.55 },
-		perfect: { pc: [11, 9, 8], phone: [8, 7, 6], scale: 0.45, spine: true, ridge: true, spikes: true, pearl: true },
+		finished: { pc: [7, 7, 7], phone: [5, 5, 5], tiny: [4, 4, 4], scale: 0.55 },
+		perfect: { pc: [11, 9, 8], phone: [8, 7, 6], tiny: [6, 5, 4.5], scale: 0.45, spine: true, ridge: true, spikes: true, pearl: true },
 	};
 
 	function draw(card) {
@@ -173,7 +173,9 @@
 			return;
 		var perfect = card.classList.contains('set-card--perfect');
 		var frame = perfect ? FRAMES.perfect : FRAMES.finished;
-		var phone = h < 140, band = phone ? frame.phone : frame.pc, u = phone ? 0.62 : 0.85, id = 'set-card-frame-' + (nextID++);
+		// TEST ONLY (3 a row): a card narrower than 140px gets a thinner band, smaller spikes and a smaller pearl
+		var phone = h < 140, tiny = w < 140, band = tiny ? frame.tiny : phone ? frame.phone : frame.pc;
+		var u = tiny ? 0.45 : phone ? 0.62 : 0.85, id = 'set-card-frame-' + (nextID++);
 		var svg = card.querySelector(':scope > .set-card__frame');
 		if (!svg) {
 			svg = document.createElementNS(NS, 'svg');
