@@ -82,7 +82,9 @@ class PlayStatusMessageBrowserTest extends IntegrationTestCase
 					return {
 						inTheRow: row.contains(heading),
 						lines: text.height > parseFloat(getComputedStyle(heading).lineHeight) * 1.5,
-						whole: heading.scrollWidth <= heading.clientWidth + 1 && heading.scrollHeight <= heading.clientHeight + 1,
+						// the whole text is drawn inside the row, which clips nothing (measured on the text itself, as browsers
+						// round the boxes of the lines differently)
+						whole: (() => { const range = document.createRange(); range.selectNodeContents(heading); const drawn = range.getBoundingClientRect(); return drawn.top >= box.top - 1 && drawn.bottom <= box.bottom + 1 && drawn.right <= buttons.left + 1 && row.scrollHeight <= row.clientHeight + 2; })(),
 						inside: text.top >= box.top - 1 && text.bottom <= box.bottom + 1 && text.left >= box.left,
 						buttonsAtTheRight: buttons.left >= text.right && Math.abs(buttons.right - box.right) < 20,
 						noScroll: document.documentElement.scrollWidth === document.documentElement.clientWidth,
