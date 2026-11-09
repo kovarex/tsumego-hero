@@ -13,6 +13,7 @@ use App\Utility\PlayOutcome;
 use App\Utility\Rating;
 use App\Utility\TimeModeUtil;
 use App\Utility\Util;
+use Facebook\WebDriver\WebDriverDimension;
 use Facebook\WebDriver\WebDriverKeys;
 
 //Challenges between players: everyone in a challenge plays the same problems like a time mode
@@ -335,9 +336,9 @@ class ChallengesControllerTest extends IntegrationTestCase
 		$this->assertStringNotContainsString('challenge-place', $row);
 		$this->assertMatchesRegularExpression('/>2<\/button>.*<\/span>\s*of 3 finished/s', $row);
 		$this->assertStringContainsString('challenge-standings-popup--unranked', $row, 'the standings without places');
-		$this->assertMatchesRegularExpression('/points<\/strong> \(\d+%\) in <a href="\/challenges\/' . $challengeId . '">/', $row);
+		$this->assertMatchesRegularExpression('/<strong>[\d.]+<\/strong><span class="challenges__list-label"> points<\/span> \(\d+%\)/', $row);
 		$created = (string) Util::query('SELECT created FROM challenge WHERE id = ?', [$challengeId])[0]['created'];
-		$this->assertStringContainsString('started <time datetime="' . Util::toIso8601($created) . '"', $row);
+		$this->assertStringContainsString('in progress, started <time class="challenges__when" datetime="' . Util::toIso8601($created) . '"', $row);
 
 		$this->login('stranger');
 		$this->playRun($challengeId, array_fill(0, 5, [PlayOutcome::Failed, 10]));
@@ -620,8 +621,8 @@ class ChallengesControllerTest extends IntegrationTestCase
 		$this->assertStringNotContainsString('challenge-place--silver', $standings);
 	}
 
-	//The list of the player's challenges says "2nd of 2 with X points (Y%) in Challenge #N", the 2 opening the
-	//standings of everyone who finished, and when the last of them finished.
+	//The table of the player's challenges says "Challenge #N | 2nd of 2 | X points (Y%) | … | when the last of them
+	//finished", the 2 opening the standings of everyone who finished.
 	public function testTheListShowsThePlaceOfThePlayerAndTheStandingsOfTheChallenge(): void
 	{
 		$this->prepare();
@@ -635,13 +636,16 @@ class ChallengesControllerTest extends IntegrationTestCase
 
 		$this->get('/challenges');
 		$row = $this->listRow($wonByFriend);
-		$phrase = ['aria-label="2nd place"', '2nd</span>', 'of <span class="challenge-standings-popup">', 'with <strong>0.0 points</strong> (0%) in',
-			'<a href="/challenges/' . $wonByFriend . '">', 'data-format="relative"', 'class="hint challenges__row-details"'];
-		$positions = array_map(fn(string $part) => strpos($row, $part), $phrase);
-		$this->assertNotContains(false, $positions, 'the row has all the parts of the phrase');
+		$columns = ['<a href="/challenges/' . $wonByFriend . '">', 'aria-label="2nd place"', '2nd</span> of <span class="challenge-standings-popup">',
+			'<strong>0.0</strong><span class="challenges__list-label"> points</span> (0%)', 'class="challenges__list-problems', 'class="challenges__list-by"',
+			'class="challenges__list-when', 'data-format="relative"'];
+		$positions = array_map(fn(string $part) => strpos($row, $part), $columns);
+		$this->assertNotContains(false, $positions, 'the row has all the columns');
 		$sorted = $positions;
 		sort($sorted);
-		$this->assertSame($sorted, $positions, 'in the order of the phrase');
+		$this->assertSame($sorted, $positions, 'in the order of the columns');
+		$this->assertMatchesRegularExpression('/<th scope="col">Challenge<\/th>\s*<th scope="col">Place<\/th>\s*<th scope="col">Points<\/th>\s*'
+			. '<th scope="col">Problems<\/th>\s*<th scope="col">By<\/th>\s*<th scope="col">Finished<\/th>/', $this->view);
 		$this->assertStringNotContainsString('played', $row);
 
 		// the standings, the best first, each with its place, player and points
@@ -655,21 +659,22 @@ class ChallengesControllerTest extends IntegrationTestCase
 		// the time of the last run, the friend's
 		$friendFinished = array_find(ChallengeTable::placesOfPlayer($this->userId('challenger'))[$wonByFriend]['standings'],
 			fn(array $run) => (int) $run['user_id'] === $this->userId('friend'))['finished'];
-		$this->assertStringContainsString('<span class="hint challenges__when"><time datetime="' . Util::toIso8601($friendFinished) . '"', $row);
+		$this->assertStringContainsString('finished </span><time class="challenges__when" datetime="' . Util::toIso8601($friendFinished) . '"', $row);
 
 		$this->login('friend');
 		$this->get('/challenges');
 		$row = $this->listRow($wonByFriend);
 		$this->assertStringContainsString('aria-label="1st place"', $row);
-		$this->assertStringContainsString('<strong>' . ChallengeTable::formatPoints($friendPoints) . ' points</strong> ('
+		$this->assertStringContainsString('<strong>' . ChallengeTable::formatPoints($friendPoints) . '</strong><span class="challenges__list-label"> points</span> ('
 			. (int) round($friendPoints / 500 * 100) . '%)', $row, 'of the most five problems give');
 
 		// the removed player sees how many finished
 		$this->login('stranger');
 		$this->get('/challenges');
 		$row = $this->listRow($wonByFriend);
-		$this->assertStringContainsString('Removed by the creator: <a href="/challenges/' . $wonByFriend . '">', $row);
-		$this->assertMatchesRegularExpression('/· <span class="challenge-standings-popup">.*>2<\/button>.*<\/span>\s*finished/s', $row);
+		$this->assertStringContainsString('<span class="challenges__status">Removed by the creator</span>', $row);
+		$this->assertStringContainsString('class="challenges__list-points challenges__list-points--none"', $row, 'no points without a run');
+		$this->assertMatchesRegularExpression('/challenges__finished-of"><span class="challenge-standings-popup">.*>2<\/button>.*<\/span>\s*finished/s', $row);
 	}
 
 	public function testTheStandingsOpenFromTheListOfChallengesInTheBrowser(): void
@@ -683,7 +688,7 @@ class ChallengesControllerTest extends IntegrationTestCase
 
 		$browser = Browser::instance();
 		$browser->get('challenges');
-		$time = $browser->find('.challenges__when time');
+		$time = $browser->find('time.challenges__when');
 		$this->assertContains($time->getText(), ['just now', 'a minute ago']);
 		$this->assertMatchesRegularExpression('/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/', $time->getAttribute('title'));
 
@@ -1316,5 +1321,44 @@ class ChallengesControllerTest extends IntegrationTestCase
 			$browser->waitUntilStale($nextButton);
 		}
 		$browser->assertNoJsErrors();
+	}
+
+	//On a phone the table of challenges stacks each challenge into lines, without the headers, and the page
+	//doesn't scroll sideways.
+	public function testTheListFitsAPhone(): void
+	{
+		$this->prepare();
+		$finished = $this->create(['problem_count' => 5, 'players' => 'DN_friend']);
+		$this->playRun($finished, array_fill(0, 5, [PlayOutcome::SolvedClean, 10]));
+		$this->login('friend');
+		$this->playRun($finished, array_fill(0, 5, [PlayOutcome::Failed, 10]));
+		$this->login('challenger');
+		$this->create(['seconds_per_problem' => 45, 'problem_count' => 20, 'players' => 'DN_friend, DN_stranger']);
+		$this->login('friend');
+
+		$browser = Browser::instance();
+		$window = $browser->driver->manage()->window();
+		$originalSize = $window->getSize();
+		try
+		{
+			$window->setSize(new WebDriverDimension(390, 844));
+			$browser->get('challenges');
+			$layout = $browser->driver->executeScript(<<<'JS'
+				const rows = [...document.querySelectorAll('#challenges-list tr.challenges__row')];
+				return {
+					overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+					headers: getComputedStyle(document.querySelector('.challenges__list thead')).display,
+					rows: rows.length,
+					outside: rows.flatMap(row => [...row.children]).filter(cell => cell.getBoundingClientRect().right > document.documentElement.clientWidth).length,
+					decline: document.querySelector('#challenges-list .challenges__inline-form button') !== null,
+				};
+				JS);
+			$this->assertSame(['overflow' => 0, 'headers' => 'none', 'rows' => 2, 'outside' => 0, 'decline' => true], $layout);
+			$browser->assertNoJsErrors();
+		}
+		finally
+		{
+			$window->setSize($originalSize);
+		}
 	}
 }

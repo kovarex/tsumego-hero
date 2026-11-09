@@ -80,34 +80,135 @@
 	}
 }
 
-.challenges__row
+/* The player's challenges (Challenges/index.php): a table on a computer, a few lines for each
+   challenge on a phone. */
+.challenges__list
 {
-	display: flex;
-	flex-wrap: wrap;
-	align-items: center;
-	justify-content: space-between;
-	gap: var(--space-2);
-	padding: var(--space-2) 0;
+	width: 100%;
+	border-collapse: collapse;
+}
+
+.challenges__list th,
+.challenges__list td
+{
+	padding: var(--space-2);
+	text-align: left;
+	vertical-align: middle;
 	border-bottom: 1px solid var(--current-border-color);
 }
 
-/* A challenge in the list: the place, the challenge and the result first, what is played and who
-   started it on the right. */
-.challenges__row-main
+.challenges__list th
 {
-	line-height: 1.8;
-}
-
-.challenges__when
-{
-	margin-left: var(--space-2);
+	color: var(--text-softer-color);
+	font-size: var(--font-size-sm);
+	font-weight: var(--weight-normal);
 	white-space: nowrap;
 }
 
-.challenges__row-details
+.challenges__list-title
 {
-	margin-left: auto;
+	font-weight: var(--weight-bold);
+	overflow-wrap: anywhere;
+}
+
+.challenges__list-place,
+.challenges__list-points,
+.challenges__list-when
+{
+	white-space: nowrap;
+}
+
+.challenges__list-points
+{
 	text-align: right;
+}
+
+.challenges__list-label
+{
+	display: none;
+}
+
+.challenges__finished-of
+{
+	display: inline-block;
+}
+
+@media (width < 40rem)
+{
+	.challenges__list,
+	.challenges__list tbody
+	{
+		display: block;
+	}
+
+	.challenges__list thead
+	{
+		display: none;
+	}
+
+	/* The challenge on its own line, the place and the points under it, and then the hints: what is
+	   played and who started it, and when on a line of its own. The empty ::before breaks the line before the hints. */
+	.challenges__list tr
+	{
+		display: flex;
+		flex-wrap: wrap;
+		align-items: baseline;
+		gap: var(--space-1) var(--space-2);
+		padding: var(--space-2) 0;
+		border-bottom: 1px solid var(--current-border-color);
+	}
+
+	.challenges__list tr::before
+	{
+		content: "";
+		flex-basis: 100%;
+		order: 1;
+	}
+
+	.challenges__list td
+	{
+		padding: 0;
+		border: none;
+	}
+
+	.challenges__list-title
+	{
+		flex-basis: 100%;
+	}
+
+	.challenges__list-place
+	{
+		white-space: normal;
+	}
+
+	.challenges__list-points--none
+	{
+		display: none;
+	}
+
+	.challenges__list-problems,
+	.challenges__list-by,
+	.challenges__list-when
+	{
+		order: 2;
+		font-size: var(--font-size-sm);
+	}
+
+	.challenges__list-when
+	{
+		flex-basis: 100%;
+	}
+
+	.challenges__list-by::before
+	{
+		content: "· ";
+		color: var(--text-softer-color);
+	}
+
+	.challenges__list-label
+	{
+		display: inline;
+	}
 }
 
 /* The medal of the player's place sits on the line of the phrase, as high as its letters */
