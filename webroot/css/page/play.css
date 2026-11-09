@@ -721,10 +721,10 @@ h1 {
   font-weight: var(--weight-bold);
 }
 
-/* The one row of the messages, right above the board, the same grey rectangle whatever it says, so it and its
-   buttons never change shape: the goal, or Correct!, Incorrect! and the comment of a move at the left, Reset,
-   Review and Next at the right. Only the colour of the text tells what a message means. It keeps its height, so
-   the board doesn't move, unless a long message needs another line: it wraps, it is never cut. */
+/* The one row of the messages, right above the board, on the page itself with no background of its own, the same
+   whatever it says, so it and its buttons never change shape: the goal, or Correct!, Incorrect! and the comment of a
+   move at the left, Reset, Review and Next at the right. Only the colour of the text tells what a message means. It
+   keeps its height, so the board doesn't move, unless a long message needs another line: it wraps, it is never cut. */
 .play-message {
   display: flex;
   align-items: center;
@@ -733,7 +733,6 @@ h1 {
   min-height: 48px;
   padding: 0 var(--space-2);
   box-sizing: border-box;
-  background: var(--color-surface-hover);
 }
 .play-message__status {
   min-width: 0;

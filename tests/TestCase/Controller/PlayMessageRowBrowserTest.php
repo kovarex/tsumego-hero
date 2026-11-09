@@ -3,8 +3,8 @@
 use App\Utility\Constants;
 use Facebook\WebDriver\WebDriverDimension;
 
-//Every message of a problem is one of the row of the messages above the board, the same grey rectangle whatever it
-//says: the goal, Correct!, Incorrect! and the comment of a move ("Correct, but what about this answer?") are at the left
+//Every message of a problem is one of the row of the messages above the board, on the page with no background of its
+//own whatever it says: the goal, Correct!, Incorrect! and the comment of a move ("Correct, but what about this answer?") are at the left
 //in the same bold size, with Reset and Next at the right, on a computer and on a phone; only their colour differs
 #[RetryOnBrowserFailure]
 class PlayMessageRowBrowserTest extends IntegrationTestCase
@@ -12,7 +12,7 @@ class PlayMessageRowBrowserTest extends IntegrationTestCase
 	//Black (1,1) is correct, with a comment; black (2,1) is correct too
 	private const SGF = '(;GM[1]FF[4]SZ[19]AB[dd]AW[bb](;B[aa]C[+Correct, but what about this answer?])(;B[ba]C[+]))';
 
-	//The style of the comment and of Correct!, the grey of the row and where the comment is in it
+	//The style of the comment and of Correct!, the row without a background and where the comment is in it
 	private const LAYOUT = <<<'JS'
 		const comment = document.getElementById('theComment');
 		const status = document.querySelector('#status h2');
@@ -22,11 +22,6 @@ class PlayMessageRowBrowserTest extends IntegrationTestCase
 			const computed = getComputedStyle(element);
 			return [computed.fontSize, computed.fontWeight, computed.fontFamily, computed.textAlign];
 		};
-		const probe = document.createElement('div');
-		probe.style.background = 'var(--color-surface-hover)';
-		document.body.append(probe);
-		const grey = getComputedStyle(probe).backgroundColor;
-		probe.remove();
 		const text = document.createElement('div');
 		text.style.color = 'var(--text-color)';
 		document.body.append(text);
@@ -37,7 +32,7 @@ class PlayMessageRowBrowserTest extends IntegrationTestCase
 			sameStyleAsCorrect: JSON.stringify(style(comment)) === JSON.stringify(style(status)),
 			left: getComputedStyle(comment).textAlign,
 			colorOfTheText: getComputedStyle(comment).color === textColor,
-			greyRow: getComputedStyle(row).backgroundColor === grey,
+			noBackground: getComputedStyle(row).backgroundColor === 'rgba(0, 0, 0, 0)' && getComputedStyle(row).backgroundImage === 'none',
 			afterCorrect: comment.getBoundingClientRect().left > status.getBoundingClientRect().right,
 			beforeReset: comment.getBoundingClientRect().right <= reset.getBoundingClientRect().left,
 		};
@@ -74,7 +69,7 @@ class PlayMessageRowBrowserTest extends IntegrationTestCase
 
 			$this->assertSame('Correct, but what about this answer?', $browser->find('#theComment')->getText());
 			$this->assertEquals(['inTheRow' => true, 'sameStyleAsCorrect' => true, 'left' => 'left', 'colorOfTheText' => true,
-				'greyRow' => true, 'afterCorrect' => true, 'beforeReset' => true], $browser->driver->executeScript(self::LAYOUT));
+				'noBackground' => true, 'afterCorrect' => true, 'beforeReset' => true], $browser->driver->executeScript(self::LAYOUT));
 			$browser->assertNoJsErrors();
 		}
 		finally
@@ -83,9 +78,9 @@ class PlayMessageRowBrowserTest extends IntegrationTestCase
 		}
 	}
 
-	//A comment with no Correct! or Incorrect! yet, the comment of the problem shown when it opens, has the grey of the
-	//row too
-	public function testACommentAloneHasTheGreyOfTheRow(): void
+	//A comment with no Correct! or Incorrect! yet, the comment of the problem shown when it opens, has no background
+	//either
+	public function testACommentAloneHasNoBackground(): void
 	{
 		$context = new ContextPreparator([
 			'user' => ['mode' => Constants::$LEVEL_MODE],
@@ -95,16 +90,12 @@ class PlayMessageRowBrowserTest extends IntegrationTestCase
 		$browser->waitForBoard();
 
 		$this->assertSame([true, 'left'], $browser->driver->executeScript(<<<'JS'
-			const probe = document.createElement('div');
-			probe.style.background = 'var(--color-surface-hover)';
-			document.body.append(probe);
-			const grey = getComputedStyle(probe).backgroundColor;
-			probe.remove();
-			return [getComputedStyle(document.querySelector('.play-message')).backgroundColor === grey, getComputedStyle(document.getElementById('theComment')).textAlign];
+			return [getComputedStyle(document.querySelector('.play-message')).backgroundColor === 'rgba(0, 0, 0, 0)', getComputedStyle(document.getElementById('theComment')).textAlign];
 			JS));
 	}
 
-	//What the row shows: the style of its message, its grey, its height, where Reset is, and the colour of the message
+	//What the row shows: the style of its message, that it has no background, its height, where Reset is, and the colour
+	//of the message
 	//against the colour it should have
 	private const STATE = <<<'JS'
 		const message = document.querySelector('#status h2') ?? document.querySelector('#titleDescription');
@@ -117,27 +108,19 @@ class PlayMessageRowBrowserTest extends IntegrationTestCase
 			probe.remove();
 			return color;
 		};
-		const grey = (() => {
-			const probe = document.createElement('div');
-			probe.style.background = 'var(--color-surface-hover)';
-			document.body.append(probe);
-			const color = getComputedStyle(probe).backgroundColor;
-			probe.remove();
-			return color;
-		})();
 		const computed = getComputedStyle(message);
 		const reset = document.querySelector('#besogo-reset-button, #besogo-reset-button-inactive').getBoundingClientRect();
 		return {
 			text: message.textContent.trim(),
 			font: [computed.fontSize, computed.fontWeight, computed.fontFamily, computed.textAlign].join('|'),
-			grey: getComputedStyle(row).backgroundColor === grey,
+			noBackground: getComputedStyle(row).backgroundColor === 'rgba(0, 0, 0, 0)',
 			height: Math.round(row.getBoundingClientRect().height),
 			reset: Math.round(reset.left) + ',' + Math.round(reset.top),
 			color: computed.color === resolve(arguments[0]),
 		};
 		JS;
 
-	//The goal, Incorrect! and Correct! are the same grey row, in the same bold size at the left, with Reset in the same
+	//The goal, Incorrect! and Correct! are the same row without a background, in the same bold size at the left, with Reset in the same
 	//place; only the colour of the text differs
 	public function testTheGoalIncorrectAndCorrectAreTheSameRow(): void
 	{
@@ -162,7 +145,7 @@ class PlayMessageRowBrowserTest extends IntegrationTestCase
 		$this->assertSame(['to capture', 'Incorrect!', 'Correct!'], [$goal['text'], $incorrect['text'], $correct['text']]);
 		foreach (['font', 'height', 'reset'] as $key)
 			$this->assertSame([$goal[$key], $goal[$key]], [$incorrect[$key], $correct[$key]], "the same $key");
-		$this->assertSame([true, true, true], [$goal['grey'], $incorrect['grey'], $correct['grey']], 'the grey of the row');
+		$this->assertSame([true, true, true], [$goal['noBackground'], $incorrect['noBackground'], $correct['noBackground']], 'no background of the row');
 		$this->assertSame([true, true, true], [$goal['color'], $incorrect['color'], $correct['color']], 'the colour of each');
 	}
 
@@ -221,5 +204,47 @@ class PlayMessageRowBrowserTest extends IntegrationTestCase
 		$this->assertTrue($second['solved']);
 		$this->assertTrue($second['greenNext'], 'Next is green');
 		$this->assertTrue($second['greenGlow'], 'the board glows green');
+	}
+
+	//Correct! and Incorrect! reach the 4.5:1 of WCAG AA on the background the row shows through, in both themes
+	public function testTheColoursOfTheMessagesAreReadableOnThePage(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['mode' => Constants::$LEVEL_MODE],
+			'tsumego' => ['set_order' => 1, 'sgf' => ['data' => self::SGF, 'first_move_color' => 'B']]]);
+		$browser = Browser::instance();
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		$browser->waitForBoard();
+		foreach (['light', 'dark'] as $theme)
+		{
+			$ratios = $browser->driver->executeScript(<<<'JS'
+				document.documentElement.dataset.theme = arguments[0];
+				const rgb = color => color.match(/[\d.]+/g).slice(0, 3).map(Number);
+				const luminance = color => {
+					const [r, g, b] = rgb(color).map(value => value / 255).map(value => value <= 0.03928 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4);
+					return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+				};
+				// the first background behind the row that isn't transparent
+				let element = document.querySelector('.play-message');
+				let background = getComputedStyle(element).backgroundColor;
+				while (element && (background === 'rgba(0, 0, 0, 0)' || background === 'transparent'))
+				{
+					element = element.parentElement;
+					background = element ? getComputedStyle(element).backgroundColor : 'rgb(255, 255, 255)';
+				}
+				const ratio = token => {
+					const probe = document.createElement('div');
+					probe.style.color = token;
+					document.body.append(probe);
+					const color = getComputedStyle(probe).color;
+					probe.remove();
+					const [a, b] = [luminance(color), luminance(background)].sort((x, y) => y - x);
+					return Math.round((a + 0.05) / (b + 0.05) * 100) / 100;
+				};
+				return {background, correct: ratio('var(--play-message-correct)'), incorrect: ratio('var(--play-message-incorrect)'), text: ratio('var(--text-color)')};
+				JS, [$theme]);
+			foreach (['correct', 'incorrect', 'text'] as $message)
+				$this->assertGreaterThanOrEqual(4.5, $ratios[$message], "$message in the $theme theme, on {$ratios['background']}");
+		}
 	}
 }
