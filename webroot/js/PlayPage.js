@@ -321,13 +321,10 @@ function createCoordPopup() {
 	document.body.appendChild(coordPopupDiv);
 }
 
-// Maps an internal board coordinate to its pixel position on the board SVG.
-// Matches boardDisplay.js svgPos (CELL_SIZE=88, COORD_MARGIN=75).
+// Maps an internal board coordinate to its position on the board SVG, as boardDisplay.js svgPos() places it
 function boardPixel(x) {
-	var coordStyle = besogo.editor.getCoordStyle();
-	var cell = 88;
-	var margin = coordStyle === "none" ? 0 : 75;
-	return margin + cell / 2 + (x - 1) * cell;
+	var cell = besogo.BOARD_CELL_SIZE;
+	return besogo.boardMargin(besogo.editor.getCoordStyle()) + cell / 2 + (x - 1) * cell;
 }
 
 // Returns the coordinate labels for the path from the root to `node`.

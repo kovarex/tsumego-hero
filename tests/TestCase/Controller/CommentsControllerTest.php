@@ -90,6 +90,33 @@ class CommentsControllerTest extends IntegrationTestCase
 			return {colors: colors, sequences: texts(".go-coord-group--sequence"), alternatives: texts(".go-coord-group--alternative")};');
 	}
 
+	//The popup board of a hovered coordinate rings the point it names: the ring is centred where the board draws that
+	//point (its grid starts at the first line, besogo's svgPos(1)), with the coordinates shown or not
+	public function testTheHoveredCoordinateIsRingedOnItsPoint(): void
+	{
+		$browser = Browser::instance();
+		$this->renderComment('Look at C17', 1);
+		foreach (['western', 'none'] as $coordStyle)
+		{
+			$browser->driver->executeScript('besogo.editor.setCoordStyle(arguments[0]);', [$coordStyle]);
+			$browser->hover($browser->find('.go-coord'));
+			$browser->waitUntilJs('document.querySelector("#coord-popup-board circle[stroke=blue]") !== null');
+			$ring = $browser->driver->executeScript(<<<'JS'
+				const popup = document.querySelector('#coord-popup-board svg');
+				const ring = popup.querySelector('circle[stroke=blue]');
+				const grid = popup.querySelector('rect.besogo-svg-lines');
+				const point = besogo.editor.coordLabelToXY('C17');
+				return {x: ring.cx.baseVal.value, y: ring.cy.baseVal.value,
+					expectedX: grid.x.baseVal.value + (point.x - 1) * besogo.BOARD_CELL_SIZE, expectedY: grid.y.baseVal.value + (point.y - 1) * besogo.BOARD_CELL_SIZE};
+				JS);
+			$this->assertEqualsWithDelta($ring['expectedX'], $ring['x'], 0.01, 'The ring is on the column of the point, coordinates ' . $coordStyle);
+			$this->assertEqualsWithDelta($ring['expectedY'], $ring['y'], 0.01, 'The ring is on the row of the point, coordinates ' . $coordStyle);
+			$browser->hover($browser->find('#commentsToggle'));
+			$browser->waitUntilJs('document.getElementById("coord-popup-board").style.display === "none"');
+		}
+		$browser->assertNoJsErrors();
+	}
+
 	public function testAddCommentToSolvedTsumego()
 	{
 		$browser = Browser::instance();

@@ -99,4 +99,28 @@ class BoardFitsWindowTest extends IntegrationTestCase
 			$window->setSize($originalSize);
 		}
 	}
+
+	//On a phone the board is as wide as the page: a stone on an edge of the board keeps a little wood between it and
+	//the end of the board, so it doesn't touch the end of the page
+	public function testAStoneOnTheEdgeDoesNotTouchTheEndOfTheBoard(): void
+	{
+		$browser = Browser::instance();
+		$window = $browser->driver->manage()->window();
+		$originalSize = $window->getSize();
+		try
+		{
+			$this->openProblem($browser, 412, 915);
+			$gaps = $browser->driver->executeScript(<<<'JS'
+				const board = besogo.boardCanvasSvg.getBoundingClientRect();
+				const stones = [...besogo.boardCanvasSvg.querySelectorAll('circle, use, image')].map(stone => stone.getBoundingClientRect()).filter(stone => stone.width > 10);
+				return stones.map(stone => Math.min(stone.left - board.left, board.right - stone.right, stone.top - board.top, board.bottom - stone.bottom));
+				JS);
+			$this->assertNotEmpty($gaps);
+			$this->assertGreaterThanOrEqual(4, min($gaps), 'Every stone is a few pixels inside the board');
+		}
+		finally
+		{
+			$window->setSize($originalSize);
+		}
+	}
 }

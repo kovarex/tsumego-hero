@@ -1,7 +1,18 @@
+// The distance between two lines of the board, in the units of its SVG (line width included)
+besogo.BOARD_CELL_SIZE = 88;
+
+// The wood past an edge of the board, in the units of its SVG: room for the coordinate labels, or without them a little
+// gap, so a stone on the edge line doesn't touch the end of the board (and on a phone the end of the page); a cut side
+// shows half a line past its last line. Whatever draws on the board (PlayPage.js boardPixel()) places points with it.
+besogo.boardMargin = function(coordStyle)
+{
+  return coordStyle === 'none' ? 16 : 75;
+};
+
 besogo.makeBoardDisplay = function(container, editor, corner)
 {
-  var CELL_SIZE = 88, // Including line width
-      COORD_MARGIN = 75, // Margin for coordinate labels
+  var CELL_SIZE = besogo.BOARD_CELL_SIZE, // Including line width
+      COORD_MARGIN = besogo.boardMargin('western'), // Margin for coordinate labels
       EXTRA_MARGIN = 6, // Extra margin on the edge of board
       BOARD_MARGIN, // Total board margin
 
@@ -158,7 +169,7 @@ besogo.makeBoardDisplay = function(container, editor, corner)
   {
     var string = ""; // Path string for inner board lines
 
-    BOARD_MARGIN = (coord === 'none' ? 0 : COORD_MARGIN);
+    BOARD_MARGIN = besogo.boardMargin(coord);
     boardWidth = 2*BOARD_MARGIN + sizeX*CELL_SIZE;
     boardHeight = 2*BOARD_MARGIN + sizeY*CELL_SIZE;
 
