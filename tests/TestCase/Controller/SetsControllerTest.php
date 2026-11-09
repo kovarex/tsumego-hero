@@ -2039,8 +2039,12 @@ class SetsControllerTest extends IntegrationTestCase
 
 		$collectionTopDivs = $browser->getElements('.set-card__title');
 		$this->assertCount(2, $collectionTopDivs);
-		$this->checkSetFinishedPercent($browser, 0, 'partitioned set #1', '33%');
-		$this->checkSetFinishedPercent($browser, 1, 'partitioned set #2', '66%');
+		$this->checkSetFinishedPercent($browser, 0, 'partitioned set', '33%');
+		$this->checkSetFinishedPercent($browser, 1, 'partitioned set', '66%');
+		// the part is the tab in the card's corner
+		$parts = $browser->getElements('.set-card__part');
+		$this->assertSame('1/2', $parts[0]->getText());
+		$this->assertSame('2/2', $parts[1]->getText());
 		$this->assertSame('Problems found: 300', $browser->find('#problems-found')->getText());
 	}
 
