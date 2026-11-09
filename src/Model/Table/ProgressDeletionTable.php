@@ -33,6 +33,19 @@ WHERE sc.id = ?', [$setConnectionID]);
 		return ['set_id' => (int) $rows[0]['set_id'], 'partition' => intdiv((int) $rows[0]['position'], self::$PARTITION_SIZE)];
 	}
 
+	//The part of each set connection of the set, by the order partitionOf() uses
+	/** @return array<int, int> By set connection */
+	public static function partitionsOfSet(int $setID): array
+	{
+		$parts = [];
+		$position = 0;
+		foreach (Util::query('SELECT sc.id FROM set_connection sc
+			JOIN tsumego ON tsumego.id = sc.tsumego_id AND tsumego.deleted IS NULL
+			WHERE sc.set_id = ? ORDER BY sc.num, sc.id', [$setID]) as $row)
+			$parts[(int) $row['id']] = intdiv($position++, self::$PARTITION_SIZE);
+		return $parts;
+	}
+
 	//How many times the user reset the part of the set in the last month. Resets saved before the
 	//part was recorded count for every part of their set.
 	public static function countRecent(int $userID, int $setID, int $partition): int

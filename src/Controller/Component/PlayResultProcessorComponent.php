@@ -25,6 +25,7 @@ use App\Utility\PlayOutcome;
 use App\Utility\PlayResult;
 use App\Utility\Rating;
 use App\Utility\SetCompletionCounter;
+use App\Utility\SetPartBestScores;
 use App\Utility\TimeMode;
 use App\Utility\TsumegoUtil;
 use App\Utility\TsumegoXPAndRating;
@@ -122,6 +123,10 @@ class PlayResultProcessorComponent extends Component
 			$result->potionTriggered = $this->processPotion();
 		$this->processXpChange($result, $previousStatusValue, $originalTsumegoRating, $progressDeletionCount);
 		$this->updateTsumegoAttempt($tsumego, $result, $previousStatusValue, $seconds, $lastTsumegoAttempt);
+		// the solve that finishes a part of a collection keeps the scores of the run through it as the player's best
+		// there, once its attempt is written (SetPartBestScores)
+		$finishedParts = TsumegoUtil::isSolvedStatus($newStatus) && !TsumegoUtil::isSolvedStatus($previousStatusValue)
+			? SetPartBestScores::recordAfterSolve((int) Auth::getUserID(), $tsumegoID) : [];
 		ClassroomAssignmentTable::recordResult((int) Auth::getUserID(), $tsumegoID, $outcome);
 		// The pool is fed from every mode: a solved problem that goes wrong enters the
 		// review ladder, a clean solve climbs it. The training says it is the one playing, since a replay there counts for nothing,
@@ -139,7 +144,10 @@ class PlayResultProcessorComponent extends Component
 		// Check solve-dependent achievements right away (not only on the next page
 		// load) so the user sees the popup immediately after solving.
 		$achievementChecker = new AchievementChecker();
-		$achievementChecker->checkStandardAchievements()->finalize();
+		$achievementChecker->checkStandardAchievements();
+		foreach ($finishedParts as $part)
+			$achievementChecker->checkSetAchievements($part['set_id'], $part['scores']->rating, $part['partition']);
+		$achievementChecker->finalize();
 
 		$response = [
 			'xp_gained' => $trainingXp !== null ? array_sum($trainingXp) : $result->xpGained,

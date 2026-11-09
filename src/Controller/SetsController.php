@@ -25,7 +25,7 @@ use App\Utility\CookieFlash;
 use App\Utility\HtmlSanitizer;
 use App\Utility\Preferences;
 use App\Utility\Rating;
-use App\Utility\SetBestScores;
+use App\Utility\SetPartBestScores;
 use App\Utility\SetImage;
 use App\Utility\SetsSelector;
 use App\Utility\Trash;
@@ -661,6 +661,9 @@ ORDER BY sc.num ASC", [(int) $id]);
 
 		// the player's own scores are kept on the collections, a rank or a tag has none
 		$scoring = Auth::isLoggedIn() && $tsumegoFilters->query == 'topics';
+		// the bests are per part of a collection, the part a reset clears: a page shows them, and offers the reset, when
+		// it is exactly one part, of the size of the parts and without rank and tag filters
+		$pageIsAPart = $tsumegoFilters->collectionSize == ProgressDeletionTable::$PARTITION_SIZE && !$tsumegoFilters->hasProblemFilters();
 		$avgTime = 0;
 		$accuracy = 0;
 		if ($scoring)
@@ -671,16 +674,10 @@ ORDER BY sc.num ASC", [(int) $id]);
 			if ($problemSolvedPercent >= 100)
 			{
 				$achievementChecker = new AchievementChecker();
-				// Set achievements belong to the site's collections only, so nothing is recorded for a
-				// collection a player assembled, however complete it is. The best scores are of the whole
-				// collection since its resets, not of the part or the ranks and tags this page shows
-				// (SetBestScores), and only once every problem of it is solved.
-				$best = SetTable::isOfficial($set) ? SetBestScores::of(Auth::getUserID(), (int) $set->id) : null;
-				if ($best !== null)
-				{
-					$this->updateAchievementConditions($set->id, $best->averageSeconds, $best->accuracy);
-					$achievementChecker->checkSetAchievements($set->id, $best->rating);
-				}
+				// Set achievements belong to the site's collections only (SetPartBestScores::record() keeps no best of a
+				// collection a player assembled). A part finished before it was kept on its last solve gets its best here.
+				if ($pageIsAPart && ($best = SetPartBestScores::record(Auth::getUserID(), (int) $set->id, $partition)) !== null)
+					$achievementChecker->checkSetAchievements($set->id, $best->rating, $partition);
 				$achievementChecker->checkCompletionAchievement($set);
 				$achievementChecker->finalize();
 				$this->set('achievementUpdates', $achievementChecker->updated);
@@ -689,10 +686,10 @@ ORDER BY sc.num ASC", [(int) $id]);
 
 		if ($tsumegoFilters->query == 'topics')
 		{
-			// the resets of this part of the set, the same count that reduces the XP of its problems
-			$this->set('pdCounter', $scoring ? ProgressDeletionTable::countRecent(Auth::getUserID(), (int) $id, $partition) : 0);
-			$this->set('bestTime', $scoring ? AchievementConditionTable::value(Auth::getUserID(), AchievementConditionTable::CATEGORY_SET_TIME, (int) $id) : null);
-			$this->set('bestAccuracy', $scoring ? AchievementConditionTable::value(Auth::getUserID(), AchievementConditionTable::CATEGORY_SET_ACCURACY, (int) $id) : null);
+			// the resets of the parts the page's problems are in, the count that reduces their XP
+			$this->set('pdCounter', $scoring ? $this->recentResetsOf($tsumegoButtons, (int) $id) : 0);
+			$this->set('bestTime', $scoring && $pageIsAPart ? AchievementConditionTable::value(Auth::getUserID(), AchievementConditionTable::CATEGORY_SET_TIME, (int) $id, $partition) : null);
+			$this->set('bestAccuracy', $scoring && $pageIsAPart ? AchievementConditionTable::value(Auth::getUserID(), AchievementConditionTable::CATEGORY_SET_ACCURACY, (int) $id, $partition) : null);
 		}
 
 		$this->set('tsumegoFilters', $tsumegoFilters);
@@ -771,10 +768,19 @@ ORDER BY sc.num ASC", [(int) $id]);
 	}
 
 	//Keeps the player's records on the set: the best average time and the best accuracy.
-	private function updateAchievementConditions(int $sid, int|float $avgTime, int|float $accuracy): void
+	//The resets of the last month of the parts of the set the page's problems are in (ProgressDeletionTable::$PARTITION_SIZE,
+	//whatever the player's collection size), the most of them when the page has problems of two parts
+	private function recentResetsOf(TsumegoButtons $tsumegoButtons, int $setID): int
 	{
-		AchievementConditionTable::keepLowest(Auth::getUserID(), AchievementConditionTable::CATEGORY_SET_TIME, $avgTime, $sid);
-		AchievementConditionTable::keepHighest(Auth::getUserID(), AchievementConditionTable::CATEGORY_SET_ACCURACY, $accuracy, $sid);
+		$partOf = ProgressDeletionTable::partitionsOfSet($setID);
+		$parts = [];
+		foreach ($tsumegoButtons as $tsumegoButton)
+			if (isset($partOf[$tsumegoButton->setConnectionID]))
+				$parts[$partOf[$tsumegoButton->setConnectionID]] = true;
+		$resets = 0;
+		foreach (array_keys($parts) as $part)
+			$resets = max($resets, ProgressDeletionTable::countRecent(Auth::getUserID(), $setID, $part));
+		return $resets;
 	}
 
 	#[HttpPost]

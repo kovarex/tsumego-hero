@@ -188,10 +188,11 @@ class AchievementsController extends AppController
 			. 'ORDER BY ' . SetConnectionTable::displayOrderForSetSql('s')
 		);
 
+		// the bests are per part of a collection: a collection shows its best part
 		$bestAccuracy = [];
 		if ($userID)
 			foreach (Util::query(
-				'SELECT set_id, value AS accuracy FROM achievement_condition WHERE user_id = ? AND achievement_condition_category_id = ?',
+				'SELECT set_id, MAX(value) AS accuracy FROM achievement_condition WHERE user_id = ? AND achievement_condition_category_id = ? GROUP BY set_id',
 				[$userID, AchievementConditionTable::CATEGORY_SET_ACCURACY]) as $row)
 					$bestAccuracy[(int) $row['set_id']] = (float) $row['accuracy'];
 

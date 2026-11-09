@@ -1,6 +1,7 @@
 <?php
 
 use App\Model\Table\AchievementConditionTable;
+use App\Model\Table\ProgressDeletionTable;
 use App\Model\Table\SetTable;
 use App\Model\Table\SgfTable;
 use App\Utility\AchievementId;
@@ -533,37 +534,42 @@ class SetsControllerTest extends IntegrationTestCase
 		$this->assertCount(0, $dom->querySelectorAll('.set-card--perfect'));
 	}
 
-	//A finished card whose problems were all solved without a failed attempt is finished with 100% accuracy;
-	//a single failed attempt, even one followed by a solve, takes that away from its card only
-	public function testTopicsIndexMarksCardsFinishedWithoutMistakes(): void
+	//A finished card is framed when the stored best accuracy of its part is 100, whatever the attempts: the first part
+	//has it, the second, solved as cleanly, has no best stored
+	public function testTopicsIndexFramesTheCardsOfPartsWithABestOf100(): void
 	{
-		// two parts of ten (the smallest collection size): the first all solved without a miss, some more than once,
-		// the second with one problem failed before it was solved
-		$contextParams = ['user' => ['collection_size' => 10]];
-		$contextParams['tsumegos'] = [];
-		$attempts = [];
-		for ($i = 0; $i < 20; $i++)
-			$attempts[] = match ($i)
-			{
-				3 => [['solved' => true], ['solved' => true]],
-				15 => [['solved' => false], ['solved' => true]],
-				default => [['solved' => true]],
-			};
-		foreach ($attempts as $i => $problemAttempts)
-			$contextParams['tsumegos'] [] = [
-				'sets' => [['name' => 'accuracy set', 'num' => $i + 1]],
-				'status' => 'S',
-				'attempts' => $problemAttempts];
+		ProgressDeletionTable::$PARTITION_SIZE = 10;
+		$contextParams = ['user' => ['collection_size' => 10], 'tsumegos' => [], 'achievement-conditions' => [
+			['category' => AchievementConditionTable::CATEGORY_SET_ACCURACY, 'set' => 'accuracy set', 'partition' => 0, 'value' => 100],
+			['category' => AchievementConditionTable::CATEGORY_SET_ACCURACY, 'set' => 'accuracy set', 'partition' => 2, 'value' => 99]]];
+		for ($i = 0; $i < 30; $i++)
+			$contextParams['tsumegos'][] = ['sets' => [['name' => 'accuracy set', 'num' => $i + 1]], 'status' => 'S', 'attempts' => [['solved' => true]]];
 		new ContextPreparator($contextParams);
 		$this->get('sets');
 
-		$dom = $this->getStringDom();
-		$cards = $dom->querySelectorAll('.set-card');
+		$cards = $this->getStringDom()->querySelectorAll('.set-card');
+		$this->assertCount(3, $cards);
+		$this->assertSame([true, false, false], array_map(fn($card) => str_contains($card->getAttribute('class'), 'set-card--perfect'), iterator_to_array($cards)));
+		$this->assertCount(3, $this->getStringDom()->querySelectorAll('.set-card--finished'));
+	}
+
+	//A card of another size than the parts is framed only when every part it covers has a best of 100
+	public function testTopicsIndexFramesACardCoveringSeveralPartsWhenEachHas100(): void
+	{
+		ProgressDeletionTable::$PARTITION_SIZE = 10;
+		$contextParams = ['user' => ['collection_size' => 20], 'tsumegos' => [], 'achievement-conditions' => [
+			['category' => AchievementConditionTable::CATEGORY_SET_ACCURACY, 'set' => 'accuracy set', 'partition' => 0, 'value' => 100],
+			['category' => AchievementConditionTable::CATEGORY_SET_ACCURACY, 'set' => 'accuracy set', 'partition' => 1, 'value' => 100],
+			['category' => AchievementConditionTable::CATEGORY_SET_ACCURACY, 'set' => 'accuracy set', 'partition' => 2, 'value' => 100]]];
+		for ($i = 0; $i < 40; $i++)
+			$contextParams['tsumegos'][] = ['sets' => [['name' => 'accuracy set', 'num' => $i + 1]], 'status' => 'S'];
+		new ContextPreparator($contextParams);
+		$this->get('sets');
+
+		$cards = $this->getStringDom()->querySelectorAll('.set-card');
 		$this->assertCount(2, $cards);
-		$this->assertStringContainsString('set-card--finished', $cards[0]->getAttribute('class'));
-		$this->assertStringContainsString('set-card--perfect', $cards[0]->getAttribute('class'));
-		$this->assertStringContainsString('set-card--finished', $cards[1]->getAttribute('class'));
-		$this->assertStringNotContainsString('set-card--perfect', $cards[1]->getAttribute('class'));
+		$this->assertStringContainsString('set-card--perfect', $cards[0]->getAttribute('class'), 'parts 0 and 1 have 100');
+		$this->assertStringNotContainsString('set-card--perfect', $cards[1]->getAttribute('class'), 'part 3 has no best');
 	}
 
 	//A card not finished is not marked, however clean its attempts
@@ -2441,98 +2447,162 @@ class SetsControllerTest extends IntegrationTestCase
 		$this->assertTextContains('<div class="problem-nav__ratio">2/3</div>', (string) $this->_response->getBody());
 	}
 
-	//The collection's best scores kept for the player after opening the set page with the given cookies
-	/** @return array{accuracy: ?float, time: ?float} */
-	private function bestScoresAfterOpening(int $setID, array $cookies = []): array
+	//The parts of these tests are of ten problems, the smallest collection size, so a page of that size is a part
+	private const PART = 10;
+
+	protected function tearDown(): void
 	{
-		foreach ($cookies as $name => $value)
-			$_COOKIE[$name] = $value;
-		$this->get('sets/' . $setID);
-		$this->assertResponseOk();
-		$userID = (int) Auth::getUserID();
-		return [
-			'accuracy' => AchievementConditionTable::value($userID, AchievementConditionTable::CATEGORY_SET_ACCURACY, $setID),
-			'time' => AchievementConditionTable::value($userID, AchievementConditionTable::CATEGORY_SET_TIME, $setID)];
+		ProgressDeletionTable::$PARTITION_SIZE = 200;
+		parent::tearDown();
 	}
 
+	//The best scores of the part kept for the player
+	/** @return array{accuracy: ?float, time: ?float} */
+	private static function bestOf(int $setID, int $partition): array
+	{
+		$userID = (int) Auth::getUserID();
+		return [
+			'accuracy' => AchievementConditionTable::value($userID, AchievementConditionTable::CATEGORY_SET_ACCURACY, $setID, $partition),
+			'time' => AchievementConditionTable::value($userID, AchievementConditionTable::CATEGORY_SET_TIME, $setID, $partition)];
+	}
+
+	//Opens each page (1 based) of the set at the player's collection size
+	private function open(int $setID, int ...$pages): void
+	{
+		foreach ($pages as $page)
+		{
+			$this->get('sets/' . $setID . '/' . $page);
+			$this->assertResponseOk();
+		}
+	}
+
+	//A collection of one problem per item, solved with its attempts
 	/** @param list<list<array<string, mixed>>> $attempts The attempts of each problem, in order */
 	private static function collectionOf(array $attempts, array $user = [], array $more = []): array
 	{
 		$tsumegos = [];
 		foreach ($attempts as $i => $problemAttempts)
 			$tsumegos[] = ($more[$i] ?? []) + ['sets' => [['name' => 'best set', 'num' => $i + 1]], 'status' => 'S', 'attempts' => $problemAttempts];
-		return ['user' => ['name' => 'trainer'] + $user, 'tsumegos' => $tsumegos];
+		return ['user' => ['name' => 'trainer', 'collection_size' => self::PART] + $user, 'tsumegos' => $tsumegos];
 	}
 
-	//A part of the collection shown whole and solved without a mistake isn't the collection: the best accuracy is of
-	//all its problems, here 20 solves against the one fail of the second part
-	public function testACleanPartDoesNotGiveTheCollection100(): void
+	//Each part keeps its own best, from its own problems only: the fail in the second part doesn't reach the first
+	public function testEachPartKeepsItsOwnBest(): void
 	{
+		ProgressDeletionTable::$PARTITION_SIZE = self::PART;
 		$attempts = array_fill(0, 20, [['solved' => true, 'seconds' => 10]]);
-		$attempts[15] = [['solved' => false], ['solved' => true, 'seconds' => 10]];
-		$context = new ContextPreparator(self::collectionOf($attempts, ['collection_size' => 10]));
+		$attempts[15] = [['solved' => false], ['solved' => true, 'seconds' => 30]];
+		$context = new ContextPreparator(self::collectionOf($attempts));
+		$setID = $context->tsumegos[0]['sets'][0]['id'];
 
-		$best = $this->bestScoresAfterOpening($context->tsumegos[0]['sets'][0]['id']);
+		$this->open($setID, 1, 2);
 
-		$this->assertEquals(95.24, $best['accuracy']);
-		$this->assertEquals(10, $best['time']);
+		$this->assertEquals(['accuracy' => 100, 'time' => 10], self::bestOf($setID, 0));
+		$this->assertEquals(['accuracy' => 90.91, 'time' => 12], self::bestOf($setID, 1), '10 solves against 1 fail, (9 * 10 + 30) / 10');
+		$this->assertEquals(90.91, $this->viewVariable('bestAccuracy'), 'the page shows the best of its part');
+		$this->assertSame(2, (int) Util::query('SELECT COUNT(*) AS c FROM achievement_condition WHERE set_id = ? AND achievement_condition_category_id = ?',
+			[$setID, AchievementConditionTable::CATEGORY_SET_ACCURACY])[0]['c'], 'one row per part');
 	}
 
-	//The problems the rank filter shows don't make the collection's best either
-	public function testAFilteredPageDoesNotCount(): void
+	//The misplays of an attempt that ended solved are its fails, and a problem solved without an attempt is one fail
+	public function testMisplaysOfSolvedAttemptsCount(): void
 	{
-		$attempts = [[['solved' => true, 'seconds' => 10]], [['solved' => true, 'seconds' => 10]], [['solved' => false], ['solved' => true, 'seconds' => 40]]];
-		$context = new ContextPreparator(self::collectionOf($attempts, [], [2 => ['rating' => 2400]]));
+		ProgressDeletionTable::$PARTITION_SIZE = self::PART;
+		$attempts = array_fill(0, 10, [['solved' => true, 'seconds' => 10]]);
+		$attempts[3] = [['solved' => true, 'seconds' => 10, 'misplays' => 2]];
+		$attempts[7] = [];
+		$context = new ContextPreparator(self::collectionOf($attempts));
+		$setID = $context->tsumegos[0]['sets'][0]['id'];
 
-		$best = $this->bestScoresAfterOpening($context->tsumegos[0]['sets'][0]['id'], ['filtered_ranks' => '11k']);
+		$this->open($setID, 1);
 
-		$this->assertEquals(75, $best['accuracy'], '3 solves against the 1 fail of the problem the filter hides');
-		$this->assertEquals(20, $best['time'], '(10 + 10 + 40) / 3');
+		$this->assertEquals(75, self::bestOf($setID, 0)['accuracy'], '9 solves against 2 misplays and the solve without an attempt');
 	}
 
-	//A reset starts a new run through its part: the fails before it count no more, and solving the part again without
-	//a mistake makes 100%
-	public function testAfterAResetOnlyTheNewRunCounts(): void
+	//A part with a problem not solved has no best yet, whatever its attempts
+	public function testAnUnfinishedPartKeepsNoBest(): void
 	{
-		$before = date('Y-m-d H:i:s', strtotime('-2 days'));
+		ProgressDeletionTable::$PARTITION_SIZE = self::PART;
+		$context = new ContextPreparator(self::collectionOf(array_fill(0, 10, [['solved' => true, 'seconds' => 10]]), [], [9 => ['status' => 'F']]));
+		$setID = $context->tsumegos[0]['sets'][0]['id'];
+
+		$this->open($setID, 1);
+
+		$this->assertSame(['accuracy' => null, 'time' => null], self::bestOf($setID, 0));
+	}
+
+	//A reset of a part starts a new run through it: its fails before the reset count no more. The reset of another part
+	//doesn't, and an old reset without a part is a reset of every part.
+	public function testAResetStartsANewRunOfItsPartOnly(): void
+	{
+		ProgressDeletionTable::$PARTITION_SIZE = self::PART;
+		$before = date('Y-m-d H:i:s', strtotime('-3 days'));
 		$after = date('Y-m-d H:i:s', strtotime('-1 hour'));
-		$oldRun = [['solved' => false, 'created' => $before], ['solved' => true, 'seconds' => 50, 'created' => $before]];
-		$context = new ContextPreparator(self::collectionOf([
-			[...$oldRun, ['solved' => true, 'seconds' => 20, 'created' => $after]],
-			[...$oldRun, ['solved' => true, 'seconds' => 30, 'created' => $after]]])
-			+ ['progress-deletions' => [['set' => 'best set', 'partition' => 0, 'created' => date('Y-m-d H:i:s', strtotime('-1 day'))]]]);
+		$run = [['solved' => false, 'created' => $before], ['solved' => true, 'seconds' => 20, 'created' => $after]];
+		$context = new ContextPreparator(self::collectionOf(array_fill(0, 30, $run)) + ['progress-deletions' => [
+			['set' => 'best set', 'partition' => 0, 'created' => date('Y-m-d H:i:s', strtotime('-2 days'))],
+			['set' => 'best set', 'partition' => 2, 'created' => date('Y-m-d H:i:s', strtotime('-5 days'))]]]);
+		$setID = $context->tsumegos[0]['sets'][0]['id'];
 
-		$best = $this->bestScoresAfterOpening($context->tsumegos[0]['sets'][0]['id']);
+		$this->open($setID, 1, 2, 3);
 
-		$this->assertEquals(100, $best['accuracy']);
-		$this->assertEquals(25, $best['time'], 'the solves of the new run, not the old ones');
+		$this->assertEquals(100, self::bestOf($setID, 0)['accuracy'], 'reset after the fails');
+		$this->assertEquals(50, self::bestOf($setID, 1)['accuracy'], 'the reset of another part');
+		$this->assertEquals(50, self::bestOf($setID, 2)['accuracy'], 'reset before the fails');
+
+		Util::execute('DELETE FROM achievement_condition');
+		Util::execute('INSERT INTO progress_deletion (user_id, set_id, set_partition, created) VALUES (?, ?, NULL, ?)',
+			[Auth::getUserID(), $setID, date('Y-m-d H:i:s', strtotime('-2 days'))]);
+		$this->open($setID, 2, 3);
+		$this->assertEquals(100, self::bestOf($setID, 1)['accuracy'], 'a reset without a part');
+		$this->assertEquals(100, self::bestOf($setID, 2)['accuracy'], 'a reset without a part');
 	}
 
-	//One fail since the reset keeps the run below 100%
-	public function testAFailSinceTheResetKeepsItBelow100(): void
+	//At a collection size other than the parts' the page isn't a part: it shows the live accuracy and time only, and
+	//keeps no best
+	public function testAPageThatIsNotAPartShowsNoBest(): void
 	{
-		$after = date('Y-m-d H:i:s', strtotime('-1 hour'));
-		$context = new ContextPreparator(self::collectionOf([
-			[['solved' => true, 'seconds' => 20, 'created' => $after]],
-			[['solved' => false, 'created' => $after], ['solved' => true, 'seconds' => 30, 'created' => $after]]])
-			+ ['progress-deletions' => [['set' => 'best set', 'partition' => 0, 'created' => date('Y-m-d H:i:s', strtotime('-1 day'))]]]);
+		$context = new ContextPreparator(self::collectionOf(array_fill(0, 10, [['solved' => true, 'seconds' => 10]]))
+			+ ['achievement-conditions' => [['category' => AchievementConditionTable::CATEGORY_SET_ACCURACY, 'set' => 'best set', 'partition' => 0, 'value' => 80]]]);
+		$setID = $context->tsumegos[0]['sets'][0]['id'];
 
-		$best = $this->bestScoresAfterOpening($context->tsumegos[0]['sets'][0]['id']);
+		$this->open($setID, 1);
 
-		$this->assertEquals(66.67, $best['accuracy']);
+		$this->assertNull($this->viewVariable('bestAccuracy'));
+		$this->assertNull($this->viewVariable('bestTime'));
+		$this->assertEquals(100, $this->viewVariable('accuracy'));
+		$this->assertStringNotContainsString('Best:', (string) $this->_response->getBody());
+		$this->assertEquals(['accuracy' => 80, 'time' => null], self::bestOf($setID, 0), 'kept as it was');
 	}
 
-	//A collection with a problem not solved has no best yet, whatever part of it is solved
-	public function testAnUnfinishedCollectionKeepsNoBest(): void
+	//The page of a filtered part isn't the part either
+	public function testAFilteredPageKeepsNoBest(): void
 	{
-		$attempts = array_fill(0, 20, [['solved' => true, 'seconds' => 10]]);
-		$more = [19 => ['status' => 'F']];
-		$context = new ContextPreparator(self::collectionOf($attempts, ['collection_size' => 10], $more));
+		ProgressDeletionTable::$PARTITION_SIZE = self::PART;
+		$context = new ContextPreparator(self::collectionOf(array_fill(0, 10, [['solved' => true, 'seconds' => 10]]), [], [2 => ['rating' => 2400]]));
+		$setID = $context->tsumegos[0]['sets'][0]['id'];
 
-		$best = $this->bestScoresAfterOpening($context->tsumegos[0]['sets'][0]['id']);
+		$_COOKIE['filtered_ranks'] = '11k';
+		$this->open($setID, 1);
 
-		$this->assertNull($best['accuracy']);
-		$this->assertNull($best['time']);
+		$this->assertNull($this->viewVariable('bestAccuracy'));
+		$this->assertSame(['accuracy' => null, 'time' => null], self::bestOf($setID, 0));
+	}
+
+	//The resets that reduce the XP are those of the part the page is in, not of the part numbered like the page
+	public function testTheResetsCountedAreOfThePartOfThePage(): void
+	{
+		$tsumegos = [];
+		for ($i = 0; $i < 20; $i++)
+			$tsumegos[] = ['sets' => [['name' => 'reset set', 'num' => $i + 1]], 'status' => 'S'];
+		$context = new ContextPreparator(['user' => ['collection_size' => 10], 'tsumegos' => $tsumegos,
+			'progress-deletions' => [['set' => 'reset set', 'partition' => 0, 'created' => date('Y-m-d H:i:s', strtotime('-1 day'))]]]);
+
+		// the second page of ten is in the first part of 200
+		$this->open($context->tsumegos[0]['sets'][0]['id'], 2);
+
+		$this->assertSame(1, $this->viewVariable('pdCounter'));
+		$this->assertTextContains('1 reset in the last month', (string) $this->_response->getBody());
 	}
 
 	public function testGuestSeesNoScoresOnASet(): void
@@ -2590,7 +2660,10 @@ class SetsControllerTest extends IntegrationTestCase
 			$this->assertNotEmpty($TsumegoStatus->find()->where($statusCurrentUserOtherSet)->toArray());
 			$this->assertNotEmpty($TsumegoStatus->find()->where($statusOtherUserThisSet)->toArray());
 
-			$browser->clickId("reset-submit");
+			// the reset is done once the page it leads back to is there
+			$submit = $browser->find('#reset-submit');
+			$submit->click();
+			$browser->waitUntilStale($submit);
 			if ($resetInput == "reset")
 			{
 				$this->assertEmpty($TsumegoStatus->find()->where($statusCurrentUserThisSet1)->toArray());
