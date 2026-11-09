@@ -1353,7 +1353,7 @@ class ChallengesControllerTest extends IntegrationTestCase
 					decline: document.querySelector('#challenges-list .challenges__inline-form button') !== null,
 				};
 				JS);
-			$this->assertSame(['overflow' => 0, 'headers' => 'none', 'rows' => 2, 'outside' => 0, 'decline' => true], $layout);
+			$this->assertEquals(['decline' => true, 'headers' => 'none', 'outside' => 0, 'overflow' => 0, 'rows' => 2], $layout);
 			$browser->assertNoJsErrors();
 		}
 		finally
