@@ -235,7 +235,7 @@ class ChallengeTable extends AppTable
 		Util::execute('UPDATE challenge SET name = ? WHERE id = ?', [$name, $challengeId]);
 	}
 
-	//What is played in a challenge, like "10 problems, 5k to 1d, 1 minute each".
+	//What is played in a challenge, like "10 problems, 5k to 1d, 1 minute".
 	/** @param array<string, mixed> $challenge With problem_count, minimum_rank and maximum_rank, see withDetails() */
 	public static function describe(array $challenge): string
 	{
@@ -243,7 +243,7 @@ class ChallengeTable extends AppTable
 			? $challenge['minimum_rank']
 			: $challenge['minimum_rank'] . ' to ' . $challenge['maximum_rank'];
 		return $challenge['problem_count'] . ' problem' . ($challenge['problem_count'] == 1 ? '' : 's') . ', '
-			. $ranks . ', ' . self::formatTimeForAProblem((int) $challenge['seconds_per_problem']) . ' each';
+			. $ranks . ', ' . self::formatTimeForAProblem((int) $challenge['seconds_per_problem']);
 	}
 
 	//The time for a problem in words, like "45 seconds", "1 minute" or "1.5 minutes".

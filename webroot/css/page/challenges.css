@@ -132,12 +132,14 @@
 
 .challenges__list-title
 {
+	min-width: 10em;
 	font-weight: var(--weight-bold);
 	overflow-wrap: anywhere;
 }
 
 .challenges__list-place,
 .challenges__list-points,
+.challenges__list-players,
 .challenges__list-when
 {
 	white-space: nowrap;
@@ -151,6 +153,54 @@
 .challenges__list-label
 {
 	display: none;
+}
+
+/* The players who finished a challenge, overlapping a little, each ringed in the colour of the card so
+   the one below shows where it ends */
+.challenges__avatars
+{
+	display: inline-flex;
+	align-items: center;
+	vertical-align: middle;
+}
+
+.challenges__avatar
+{
+	display: inline-flex;
+	flex-shrink: 0;
+	line-height: 0;
+}
+
+.challenges__avatar + .challenges__avatar,
+.challenges__avatar + .challenges__avatars-rest
+{
+	margin-left: -6px;
+}
+
+.challenges__avatars .user-avatar
+{
+	width: 24px;
+	max-width: none;
+	height: 24px;
+	margin: 0;
+	border: 2px solid var(--color-surface);
+	box-sizing: content-box;
+}
+
+.challenges__avatars-rest
+{
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 24px;
+	height: 24px;
+	padding: 0 var(--space-1);
+	border: 2px solid var(--color-surface);
+	border-radius: 999px;
+	background: var(--current-border-color);
+	color: var(--text-color);
+	font-size: var(--font-size-sm);
+	box-sizing: content-box;
 }
 
 .challenges__finished-of
@@ -212,7 +262,7 @@
 	}
 
 	.challenges__list-problems,
-	.challenges__list-by,
+	.challenges__list-players,
 	.challenges__list-when
 	{
 		order: 2;
@@ -224,11 +274,6 @@
 		flex-basis: 100%;
 	}
 
-	.challenges__list-by::before
-	{
-		content: "· ";
-		color: var(--text-softer-color);
-	}
 
 	.challenges__list-label
 	{

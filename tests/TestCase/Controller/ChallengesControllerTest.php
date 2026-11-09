@@ -116,7 +116,7 @@ class ChallengesControllerTest extends IntegrationTestCase
 		// the invitation is the challenge in the friend's challenges, not a message
 		$this->assertEmpty(Util::query('SELECT * FROM message'));
 		$this->assertSame(1, ChallengeTable::countWaitingFor($this->userId('friend')));
-		$this->assertStringContainsString('10 problems, 5k, 30 seconds each', ChallengeTable::describe($challenge));
+		$this->assertStringContainsString('10 problems, 5k, 30 seconds', ChallengeTable::describe($challenge));
 	}
 
 	public function testTheTimeForAProblemCanBeLong(): void
@@ -124,7 +124,7 @@ class ChallengesControllerTest extends IntegrationTestCase
 		$this->prepare();
 		$challengeId = $this->create(['seconds_per_problem' => 1800]);
 		$this->assertSame(1800, (int) ChallengeTable::withDetails($challengeId)['seconds_per_problem']);
-		$this->assertStringContainsString('10 problems, 5k, 30 minutes each', ChallengeTable::describe(ChallengeTable::withDetails($challengeId)));
+		$this->assertStringContainsString('10 problems, 5k, 30 minutes', ChallengeTable::describe(ChallengeTable::withDetails($challengeId)));
 	}
 
 	public function testAChallengeDrawsOnlyProblemsOfItsRanks(): void
@@ -637,7 +637,7 @@ class ChallengesControllerTest extends IntegrationTestCase
 		$this->get('/challenges');
 		$row = $this->listRow($wonByFriend);
 		$columns = ['<a href="/challenges/' . $wonByFriend . '">', 'aria-label="2nd place"', '2nd</span> of <span class="challenge-standings-popup">',
-			'<strong>0.0</strong><span class="challenges__list-label"> points</span> (0%)', 'class="challenges__list-problems', 'class="challenges__list-by"',
+			'<strong>0.0</strong><span class="challenges__list-label"> points</span> (0%)', 'class="challenges__list-problems', 'class="challenges__list-players"',
 			'class="challenges__list-when', 'data-format="relative"'];
 		$positions = array_map(fn(string $part) => strpos($row, $part), $columns);
 		$this->assertNotContains(false, $positions, 'the row has all the columns');
@@ -1454,5 +1454,41 @@ class ChallengesControllerTest extends IntegrationTestCase
 		$rematch = ChallengeTable::rematch(ChallengeTable::withDetails($challengeId), $this->userId('challenger'));
 
 		$this->assertSame('Čajovna', ChallengeTable::withDetails($rematch['id'])['name']);
+	}
+
+	//The list shows who finished a challenge as their avatars, the best first, each with the name and the rank in
+	//its tooltip, and the ones after the first five as "+N".
+	public function testTheListShowsTheAvatarsOfThePlayersByTheirPlaces(): void
+	{
+		Auth::logout();
+		$others = array_map(fn(int $number) => 'player' . $number, range(1, 7));
+		$this->context = new ContextPreparator([
+			'user' => ['name' => 'challenger', 'mode' => Constants::$LEVEL_MODE],
+			'other-users' => array_map(fn(string $name) => ['name' => $name], $others),
+			'time-mode-ranks' => ['5k'],
+			'tsumegos' => range(1, 12),
+		]);
+		$this->login('challenger');
+		$challengeId = $this->create(['problem_count' => 5]);
+		$this->playRun($challengeId, array_fill(0, 5, [PlayOutcome::Failed, 10]));
+		foreach ($others as $index => $name)
+		{
+			$this->login($name);
+			$this->post('/challenges/join/' . $challengeId);
+			// the later players solve more, so the places go the other way round than they played
+			$this->playRun($challengeId, array_map(fn(int $order) => [$order <= $index ? PlayOutcome::SolvedClean : PlayOutcome::Failed, 10], range(0, 4)));
+		}
+		$this->login('challenger');
+
+		$this->get('/challenges');
+		$row = $this->listRow($challengeId);
+		$standings = ChallengeTable::placesOfPlayer($this->userId('challenger'))[$challengeId]['standings'];
+		$this->assertSame(['DN_player7', 'DN_player6', 'DN_player5', 'DN_player4', 'DN_player3', 'DN_player2', 'DN_player1', 'DN_challenger'],
+			array_column($standings, 'user_display_name'));
+		$avatars = substr($row, strpos($row, 'class="challenges__list-players"'));
+		preg_match_all('/class="challenges__avatar" href="\/users\/view\/(\d+)" title="([^"]+)"/', $avatars, $matches);
+		$this->assertSame(array_map(fn(array $run) => (string) $run['user_id'], array_slice($standings, 0, 5)), $matches[1]);
+		$this->assertMatchesRegularExpression('/^DN_player7 \d+[kdp]$/', $matches[2][0], 'the name and the rank');
+		$this->assertStringContainsString('<span class="challenges__avatars-rest" title="3 more">+3</span>', $avatars);
 	}
 }

@@ -1,7 +1,6 @@
 <?php
 
 use App\Model\Table\ChallengeTable;
-use App\Model\Table\UserTable;
 use App\Utility\Util;
 use App\Utility\ViteManifest;
 
@@ -85,7 +84,7 @@ use App\Utility\ViteManifest;
 					<th scope="col">Place</th>
 					<th scope="col">Points</th>
 					<th scope="col">Problems</th>
-					<th scope="col">By</th>
+					<th scope="col">Players</th>
 					<th scope="col">Finished</th>
 				</tr>
 			</thead>
@@ -131,7 +130,8 @@ use App\Utility\ViteManifest;
 					<td class="challenges__list-points challenges__list-points--none"><span class="hint">–</span></td>
 					<?php endif; ?>
 					<td class="challenges__list-problems hint"><?= h(ChallengeTable::describe($challenge)) ?></td>
-					<td class="challenges__list-by"><span class="challenges__list-label">by </span><?= UserTable::renderLink($challenge) ?></td>
+					<?php // who finished it, the best first ?>
+					<td class="challenges__list-players"><?= $placing === null ? '' : $this->element('Challenges/player_avatars', ['runs' => $placing['standings']]) ?></td>
 					<td class="challenges__list-when hint">
 						<?php if ($isFinished && $placing !== null): ?>
 						<?php // when the last player finished ?>
