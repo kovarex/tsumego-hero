@@ -2,6 +2,8 @@
 
 namespace App\Utility;
 
+use App\Model\Table\TimeModeAttemptStatusTable;
+
 //The line a player played on a problem of a challenge until they failed it or ran out of time, as the play page
 //sends it: the moves from the root in the coordinates of the SGF version played, two letters a–s each, tt for a
 //pass. It is only shown on the challenge page, so a line that isn't one is left out rather than the result
@@ -17,6 +19,24 @@ final class ChallengeFailedLine
 	{
 		Util::execute('INSERT INTO challenge_failed_line (time_mode_attempt_id, moves, sgf_id) VALUES (?, ?, ?)
 			ON DUPLICATE KEY UPDATE moves = VALUES(moves), sgf_id = VALUES(sgf_id)', [$timeModeAttemptID, $this->moves, $this->sgfID]);
+	}
+
+	//The line played out after the fail was sent: the play page sends the fail at the first move that loses the
+	//problem (PlayPage.js lineLost()), and the player plays on along the refutations until the line ends. It replaces
+	//the stored line of the player's latest failed attempt of the problem in a challenge when it carries that line on,
+	//in the same version of the problem; false when there is no such line
+	public function extend(int $userID, int $tsumegoID): bool
+	{
+		$stored = Util::query('SELECT line.time_mode_attempt_id, line.moves FROM challenge_failed_line line
+			JOIN time_mode_attempt a ON a.id = line.time_mode_attempt_id
+			JOIN time_mode_session s ON s.id = a.time_mode_session_id
+			WHERE s.user_id = ? AND s.challenge_id IS NOT NULL AND a.tsumego_id = ? AND a.time_mode_attempt_status_id = ?
+				AND line.sgf_id = ?
+			ORDER BY a.id DESC LIMIT 1', [$userID, $tsumegoID, TimeModeAttemptStatusTable::FAILED, $this->sgfID])[0] ?? null;
+		if ($stored === null || strlen($this->moves) <= strlen($stored['moves']) || !str_starts_with($this->moves, $stored['moves']))
+			return false;
+		Util::execute('UPDATE challenge_failed_line SET moves = ? WHERE time_mode_attempt_id = ?', [$this->moves, (int) $stored['time_mode_attempt_id']]);
+		return true;
 	}
 
 	//The line the request sent, null when it sent none, or one that isn't a line on a version of the problem

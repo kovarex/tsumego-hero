@@ -68,6 +68,18 @@ class TsumegosController extends AppController
 		return $this->respondJson($result);
 	}
 
+	//The whole line of a failed problem of a challenge, sent when the player has played it out after the fail
+	//(ChallengeFailedLine::extend())
+	#[HttpPost]
+	public function failedLine(): Response
+	{
+		$this->Authorization->authorize('User', 'reportResult');
+		$data = json_decode($this->requestBody(), true) ?: $this->inputs();
+		$tsumegoID = (int) ($data['tsumego_id'] ?? 0);
+		$line = ChallengeFailedLine::fromRequest($data['challenge_failed_line'] ?? null, $data['sgf_id'] ?? null, $tsumegoID);
+		return $this->respondJson(['extended' => $line !== null && $line->extend((int) Auth::getUserID(), $tsumegoID)]);
+	}
+
 	private function deduceRelevantSetConnection(array $setConnections): array
 	{
 		if ($this->query('sid') === null)
