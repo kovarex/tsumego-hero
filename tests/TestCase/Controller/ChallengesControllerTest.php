@@ -645,7 +645,7 @@ class ChallengesControllerTest extends IntegrationTestCase
 		sort($sorted);
 		$this->assertSame($sorted, $positions, 'in the order of the columns');
 		$this->assertMatchesRegularExpression('/<th scope="col">Challenge<\/th>\s*<th scope="col">Place<\/th>\s*<th scope="col">Points<\/th>\s*'
-			. '<th scope="col">Problems<\/th>\s*<th scope="col">By<\/th>\s*<th scope="col">Finished<\/th>/', $this->view);
+			. '<th scope="col">Problems<\/th>\s*<th scope="col">Players<\/th>\s*<th scope="col">Finished<\/th>/', $this->view);
 		$this->assertStringNotContainsString('played', $row);
 
 		// the standings, the best first, each with its place, player and points
@@ -1475,8 +1475,8 @@ class ChallengesControllerTest extends IntegrationTestCase
 		{
 			$this->login($name);
 			$this->post('/challenges/join/' . $challengeId);
-			// the later players solve more, so the places go the other way round than they played
-			$this->playRun($challengeId, array_map(fn(int $order) => [$order <= $index ? PlayOutcome::SolvedClean : PlayOutcome::Failed, 10], range(0, 4)));
+			// the later players solve more and faster, so the places go the other way round than they played
+			$this->playRun($challengeId, array_map(fn(int $order) => [$order <= $index ? PlayOutcome::SolvedClean : PlayOutcome::Failed, 30 - 3 * $index], range(0, 4)));
 		}
 		$this->login('challenger');
 
