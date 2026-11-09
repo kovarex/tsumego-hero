@@ -141,7 +141,7 @@ if (locked)
 if (playPage.page.accountBlocked)
 {
 	document.getElementById("status").innerHTML = "<h2>Your account is temporarily locked.</h2>";
-	document.getElementById("status").style.color = "var(--feedback-error)";
+	document.getElementById("status").style.color = "var(--play-message-incorrect)";
 }
 
 var noXP = tStatus == 'S' || tStatus == 'C' || playPage.page.userID === null || mode == playPage.page.modes.time;

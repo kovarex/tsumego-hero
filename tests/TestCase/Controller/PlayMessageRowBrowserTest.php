@@ -3,9 +3,9 @@
 use App\Utility\Constants;
 use Facebook\WebDriver\WebDriverDimension;
 
-//Every message of a problem is one of the row of the messages above the board: the comment of a move ("Correct, but
-//what about this answer?") looks like Correct! next to it, at the left in the same bold size, on the same grey, with
-//Reset and Next at the right, on a computer and on a phone
+//Every message of a problem is one of the row of the messages above the board, the same grey rectangle whatever it
+//says: the goal, Correct!, Incorrect! and the comment of a move ("Correct, but what about this answer?") are at the left
+//in the same bold size, with Reset and Next at the right, on a computer and on a phone; only their colour differs
 #[RetryOnBrowserFailure]
 class PlayMessageRowBrowserTest extends IntegrationTestCase
 {
@@ -102,5 +102,67 @@ class PlayMessageRowBrowserTest extends IntegrationTestCase
 			probe.remove();
 			return [getComputedStyle(document.querySelector('.play-message')).backgroundColor === grey, getComputedStyle(document.getElementById('theComment')).textAlign];
 			JS));
+	}
+
+	//What the row shows: the style of its message, its grey, its height, where Reset is, and the colour of the message
+	//against the colour it should have
+	private const STATE = <<<'JS'
+		const message = document.querySelector('#status h2') ?? document.querySelector('#titleDescription');
+		const row = document.querySelector('.play-message');
+		const resolve = value => {
+			const probe = document.createElement('div');
+			probe.style.color = value;
+			document.body.append(probe);
+			const color = getComputedStyle(probe).color;
+			probe.remove();
+			return color;
+		};
+		const grey = (() => {
+			const probe = document.createElement('div');
+			probe.style.background = 'var(--color-surface-hover)';
+			document.body.append(probe);
+			const color = getComputedStyle(probe).backgroundColor;
+			probe.remove();
+			return color;
+		})();
+		const computed = getComputedStyle(message);
+		const reset = document.querySelector('#besogo-reset-button, #besogo-reset-button-inactive').getBoundingClientRect();
+		return {
+			text: message.textContent.trim(),
+			font: [computed.fontSize, computed.fontWeight, computed.fontFamily, computed.textAlign].join('|'),
+			grey: getComputedStyle(row).backgroundColor === grey,
+			height: Math.round(row.getBoundingClientRect().height),
+			reset: Math.round(reset.left) + ',' + Math.round(reset.top),
+			color: computed.color === resolve(arguments[0]),
+		};
+		JS;
+
+	//The goal, Incorrect! and Correct! are the same grey row, in the same bold size at the left, with Reset in the same
+	//place; only the colour of the text differs
+	public function testTheGoalIncorrectAndCorrectAreTheSameRow(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['mode' => Constants::$LEVEL_MODE],
+			'tsumego' => ['set_order' => 1, 'sgf' => ['data' => '(;GM[1]FF[4]SZ[19]AB[dd]AW[bb];B[ba]C[+])', 'first_move_color' => 'B'], 'description' => 'Black to capture']]);
+		$browser = Browser::instance();
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		$browser->waitForBoard();
+		$goal = $browser->driver->executeScript(self::STATE, ['var(--text-color)']);
+
+		$browser->clickBoard(5, 5);
+		$browser->waitUntilJs('document.getElementById("status").textContent.includes("Incorrect")');
+		$incorrect = $browser->driver->executeScript(self::STATE, ['var(--play-message-incorrect)']);
+
+		$browser->clickId('besogo-reset-button');
+		$browser->waitUntilJs('document.getElementById("status").textContent === ""');
+		$browser->clickBoard(2, 1);
+		$browser->waitUntilJs('document.getElementById("status").textContent.includes("Correct!")');
+		$correct = $browser->driver->executeScript(self::STATE, ['var(--play-message-correct)']);
+
+		$this->assertSame(['to capture', 'Incorrect!', 'Correct!'], [$goal['text'], $incorrect['text'], $correct['text']]);
+		foreach (['font', 'height', 'reset'] as $key)
+			$this->assertSame([$goal[$key], $goal[$key]], [$incorrect[$key], $correct[$key]], "the same $key");
+		$this->assertSame([true, true, true], [$goal['grey'], $incorrect['grey'], $correct['grey']], 'the grey of the row');
+		$this->assertSame([true, true, true], [$goal['color'], $incorrect['color'], $correct['color']], 'the colour of each');
 	}
 }

@@ -539,8 +539,7 @@ h1 {
   color: var(--play-dark-text);
 }
 #multipleChoiceText,
-#potionAlerts,
-#customAlerts {
+#potionAlerts {
   color: var(--play-dark-text);
 }
 #xpDisplayDiv {
@@ -638,7 +637,8 @@ h1 {
 }
 .play-message__goal #titleDescription {
   display: inline;
-  font-size: var(--text-md);
+  font-size: var(--text-lg);
+  font-weight: var(--weight-bold);
 }
 /* on the grey of the row: the goal in the colour of the text, its hint a little softer, the white stone outlined */
 .play-message__goal #descriptionText {
@@ -721,18 +721,28 @@ h1 {
   font-weight: var(--weight-bold);
 }
 
-/* The one row of the messages, right above the board: Correct! or Incorrect! at the left, the comment of a
-   move in the middle, Reset, Review and Next at the right. Its height is fixed, empty or full, so the board
-   never moves; a long comment of a move scrolls inside it. */
+/* The one row of the messages, right above the board, the same grey rectangle whatever it says, so it and its
+   buttons never change shape: the goal, or Correct!, Incorrect! and the comment of a move at the left, Reset,
+   Review and Next at the right. Only the colour of the text tells what a message means. It keeps its height, so
+   the board doesn't move, unless a long message needs another line: it wraps, it is never cut. */
 .play-message {
   display: flex;
   align-items: center;
   width: 100%;
   max-width: 900px;
-  height: 48px;
+  min-height: 48px;
   padding: 0 var(--space-2);
   box-sizing: border-box;
-  overflow: hidden;
+  background: var(--color-surface-hover);
+}
+.play-message__status {
+  min-width: 0;
+  padding: 2px 0;
+}
+/* a long message (what a wrong line ends in) wraps to another line inside the row, the buttons staying at the right */
+.play-message #status :is(h2, h3) {
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 .play-message #theComment {
   flex: 1;
@@ -766,7 +776,7 @@ h1 {
 }
 /* an error of the problem itself (besogo's displayError), in the red of Incorrect! */
 .play-message #theComment.play-message__error {
-  color: var(--feedback-error);
+  color: var(--play-message-incorrect);
 }
 
 /* The hearts of the player, on their own line above the actions: a heart for each one the player can
@@ -927,17 +937,8 @@ h1 {
 .play-screen:has(.play-message--solved) .play-actions__end #besogo-next-button:hover {
   background: var(--color-green-btn-gradient) !important;
 }
-/* the grey of the row while it says something but Incorrect!, which has its red */
-.play-message--solved,
-.play-message:not(.play-message--failed):has(#theComment:not(:empty)) {
-  background: var(--color-surface-hover);
-}
-
 /* After a fail, Reset is the thing to do: it keeps its look, with a thin outline in the red of Incorrect! (and
    the keyboard focus, PlayPage.js markFailed()) until the reset */
-.play-message--failed {
-  background: var(--color-danger-surface);
-}
 .play-screen:has(.play-message--failed) .play-actions__end #besogo-reset-button {
   border-color: var(--feedback-error) !important;
   box-shadow: 0 0 0 1px var(--feedback-error);
@@ -1272,7 +1273,8 @@ h1 {
   /* The row of the messages fits a phone: a smaller message and narrower buttons */
   .play-message__status h2,
   .play-message__status h3,
-  .play-message #theComment {
+  .play-message #theComment,
+  .play-message__goal #titleDescription {
     font-size: var(--text-md);
   }
   .play-actions__end {

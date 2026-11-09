@@ -227,6 +227,9 @@
 		--color-warning: #f0ad4e;
 		--color-danger-surface: #fee;
 		--color-surface-hover: #eee;
+		/* Correct! and Incorrect! in the row of the messages of the play page, at least 4.5:1 on its grey */
+		--play-message-correct: #147a14;
+		--play-message-incorrect: #c0303c;
 		--color-surface-hover-strong: #ddd;
 		--surface-panel-light: #f0f0f0;
 		/* The big code behind the title of an error page: grey, orange for a bad request, red for a server error */
@@ -586,6 +589,8 @@
 		--color-warning: #c87f0a;
 		--color-danger-surface: #3a2020;
 		--color-surface-hover: #3a3a3a;
+		--play-message-correct: #3fd23f;
+		--play-message-incorrect: #ff8585;
 		--color-surface-hover-strong: #444;
 		--surface-rank-bg: transparent;
 		--alert-success-bg: #1a3a1a;

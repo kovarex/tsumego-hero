@@ -490,6 +490,8 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
     )
       return;
     let success = !node.localEdit && node.correct == CORRECT_GOOD;
+    // what a wrong line of a status based problem ends in, told in the row of the messages after "Incorrect"
+    let incorrectDetail = "";
     if (
       !node.localEdit &&
       !success &&
@@ -500,28 +502,19 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
       let root = node.getRoot();
       if (root.goal != GOAL_NONE && node.status.isNone())
         // the board editor refuses to save this, so it is an error in the problem (forum#111)
-        displayMessage(
-          "This line ends without a status, which is an error in the problem. Please report it in the comments.",
-          "Error in the problem"
-        );
+        incorrectDetail = "this line ends without a status, which is an error in the problem. Please report it in the comments.";
       else if (
         root.goal != GOAL_NONE &&
         !root.status.isNone() &&
         node.status.blackFirst.type != STATUS_ALIVE && // when the current is clearly dead or alive, we don't say the obvious
         node.status.blackFirst.type != STATUS_DEAD
       )
-        displayMessage(
-          transformTextColors(
-            root,
-            "It is " +
-              node.status.strLong() +
-              ", but it should be: " +
-              root.status.strLong()
-          ),
-          "Not the best solution"
+        incorrectDetail = transformTextColors(
+          root,
+          "it is " + node.status.strLong() + ", but it should be " + root.status.strLong()
         );
     }
-    displayResult(success ? "S" : "F");
+    displayResult(success ? "S" : "F", incorrectDetail);
   }
 
   function navigateToNode(node, byClicking = false) {

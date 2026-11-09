@@ -30,12 +30,10 @@ function withPlayEditor(root, method)
 	let originalSetTimeout = window.setTimeout;
 	let originalRandom = Math.random;
 	let originalIsMutable = window.isMutable;
-	let originalDisplayMessage = window.displayMessage;
 	let queue = [];
 	window.setTimeout = callback => queue.push(callback);
 	Math.random = () => 0; // the autoplay picks the first reply
 	window.isMutable = true;
-	window.displayMessage = () => {}; // the message box of the play page
 	try
 	{
 		method(editor, () => { while (queue.length) queue.shift()(); }, results, comments);
@@ -45,7 +43,6 @@ function withPlayEditor(root, method)
 		window.setTimeout = originalSetTimeout;
 		Math.random = originalRandom;
 		window.isMutable = originalIsMutable;
-		window.displayMessage = originalDisplayMessage;
 	}
 }
 

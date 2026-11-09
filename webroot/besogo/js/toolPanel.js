@@ -336,9 +336,6 @@ besogo.makeToolPanel = function (container, editor) {
 				document.getElementById("status").innerHTML = "";
 				document.querySelector(".play-message")?.classList.remove("play-message--failed");
 				document.getElementById("theComment").style.cssText = "display:none;";
-				let customAlerts = document.getElementById("customAlerts");
-				if (customAlerts && getComputedStyle(customAlerts).display !== "none")
-					customAlerts.animate([{ opacity: getComputedStyle(customAlerts).opacity }, { opacity: 0 }], 500).onfinish = function () { customAlerts.style.display = "none"; };
 				document.querySelectorAll(".besogo-board").forEach(function (board) { board.classList.remove("besogo-board-red-glow"); });
 				besogo.setStyle(".besogo-panels","display", "none");
 				if (besogo.scaleParameters["boardCanvasSize"] === "full board")
