@@ -847,6 +847,8 @@ class ContextPreparator
 	//  - 'category' (required): The achievement category, an AchievementConditionTable::CATEGORY_ constant
 	//  - 'value' (required): The condition value (e.g., 100 for percentage, 1 for boolean)
 	//  - 'set_id' (optional): The set_id for set-specific conditions (defaults to null)
+	//  - 'set' (optional): The name of the set, in place of 'set_id'
+	//  - 'partition' (optional): The 0 based part of the set (ProgressDeletionTable::$PARTITION_SIZE) of a set record
 	//  - 'user_id' (optional): Override the user_id (defaults to $this->user['id'])
 	public function prepareAchievementConditions(?array $conditions): void
 	{
@@ -855,11 +857,15 @@ class ContextPreparator
 
 		foreach ($conditions as $conditionInput)
 		{
+			$setName = Util::extract('set', $conditionInput);
+			if ($setName !== null)
+				$conditionInput['set_id'] = $this->getOrCreateTsumegoSet($setName)['id'];
 			AchievementConditionTable::put(
 				(int) (Util::extract('user_id', $conditionInput) ?: $this->user['id']),
 				Util::extract('category', $conditionInput),
 				Util::extract('value', $conditionInput),
-				Util::extract('set_id', $conditionInput));
+				Util::extract('set_id', $conditionInput),
+				Util::extract('partition', $conditionInput));
 			$this->checkOptionsConsumed($conditionInput);
 		}
 	}

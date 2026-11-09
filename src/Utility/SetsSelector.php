@@ -2,6 +2,8 @@
 
 namespace App\Utility;
 
+use App\Model\Table\AchievementConditionTable;
+use App\Model\Table\ProgressDeletionTable;
 use App\Model\Table\SetTable;
 use App\Model\Table\TsumegoStatusTable;
 
@@ -113,7 +115,7 @@ class SetsSelector
 
 		// Set cards are ordered in PHP below; items are sorted within each set by
 		// buildPartitionedSets, so this query does not need an ORDER BY.
-		$sets = $this->buildPartitionedSets($rows, 'set_id', null, null, null, ['num', 'tsumego_id'], $setInfo);
+		$sets = $this->buildPartitionedSets($rows, 'set_id', null, null, null, ['num', 'tsumego_id'], $setInfo, true);
 		usort($sets, function ($a, $b) {
 			// sets without a curated order sort last, matching displayOrderForSetSql
 			$aOrder = $a['order'] ?? PHP_INT_MAX;
@@ -232,10 +234,12 @@ class SetsSelector
 	 *   Each item has its own combination of them.
 	 * @param array<int|string, array{name: string, color: string, order: mixed}>|null $collectionInfo The name, color
 	 *   and order of each collection by its id, in place of the row fields.
+	 * @param bool $framesFromBests Whether the collections are official sets, whose finished cards are framed
+	 *   from the stored best accuracies of their parts; the cards of other collections are never framed.
 	 * @return array[] Collection chunks, each with id, name, color, order, partition, total_count,
 	 *   usage_count, rating_sum, solved_count, perfect and part_count (0 for a collection not split).
 	 */
-	private function buildPartitionedSets(array $rows, string $idField, ?string $nameField, ?string $colorField, ?string $orderField = null, array $itemSortKeys = [], ?array $collectionInfo = null): array
+	private function buildPartitionedSets(array $rows, string $idField, ?string $nameField, ?string $colorField, ?string $orderField = null, array $itemSortKeys = [], ?array $collectionInfo = null, bool $framesFromBests = false): array
 	{
 		// The catalogue has a row for every problem of every collection, so the items are kept small: the
 		// rating and the tsumego id under an integer sort key, which ksort() orders without a callback.
@@ -303,18 +307,53 @@ class SetsSelector
 			}
 		}
 
-		$perfect = $this->getPerfectTsumegoIDs(array_merge(...array_values($finished)));
+		if ($framesFromBests)
+			$this->markPerfectParts($sets, $finished);
+		return $sets;
+	}
+
+	//Frames the finished cards of official collections whose problems all lie in 200-problem parts
+	//(ProgressDeletionTable::$PARTITION_SIZE) with a stored best accuracy of 100, the best the collection's
+	//page shows at that size. A card of another size is framed only when every part it covers is.
+	/**
+	 * @param array[] $sets The cards, by reference.
+	 * @param array<int, int[]> $finished The problems of each finished card, by the card's index in $sets.
+	 */
+	private function markPerfectParts(array &$sets, array $finished): void
+	{
+		if (!Auth::isLoggedIn() || empty($finished))
+			return;
+		$setIDs = array_values(array_unique(array_map(fn($index) => (int) $sets[$index]['id'], array_keys($finished))));
+		$best = AchievementConditionTable::bestAccuracies(Auth::getUserID(), $setIDs);
+		if (!$best)
+			return;
+		// the 200-parts of each problem of those sets, in the order ProgressDeletionTable::partitionOf() uses
+		$parts = [];
+		$positions = [];
+		foreach (Util::query('SELECT sc.set_id, sc.tsumego_id FROM set_connection sc
+			JOIN tsumego ON tsumego.id = sc.tsumego_id AND tsumego.deleted IS NULL
+			WHERE sc.set_id IN (' . implode(',', array_fill(0, count($setIDs), '?')) . ') ORDER BY sc.set_id, sc.num, sc.id', $setIDs) as $row)
+		{
+			$setID = (int) $row['set_id'];
+			$position = $positions[$setID] = ($positions[$setID] ?? -1) + 1;
+			$parts[$setID][(int) $row['tsumego_id']][] = intdiv($position, ProgressDeletionTable::$PARTITION_SIZE);
+		}
 		foreach ($finished as $index => $tsumegoIDs)
 		{
-			$sets[$index]['perfect'] = true;
+			$setID = (int) $sets[$index]['id'];
+			$covered = [];
 			foreach ($tsumegoIDs as $tsumegoID)
-				if (!isset($perfect[$tsumegoID]))
+				foreach ($parts[$setID][$tsumegoID] ?? [] as $part)
+					$covered[$part] = true;
+			$perfect = !empty($covered);
+			foreach (array_keys($covered) as $part)
+				if (($best[$setID][$part] ?? 0) < 100)
 				{
-					$sets[$index]['perfect'] = false;
+					$perfect = false;
 					break;
 				}
+			$sets[$index]['perfect'] = $perfect;
 		}
-		return $sets;
 	}
 
 	//The card of a part of a collection as the page shows it. The parts of a tag have no difficulty.
@@ -351,30 +390,6 @@ class SetsSelector
 			'solved_count' => $solvedCount,
 			'perfect' => false,
 		];
-	}
-
-	//Of the given problems, those the current user solved without a mistake: attempted, and never failed.
-	//A card is finished with 100% accuracy when all its problems are, the same accuracy the collection's
-	//page shows (TsumegoButtons::getAccuracy), where a problem solved without a recorded attempt counts as
-	//a miss. Only the problems of finished cards are asked for, through the (user_id, tsumego_id) index.
-	/**
-	 * @param int[] $tsumegoIDs
-	 * @return array<int, true>
-	 */
-	private function getPerfectTsumegoIDs(array $tsumegoIDs): array
-	{
-		if (!Auth::isLoggedIn() || empty($tsumegoIDs))
-			return [];
-		$perfect = [];
-		foreach (array_chunk(array_values(array_unique($tsumegoIDs)), 1000) as $chunk)
-		{
-			$rows = Util::query('SELECT tsumego_id FROM tsumego_attempt WHERE user_id = ? AND tsumego_id IN ('
-				. implode(',', array_fill(0, count($chunk), '?')) . ') GROUP BY tsumego_id HAVING MIN(solved) = 1',
-				[Auth::getUserID(), ...$chunk]);
-			foreach ($rows as $row)
-				$perfect[(int) $row['tsumego_id']] = true;
-		}
-		return $perfect;
 	}
 
 	//The tsumego IDs the current user has solved (status S, W or C), or an empty array for guests.

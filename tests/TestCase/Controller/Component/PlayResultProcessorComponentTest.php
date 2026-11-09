@@ -3,6 +3,7 @@
 use App\Model\Table\TsumegoStatusTable;
 use App\Model\Table\AchievementConditionTable;
 use App\Model\Table\AchievementTable;
+use App\Model\Table\ProgressDeletionTable;
 use App\Utility\AchievementChecker;
 use App\Utility\AchievementId;
 use App\Utility\Auth;
@@ -984,6 +985,38 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 		{
 			SetCompletionCounter::$PARTITION_SIZE = $originalPartitionSize;
 		}
+	}
+
+	//The solve that finishes a part keeps the part's best right away, its misplays counted, before the set's page is
+	//opened; the next part has none
+	#[DataProvider('partFinishingSolves')]
+	public function testSolveFinishingAPartKeepsItsBest(int $misplays, float $accuracy): void
+	{
+		ProgressDeletionTable::$PARTITION_SIZE = 2;
+		try
+		{
+			$context = new ContextPreparator([
+				'tsumego' => ['sets' => [['name' => 'big set', 'num' => 1]]],
+				'tsumegos' => [
+					['sets' => [['name' => 'big set', 'num' => 2]], 'status' => 'S', 'attempts' => [['solved' => true, 'seconds' => 10]]],
+					['sets' => [['name' => 'big set', 'num' => 3]], 'status' => 'S', 'attempts' => [['solved' => true, 'seconds' => 10]]],
+				],
+			]);
+			$misplays ? $this->solveWithMisplays($context, $misplays) : $this->solve($context);
+			$setID = $context->tsumegos[0]['sets'][0]['id'];
+			$userID = $context->user['id'];
+			$this->assertEquals($accuracy, AchievementConditionTable::value($userID, AchievementConditionTable::CATEGORY_SET_ACCURACY, $setID, 0));
+			$this->assertNull(AchievementConditionTable::value($userID, AchievementConditionTable::CATEGORY_SET_ACCURACY, $setID, 1));
+		}
+		finally
+		{
+			ProgressDeletionTable::$PARTITION_SIZE = 200;
+		}
+	}
+
+	public static function partFinishingSolves(): array
+	{
+		return ['clean' => [0, 100], 'after two misplays' => [2, 50]];
 	}
 
 	public function testSolveCompletingNonOfficialSetDoesNotCount(): void

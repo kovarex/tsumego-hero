@@ -6,6 +6,8 @@ use App\Model\Entity\Set;
 use App\Model\Entity\Achievement;
 use App\Model\Table\AchievementConditionTable;
 use App\Model\Table\AchievementTable;
+use App\Model\Table\ProgressDeletionTable;
+use App\Model\Table\SetTable;
 use App\Model\Table\TimeModeCategoryTable;
 use App\Model\Table\TimeModeRankTable;
 use App\Model\Table\TimeModeSessionStatusTable;
@@ -228,14 +230,18 @@ WHERE rn = 1;", [Auth::getUserID(), TimeModeSessionStatusTable::SOLVED]);
 		return $this;
 	}
 
-	public function checkSetAchievements(int $sid = 0, float|int $setRating = 0): AchievementChecker
+	//The achievements of the player's bests on a part of a collection (the parts a reset clears,
+	//ProgressDeletionTable::$PARTITION_SIZE): a part of at least SetConnectionTable::ACHIEVEMENT_MINIMUM_PROBLEMS problems
+	//counts as a collection does.
+	//$setRating: The average rating of the part's problems
+	public function checkSetAchievements(int $sid = 0, float|int $setRating = 0, int $partition = 0): AchievementChecker
 	{
-		$accuracy = AchievementConditionTable::value(Auth::getUserID(), AchievementConditionTable::CATEGORY_SET_ACCURACY, $sid);
+		$accuracy = AchievementConditionTable::value(Auth::getUserID(), AchievementConditionTable::CATEGORY_SET_ACCURACY, $sid, $partition);
 		if ($accuracy === null)
 			return $this;
-		if (TsumegoUtil::countTsumegosFromSet($sid) < 100)
+		if (ProgressDeletionTable::partSize(TsumegoUtil::countTsumegosFromSet($sid), $partition) < SetConnectionTable::ACHIEVEMENT_MINIMUM_PROBLEMS)
 			return $this;
-		$time = AchievementConditionTable::value(Auth::getUserID(), AchievementConditionTable::CATEGORY_SET_TIME, $sid);
+		$time = AchievementConditionTable::value(Auth::getUserID(), AchievementConditionTable::CATEGORY_SET_TIME, $sid, $partition);
 
 		$band = array_find(self::SET_BANDS, fn(array $band) => $setRating < $band['below']);
 		foreach ($band['accuracy'] as $minimalAccuracy => $achievementID)
@@ -254,19 +260,20 @@ WHERE rn = 1;", [Auth::getUserID(), TimeModeSessionStatusTable::SOLVED]);
 		return $this;
 	}
 
-	//How many public collections the player finished at 100% accuracy, on a set of at
-	//least the problems a collection achievement asks for. One query instead of loading
-	//every set's problems.
+	//How many parts of the site's collections the player finished at 100% accuracy, of at least the problems a
+	//collection achievement asks for
 	private function countPerfectCollections(): int
 	{
 		$rows = Util::query(
-			'SELECT COUNT(*) AS total FROM achievement_condition ac '
+			'SELECT ac.set_partition_or_zero AS part, COUNT(*) AS problems FROM achievement_condition ac '
+			. 'JOIN `set` st ON st.id = ac.set_id AND ' . SetTable::officialCondition('st') . ' '
+			. 'JOIN set_connection sc ON sc.set_id = ac.set_id '
+			. 'JOIN tsumego t ON t.id = sc.tsumego_id AND t.deleted IS NULL '
 			. 'WHERE ac.user_id = ? AND ac.achievement_condition_category_id = ? AND ac.value >= ? '
-			. 'AND ac.set_id IN (' . SetConnectionTable::publicCollectionsWithMinimumProblemsSql() . ')',
+			. 'GROUP BY ac.id, ac.set_partition_or_zero',
 			[Auth::getUserID(), AchievementConditionTable::CATEGORY_SET_ACCURACY, 100]
 		);
-
-		return (int) $rows[0]['total'];
+		return count(array_filter($rows, fn(array $row) => ProgressDeletionTable::partSize((int) $row['problems'], (int) $row['part']) >= SetConnectionTable::ACHIEVEMENT_MINIMUM_PROBLEMS));
 	}
 
 	public function checkFavoritesAchievement(int $setId): AchievementChecker

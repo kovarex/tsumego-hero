@@ -1,0 +1,6 @@
+Fixed: All best accuracies and best times of collections were reset, because they were often wrong: a part of a collection or a filtered view counted as the whole collection, and mistakes made before solving a problem weren't counted. Everyone starts fresh.
+Changed: Each 200-problem part of a collection has its own best accuracy and best time. 100% means every problem of that part solved without a single mistake since your last reset of that part. Resetting a part lets you try again, and your best only improves.
+Changed: The bests are shown at collection size 200, where a page is one part, like the reset.
+Changed: The mastered (dragon) frame shows on a part you finished at 100%.
+Changed: [Superior Accuracy](/achievements/view/46) counts each part of at least 100 problems you finished at 100%, once, and its page lists the parts you've earned it on. It and the accuracy and time achievements of collections were reset with the bests and can be earned again; the XP you already got stays.
+Changed: The accuracy and average time on a collection's page count the same way: your attempts since your last reset of each part, on the problems you've solved so far, so old mistakes no longer drag them down after a reset.

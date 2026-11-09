@@ -88,7 +88,7 @@ $markedCollections = count(array_filter($collections, fn(array $collection) => $
 		<?php endif; ?>
 		<div class="acCollections__list">
 			<?php foreach ($collections as $collection): ?>
-				<a href="<?= SetTable::url((int) $collection['id']) ?>" class="acCollections__link<?= $collection['earned'] ? ' acCollections__link--earned' : '' ?>"><?= h($collection['title']) ?><?php if (!$collection['earned'] && $collection['accuracy'] > 0): ?><span class="acCollections__percent"><?= h($collection['accuracy']) ?>%</span><?php endif; ?></a>
+				<a href="<?= SetTable::url((int) $collection['id'], $collection['partition'] + 1) ?>" class="acCollections__link<?= $collection['earned'] ? ' acCollections__link--earned' : '' ?>"><?= h($collection['title']) ?><?php if (!$collection['earned'] && $collection['accuracy'] > 0): ?><span class="acCollections__percent"><?= h($collection['accuracy']) ?>%</span><?php endif; ?></a>
 			<?php endforeach; ?>
 		</div>
 	</div>
