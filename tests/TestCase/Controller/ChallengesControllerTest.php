@@ -792,6 +792,36 @@ class ChallengesControllerTest extends IntegrationTestCase
 			array_map('intval', array_column($attempts, 'time_mode_attempt_status_id')));
 	}
 
+	//The fail is sent at the move that loses the problem, and the whole line the player played on along the
+	//refutations comes after it: it replaces the line kept when it carries it on, in the same version of the problem
+	public function testTheWholeLineAfterTheFailReplacesTheLineKept(): void
+	{
+		$this->prepare(12, self::SGF);
+		$challengeId = $this->create(['problem_count' => 5]);
+		$problemIDs = ChallengeTable::problemIDs($challengeId);
+		$sgfID = $this->sgfID($problemIDs[0]);
+		$this->playRun($challengeId, [[PlayOutcome::Failed, 10, ['challenge_failed_line' => 'eaab', 'sgf_id' => $sgfID]]]);
+		$sendLine = function (string $moves, ?int $sgf = null) use ($problemIDs, $sgfID): void {
+			$this->post('/tsumegos/failedLine', ['tsumego_id' => $problemIDs[0], 'sgf_id' => $sgf ?? $sgfID, 'challenge_failed_line' => $moves]);
+			$this->assertResponseOk();
+		};
+		$kept = fn(): ?string => $this->runAttempts($challengeId, 'challenger')[0]['line_moves'];
+
+		// another line, a shorter one, or the line in another version of the problem don't replace it
+		$sendLine('aaabba');
+		$sendLine('ea');
+		$sendLine('eaabaa', $this->sgfID($problemIDs[1]));
+		$this->assertSame('eaab', $kept());
+
+		$sendLine('eaabaaba');
+		$this->assertSame('eaabaaba', $kept());
+
+		// another player has no failed line of the problem to carry on
+		$this->login('friend');
+		$sendLine('eaabaababb');
+		$this->assertSame('eaabaaba', $kept());
+	}
+
 	//The line shows on the cell of the fail to the players who finished their run, as the results do
 	public function testTheFailedLineShowsOnlyToThePlayersWhoFinishedTheirRun(): void
 	{
@@ -1131,6 +1161,63 @@ class ChallengesControllerTest extends IntegrationTestCase
 	public function testAFailedLineIsInTheCoordinatesOfTheSgf(): void
 	{
 		$this->playAFailedLine('(;GM[1]FF[4]SZ[19]AB[qq](;B[ss];W[sr];B[rs]C[+]))', 'sssros');
+	}
+
+	//The line a failed problem keeps ends at the move that failed it: every move the player played while the tree had
+	//refutations for them, the refutations, and the last bad move, also one the tree has no answer to
+	public function testTheWholeFailedLineIsKeptUpToTheMoveThatFailedIt(): void
+	{
+		// B[ea] is wrong, W[ab] refutes it, B[aa] is answered by W[ba], and B[fa] has no answer in the tree
+		$browser = $this->startAChallengeOf('(;GM[1]FF[4]SZ[19]AB[cc](;B[aa];W[ab];B[ba]C[+])(;B[ea];W[ab];B[aa];W[ba];B[da];W[ca]))');
+		$browser->clickBoard(5, 1);
+		$browser->waitUntilJs('besogo.editor.getCurrent().moveNumber >= 2');
+		$browser->clickBoard(1, 1);
+		$browser->waitUntilJs('besogo.editor.getCurrent().moveNumber >= 4');
+		$browser->clickBoard(6, 1);
+		$this->assertSame('eaabaabafa', $this->keptLineAfterTheFail($browser));
+	}
+
+	//A line played out to the end of the tree is kept up to there, and nothing the player plays after "Incorrect!" is
+	//shown joins it
+	public function testWhatIsPlayedAfterTheFailIsNotKept(): void
+	{
+		$browser = $this->startAChallengeOf('(;GM[1]FF[4]SZ[19]AB[cc](;B[aa];W[ab];B[ba]C[+])(;B[ea];W[ab];B[aa];W[ba]))');
+		$browser->clickBoard(5, 1);
+		$browser->waitUntilJs('besogo.editor.getCurrent().moveNumber >= 2');
+		$browser->clickBoard(1, 1);
+		$this->assertSame('eaabaaba', $this->keptLineAfterTheFail($browser));
+
+		// the player explores on after the fail
+		$browser->driver->executeScript('toggleBoardLock(false); besogo.editor.click(7, 1, false, false); besogo.editor.click(8, 1, false, false);');
+		$browser->waitUntilJs('besogo.editor.getCurrent().moveNumber >= 5');
+		sleep(2);
+		$this->assertSame('eaabaaba', $this->runAttempts($this->challengeId, 'challenger')[0]['line_moves']);
+		$browser->assertNoJsErrors();
+	}
+
+	private int $challengeId;
+
+	//Starts the run of a challenge of one problem with the SGF, as the signed-in player, on its board
+	private function startAChallengeOf(string $sgf): Browser
+	{
+		$this->prepare(1, $sgf);
+		$this->challengeId = ChallengeTable::start($this->userId('challenger'), $this->rankId('5k'), $this->rankId('5k'), 60, 5);
+		$browser = Browser::instance();
+		$browser->get('challenges/' . $this->challengeId);
+		$playButton = $browser->find('#challenge-play');
+		$playButton->click();
+		$browser->waitUntilStale($playButton);
+		return $browser;
+	}
+
+	//The line the run keeps of its failed problem, once the fail is shown and the whole line is sent
+	private function keptLineAfterTheFail(Browser $browser): string
+	{
+		$browser->waitUntilJs('document.getElementById("status").textContent.includes("Incorrect")');
+		$browser->waitForSubmitResult();
+		$played = $browser->driver->executeScript('return playedLineInSgf();');
+		$browser->waitUntil(fn() => $this->runAttempts($this->challengeId, 'challenger')[0]['line_moves'] === $played, 10, 'the whole line is kept');
+		return (string) $this->runAttempts($this->challengeId, 'challenger')[0]['line_moves'];
 	}
 
 	//The last problem of the run failed, the run ends at once, with the line of the fail kept

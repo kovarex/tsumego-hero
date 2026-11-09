@@ -628,7 +628,24 @@ function revealFail()
 {
 	currentHealth--;
 	showResultResponse(playOutcome.failed, unrevealedFail.response);
+	sendWholeFailedLine(unrevealedFail.response);
 	unrevealedFail = null;
+}
+
+// The fail of a problem of a challenge went with the line up to the move that lost it; the challenge page shows
+// the whole line the player played on along the refutations, so it is sent again once it is over, after the fail
+// is stored (App\Utility\ChallengeFailedLine::extend())
+function sendWholeFailedLine(failResponse)
+{
+	if (!failResponse || mode != playPage.page.modes.time || !playPage.page.challengeRun)
+		return;
+	let line = playedLineInSgf();
+	failResponse.catch(() => {}).finally(() => fetch('/tsumegos/failedLine', {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+		body: JSON.stringify({ tsumego_id: tsumegoID, sgf_id: playPage.problem.sgfID, challenge_failed_line: line }),
+		keepalive: true,
+	}).catch(err => console.error('sending the failed line failed:', err)));
 }
 
 function displayResult(result)
