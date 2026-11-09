@@ -2,6 +2,9 @@ besogo.makeBoardDisplay = function(container, editor, corner)
 {
   var CELL_SIZE = 88, // Including line width
       COORD_MARGIN = 75, // Margin for coordinate labels
+      // Wood beyond an edge of the board when there are no coordinates, so a stone on the edge line doesn't touch
+      // the end of the board (and on a phone the end of the page); a cut side shows half a line past its last line
+      EDGE_GAP = 16,
       EXTRA_MARGIN = 6, // Extra margin on the edge of board
       BOARD_MARGIN, // Total board margin
 
@@ -158,7 +161,7 @@ besogo.makeBoardDisplay = function(container, editor, corner)
   {
     var string = ""; // Path string for inner board lines
 
-    BOARD_MARGIN = (coord === 'none' ? 0 : COORD_MARGIN);
+    BOARD_MARGIN = (coord === 'none' ? EDGE_GAP : COORD_MARGIN);
     boardWidth = 2*BOARD_MARGIN + sizeX*CELL_SIZE;
     boardHeight = 2*BOARD_MARGIN + sizeY*CELL_SIZE;
 
