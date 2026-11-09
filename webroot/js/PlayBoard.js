@@ -140,8 +140,8 @@ if (locked)
 }
 if (playPage.page.accountBlocked)
 {
-	document.getElementById("status").innerHTML = "<h3><b>Your account is temporarily locked.</b></h3>";
-	document.getElementById("status").style.color = "red";
+	document.getElementById("status").innerHTML = "<h2>Your account is temporarily locked.</h2>";
+	document.getElementById("status").style.color = "var(--feedback-error)";
 }
 
 var noXP = tStatus == 'S' || tStatus == 'C' || playPage.page.userID === null || mode == playPage.page.modes.time;

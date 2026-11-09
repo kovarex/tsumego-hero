@@ -211,7 +211,7 @@ function setUpPageEnd()
 {
 	if (lockedUntilTomorrow && mode != playPage.page.modes.time)
 	{
-		document.getElementById("status").innerHTML = '<b class="message--locked">This problem is locked until ' + heartResetTime + '</b>';
+		document.getElementById("status").innerHTML = '<h2>This problem is locked until ' + heartResetTime + '</h2>';
 		tryAgainTomorrow = true;
 		document.getElementById("status").style.color = "var(--feedback-error)";
 		document.querySelectorAll(".besogo-board").forEach(board => board.classList.add("besogo-board-red-glow"));
@@ -738,7 +738,7 @@ function displayResult(result)
 					if (currentHealth < 0)
 					{
 						updateCurrentNavigationButton('F');
-						document.getElementById("status").innerHTML = '<b class="message--locked">This problem is locked until ' + heartResetTime + '</b>';
+						document.getElementById("status").innerHTML = '<h2>This problem is locked until ' + heartResetTime + '</h2>';
 						tryAgainTomorrow = true;
 						toggleBoardLock(true);
 						var resetBtn = document.getElementById("besogo-reset-button");
@@ -862,6 +862,7 @@ var showComment = function(commentText)
 		if (!comment)
 			return;
 		comment.style.display = commentText.length == 0 ? "none" : "block";
+		comment.classList.remove("play-message__error");
 		comment.textContent = besogo.boardInverted ? besogo.swapColorWords(commentText) : commentText;
 	};
 besogo.editor.registerShowComment(showComment);

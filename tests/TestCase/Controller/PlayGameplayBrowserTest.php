@@ -800,9 +800,9 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 		$theComment = $browser->findById('theComment');
 		$this->assertSame('Go Seigen 4p vs Kubomatsu 6p', $theComment->getText());
 		$this->assertTrue($theComment->isDisplayed(), 'Root comment should be visible on initial page load');
-		//In the row of the messages above the board, between the message and the buttons, its text centered there
+		//In the row of the messages above the board, at its left like any message of the row (PlayMessageRowBrowserTest)
 		$this->assertTrue($browser->driver->executeScript('return document.getElementById("theComment").parentElement.classList.contains("play-message");'), 'The comment is in the row of the messages');
-		$this->assertSame('center', $browser->driver->executeScript('return getComputedStyle(document.getElementById("theComment")).textAlign;'), 'The comment is centered');
+		$this->assertSame('left', $browser->driver->executeScript('return getComputedStyle(document.getElementById("theComment")).textAlign;'), 'The comment is at the left');
 
 		$xpDisplayDiv = $browser->findById('xpDisplayDiv');
 		$this->assertTrue($xpDisplayDiv->isDisplayed(), 'xpDisplayDiv must be visible on initial page load');

@@ -12,9 +12,6 @@
   text-decoration: underline;
   cursor: pointer;
 }
-.message--locked {
-  font-size: var(--font-size-lg);
-}
 .sandboxTable2time {
   vertical-align: top;
   color: var(--play-comment-time);
@@ -744,18 +741,32 @@ h1 {
   max-height: 100%;
   overflow-y: auto;
   margin: 0;
-  padding: 2px var(--space-2);
+  padding: 2px 0;
   border: 0;
   background: none;
-  text-align: center;
-  font-size: var(--text-sm);
-  line-height: 1.25;
+  text-align: left;
   white-space: pre-line;
 }
+/* Every message of the row is one: Correct!, Incorrect!, a lock and the comment of a move, at the left in the same
+   bold size, the comment in the colour of the text (it can say anything; Correct! or Incorrect! next to it gives the
+   verdict), right after the status when there is one */
 .play-message__status h2,
-.play-message__status h3 {
+.play-message__status h3,
+.play-message #theComment {
   margin: 0;
   font-size: var(--text-lg);
+  font-weight: var(--weight-bold);
+  line-height: 1.25;
+}
+.play-message #theComment {
+  color: var(--text-color);
+}
+.play-message__status:not(:empty) + #theComment {
+  margin-left: var(--space-3);
+}
+/* an error of the problem itself (besogo's displayError), in the red of Incorrect! */
+.play-message #theComment.play-message__error {
+  color: var(--feedback-error);
 }
 
 /* The hearts of the player, on their own line above the actions: a heart for each one the player can
@@ -916,7 +927,9 @@ h1 {
 .play-screen:has(.play-message--solved) .play-actions__end #besogo-next-button:hover {
   background: var(--color-green-btn-gradient) !important;
 }
-.play-message--solved {
+/* the grey of the row while it says something but Incorrect!, which has its red */
+.play-message--solved,
+.play-message:not(.play-message--failed):has(#theComment:not(:empty)) {
   background: var(--color-surface-hover);
 }
 
@@ -1258,7 +1271,8 @@ h1 {
   }
   /* The row of the messages fits a phone: a smaller message and narrower buttons */
   .play-message__status h2,
-  .play-message__status h3 {
+  .play-message__status h3,
+  .play-message #theComment {
     font-size: var(--text-md);
   }
   .play-actions__end {

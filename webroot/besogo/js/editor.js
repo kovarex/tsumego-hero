@@ -1173,10 +1173,10 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
   }
 
   function displayError(e) {
+    // shown in the row of the messages like any other, in the red of Incorrect! (play.css)
     besogo.setText("#theComment", e);
     besogo.setStyle("#theComment", "display", "block");
-    besogo.setStyle("#theComment", "color", "rgb(166, 27, 27)");
-    besogo.setStyle("#theComment", "border", "thick double rgb(166, 27, 27)");
+    document.querySelector("#theComment")?.classList.add("play-message__error");
   }
 
   // Rotate the board 90° in the given direction.

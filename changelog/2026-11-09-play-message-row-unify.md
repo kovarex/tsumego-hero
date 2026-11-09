@@ -1,0 +1,1 @@
+Fixed: The comment of a move ("Correct, but what about this answer?") is shown like Correct! in the row above the board: at the left, in the same bold size, on the same grey. The lock messages and the error of a problem without a solution look the same way.
