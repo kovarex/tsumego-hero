@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">55.93% </span>
+                <span class="strong">55.76% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>297/531</span>
+                <span class='fraction'>300/538</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">53.86% </span>
+                <span class="strong">53.94% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>216/401</span>
+                <span class='fraction'>219/406</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">54.79% </span>
+                <span class="strong">53.24% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>40/73</span>
+                <span class='fraction'>41/77</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">58.64% </span>
+                <span class="strong">58.53% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>285/486</span>
+                <span class='fraction'>288/492</span>
             </div>
         
             
@@ -921,7 +921,24 @@
 <a name='L856'></a><a href='#L856'>856</a>
 <a name='L857'></a><a href='#L857'>857</a>
 <a name='L858'></a><a href='#L858'>858</a>
-<a name='L859'></a><a href='#L859'>859</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L859'></a><a href='#L859'>859</a>
+<a name='L860'></a><a href='#L860'>860</a>
+<a name='L861'></a><a href='#L861'>861</a>
+<a name='L862'></a><a href='#L862'>862</a>
+<a name='L863'></a><a href='#L863'>863</a>
+<a name='L864'></a><a href='#L864'>864</a>
+<a name='L865'></a><a href='#L865'>865</a>
+<a name='L866'></a><a href='#L866'>866</a>
+<a name='L867'></a><a href='#L867'>867</a>
+<a name='L868'></a><a href='#L868'>868</a>
+<a name='L869'></a><a href='#L869'>869</a>
+<a name='L870'></a><a href='#L870'>870</a>
+<a name='L871'></a><a href='#L871'>871</a>
+<a name='L872'></a><a href='#L872'>872</a>
+<a name='L873'></a><a href='#L873'>873</a>
+<a name='L874'></a><a href='#L874'>874</a>
+<a name='L875'></a><a href='#L875'>875</a>
+<a name='L876'></a><a href='#L876'>876</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1487,7 +1504,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">42x</span>
+<span class="cline-any cline-yes">40x</span>
 <span class="cline-any cline-yes">42x</span>
 <span class="cline-any cline-yes">42x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1552,6 +1569,23 @@
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1754,8 +1788,8 @@
 <span class="cline-any cline-yes">90x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">140x</span>
-<span class="cline-any cline-yes">105x</span>
+<span class="cline-any cline-yes">139x</span>
+<span class="cline-any cline-yes">104x</span>
 <span class="cline-any cline-yes">35x</span>
 <span class="cline-any cline-yes">35x</span>
 <span class="cline-any cline-yes">15x</span>
@@ -2409,7 +2443,24 @@ function revealFail()
 {
 	currentHealth--;
 	showResultResponse(playOutcome.failed, unrevealedFail.response);
+	sendWholeFailedLine(unrevealedFail.response);
 	unrevealedFail = null;
+}
+&nbsp;
+// The fail of a problem of a challenge went with the line up to the move that lost it; the challenge page shows
+// the whole line the player played on along the refutations, so it is sent again once it is over, after the fail
+// is stored (App\Utility\ChallengeFailedLine::extend())
+function sendWholeFailedLine(failResponse)
+{
+	if (!failResponse || mode != playPage.page.modes.time || <span class="branch-2 cbranch-no" title="branch not covered" >!playPage.page.challengeRun)</span>
+		return;
+	let line = <span class="cstat-no" title="statement not covered" >playedLineInSgf();</span>
+<span class="cstat-no" title="statement not covered" >	failResponse.catch(<span class="fstat-no" title="function not covered" >()</span> =&gt; {}).finally(<span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >fetch('/tsumegos/failedLine', {</span></span>
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+		body: JSON.stringify({ tsumego_id: tsumegoID, sgf_id: playPage.problem.sgfID, challenge_failed_line: line }),
+		keepalive: true,
+	}).catch(<span class="fstat-no" title="function not covered" >er</span>r =&gt; <span class="cstat-no" title="statement not covered" >console.error('sending the failed line failed:', err))</span>);
 }
 &nbsp;
 function displayResult(result)
@@ -2644,7 +2695,7 @@ if (mode == 2)
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-11-09T14:04:22.132Z
+                at 2026-11-09T14:58:14.028Z
             </div>
         <script src="../../prettify.js"></script>
         <script>
