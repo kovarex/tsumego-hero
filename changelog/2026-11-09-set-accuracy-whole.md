@@ -1,0 +1,1 @@
+Changed: A collection's best accuracy and best time are now of the whole collection, solved since your last reset of each part: 100% means every problem of it solved without a mistake. A part, or the problems your rank and tag filters show, no longer counts as the whole collection, and the bests kept are worked out again this way.

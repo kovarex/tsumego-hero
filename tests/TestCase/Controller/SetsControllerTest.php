@@ -1,8 +1,10 @@
 <?php
 
+use App\Model\Table\AchievementConditionTable;
 use App\Model\Table\SetTable;
 use App\Model\Table\SgfTable;
 use App\Utility\AchievementId;
+use App\Utility\Auth;
 use App\Utility\Constants;
 use App\Utility\Rating;
 use App\Utility\Util;
@@ -2439,6 +2441,100 @@ class SetsControllerTest extends IntegrationTestCase
 		$this->assertTextContains('<div class="problem-nav__ratio">2/3</div>', (string) $this->_response->getBody());
 	}
 
+	//The collection's best scores kept for the player after opening the set page with the given cookies
+	/** @return array{accuracy: ?float, time: ?float} */
+	private function bestScoresAfterOpening(int $setID, array $cookies = []): array
+	{
+		foreach ($cookies as $name => $value)
+			$_COOKIE[$name] = $value;
+		$this->get('sets/' . $setID);
+		$this->assertResponseOk();
+		$userID = (int) Auth::getUserID();
+		return [
+			'accuracy' => AchievementConditionTable::value($userID, AchievementConditionTable::CATEGORY_SET_ACCURACY, $setID),
+			'time' => AchievementConditionTable::value($userID, AchievementConditionTable::CATEGORY_SET_TIME, $setID)];
+	}
+
+	/** @param list<list<array<string, mixed>>> $attempts The attempts of each problem, in order */
+	private static function collectionOf(array $attempts, array $user = [], array $more = []): array
+	{
+		$tsumegos = [];
+		foreach ($attempts as $i => $problemAttempts)
+			$tsumegos[] = ($more[$i] ?? []) + ['sets' => [['name' => 'best set', 'num' => $i + 1]], 'status' => 'S', 'attempts' => $problemAttempts];
+		return ['user' => ['name' => 'trainer'] + $user, 'tsumegos' => $tsumegos];
+	}
+
+	//A part of the collection shown whole and solved without a mistake isn't the collection: the best accuracy is of
+	//all its problems, here 20 solves against the one fail of the second part
+	public function testACleanPartDoesNotGiveTheCollection100(): void
+	{
+		$attempts = array_fill(0, 20, [['solved' => true, 'seconds' => 10]]);
+		$attempts[15] = [['solved' => false], ['solved' => true, 'seconds' => 10]];
+		$context = new ContextPreparator(self::collectionOf($attempts, ['collection_size' => 10]));
+
+		$best = $this->bestScoresAfterOpening($context->tsumegos[0]['sets'][0]['id']);
+
+		$this->assertEquals(95.24, $best['accuracy']);
+		$this->assertEquals(10, $best['time']);
+	}
+
+	//The problems the rank filter shows don't make the collection's best either
+	public function testAFilteredPageDoesNotCount(): void
+	{
+		$attempts = [[['solved' => true, 'seconds' => 10]], [['solved' => true, 'seconds' => 10]], [['solved' => false], ['solved' => true, 'seconds' => 40]]];
+		$context = new ContextPreparator(self::collectionOf($attempts, [], [2 => ['rating' => 2400]]));
+
+		$best = $this->bestScoresAfterOpening($context->tsumegos[0]['sets'][0]['id'], ['filtered_ranks' => '11k']);
+
+		$this->assertEquals(75, $best['accuracy'], '3 solves against the 1 fail of the problem the filter hides');
+		$this->assertEquals(20, $best['time'], '(10 + 10 + 40) / 3');
+	}
+
+	//A reset starts a new run through its part: the fails before it count no more, and solving the part again without
+	//a mistake makes 100%
+	public function testAfterAResetOnlyTheNewRunCounts(): void
+	{
+		$before = date('Y-m-d H:i:s', strtotime('-2 days'));
+		$after = date('Y-m-d H:i:s', strtotime('-1 hour'));
+		$oldRun = [['solved' => false, 'created' => $before], ['solved' => true, 'seconds' => 50, 'created' => $before]];
+		$context = new ContextPreparator(self::collectionOf([
+			[...$oldRun, ['solved' => true, 'seconds' => 20, 'created' => $after]],
+			[...$oldRun, ['solved' => true, 'seconds' => 30, 'created' => $after]]])
+			+ ['progress-deletions' => [['set' => 'best set', 'partition' => 0, 'created' => date('Y-m-d H:i:s', strtotime('-1 day'))]]]);
+
+		$best = $this->bestScoresAfterOpening($context->tsumegos[0]['sets'][0]['id']);
+
+		$this->assertEquals(100, $best['accuracy']);
+		$this->assertEquals(25, $best['time'], 'the solves of the new run, not the old ones');
+	}
+
+	//One fail since the reset keeps the run below 100%
+	public function testAFailSinceTheResetKeepsItBelow100(): void
+	{
+		$after = date('Y-m-d H:i:s', strtotime('-1 hour'));
+		$context = new ContextPreparator(self::collectionOf([
+			[['solved' => true, 'seconds' => 20, 'created' => $after]],
+			[['solved' => false, 'created' => $after], ['solved' => true, 'seconds' => 30, 'created' => $after]]])
+			+ ['progress-deletions' => [['set' => 'best set', 'partition' => 0, 'created' => date('Y-m-d H:i:s', strtotime('-1 day'))]]]);
+
+		$best = $this->bestScoresAfterOpening($context->tsumegos[0]['sets'][0]['id']);
+
+		$this->assertEquals(66.67, $best['accuracy']);
+	}
+
+	//A collection with a problem not solved has no best yet, whatever part of it is solved
+	public function testAnUnfinishedCollectionKeepsNoBest(): void
+	{
+		$attempts = array_fill(0, 20, [['solved' => true, 'seconds' => 10]]);
+		$more = [19 => ['status' => 'F']];
+		$context = new ContextPreparator(self::collectionOf($attempts, ['collection_size' => 10], $more));
+
+		$best = $this->bestScoresAfterOpening($context->tsumegos[0]['sets'][0]['id']);
+
+		$this->assertNull($best['accuracy']);
+		$this->assertNull($best['time']);
+	}
+
 	public function testGuestSeesNoScoresOnASet(): void
 	{
 		$context = new ContextPreparator([
@@ -2582,7 +2678,10 @@ class SetsControllerTest extends IntegrationTestCase
 			$browser->clickId("showx");
 			$browser->clickId("reset-textfield");
 			$browser->driver->getKeyboard()->sendKeys('reset');
-			$browser->clickId("reset-submit");
+			// the reset is done once the page it leads back to is there
+			$submit = $browser->find('#reset-submit');
+			$submit->click();
+			$browser->waitUntilStale($submit);
 			$statuses = $this->fetchTable('TsumegoStatus')->find()->orderBy('id')->toArray();
 
 			// 200 statuses left

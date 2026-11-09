@@ -25,6 +25,7 @@ use App\Utility\CookieFlash;
 use App\Utility\HtmlSanitizer;
 use App\Utility\Preferences;
 use App\Utility\Rating;
+use App\Utility\SetBestScores;
 use App\Utility\SetImage;
 use App\Utility\SetsSelector;
 use App\Utility\Trash;
@@ -671,11 +672,14 @@ ORDER BY sc.num ASC", [(int) $id]);
 			{
 				$achievementChecker = new AchievementChecker();
 				// Set achievements belong to the site's collections only, so nothing is recorded for a
-				// collection a player assembled, however complete it is.
-				if (SetTable::isOfficial($set))
+				// collection a player assembled, however complete it is. The best scores are of the whole
+				// collection since its resets, not of the part or the ranks and tags this page shows
+				// (SetBestScores), and only once every problem of it is solved.
+				$best = SetTable::isOfficial($set) ? SetBestScores::of(Auth::getUserID(), (int) $set->id) : null;
+				if ($best !== null)
 				{
-					$this->updateAchievementConditions($set->id, $avgTime, $accuracy);
-					$achievementChecker->checkSetAchievements($set->id, $setRating);
+					$this->updateAchievementConditions($set->id, $best->averageSeconds, $best->accuracy);
+					$achievementChecker->checkSetAchievements($set->id, $best->rating);
 				}
 				$achievementChecker->checkCompletionAchievement($set);
 				$achievementChecker->finalize();
