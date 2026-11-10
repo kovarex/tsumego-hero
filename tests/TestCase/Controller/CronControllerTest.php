@@ -11,22 +11,19 @@ use App\Utility\Util;
 
 class CronControllerTest extends IntegrationTestCase
 {
-	public function testCronResetsPowers()
+	//The hearts and the hero powers come back with the player's own day (DailyResetTest), not with the cron
+	public function testCronLeavesTheHeartsAndThePowersToThePlayersDay()
 	{
-		foreach ([
-			'used_refinement',
-			'used_sprint',
-			'used_rejuvenation',
-			'used_potion',
-			'used_intuition',
-			'used_revelation'] as $name)
-		{
-			$context = new ContextPreparator([
-				'user' => ['mode' => Constants::$LEVEL_MODE, $name => 1]]);
-			$this->assertSame($context->reloadUser()[$name], 1);
-			$this->get('/cron/daily/' . CRON_SECRET);
-			$this->assertSame($context->reloadUser()[$name], 0);
-		}
+		$powers = ['used_refinement', 'used_sprint', 'used_rejuvenation', 'used_potion', 'used_intuition', 'used_revelation'];
+		$context = new ContextPreparator([
+			'user' => ['mode' => Constants::$LEVEL_MODE, 'damage' => 7] + array_fill_keys($powers, 1)]);
+
+		$this->get('/cron/daily/' . CRON_SECRET);
+
+		$user = $context->reloadUser();
+		$this->assertSame(7, $user['damage']);
+		foreach ($powers as $name)
+			$this->assertSame(1, $user[$name], $name);
 	}
 
 	//The daily run takes the change stamps of a week ago (Live::pruneStale())
@@ -78,15 +75,6 @@ class CronControllerTest extends IntegrationTestCase
 		$this->assertNull($user['unconfirmed_email_created']);
 	}
 
-
-	public function testCronResetsDamage()
-	{
-		$context = new ContextPreparator([
-			'user' => ['mode' => Constants::$LEVEL_MODE, 'damage' => 7]]);
-		$this->assertSame($context->reloadUser()['damage'], 7);
-		$this->get('/cron/daily/' . CRON_SECRET);
-		$this->assertSame($context->reloadUser()['damage'], 0);
-	}
 
 	public function testCronResetsFailedTsumegos()
 	{
@@ -274,7 +262,8 @@ class CronControllerTest extends IntegrationTestCase
 		$this->assertSame(0, $detkov['solved']);
 	}
 
-	public function testCronResetsOnlyThePotionCondition()
+	//The potions drunk today are of the player's day too (DailyReset)
+	public function testCronLeavesThePotionConditionToThePlayersDay()
 	{
 		new ContextPreparator([
 			'user' => ['mode' => Constants::$LEVEL_MODE],
@@ -288,7 +277,7 @@ class CronControllerTest extends IntegrationTestCase
 			->find('list', keyField: 'achievement_condition_category_id', valueField: 'value')
 			->where(['achievement_condition_category_id IN' => [AchievementConditionTable::CATEGORY_POTION, AchievementConditionTable::CATEGORY_GOLDEN]])
 			->toArray();
-		$this->assertEquals([AchievementConditionTable::CATEGORY_POTION => 0, AchievementConditionTable::CATEGORY_GOLDEN => 2], $values);
+		$this->assertEquals([AchievementConditionTable::CATEGORY_POTION => 2, AchievementConditionTable::CATEGORY_GOLDEN => 2], $values);
 	}
 
 	//The daily work runs under READ COMMITTED, and the session gets back the level it had, as the

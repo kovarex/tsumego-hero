@@ -4,6 +4,7 @@ use App\View\Helper\AchievementHelper;
 use App\Model\Table\UserTable;
 use App\Utility\Auth;
 use App\Utility\ChartRenderer;
+use App\Utility\DailyReset;
 use App\Utility\Level;
 use App\Utility\Rating;
 use App\Utility\Util;
@@ -59,7 +60,8 @@ use App\Utility\Util;
 				<td>
 					<?php
 					$maxHealth = Util::getHealthBasedOnLevel($user['level']);
-					$remainingHealth = max(0, $maxHealth - ($user['damage'] ?? 0));
+					// a row waiting for the reset of the player's new day has lost no hearts yet
+					$remainingHealth = max(0, $maxHealth - DailyReset::damageOf($user));
 					echo $remainingHealth . '/' . $maxHealth . ' HP';
 					?>
 				</td>

@@ -74,5 +74,6 @@ use DateTimeImmutable;
  * @property int $streak_day_reviews
  * @property int|null $streak_day_reviews_required
  * @property int|null $streak_day_xp_required
+ * @property \Cake\Chronos\ChronosDate|null $daily_reset_day
  */
 class User extends AppEntity {}

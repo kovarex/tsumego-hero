@@ -35,7 +35,6 @@ class CronController extends AppController
 			self::dailyTsumegoStatusReset();
 			self::createDayRecord();
 			$this->dailyUsersReset();
-			$this->dailyPotionConditionReset();
 			self::updateSolvedCounts();
 			self::dropExpiredAddressChanges();
 			Trash::purgeExpired();
@@ -89,16 +88,9 @@ class CronController extends AppController
 	//rows alone, so they are not written, and not kept locked either.
 	private function dailyUsersReset(): void
 	{
-		Util::execute('UPDATE user
-			SET used_refinement = 0, used_sprint = 0, used_rejuvenation = 0, used_potion = 0,
-				used_intuition = 0, used_revelation = 0, damage = 0, daily_xp = 0, daily_solved = 0
-			WHERE used_refinement <> 0 OR used_sprint <> 0 OR used_rejuvenation <> 0 OR used_potion <> 0
-				OR used_intuition <> 0 OR used_revelation <> 0 OR damage <> 0 OR daily_xp <> 0 OR daily_solved <> 0');
-	}
-
-	private function dailyPotionConditionReset(): void
-	{
-		Util::execute('UPDATE achievement_condition SET value = 0 WHERE achievement_condition_category_id = ? AND value <> 0', [AchievementConditionTable::CATEGORY_POTION]);
+		// the hearts and the hero powers come back with the player's own day instead (DailyReset); the XP and the
+		// solves of the day are the day of the site, for its daily highscore and the user of the day
+		Util::execute('UPDATE user SET daily_xp = 0, daily_solved = 0 WHERE daily_xp <> 0 OR daily_solved <> 0');
 	}
 
 	//A failed problem can be tried again (F → V, X → W) and one solved over a week ago gives half
