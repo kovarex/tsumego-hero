@@ -424,9 +424,6 @@ input.newCheck {
 #dropdowntable,
 #dropdowntable2 {
   font-family: var(--font-family-body);
-}
-#dropdowntable,
-#dropdowntable2 {
   display: inline-block;
   width: 700px;
   color: var(--color-green);
@@ -581,12 +578,6 @@ input.newCheck {
 #heroLogout li a {
   color: var(--color-green);
 }
-#status h2,
-#status h3,
-#status2 h3 {
-  margin: 0;
-  white-space: nowrap;
-}
 #time-mode-countdown {
   font-size: 21px;
   font-weight: var(--weight-heavy);
@@ -694,16 +685,11 @@ nav ul ul ul li {
 .newMenuLi2 li {
   width: 169px;
 }
-.newMenuLi3 li {
-  width: 159px;
-}
-.newMenuLi3 a {
-  font-weight: var(--weight-normal);
-  font-size: 19px;
-}
+.newMenuLi3 li,
 .newMenuLi4 li {
   width: 159px;
 }
+.newMenuLi3 a,
 .newMenuLi4 a {
   font-weight: var(--weight-normal);
   font-size: 19px;

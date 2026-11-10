@@ -142,11 +142,6 @@
 	font-weight: var(--weight-normal);
 }
 
-.classes__pupil
-{
-	text-align: left;
-}
-
 .classes__table td.classes__pupil
 {
 	text-align: left;

@@ -88,11 +88,6 @@
 	float: none;
 }
 
-.problem-nav__item--current
-{
-	position: relative;
-}
-
 .problem-nav__item--current::before
 {
 	content: "";
@@ -201,11 +196,6 @@
 }
 
 .problem-nav__item--G a
-{
-	color: var(--gold-ink);
-}
-
-.problem-nav__item--G a:hover
 {
 	color: var(--gold-ink);
 }
@@ -449,17 +439,6 @@ a[data-tsumego-id]:hover .tooltip-desc
 .mistake-training__import {
   margin-top: var(--space-3);
 }
-.play-status--training #xpDisplayDiv
-{
-	height: auto;
-}
-
-.play-status--training #status
-{
-	min-height: 72px;
-	padding-bottom: var(--space-2);
-}
-
 .mistake-training-replay
 {
 	max-width: 480px;

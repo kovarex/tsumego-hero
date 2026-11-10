@@ -73,7 +73,8 @@
   margin-left: var(--space-2);
 }
 /* The admin page (AdminController), a link to everything an admin does with a count of what waits there */
-.admin-area {
+.admin-area,
+.roles {
   text-align: left;
   max-width: 800px;
   margin: 0 auto;
@@ -191,11 +192,6 @@
 }
 .data-table tr.data-table__row--new td:first-child {
   box-shadow: inset 3px 0 0 var(--color-red);
-}
-.roles {
-  text-align: left;
-  max-width: 800px;
-  margin: 0 auto;
 }
 .role-form {
   display: inline-flex;
