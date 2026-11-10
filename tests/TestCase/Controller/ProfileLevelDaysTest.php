@@ -2,9 +2,8 @@
 
 use App\Utility\UserProfile;
 
-//The level chart of the profile pages through the days 30 at a time (UserProfile::levelDays, /users/levelDays):
-//the latest window by default, Older and Newer to the windows around it, no Older before the first day with data
-//and no Newer on the latest window.
+//The level chart of the profile in pages of 60 days with attempts (UserProfile::levelDays, /users/levelDays/{id}?page=N):
+//page 1 the newest, a page out of range the nearest one.
 class ProfileLevelDaysTest extends IntegrationTestCase
 {
 	private static function day(int $daysAgo): string
@@ -12,81 +11,74 @@ class ProfileLevelDaysTest extends IntegrationTestCase
 		return date('Y-m-d', strtotime('-' . $daysAgo . ' days'));
 	}
 
-	//Attempts 2 days ago (two solves, a fail), yesterday (a fail) and 40 days ago (a solve)
+	//An attempt on each of the 130 days before today, a solve every second day, and two more on the day before
+	//yesterday: 130 days with attempts, three pages of 60, 60 and 10
 	private function prepare(): ContextPreparator
 	{
+		$attempts = [];
+		for ($daysAgo = 1; $daysAgo <= 130; $daysAgo++)
+			$attempts[] = ['solved' => $daysAgo % 2 == 0, 'user_rating' => 1500, 'created' => self::day($daysAgo) . ' 10:00:00'];
+		$attempts[] = ['solved' => true, 'user_rating' => 1500, 'created' => self::day(2) . ' 11:00:00'];
+		$attempts[] = ['solved' => false, 'user_rating' => 1500, 'created' => self::day(2) . ' 12:00:00'];
 		return new ContextPreparator([
 			'user' => ['name' => 'alice'],
-			'tsumegos' => [[
-				'sets' => [['name' => 'set', 'num' => 1]],
-				'attempts' => [
-					['solved' => true, 'user_rating' => 1500, 'created' => self::day(40) . ' 10:00:00'],
-					['solved' => true, 'user_rating' => 1500, 'created' => self::day(2) . ' 10:00:00'],
-					['solved' => true, 'user_rating' => 1510, 'created' => self::day(2) . ' 11:00:00'],
-					['solved' => false, 'user_rating' => 1490, 'created' => self::day(2) . ' 12:00:00'],
-					['solved' => false, 'user_rating' => 1480, 'created' => self::day(1) . ' 10:00:00']]]]]);
+			'tsumegos' => [['sets' => [['name' => 'set', 'num' => 1]], 'attempts' => $attempts]]]);
 	}
 
-	public function testTheDefaultWindowIsTheLast30Days(): void
+	public function testThePagesAreSixtyDaysWithAttemptsNewestFirst(): void
 	{
-		$context = $this->prepare();
+		$userID = (int) $this->prepare()->user['id'];
 
-		$window = UserProfile::levelDays((int) $context->user['id']);
-
-		$this->assertSame(self::day(29), $window['from']);
-		$this->assertSame(self::day(0), $window['until']);
+		$first = UserProfile::levelDays($userID);
+		$this->assertSame([1, 3], [$first['page'], $first['pages']]);
+		$this->assertCount(UserProfile::LEVEL_DAYS_PAGE, $first['days']);
+		$this->assertSame([self::day(60), self::day(1)], [$first['from'], $first['until']]);
 		$this->assertSame([
 			['day' => self::day(1), 'Solves' => 0, 'Fails' => 1],
-			['day' => self::day(2), 'Solves' => 2, 'Fails' => 1]], $window['days'], 'the days of the window, newest first');
-		$this->assertSame(self::day(30), $window['older'], 'there is an attempt before the window');
-		$this->assertNull($window['newer'], 'no newer window than the latest');
+			['day' => self::day(2), 'Solves' => 2, 'Fails' => 1]], array_slice($first['days'], 0, 2), 'a day sums its attempts');
+
+		$second = UserProfile::levelDays($userID, 2);
+		$this->assertCount(UserProfile::LEVEL_DAYS_PAGE, $second['days']);
+		$this->assertSame([self::day(120), self::day(61)], [$second['from'], $second['until']]);
+
+		$last = UserProfile::levelDays($userID, 3);
+		$this->assertCount(10, $last['days'], 'the last page has the days left');
+		$this->assertSame([self::day(130), self::day(121)], [$last['from'], $last['until']]);
 	}
 
-	//Older goes back 30 days and stops at the first day with data; Newer comes back to the latest
-	public function testPagingBackAndForward(): void
+	//A page out of range is the nearest one
+	public function testThePageNumberClamps(): void
 	{
-		$context = $this->prepare();
-		$userID = (int) $context->user['id'];
+		$userID = (int) $this->prepare()->user['id'];
 
-		$older = UserProfile::levelDays($userID, UserProfile::levelDays($userID)['older']);
-		$this->assertSame(self::day(59), $older['from']);
-		$this->assertSame(self::day(30), $older['until']);
-		$this->assertSame([['day' => self::day(40), 'Solves' => 1, 'Fails' => 0]], $older['days']);
-		$this->assertNull($older['older'], 'the first day with data is in this window');
-		$this->assertSame(self::day(0), $older['newer']);
-
-		$this->assertSame(UserProfile::levelDays($userID), UserProfile::levelDays($userID, $older['newer']));
+		$this->assertSame(1, UserProfile::levelDays($userID, 0)['page']);
+		$this->assertSame(1, UserProfile::levelDays($userID, -5)['page']);
+		$this->assertSame(UserProfile::levelDays($userID, 3), UserProfile::levelDays($userID, 99));
 	}
 
-	public function testAWindowEndsTodayAtTheLatest(): void
-	{
-		$context = $this->prepare();
-
-		$this->assertSame(self::day(0), UserProfile::levelDays((int) $context->user['id'], date('Y-m-d', strtotime('+10 days')))['until']);
-	}
-
-	public function testAPlayerWithoutAttemptsHasNoOlderWindow(): void
+	public function testAPlayerWithoutAttemptsHasOneEmptyPage(): void
 	{
 		$context = new ContextPreparator(['user' => ['name' => 'alice']]);
 
-		$window = UserProfile::levelDays((int) $context->user['id']);
-
-		$this->assertSame([], $window['days']);
-		$this->assertNull($window['older']);
-		$this->assertNull($window['newer']);
+		$this->assertSame(['page' => 1, 'pages' => 1, 'from' => null, 'until' => null, 'days' => []], UserProfile::levelDays((int) $context->user['id']));
 	}
 
-	public function testTheWindowAsJson(): void
+	public function testThePageAsJson(): void
 	{
 		$context = $this->prepare();
+		$userID = (int) $context->user['id'];
 		$this->logout();
 
-		$this->get('/users/levelDays/' . $context->user['id'] . '?until=' . self::day(30));
+		$this->get('/users/levelDays/' . $userID . '?page=2');
 		$this->assertResponseOk();
-		$this->assertSame(UserProfile::levelDays((int) $context->user['id'], self::day(30)), json_decode($this->view, true));
+		$this->assertSame(UserProfile::levelDays($userID, 2), json_decode($this->view, true));
 
-		$this->get('/users/levelDays/' . $context->user['id'] . '?until=nonsense');
-		$this->assertSame(self::day(0), json_decode($this->view, true)['until'], 'an until that is no day is today');
+		$this->get('/users/levelDays/' . $userID . '?page=99');
+		$this->assertSame(3, json_decode($this->view, true)['page'], 'a page past the last is the last');
+		$this->get('/users/levelDays/' . $userID . '?page=nonsense');
+		$this->assertSame(1, json_decode($this->view, true)['page']);
+		$this->get('/users/levelDays/' . $userID);
+		$this->assertSame(1, json_decode($this->view, true)['page'], 'the newest by default');
 	}
 
 	public function testAnUnknownPlayerIsNotFound(): void
@@ -97,14 +89,14 @@ class ProfileLevelDaysTest extends IntegrationTestCase
 		$this->assertResponseCode(404);
 	}
 
-	//The profile prints the latest window, so the chart needs no request to show
-	public function testTheProfilePrintsTheLatestWindow(): void
+	//The profile prints the newest page, so the chart needs no request to show
+	public function testTheProfilePrintsTheNewestPage(): void
 	{
 		$context = $this->prepare();
 
 		$this->get('/users/view/' . $context->user['id']);
 
 		$this->assertStringContainsString('data-level-chart-root', $this->view);
-		$this->assertStringContainsString(h(json_encode(['playerId' => (int) $context->user['id'], 'window' => UserProfile::levelDays((int) $context->user['id'])])), $this->view);
+		$this->assertStringContainsString(h(json_encode(['playerId' => (int) $context->user['id'], 'page' => UserProfile::levelDays((int) $context->user['id'])])), $this->view);
 	}
 }

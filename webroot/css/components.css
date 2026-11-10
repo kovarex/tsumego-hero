@@ -1244,20 +1244,42 @@
 	color: var(--color-text);
 	padding: var(--space-1) var(--space-2);
 }
-.level-chart__pages {
+.level-chart__header {
 	display: flex;
 	flex-wrap: wrap;
 	align-items: center;
+	justify-content: space-between;
 	gap: var(--space-1) var(--space-2);
 	padding: 0 var(--space-2) var(--space-2);
 }
 .level-chart__range {
-	flex: 1;
-	min-width: 0;
-	text-align: center;
 	font-size: var(--text-sm);
 	color: var(--color-text-muted);
 	font-variant-numeric: tabular-nums;
+}
+.level-chart__pager {
+	margin: 0;
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 2px;
+}
+/* The pager's buttons look like the links of PaginationHelper */
+.level-chart__pager .pagination__link {
+	margin: 0;
+	background: none;
+	font: inherit;
+	font-variant-numeric: tabular-nums;
+	cursor: pointer;
+}
+.level-chart__pager .pagination__link--active {
+	background: var(--active-paginator-button-background-color);
+	cursor: default;
+}
+.level-chart__pager .pagination__link:disabled:not(.pagination__link--active) {
+	opacity: 0.4;
+	cursor: default;
+	text-decoration: none;
 }
 .level-chart__error {
 	flex-basis: 100%;

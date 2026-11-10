@@ -317,8 +317,7 @@ class UsersController extends AppController
 		return hash_hmac('sha256', 'demote_admin ' . $userID, Configure::read('Security.salt'));
 	}
 
-	//A window of the level chart of a profile as JSON, LEVEL_DAYS_WINDOW days ending on ?until (today by default),
-	//for the Older and Newer of the chart (UserProfile::levelDays)
+	//A page of the level chart of a profile as JSON, ?page=N, the newest by default (UserProfile::levelDays)
 	#[HttpGet]
 	public function levelDays(string $userID): Response
 	{
@@ -326,8 +325,7 @@ class UsersController extends AppController
 		if (!$user)
 			throw new NotFoundException('User not found');
 		$this->assertUserVisible($user);
-		$until = $this->query('until');
-		return $this->respondJson(UserProfile::levelDays((int) $user['id'], is_string($until) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $until) ? $until : null));
+		return $this->respondJson(UserProfile::levelDays((int) $user['id'], (int) ($this->query('page') ?? 1)));
 	}
 
 	#[HttpGet]

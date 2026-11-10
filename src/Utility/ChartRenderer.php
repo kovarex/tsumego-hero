@@ -36,11 +36,11 @@ class ChartRenderer
 			'series' => array_map(fn($oneSeries) => $oneSeries + ['values' => array_map(fn($row) => (int) $row[$oneSeries['label']], $rows)], $series)]);
 	}
 
-	//The level chart of a profile, a window of days at a time with Older and Newer (app/charts/LevelChart.tsx), from
-	//the latest window of UserProfile::levelDays()
-	public static function levelDays(int $playerID, array $window): string
+	//The level chart of a profile, a page of days at a time with a pager (app/charts/LevelChart.tsx), from the newest
+	//page of UserProfile::levelDays()
+	public static function levelDays(int $playerID, array $page): string
 	{
-		return self::mount('data-level-chart-root', '', ['playerId' => $playerID, 'window' => $window]);
+		return self::mount('data-level-chart-root', '', ['playerId' => $playerID, 'page' => $page]);
 	}
 
 	private static function mount(string $attribute, string $class, array $props): string

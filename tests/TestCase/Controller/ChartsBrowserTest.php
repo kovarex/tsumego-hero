@@ -107,44 +107,50 @@ class ChartsBrowserTest extends IntegrationTestCase
 		$browser->assertNoJsErrors();
 	}
 
-	//The level chart shows the last 30 days; Older loads the 30 before, down to the first day with data, and Newer
-	//comes back, disabled on the latest days
-	public function testProfileLevelChartPagesThirtyDaysAtATime(): void
+	//The level chart shows 60 days with attempts a page, with a pager under the title: page 1 the newest, < off on it,
+	//> off on the last, the current page marked; a player of one page has no pager
+	public function testProfileLevelChartPagesSixtyDaysWithAttemptsAtATime(): void
 	{
 		$day = fn(int $daysAgo) => date('Y-m-d', strtotime('-' . $daysAgo . ' days'));
+		$attempts = [];
+		for ($daysAgo = 1; $daysAgo <= 130; $daysAgo++)
+			$attempts[] = ['solved' => true, 'user_rating' => 1500, 'created' => $day($daysAgo) . ' 10:00:00'];
 		$context = new ContextPreparator([
 			'user' => ['name' => 'alice'],
-			'tsumegos' => [[
-				'sets' => [['name' => 'set', 'num' => 1]],
-				'attempts' => [
-					['solved' => true, 'user_rating' => 1500, 'created' => $day(40) . ' 10:00:00'],
-					['solved' => false, 'user_rating' => 1490, 'created' => $day(1) . ' 10:00:00']]]]]);
+			'other-users' => [['name' => 'bob']],
+			'tsumegos' => [['sets' => [['name' => 'set', 'num' => 1]], 'attempts' => $attempts]]]);
 
 		$browser = Browser::instance();
 		$browser->get('users/view/' . $context->user['id']);
 		$state = fn() => $browser->driver->executeScript(<<<'JS'
 			const chart = document.getElementById('profile-chart-level');
+			const pager = chart.querySelector('.level-chart__pager');
 			return {
-				days: [...chart.querySelectorAll('.bar-chart__category')].map(category => category.textContent),
-				older: chart.querySelector('.level-chart__older').disabled,
-				newer: chart.querySelector('.level-chart__newer').disabled,
-				range: chart.querySelector('.level-chart__range').textContent};
+				first: chart.querySelector('.bar-chart__category')?.textContent ?? null,
+				days: chart.querySelectorAll('.bar-chart__category').length,
+				items: pager ? [...pager.children].map(item => item.textContent) : null,
+				current: pager?.querySelector('[aria-current="page"]')?.textContent ?? null,
+				previous: pager?.querySelector('.level-chart__previous').disabled ?? null,
+				next: pager?.querySelector('.level-chart__next').disabled ?? null};
 			JS);
-		$browser->waitUntilCssSelectorDisplayed('#profile-chart-level .bar-chart__bar');
-		$latest = $state();
-		$this->assertSame([$day(1)], $latest['days'], 'the last 30 days only');
-		$this->assertFalse($latest['older']);
-		$this->assertTrue($latest['newer'], 'no newer days than the latest');
+		$browser->waitUntilCssSelectorDisplayed('#profile-chart-level .level-chart__pager');
+		$this->assertSame(['first' => $day(1), 'days' => 60, 'items' => ['<', '1', '2', '3', '>'], 'current' => '1', 'previous' => true, 'next' => false], $state());
 
-		$browser->clickCssSelect('#profile-chart-level .level-chart__older');
-		$browser->waitUntil(fn() => $state()['days'] === [$day(40)], 10, 'the 30 days before');
-		$this->assertTrue($state()['older'], 'the first day with data is in this window');
-		$this->assertFalse($state()['newer']);
-		$this->assertNotSame($latest['range'], $state()['range']);
+		$browser->clickCssSelect('#profile-chart-level .level-chart__page:nth-of-type(3)');
+		$browser->waitUntil(fn() => $state()['current'] === '2', 10, 'page 2');
+		$this->assertSame(['first' => $day(61), 'days' => 60, 'previous' => false, 'next' => false], array_intersect_key($state(), array_flip(['first', 'days', 'previous', 'next'])));
 
-		$browser->clickCssSelect('#profile-chart-level .level-chart__newer');
-		$browser->waitUntil(fn() => $state()['days'] === [$day(1)], 10, 'back to the latest');
-		$this->assertTrue($state()['newer']);
+		$browser->clickCssSelect('#profile-chart-level .level-chart__next');
+		$browser->waitUntil(fn() => $state()['current'] === '3', 10, 'the last page');
+		$this->assertSame(['first' => $day(121), 'days' => 10, 'next' => true], array_intersect_key($state(), array_flip(['first', 'days', 'next'])));
+
+		$browser->clickCssSelect('#profile-chart-level .level-chart__previous');
+		$browser->waitUntil(fn() => $state()['current'] === '2', 10, 'back to page 2');
+
+		// one page needs no pager
+		$browser->get('users/view/' . $context->otherUsers[0]['id']);
+		$browser->waitUntilCssSelectorDisplayed('#profile-chart-level .chart__title');
+		$this->assertNull($state()['items']);
 		$browser->assertNoJsErrors();
 	}
 

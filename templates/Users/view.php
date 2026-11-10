@@ -13,7 +13,7 @@ use App\Utility\Util;
  * @var int $achievementCount
  * @var array{completed: int, earned_times: int} $achievementCounts
  * @var array $dailyResults
- * @var array $levelDays The latest window of the level chart (UserProfile::levelDays())
+ * @var array $levelDays The newest page of the level chart (UserProfile::levelDays())
  * @var array|null $mistakeTraining
  * @var int $solvedProblemCount
  * @var int $solvedPublishedCount

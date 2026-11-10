@@ -61,19 +61,28 @@ class UserProfile
 			ORDER BY category DESC', [$userID]);
 	}
 
-	//The days a window of the level chart of the profile spans (LEVEL_DAYS_WINDOW days, the last one included)
-	public const int LEVEL_DAYS_WINDOW = 30;
+	//How many days with attempts a page of the level chart of the profile shows
+	public const int LEVEL_DAYS_PAGE = 60;
 
-	//The solves and fails of each day of the window of the level chart that ends on $until (today when null or later),
-	//newest first, only the days with an attempt. With the window's first and last day, and the $until of the window
-	//before it (null when the player has no attempt before it) and of the one after it (null on the latest).
-	/** @return array{from: string, until: string, days: list<array{day: string, Solves: int, Fails: int}>, older: ?string, newer: ?string} */
-	public static function levelDays(int $userID, ?string $until = null): array
+	//A page of the level chart: the solves and fails of LEVEL_DAYS_PAGE days with attempts, newest first, page 1 the
+	//newest. A page number out of range is the nearest page. With the count of pages and the first and last day of
+	//the page (null without attempts).
+	/** @return array{page: int, pages: int, from: ?string, until: ?string, days: list<array{day: string, Solves: int, Fails: int}>} */
+	public static function levelDays(int $userID, int $page = 1): array
 	{
-		$today = date('Y-m-d');
-		$until = $until !== null && strtotime($until) !== false ? min(date('Y-m-d', strtotime($until)), $today) : $today;
-		$from = date('Y-m-d', strtotime($until . ' -' . (self::LEVEL_DAYS_WINDOW - 1) . ' days'));
-		$days = array_map(fn($row) => ['day' => $row['day'], 'Solves' => (int) $row['Solves'], 'Fails' => (int) $row['Fails']], Util::query('
+		// all three read the player's attempts through the index on (user_id, created)
+		$dayCount = (int) Util::query('SELECT COUNT(DISTINCT DATE(created)) AS days FROM tsumego_attempt WHERE user_id = ?', [$userID])[0]['days'];
+		$pages = max(1, (int) ceil($dayCount / self::LEVEL_DAYS_PAGE));
+		$page = min(max(1, $page), $pages);
+		// the days of the page first, from the index alone, then the attempts of those days only: summing all the
+		// player's attempts and paging after reads every row (150 ms for 60000 attempts against 20 ms)
+		$pageDays = array_column(Util::query('
+			SELECT DISTINCT DATE(created) AS day
+			FROM tsumego_attempt
+			WHERE user_id = ?
+			ORDER BY day DESC
+			LIMIT ' . self::LEVEL_DAYS_PAGE . ' OFFSET ' . (($page - 1) * self::LEVEL_DAYS_PAGE), [$userID]), 'day');
+		$days = !$pageDays ? [] : array_map(fn($row) => ['day' => $row['day'], 'Solves' => (int) $row['Solves'], 'Fails' => (int) $row['Fails']], Util::query('
 			SELECT
 				DATE(created) AS day,
 				SUM(CASE WHEN solved = 1 THEN 1 ELSE 0 END) AS Solves,
@@ -81,15 +90,13 @@ class UserProfile
 			FROM tsumego_attempt
 			WHERE user_id = ? AND created >= ? AND created < ?
 			GROUP BY DATE(created)
-			ORDER BY day DESC', [$userID, $from, date('Y-m-d', strtotime($until . ' +1 day'))]));
-		// the first attempt ever, through the index on (user_id, created)
-		$first = Util::query('SELECT MIN(created) AS first FROM tsumego_attempt WHERE user_id = ?', [$userID])[0]['first'];
+			ORDER BY day DESC', [$userID, end($pageDays), date('Y-m-d', strtotime($pageDays[0] . ' +1 day'))]));
 		return [
-			'from' => $from,
-			'until' => $until,
-			'days' => $days,
-			'older' => $first !== null && substr($first, 0, 10) < $from ? date('Y-m-d', strtotime($from . ' -1 day')) : null,
-			'newer' => $until < $today ? min(date('Y-m-d', strtotime($until . ' +' . self::LEVEL_DAYS_WINDOW . ' days')), $today) : null];
+			'page' => $page,
+			'pages' => $pages,
+			'from' => $days ? $days[count($days) - 1]['day'] : null,
+			'until' => $days ? $days[0]['day'] : null,
+			'days' => $days];
 	}
 
 	//How many different achievements the player has, and how many times the ones earned more than once were earned
