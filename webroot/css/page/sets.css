@@ -22,9 +22,6 @@
 .sandbox-page__actions {
   width: 100%;
 }
-.set-search__submit {
-  width: 70px;
-}
 
 .setViewAccuracy {
   color: var(--set-accuracy);
