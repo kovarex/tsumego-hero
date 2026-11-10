@@ -168,7 +168,7 @@ class MistakeTrainingControllerTest extends IntegrationTestCase
 	//moment the way an import brings them, and untried today.
 	private function prepareTraining(array ...$problems): ContextPreparator
 	{
-		$due = date('Y-m-d H:i:s', strtotime('-1 hour'));
+		$due = MistakeTraining::today() . ' 00:00:00';
 		$tsumegos = [];
 		foreach ($problems as $index => $problem)
 			$tsumegos[] = ['set_order' => $index + 1, 'status' => $problem + ['name' => 'V', 'mistake_training_due' => $due]];
@@ -179,7 +179,7 @@ class MistakeTrainingControllerTest extends IntegrationTestCase
 	{
 		return [
 			'mistake_training_due' => $result === MistakeTraining::REVIEW_MISSED
-				? date('Y-m-d H:i:s', strtotime('-1 hour'))
+				? MistakeTraining::today() . ' 00:00:00'
 				: date('Y-m-d H:i:s', strtotime('+3 days')),
 			'mistake_training_review_day' => MistakeTraining::today(),
 			'mistake_training_review_result' => $result,
@@ -200,7 +200,7 @@ class MistakeTrainingControllerTest extends IntegrationTestCase
 			'user' => ['name' => 'testuser'],
 			'tsumegos' => [['set_order' => 1], ['set_order' => 2], ['set_order' => 3]],
 		]);
-		$due = date('Y-m-d H:i:s', strtotime('-1 hour'));
+		$due = MistakeTraining::today() . ' 00:00:00';
 		foreach ([1, 2, 0] as $index)
 			MistakeTraining::addProblem($context->user['id'], (int) $context->tsumegos[$index]['id'], $due);
 
@@ -572,8 +572,8 @@ class MistakeTrainingControllerTest extends IntegrationTestCase
 		new ContextPreparator([
 			'user' => ['name' => 'testuser'],
 			'tsumegos' => [
-				['set_order' => 1, 'status' => ['name' => 'V', 'mistake_training_due' => date('Y-m-d H:i:s', strtotime('-1 hour'))]],
-				['set_order' => 2, 'status' => ['name' => 'V', 'mistake_training_due' => date('Y-m-d H:i:s', strtotime('-1 hour'))]],
+				['set_order' => 1, 'status' => ['name' => 'V', 'mistake_training_due' => MistakeTraining::today() . ' 00:00:00']],
+				['set_order' => 2, 'status' => ['name' => 'V', 'mistake_training_due' => MistakeTraining::today() . ' 00:00:00']],
 			],
 		]);
 
@@ -590,8 +590,8 @@ class MistakeTrainingControllerTest extends IntegrationTestCase
 		new ContextPreparator([
 			'user' => ['name' => 'testuser'],
 			'tsumegos' => [
-				['set_order' => 1, 'status' => ['name' => 'V', 'mistake_training_due' => date('Y-m-d H:i:s', strtotime('-1 hour'))]],
-				['set_order' => 2, 'status' => ['name' => 'V', 'mistake_training_due' => date('Y-m-d H:i:s', strtotime('-1 hour'))]],
+				['set_order' => 1, 'status' => ['name' => 'V', 'mistake_training_due' => MistakeTraining::today() . ' 00:00:00']],
+				['set_order' => 2, 'status' => ['name' => 'V', 'mistake_training_due' => MistakeTraining::today() . ' 00:00:00']],
 			],
 		]);
 
@@ -610,7 +610,7 @@ class MistakeTrainingControllerTest extends IntegrationTestCase
 		new ContextPreparator([
 			'user' => ['name' => 'testuser'],
 			'tsumegos' => [
-				['set_order' => 7, 'status' => ['name' => 'V', 'mistake_training_due' => date('Y-m-d H:i:s', strtotime('-1 hour'))]],
+				['set_order' => 7, 'status' => ['name' => 'V', 'mistake_training_due' => MistakeTraining::today() . ' 00:00:00']],
 				['set_order' => 3, 'status' => ['name' => 'V', 'mistake_training_rung' => 4, 'mistake_training_due' => date('Y-m-d', strtotime(MistakeTraining::today() . ' +10 days')) . ' 00:00:00']],
 			],
 		]);
@@ -643,7 +643,7 @@ class MistakeTrainingControllerTest extends IntegrationTestCase
 	{
 		new ContextPreparator([
 			'user' => ['name' => 'testuser'],
-			'tsumego' => ['set_order' => 1, 'status' => ['name' => 'V', 'mistake_training_due' => date('Y-m-d H:i:s', strtotime('-1 hour'))]],
+			'tsumego' => ['set_order' => 1, 'status' => ['name' => 'V', 'mistake_training_due' => MistakeTraining::today() . ' 00:00:00']],
 		]);
 
 		$this->get('/mistake-training');
@@ -701,7 +701,7 @@ class MistakeTrainingControllerTest extends IntegrationTestCase
 			'tsumego' => [
 				'set_order' => 1,
 				'attempt' => ['solved' => true, 'misplays' => 1],
-				'status' => ['name' => 'V', 'mistake_training_due' => date('Y-m-d H:i:s', strtotime('-1 hour'))],
+				'status' => ['name' => 'V', 'mistake_training_due' => MistakeTraining::today() . ' 00:00:00'],
 			],
 		]);
 
@@ -764,8 +764,9 @@ class MistakeTrainingControllerTest extends IntegrationTestCase
 	//missed one are still to do, and the solved one comes back after its two days.
 	public function testANextDayKeepsWhatWasNotSolvedAndBringsBackTheSolvedOneOnTime()
 	{
-		$now = date('Y-m-d H:i:s');
 		$today = MistakeTraining::today();
+		// due now: at the start of the player's day
+		$now = $today . ' 00:00:00';
 		$context = new ContextPreparator([
 			'user' => ['name' => 'admin', 'admin' => true],
 			'tsumegos' => [

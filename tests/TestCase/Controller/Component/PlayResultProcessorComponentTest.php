@@ -1140,7 +1140,7 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 		$row = MistakeTraining::getPoolRow($context->user['id'], (int) $context->tsumegos[0]['id']);
 		$this->assertNotNull($row, 'Should still be in the pool after a fail');
 		$this->assertGreaterThan(
-			date('Y-m-d H:i:s'),
+			MistakeTraining::today() . ' 23:59:59',
 			$row['next_due'],
 			'next_due should be in the future after fail, so problem drops from due queue'
 		);
@@ -1165,7 +1165,7 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 		$row = MistakeTraining::getPoolRow($userId, $tsumegoId);
 		$this->assertSame(1, (int) $row['rung'], 'A clean solve on the review day climbs one rung');
 		$this->assertGreaterThan(
-			date('Y-m-d H:i:s'),
+			MistakeTraining::today() . ' 23:59:59',
 			$row['next_due'],
 			'next_due should be in the future after clean solve'
 		);

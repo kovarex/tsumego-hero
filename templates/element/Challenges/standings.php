@@ -76,7 +76,7 @@ $cellSymbols = ['failed' => '✗', 'timeout' => '⏱', 'skipped' => '–', 'queu
 							$status = $attempt['status'] ?? 'queued';
 						?>
 						<?php $failedLine = $attempt['failedLine'] ?? null; ?>
-						<td class="challenges__cell challenges__cell--<?= h($status) ?><?= $failedLine ? ' challenges__cell--line' : '' ?>"<?= $attempt !== null && $attempt['seconds'] !== null ? ' title="' . ChallengeTable::formatSeconds($attempt['seconds']) . '"' : '' ?>
+						<td class="challenges__cell challenges__cell--<?= h($status) ?><?= $failedLine ? ' challenges__cell--line' : '' ?>"
 							<?= $failedLine ? ' tabindex="0" data-failed-line="' . h(json_encode($failedLine)) . '"' : '' ?>>
 							<?= $status === 'solved' ? ChallengeTable::formatPoints((float) $attempt['points']) : $cellSymbols[$status] ?? '' ?>
 							<?php if ($failedLine): ?><span class="tooltip-box challenges__line-board"></span><?php endif; ?>
@@ -88,7 +88,7 @@ $cellSymbols = ['failed' => '✗', 'timeout' => '⏱', 'skipped' => '–', 'queu
 			</table>
 		</div>
 		<?php if ($showResults): ?>
-		<p class="hint challenges__legend">A problem button opens the problem and shows its board when you point at it, its colour is how you did with it. A solved problem shows its points, the time is in its tooltip.
+		<p class="hint challenges__legend">A problem button opens the problem and shows its board when you point at it, its colour is how you did with it. A solved problem shows its points.
 			<span class="challenges__cell challenges__cell--failed">✗</span> failed
 			<span class="challenges__cell challenges__cell--timeout">⏱</span> out of time
 			<span class="challenges__cell challenges__cell--skipped">–</span> skipped.

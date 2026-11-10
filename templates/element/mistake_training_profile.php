@@ -14,11 +14,12 @@ use App\Utility\RungInsignia;
  *
  * @var \App\View\AppView $this
  * @var string|null $title
- * @var array{days: array<string, array{reviewed: int, cleared: bool, missed: bool}>, rungs: list<int>, graduated: int} $training
+ * @var array{days: array<string, array{reviewed: int, cleared: bool, missed: bool}>, rungs: list<int>, graduated: int, today: string, since: string} $training
  */
 
-$today = MistakeTraining::today();
-$start = MistakeTraining::profileStart();
+// the days of the player whose training it is, in their own time zone
+$today = $training['today'];
+$start = $training['since'];
 $rungCount = count($training['rungs']);
 $inTraining = array_sum($training['rungs']);
 $weeks = intdiv((int) round((strtotime($today) - strtotime($start)) / 86400), 7) + 1;

@@ -9,6 +9,7 @@ use App\Model\Table\AchievementTable;
 use App\Model\Table\UserTable;
 use App\Utility\AchievementId;
 use App\Utility\Auth;
+use App\Utility\DailyStreak;
 use App\Utility\Util;
 use App\Attribute\HttpGet;
 use App\Model\Table\ProgressDeletionTable;
@@ -75,7 +76,10 @@ class AchievementsController extends AppController
 			];
 		}
 		if ($viewedUser)
+		{
 			$this->fillProgress($achievements, (int) $viewedUser['id']);
+			$this->fillDailyStreakProgress($achievements, $viewedUser);
+		}
 
 		$this->set('achievements', $achievements);
 		$this->set('unlockedCount', count(array_filter(array_column($achievements, 'unlocked'))));
@@ -102,6 +106,21 @@ class AchievementsController extends AppController
 			$achievements[$index]['progress_goal'] = $definition['goal'];
 			$achievements[$index]['progress_percent'] = (int) round($progress / $definition['goal'] * 100);
 		}
+	}
+
+	//The locked daily streak achievements show the streak the player has now, of the days they ask in a row
+	/** @param UserRow $user */
+	private function fillDailyStreakProgress(array &$achievements, array $user): void
+	{
+		$length = DailyStreak::ofUser($user)->length;
+		foreach ($achievements as $index => $achievement)
+			if (!$achievement['unlocked'] && ($goal = AchievementTable::DAILY_STREAK_DAYS[$achievement['id']] ?? null))
+			{
+				$progress = min($length, $goal);
+				$achievements[$index]['progress'] = $progress;
+				$achievements[$index]['progress_goal'] = $goal;
+				$achievements[$index]['progress_percent'] = (int) round($progress / $goal * 100);
+			}
 	}
 
 	#[HttpGet]
@@ -157,6 +176,11 @@ class AchievementsController extends AppController
 			{
 				$progress = (int) AchievementConditionTable::value($statusUserId, $progressDefinition['category']);
 				$progressGoal = $progressDefinition['goal'];
+			}
+			elseif ($progressGoal = AchievementTable::DAILY_STREAK_DAYS[$achievement->id] ?? null)
+				$progress = DailyStreak::ofUser($viewedUser ?? Auth::getUser())->length;
+			if ($progressGoal !== null)
+			{
 				if ($currentUserStatus)
 					$progress = $progressGoal;
 				$progress = min($progress, $progressGoal);
