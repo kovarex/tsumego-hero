@@ -9,8 +9,8 @@ use Cake\Routing\Router;
 //What the profile page (UsersController::view) shows of a player besides the user row.
 class UserProfile
 {
-	//How many of the latest achievements the profile lists
-	public const int LATEST_ACHIEVEMENT_COUNT = 12;
+	//How many of the rarest achievements the profile lists before Show all
+	public const int SHOWN_ACHIEVEMENT_COUNT = 10;
 
 	//The solves, the fails and the highest rating of each day of the last half year, oldest first
 	/** @return array<int, array{day: string, Solves: int|string, Fails: int|string, Rating: float|string|null}> */
@@ -64,18 +64,23 @@ class UserProfile
 			ORDER BY category DESC', [$userID]);
 	}
 
-	//The achievements the player got last, newest first, with how many times each was earned
-	/** @return array<int, array{id: int|string, name: string, description: string, image: string, color: string, xp: int|string, earned_count: int|string, created: string}> */
-	public static function latestAchievements(int $userID): array
+	//The achievements the player unlocked, the rarest first (AchievementRarity), the latest first among equally rare
+	//ones. Each with how many times it was earned and the percent of the active players who have it.
+	public static function achievementsByRarity(int $userID): array
 	{
-		return Util::query('
-			SELECT achievement.id, achievement.name, achievement.description, achievement.image, achievement.color, achievement.xp,
+		$achievements = Util::query('
+			SELECT achievement.id, achievement.name, achievement.description, achievement.image,
 				achievement_status.value AS earned_count, achievement_status.created
 			FROM achievement_status
 				JOIN achievement ON achievement.id = achievement_status.achievement_id
 			WHERE achievement_status.user_id = ?
-			ORDER BY achievement_status.created DESC, achievement_status.id DESC
-			LIMIT ' . self::LATEST_ACHIEVEMENT_COUNT, [$userID]);
+			ORDER BY achievement_status.created DESC, achievement_status.id DESC', [$userID]);
+		foreach ($achievements as &$achievement)
+			$achievement['percent'] = AchievementRarity::percent((int) $achievement['id'], true);
+		unset($achievement);
+		// usort is stable, so equally rare ones keep the latest first
+		usort($achievements, fn(array $a, array $b) => $a['percent'] <=> $b['percent']);
+		return $achievements;
 	}
 
 	//How many different achievements the player has, and how many times the ones earned more than once were earned

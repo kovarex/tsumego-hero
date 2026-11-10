@@ -1,9 +1,10 @@
 //The profile (Users/view.php): each of the two columns of statistics under it shows the chart its
 //buttons pick (data-profile-side and data-profile-show), remembered in the cookie lastProfile<side>.
+//Show all of the achievements (profile_achievements.php) shows the rows past the rarest ones, and back.
 (function()
 {
-	const selections = ['level', 'rating', 'time', 'achievement'];
-	const sections = {level: 'userShowLevel', rating: 'userShowRating', time: 'userShowTime', achievement: 'userShowAchievements'};
+	const selections = ['level', 'rating', 'time'];
+	const sections = {level: 'userShowLevel', rating: 'userShowRating', time: 'userShowTime'};
 	const defaults = {Left: 'level', Right: 'rating'};
 
 	function show(selection, side)
@@ -31,4 +32,14 @@
 	});
 	show(getCookie('lastProfileLeft'), 'Left');
 	show(getCookie('lastProfileRight'), 'Right');
+
+	const achievementsToggle = document.getElementById('profile-achievements-toggle');
+	if (achievementsToggle)
+		achievementsToggle.addEventListener('click', function()
+		{
+			const expand = achievementsToggle.getAttribute('aria-expanded') !== 'true';
+			document.querySelectorAll('[data-profile-achievement-more]').forEach(function(row) { row.hidden = !expand; });
+			achievementsToggle.setAttribute('aria-expanded', expand ? 'true' : 'false');
+			achievementsToggle.textContent = expand ? achievementsToggle.dataset.showFewer : achievementsToggle.dataset.showAll;
+		});
 })();

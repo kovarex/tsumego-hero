@@ -1,0 +1,1 @@
+Changed: The profile lists the achievements the player unlocked as rows, the rarest first, each with the day it was unlocked and the share of active players who have it (players who solved at least one problem). The rarest ten show, the rest after Show all.

@@ -30,4 +30,14 @@ class AchievementHelper extends AppHelper
 		return '<div class="achievementEarnedCount" title="Earned ' . $earnedCount . ' times">'
 			. $earnedCount . 'x</div>';
 	}
+
+	//A share of the players, e.g. "3.4%": whole from 10% on, one decimal below, "<0.1%" under a tenth
+	public static function formatPercent(float $percent): string
+	{
+		if ($percent >= 10)
+			return round($percent) . '%';
+		if ($percent >= 0.1)
+			return number_format($percent, 1) . '%';
+		return '<0.1%';
+	}
 }

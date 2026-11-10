@@ -13,7 +13,7 @@ use App\Utility\ViteManifest;
  * @var \App\View\AppView $this
  * @var int $achievementCount
  * @var array{completed: int, earned_times: int} $achievementCounts
- * @var array $latestAchievements
+ * @var array $achievements See UserProfile::achievementsByRarity()
  * @var array $dailyResults
  * @var array|null $mistakeTraining
  * @var int $solvedProblemCount
@@ -202,6 +202,7 @@ foreach ($heroPowers as $power)
 </div>
 <?php if ($mistakeTraining !== null)
 	echo $this->element('mistake_training_profile', ['training' => $mistakeTraining]); ?>
+<?php echo $this->element('profile_achievements', compact('user', 'achievements', 'achievementCount')); ?>
 <?php
 	$size = count($dailyResults);
 	if ($size < 10)
@@ -221,7 +222,6 @@ foreach ($heroPowers as $power)
 			<a id="userShowLevelButtonLeft" class="btn" data-profile-show="level" data-profile-side="Left">Level</a>
 			<a id="userShowRatingButtonLeft" class="btn" data-profile-show="rating" data-profile-side="Left">Rating</a>
 			<a id="userShowTimeButtonLeft" class="btn" data-profile-show="time" data-profile-side="Left">Time</a>
-			<a id="userShowAchievementsButtonLeft" class="btn" data-profile-show="achievement" data-profile-side="Left">Achievements</a>
 		</div>
 	</td>
 	<td class="profileTable__half">
@@ -229,7 +229,6 @@ foreach ($heroPowers as $power)
 			<a id="userShowLevelButtonRight" class="btn" data-profile-show="level" data-profile-side="Right">Level</a>
 			<a id="userShowRatingButtonRight" class="btn" data-profile-show="rating" data-profile-side="Right">Rating</a>
 			<a id="userShowTimeButtonRight" class="btn" data-profile-show="time" data-profile-side="Right">Time</a>
-			<a id="userShowAchievementsButtonRight" class="btn" data-profile-show="achievement" data-profile-side="Right">Achievements</a>
 		</div>
 	</td>
 	</tr>
@@ -238,7 +237,7 @@ foreach ($heroPowers as $power)
 	<table class="profileTable">
 		<tr>
 			<?php foreach (['Left', 'Right'] as $side)
-				echo $this->element('profile_statistics', compact('side', 'user', 'latestAchievements', 'dailyResults', 'timeGraph')); ?>
+				echo $this->element('profile_statistics', compact('side', 'dailyResults', 'timeGraph')); ?>
 	</tr></table>
 </div>
 
