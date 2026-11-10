@@ -336,7 +336,7 @@
   color: var(--color-white) !important;
   left: 316px;
   top: 121px;
-  font-size: 22px !important;
+  font-size: 22px;
   font-weight: var(--weight-bold);
   font-family: Geneva, Times New Roman, verdana;
 }
