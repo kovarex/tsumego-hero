@@ -8,7 +8,7 @@ use App\Model\Table\AchievementConditionTable;
 //the count of potions drunk that day (achievement condition CATEGORY_POTION). They come back when the player's
 //own day turns, at DailyStreak::DAY_START_HOUR in their time zone like the daily streak and the mistake
 //training, not at midnight of the server. The row keeps the player's day of the last reset (user.daily_reset_day).
-//The hourly cron (CronController::hourly, resetDuePlayers()) resets every player whose day turned, so every reader
+//The hourly cron (`bin/cake cron_hourly`, resetDuePlayers()) resets every player whose day turned, so every reader
 //of the row sees the day's values; the first request of the player's new day does it too (apply()), so the one who
 //plays gets them at 03:00 sharp rather than at the next run. Both only reset a row whose day is behind, so a day is
 //reset once whichever comes first.

@@ -258,12 +258,6 @@ return [
 		'/comments/index' => ['Comments', 'index', []],
 		'/comments/index/7' => ['Comments', 'index', ['7']],
 
-		'/cron' => ['Cron', 'index', []],
-		'/cron/daily' => ['Cron', 'daily', []],
-		'/cron/daily/7' => ['Cron', 'daily', ['7']],
-		'/cron/hourly' => ['Cron', 'hourly', []],
-		'/cron/hourly/7' => ['Cron', 'hourly', ['7']],
-
 		'/editor/index' => ['Editor', 'index', []],
 		'/editor/index/7' => ['Editor', 'index', ['7']],
 

@@ -8,17 +8,22 @@ use App\Utility\Auth;
 use App\Utility\Constants;
 use App\Utility\Live;
 use App\Utility\Util;
+use Cake\Console\TestSuite\ConsoleIntegrationTestTrait;
 
-class CronControllerTest extends IntegrationTestCase
+//bin/cake cron_daily: the daily work of the site (DailyCron), run by the scheduler at midnight UTC
+class CronDailyCommandTest extends IntegrationTestCase
 {
-	//The hearts and the hero powers come back with the player's own day (DailyResetTest), not with the cron
+	use ConsoleIntegrationTestTrait;
+
+	//The hearts and the hero powers come back with the player's own day (DailyResetTest, cron_hourly), not with the daily cron
 	public function testCronLeavesTheHeartsAndThePowersToThePlayersDay()
 	{
 		$powers = ['used_refinement', 'used_sprint', 'used_rejuvenation', 'used_potion', 'used_intuition', 'used_revelation'];
 		$context = new ContextPreparator([
 			'user' => ['mode' => Constants::$LEVEL_MODE, 'damage' => 7] + array_fill_keys($powers, 1)]);
 
-		$this->get('/cron/daily/' . CRON_SECRET);
+		$this->exec('cron_daily');
+		$this->assertExitSuccess();
 
 		$user = $context->reloadUser();
 		$this->assertSame(7, $user['damage']);
@@ -34,25 +39,14 @@ class CronControllerTest extends IntegrationTestCase
 		touch(Live::path('test-cron-stamp'), time() - (Live::STALE_AFTER_DAYS + 1) * 24 * 3600);
 		try
 		{
-			$this->get('/cron/daily/' . CRON_SECRET);
-
-			$this->assertResponseOk();
+			$this->exec('cron_daily');
+			$this->assertExitSuccess();
 			$this->assertFileDoesNotExist(Live::path('test-cron-stamp'));
 		}
 		finally
 		{
 			@unlink(Live::path('test-cron-stamp'));
 		}
-	}
-
-	public function testCronWithWrongSecret()
-	{
-		$context = new ContextPreparator(['user' => ['mode' => Constants::$LEVEL_MODE, 'used_refinement' => 1]]);
-		$this->assertSame($context->reloadUser()['used_refinement'], 1);
-
-		$this->get('/cron/daily/wrongsecret');
-
-		$this->assertResponseCode(403);
 	}
 
 	//An address change whose links have expired is forgotten overnight, so it does
@@ -66,7 +60,8 @@ class CronControllerTest extends IntegrationTestCase
 			'new@example.com', 'confirm_token', 'cancel_token',
 			date('Y-m-d H:i:s', strtotime('-2 days')), $context->user['id']]);
 
-		$this->get('/cron/daily/' . CRON_SECRET);
+		$this->exec('cron_daily');
+		$this->assertExitSuccess();
 
 		$user = $context->reloadUser();
 		$this->assertNull($user['unconfirmed_email']);
@@ -83,7 +78,8 @@ class CronControllerTest extends IntegrationTestCase
 			'tsumegos' => [
 				['set_order' => 1, 'status' => 'F'],
 				['set_order' => 2, 'status' => 'X']]]);
-		$this->get('/cron/daily/' . CRON_SECRET);
+		$this->exec('cron_daily');
+		$this->assertExitSuccess();
 		$status1 = $this->fetchTable('TsumegoStatus')->find()->where(['user_id' => Auth::getUserID(), 'tsumego_id' => $context->tsumegos[0]['id']])->first();
 		$this->assertSame($status1->status, 'V');
 		$status2 = $this->fetchTable('TsumegoStatus')->find()->where(['user_id' => Auth::getUserID(), 'tsumego_id' => $context->tsumegos[1]['id']])->first();
@@ -99,7 +95,8 @@ class CronControllerTest extends IntegrationTestCase
 			'tsumegos' => [
 				['set_order' => 1, 'status' => ['name' => 'S', 'updated' => $oldEnoughToTransfer]],
 				['set_order' => 2, 'status' => ['name' => 'S', 'updated' => $newEnoughToTransfer]]]]);
-		$this->get('/cron/daily/' . CRON_SECRET);
+		$this->exec('cron_daily');
+		$this->assertExitSuccess();
 		$status1 = $this->fetchTable('TsumegoStatus')->find()->where(['user_id' => Auth::getUserID(), 'tsumego_id' => $context->tsumegos[0]['id']])->first();
 		$this->assertSame($status1->status, 'W');
 		$status2 = $this->fetchTable('TsumegoStatus')->find()->where(['user_id' => Auth::getUserID(), 'tsumego_id' => $context->tsumegos[1]['id']])->first();
@@ -116,7 +113,8 @@ class CronControllerTest extends IntegrationTestCase
 			$tsumegos[] = ['set_order' => $order + 1, 'status' => ['name' => $status, 'updated' => $old]];
 		$context = new ContextPreparator(['user' => ['mode' => Constants::$LEVEL_MODE], 'tsumegos' => $tsumegos]);
 
-		$this->get('/cron/daily/' . CRON_SECRET);
+		$this->exec('cron_daily');
+		$this->assertExitSuccess();
 
 		foreach ($statuses as $order => $status)
 			$this->assertSame($status, $this->fetchTable('TsumegoStatus')->find()->where(['user_id' => Auth::getUserID(), 'tsumego_id' => $context->tsumegos[$order]['id']])->first()->status);
@@ -128,7 +126,8 @@ class CronControllerTest extends IntegrationTestCase
 			'user' => ['name' => 'kovarex', 'daily_xp' => 5, 'daily_solved' => 1],
 			'other-users' => [['name' => 'Ivan Detkov', 'daily_xp' => 10, 'daily_solved' => 2]]]);
 
-		$this->get('/cron/daily/' . CRON_SECRET);
+		$this->exec('cron_daily');
+		$this->assertExitSuccess();
 		$this->assertSame($context->reloadUser()['daily_xp'], 0);
 		$this->assertSame($context->reloadUser()['daily_solved'], 0);
 		$detkov = ContextPreparator::findUserRow(['name' => 'Ivan Detkov']);
@@ -153,8 +152,8 @@ class CronControllerTest extends IntegrationTestCase
 			'sapphire_solves' => 0,
 			'ruby_solves' => 0]));
 
-		$this->get('/cron/daily/' . CRON_SECRET);
-		$this->assertResponseOk();
+		$this->exec('cron_daily');
+		$this->assertExitSuccess();
 		$this->assertNull($dayRecordTable->find()->where(['date' => date('Y-m-d')])->firstOrFail()->user_id);
 		$this->assertSame(0, $context->reloadUser()['daily_xp']);
 
@@ -167,8 +166,12 @@ class CronControllerTest extends IntegrationTestCase
 		new ContextPreparator([
 			'user' => ['mode' => Constants::$LEVEL_MODE, 'daily_xp' => 5, 'daily_solved' => 1]]);
 
-		$this->get('/cron/daily/' . CRON_SECRET);
-		$this->get('/cron/daily/' . CRON_SECRET);
+		$this->exec('cron_daily');
+		$this->assertExitSuccess();
+		$this->assertOutputContains('Did the work of the day.');
+		$this->exec('cron_daily');
+		$this->assertExitSuccess();
+		$this->assertOutputContains('The day was done already, published what was due.');
 
 		$this->assertSame(1, $this->fetchTable('DayRecord')->find()->count());
 		$this->assertSame(1, $this->fetchTable('AchievementCondition')->find()->where(['achievement_condition_category_id' => AchievementConditionTable::CATEGORY_USER_OF_THE_DAY])->count());
@@ -180,7 +183,8 @@ class CronControllerTest extends IntegrationTestCase
 	{
 		new ContextPreparator(['user' => ['daily_xp' => 5, 'daily_solved' => 1]]);
 
-		$this->get('/cron/daily/' . CRON_SECRET);
+		$this->exec('cron_daily');
+		$this->assertExitSuccess();
 
 		$gems = explode('-', $this->fetchTable('DayRecord')->find()->firstOrFail()->gems);
 		$difficulties = ['an easy', 'a regular', 'a difficult'];
@@ -209,7 +213,8 @@ class CronControllerTest extends IntegrationTestCase
 			'published' => 0,
 		]));
 
-		$this->get('/cron/daily/' . CRON_SECRET);
+		$this->exec('cron_daily');
+		$this->assertExitSuccess();
 		$newTsumego = $this->fetchTable('Tsumego')->find()->where(['id' => $tsumegoToMigrate['id']])->first();
 		$newSetConnection = $this->fetchTable('SetConnection')->find()->where(['tsumego_id' => $tsumegoToMigrate['id']])->first();
 		$this->assertSame($newTsumego->id, $tsumegoToMigrate['id']);
@@ -231,7 +236,8 @@ class CronControllerTest extends IntegrationTestCase
 			'schedule' => [
 				['tsumego' => 0, 'set' => 'set 1', 'date' => date('Y-m-d', strtotime('-2 days'))]]]);
 
-		$this->get('/cron/daily/' . CRON_SECRET);
+		$this->exec('cron_daily');
+		$this->assertExitSuccess();
 
 		$this->assertTrue($this->fetchTable('Schedule')->find()->orderBy('id')->firstOrFail()->published);
 	}
@@ -244,7 +250,8 @@ class CronControllerTest extends IntegrationTestCase
 				['set_order' => 2, 'status' => 'S']],
 			'user' => ['mode' => Constants::$LEVEL_MODE, 'solved' => 2]]);
 		$this->fetchTable('TsumegoStatus')->deleteAll(['tsumego_id' => $context->tsumegos[0]['id']]);
-		$this->get('/cron/daily/' . CRON_SECRET);
+		$this->exec('cron_daily');
+		$this->assertExitSuccess();
 		$this->assertSame($context->reloadUser()['solved'], 1);
 	}
 
@@ -255,7 +262,8 @@ class CronControllerTest extends IntegrationTestCase
 			'other-users' => [['name' => 'Ivan Detkov']]]);
 		Util::execute('UPDATE user SET solved = NULL WHERE id = ?', [$context->otherUsers[0]['id']]);
 
-		$this->get('/cron/daily/' . CRON_SECRET);
+		$this->exec('cron_daily');
+		$this->assertExitSuccess();
 
 		$this->assertSame(0, $context->reloadUser()['solved']);
 		$detkov = UserTable::row((int) $context->otherUsers[0]['id']);
@@ -271,7 +279,8 @@ class CronControllerTest extends IntegrationTestCase
 				['category' => AchievementConditionTable::CATEGORY_POTION, 'value' => 2],
 				['category' => AchievementConditionTable::CATEGORY_GOLDEN, 'value' => 2]]]);
 
-		$this->get('/cron/daily/' . CRON_SECRET);
+		$this->exec('cron_daily');
+		$this->assertExitSuccess();
 
 		$values = $this->fetchTable('AchievementCondition')
 			->find('list', keyField: 'achievement_condition_category_id', valueField: 'value')
@@ -281,14 +290,15 @@ class CronControllerTest extends IntegrationTestCase
 	}
 
 	//The daily work runs under READ COMMITTED, and the session gets back the level it had, as the
-	//connection outlives the request here.
+	//connection outlives the command here.
 	public function testCronPutsBackTheIsolationLevel()
 	{
 		new ContextPreparator(['user' => ['mode' => Constants::$LEVEL_MODE]]);
 		Util::execute('SET SESSION TRANSACTION ISOLATION LEVEL SERIALIZABLE');
 		try
 		{
-			$this->get('/cron/daily/' . CRON_SECRET);
+			$this->exec('cron_daily');
+			$this->assertExitSuccess();
 			$this->assertSame('SERIALIZABLE', Util::isolationLevel());
 		}
 		finally

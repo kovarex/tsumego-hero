@@ -10,7 +10,6 @@ Configure::write('debug', 2);
 
 // Disable cache for development
 Configure::write('Cache.disable', true);
-define ('CRON_SECRET', 'example');
 
 // The salt of the HMACs of this server (signed login redirects, the demotion form of a Google admin):
 // a random value of its own, made on the server with

@@ -31,8 +31,8 @@ use App\Model\Table\SetConnectionTable;
 //playing it again from there is a replay that counts for nothing.
 //Reviews are counted in days, not in hours: the next review of a problem is the
 //start of a day, so a mistake made in the evening is not due tomorrow evening.
-//The day is the one of the daily cron (CronController::daily), which also gives
-//back the hearts, so the whole site turns to a new day at the same moment.
+//The day is the player's own (today(), the day of the daily streak), which also gives
+//back the hearts (DailyReset), so the player's site turns to a new day at one moment.
 class MistakeTraining
 {
 	//Review ladder: days until the next review at each rung, for a problem that

@@ -6,11 +6,14 @@ use App\Utility\Clock;
 use App\Utility\DailyReset;
 use App\Utility\DailyStreak;
 use App\Utility\Util;
+use Cake\Console\TestSuite\ConsoleIntegrationTestTrait;
 
 //The hearts and the hero powers come back when the player's own day turns (DailyReset), at
 //DailyStreak::DAY_START_HOUR in their time zone like the daily streak, not with the daily cron at midnight UTC.
 class DailyResetTest extends IntegrationTestCase
 {
+	use ConsoleIntegrationTestTrait;
+
 	private const array POWERS = ['used_refinement', 'used_sprint', 'used_rejuvenation', 'used_potion', 'used_intuition', 'used_revelation'];
 
 	protected function tearDown(): void
@@ -195,18 +198,16 @@ class DailyResetTest extends IntegrationTestCase
 		$this->assertSame($before, self::stored($ids));
 	}
 
-	//The cron calls it every hour, with its secret
-	public function testTheHourlyCronResetsThePlayersWhoseDayTurned(): void
+	//bin/cake cron_hourly runs it, every hour
+	public function testTheHourlyCommandResetsThePlayersWhoseDayTurned(): void
 	{
 		$ids = $this->playersInZones();
 		Clock::freeze(new DateTimeImmutable('2026-11-10 08:30:00', new DateTimeZone('UTC')));
 
-		$this->get('/cron/hourly/wrong');
-		$this->assertResponseCode(403);
-		$this->assertSame(7, self::stored($ids)['America/New_York'][0]);
+		$this->exec('cron_hourly');
 
-		$this->get('/cron/hourly/' . CRON_SECRET);
-		$this->assertResponseOk();
+		$this->assertExitSuccess();
+		$this->assertOutputContains('Reset 5 players.');
 		// 03:30 in New York, 08:30 in London and in UTC: everyone is on the 10th
 		$this->assertSame([0, 0, 0, 0, 0], array_values(array_map(fn(array $player) => $player[0], self::stored($ids))));
 	}
