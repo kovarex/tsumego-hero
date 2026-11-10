@@ -36,7 +36,8 @@ class PlayResultJsonTest extends JsonGoldenTestCase
 		$this->assertJsonGolden('solved after a mistake');
 	}
 
-	//The 1000th problem solved unlocks an achievement, which comes with the result for its popup
+	//The 1000th problem solved unlocks an achievement, which comes with the result for its popup, and its XP lifts the
+	//level past 10, which unlocks Level up! in the same result
 	public function testSolvedUnlockingAnAchievement(): void
 	{
 		$context = new ContextPreparator(['user' => ['rating' => 1500, 'solved' => 999], 'tsumego' => ['set_order' => 1, 'rating' => 1500]]);

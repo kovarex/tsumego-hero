@@ -64,8 +64,16 @@ class SuperiorAccuracyAchievementTest extends AchievementTestCase
 			'Superior Accuracy should be among the achievements unlocked by the first perfect collection');
 
 		// 5000 XP for Superior Accuracy itself + 26000 for the accuracy and speed
-		// achievements the same collection unlocks
-		$this->assertSame(31000, $context->XPGained());
+		// achievements the same collection unlocks, + the level achievements that XP reaches
+		$levelAchievementIDs = array_map(fn(AchievementId $achievementID) => $achievementID->value, [
+			AchievementId::LEVEL_UP, AchievementId::FIRST_HERO_POWER, AchievementId::UPGRADED_INTUITION, AchievementId::MORE_POWER,
+			AchievementId::HALF_WAY_TO_TOP, AchievementId::CONGRATS_MORE_PROBLEMS, AchievementId::NICE_LEVEL,
+			AchievementId::DID_LOT_OF_TSUMEGO, AchievementId::STILL_DOING_TSUMEGO, AchievementId::THE_TOP]);
+		$levelAchievementsXP = array_sum(array_map(
+			fn(Achievement $achievement) => in_array($achievement->id, $levelAchievementIDs) ? $achievement->xp : 0,
+			$checker->updated));
+		$this->assertGreaterThan(0, $levelAchievementsXP, 'The 31000 XP reach level 10 at least');
+		$this->assertSame(31000 + $levelAchievementsXP, $context->XPGained());
 	}
 
 	//A further perfect collection raises the count without paying out again.

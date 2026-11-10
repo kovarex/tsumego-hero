@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\AchievementConditionTable;
 use App\Utility\AchievementId;
 use App\Utility\Auth;
 use App\Utility\Level;
@@ -53,6 +54,22 @@ class LevelAchievementTest extends AchievementTestCase
 			$this->triggerAchievementCheck();
 			$this->assertAchievementUnlocked($achievementId, "Achievement {$achievementId->name} should unlock at level $requiredLevel");
 		}
+	}
+
+	//The XP of the achievements a page load unlocks can raise the level past a level achievement, which
+	//was checked before that XP came: the same page load unlocks it, not the next one
+	public function testLevelReachedByTheXPOfOtherAchievementsUnlocksOnTheSamePageLoad()
+	{
+		$context = new ContextPreparator([
+			'user' => ['level' => 1],
+			'achievement-conditions' => [['category' => AchievementConditionTable::CATEGORY_COMPLETED_SETS, 'value' => 20]]]);
+		$this->triggerAchievementCheck();
+
+		$this->assertAchievementUnlocked(AchievementId::COMPLETE_SETS_II);
+		$level = (int) $context->reloadUser()['level'];
+		$this->assertGreaterThanOrEqual(10, $level, 'The XP of the set achievements is enough for level 10');
+		foreach ([10 => AchievementId::LEVEL_UP, 20 => AchievementId::FIRST_HERO_POWER, 30 => AchievementId::UPGRADED_INTUITION] as $threshold => $achievementID)
+			$this->assertAchievementUnlockedWhen($level >= $threshold, $achievementID);
 	}
 
 	public function testAjaxRequestDoesntTriggerAchievementCheck()

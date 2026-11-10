@@ -75,7 +75,7 @@ return [
 		'json' => [
 			'xp_gained' => 45,
 			'new_rating' => 1509.4086883822947,
-			'new_xp' => 45,
+			'new_xp' => 145,
 			'new_level' => 12,
 			'new_damage' => 0,
 			'status' => 'S',
@@ -88,6 +88,14 @@ return [
 					'xp' => 1000,
 					'image' => 'ac001',
 					'color' => 'achievementColorBlack',
+				],
+				[
+					'id' => '@int',
+					'name' => 'Level up!',
+					'description' => 'Reach level 10.',
+					'xp' => 100,
+					'image' => 'ac036',
+					'color' => 'achievementColorBlue',
 				],
 			],
 			'daily_streak' => [
