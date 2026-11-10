@@ -4,6 +4,7 @@ use App\Model\Table\AchievementConditionTable;
 use App\Model\Table\AchievementTable;
 use App\Utility\AchievementId;
 use App\Utility\DailyStreak;
+use App\Utility\Rating;
 
 class AchievementsControllerTest extends IntegrationTestCase
 {
@@ -60,7 +61,131 @@ class AchievementsControllerTest extends IntegrationTestCase
 		$this->assertStringContainsString('27/' . AchievementTable::COMPLETE_SETS_III_SETS_COUNT, $result);
 		$this->assertStringContainsString('27/' . AchievementTable::COMPLETE_SETS_V_SETS_COUNT, $result);
 		$this->assertStringNotContainsString(AchievementTable::COMPLETE_SETS_I_SETS_COUNT . '/' . AchievementTable::COMPLETE_SETS_I_SETS_COUNT, $result, 'Unlocked achievements show their date, not progress');
-		$this->assertStringNotContainsString('7/' . AchievementTable::GOLD_DIGGER_COUNT, $result, 'Only the set achievements show progress on the cards so far');
+		$this->assertStringContainsString('7/' . AchievementTable::GOLD_DIGGER_COUNT, $result, 'The other counter achievements show their progress too');
+	}
+
+	//The solved count achievements count the problems solved, the value their check compares: a page load
+	//unlocks the ones reached, so their cards show the date, and the others show how far the player got.
+	public function testCardsShowProblemsSolvedProgress(): void
+	{
+		$context = new ContextPreparator(['user' => ['name' => 'achiever', 'solved' => 3420]]);
+		$this->login('achiever');
+
+		$this->get('/achievements');
+		$result = $this->view;
+
+		$this->assertStringContainsString('>3420/4000<', $result);
+		$this->assertStringContainsString('>3420/10000<', $result);
+		$this->assertStringNotContainsString('>3000/3000<', $result, 'An unlocked achievement shows its date, not progress');
+		$this->assertTrue($this->isUnlocked($context->user['id'], AchievementId::PROBLEMS_3000));
+		$this->assertFalse($this->isUnlocked($context->user['id'], AchievementId::PROBLEMS_4000));
+	}
+
+	public function testCardsShowNoProblemsSolvedYet(): void
+	{
+		new ContextPreparator(['user' => ['name' => 'achiever', 'solved' => 0]]);
+		$this->login('achiever');
+
+		$this->get('/achievements');
+
+		$this->assertStringContainsString('>0/1000<', $this->view);
+		$this->assertStringContainsString('>0/10000<', $this->view);
+	}
+
+	//Reaching the goal unlocks it on the player's own page load, the same threshold the bar fills at
+	public function testReachingTheProblemsSolvedGoalUnlocksIt(): void
+	{
+		$context = new ContextPreparator(['user' => ['name' => 'achiever', 'solved' => 4000]]);
+		$this->login('achiever');
+
+		$this->get('/achievements');
+
+		$this->assertTrue($this->isUnlocked($context->user['id'], AchievementId::PROBLEMS_4000));
+		$this->assertStringNotContainsString('>4000/4000<', $this->view);
+		$this->assertStringContainsString('>4000/5000<', $this->view);
+	}
+
+	//Another player's page shows their progress, not the viewer's; a goal reached but not yet
+	//unlocked (no page load of theirs checked it) shows a full bar.
+	public function testOtherPlayersCardsShowTheirProgress(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'viewer', 'solved' => 5],
+			'other-users' => [['name' => 'target', 'solved' => 12000, 'level' => 47]]]);
+		$this->login('viewer');
+
+		$this->get('/achievements/user/' . $context->otherUsers[0]['id']);
+		$result = $this->view;
+
+		$this->assertStringContainsString('>1000/1000<', $result);
+		$this->assertStringContainsString('>10000/10000<', $result);
+		$this->assertStringContainsString('width:100%', $result);
+		$this->assertStringContainsString('>47/50<', $result);
+		$this->assertStringNotContainsString('>5/1000<', $result);
+	}
+
+	public function testAchievementPageShowsProblemsSolvedProgress(): void
+	{
+		new ContextPreparator(['user' => ['name' => 'achiever', 'solved' => 3420]]);
+		$this->login('achiever');
+
+		$this->get('/achievements/view/' . AchievementId::PROBLEMS_5000->value);
+		$this->assertStringContainsString('class="progress"', $this->view);
+		$this->assertStringContainsString('3420/5000', $this->view);
+		$this->assertStringContainsString('width:68%', $this->view);
+
+		// unlocked, so full like the other achievements
+		$this->get('/achievements/view/' . AchievementId::PROBLEMS_1000->value);
+		$this->assertStringContainsString('1000/1000', $this->view);
+		$this->assertStringContainsString('width:100%', $this->view);
+	}
+
+	public function testLevelAchievementsShowTheLevel(): void
+	{
+		$context = new ContextPreparator(['user' => ['name' => 'achiever', 'level' => 47]]);
+		$this->login('achiever');
+
+		$this->get('/achievements');
+		$this->assertStringContainsString('>47/50<', $this->view);
+		$this->assertStringContainsString('>47/100<', $this->view);
+		$this->assertTrue($this->isUnlocked($context->user['id'], AchievementId::MORE_POWER));
+
+		$this->get('/achievements/view/' . AchievementId::HALF_WAY_TO_TOP->value);
+		$this->assertStringContainsString('47/50', $this->view);
+		$this->assertStringContainsString('width:94%', $this->view);
+	}
+
+	//The goal is the minimal rating of the rank the check compares with, and the rating is rounded down,
+	//so a bar is never full before the achievement unlocks
+	public function testRatingAchievementsShowTheRating(): void
+	{
+		$context = new ContextPreparator(['user' => ['name' => 'achiever', 'rating' => 1749.6]]);
+		$this->login('achiever');
+		$threeKyu = (int) Rating::getRankMinimalRatingFromReadableRank('3k');
+
+		$this->get('/achievements');
+		$this->assertStringContainsString('>1749/' . $threeKyu . '<', $this->view);
+		$this->assertFalse($this->isUnlocked($context->user['id'], AchievementId::RATING_3_KYU));
+		$this->assertTrue($this->isUnlocked($context->user['id'], AchievementId::RATING_4_KYU));
+
+		$this->get('/achievements/view/' . AchievementId::RATING_5_DAN->value);
+		$this->assertStringContainsString('1749/' . (int) Rating::getRankMinimalRatingFromReadableRank('5d'), $this->view);
+	}
+
+	public function testGuestSeesNoProgressOnAchievementPage(): void
+	{
+		new ContextPreparator([]);
+		$this->logout();
+
+		$this->get('/achievements/view/' . AchievementId::PROBLEMS_1000->value);
+		$this->assertStringNotContainsString('class="progress"', $this->view);
+		$this->get('/achievements/view/' . AchievementId::COMPLETE_SETS_I->value);
+		$this->assertStringNotContainsString('class="progress"', $this->view);
+	}
+
+	private function isUnlocked(int $userID, AchievementId $achievementID): bool
+	{
+		return $this->fetchTable('AchievementStatus')->exists(['user_id' => $userID, 'achievement_id' => $achievementID->value]);
 	}
 
 	public function testAnonymousSeesNoProgressOnCards()
@@ -417,7 +542,7 @@ class AchievementsControllerTest extends IntegrationTestCase
 			],
 		]);
 
-		$this->get('/achievements/view/1');
+		$this->get('/achievements/view/' . AchievementId::USER_OF_THE_DAY->value);
 		$result = $this->view;
 
 		$this->assertStringNotContainsString('class="progress"', $result);

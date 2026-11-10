@@ -15,6 +15,7 @@ use App\Model\Table\TsumegoStatusTable;
 use Cake\ORM\Locator\LocatorAwareTrait;
 use App\Model\Table\SetConnectionTable;
 
+/** @phpstan-import-type UserRow from \App\Utility\RowTypes */
 class AchievementChecker
 {
 	use LocatorAwareTrait;
@@ -37,6 +38,41 @@ class AchievementChecker
 			'image' => $achievement->image,
 			'color' => $achievement->color,
 		];
+	}
+
+	//How far a player got toward a solved, level or rating achievement, from their user row: the value
+	//its check compares and the threshold that unlocks it. Null for the other achievements.
+	/** @param UserRow $user */
+	public static function userRowProgress(int $achievementID, array $user): ?array
+	{
+		$achievement = AchievementId::tryFrom($achievementID);
+		if (($threshold = array_search($achievement, self::PROBLEMS_SOLVED, true)) !== false)
+			return ['value' => self::solved($user), 'goal' => $threshold];
+		if (($threshold = array_search($achievement, self::LEVEL, true)) !== false)
+			return ['value' => self::level($user), 'goal' => $threshold];
+		//The rating is fractional: shown rounded down, as the check unlocks it only once the rating reaches the threshold
+		if (($rank = array_search($achievement, self::RATING, true)) !== false)
+			return ['value' => (int) floor(self::rating($user)), 'goal' => (int) ceil(Rating::getRankMinimalRatingFromReadableRank($rank))];
+		return null;
+	}
+
+	//The values of the user row the solved, level and rating achievements unlock by
+	/** @param UserRow $user */
+	private static function solved(array $user): int
+	{
+		return (int) ($user['solved'] ?? 0);
+	}
+
+	/** @param UserRow $user */
+	private static function level(array $user): int
+	{
+		return (int) ($user['level'] ?? 0);
+	}
+
+	/** @param UserRow $user */
+	private static function rating(array $user): float
+	{
+		return (float) ($user['rating'] ?? 0);
 	}
 
 	public function gained(AchievementId $achievementID): void
@@ -103,7 +139,7 @@ class AchievementChecker
 
 	public function checkProblemNumberAchievements(): AchievementChecker
 	{
-		$this->gainedFrom(Auth::getUser()['solved'], self::PROBLEMS_SOLVED);
+		$this->gainedFrom(self::solved(Auth::getUser()), self::PROBLEMS_SOLVED);
 		if ($this->condition(AchievementConditionTable::CATEGORY_USER_OF_THE_DAY) !== null)
 			$this->gained(AchievementId::USER_OF_THE_DAY);
 		return $this;
@@ -176,7 +212,7 @@ WHERE rn = 1;", [Auth::getUserID(), TimeModeSessionStatusTable::SOLVED]);
 
 	public function checkRatingAchievements(): AchievementChecker
 	{
-		$rating = Auth::getUser()['rating'];
+		$rating = self::rating(Auth::getUser());
 		foreach (self::RATING as $rank => $achievementID)
 			if ($rating >= Rating::getRankMinimalRatingFromReadableRank($rank))
 				$this->gained($achievementID);
@@ -185,7 +221,7 @@ WHERE rn = 1;", [Auth::getUserID(), TimeModeSessionStatusTable::SOLVED]);
 
 	public function checkLevelAchievements(): AchievementChecker
 	{
-		$this->gainedFrom(Auth::getUser()['level'], self::LEVEL);
+		$this->gainedFrom(self::level(Auth::getUser()), self::LEVEL);
 		return $this;
 	}
 

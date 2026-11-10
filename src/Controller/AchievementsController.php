@@ -7,6 +7,7 @@ use App\Model\Entity\Achievement;
 use App\Model\Table\AchievementConditionTable;
 use App\Model\Table\AchievementTable;
 use App\Model\Table\UserTable;
+use App\Utility\AchievementChecker;
 use App\Utility\AchievementId;
 use App\Utility\Auth;
 use App\Utility\DailyStreak;
@@ -77,7 +78,7 @@ class AchievementsController extends AppController
 		}
 		if ($viewedUser)
 		{
-			$this->fillProgress($achievements, (int) $viewedUser['id']);
+			$this->fillProgress($achievements, $viewedUser);
 			$this->fillDailyStreakProgress($achievements, $viewedUser);
 		}
 
@@ -85,27 +86,36 @@ class AchievementsController extends AppController
 		$this->set('unlockedCount', count(array_filter(array_column($achievements, 'unlocked'))));
 	}
 
-	//Fills progress, progress_goal and progress_percent of the locked set completion
-	//achievements, so their cards can show how far the user got.
-	private function fillProgress(array &$achievements, int $userID): void
+	//Fills progress, progress_goal and progress_percent of the locked achievements with a counter,
+	//so their cards can show how far the user got: the solved, level and rating ones from the user
+	//row, the others from their achievement conditions.
+	/** @param UserRow $user */
+	private function fillProgress(array &$achievements, array $user): void
 	{
 		$definitions = [];
 		foreach ($achievements as $index => $achievement)
 			if (!$achievement['unlocked'])
-				if ($definition = AchievementTable::progressDefinition($achievement['id']))
-					if ($definition['category'] == AchievementConditionTable::CATEGORY_COMPLETED_SETS)
-						$definitions[$index] = $definition;
+			{
+				if ($userRowProgress = AchievementChecker::userRowProgress($achievement['id'], $user))
+					self::setProgress($achievements[$index], $userRowProgress['value'], $userRowProgress['goal']);
+				elseif ($definition = AchievementTable::progressDefinition($achievement['id']))
+					$definitions[$index] = $definition;
+			}
 		if (!$definitions)
 			return;
 
-		$values = AchievementConditionTable::values($userID, array_values(array_unique(array_column($definitions, 'category'))));
+		$values = AchievementConditionTable::values((int) $user['id'], array_values(array_unique(array_column($definitions, 'category'))));
 		foreach ($definitions as $index => $definition)
-		{
-			$progress = min((int) ($values[$definition['category']] ?? 0), $definition['goal']);
-			$achievements[$index]['progress'] = $progress;
-			$achievements[$index]['progress_goal'] = $definition['goal'];
-			$achievements[$index]['progress_percent'] = (int) round($progress / $definition['goal'] * 100);
-		}
+			self::setProgress($achievements[$index], (int) ($values[$definition['category']] ?? 0), $definition['goal']);
+	}
+
+	//The progress of an achievement card, of $value toward $goal, the bar full once the value reaches it
+	private static function setProgress(array &$achievement, int $value, int $goal): void
+	{
+		$progress = max(0, min($value, $goal));
+		$achievement['progress'] = $progress;
+		$achievement['progress_goal'] = $goal;
+		$achievement['progress_percent'] = (int) round($progress / $goal * 100);
 	}
 
 	//The locked daily streak achievements show the streak the player has now, of the days they ask in a row
@@ -115,12 +125,7 @@ class AchievementsController extends AppController
 		$length = DailyStreak::ofUser($user)->length;
 		foreach ($achievements as $index => $achievement)
 			if (!$achievement['unlocked'] && ($goal = AchievementTable::DAILY_STREAK_DAYS[$achievement['id']] ?? null))
-			{
-				$progress = min($length, $goal);
-				$achievements[$index]['progress'] = $progress;
-				$achievements[$index]['progress_goal'] = $goal;
-				$achievements[$index]['progress_percent'] = (int) round($progress / $goal * 100);
-			}
+				self::setProgress($achievements[$index], $length, $goal);
 	}
 
 	#[HttpGet]
@@ -179,11 +184,16 @@ class AchievementsController extends AppController
 			}
 			elseif ($progressGoal = AchievementTable::DAILY_STREAK_DAYS[$achievement->id] ?? null)
 				$progress = DailyStreak::ofUser($viewedUser ?? Auth::getUser())->length;
+			elseif ($userRowProgress = AchievementChecker::userRowProgress($achievement->id, $viewedUser ?? Auth::getUser()))
+			{
+				$progress = $userRowProgress['value'];
+				$progressGoal = $userRowProgress['goal'];
+			}
 			if ($progressGoal !== null)
 			{
 				if ($currentUserStatus)
 					$progress = $progressGoal;
-				$progress = min($progress, $progressGoal);
+				$progress = max(0, min($progress, $progressGoal));
 			}
 		}
 
