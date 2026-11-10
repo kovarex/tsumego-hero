@@ -79,8 +79,9 @@ class TrainingDayTest extends IntegrationTestCase
 
 		$userId = (int) $context->user['id'];
 		$this->assertSame(['2026-11-09'], array_column(Util::query('SELECT day FROM mistake_training_review WHERE user_id = ?', [$userId]), 'day'));
-		$user = $context->reloadUser();
-		$this->assertSame('2026-11-09', substr((string) $user['streak_day'], 0, 10));
+		// read as the database has it: the entity would give the date as an object
+		$user = Util::query('SELECT streak_day, streak_day_reviews FROM user WHERE id = ?', [$userId])[0];
+		$this->assertSame('2026-11-09', (string) $user['streak_day']);
 		$this->assertSame(1, (int) $user['streak_day_reviews']);
 		$this->assertSame(1, $response['daily_streak']['reviews']);
 	}
