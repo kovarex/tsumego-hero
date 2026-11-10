@@ -1175,7 +1175,6 @@ h1 {
 		vertical-align: -2px;
 	}
 }
-}
 
 .play-edit {
   margin: var(--space-2) auto var(--space-3);
@@ -1302,4 +1301,5 @@ h1 {
     padding: 0 var(--space-2);
     font-size: var(--text-sm);
   }
+}
 }

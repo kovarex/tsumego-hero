@@ -429,7 +429,6 @@ a[data-tsumego-id]:hover .tooltip-desc
 		height: auto;
 	}
 }
-}
 
 /* Mistake training: the status keeps room for its two lines, so the board does not
    move when a result shows, and stays clear of the board */
@@ -511,4 +510,5 @@ a[data-tsumego-id]:hover .tooltip-desc
 .mistake-training-pool__table .training-overview__insignia
 {
 	display: inline-flex;
+}
 }
