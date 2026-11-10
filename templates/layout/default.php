@@ -179,7 +179,10 @@ $friendsBadge = $friendRequests > 0
 							<ul class="newMenuLi1">
 								<li><a class="<?php echo $active('websitefunctions'); ?>" href="/sites/websitefunctions">Functions & Modes</a></li>
 								<li><a class="<?php echo $active('gotutorial'); ?>" href="/sites/gotutorial">Go Rules</a></li>
-								<li class="newMenuLi1-forum"><a href="/forums">Forums</a></li>
+								<?php //The site's comments, the forums are in the menu itself ?>
+								<?php if (Auth::isLoggedIn()): ?>
+								<li><a class="<?php echo $active('discuss'); ?>" href="/comments<?php echo Auth::isAdmin() ? '?filter=false' : ''; ?>">Discuss</a></li>
+								<?php endif; ?>
 								<li><a class="<?php echo $active('changelog'); ?>" href="/changelog">What's new<span class="nav__new-badge"></span></a></li>
 								<li><a class="<?php echo $active('about'); ?>" href="/sites/about">About</a></li>
 								<?php //The legal notice, which the footer of every page carried until it went ?>
@@ -222,11 +225,7 @@ $friendsBadge = $friendRequests > 0
 								<li><a class="<?php echo $active('timeHighscore'); ?>" href="/users/time_mode">Time Mode Highscore</a></li>
 							</ul>
 						</li>
-						<?php if (Auth::isLoggedIn()): ?>
-						<li><a class="<?php echo $active('discuss'); ?>" href="/comments<?php echo Auth::isAdmin() ? '?filter=false' : ''; ?>">Discuss</a></li>
-						<?php else: ?>
-						<li class="discuss-disabled"><a class="discuss-disabled__link">Discuss</a></li>
-						<?php endif; ?>
+						<li><a href="/forums">Forums</a></li>
 						<li class="menuIcons1">
 							<a href="#" id="soundButton" onclick="changeSound(); return false;"><img id="soundButtonImage" src="/img/<?php echo $soundSetting === 'off' ? 'sound-icon2.png' : 'sound-icon1.png'; ?>" width="25px"></a>
 						</li>
