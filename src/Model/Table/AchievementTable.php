@@ -78,4 +78,19 @@ class AchievementTable extends AppTable
 
 	// Multiple solves
 	public const int SOLVE_10_COUNT = 10;
+
+	// Daily streak: the days in a row (DailyStreak)
+	public const int DAILY_STREAK_WEEK_DAYS = 7;
+	public const int DAILY_STREAK_TWO_WEEKS_DAYS = 14;
+	public const int DAILY_STREAK_MONTH_DAYS = 30;
+	public const int DAILY_STREAK_HALF_YEAR_DAYS = 182;
+	public const int DAILY_STREAK_YEAR_DAYS = 365;
+
+	//The days in a row a daily streak achievement asks for, by its id
+	public const array DAILY_STREAK_DAYS = [
+		AchievementId::DAILY_STREAK_WEEK->value => self::DAILY_STREAK_WEEK_DAYS,
+		AchievementId::DAILY_STREAK_TWO_WEEKS->value => self::DAILY_STREAK_TWO_WEEKS_DAYS,
+		AchievementId::DAILY_STREAK_MONTH->value => self::DAILY_STREAK_MONTH_DAYS,
+		AchievementId::DAILY_STREAK_HALF_YEAR->value => self::DAILY_STREAK_HALF_YEAR_DAYS,
+		AchievementId::DAILY_STREAK_YEAR->value => self::DAILY_STREAK_YEAR_DAYS];
 }

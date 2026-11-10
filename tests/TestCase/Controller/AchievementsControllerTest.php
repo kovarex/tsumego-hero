@@ -3,6 +3,7 @@
 use App\Model\Table\AchievementConditionTable;
 use App\Model\Table\AchievementTable;
 use App\Utility\AchievementId;
+use App\Utility\DailyStreak;
 
 class AchievementsControllerTest extends IntegrationTestCase
 {
@@ -390,6 +391,22 @@ class AchievementsControllerTest extends IntegrationTestCase
 		$this->get('/achievements/view/' . AchievementId::SPRINT->value);
 		$sprint = $this->view;
 		$this->assertStringContainsString('class="progress"', $sprint);
+	}
+
+	//The daily streak achievements show the streak running now, on the cards and on their pages
+	public function testDailyStreakAchievementsShowTheStreakRunningNow(): void
+	{
+		$yesterday = new DateTimeImmutable(DailyStreak::today(null, new DateTimeImmutable()))->modify('-1 day')->format('Y-m-d');
+		new ContextPreparator(['user' => ['name' => 'achiever', 'streak_length' => 3, 'streak_best' => 9, 'streak_last_day' => $yesterday]]);
+		$this->login('achiever');
+
+		$this->get('/achievements');
+		$this->assertStringContainsString('3/' . AchievementTable::DAILY_STREAK_TWO_WEEKS_DAYS, $this->view);
+		$this->assertStringContainsString('3/' . AchievementTable::DAILY_STREAK_YEAR_DAYS, $this->view);
+
+		$this->get('/achievements/view/' . AchievementId::DAILY_STREAK_MONTH->value);
+		$this->assertStringContainsString('class="progress"', $this->view);
+		$this->assertStringContainsString('3/' . AchievementTable::DAILY_STREAK_MONTH_DAYS, $this->view);
 	}
 
 	public function testViewAchievementShowsNoProgressBarForNonCounterAchievement(): void

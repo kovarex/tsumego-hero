@@ -197,6 +197,17 @@ WHERE rn = 1;", [Auth::getUserID(), TimeModeSessionStatusTable::SOLVED]);
 		return $this;
 	}
 
+	//The daily streak achievements, by the longest streak the player reached (DailyStreak), so a freeze
+	//keeps counting towards them and a broken streak keeps them. It runs with the other standard checks:
+	//after the result that counts a day, and on page loads, which gives them to a streak reached before
+	//they existed.
+	public function checkDailyStreakAchievements(): AchievementChecker
+	{
+		$user = Auth::getUser();
+		$this->gainedFrom(max((int) ($user['streak_best'] ?? 0), (int) ($user['streak_length'] ?? 0)), self::DAILY_STREAK);
+		return $this;
+	}
+
 	//Unlocks every achievement of $achievementByThreshold whose threshold $value reached, the lowest first.
 	/** @param array<int, AchievementId> $achievementByThreshold */
 	private function gainedFrom(float|int $value, array $achievementByThreshold): void
@@ -305,6 +316,7 @@ WHERE rn = 1;", [Auth::getUserID(), TimeModeSessionStatusTable::SOLVED]);
 		$this->checkDanSolveAchievements();
 		$this->checkNoErrorAchievements();
 		$this->checkSetCompletedAchievements();
+		$this->checkDailyStreakAchievements();
 		return $this;
 	}
 
@@ -386,6 +398,13 @@ WHERE rn = 1;", [Auth::getUserID(), TimeModeSessionStatusTable::SOLVED]);
 		AchievementTable::COMPLETE_SETS_IV_SETS_COUNT => AchievementId::COMPLETE_SETS_IV,
 		AchievementTable::COMPLETE_SETS_V_SETS_COUNT => AchievementId::COMPLETE_SETS_V,
 		AchievementTable::COMPLETE_SETS_VI_SETS_COUNT => AchievementId::COMPLETE_SETS_VI];
+
+	private const array DAILY_STREAK = [
+		AchievementTable::DAILY_STREAK_WEEK_DAYS => AchievementId::DAILY_STREAK_WEEK,
+		AchievementTable::DAILY_STREAK_TWO_WEEKS_DAYS => AchievementId::DAILY_STREAK_TWO_WEEKS,
+		AchievementTable::DAILY_STREAK_MONTH_DAYS => AchievementId::DAILY_STREAK_MONTH,
+		AchievementTable::DAILY_STREAK_HALF_YEAR_DAYS => AchievementId::DAILY_STREAK_HALF_YEAR,
+		AchievementTable::DAILY_STREAK_YEAR_DAYS => AchievementId::DAILY_STREAK_YEAR];
 
 	//By the keys of AchievementConditionTable::DAN_SOLVE_CATEGORIES: one problem of the rank solved, and ten
 	private const array DAN_SOLVE = [

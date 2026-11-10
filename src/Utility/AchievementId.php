@@ -159,6 +159,13 @@ enum AchievementId: int
 	case RUBY = 113;
 	case DIAMOND = 114;
 
+	// Daily streak: days in a row (DailyStreak)
+	case DAILY_STREAK_WEEK = 116;
+	case DAILY_STREAK_TWO_WEEKS = 117;
+	case DAILY_STREAK_MONTH = 118;
+	case DAILY_STREAK_HALF_YEAR = 119;
+	case DAILY_STREAK_YEAR = 120;
+
 	//The number of achievements there are.
 	public static function count(): int
 	{
