@@ -1182,7 +1182,7 @@
 	border-top-left-radius: var(--radius-md);
 	border-top-right-radius: var(--radius-md);
 	background: linear-gradient(rgb(100, 100, 100), rgb(36, 36, 36));
-	color: white;
+	color: var(--color-white);
 	height: 31px;
 	width: 100%;
 	font-weight: var(--weight-heavy);

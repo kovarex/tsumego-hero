@@ -124,7 +124,7 @@
   text-align: center;
 }
 .admin-area__badge {
-  color: #fff;
+  color: var(--color-white);
   background: var(--color-red);
 }
 .admin-area__count {
@@ -170,7 +170,7 @@
 .sgf-review__tick--reviewed:hover {
   border-color: var(--color-green);
   background: var(--color-green);
-  color: #fff;
+  color: var(--color-white);
 }
 .sgf-review__tick:disabled {
   opacity: 0.6;

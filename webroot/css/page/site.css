@@ -841,7 +841,7 @@ nav ul ul ul li {
   padding: 30px;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   text-align: left;
   position: relative;
   z-index: 2;
@@ -855,7 +855,7 @@ nav ul ul ul li {
   margin: 15px 0;
   padding: 10px;
   background: rgba(0, 0, 0, 0.05);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
 }
 .error-page__fact-name {
   color: var(--text-color);
@@ -879,7 +879,7 @@ nav ul ul ul li {
   display: block;
   padding: 10px;
   background: rgba(0, 0, 0, 0.03);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
 }
 .error-page__trace-lines {
   overflow: auto;
@@ -1234,7 +1234,7 @@ nav ul ul ul li {
 	}
 	#account-bar-xp {
 		margin-top: 4px;
-		font-size: 11px;
+		font-size: var(--text-xs);
 		letter-spacing: 0;
 	}
 	#heroProfile,

@@ -169,13 +169,13 @@
 .classes__cell--solved
 {
 	background: var(--color-green);
-	color: #fff;
+	color: var(--color-white);
 }
 
 .classes__cell--late
 {
 	background: var(--color-yellow);
-	color: #000;
+	color: var(--color-black);
 }
 
 .classes__cell--solved.classes__cell--with-misplays
@@ -204,7 +204,7 @@
 .classes__cell--tried
 {
 	background: var(--color-red);
-	color: #fff;
+	color: var(--color-white);
 }
 
 .classes__solved-count
@@ -253,7 +253,7 @@ a[href="/sets"]
 	margin-right: var(--space-2);
 	border-radius: var(--radius-sm);
 	background: var(--color-yellow);
-	color: #000;
+	color: var(--color-black);
 	font-size: var(--font-size-sm);
 	text-transform: uppercase;
 }

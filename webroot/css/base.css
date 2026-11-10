@@ -135,7 +135,7 @@
 	li a
 	{
 		display: block;
-		color: white;
+		color: var(--color-white);
 		text-align: center;
 		padding: 5px 5px;
 		text-decoration: none;

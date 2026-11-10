@@ -79,7 +79,7 @@
   padding: 40px;
   width: 345px;
   flex: 0 0 345px;
-  background-color: black;
+  background-color: var(--color-black);
   background-image: url("/img/loginBg3.png");
   background-size: cover;
   background-position: center;

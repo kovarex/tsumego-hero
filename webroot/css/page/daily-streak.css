@@ -45,7 +45,7 @@
 	border-radius: 8px;
 	background: var(--surface-near-black);
 	color: var(--color-white);
-	font-size: 11px;
+	font-size: var(--text-xs);
 	line-height: 16px;
 	text-align: center;
 	opacity: 0.6;
