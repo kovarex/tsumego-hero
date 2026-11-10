@@ -162,6 +162,14 @@ h1 {
 .eloTooltip:hover .eloTooltiptext {
   display: block;
 }
+/* A number without an explanation behind it is no tooltip */
+.eloTooltip:has(.eloTooltiptext:empty) {
+  border-bottom: 0;
+  cursor: auto;
+}
+.eloTooltip:hover .eloTooltiptext:empty {
+  display: none;
+}
 .besogo-board {
   /* Do NOT force the width here: besogo's JS sets an inline width per
      orientation (60% full, 78% horizontal half, 30% vertical half, 50% in

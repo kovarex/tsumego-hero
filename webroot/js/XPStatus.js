@@ -93,9 +93,10 @@ class XPStatus
 			return;
 		}
 
+		//With one significant digit, so a small change shows as it is (+0.5, +0.04) without a tooltip
 		let ratingGain = calculateRatingChange(this.userRating, this.tsumegoRating, 1, playerRatingCalculationModifier);
-		this.ratingGainShort.textContent = '+' + showRatingShort(ratingGain);
-		this.ratingGainLong.textContent = '+' + showRatingLong(ratingGain);
+		this.ratingGainShort.textContent = '+' + formatSignificant(ratingGain, 1);
+		this.ratingGainLong.textContent = '';
 		this.ratingHeader.textContent = 'Rating: ';
 
 		if (this.solved)
@@ -110,9 +111,9 @@ class XPStatus
 		{
 			let ratingLoss = this.ratingChange(this.userRating, false);
 			this.ratingSeparator.textContent = '/';
-			this.ratingLossShort.textContent = showRatingShort(ratingLoss);
+			this.ratingLossShort.textContent = formatSignificant(ratingLoss, 1);
 			if (this.failChangesRating())
-				this.ratingLossLong.textContent = showRatingLong(ratingLoss);
+				this.ratingLossLong.textContent = '';
 			else
 				this.ratingLossLong.textContent = 'You failed this problem ' + this.failsInARow
 					+ ' times in a row, more fails don\'t lower your rating until you solve it.';

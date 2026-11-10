@@ -5,9 +5,26 @@ use App\Utility\Level;
 use App\Utility\Rating;
 use App\Utility\TsumegoUtil;
 use App\Utility\TsumegoXPAndRating;
+use App\Utility\Util;
 
 class TsumegoXPAndRatingTest extends IntegrationTestCase
 {
+	//The rating a solve or a fail brings shows with one significant digit, so a small gain is seen as it is (+0.2), not
+	//rounded to 0 with the real number in a tooltip; only an explanation keeps a tooltip
+	public function testRatingChangeShowsOneSignificantDigit(): void
+	{
+		$context = new ContextPreparator(['user' => ['rating' => 2400], 'tsumego' => ['set_order' => 1, 'rating' => 1800]]);
+		$browser = Browser::instance();
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+
+		$gain = Rating::calculateRatingChange(2400, 1800, 1, Constants::$PLAYER_RATING_CALCULATION_MODIFIER);
+		$loss = Rating::calculateRatingChange(2400, 1800, 0, Constants::$PLAYER_RATING_CALCULATION_MODIFIER);
+		$this->assertSame('0.2', Util::formatSignificant($gain, 1), 'the case asks for a gain under 1');
+		$browser->waitUntilJs('document.getElementById("ratingGainShort").textContent !== ""');
+		$this->assertSame(['+' . Util::formatSignificant($gain, 1), Util::formatSignificant($loss, 1), '', ''], $browser->driver->executeScript(
+			'return ["ratingGainShort", "ratingLossShort", "ratingGainLong", "ratingLossLong"].map(id => document.getElementById(id).textContent);'));
+	}
+
 	public function testshowNormalXP(): void
 	{
 		$context = new ContextPreparator(['user' => ['premium' => 1], 'tsumego' => 1]);

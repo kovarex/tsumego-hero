@@ -38,27 +38,6 @@ function formatMultiplier(value)
 	return `&times; ${value}`;
 }
 
-function showRatingShort(rating)
-{
-	const abs = Math.abs(rating);
-
-	if (abs >= 1)
-		return String(Math.round(rating));
-	if (abs == 0)
-		return '0';
-
-	let exponent = Math.floor(Math.log10(abs));
-
-	// exponent is negative, e.g. 0.0011 → exponent = -3
-	const decimals = -exponent;
-	return rating.toFixed(decimals);
-}
-
-function showRatingLong(rating)
-{
-	return String(Math.round((rating * 10)) / 10);
-}
-
 function updateSprintStatus(seconds)
 {
 	document.getElementById("status2").innerHTML = Math.floor(seconds / 60) + ":" + String(seconds % 60).padStart(2,'0');
