@@ -40,7 +40,7 @@ use App\Utility\ViteManifest;
 			<?php if (UserTable::signsInOnlyWithGoogle($user)): ?>
 			<tr>
 				<td><strong>Sign-in:</strong> Google</td>
-				<td><a href="/users/switchToPassword" id="switch-to-password-link">switch to email and password</a></td>
+				<td><a href="/users/switchToPassword" id="switch-to-password-link">switch to a username and password</a></td>
 			</tr>
 			<?php endif; ?>
 			<?php if ($unconfirmedEmail): ?>

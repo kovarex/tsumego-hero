@@ -104,7 +104,7 @@ class UserTable extends AppTable
 	{
 		return $validator
 			->allowEmptyString('name')
-			->lengthBetween('name', [3, 30], 'The length of the name should have at least 3 characters')
+			->lengthBetween('name', [self::USERNAME_MIN_LENGTH, self::USERNAME_MAX_LENGTH], 'The length of the name should have at least 3 characters')
 			->requirePresence('email', 'create', 'Insert Email')
 			->notBlank('email', 'Insert Email')
 			->email('email', false, 'Enter a valid email-address')
@@ -514,6 +514,24 @@ class UserTable extends AppTable
 	private static function syncToForum(int $userId, string $displayName): void
 	{
 		PhpbbNames::sync(Util::connection(), $userId, $displayName);
+	}
+
+	//The length of a login name (the name column), in characters
+	public const int USERNAME_MIN_LENGTH = 3;
+	public const int USERNAME_MAX_LENGTH = 30;
+
+	//A free login name to offer an account that has none: the part of its address before the "@",
+	//kept to letters, digits, dots, dashes and underscores, with a number added when it is taken.
+	public static function suggestUsername(string $email): string
+	{
+		$base = substr(preg_replace('/[^A-Za-z0-9._-]/', '', strstr($email, '@', true) ?: $email) ?? '', 0, self::USERNAME_MAX_LENGTH - 4);
+		if (strlen($base) < self::USERNAME_MIN_LENGTH)
+			$base = 'player' . $base;
+		$table = TableRegistry::getTableLocator()->get('User');
+		$name = $base;
+		for ($number = 2; $table->exists(['name' => $name]); $number++)
+			$name = $base . $number;
+		return $name;
 	}
 
 	//What password_hash holds for an account that has no password: it signs in with Google only.

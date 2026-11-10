@@ -938,6 +938,10 @@ If you have not asked for this, ignore this email, your account stays as it is.'
 		$this->set('googleState', base64_encode((string) json_encode(['redirect' => $here, 'signature' => $this->signRedirectUrl($here)])));
 		$this->set('email', $user['email']);
 		$this->set('displayName', $user['display_name']);
+		// A Google account has no login name, so it picks one here to sign in with, besides the address
+		$needsUsername = empty($user['name']);
+		$this->set('needsUsername', $needsUsername);
+		$this->set('username', $needsUsername ? UserTable::suggestUsername((string) $user['email']) : $user['name']);
 		if (!$this->request->is('post'))
 			return null;
 
@@ -952,11 +956,14 @@ If you have not asked for this, ignore this email, your account stays as it is.'
 		$displayName = UserTable::normalizeDisplayName((string) ($this->input('display_name') ?? ''));
 		if ($displayName === '')
 			$displayName = $user['display_name'];
+		$username = $needsUsername ? trim((string) ($this->input('username') ?? '')) : (string) $user['name'];
 		// what the player typed stays in the form when something is wrong with it
 		$this->set('email', $email);
 		$this->set('displayName', $displayName);
+		$this->set('username', $username);
 
 		$problem = $this->passwordProblem((string) ($this->input('password1') ?? ''), (string) ($this->input('password2') ?? ''))
+			?? ($needsUsername ? $this->usernameProblem($username, $userID) : null)
 			?? $this->addressProblem($email, $userID)
 			?? ($displayName !== $user['display_name'] ? $this->displayNameProblem($displayName, $userID) : null);
 		if ($problem)
@@ -975,17 +982,32 @@ If you have not asked for this, ignore this email, your account stays as it is.'
 			$this->rename($userID, $user['display_name'], $displayName);
 
 		$hash = password_hash((string) $this->input('password1'), PASSWORD_DEFAULT);
-		Auth::saveUserField('password_hash', $hash);
+		Auth::saveUserFields(['name' => $username, 'password_hash' => $hash]);
 		// The tokens of the other devices were issued without the password and stop fitting
 		JwtAuth::setAuthCookie($userID, $hash);
 
 		$emailer = $this->accountMail($user['email'], 'Your Tsumego Hero account now has a password');
-		$this->sendNotification($emailer, 'Your Tsumego Hero account now signs in with its email and a password. Signing in with Google keeps working too.'
+		$this->sendNotification($emailer, 'Your Tsumego Hero account now signs in with its username ' . $username . ' or its email, and a password. Signing in with Google keeps working too.'
 			. "\nIf you did not do this, set a new password at " . Router::url('/users/resetpassword', true) . ' and write to me@tsumego.com.');
 
-		CookieFlash::set('Your account now signs in with ' . $user['email'] . ' and your password.'
+		CookieFlash::set('Your account now signs in with the username ' . $username . ' or ' . $user['email'] . ', and your password.'
 			. ($addressChanges ? ' We sent a confirmation link to ' . $email . ', the address changes once you open it.' : ''), 'success');
 		return $this->redirect('/users/settings');
+	}
+
+	//The message to show for a login name the signed in account can not take, or null when it can.
+	//The rules of a sign-up (UserTable::validationDefault(), the unique index), and no "@": signing in
+	//looks for the name before the address, so a name that is an address would hide an account.
+	private function usernameProblem(string $username, int $userID): ?string
+	{
+		$length = mb_strlen($username);
+		if ($length < UserTable::USERNAME_MIN_LENGTH || $length > UserTable::USERNAME_MAX_LENGTH)
+			return 'The username needs ' . UserTable::USERNAME_MIN_LENGTH . ' to ' . UserTable::USERNAME_MAX_LENGTH . ' characters.';
+		if (str_contains($username, '@'))
+			return 'The username must not contain "@".';
+		if ($this->fetchTable('User')->exists(['name' => $username, 'id !=' => $userID]))
+			return 'That username is taken, choose another one.';
+		return null;
 	}
 
 	//The message to show for an address the signed in account can not take, or null when it can.

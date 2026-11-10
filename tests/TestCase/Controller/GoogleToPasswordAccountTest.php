@@ -69,7 +69,7 @@ class GoogleToPasswordAccountTest extends IntegrationTestCase
 	private function switchToPassword(array $data): void
 	{
 		JwtAuth::clearCache();
-		$this->post('/users/switchToPassword', $data + ['password1' => self::PASSWORD, 'password2' => self::PASSWORD]);
+		$this->post('/users/switchToPassword', $data + ['username' => 'janaPlays', 'password1' => self::PASSWORD, 'password2' => self::PASSWORD]);
 	}
 
 	private function stored(array $user): array
@@ -119,6 +119,65 @@ class GoogleToPasswordAccountTest extends IntegrationTestCase
 		JwtAuth::clearCache();
 		$this->post('/users/login', ['username' => 'player@gmail.com', 'password' => self::PASSWORD]);
 		$this->assertSame($user['id'], JwtAuth::validateToken($this->browserCookies()['auth_token'] ?? ''), 'signs in with the address and the password');
+
+		$this->logout();
+		JwtAuth::clearCache();
+		$this->post('/users/login', ['username' => 'janaPlays', 'password' => self::PASSWORD]);
+		$this->assertSame($user['id'], JwtAuth::validateToken($this->browserCookies()['auth_token'] ?? ''), 'signs in with the username and the password');
+	}
+
+	//The account picks the login name it signs in with, offered one made of its address
+	public function testTheSwitchGivesTheAccountAUsername(): void
+	{
+		$user = $this->googleAccount();
+		$this->passwordAccount('player', 'someone@example.com', 'Someone');
+		$this->signedIn($user);
+
+		$this->get('/users/switchToPassword');
+		$this->assertResponseContains('Username (for signing in)');
+		$this->assertResponseContains('value="player2"', 'the part before the "@", numbered as "player" is taken');
+
+		$this->switchToPassword(['email' => 'player@gmail.com', 'username' => 'janaPlays']);
+		$this->assertSame('janaPlays', $this->stored($user)['name']);
+	}
+
+	//The login name of another account is refused
+	public function testATakenUsernameIsRefused(): void
+	{
+		$user = $this->googleAccount();
+		$this->passwordAccount('takenName', 'other@example.com', 'Other Player');
+		$this->signedIn($user);
+
+		$this->switchToPassword(['email' => 'player@gmail.com', 'username' => 'takenName']);
+
+		$stored = $this->stored($user);
+		$this->assertNull($stored['name']);
+		$this->assertSame(UserTable::NO_PASSWORD, $stored['password_hash']);
+		$this->assertResponseContains('That username is taken, choose another one.');
+	}
+
+	//The rules of a sign-up: 3 to 30 characters; and no "@", as signing in looks for the name before the address
+	/** @return array<string, array{string, string}> */
+	public static function badUsernames(): array
+	{
+		return [
+			'too short' => ['ab', 'The username needs 3 to 30 characters.'],
+			'too long' => [str_repeat('a', 31), 'The username needs 3 to 30 characters.'],
+			'an address' => ['other@example.com', 'The username must not contain &quot;@&quot;.'],
+		];
+	}
+
+	#[\PHPUnit\Framework\Attributes\DataProvider('badUsernames')]
+	public function testTheUsernameRulesApply(string $username, string $message): void
+	{
+		$user = $this->googleAccount();
+		$this->signedIn($user);
+
+		$this->switchToPassword(['email' => 'player@gmail.com', 'username' => $username]);
+
+		$this->assertNull($this->stored($user)['name']);
+		$this->assertSame(UserTable::NO_PASSWORD, $this->stored($user)['password_hash']);
+		$this->assertResponseContains($message);
 	}
 
 	//The Google button keeps signing the switched account in, and no longer moves it to the

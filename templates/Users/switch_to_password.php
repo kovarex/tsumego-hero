@@ -14,12 +14,14 @@ use App\Utility\Constants;
  * @var string $googleState
  * @var string $email
  * @var string $displayName
+ * @var bool $needsUsername
+ * @var string $username
  */
 ?>
 <div id="login-box" class="users form">
 	<div class="left signin" id="switch-to-password">
 		<h1>Switch to email and password</h1>
-		<p>Your account signs in with Google. Give it a password and it signs in with its email and that password; the Google button keeps working too. Your progress, rating and achievements stay, it is the same account.</p>
+		<p>Your account signs in with Google. Give it a username and a password and it signs in with the username or its email, and that password; the Google button keeps working too. Your progress, rating and achievements stay, it is the same account.</p>
 		<?php if (!$signedInRecently): ?>
 			<p id="switch-sign-in-again">For your security, sign in with Google again first (within the last <?php echo intdiv(Auth::RECENT_SIGN_IN_SECONDS, 60); ?> minutes).</p>
 			<?php echo $this->element('google_signin', ['googleState' => $googleState]); ?>
@@ -35,6 +37,13 @@ use App\Utility\Constants;
 				<input name="display_name" maxlength="50" autocomplete="off" type="text" id="SwitchDisplayName" value="<?php echo h($displayName); ?>"/>
 			</div>
 			<p class="hint">The name other players see, 3-50 characters and unique. Change it here if you like.</p>
+			<?php if ($needsUsername): ?>
+			<div class="input text required">
+				<label for="SwitchUsername">Username (for signing in)</label>
+				<input name="username" autocomplete="username" maxlength="<?php echo UserTable::USERNAME_MAX_LENGTH; ?>" type="text" id="SwitchUsername" required="required" value="<?php echo h($username); ?>"/>
+			</div>
+			<p class="hint"><?php echo UserTable::USERNAME_MIN_LENGTH . '-' . UserTable::USERNAME_MAX_LENGTH; ?> characters and unique. Only for signing in: other players see the display name.</p>
+			<?php endif; ?>
 			<div class="input password required">
 				<label for="SwitchPassword1">Password</label>
 				<input name="password1" autocomplete="new-password" type="password" id="SwitchPassword1" required="required"/>
