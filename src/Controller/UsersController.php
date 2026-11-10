@@ -220,7 +220,7 @@ class UsersController extends AppController
 		$this->set('achievementCount', $this->fetchTable('Achievement')->find()->count());
 
 		// The section of the training shows only for a player who trained.
-		$this->set('mistakeTraining', MistakeTraining::profile($userID, MistakeTraining::profileStart()));
+		$this->set('mistakeTraining', MistakeTraining::profile($userID, MistakeTraining::profileStart($userID)));
 		return null;
 	}
 

@@ -23,7 +23,7 @@ class MistakeTrainingTest extends IntegrationTestCase
 	{
 		Util::execute(
 			'UPDATE mistake_training_pool SET next_due = ?, last_review_day = NULL, last_mistake_training_result_id = NULL WHERE user_id = ? AND tsumego_id = ?',
-			[date('Y-m-d H:i:s', strtotime('-1 minute')), $userId, $tsumegoId]
+			[MistakeTraining::today() . ' 00:00:00', $userId, $tsumegoId]
 		);
 		MistakeTraining::recordResult($userId, $tsumegoId, PlayOutcome::SolvedClean, null);
 	}
@@ -634,7 +634,7 @@ class MistakeTrainingTest extends IntegrationTestCase
 	//moment the way an import brings them, on the bottom rung and untried today.
 	private function prepareTraining(array ...$problems): ContextPreparator
 	{
-		$due = date('Y-m-d H:i:s', strtotime('-1 hour'));
+		$due = MistakeTraining::today() . ' 00:00:00';
 		$tsumegos = [];
 		foreach ($problems as $index => $problem)
 			$tsumegos[] = ['set_order' => $index + 1, 'status' => $problem + ['name' => 'V', 'mistake_training_due' => $due]];
@@ -693,7 +693,7 @@ class MistakeTrainingTest extends IntegrationTestCase
 			'tsumegos' => [['set_order' => 1], ['set_order' => 2], ['set_order' => 3], ['set_order' => 4]],
 		]);
 		$userId = $context->user['id'];
-		$due = date('Y-m-d H:i:s', strtotime('-1 hour'));
+		$due = MistakeTraining::today() . ' 00:00:00';
 		foreach ([2, 0, 3] as $index)
 			MistakeTraining::addProblem($userId, $this->tsumegoId($context, $index), $due);
 		$order = fn(int ...$indexes) => array_map(fn($index) => $this->tsumegoId($context, $index), $indexes);

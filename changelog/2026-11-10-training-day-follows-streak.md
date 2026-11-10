@@ -1,0 +1,1 @@
+Fixed: The [mistake training](/mistake-training/overview) now starts a new day together with your daily streak, at 3:00 in your own time zone, so the reviews you do after midnight count for the day you are still playing.

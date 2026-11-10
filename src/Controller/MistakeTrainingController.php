@@ -73,7 +73,7 @@ class MistakeTrainingController extends AppController
 		$this->set('todaysTrainingLink', $todaysTraining
 			? MistakeTraining::$PLAY_LINK_PREFIX . $todaysTraining[0]['set_connection_id']
 			: null);
-		$this->set('training', MistakeTraining::profile($userId, MistakeTraining::profileStart()));
+		$this->set('training', MistakeTraining::profile($userId, MistakeTraining::profileStart($userId)));
 		$this->render('/Tsumegos/mistake_training');
 		return null;
 	}
