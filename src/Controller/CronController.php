@@ -8,6 +8,7 @@ use App\Attribute\HttpGet;
 use App\Model\Table\AchievementConditionTable;
 use App\Model\Table\TsumegoStatusTable;
 use App\Utility\AchievementId;
+use App\Utility\DailyReset;
 use App\Utility\Live;
 use App\Utility\SchedulePublisher;
 use App\Utility\Trash;
@@ -16,7 +17,19 @@ use Cake\ORM\TableRegistry;
 
 class CronController extends AppController
 {
-	/* Supposed to be ran daily to reset hearts and hero powers */
+	//Run every hour (or more often): gives the players whose day turned since the last run their hearts and hero
+	//powers back (DailyReset), as each player's day turns at 03:00 in their own time zone
+	#[HttpGet]
+	public function hourly(string $secret)
+	{
+		if ($secret != CRON_SECRET)
+			throw new ForbiddenException('Wrong cron secret.');
+		DailyReset::resetDuePlayers();
+		return $this->respond('');
+	}
+
+	//Run daily at midnight UTC: the day of the site (the user of the day, the daily highscore, the statuses of the
+	//problems); the hearts and the hero powers are the player's own day, see hourly()
 	#[HttpGet]
 	public function daily(string $secret)
 	{

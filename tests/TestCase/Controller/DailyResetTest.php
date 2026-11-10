@@ -131,14 +131,83 @@ class DailyResetTest extends IntegrationTestCase
 		$this->assertSame(0, $this->signInAt($context, '2026-11-11 02:00:00')['damage'], '03:00 in Prague, the next day');
 	}
 
-	//The profile shows the hearts of another player as they are on that player's day: a row waiting for its
-	//reset has lost none yet
-	public function testTheProfileShowsTheHeartsOfThePlayersDay(): void
+	//Players in five zones, none signed in, who lost 7 hearts, used a power and drank a potion on the 9th
+	/** @return array<string, int> The ids of the players by their zone, 'UTC' for the one whose zone isn't known */
+	private function playersInZones(): array
 	{
-		// 08:59 in Prague, 02:59 in New York
-		Clock::freeze(new DateTimeImmutable('2026-11-10 07:59:00', new DateTimeZone('UTC')));
-		$this->assertSame(0, DailyReset::damageOf(['damage' => 7, 'time_zone' => 'Europe/Prague', 'daily_reset_day' => '2026-11-09']));
-		$this->assertSame(7, DailyReset::damageOf(['damage' => 7, 'time_zone' => 'Europe/Prague', 'daily_reset_day' => '2026-11-10']));
-		$this->assertSame(7, DailyReset::damageOf(['damage' => 7, 'time_zone' => 'America/New_York', 'daily_reset_day' => '2026-11-09']), 'Still the 9th in New York');
+		self::freezeAtNoonOf('2026-11-09');
+		$zones = ['Europe/Prague', 'Europe/London', 'America/New_York', 'Asia/Tokyo', null];
+		$context = new ContextPreparator(['other-users' => array_map(fn(?string $zone) => [
+			'name' => 'player in ' . ($zone ?? 'UTC'), 'time_zone' => $zone, 'damage' => 7, 'used_sprint' => 1, 'daily_reset_day' => '2026-11-09'], $zones)]);
+		Auth::logout();
+		$ids = [];
+		foreach ($zones as $index => $zone)
+		{
+			$id = (int) $context->otherUsers[$index]['id'];
+			AchievementConditionTable::put($id, AchievementConditionTable::CATEGORY_POTION, 1);
+			$ids[$zone ?? 'UTC'] = $id;
+		}
+		return $ids;
+	}
+
+	//The hearts, the sprint and the potions of the day of each player, as the database has them
+	/**
+	 * @param array<string, int> $ids
+	 * @return array<string, array{int, int, float}>
+	 */
+	private static function stored(array $ids): array
+	{
+		return array_map(fn(int $id) => [
+			(int) Util::query('SELECT damage FROM user WHERE id = ?', [$id])[0]['damage'],
+			(int) Util::query('SELECT used_sprint FROM user WHERE id = ?', [$id])[0]['used_sprint'],
+			AchievementConditionTable::value($id, AchievementConditionTable::CATEGORY_POTION)], $ids);
+	}
+
+	//At 02:00 UTC it is 03:00 in Prague and 11:00 in Tokyo, where the 10th began, but 02:00 in London and in UTC
+	//and the evening of the 9th in New York: the run resets the first two, in the database, without their requests
+	public function testTheHourlyRunResetsThePlayersWhoseDayTurned(): void
+	{
+		$ids = $this->playersInZones();
+		Clock::freeze(new DateTimeImmutable('2026-11-10 02:00:00', new DateTimeZone('UTC')));
+
+		$this->assertSame(2, DailyReset::resetDuePlayers());
+
+		$this->assertSame([
+			'Europe/Prague' => [0, 0, 0.0],
+			'Europe/London' => [7, 1, 1.0],
+			'America/New_York' => [7, 1, 1.0],
+			'Asia/Tokyo' => [0, 0, 0.0],
+			'UTC' => [7, 1, 1.0],
+		], self::stored($ids));
+	}
+
+	//A second run in the same hour finds nobody behind, so it changes nothing, also not what was lost since
+	public function testASecondRunIsANoOp(): void
+	{
+		$ids = $this->playersInZones();
+		Clock::freeze(new DateTimeImmutable('2026-11-10 02:00:00', new DateTimeZone('UTC')));
+		DailyReset::resetDuePlayers();
+		Util::execute('UPDATE user SET damage = 3 WHERE id = ?', [$ids['Europe/Prague']]);
+		$before = self::stored($ids);
+
+		Clock::freeze(new DateTimeImmutable('2026-11-10 02:30:00', new DateTimeZone('UTC')));
+		$this->assertSame(0, DailyReset::resetDuePlayers());
+		$this->assertSame($before, self::stored($ids));
+	}
+
+	//The cron calls it every hour, with its secret
+	public function testTheHourlyCronResetsThePlayersWhoseDayTurned(): void
+	{
+		$ids = $this->playersInZones();
+		Clock::freeze(new DateTimeImmutable('2026-11-10 08:30:00', new DateTimeZone('UTC')));
+
+		$this->get('/cron/hourly/wrong');
+		$this->assertResponseCode(403);
+		$this->assertSame(7, self::stored($ids)['America/New_York'][0]);
+
+		$this->get('/cron/hourly/' . CRON_SECRET);
+		$this->assertResponseOk();
+		// 03:30 in New York, 08:30 in London and in UTC: everyone is on the 10th
+		$this->assertSame([0, 0, 0, 0, 0], array_values(array_map(fn(array $player) => $player[0], self::stored($ids))));
 	}
 }

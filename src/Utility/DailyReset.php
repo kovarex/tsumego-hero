@@ -7,9 +7,11 @@ use App\Model\Table\AchievementConditionTable;
 //What a player gets back every day: the hearts (damage) and the hero powers of the day (the used_ flags), and
 //the count of potions drunk that day (achievement condition CATEGORY_POTION). They come back when the player's
 //own day turns, at DailyStreak::DAY_START_HOUR in their time zone like the daily streak and the mistake
-//training, not at midnight of the server. There is no cron for it: the row keeps the player's day of the last
-//reset (user.daily_reset_day), and the first time the player is signed in on a later day (Auth::init(), on every
-//request) the reset is done, however long they were away.
+//training, not at midnight of the server. The row keeps the player's day of the last reset (user.daily_reset_day).
+//The hourly cron (CronController::hourly, resetDuePlayers()) resets every player whose day turned, so every reader
+//of the row sees the day's values; the first request of the player's new day does it too (apply()), so the one who
+//plays gets them at 03:00 sharp rather than at the next run. Both only reset a row whose day is behind, so a day is
+//reset once whichever comes first.
 /** @phpstan-import-type UserRow from \App\Utility\RowTypes */
 class DailyReset
 {
@@ -61,12 +63,30 @@ class DailyReset
 		return ['daily_reset_day' => $today] + self::COLUMNS + $user;
 	}
 
-	//The hearts a player lost today, for showing another player's row (the profile): a row that waits for its
-	//reset has lost none yet.
-	/** @param UserRow $user */
-	public static function damageOf(array $user): int
+	//Reset every player whose day turned since their last reset, a time zone at a time: the day of a zone is
+	//worked out here, and one UPDATE takes all its players that are behind it, the potions of those players first,
+	//as the condition reads the day before it moves. Returns how many players were reset.
+	public static function resetDuePlayers(): int
 	{
-		return self::isDue($user) ? 0 : (int) ($user['damage'] ?? 0);
+		$now = Clock::now();
+		$assignments = implode(', ', array_map(fn(string $column) => 'u.' . $column . ' = ?', array_keys(self::COLUMNS)));
+		$reset = 0;
+		foreach (Util::query('SELECT DISTINCT time_zone FROM user') as $row)
+		{
+			$timeZone = $row['time_zone'];
+			$today = DailyStreak::today($timeZone, $now);
+			$behind = 'u.time_zone <=> ? AND (u.daily_reset_day IS NULL OR u.daily_reset_day < ?)';
+			Util::database()->transactional(function () use ($timeZone, $today, $behind, $assignments, &$reset) {
+				Util::execute(
+					'UPDATE achievement_condition c JOIN user u ON u.id = c.user_id SET c.value = 0'
+					. ' WHERE c.achievement_condition_category_id = ? AND c.value <> 0 AND ' . $behind,
+					[AchievementConditionTable::CATEGORY_POTION, $timeZone, $today]);
+				$reset += Util::execute(
+					'UPDATE user u SET ' . $assignments . ', u.daily_reset_day = ? WHERE ' . $behind,
+					[...array_values(self::COLUMNS), $today, $timeZone, $today]);
+			});
+		}
+		return $reset;
 	}
 
 	/** @param UserRow $user */
