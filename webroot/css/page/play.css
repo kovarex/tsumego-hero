@@ -931,12 +931,6 @@ h1 {
   margin-top: var(--space-2);
 }
 
-/* The problem buttons: the first, the last and three on each side of the open problem; a phone
-   shows one on each side (below) */
-.problem-nav__item--beyond3 {
-  display: none;
-}
-
 /* Mobile: stack the besogo control/tool panels and let the board fill the
    viewport. The board (besogo) sizes itself, so only the surrounding chrome
    needs the fluid treatment. The embedded JS sets an inline width:60% +
@@ -1155,10 +1149,6 @@ h1 {
     padding: var(--space-2) var(--play-panel-padding) var(--space-4);
     border-left: 0;
     border-top: 1px solid var(--surface-border-muted);
-  }
-  /* Both classes: .problem-nav__item (tsumego.css, later in the layer) sets display too */
-  .problem-nav__item.problem-nav__item--beyond1 {
-    display: none;
   }
   /* The row of the messages fits a phone: a smaller message and narrower buttons */
   .play-message__status h2,

@@ -203,19 +203,26 @@ use App\Utility\ViteManifest;
 
 		<?php if (isset($tsumegoButtons)): ?>
 			<?php
-			//How far each button is from the open problem, so a phone shows fewer around it; the first and the last always show
+			//A narrow row shows 5 buttons, a wider one 9, a wide one all 13 (tsumego.css): the first, the last and the
+			//open problem always, then its neighbours, the nearest first, so the row is full at the ends of a set too
 			$currentIndex = null;
 			foreach ($tsumegoButtons as $index => $tsumegoButton)
 				if ($tsumegoButton->isCurrentlyOpened)
 					$currentIndex = $index;
+			$lastIndex = count($tsumegoButtons) - 1;
+			$alwaysShown = array_unique(array_filter([0, $lastIndex, $currentIndex], fn($index) => $index !== null));
+			$neighbours = array_values(array_diff(array_keys((array) $tsumegoButtons), $alwaysShown));
+			usort($neighbours, fn($a, $b) => [abs($a - ($currentIndex ?? 0)), $a] <=> [abs($b - ($currentIndex ?? 0)), $b]);
+			$smallestRows = [];
+			foreach ($neighbours as $rank => $index)
+				$smallestRows[$index] = count($alwaysShown) + $rank < 5 ? 5 : (count($alwaysShown) + $rank < 9 ? 9 : 13);
 			?>
 			<div class="problem-nav">
 				<div class="problem-nav__inner">
 					<?php
 					foreach ($tsumegoButtons as $index => $tsumegoButton)
 					{
-						$isEnd = $index == 0 || $index == count($tsumegoButtons) - 1;
-						$tsumegoButton->distance = $currentIndex === null || $isEnd ? 0 : abs($index - $currentIndex);
+						$tsumegoButton->smallestRow = $smallestRows[$index] ?? 0;
 						$tsumegoButton->render();
 						if ($index == 0 || $index == count($tsumegoButtons) - 2)
 							echo '<span class="gap10"></span>';
