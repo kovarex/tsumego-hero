@@ -75,6 +75,7 @@ use App\Utility\ViteManifest;
 				</td>
 			</tr>
 		</table>
+		<?php echo $this->element('profile_daily_streak', ['user' => $user]); ?>
 	</div>
 
 	<?php $highestRating = UserTable::getHighestRating($user); ?>
