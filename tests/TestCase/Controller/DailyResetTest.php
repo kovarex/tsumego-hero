@@ -103,6 +103,21 @@ class DailyResetTest extends IntegrationTestCase
 		$this->assertSame(['damage' => 0, 'powers' => 0, 'day' => '2026-11-11'], $this->signInAt($context, '2026-11-11 02:00:00'));
 	}
 
+	//The reset runs on every request (Auth::init()), so it must cost nothing on the day's other requests: the
+	//day of the row is compared in PHP and the database gets no write
+	public function testARequestOnTheSameDayWritesNothing(): void
+	{
+		$context = $this->playerOf('Europe/Prague');
+		$this->signInAt($context, '2026-11-10 02:01:00');
+		$writes = fn() => array_sum(array_map(fn(array $row) => (int) $row['Value'],
+			Util::query("SHOW SESSION STATUS WHERE Variable_name IN ('Com_update', 'Com_insert', 'Com_delete')")));
+
+		$before = $writes();
+		$_COOKIE['hackedLoggedInUserID'] = $context->user['id'];
+		Auth::init();
+		$this->assertSame($before, $writes(), 'No write on a later request of the same day');
+	}
+
 	//On the day of the deploy, the migration gives every player the day they are in (AddDailyResetDay), so the
 	//hearts the cron gave at midnight UTC are the ones of that day: none come back again before the player's next day
 	public function testNoSecondRefillOnTheDayOfTheDeploy(): void

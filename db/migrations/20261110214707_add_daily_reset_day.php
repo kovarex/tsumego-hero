@@ -7,8 +7,12 @@ use Phinx\Migration\AbstractMigration;
 
 //The day of the player's last reset of the hearts and the hero powers (App\Utility\DailyReset), which now come
 //back when the player's own day turns instead of in the daily cron. Every player starts with the day they are in
-//now: the cron gave them their hearts last, so the next ones come when their day turns next, neither twice
-//in the day nor a day later.
+//now: the cron gave them their hearts last, so the next ones come when their day turns next.
+//Once, for a player whose 03:00 comes between the cron's last run (midnight UTC) and the deploy's next midnight
+//UTC, that next refill is less than a day after the cron's: a player in Prague deploying at 01:30 local is still
+//in their previous day and gets hearts again at 03:00. Moving them to the next day instead would make the wait
+//longer than a day for others (New York's cron refill is at 19:00 the evening before), so the earlier refill,
+//once and only for some, is the smaller harm.
 final class AddDailyResetDay extends AbstractMigration
 {
 	public function up(): void

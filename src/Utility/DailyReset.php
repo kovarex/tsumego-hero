@@ -41,6 +41,7 @@ class DailyReset
 	 */
 	public static function apply(array $user): array
 	{
+		// the row of the request knows its day, so all the other requests of the day cost no query
 		if (!self::isDue($user))
 			return $user;
 		$today = self::today($user);
