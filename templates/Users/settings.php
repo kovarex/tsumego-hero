@@ -32,11 +32,17 @@ use App\Utility\ViteManifest;
 			<tr>
 				<td><strong>Email:</strong> <?php echo h($user['email']); ?></td>
 				<td>
-					<?php if (!UserTable::isGoogleUser($user)): ?>
+					<?php if (!UserTable::signsInOnlyWithGoogle($user)): ?>
 						<button type="button" id="change-email" class="link" data-opens="email-form">change</button>
 					<?php endif; ?>
 				</td>
 			</tr>
+			<?php if (UserTable::signsInOnlyWithGoogle($user)): ?>
+			<tr>
+				<td><strong>Sign-in:</strong> Google</td>
+				<td><a href="/users/switchToPassword" id="switch-to-password-link">switch to email and password</a></td>
+			</tr>
+			<?php endif; ?>
 			<?php if ($unconfirmedEmail): ?>
 			<tr>
 				<td colspan="2">
@@ -47,7 +53,7 @@ use App\Utility\ViteManifest;
 				</td>
 			</tr>
 			<?php endif; ?>
-			<?php if (!UserTable::isGoogleUser($user)): ?>
+			<?php if (!UserTable::signsInOnlyWithGoogle($user)): ?>
 			<tr>
 				<td colspan="2">
 					<div id="email-form" style="display:none;margin-top:3px;">
@@ -81,10 +87,12 @@ use App\Utility\ViteManifest;
 					</div>
 				</td>
 			</tr>
+			<?php if (!empty($user['name'])): ?>
 			<tr>
-				<td><strong>Username:</strong> <?php echo h($user['name'] ?? ''); ?></td>
+				<td><strong>Username:</strong> <?php echo h($user['name']); ?></td>
 				<td></td>
 			</tr>
+			<?php endif; ?>
 			<?php endif; ?>
 			<tr>
 				<td><strong>Avatar:</strong></td>

@@ -99,23 +99,23 @@ class AuthUserPersistenceTest extends IntegrationTestCase
 			'Google user must keep their display_name');
 	}
 
-	//Test that UserTable::isGoogleUser correctly identifies Google users.
+	//Test that UserTable::signsInOnlyWithGoogle correctly identifies Google users.
 	//Google users are identified by having a non-empty external_id. Regular users have external_id = null.
 	public function testIsGoogleUserDetection()
 	{
 		// Google user: has external_id
 		$googleUser = ['name' => null, 'external_id' => '12345', 'display_name' => 'GoogleUser'];
-		$this->assertTrue(UserTable::isGoogleUser($googleUser),
+		$this->assertTrue(UserTable::signsInOnlyWithGoogle($googleUser),
 			'User with external_id should be detected as Google user');
 
 		// Regular user: no external_id
 		$regularUser = ['name' => 'RegularUser', 'external_id' => null, 'display_name' => 'RegularUser'];
-		$this->assertFalse(UserTable::isGoogleUser($regularUser),
+		$this->assertFalse(UserTable::signsInOnlyWithGoogle($regularUser),
 			'User without external_id should not be detected as Google user');
 
 		// Edge case: empty external_id
 		$ambiguousUser = ['name' => 'Someone', 'external_id' => '', 'display_name' => 'Someone'];
-		$this->assertFalse(UserTable::isGoogleUser($ambiguousUser),
+		$this->assertFalse(UserTable::signsInOnlyWithGoogle($ambiguousUser),
 			'User with empty external_id should not be detected as Google user');
 	}
 }

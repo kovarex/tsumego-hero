@@ -27,6 +27,9 @@ class JwtAuth
 	//Cached password claim of the token in the cookie
 	private static ?string $cachedPasswordClaim = null;
 
+	//When the token in the cookie was issued (a Unix time), which is when the player signed in
+	private static ?int $cachedIssuedAt = null;
+
 	//Whether the cookie was looked at already in this request
 	private static bool $cookieRead = false;
 
@@ -37,15 +40,17 @@ class JwtAuth
 	//$userId: The user ID to encode
 	//$passwordHash: The password the session is opened with
 	//$expirySeconds: Seconds until expiration (null = default 30 days)
+	//$issuedAt: When the player signed in (null = now); tests sign in earlier than now
 	//Returns the JWT token
-	public static function createToken(int $userId, string $passwordHash, ?int $expirySeconds = null): string
+	public static function createToken(int $userId, string $passwordHash, ?int $expirySeconds = null, ?int $issuedAt = null): string
 	{
 		$expiry = $expirySeconds ?? self::DEFAULT_EXPIRY_SECONDS;
+		$issuedAt ??= time();
 
 		$payload = [
 			'sub' => $userId,
-			'iat' => time(),
-			'exp' => time() + $expiry,
+			'iat' => $issuedAt,
+			'exp' => $issuedAt + $expiry,
 			'pwd' => self::passwordClaim($passwordHash),
 		];
 
@@ -64,6 +69,13 @@ class JwtAuth
 	{
 		self::readCookie();
 		return self::$cachedPasswordClaim;
+	}
+
+	//When the player signed in, as a Unix time: when the token in the cookie was issued, or null without one.
+	public static function getIssuedAtFromCookie(): ?int
+	{
+		self::readCookie();
+		return self::$cachedIssuedAt;
 	}
 
 	//Validate a JWT token and return the user ID.
@@ -100,6 +112,7 @@ class JwtAuth
 
 		self::$cachedUserId = (int) $payload->sub;
 		self::$cachedPasswordClaim = $payload->pwd;
+		self::$cachedIssuedAt = isset($payload->iat) ? (int) $payload->iat : null;
 	}
 
 	//Check the signature and the expiry of a token, the one place that does it. Every token is issued
@@ -139,6 +152,7 @@ class JwtAuth
 			'samesite' => null]);
 		self::$cachedUserId = $userId;
 		self::$cachedPasswordClaim = self::claimOf($passwordHash);
+		self::$cachedIssuedAt = time();
 		self::$cookieRead = true;
 		return $token;
 	}
@@ -149,6 +163,7 @@ class JwtAuth
 		Util::clearCookie(self::COOKIE_NAME, ['secure' => false, 'samesite' => null]);
 		self::$cachedUserId = null;
 		self::$cachedPasswordClaim = null;
+		self::$cachedIssuedAt = null;
 		self::$cookieRead = true;
 	}
 
@@ -157,6 +172,7 @@ class JwtAuth
 	{
 		self::$cachedUserId = null;
 		self::$cachedPasswordClaim = null;
+		self::$cachedIssuedAt = null;
 		self::$cookieRead = false;
 	}
 

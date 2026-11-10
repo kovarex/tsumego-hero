@@ -516,24 +516,29 @@ class UserTable extends AppTable
 		PhpbbNames::sync(Util::connection(), $userId, $displayName);
 	}
 
-	//Check if user is a Google user (has external_id).
-	//Returns true if user is a Google user
+	//What password_hash holds for an account that has no password: it signs in with Google only.
+	public const string NO_PASSWORD = 'google_oauth';
+
+	//True for an account that signs in with Google only: it has a Google id and no password. An
+	//account switched to email and password (AccountController::switchToPassword) keeps its Google
+	//id, so it can sign in either way, and is not one of these anymore.
 	/** @param UserRow|User $user */
-	public static function isGoogleUser(array|User $user): bool
+	public static function signsInOnlyWithGoogle(array|User $user): bool
 	{
-		return !empty($user instanceof User ? $user->external_id : ($user['external_id'] ?? null));
+		$externalID = $user instanceof User ? $user->external_id : ($user['external_id'] ?? null);
+		$passwordHash = $user instanceof User ? $user->password_hash : ($user['password_hash'] ?? self::NO_PASSWORD);
+		return !empty($externalID) && $passwordHash === self::NO_PASSWORD;
 	}
 
-	//Find a local (non-Google) user by email.
-	//Local users have external_id = NULL and use password authentication.
-	//Use this for password login and password reset to exclude Google users.
+	//Find an account that signs in with a password, by its email.
+	//Use this for password login and password reset to exclude the accounts that sign in with Google only.
 	//The address is not unique in the database, so the order makes the result of
 	//several matching accounts deterministic (the oldest account wins).
 	//$email: Email to search for
 	public static function findLocalUserByEmail(string $email): ?User
 	{
 		return TableRegistry::getTableLocator()->get('User')->find()
-			->where(['email' => $email, 'external_id IS' => null])
+			->where(['email' => $email, 'password_hash !=' => self::NO_PASSWORD])
 			->orderBy(['id' => 'ASC'])
 			->first();
 	}

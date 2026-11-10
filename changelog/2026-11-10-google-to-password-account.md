@@ -1,0 +1,1 @@
+Added: An account that signs in with Google can switch to email and password in the [settings](/users/settings), and pick another display name in the same step. It stays the same account with all its progress, and the Google button keeps signing it in.

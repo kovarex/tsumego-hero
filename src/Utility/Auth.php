@@ -61,6 +61,18 @@ class Auth
 		return JwtAuth::getPasswordClaimFromCookie() === JwtAuth::claimOf((string) ($user['password_hash'] ?? ''));
 	}
 
+	//How long after signing in a player counts as having signed in just now, in seconds. Changing
+	//how an account signs in asks for it, so a session left open somewhere is not enough.
+	public const int RECENT_SIGN_IN_SECONDS = 10 * 60;
+
+	//Whether the player signed in within the last RECENT_SIGN_IN_SECONDS, by the time the token of
+	//their session was issued.
+	public static function signedInRecently(): bool
+	{
+		$issuedAt = JwtAuth::getIssuedAtFromCookie();
+		return self::isLoggedIn() && $issuedAt !== null && time() - $issuedAt <= self::RECENT_SIGN_IN_SECONDS;
+	}
+
 	public static function isLoggedIn(): bool
 	{
 		return (bool) Auth::$user;

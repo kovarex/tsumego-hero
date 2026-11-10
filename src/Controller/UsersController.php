@@ -293,19 +293,19 @@ class UsersController extends AppController
 			return $this->redirect('/users/login');
 
 		$admin = Auth::getUser();
-		$isGoogleUser = UserTable::isGoogleUser($admin);
+		$signsInOnlyWithGoogle = UserTable::signsInOnlyWithGoogle($admin);
 		$error = null;
 		if ($this->input('demote') !== null)
 		{
-			if ($isGoogleUser ? !hash_equals(self::demotionToken((int) $admin['id']), (string) $this->input('demote')) : !password_verify((string) $this->input('demote'), $admin['password_hash']))
-				$error = $isGoogleUser ? 'The form has expired, please submit it again.' : 'Password incorrect.';
+			if ($signsInOnlyWithGoogle ? !hash_equals(self::demotionToken((int) $admin['id']), (string) $this->input('demote')) : !password_verify((string) $this->input('demote'), $admin['password_hash']))
+				$error = $signsInOnlyWithGoogle ? 'The form has expired, please submit it again.' : 'Password incorrect.';
 			elseif (!($error = UserTable::changeRole(Auth::getUserID(), UserTable::ROLE_PLAYER)))
 				return $this->redirect('/users/view/' . Auth::getUserID());
 		}
 
 		$this->set('error', $error);
 		$this->set('admin', $admin);
-		$this->set('demotionToken', $isGoogleUser ? self::demotionToken((int) $admin['id']) : null);
+		$this->set('demotionToken', $signsInOnlyWithGoogle ? self::demotionToken((int) $admin['id']) : null);
 		return null;
 	}
 

@@ -134,14 +134,14 @@ class ContextPreparator
 		$user = [];
 		// Extract external_id first (used for multiple checks)
 		$externalId = Util::extract('external_id', $userInput);
-		$isGoogleUser = !empty($externalId);
+		$signsInOnlyWithGoogle = !empty($externalId);
 		// Google users have NULL name (they can't use password login)
 		// We still extract 'name' to consume it from the input array (prevents "Option not recognized" error)
 		$inputName = Util::extract('name', $userInput);
-		$user['name'] = $isGoogleUser ? null : ($inputName ?: 'kovarex');
-		$user['display_name'] = Util::extract('display_name', $userInput) ?: ($isGoogleUser ? 'DN_G_' . substr($externalId, -6) : 'DN_' . $user['name']);
+		$user['name'] = $signsInOnlyWithGoogle ? null : ($inputName ?: 'kovarex');
+		$user['display_name'] = Util::extract('display_name', $userInput) ?: ($signsInOnlyWithGoogle ? 'DN_G_' . substr($externalId, -6) : 'DN_' . $user['name']);
 		$user['email'] = Util::extract('email', $userInput) ?: 'test@example.com';
-		$user['password_hash'] = $isGoogleUser ? 'google_oauth' : '$2y$10$5.F2n794IrgFcLRBnE.rju1ZoJheRr1fVc4SYq5ICeaJG0C800TRG'; // hash of test
+		$user['password_hash'] = $signsInOnlyWithGoogle ? 'google_oauth' : '$2y$10$5.F2n794IrgFcLRBnE.rju1ZoJheRr1fVc4SYq5ICeaJG0C800TRG'; // hash of test
 		$id = Util::extract('id', $userInput);
 		if ($id)
 			$user['id'] = (int) $id;

@@ -400,7 +400,8 @@ return function (RouteBuilder $routes): void
 	);
 	//The account (AccountController) keeps the addresses it had under /users/
 	foreach (['login', 'logout', 'googlesignin', 'add', 'changename', 'updatename', 'resetpassword', 'newpassword',
-		'delete_account', 'confirm_delete_account', 'emailPreference', 'confirmEmailChange', 'cancelEmailChange', 'passwordPreference'] as $accountAction)
+		'delete_account', 'confirm_delete_account', 'emailPreference', 'confirmEmailChange', 'cancelEmailChange', 'passwordPreference',
+		'switchToPassword'] as $accountAction)
 		$routes->connect('/users/' . $accountAction . '/*', ['controller' => 'Account', 'action' => $accountAction]);
 	$routes->connect(
 		'/profile',
