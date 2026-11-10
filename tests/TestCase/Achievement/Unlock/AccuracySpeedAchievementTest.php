@@ -13,7 +13,7 @@ class AccuracySpeedAchievementTest extends AchievementTestCase
 			$browser = Browser::instance();
 			// Arrange: User completes set with difficulty < 1300 and 75% accuracy
 			$context = new ContextPreparator();
-			$setID = $this->createSetWithTsumegosAndConnections(1200, 100);
+			$setID = $this->createSetWithTsumegosAndConnections(1000, 100);
 
 			// Add accuracy achievement condition (category CATEGORY_SET_ACCURACY, value=75 means 75% accuracy)
 			$achievementConditionTable = $this->fetchTable('AchievementCondition');
