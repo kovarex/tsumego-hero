@@ -132,6 +132,7 @@ return [
 		'/users/confirmEmailChange/7' => ['Account', 'confirmEmailChange', ['7']],
 		'/users/cancelEmailChange/7' => ['Account', 'cancelEmailChange', ['7']],
 		'/users/passwordPreference' => ['Account', 'passwordPreference', []],
+		'/users/switchToPassword' => ['Account', 'switchToPassword', []],
 		'/profile' => ['Users', 'profile', []],
 		'/me' => ['Users', 'profile', []],
 		'/me/solve-history' => ['Users', 'meSolveHistory', []],
@@ -154,6 +155,7 @@ return [
 		'/account/newpassword' => ['Account', 'newpassword', []],
 		'/account/passwordPreference' => ['Account', 'passwordPreference', []],
 		'/account/resetpassword' => ['Account', 'resetpassword', []],
+		'/account/switchToPassword' => ['Account', 'switchToPassword', []],
 		'/account/updatename' => ['Account', 'updatename', []],
 
 		'/achievements' => ['Achievements', 'index', []],
