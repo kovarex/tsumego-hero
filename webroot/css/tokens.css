@@ -455,7 +455,6 @@
 		/* the gold of a finished set card's frame and percent, the same in both themes */
 		--set-card-gold-text: #ffe08a;
 		--training-title: var(--color-green-dark);
-		--profile-name: black;
 		--time-mode-table-text: currentColor;
 		--signin-background: transparent;
 		--schedule-link: var(--color-white);
@@ -573,7 +572,6 @@
 		--set-filter-hover-background: var(--surface-border-strong);
 		--set-card-hover-shade: linear-gradient(rgba(200, 200, 200, 0.3), rgba(33, 33, 33, 0.35));
 		--training-title: var(--color-green);
-		--profile-name: var(--color-white);
 		--time-mode-table-text: var(--color-black);
 		--signin-background: var(--surface-dark);
 		--schedule-link: var(--link-color);

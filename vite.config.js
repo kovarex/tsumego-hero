@@ -170,7 +170,6 @@ export default defineConfig({
 		legacyBundlePlugin('play', ['webroot/js/PlayPage.js']),
 		//The board of the play page, loaded right after its <div> so that the first paint has it
 		legacyBundlePlugin('play-board', ['webroot/js/PlayBoard.js']),
-		legacyBundlePlugin('profile', ['webroot/js/ProfilePage.js']),
 		legacyBundlePlugin('sets-index', ['webroot/js/SetsIndexPage.js']),
 		legacyBundlePlugin('sets-view', ['webroot/js/SetsViewPage.js']),
 		legacyBundlePlugin('time-mode', ['webroot/js/TimeModePages.js']),

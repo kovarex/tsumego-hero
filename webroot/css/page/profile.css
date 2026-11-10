@@ -1,15 +1,23 @@
 @layer page
 {
-.profileTable {
-  width: 100%;
-  padding: 0;
-  margin: 0;
+/* The charts of the profile: the level on the left, the rating and the time mode runs on the right; stacked on a phone */
+.profile-charts {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--space-3);
+  align-items: start;
+  margin: var(--space-3) 0;
 }
-.profileTable__half {
-  width: 50%;
+.profile-charts__column {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
 }
-.profile-statistics__heading {
-  width: 95%;
+@media (width < 48rem) {
+  .profile-charts {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 /* Settings: the fields of a new e-mail and password */
 .settings-account__field {
@@ -36,24 +44,6 @@
 }
 .solve-history__failed {
   color: var(--color-red);
-}
-.profileTable td {
-  padding: 0;
-  vertical-align: top;
-}
-.profileTable h1 {
-  padding: 0;
-  margin: 0;
-}
-.profileTable .h1 {
-  margin-left: 20px;
-}
-.profileTable2 a {
-  margin-left: 20px;
-}
-.h1profile h1,
-.profileTable2 a {
-  color: var(--profile-name);
 }
 .rank-icon {
 	display: inline-block;

@@ -3,10 +3,10 @@
 use App\View\Helper\AchievementHelper;
 use App\Model\Table\UserTable;
 use App\Utility\Auth;
+use App\Utility\ChartRenderer;
 use App\Utility\Level;
 use App\Utility\Rating;
 use App\Utility\Util;
-use App\Utility\ViteManifest;
 
 /**
  * @var \App\View\AppView $this
@@ -167,42 +167,21 @@ use App\Utility\ViteManifest;
 </div>
 <?php if ($mistakeTraining !== null)
 	echo $this->element('mistake_training_profile', ['training' => $mistakeTraining]); ?>
-<?php
-	$size = count($dailyResults);
-	if ($size < 10)
-		$height = '400';
-	elseif($size < 30)
-		$height = '600';
-	elseif ($size < 50)
-		$height = '900';
-	else
-		$height = '1200';
-?>
-<div class="userBottom1">
-	<table class="profileTable">
-	<tr>
-	<td class="profileTable__half">
-		<div class="legacy-center">
-			<a id="userShowLevelButtonLeft" class="btn" data-profile-show="level" data-profile-side="Left">Level</a>
-			<a id="userShowRatingButtonLeft" class="btn" data-profile-show="rating" data-profile-side="Left">Rating</a>
-			<a id="userShowTimeButtonLeft" class="btn" data-profile-show="time" data-profile-side="Left">Time</a>
+<?php //The charts of the player: the level on the left, the rating with the time mode runs under it on the right ?>
+<div class="profile-charts">
+	<div class="profile-charts__column">
+		<div id="profile-chart-level">
+		<?php echo ChartRenderer::bar('Problems in level mode', array_reverse($dailyResults), 'day', [
+			['label' => 'Solves', 'color' => '#74d14c'],
+			['label' => 'Fails', 'color' => '#d63a49']]); ?>
 		</div>
-	</td>
-	<td class="profileTable__half">
-		<div class="legacy-center">
-			<a id="userShowLevelButtonRight" class="btn" data-profile-show="level" data-profile-side="Right">Level</a>
-			<a id="userShowRatingButtonRight" class="btn" data-profile-show="rating" data-profile-side="Right">Rating</a>
-			<a id="userShowTimeButtonRight" class="btn" data-profile-show="time" data-profile-side="Right">Time</a>
+	</div>
+	<div class="profile-charts__column">
+		<div id="profile-chart-rating"><?php echo ChartRenderer::ratingLine('Overall rating', $dailyResults); ?></div>
+		<div id="profile-chart-time">
+		<?php echo ChartRenderer::bar('Time mode runs', $timeGraph, 'category', [
+			['label' => 'Passes', 'color' => '#c8723d'],
+			['label' => 'Fails', 'color' => '#888888']]); ?>
 		</div>
-	</td>
-	</tr>
-	</table>
-	<br>
-	<table class="profileTable">
-		<tr>
-			<?php foreach (['Left', 'Right'] as $side)
-				echo $this->element('profile_statistics', compact('side', 'dailyResults', 'timeGraph')); ?>
-	</tr></table>
+	</div>
 </div>
-
-<?php echo ViteManifest::legacyScript('profile'); ?>
