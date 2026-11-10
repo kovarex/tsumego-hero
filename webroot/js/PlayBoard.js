@@ -262,7 +262,6 @@ function fitReviewTree(reviewPanels)
 	let screen = document.querySelector(".play-screen");
 	if (!tree || !screen)
 		return;
-	const PANEL = 430;
 	let reset = () =>
 	{
 		screen.classList.remove("play-screen--review");
@@ -280,6 +279,8 @@ function fitReviewTree(reviewPanels)
 		let svg = tree.querySelector("svg");
 		if (getComputedStyle(reviewPanels).display === "none" || !board || !main || !box || !svg || !window.matchMedia("(width >= 64rem)").matches)
 			return;
+		//the width of the panel without the review, which grows with a wide window (--play-panel in play.css)
+		const PANEL = screen.querySelector(".play-screen__panel").getBoundingClientRect().width;
 		screen.classList.add("play-screen--review");
 		let commentsOpen = comments && getComputedStyle(comments).display !== "none";
 		//down to the bottom of what the board column shows: the board and the problem buttons under it

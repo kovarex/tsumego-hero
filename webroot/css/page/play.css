@@ -566,9 +566,28 @@ h1 {
 /* The play screen: the board column (where the problem is, its goal and stake, the one row of
    messages, the board and the problem buttons) and beside it the panel of the player's hearts, the
    actions and what they open. On a phone the panel goes under the board column. */
+/* --play-panel: the width of the panel. On a wide screen it grows with the window, from 430px (up to a window of
+   about 1430px) to 560px (from about 1870px), into the margins of the page: the white box grows by as much on its
+   sides (--play-grow, like the review below), so the board column keeps its width. --play-panel-padding: the one
+   inset of everything in the panel, from its border to the hearts, the hero powers, the actions and the comments. */
+:root {
+  --play-panel: 430px;
+  --play-panel-padding: var(--space-4);
+  --play-grow: calc(var(--play-panel) - 430px);
+}
+@media (width >= 64rem) {
+  :root {
+    --play-panel: clamp(430px, 30vw, 560px);
+  }
+  .whitebox2:has(.play-screen) {
+    width: calc(100% + var(--play-grow));
+    max-width: calc(1280px + var(--play-grow));
+    margin-left: calc((100% - min(100% + var(--play-grow), 1280px + var(--play-grow))) / 2);
+  }
+}
 .play-screen {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 430px;
+  grid-template-columns: minmax(0, 1fr) var(--play-panel);
   align-items: stretch;
   min-height: 700px;
   text-align: left;
@@ -594,7 +613,7 @@ h1 {
   grid-column: 2;
   grid-row: 1;
   min-width: 0;
-  padding: var(--space-3) var(--space-4);
+  padding: var(--space-3) var(--play-panel-padding);
   border-left: 1px solid var(--surface-border-muted);
 }
 
@@ -993,12 +1012,12 @@ h1 {
    its width, --review-grow how much the white box grows into the margins of the page, as much on each side */
 @media (width >= 64rem) {
   .play-screen--review {
-    grid-template-columns: minmax(0, 1fr) var(--review-panel, 430px);
+    grid-template-columns: minmax(0, 1fr) var(--review-panel, var(--play-panel));
   }
   .whitebox2:has(.play-screen--review) {
-    width: calc(100% + var(--review-grow, 0px));
-    max-width: calc(1280px + var(--review-grow, 0px));
-    margin-left: calc((100% - min(100% + var(--review-grow, 0px), 1280px + var(--review-grow, 0px))) / 2);
+    width: calc(100% + var(--play-grow) + var(--review-grow, 0px));
+    max-width: calc(1280px + var(--play-grow) + var(--review-grow, 0px));
+    margin-left: calc((100% - min(100% + var(--play-grow) + var(--review-grow, 0px), 1280px + var(--play-grow) + var(--review-grow, 0px))) / 2);
   }
 }
 
@@ -1008,7 +1027,7 @@ h1 {
   #heroPowersTray {
     display: flex !important;
     flex-wrap: wrap;
-    justify-content: flex-end;
+    justify-content: flex-start;
     gap: var(--space-2);
     margin-top: var(--space-2);
     padding: 0;
@@ -1217,10 +1236,7 @@ h1 {
 }
 .play-filters {
   display: inline-block;
-  margin: 0 var(--space-1) var(--space-2);
-}
-.play-filters-toggle {
-  margin: var(--space-2) var(--space-1);
+  margin: 0 0 var(--space-2);
 }
 
 /* A phone: the panel goes under the board column, and fewer problem buttons show */
@@ -1259,10 +1275,13 @@ h1 {
   .play-screen__main {
     grid-row: 1;
   }
+  :root {
+    --play-panel-padding: var(--space-3);
+  }
   .play-screen__panel {
     grid-column: 1;
     grid-row: 2;
-    padding: var(--space-2) var(--space-3) var(--space-4);
+    padding: var(--space-2) var(--play-panel-padding) var(--space-4);
     border-left: 0;
     border-top: 1px solid var(--surface-border-muted);
   }
