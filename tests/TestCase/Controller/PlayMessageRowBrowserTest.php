@@ -4,20 +4,36 @@ use App\Utility\Constants;
 use Facebook\WebDriver\WebDriverDimension;
 
 //Every message of a problem is one of the row of the messages above the board, on the page with no background of its
-//own whatever it says: the goal, Correct!, Incorrect! and the comment of a move ("Correct, but what about this answer?") are at the left
-//in the same bold size, with Reset and Next at the right, on a computer and on a phone; only their colour differs
+//own whatever it says: the goal, Correct!, Incorrect! and the comment of a move ("Correct, but what about this answer?",
+//under Correct! or Incorrect! at the same left edge) are at the left in the same bold size, with Reset and Next at the
+//right, on a computer and on a phone; only their colour differs. The row grows for a longer message, the board under it.
 #[RetryOnBrowserFailure]
 class PlayMessageRowBrowserTest extends IntegrationTestCase
 {
 	//Black (1,1) is correct, with a comment; black (2,1) is correct too
 	private const SGF = '(;GM[1]FF[4]SZ[19]AB[dd]AW[bb](;B[aa]C[+Correct, but what about this answer?])(;B[ba]C[+]))';
 
-	//The style of the comment and of Correct!, the row without a background and where the comment is in it
+	//The comments of the moves of commented(): a short one of a correct move, a long one of a correct move, which wraps,
+	//and one of a wrong move; without the names of the colours, which the board may swap
+	private const COMMENTS = [
+		'correct' => 'Correct, but what about this answer?',
+		'long' => 'A is the best completion before ko. B would also live, but it leaves the opponent an extra threat, and C fails to the throw-in at D, which is the main point of this problem.',
+		'incorrect' => 'A looks natural, but the answer at B leaves the group short of liberties.'];
+
+	//Black (1,1) with the comment of the case, correct or not; black (2,1) is correct
+	private static function commented(string $case): string
+	{
+		return '(;GM[1]FF[4]SZ[19]AB[dd]AW[bb](;B[aa]C[' . ($case === 'incorrect' ? '' : '+') . self::COMMENTS[$case] . '])(;B[ba]C[+]))';
+	}
+
+	//The style of the comment and of the message above it, the row without a background, where the comment is in it and
+	//where the board is
 	private const LAYOUT = <<<'JS'
 		const comment = document.getElementById('theComment');
 		const status = document.querySelector('#status h2');
 		const row = document.querySelector('.play-message');
 		const reset = document.getElementById('besogo-reset-button');
+		const board = document.querySelector('.besogo-board');
 		const style = element => {
 			const computed = getComputedStyle(element);
 			return [computed.fontSize, computed.fontWeight, computed.fontFamily, computed.textAlign];
@@ -27,49 +43,58 @@ class PlayMessageRowBrowserTest extends IntegrationTestCase
 		document.body.append(text);
 		const textColor = getComputedStyle(text).color;
 		text.remove();
+		const box = element => element.getBoundingClientRect();
 		return {
-			inTheRow: comment.parentElement === row,
+			inTheRow: row.contains(comment),
 			sameStyleAsCorrect: JSON.stringify(style(comment)) === JSON.stringify(style(status)),
 			left: getComputedStyle(comment).textAlign,
 			colorOfTheText: getComputedStyle(comment).color === textColor,
 			noBackground: getComputedStyle(row).backgroundColor === 'rgba(0, 0, 0, 0)' && getComputedStyle(row).backgroundImage === 'none',
-			afterCorrect: comment.getBoundingClientRect().left > status.getBoundingClientRect().right,
-			beforeReset: comment.getBoundingClientRect().right <= reset.getBoundingClientRect().left,
+			sameLeftEdge: Math.abs(box(comment).left - box(status).left) < 1,
+			underCorrect: box(comment).top >= box(status).bottom - 1,
+			insideTheRow: box(comment).top >= box(row).top - 1 && box(comment).bottom <= box(row).bottom + 1,
+			beforeReset: box(comment).right <= box(reset).left,
+			boardUnderTheRow: box(row).bottom <= box(board).top + 1,
 		};
 		JS;
 
-	private function playTheCommentedMove(int $width, int $height, string $theme): Browser
+	private function playTheCommentedMove(int $width, int $height, string $theme, string $case = 'correct'): Browser
 	{
 		$context = new ContextPreparator([
 			'user' => ['mode' => Constants::$LEVEL_MODE],
-			'tsumego' => ['set_order' => 1, 'sgf' => ['data' => self::SGF, 'first_move_color' => 'B']]]);
+			'tsumego' => ['set_order' => 1, 'sgf' => ['data' => self::commented($case), 'first_move_color' => 'B']]]);
 		$browser = Browser::instance();
 		$browser->driver->manage()->window()->setSize(new WebDriverDimension($width, $height));
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		$browser->driver->executeScript('document.documentElement.dataset.theme = arguments[0];', [$theme]);
 		$browser->clickBoard(1, 1);
-		$browser->waitUntilJs('document.getElementById("status").textContent.includes("Correct!") && document.getElementById("theComment").textContent.length > 0');
+		$browser->waitUntilJs('document.getElementById("status").textContent.includes("' . ($case === 'incorrect' ? 'Incorrect' : 'Correct!') . '") && document.getElementById("theComment").textContent.length > 0');
 		return $browser;
 	}
 
 	public static function screens(): array
 	{
-		return ['computer, light' => [1280, 900, 'light'], 'computer, dark' => [1280, 900, 'dark'],
-			'phone, light' => [390, 844, 'light'], 'phone, dark' => [390, 844, 'dark']];
+		$screens = [];
+		foreach (['computer' => [1280, 900], 'phone' => [390, 844]] as $device => [$width, $height])
+			foreach (['light', 'dark'] as $theme)
+				foreach (array_keys(self::COMMENTS) as $case)
+					$screens["$device, $theme, $case"] = [$width, $height, $theme, $case];
+		return $screens;
 	}
 
 	#[PHPUnit\Framework\Attributes\DataProvider('screens')]
-	public function testTheCommentOfACorrectMoveIsAMessageOfTheRow(int $width, int $height, string $theme): void
+	public function testTheCommentOfAMoveIsAMessageOfTheRow(int $width, int $height, string $theme, string $case): void
 	{
 		$browser = Browser::instance();
 		$original = $browser->driver->manage()->window()->getSize();
 		try
 		{
-			$browser = $this->playTheCommentedMove($width, $height, $theme);
+			$browser = $this->playTheCommentedMove($width, $height, $theme, $case);
 
-			$this->assertSame('Correct, but what about this answer?', $browser->find('#theComment')->getText());
+			$this->assertSame(self::COMMENTS[$case], $browser->find('#theComment')->getText());
 			$this->assertEquals(['inTheRow' => true, 'sameStyleAsCorrect' => true, 'left' => 'left', 'colorOfTheText' => true,
-				'noBackground' => true, 'afterCorrect' => true, 'beforeReset' => true], $browser->driver->executeScript(self::LAYOUT));
+				'noBackground' => true, 'sameLeftEdge' => true, 'underCorrect' => true, 'insideTheRow' => true, 'beforeReset' => true,
+				'boardUnderTheRow' => true], $browser->driver->executeScript(self::LAYOUT));
 			$browser->assertNoJsErrors();
 		}
 		finally

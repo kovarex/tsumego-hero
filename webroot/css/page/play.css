@@ -644,8 +644,7 @@ h1 {
 /* The goal of the problem in the row of the messages, at most two lines, until Correct!, Incorrect! or the comment
    of a move take its place */
 .play-message__goal {
-  flex: 1;
-  min-width: 0;
+  max-width: 100%;
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
@@ -669,10 +668,6 @@ h1 {
 }
 .play-message__goal .play-goal__stone--white {
   border-color: var(--text-color);
-}
-.play-message #theComment:empty {
-  flex: 0;
-  padding: 0;
 }
 .play-message:has(#status:not(:empty)) .play-message__goal,
 .play-message:has(#theComment:not(:empty)) .play-message__goal {
@@ -741,9 +736,10 @@ h1 {
 }
 
 /* The one row of the messages, right above the board, on the page itself with no background of its own, the same
-   whatever it says, so it and its buttons never change shape: the goal, or Correct!, Incorrect! and the comment of a
-   move at the left, Reset, Review and Next at the right. Only the colour of the text tells what a message means. It
-   keeps its height, so the board doesn't move, unless a long message needs another line: it wraps, it is never cut. */
+   whatever it says, so it and its buttons never change shape: at the left the goal, or Correct! or Incorrect! with the
+   comment of the move under it at the same left edge (.play-message__text), Reset, Review and Next at the right, in
+   the middle of its height. Only the colour of the text tells what a message means. It keeps its height, so the board
+   doesn't move, unless a message needs more lines: the row grows and the board moves down, nothing is cut or covered. */
 .play-message {
   display: flex;
   align-items: center;
@@ -753,9 +749,18 @@ h1 {
   padding: 0 var(--space-2);
   box-sizing: border-box;
 }
-.play-message__status {
+.play-message__text {
+  flex: 1;
   min-width: 0;
-  padding: 2px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 2px;
+  padding: var(--space-1) 0;
+}
+.play-message__status {
+  max-width: 100%;
 }
 /* a long message (what a wrong line ends in) wraps to another line inside the row, the buttons staying at the right */
 .play-message #status :is(h2, h3) {
@@ -763,21 +768,19 @@ h1 {
   overflow-wrap: anywhere;
 }
 .play-message #theComment {
-  flex: 1;
-  width: auto;
+  max-width: 100%;
   min-width: 0;
-  max-height: 100%;
-  overflow-y: auto;
+  width: auto;
   margin: 0;
-  padding: 2px 0;
+  padding: 0;
   border: 0;
   background: none;
   text-align: left;
   white-space: pre-line;
 }
 /* Every message of the row is one: Correct!, Incorrect!, a lock and the comment of a move, at the left in the same
-   bold size, the comment in the colour of the text (it can say anything; Correct! or Incorrect! next to it gives the
-   verdict), right after the status when there is one */
+   bold size, the comment in the colour of the text (it can say anything; Correct! or Incorrect! above it gives the
+   verdict) */
 .play-message__status h2,
 .play-message__status h3,
 .play-message #theComment {
@@ -788,9 +791,6 @@ h1 {
 }
 .play-message #theComment {
   color: var(--text-color);
-}
-.play-message__status:not(:empty) + #theComment {
-  margin-left: var(--space-3);
 }
 /* an error of the problem itself (besogo's displayError), in the red of Incorrect! */
 .play-message #theComment.play-message__error {
