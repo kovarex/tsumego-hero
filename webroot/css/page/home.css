@@ -395,32 +395,6 @@
   font-family: Helvetica, Times New Roman, verdana;
 }
 
-.user-pick-q13 {
-  color: white !important;
-  left: 321px;
-  top: 118px;
-  font-family: Helvetica, Times New Roman, verdana;
-}
-
-.user-pick-q96 {
-  left: 280px;
-  top: 130px;
-  font-family: Helvetica, Times New Roman, verdana;
-  color: black !important;
-}
-
-.user-pick-q97 {
-  left: 321px;
-  top: 128px;
-  font-family: Helvetica, Times New Roman, verdana;
-}
-
-.user-pick-q99 {
-  left: 321px;
-  top: 210px;
-  font-family: Helvetica, Times New Roman, verdana;
-}
-
 /* Anchor the label to the wrapper's right edge rather than the per-quote
    left offsets, which pushed it past the wrapper on narrower windows. */
 .user-pick-all {

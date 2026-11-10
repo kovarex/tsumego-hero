@@ -175,10 +175,6 @@ li a.menuLi.nav__link--active {
 .titleDescription2 {
   font-size: 22px;
 }
-#pageTitle {
-  font-size: 16pt;
-  font-weight: bold;
-}
 /* The flame of the daily streak and the account bar, side by side at the right of the header */
 .site-header-account {
   position: absolute;
@@ -264,7 +260,6 @@ li a.menuLi.nav__link--active {
   width: 144px;
   background: var(--surface-ink);
   display: inline-block;
-  vertical-align: left;
 }
 #xp-bar-fill {
 	position: absolute;
@@ -765,13 +760,6 @@ nav ul ul ul li {
 .modeSelectorInLevelBar {
   background-image: var(--color-purple-btn-gradient);
 }
-.xpDisplayTable {
-  width: 70%;
-  text-align: center;
-}
-.xpDisplayTable__third {
-  width: 33%;
-}
 /* The rating of the problem under the board: <font size="4"> was large */
 .status-rating {
   font-size: large;
@@ -919,11 +907,6 @@ nav ul ul ul li {
   line-height: 1.6;
   margin-top: 10px;
   font-family: var(--font-family-code);
-}
-
-/* Dark overrides */
-[data-theme="dark"] .titleDescription1 font {
-	color: var(--color-gray);
 }
 
 /* Responsive */

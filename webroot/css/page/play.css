@@ -5,7 +5,6 @@
     opacity: 0.4;
   }
 }
-#show,
 .selectable-text {
   font-size: 16px;
   color: var(--play-link);
@@ -65,50 +64,10 @@
   position: relative;
   top: 9px;
 }
-.author-notice {
-  font-family: var(--font-family-display);
-  font-size: 12px;
-  color: var(--text-softer-color);
-  padding: 5px 0 0 5px;
-}
 .besogo-blank-space {
   width: 25px;
   height: 25px;
   margin: 12px 5px 0 1px;
-}
-#multipleChoice1,
-#multipleChoice2,
-#multipleChoice3,
-#multipleChoice4 {
-  font-family: var(--font-family-display);
-  padding: 10px 13px;
-  font-size: 18px;
-  font-style: normal;
-  font-variant: normal;
-  font-weight: 800;
-  line-height: 20px;
-
-  background-color: var(--surface-button);
-  color: var(--color-white);
-  text-decoration: none;
-  border-top: 1px solid var(--surface-border-light);
-  border-right: 1px solid var(--surface-border-strong);
-  border-bottom: 1px solid var(--surface-border-strong);
-  border-left: 1px solid var(--surface-border-light);
-  border-bottom-right-radius: 9px;
-  border-bottom-left-radius: 9px;
-  border-top-right-radius: 9px;
-  border-top-left-radius: 9px;
-}
-#multipleChoice1:hover,
-#multipleChoice2:hover,
-#multipleChoice3:hover,
-#multipleChoice4:hover {
-  background-color: var(--surface-button-hover);
-  color: var(--color-white);
-}
-.tag-submit-button {
-  display: none;
 }
 #sandbox {
   color: var(--play-sandbox-text);
@@ -183,7 +142,7 @@ h1 {
   padding: 20px;
   text-align: center;
 }
-.xpDisplay { align:center; color: var(--xp-display); }
+.xpDisplay { color: var(--xp-display); }
 .solvedXpDisplay { color: var(--xp-display-solved); }
 .goldenTsumegoXpDisplay { color: var(--xp-display-golden); font-weight:800; text-shadow: 0 0 6px rgba(218, 165, 32, 0.4); }
 .sprintXpDisplay { color: var(--xp-display-sprint); }
@@ -1129,11 +1088,6 @@ h1 {
 	   that wastes vertical space). The hero-power cell is the crowded one,
 	   so the small side cells are allowed to shrink and the icons are made
 	   tiny enough to sit in one wrap-free row. */
-	.play-header > div,
-	.play-header__cell {
-		padding: 4px 2px;
-	}
-
 	/* Hero power icons: very compact single row inside their narrow cell. */
 	#rejuvenation,
 	#intuition,
