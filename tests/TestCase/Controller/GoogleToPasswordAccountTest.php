@@ -139,6 +139,39 @@ class GoogleToPasswordAccountTest extends IntegrationTestCase
 
 		$this->switchToPassword(['email' => 'player@gmail.com', 'username' => 'janaPlays']);
 		$this->assertSame('janaPlays', $this->stored($user)['name']);
+
+		$this->logout();
+		JwtAuth::clearCache();
+		$this->post('/users/login', ['username' => 'janaPlays', 'password' => self::PASSWORD]);
+		$this->assertSame($user['id'], JwtAuth::validateToken($this->browserCookies()['auth_token'] ?? ''), 'signs in with the username it picked');
+	}
+
+	//Whether the token, as the auth_token cookie of a request, signs anybody in
+	private function signsIn(string $token): bool
+	{
+		Auth::logout();
+		$_COOKIE['auth_token'] = $token;
+		JwtAuth::clearCache();
+		Auth::init();
+		return Auth::isLoggedIn();
+	}
+
+	//The switch ends the other sessions of the account: a token issued before it, on another device,
+	//no longer signs in. The session that switched gets a new token and stays signed in.
+	public function testTheSwitchSignsTheOtherSessionsOut(): void
+	{
+		$user = $this->googleAccount();
+		$otherDevice = JwtAuth::createToken($user['id'], UserTable::NO_PASSWORD);
+		$this->assertTrue($this->signsIn($otherDevice), 'before the switch');
+		$this->signedIn($user);
+
+		$this->switchToPassword(['email' => 'player@gmail.com']);
+
+		$switchingSession = $this->browserCookies()['auth_token'] ?? '';
+		$this->assertTrue($this->signsIn($switchingSession), 'the session that switched');
+		$this->assertSame($user['id'], Auth::getUserID());
+		$this->assertFalse($this->signsIn($otherDevice), 'the other device is signed out');
+		$this->logout();
 	}
 
 	//The login name of another account is refused
