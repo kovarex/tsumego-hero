@@ -1,5 +1,5 @@
 import { useLayoutEffect, useRef, useState } from 'react';
-import type { MouseEvent } from 'react';
+import type { MouseEvent, ReactNode } from 'react';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import { formatDate } from '../shared/dates';
@@ -27,9 +27,11 @@ interface Props
 	series: LineChartSeries[];
 	height: number;
 	//what one point stands for, it names the date under the mouse
-	period: 'month' | 'day';
+	period: 'month' | 'week' | 'day';
 	//false fits the value axes to the values, for a rating that never gets near zero
 	startAtZero: boolean;
+	//under the title, as the ranges of the rating chart
+	header?: ReactNode;
 }
 
 interface Point
@@ -62,7 +64,7 @@ function stretchesOf(points: [string, number | null][]): Point[][]
 
 //A line chart over a time axis drawn as an SVG, with up to two value axes, a legend that hides a series on a click
 //and the values of the date under the mouse.
-export function LineChart({ title, series, height, period, startAtZero }: Props)
+export function LineChart({ title, series, height, period, startAtZero, header }: Props)
 {
 	const plotRef = useRef<HTMLDivElement>(null);
 	const [width, setWidth] = useState(0);
@@ -138,6 +140,7 @@ export function LineChart({ title, series, height, period, startAtZero }: Props)
 	return (
 		<div className="chart">
 			{title && <div className="chart__title">{title}</div>}
+			{header}
 			{series.length > 1 && <ChartLegend series={series} shown={shown} onToggle={index => setShown(previous => toggled(previous, index))} />}
 			<div className="line-chart__plot" ref={plotRef} style={{ height }}>
 				{width > 0 && (
@@ -150,7 +153,7 @@ export function LineChart({ title, series, height, period, startAtZero }: Props)
 							<g key={'month' + month}>
 								<line className="line-chart__grid" x1={x(monthStart(month))} x2={x(monthStart(month))} y1={top} y2={bottom} />
 								<text className="line-chart__tick" x={x(monthStart(month))} y={bottom + 17} textAnchor="middle">
-									{dayjs.utc(monthStart(month)).format(period === 'day' ? 'MMM YYYY' : 'MMM YY')}
+									{dayjs.utc(monthStart(month)).format(period === 'month' ? 'MMM YY' : 'MMM YYYY')}
 								</text>
 							</g>
 						))}
@@ -186,7 +189,7 @@ export function LineChart({ title, series, height, period, startAtZero }: Props)
 				)}
 				{hovered && hoveredValues.length > 0 && (
 					<ChartTooltip
-						title={period === 'day' ? formatDate(hovered.date, 'date') : dayjs.utc(hovered.at.time).format('MMM YYYY')}
+						title={period === 'month' ? dayjs.utc(hovered.at.time).format('MMM YYYY') : (period === 'week' ? 'Week of ' : '') + formatDate(hovered.date, 'date')}
 						values={hoveredValues}
 						style={hoveredX > width / 2 ? { right: width - hoveredX + TOOLTIP_OFFSET } : { left: hoveredX + TOOLTIP_OFFSET }}
 					/>

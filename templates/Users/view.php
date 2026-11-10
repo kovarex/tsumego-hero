@@ -13,6 +13,7 @@ use App\Utility\Util;
  * @var int $achievementCount
  * @var array{completed: int, earned_times: int} $achievementCounts
  * @var array $dailyResults
+ * @var array $ratingHistory The default range of the rating chart (UserProfile::ratingHistory())
  * @var array|null $mistakeTraining
  * @var int $solvedProblemCount
  * @var int $solvedPublishedCount
@@ -177,7 +178,7 @@ use App\Utility\Util;
 		</div>
 	</div>
 	<div class="profile-charts__column">
-		<div id="profile-chart-rating"><?php echo ChartRenderer::ratingLine('Overall rating', $dailyResults); ?></div>
+		<div id="profile-chart-rating"><?php echo ChartRenderer::ratingHistory((int) $user['id'], $ratingHistory); ?></div>
 		<div id="profile-chart-time">
 		<?php echo ChartRenderer::bar('Time mode runs', $timeGraph, 'category', [
 			['label' => 'Passes', 'color' => '#c8723d'],

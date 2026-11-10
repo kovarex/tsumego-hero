@@ -1265,6 +1265,50 @@
 	text-decoration: line-through;
 	opacity: 0.5;
 }
+/* the ranges above the rating chart of the profile (app/charts/RatingChart.tsx), one segmented row */
+.rating-chart__header {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: var(--space-2);
+	padding: 0 var(--space-2) var(--space-1);
+}
+.rating-chart__ranges {
+	display: inline-flex;
+	border: 1px solid var(--color-border);
+	border-radius: 3px;
+	overflow: hidden;
+}
+.rating-chart__range {
+	margin: 0;
+	padding: 3px 12px;
+	border: none;
+	border-left: 1px solid var(--color-border);
+	background: none;
+	color: var(--paginator-button-text-color);
+	font: inherit;
+	font-size: var(--font-size-sm);
+	cursor: pointer;
+}
+.rating-chart__range:first-child {
+	border-left: none;
+}
+.rating-chart__range:hover:not(:disabled) {
+	text-decoration: underline;
+}
+.rating-chart__range--active {
+	background: var(--active-paginator-button-background-color);
+	color: var(--active-paginator-button-text-color);
+	cursor: default;
+}
+.rating-chart__range:disabled:not(.rating-chart__range--active) {
+	opacity: 0.6;
+	cursor: default;
+}
+.rating-chart__error {
+	font-size: var(--font-size-sm);
+	color: var(--color-red);
+}
 .chart__swatch {
 	width: var(--space-3);
 	height: var(--space-3);

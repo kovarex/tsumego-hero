@@ -524,6 +524,8 @@ return [
 		'/users/profile/7' => ['Users', 'profile', ['7']],
 		'/users/rating' => ['Users', 'rating', []],
 		'/users/rating/7' => ['Users', 'rating', ['7']],
+		'/users/ratingHistory' => ['Users', 'ratingHistory', []],
+		'/users/ratingHistory/7' => ['Users', 'ratingHistory', ['7']],
 		'/users/restore_account' => ['Users', 'restore_account', []],
 		'/users/restore_account/7' => ['Users', 'restore_account', ['7']],
 		'/users/settings' => ['Users', 'settings', []],

@@ -206,6 +206,7 @@ class UsersController extends AppController
 		$this->set('user', $user);
 
 		$this->set('dailyResults', UserProfile::dailyResults($userID));
+		$this->set('ratingHistory', UserProfile::ratingHistory($userID));
 		$this->set('timeModeRanks', UserProfile::timeModeRanks($userID));
 		$this->set('timeGraph', UserProfile::timeModeRuns($userID));
 
@@ -314,6 +315,18 @@ class UsersController extends AppController
 	private static function demotionToken(int $userID): string
 	{
 		return hash_hmac('sha256', 'demote_admin ' . $userID, Configure::read('Security.salt'));
+	}
+
+	//A range of the rating chart of a profile as JSON, ?range=1M|6M|1Y|All, 6M by default (UserProfile::ratingHistory)
+	#[HttpGet]
+	public function ratingHistory(string $userID): Response
+	{
+		$user = UserTable::row((int) $userID);
+		if (!$user)
+			throw new NotFoundException('User not found');
+		$this->assertUserVisible($user);
+		$range = $this->query('range');
+		return $this->respondJson(UserProfile::ratingHistory((int) $user['id'], is_string($range) ? $range : UserProfile::DEFAULT_RATING_RANGE));
 	}
 
 	#[HttpGet]

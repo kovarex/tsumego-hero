@@ -10,6 +10,7 @@ import { PrintSelection } from './print/PrintSelection';
 import { Messages } from './messages/Messages';
 import { LineChart } from './charts/LineChart';
 import { BarChart } from './charts/BarChart';
+import { RatingChart } from './charts/RatingChart';
 import { syncMenuNewBadge } from './changelog/changelogCount';
 import { queryClient } from './queryClient';
 import { localizeTimeElements } from './shared/dates';
@@ -28,6 +29,7 @@ function initializeApp()
 	mountApp('[data-messages-root]', Messages);
 	mountApp('[data-line-chart-root]', LineChart);
 	mountApp('[data-bar-chart-root]', BarChart);
+	mountApp('[data-rating-chart-root]', RatingChart);
 
 	syncMenuNewBadge();
 

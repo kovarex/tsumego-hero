@@ -25,6 +25,16 @@ class ChartRenderer
 		return self::line($title, [['label' => 'Rating', 'color' => '#74d14c', 'axis' => 'left', 'fill' => false, 'points' => $points]], 'day', 360, false, 'timeGraph');
 	}
 
+	//The rating chart of a profile with its ranges (app/charts/RatingChart.tsx), from the range of
+	//UserProfile::ratingHistory() it starts with
+	public static function ratingHistory(int $playerID, array $history): string
+	{
+		return self::mount('data-rating-chart-root', 'timeGraph', [
+			'playerId' => $playerID,
+			'ranges' => array_keys(UserProfile::RATING_RANGES),
+			'history' => $history]);
+	}
+
 	//Horizontal stacked bars, one for each of the $rows, labeled by the date in its $categoryColumn; a series takes its
 	//values from the column named as its label.
 	/** @param array<int, array{label: string, color: string}> $series */

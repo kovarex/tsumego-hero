@@ -107,6 +107,45 @@ class ChartsBrowserTest extends IntegrationTestCase
 		$browser->assertNoJsErrors();
 	}
 
+	//The ranges above the rating chart: 6M with the page, a click on another loads it, a point a week for a year and a
+	//point a month for all of five years
+	public function testProfileRatingChartSwitchesRanges(): void
+	{
+		$day = fn(int $daysAgo) => date('Y-m-d', strtotime('-' . $daysAgo . ' days'));
+		$context = new ContextPreparator([
+			'user' => ['name' => 'alice'],
+			'tsumegos' => [['sets' => [['name' => 'set', 'num' => 1]], 'attempts' => array_map(fn($rating) => [
+				'solved' => true,
+				'user_rating' => $rating[1],
+				'created' => $day($rating[0]) . ' 10:00:00'], [[1800, 1200], [300, 1300], [100, 1400], [10, 1500], [3, 1490]])]]]);
+
+		$browser = Browser::instance();
+		$browser->get('users/view/' . $context->user['id']);
+		$state = fn() => $browser->driver->executeScript(<<<'JS'
+			const chart = document.getElementById('profile-chart-rating');
+			const line = chart.querySelector('.line-chart__line');
+			return {
+				ranges: [...chart.querySelectorAll('.rating-chart__range')].map(button => button.textContent),
+				active: chart.querySelector('.rating-chart__range[aria-pressed="true"]')?.textContent ?? null,
+				points: line ? line.getAttribute('d').split('L').length : 0};
+			JS);
+		$pick = function (string $range) use ($browser, $state)
+		{
+			$browser->driver->executeScript("[...document.querySelectorAll('#profile-chart-rating .rating-chart__range')].find(button => button.textContent === arguments[0]).click()", [$range]);
+			$browser->waitUntil(fn() => $state()['active'] === $range, 10, 'the range ' . $range);
+			return $state()['points'];
+		};
+		$browser->waitUntilCssSelectorDisplayed('#profile-chart-rating .line-chart__line');
+		$this->assertSame(['ranges' => ['1M', '6M', '1Y', 'All'], 'active' => '6M', 'points' => 3], $state());
+
+		$this->assertSame(4, $pick('1Y'), 'a point a week');
+		$months = count(array_unique(array_map(fn($daysAgo) => substr($day($daysAgo), 0, 7), [1800, 300, 100, 10, 3])));
+		$this->assertSame($months, $pick('All'), 'a point a month');
+		$this->assertSame(2, $pick('1M'));
+		$this->assertSame(3, $pick('6M'), 'back to the range of the page');
+		$browser->assertNoJsErrors();
+	}
+
 	public function testProblemHistoryDrawsTheRatingOfTheProblem(): void
 	{
 		$context = new ContextPreparator([

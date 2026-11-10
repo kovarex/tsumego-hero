@@ -9,6 +9,40 @@ use Cake\Routing\Router;
 //What the profile page (UsersController::view) shows of a player besides the user row.
 class UserProfile
 {
+	//The ranges of the rating chart of the profile, by name: how far back it goes, null for all of it
+	public const array RATING_RANGES = ['1M' => '-1 month', '6M' => '-6 months', '1Y' => '-1 year', 'All' => null];
+	public const string DEFAULT_RATING_RANGE = '6M';
+	//The most points a range draws: a longer one has a point a week or a month, the highest rating of it
+	public const int RATING_POINTS = 200;
+
+	//The highest rating of each day, week or month of a range of the rating chart, oldest first. The period is the
+	//shortest that keeps the range at RATING_POINTS points; a point is dated by the first day of its period. An
+	//unknown range is the default one.
+	/** @return array{range: string, period: 'day'|'week'|'month', points: list<array{0: string, 1: ?int}>} */
+	public static function ratingHistory(int $userID, string $range = self::DEFAULT_RATING_RANGE): array
+	{
+		if (!array_key_exists($range, self::RATING_RANGES))
+			$range = self::DEFAULT_RATING_RANGE;
+		$back = self::RATING_RANGES[$range];
+		// all of it starts with the first attempt, read from the index on (user_id, created)
+		$from = $back !== null
+			? date('Y-m-d', strtotime($back))
+			: Util::query('SELECT DATE(MIN(created)) AS first FROM tsumego_attempt WHERE user_id = ?', [$userID])[0]['first'] ?? date('Y-m-d');
+		$days = (time() - strtotime($from)) / 86400;
+		$period = $days <= self::RATING_POINTS ? 'day' : ($days / 7 <= self::RATING_POINTS ? 'week' : 'month');
+		$start = [
+			'day' => 'DATE(created)',
+			'week' => 'DATE(created) - INTERVAL WEEKDAY(created) DAY',
+			'month' => "DATE_FORMAT(created, '%Y-%m-01')"][$period];
+		$points = array_map(fn($row) => [(string) $row['start'], $row['rating'] === null ? null : (int) $row['rating']], Util::query('
+			SELECT ' . $start . ' AS start, MAX(user_rating) AS rating
+			FROM tsumego_attempt
+			WHERE user_id = ? AND created >= ?
+			GROUP BY start
+			ORDER BY start', [$userID, $from]));
+		return ['range' => $range, 'period' => $period, 'points' => $points];
+	}
+
 	//The solves, the fails and the highest rating of each day of the last half year, oldest first
 	/** @return array<int, array{day: string, Solves: int|string, Fails: int|string, Rating: float|string|null}> */
 	public static function dailyResults(int $userID): array
