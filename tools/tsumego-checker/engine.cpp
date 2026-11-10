@@ -460,10 +460,47 @@ int terminalUncached(const State& s)
       if (s.c[p] == defender && alive[p])
         return NOKILL;
     //with counted threats left the defender could still retake, so the attacker has to play it out instead of passing
+    //only chains in the target's own area count: a stray defender stone at the region's edge decides nothing
     if (searchMode != MODE_N || s.threats[defender] == 0)
+    {
+      static int inArea[361], areaStamp = 0;
+      static int stack[361];
+      ++areaStamp;
+      int top = 0;
+      for (int p : target)
+        if (s.c[p] == defender && inArea[p] != areaStamp)
+        {
+          inArea[p] = areaStamp;
+          stack[top++] = p;
+        }
+      while (top)
+      {
+        int q = stack[--top];
+        for (int k = 0; k < neighbourCount[q]; ++k)
+        {
+          int r = neighbours[q][k];
+          if (inArea[r] != areaStamp && (s.c[r] == EMPTY || s.c[r] == defender))
+          {
+            inArea[r] = areaStamp;
+            stack[top++] = r;
+          }
+        }
+      }
+      //a chain touching the region's edge has its real liberties beyond it
       for (int p : active)
-        if (s.c[p] == defender && chain(s, p, nullptr, 2) == 1)
-          return KILL;
+        if (s.c[p] == defender && inArea[p] == areaStamp)
+        {
+          vector<int> stones;
+          if (chain(s, p, &stones, 1000) != 1)
+            continue;
+          bool edge = false;
+          for (int q : stones)
+            for (int k = 0; k < neighbourCount[q]; ++k)
+              edge = edge || s.c[neighbours[q][k]] == OUTSIDE;
+          if (!edge)
+            return KILL;
+        }
+    }
     return NOKILL;
   }
   bensonAlive(s);
