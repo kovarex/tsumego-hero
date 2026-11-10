@@ -1284,7 +1284,8 @@ h1 {
     border-left: 0;
     border-top: 1px solid var(--surface-border-muted);
   }
-  .problem-nav__item--beyond1 {
+  /* Both classes: .problem-nav__item (tsumego.css, later in the layer) sets display too */
+  .problem-nav__item.problem-nav__item--beyond1 {
     display: none;
   }
   /* The row of the messages fits a phone: a smaller message and narrower buttons */
