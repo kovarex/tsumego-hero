@@ -145,7 +145,7 @@
 }
 #playTitleA { color: var(--text-color); }
 /* The collection a problem of a class or a query comes from */
-.play-title__origin-line { font-weight: 400; }
+.play-title__origin-line { font-weight: var(--weight-normal); }
 .play-title__origin { color: grey; }
 /* <font size="5px"> was x-large */
 .play-title__time-mode { font-size: x-large; }
@@ -153,10 +153,10 @@
 h1 {
   font-family: var(--font-family-display);
   letter-spacing: 1px;
-  font-size: 18px;
+  font-size: var(--text-lg);
   font-style: normal;
   font-variant: normal;
-  font-weight: 400;
+  font-weight: var(--weight-normal);
   line-height: 19.8px;
 }
 .add-tag-list-anchor {
@@ -185,7 +185,7 @@ h1 {
 }
 .xpDisplay { align:center; color: var(--xp-display); }
 .solvedXpDisplay { color: var(--xp-display-solved); }
-.goldenTsumegoXpDisplay { color: var(--xp-display-golden); font-weight:800; text-shadow: 0 0 6px rgba(218, 165, 32, 0.4); }
+.goldenTsumegoXpDisplay { color: var(--xp-display-golden); font-weight:var(--weight-heavy); text-shadow: 0 0 6px rgba(218, 165, 32, 0.4); }
 .sprintXpDisplay { color: var(--xp-display-sprint); }
 .eloTooltip {
   position: relative;
@@ -237,7 +237,7 @@ h1 {
   font-size: 16px;
   font-style: normal;
   font-variant: normal;
-  font-weight: 800;
+  font-weight: var(--weight-heavy);
   text-decoration: none;
   background-color: var(--surface-button);
   color: var(--color-white);
@@ -260,7 +260,7 @@ h1 {
   font-size: 16px;
   font-style: normal;
   font-variant: normal;
-  font-weight: 800;
+  font-weight: var(--weight-heavy);
   text-decoration: none;
   background-color: var(--surface-button);
   color: var(--color-white);
@@ -284,7 +284,7 @@ h1 {
   font-size: 16px;
   font-style: normal;
   font-variant: normal;
-  font-weight: 800;
+  font-weight: var(--weight-heavy);
   text-decoration: none;
   background-color: var(--color-purple-deep);
   color: var(--color-white);
@@ -336,7 +336,7 @@ h1 {
   /* As wide as its text: a full-width block moved 75px right stuck out of the rank button */
   width: fit-content;
   color: var(--color-white);
-  font-weight: 800;
+  font-weight: var(--weight-heavy);
   font-size: 15px;
   text-decoration: none;
 }
@@ -486,7 +486,7 @@ h1 {
 }
 #sliderText {
   color: hsl(138, 0%, 47%);
-  font-weight: 400;
+  font-weight: var(--weight-normal);
   font-size: 20px;
 }
 .slider {
@@ -530,7 +530,7 @@ h1 {
   justify-content: center;
   background-color: var(--surface-panel-light);
   text-align: center;
-  font-weight: bold;
+  font-weight: var(--weight-bold);
   padding: 10px;
   margin: 0 auto 5px;
   border: thick double var(--color-gray);
@@ -1105,7 +1105,7 @@ h1 {
 		width: auto;
 		margin: var(--space-1) 0 0;
 		text-align: center;
-		font-size: 11px;
+		font-size: var(--text-xs);
 		order: 99;
 	}
 
@@ -1161,8 +1161,8 @@ h1 {
 	}
 	.health-counter {
 		display: inline-block;
-		font-weight: 800;
-		font-size: 18px;
+		font-weight: var(--weight-heavy);
+		font-size: var(--text-lg);
 		color: var(--text-color);
 	}
 	.health-counter::before {

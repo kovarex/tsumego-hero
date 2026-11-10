@@ -196,7 +196,7 @@
 	height: 24px;
 	padding: 0 var(--space-1);
 	border: 2px solid var(--color-surface);
-	border-radius: 999px;
+	border-radius: var(--radius-full);
 	background: var(--current-border-color);
 	color: var(--text-color);
 	font-size: var(--font-size-sm);
@@ -509,7 +509,7 @@
 .challenges__cell--solved
 {
 	background: var(--color-green);
-	color: #fff;
+	color: var(--color-white);
 	font-weight: var(--weight-bold);
 }
 
@@ -517,7 +517,7 @@
 .challenges__cell--timeout
 {
 	background: var(--color-red);
-	color: #fff;
+	color: var(--color-white);
 }
 
 /* A cell with the moves played until the fail or the time-out shows them on a board under it, while it is

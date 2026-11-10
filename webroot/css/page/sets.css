@@ -622,7 +622,7 @@
 	margin: 10px;
 	padding: 10px;
 	border-radius: 10px;
-	color: white;
+	color: var(--color-white);
 	font-size: var(--text-lg);
 	display: grid;
 	grid-template-rows: 1fr auto;
@@ -774,7 +774,7 @@
 		letter-spacing: 0.04em;
 	}
 	.set-card__foot {
-		font-size: 11px;
+		font-size: var(--text-xs);
 		gap: 4px;
 	}
 	.set-card__count {
@@ -788,7 +788,7 @@
 		left: 4px;
 		padding: 0 3px;
 		font-size: 9px;
-		border-radius: 4px;
+		border-radius: var(--radius-sm);
 	}
 	.set-card--finished .set-card__part {
 		top: 5px;
