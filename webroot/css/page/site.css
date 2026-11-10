@@ -760,9 +760,6 @@ nav ul ul ul li {
 .status-rating__number {
   color: grey;
 }
-.discuss-disabled__link {
-  color: var(--surface-muted-text);
-}
 /* The running text of the privacy policy and the authors page */
 .info-page__text {
   padding: 0 30px;
@@ -1070,11 +1067,6 @@ nav ul ul ul li {
 	.site-nav__signin-drawer {
 		display: block;
 	}
-	/* When logged out the disabled Discuss link is pointless on a phone; keep it
-	   only on desktop. */
-	.discuss-disabled {
-		display: none;
-	}
 	/* Drawer: hidden by default, opens when the checkbox is checked. */
 	.site-nav {
 		position: fixed;
@@ -1144,15 +1136,10 @@ nav ul ul ul li {
 	.site-nav nav ul ul.newMenuLi4 {
 		display: none;
 	}
-	/* Keep only Forums in the Home submenu on mobile; the informational links
-	   (Functions & Modes, Go Rules, About) aren't important to tap on a phone.
-	   Use the explicit .newMenuLi1-forum hook rather than :first-child, which
-	   breaks if the submenu items are reordered. */
+	/* The Home submenu is left out on a phone: its informational links (Functions & Modes, Go Rules, About) aren't
+	   important to tap there, and the forums are in the menu itself. */
 	.site-nav nav ul ul.newMenuLi1 li {
 		display: none;
-	}
-	.site-nav nav ul ul.newMenuLi1 li.newMenuLi1-forum {
-		display: list-item;
 	}
 	.site-nav nav ul ul li a {
 		font-size: 16px;
