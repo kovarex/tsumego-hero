@@ -14,6 +14,7 @@ const isCoverageBuild = process.env.VITE_COVERAGE === 'true';
 //Legacy JS files (global-scope scripts, must remain non-module to stay in global scope).
 const LEGACY_APP_FILES = [
 	'webroot/js/util.js',
+	'webroot/js/formatSignificant.js',
 	'webroot/js/Display.js',
 	'webroot/js/AchievementAlerts.js',
 	'webroot/js/Rating.js',
@@ -170,7 +171,6 @@ export default defineConfig({
 		legacyBundlePlugin('play', ['webroot/js/PlayPage.js']),
 		//The board of the play page, loaded right after its <div> so that the first paint has it
 		legacyBundlePlugin('play-board', ['webroot/js/PlayBoard.js']),
-		legacyBundlePlugin('profile', ['webroot/js/ProfilePage.js']),
 		legacyBundlePlugin('sets-index', ['webroot/js/SetsIndexPage.js']),
 		legacyBundlePlugin('sets-view', ['webroot/js/SetsViewPage.js']),
 		legacyBundlePlugin('time-mode', ['webroot/js/TimeModePages.js']),

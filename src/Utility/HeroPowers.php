@@ -16,24 +16,6 @@ class HeroPowers
 	public static int $REVELATION_MINIMUM_LEVEL = 80;
 	public static int $REFINEMENT_MINIMUM_LEVEL = 100;
 
-	public static function getPowers(): array
-	{
-		return [
-			['name' => 'Sprint', 'level' => self::$SPRINT_MINIMUM_LEVEL, 'description' => 'Speed solving'],
-			['name' => 'Intuition', 'level' => self::$INTUITION_MINIMUM_LEVEL, 'description' => 'Shows first correct move'],
-			['name' => 'Rejuvenation', 'level' => self::$REJUVENATION_MINIMUM_LEVEL, 'description' => 'Restores health and locks'],
-			['name' => 'Potion', 'level' => self::$POTION_MINIMUM_LEVEL, 'description' => 'Chance to restore health', 'premium' => true],
-			['name' => 'Revelation', 'level' => self::$REVELATION_MINIMUM_LEVEL, 'description' => 'Solves a problem', 'bonus' => 'Contribution reward grants an additional use'],
-			['name' => 'Refinement', 'level' => self::$REFINEMENT_MINIMUM_LEVEL, 'description' => 'Golden tsumego chance', 'premium' => true],
-		];
-	}
-
-	/** @param UserRow $user */
-	public static function hasPremiumUnlock(array $user): bool
-	{
-		return ($user['premium_id'] ?? null) !== null;
-	}
-
 	/** @param UserRow $user */
 	public static function hasContributionRevelationBonus(array $user): bool
 	{

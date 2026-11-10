@@ -25,7 +25,6 @@ use RuntimeException;
 //  'sets-view'    → virtual:legacy-sets-view            (the code of the page of a collection)
 //  'play'         → virtual:legacy-play                 (the code of the play page)
 //  'play-board'   → virtual:legacy-play-board           (the board of the play page, set up before the rest of the page)
-//  'profile'      → virtual:legacy-profile              (the code of the profile page)
 //  'schedule'     → virtual:legacy-schedule             (the code of the schedule page)
 //  'challenge'    → virtual:legacy-challenge            (the code of the page of a challenge)
 //  'time-mode'    → virtual:legacy-time-mode            (the code of the time mode overview and results)
@@ -50,7 +49,6 @@ class ViteManifest
 		'besogo'      => 'virtual:legacy-besogo',
 		'play'        => 'virtual:legacy-play',
 		'play-board'  => 'virtual:legacy-play-board',
-		'profile'     => 'virtual:legacy-profile',
 		'sets-index'  => 'virtual:legacy-sets-index',
 		'sets-view'   => 'virtual:legacy-sets-view',
 		'time-mode'   => 'virtual:legacy-time-mode',

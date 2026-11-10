@@ -9,9 +9,6 @@ use Cake\Routing\Router;
 //What the profile page (UsersController::view) shows of a player besides the user row.
 class UserProfile
 {
-	//How many of the latest achievements the profile lists
-	public const int LATEST_ACHIEVEMENT_COUNT = 12;
-
 	//The solves, the fails and the highest rating of each day of the last half year, oldest first
 	/** @return array<int, array{day: string, Solves: int|string, Fails: int|string, Rating: float|string|null}> */
 	public static function dailyResults(int $userID): array
@@ -62,20 +59,6 @@ class UserProfile
 			WHERE user_id = ? AND challenge_id IS NULL
 			GROUP BY DATE(created)
 			ORDER BY category DESC', [$userID]);
-	}
-
-	//The achievements the player got last, newest first, with how many times each was earned
-	/** @return array<int, array{id: int|string, name: string, description: string, image: string, color: string, xp: int|string, earned_count: int|string, created: string}> */
-	public static function latestAchievements(int $userID): array
-	{
-		return Util::query('
-			SELECT achievement.id, achievement.name, achievement.description, achievement.image, achievement.color, achievement.xp,
-				achievement_status.value AS earned_count, achievement_status.created
-			FROM achievement_status
-				JOIN achievement ON achievement.id = achievement_status.achievement_id
-			WHERE achievement_status.user_id = ?
-			ORDER BY achievement_status.created DESC, achievement_status.id DESC
-			LIMIT ' . self::LATEST_ACHIEVEMENT_COUNT, [$userID]);
 	}
 
 	//How many different achievements the player has, and how many times the ones earned more than once were earned

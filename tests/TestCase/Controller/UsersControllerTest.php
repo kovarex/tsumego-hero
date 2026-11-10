@@ -285,10 +285,9 @@ class UsersControllerTest extends IntegrationTestCase
 			'Solve history link should be present on profile');
 	}
 
-	//Test that profile achievements link to the correct achievement id.
-	//Achievement ids are not contiguous (id 100 is missing), so the profile
-	//must resolve each achievement status to the matching achievement.
-	public function testProfileAchievementLinksToCorrectAchievement(): void
+	//The achievements of a player link to the correct achievement id. Achievement ids are not contiguous
+	//(id 100 is missing), so the page must resolve each achievement status to the matching achievement.
+	public function testPlayersAchievementLinksToCorrectAchievement(): void
 	{
 		// This only breaks because the ids are not contiguous, so pin the
 		// precondition that id 100 is absent from the achievement table.
@@ -306,11 +305,11 @@ class UsersControllerTest extends IntegrationTestCase
 			],
 		]);
 
-		$this->get('users/view/' . $context->user['id']);
+		$this->get('achievements/user/' . $context->user['id']);
 
 		$this->assertStringContainsString('/achievements/view/115', $this->view);
 		$this->assertStringContainsString('/achievements/view/115/' . $context->user['id'], $this->view,
-			'the achievement link keeps the profile it was opened from');
+			'the achievement link keeps the player it was opened from');
 		$this->assertStringContainsString('1000 Weiqi problems 2nd half', $this->view);
 	}
 
@@ -376,49 +375,6 @@ class UsersControllerTest extends IntegrationTestCase
 		$browser->checkTable('#final-info-table', $this, [
 			3 => ['Achievements:', '2 of ' . AchievementId::count()],
 		]);
-	}
-
-	//The profile lists the 12 achievements the player got last, newest first.
-	public function testProfileListsTheLatestAchievementsNewestFirst(): void
-	{
-		$achievementIDs = array_slice(array_map(fn($achievement) => $achievement->value, AchievementId::cases()), 0, 13);
-		$context = new ContextPreparator([
-			'user' => [
-				'name' => 'collector',
-				'achievement-statuses' => array_map(fn($id) => ['id' => $id], $achievementIDs),
-			],
-		]);
-		foreach ($achievementIDs as $index => $achievementID)
-			Util::execute('UPDATE achievement_status SET created = ? WHERE user_id = ? AND achievement_id = ?',
-				[date('Y-m-d H:i:s', strtotime('2026-01-01 +' . $index . ' days')), $context->user['id'], $achievementID]);
-
-		$this->get('users/view/' . $context->user['id']);
-
-		$link = fn($achievementID) => 'href="/achievements/view/' . $achievementID . '/' . $context->user['id'] . '"';
-		$this->assertStringNotContainsString($link($achievementIDs[0]), $this->view, 'the oldest is the 13th');
-		$positions = array_map(fn($achievementID) => strpos($this->view, $link($achievementID)), array_reverse(array_slice($achievementIDs, 1)));
-		$this->assertNotContains(false, $positions);
-		$sorted = $positions;
-		sort($sorted);
-		$this->assertSame($sorted, $positions, 'newest first');
-		$this->assertStringContainsString(h($this->fetchTable('Achievement')->get($achievementIDs[12])->name), $this->view);
-	}
-
-	//The profile achievement card shows how often a repeatable achievement was earned.
-	public function testProfileAchievementCardShowsNumberOfEarnings(): void
-	{
-		$context = new ContextPreparator([
-			'user' => [
-				'name' => 'repeater',
-				'achievement-statuses' => [
-					['id' => AchievementId::SUPERIOR_ACCURACY->value, 'value' => 3],
-				],
-			],
-		]);
-
-		$this->get('users/view/' . $context->user['id']);
-
-		$this->assertStringContainsString('title="Earned 3 times"', $this->view);
 	}
 
 	//The achievement count on the profile carries the number of times the repeatable

@@ -1,19 +1,23 @@
 @layer page
 {
-.profileTable {
-  width: 100%;
-  padding: 0;
-  margin: 0;
+/* The charts of the profile: the level on the left, the rating and the time mode runs on the right; stacked on a phone */
+.profile-charts {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--space-3);
+  align-items: start;
+  margin: var(--space-3) 0;
 }
-.profileTable__half {
-  width: 50%;
+.profile-charts__column {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
 }
-.profile-statistics__heading {
-  width: 95%;
-}
-.acTitle2__long {
-  font-weight: var(--weight-normal);
-  font-size: 17px;
+@media (width < 48rem) {
+  .profile-charts {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 /* Settings: the fields of a new e-mail and password */
 .settings-account__field {
@@ -40,24 +44,6 @@
 }
 .solve-history__failed {
   color: var(--color-red);
-}
-.profileTable td {
-  padding: 0;
-  vertical-align: top;
-}
-.profileTable h1 {
-  padding: 0;
-  margin: 0;
-}
-.profileTable .h1 {
-  margin-left: 20px;
-}
-.profileTable2 a {
-  margin-left: 20px;
-}
-.h1profile h1,
-.profileTable2 a {
-  color: var(--profile-name);
 }
 .rank-icon {
 	display: inline-block;
@@ -197,92 +183,6 @@
 	text-transform: uppercase;
 	letter-spacing: 0.12em;
 	color: var(--text-softer-color);
-}
-
-/* ── Hero powers ── */
-.hero-powers
-{
-	margin: 0 var(--space-1) var(--space-4);
-	border: 3px solid var(--color-blue);
-	padding: var(--space-3) var(--space-4);
-}
-
-.hero-powers__title
-{
-	font-weight: var(--weight-heavy);
-	color: var(--color-blue);
-	font-size: 14px;
-	margin-bottom: 10px;
-}
-
-.hero-powers__timeline
-{
-	position: relative;
-	padding: 0 0 60px;
-	margin: 0 10px;
-}
-
-.hero-powers__track
-{
-	height: 14px;
-	background: var(--surface-bar);
-	border-radius: 7px;
-	overflow: hidden;
-	position: relative;
-}
-
-.hero-powers__fill
-{
-	height: 100%;
-	background: linear-gradient(var(--color-blue), var(--color-blue-dark));
-	border-radius: 7px;
-}
-
-.hero-powers__marker
-{
-	position: absolute;
-	top: 14px;
-	transform: translateX(-50%);
-	text-align: center;
-	white-space: nowrap;
-}
-
-.hero-powers__dot
-{
-	width: 12px;
-	height: 12px;
-	border-radius: 50%;
-	background: var(--surface-border-strong);
-	border: 2px solid var(--current-border-color);
-	margin: 0 auto 2px;
-}
-
-.hero-powers__marker--unlocked .hero-powers__dot
-{
-	background: var(--color-blue);
-	border-color: var(--color-blue);
-}
-
-.hero-powers__name
-{
-	font-size: 10px;
-	color: var(--text-softer-color);
-}
-
-.hero-powers__marker--unlocked .hero-powers__name
-{
-	color: var(--color-blue);
-}
-
-.hero-powers__level
-{
-	font-size: 9px;
-	color: var(--text-softer-color);
-}
-
-.hero-powers__marker--unlocked .hero-powers__level
-{
-	color: var(--color-blue);
 }
 
 /* ── Mistake training ── */

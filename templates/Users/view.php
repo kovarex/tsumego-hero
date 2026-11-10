@@ -3,17 +3,15 @@
 use App\View\Helper\AchievementHelper;
 use App\Model\Table\UserTable;
 use App\Utility\Auth;
-use App\Utility\HeroPowers;
+use App\Utility\ChartRenderer;
 use App\Utility\Level;
 use App\Utility\Rating;
 use App\Utility\Util;
-use App\Utility\ViteManifest;
 
 /**
  * @var \App\View\AppView $this
  * @var int $achievementCount
  * @var array{completed: int, earned_times: int} $achievementCounts
- * @var array $latestAchievements
  * @var array $dailyResults
  * @var array|null $mistakeTraining
  * @var int $solvedProblemCount
@@ -167,80 +165,23 @@ use App\Utility\ViteManifest;
 		</table>
 	</div>
 </div>
-<?php
-$heroPowers = HeroPowers::getPowers();
-$maxPowerLevel = max(array_column($heroPowers, 'level'));
-$isPremium = HeroPowers::hasPremiumUnlock($user);
-$hasRevelationBonus = HeroPowers::hasContributionRevelationBonus($user);
-$unlockedCount = 0;
-foreach ($heroPowers as $power)
-	if ($user['level'] >= $power['level'])
-		$unlockedCount++;
-?>
-<div class="hero-powers">
-	<div class="hero-powers__title">Hero Powers: <?php echo $unlockedCount . ' of ' . count($heroPowers); ?> unlocked</div>
-	<div class="hero-powers__timeline">
-		<div class="hero-powers__track">
-			<div class="hero-powers__fill" style="width:<?php echo min(100, round($user['level'] / $maxPowerLevel * 100)); ?>%"></div>
-		</div>
-		<?php foreach ($heroPowers as $power):
-			$pos = round($power['level'] / $maxPowerLevel * 100);
-			$isUnlocked = $user['level'] >= $power['level'];
-		?>
-		<div class="hero-powers__marker<?php echo $isUnlocked ? ' hero-powers__marker--unlocked' : ''; ?>" style="left:<?php echo $pos; ?>%" title="<?php echo $power['description']; ?>">
-			<div class="hero-powers__dot"></div>
-			<div class="hero-powers__name"><?php echo $power['name']; ?></div>
-			<div class="hero-powers__level">Lv <?php echo $power['level']; ?></div>
-			<?php if (!empty($power['premium']) && $isPremium): ?>
-				<div class="badge badge--active" title="Unlocked via premium">Premium</div>
-			<?php endif; ?>
-			<?php if (!empty($power['bonus']) && $hasRevelationBonus): ?>
-				<div class="badge badge--active" title="<?php echo $power['bonus']; ?>">+1 use</div>
-			<?php endif; ?>
-		</div>
-		<?php endforeach; ?>
-	</div>
-</div>
 <?php if ($mistakeTraining !== null)
 	echo $this->element('mistake_training_profile', ['training' => $mistakeTraining]); ?>
-<?php
-	$size = count($dailyResults);
-	if ($size < 10)
-		$height = '400';
-	elseif($size < 30)
-		$height = '600';
-	elseif ($size < 50)
-		$height = '900';
-	else
-		$height = '1200';
-?>
-<div class="userBottom1">
-	<table class="profileTable">
-	<tr>
-	<td class="profileTable__half">
-		<div class="legacy-center">
-			<a id="userShowLevelButtonLeft" class="btn" data-profile-show="level" data-profile-side="Left">Level</a>
-			<a id="userShowRatingButtonLeft" class="btn" data-profile-show="rating" data-profile-side="Left">Rating</a>
-			<a id="userShowTimeButtonLeft" class="btn" data-profile-show="time" data-profile-side="Left">Time</a>
-			<a id="userShowAchievementsButtonLeft" class="btn" data-profile-show="achievement" data-profile-side="Left">Achievements</a>
+<?php //The charts of the player: the level on the left, the rating with the time mode runs under it on the right ?>
+<div class="profile-charts">
+	<div class="profile-charts__column">
+		<div id="profile-chart-level">
+		<?php echo ChartRenderer::bar('Problems in level mode', array_reverse($dailyResults), 'day', [
+			['label' => 'Solves', 'color' => '#74d14c'],
+			['label' => 'Fails', 'color' => '#d63a49']]); ?>
 		</div>
-	</td>
-	<td class="profileTable__half">
-		<div class="legacy-center">
-			<a id="userShowLevelButtonRight" class="btn" data-profile-show="level" data-profile-side="Right">Level</a>
-			<a id="userShowRatingButtonRight" class="btn" data-profile-show="rating" data-profile-side="Right">Rating</a>
-			<a id="userShowTimeButtonRight" class="btn" data-profile-show="time" data-profile-side="Right">Time</a>
-			<a id="userShowAchievementsButtonRight" class="btn" data-profile-show="achievement" data-profile-side="Right">Achievements</a>
+	</div>
+	<div class="profile-charts__column">
+		<div id="profile-chart-rating"><?php echo ChartRenderer::ratingLine('Overall rating', $dailyResults); ?></div>
+		<div id="profile-chart-time">
+		<?php echo ChartRenderer::bar('Time mode runs', $timeGraph, 'category', [
+			['label' => 'Passes', 'color' => '#c8723d'],
+			['label' => 'Fails', 'color' => '#888888']]); ?>
 		</div>
-	</td>
-	</tr>
-	</table>
-	<br>
-	<table class="profileTable">
-		<tr>
-			<?php foreach (['Left', 'Right'] as $side)
-				echo $this->element('profile_statistics', compact('side', 'user', 'latestAchievements', 'dailyResults', 'timeGraph')); ?>
-	</tr></table>
+	</div>
 </div>
-
-<?php echo ViteManifest::legacyScript('profile'); ?>

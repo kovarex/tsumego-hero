@@ -2,6 +2,8 @@
 
 namespace App\View\Helper;
 
+use App\Utility\Util;
+
 //Renders the small achievement widgets that appear on several pages.
 //The same achievement is shown on the grid, on its detail page, on the profile
 //and in the achievement highscore, so the markup and its wording live here
@@ -29,5 +31,11 @@ class AchievementHelper extends AppHelper
 			return '';
 		return '<div class="achievementEarnedCount" title="Earned ' . $earnedCount . ' times">'
 			. $earnedCount . 'x</div>';
+	}
+
+	//A share of the players with two significant digits, e.g. "57%", "3.4%", "0.015%" (Util::formatSignificant)
+	public static function formatPercent(float $percent): string
+	{
+		return Util::formatSignificant($percent) . '%';
 	}
 }

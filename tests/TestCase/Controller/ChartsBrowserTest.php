@@ -58,26 +58,52 @@ class ChartsBrowserTest extends IntegrationTestCase
 		$browser = Browser::instance();
 		$browser->get('users/view/' . $context->user['id']);
 
-		// the left side opens on the level mode, the newest day first
-		$browser->waitUntilCssSelectorDisplayed('#userShowLevelLeft .bar-chart__bar');
-		$texts = fn(string $selector) => array_map(fn($element) => $element->getText(), $browser->getElements('#userShowLevelLeft ' . $selector));
+		// all three at once: the level mode on the left, the newest day first
+		$browser->waitUntilCssSelectorDisplayed('#profile-chart-level .bar-chart__bar');
+		$texts = fn(string $selector) => array_map(fn($element) => $element->getText(), $browser->getElements('#profile-chart-level ' . $selector));
 		$this->assertSame([$yesterday, $twoDaysAgo], $texts('.bar-chart__category'));
 		$this->assertSame(['1', '3'], $texts('.bar-chart__total'));
 		$this->assertSame(['2'], $texts("[data-label='Solves']"));
 		$this->assertSame(['1', '1'], $texts("[data-label='Fails']"));
 
-		// the right side opens on the rating
-		$browser->waitUntilCssSelectorDisplayed('#userShowRatingRight .line-chart__line');
-		$this->assertSame('Overall rating', $browser->find('#userShowRatingRight .chart__title')->getText());
+		// the rating on the right, the time mode runs under it
+		$browser->waitUntilCssSelectorDisplayed('#profile-chart-rating .line-chart__line');
+		$this->assertSame('Overall rating', $browser->find('#profile-chart-rating .chart__title')->getText());
+		$browser->waitUntilCssSelectorDisplayed('#profile-chart-time .bar-chart__bar');
+		$this->assertSame('2', $browser->find('#profile-chart-time .bar-chart__total')->getText());
 
-		$browser->clickId('userShowTimeButtonLeft');
-		$browser->waitUntilCssSelectorDisplayed('#userShowTimeLeft .bar-chart__bar');
-		$this->assertSame('2', $browser->find('#userShowTimeLeft .bar-chart__total')->getText());
+		$layout = fn() => $browser->driver->executeScript(<<<'JS'
+			const box = id => { const rect = document.getElementById(id).getBoundingClientRect(); return {left: Math.round(rect.left), top: Math.round(rect.top), width: Math.round(rect.width)}; };
+			const svgWidths = [...document.querySelectorAll('.profile-charts svg[role="img"]')].map(svg => Math.round(svg.getBoundingClientRect().width));
+			return {level: box('profile-chart-level'), rating: box('profile-chart-rating'), time: box('profile-chart-time'), svgWidths: svgWidths, toggles: document.querySelectorAll('[data-profile-show]').length};
+			JS);
+		$pc = $layout();
+		$this->assertSame(0, $pc['toggles']);
+		$this->assertLessThan($pc['rating']['left'], $pc['level']['left'], 'the level on the left');
+		$this->assertSame($pc['rating']['left'], $pc['time']['left'], 'the time mode runs in the column of the rating');
+		$this->assertGreaterThan($pc['rating']['top'], $pc['time']['top'], 'under it');
+		$this->assertSame($pc['level']['width'], $pc['rating']['width'], 'two columns of the same width');
+		$this->assertCount(1, $pc['svgWidths'], 'the rating line');
+		$this->assertGreaterThan($pc['rating']['width'] * 0.8, $pc['svgWidths'][0], 'drawn at the width of its column');
 
-		// the choice is remembered for the next visit
-		$browser->get('users/view/' . $context->user['id']);
-		$browser->waitUntilCssSelectorDisplayed('#userShowTimeLeft .bar-chart__bar');
-		$this->assertFalse($browser->find('#userShowLevelLeft')->isDisplayed());
+		// a phone stacks them: the level, the rating, the time mode runs
+		$window = $browser->driver->manage()->window();
+		$size = $window->getSize();
+		$window->setSize(new Facebook\WebDriver\WebDriverDimension(390, 900));
+		try
+		{
+			$browser->get('users/view/' . $context->user['id']);
+			$browser->waitUntilCssSelectorDisplayed('#profile-chart-time .bar-chart__bar');
+			$phone = $layout();
+			$this->assertSame($phone['level']['left'], $phone['rating']['left']);
+			$this->assertLessThan($phone['rating']['top'], $phone['level']['top']);
+			$this->assertLessThan($phone['time']['top'], $phone['rating']['top']);
+			$this->assertGreaterThan($phone['rating']['width'] * 0.8, $phone['svgWidths'][0]);
+		}
+		finally
+		{
+			$window->setSize($size);
+		}
 		$browser->assertNoJsErrors();
 	}
 
