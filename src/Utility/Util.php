@@ -291,6 +291,30 @@ class Util
 		return date('c', strtotime($mysqlDatetime));
 	}
 
+	//A number with $significant significant digits, e.g. with 2: 56, 5.6, 0.15, 0.015, and 123 (a whole number is
+	//never cut). Rounded half away from zero, the trailing zeros dropped (2, not 2.0), 9.96 gives 10. The same as
+	//formatSignificant() of webroot/js/formatSignificant.js.
+	public static function formatSignificant(float $value, int $significant = 2): string
+	{
+		if (!is_finite($value))
+			return (string) $value;
+		$magnitude = $value == 0 ? 0 : (int) floor(log10(abs($value)));
+		$decimals = max(0, $significant - 1 - $magnitude);
+		$rounded = round(abs($value), $decimals);
+		// rounding up to the next power of ten keeps one digit fewer behind the point: 9.96 is 10, not 10.0
+		if ($rounded >= 10 ** ($magnitude + 1))
+		{
+			$decimals = max(0, $significant - 2 - $magnitude);
+			$rounded = round(abs($value), $decimals);
+		}
+		if ($rounded == 0)
+			return '0';
+		$text = number_format($rounded, $decimals, '.', '');
+		if (str_contains($text, '.'))
+			$text = rtrim(rtrim($text, '0'), '.');
+		return ($value < 0 ? '-' : '') . $text;
+	}
+
 	//A place in a table in words: 1st, 2nd, 3rd, 4th, 11th, 21st…
 	public static function ordinal(int $number): string
 	{
