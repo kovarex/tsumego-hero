@@ -1287,7 +1287,7 @@
 	background: none;
 	color: var(--paginator-button-text-color);
 	font: inherit;
-	font-size: var(--font-size-sm);
+	font-size: var(--text-sm);
 	cursor: pointer;
 }
 .rating-chart__range:first-child {
@@ -1306,7 +1306,7 @@
 	cursor: default;
 }
 .rating-chart__error {
-	font-size: var(--font-size-sm);
+	font-size: var(--text-sm);
 	color: var(--color-red);
 }
 .chart__swatch {
