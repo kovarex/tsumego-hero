@@ -564,6 +564,43 @@ class SitesControllerTest extends IntegrationTestCase
 		$this->assertStringNotContainsString('users/logout', $pageSource, 'Logged-out nav should not offer Sign Out');
 	}
 
+	//The title and the links of the latest additions are light text on the dark picture of their box; until the
+	//picture has loaded (a phone on a slow line), or when it doesn't, the box itself is dark, in both themes
+	public function testLatestAdditionsReadWithoutTheirPicture(): void
+	{
+		$browser = Browser::instance();
+		$context = new ContextPreparator(['tsumego' => ['set_order' => 7, 'sgf' => '(;GM[1]FF[4]SZ[19]AB[cc]AW[dd])']]);
+		$this->addScheduleEntry([
+			'tsumego_id' => $context->tsumegos[0]['id'],
+			'set_id' => $context->tsumegos[0]['set-connections'][0]['set_id'],
+			'date' => date('Y-m-d'),
+			'published' => 1]);
+		$browser->get('/');
+		foreach (['light', 'dark'] as $theme)
+		{
+			$contrasts = $browser->driver->executeScript(<<<'JS'
+				document.documentElement.dataset.theme = arguments[0];
+				const box = document.querySelector('.new-tsumego-box--news');
+				box.style.backgroundImage = 'none';
+				const rgb = color => color.match(/[\d.]+/g).map(Number);
+				const luminance = color => {
+					const [r, g, b] = rgb(color).slice(0, 3).map(v => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; });
+					return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+				};
+				const contrast = (a, b) => { const [light, dark] = [luminance(a), luminance(b)].sort((x, y) => y - x); return (light + 0.05) / (dark + 0.05); };
+				const background = getComputedStyle(box).backgroundColor;
+				return {
+					background: background,
+					opaque: rgb(background)[3] === undefined || rgb(background)[3] === 1,
+					heading: contrast(getComputedStyle(document.querySelector('.latest-additions-heading')).color, background),
+					link: contrast(getComputedStyle(document.querySelector('.scheduleTsumego')).color, background)};
+				JS, [$theme]);
+			$this->assertTrue($contrasts['opaque'], $theme . ': the box has a background colour of its own, ' . $contrasts['background']);
+			$this->assertGreaterThanOrEqual(4.5, $contrasts['heading'], $theme . ': the title reads on ' . $contrasts['background']);
+			$this->assertGreaterThanOrEqual(4.5, $contrasts['link'], $theme . ': the link reads on ' . $contrasts['background']);
+		}
+	}
+
 	private function addScheduleEntry(array $fields): void
 	{
 		$scheduleTable = $this->fetchTable('Schedule');

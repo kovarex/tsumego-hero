@@ -84,7 +84,9 @@
   height: auto;
   overflow: hidden;
 }
+/* The dark of the picture under it, so its light text reads before the picture has loaded, or when it doesn't */
 .new-tsumego-box--news {
+  background-color: var(--surface-near-black);
   background-image: url("/img/mode-select-bg-right.png");
   background-size: 100% 100%;
   min-height: 175px;
