@@ -107,18 +107,21 @@ class ChartsBrowserTest extends IntegrationTestCase
 		$browser->assertNoJsErrors();
 	}
 
-	//The level chart shows 60 days with attempts a page, with a pager under the title: page 1 the newest, < off on it,
-	//> off on the last, the current page marked; a player of one page has no pager
-	public function testProfileLevelChartPagesSixtyDaysWithAttemptsAtATime(): void
+	//The level chart shows a calendar quarter a page, with a pager under the title: page 1 the current quarter, < off on
+	//it, > off on the last, the current page marked, a quarter without attempts empty; a player of one page has no pager
+	public function testProfileLevelChartPagesAQuarterAtATime(): void
 	{
-		$day = fn(int $daysAgo) => date('Y-m-d', strtotime('-' . $daysAgo . ' days'));
-		$attempts = [];
-		for ($daysAgo = 1; $daysAgo <= 130; $daysAgo++)
-			$attempts[] = ['solved' => true, 'user_rating' => 1500, 'created' => $day($daysAgo) . ' 10:00:00'];
+		$quarterStart = fn(int $quartersAgo) => date('Y-m-d', strtotime(date('Y') . '-' . sprintf('%02d', intdiv((int) date('n') - 1, 3) * 3 + 1) . '-01 -' . (3 * $quartersAgo) . ' months'));
+		$attempt = fn(string $day) => ['solved' => true, 'user_rating' => 1500, 'created' => $day . ' 10:00:00'];
 		$context = new ContextPreparator([
 			'user' => ['name' => 'alice'],
 			'other-users' => [['name' => 'bob']],
-			'tsumegos' => [['sets' => [['name' => 'set', 'num' => 1]], 'attempts' => $attempts]]]);
+			'tsumegos' => [['sets' => [['name' => 'set', 'num' => 1]], 'attempts' => [
+				$attempt($quarterStart(0)),
+				$attempt(date('Y-m-d', strtotime($quarterStart(0) . ' +1 day'))),
+				$attempt($quarterStart(1)),
+				$attempt($quarterStart(4))]]]]);
+		$label = fn(int $quartersAgo) => date('M', strtotime($quarterStart($quartersAgo))) . ' – ' . date('M Y', strtotime($quarterStart($quartersAgo) . ' +2 months'));
 
 		$browser = Browser::instance();
 		$browser->get('users/view/' . $context->user['id']);
@@ -126,31 +129,36 @@ class ChartsBrowserTest extends IntegrationTestCase
 			const chart = document.getElementById('profile-chart-level');
 			const pager = chart.querySelector('.level-chart__pager');
 			return {
-				first: chart.querySelector('.bar-chart__category')?.textContent ?? null,
+				range: chart.querySelector('.level-chart__range')?.textContent ?? null,
 				days: chart.querySelectorAll('.bar-chart__category').length,
+				empty: chart.querySelector('.level-chart__empty')?.textContent ?? null,
 				items: pager ? [...pager.children].map(item => item.textContent) : null,
 				current: pager?.querySelector('[aria-current="page"]')?.textContent ?? null,
 				previous: pager?.querySelector('.level-chart__previous').disabled ?? null,
 				next: pager?.querySelector('.level-chart__next').disabled ?? null};
 			JS);
 		$browser->waitUntilCssSelectorDisplayed('#profile-chart-level .level-chart__pager');
-		$this->assertSame(['first' => $day(1), 'days' => 60, 'items' => ['<', '1', '2', '3', '>'], 'current' => '1', 'previous' => true, 'next' => false], $state());
+		$this->assertSame(['range' => $label(0), 'days' => 2, 'empty' => null, 'items' => ['<', '1', '2', '…', '5', '>'], 'current' => '1', 'previous' => true, 'next' => false], $state());
 
 		$browser->clickCssSelect('#profile-chart-level .level-chart__page:nth-of-type(3)');
 		$browser->waitUntil(fn() => $state()['current'] === '2', 10, 'page 2');
-		$this->assertSame(['first' => $day(61), 'days' => 60, 'previous' => false, 'next' => false], array_intersect_key($state(), array_flip(['first', 'days', 'previous', 'next'])));
+		$this->assertSame(['range' => $label(1), 'days' => 1, 'items' => ['<', '1', '2', '3', '…', '5', '>'], 'previous' => false], array_intersect_key($state(), array_flip(['range', 'days', 'items', 'previous'])));
 
 		$browser->clickCssSelect('#profile-chart-level .level-chart__next');
-		$browser->waitUntil(fn() => $state()['current'] === '3', 10, 'the last page');
-		$this->assertSame(['first' => $day(121), 'days' => 10, 'next' => true], array_intersect_key($state(), array_flip(['first', 'days', 'next'])));
+		$browser->waitUntil(fn() => $state()['current'] === '3', 10, 'an empty quarter');
+		$this->assertSame(['range' => $label(2), 'days' => 0, 'empty' => 'No problems in level mode this quarter.'], array_intersect_key($state(), array_flip(['range', 'days', 'empty'])));
+
+		$browser->driver->executeScript("[...document.querySelectorAll('#profile-chart-level .level-chart__page')].find(button => button.textContent === '5').click()");
+		$browser->waitUntil(fn() => $state()['current'] === '5', 10, 'the last page');
+		$this->assertSame(['range' => $label(4), 'days' => 1, 'next' => true], array_intersect_key($state(), array_flip(['range', 'days', 'next'])));
 
 		$browser->clickCssSelect('#profile-chart-level .level-chart__previous');
-		$browser->waitUntil(fn() => $state()['current'] === '2', 10, 'back to page 2');
+		$browser->waitUntil(fn() => $state()['current'] === '4', 10, 'back to page 4');
 
 		// one page needs no pager
 		$browser->get('users/view/' . $context->otherUsers[0]['id']);
 		$browser->waitUntilCssSelectorDisplayed('#profile-chart-level .chart__title');
-		$this->assertNull($state()['items']);
+		$this->assertSame([null, 'No problems in level mode yet.'], [$state()['items'], $state()['empty']]);
 		$browser->assertNoJsErrors();
 	}
 

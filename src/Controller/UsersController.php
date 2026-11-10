@@ -317,7 +317,7 @@ class UsersController extends AppController
 		return hash_hmac('sha256', 'demote_admin ' . $userID, Configure::read('Security.salt'));
 	}
 
-	//A page of the level chart of a profile as JSON, ?page=N, the newest by default (UserProfile::levelDays)
+	//A page of the level chart of a profile as JSON, ?page=N, the current quarter by default (UserProfile::levelDays)
 	#[HttpGet]
 	public function levelDays(string $userID): Response
 	{

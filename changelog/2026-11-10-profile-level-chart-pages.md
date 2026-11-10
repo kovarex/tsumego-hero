@@ -1,1 +1,1 @@
-Changed: The profile's chart of problems in level mode shows 60 days with problems a page, the newest first, with a pager under its title to go back through the rest, so the rating chart is no longer far down the page.
+Changed: The profile's chart of problems in level mode shows a calendar quarter at a time, the current one first, with a pager under its title to go back through the older quarters, so the rating chart is no longer far down the page.

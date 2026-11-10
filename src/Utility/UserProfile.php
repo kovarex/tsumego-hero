@@ -62,27 +62,21 @@ class UserProfile
 	}
 
 	//How many days with attempts a page of the level chart of the profile shows
-	public const int LEVEL_DAYS_PAGE = 60;
-
-	//A page of the level chart: the solves and fails of LEVEL_DAYS_PAGE days with attempts, newest first, page 1 the
-	//newest. A page number out of range is the nearest page. With the count of pages and the first and last day of
-	//the page (null without attempts).
-	/** @return array{page: int, pages: int, from: ?string, until: ?string, days: list<array{day: string, Solves: int, Fails: int}>} */
+	//A page of the level chart: the solves and fails of each day with attempts of a calendar quarter, newest first.
+	//Page 1 is the current quarter, the last the quarter of the first attempt; a page number out of range is the
+	//nearest page. With the count of pages and the first and last day of the quarter.
+	/** @return array{page: int, pages: int, from: string, until: string, days: list<array{day: string, Solves: int, Fails: int}>} */
 	public static function levelDays(int $userID, int $page = 1): array
 	{
-		// all three read the player's attempts through the index on (user_id, created)
-		$dayCount = (int) Util::query('SELECT COUNT(DISTINCT DATE(created)) AS days FROM tsumego_attempt WHERE user_id = ?', [$userID])[0]['days'];
-		$pages = max(1, (int) ceil($dayCount / self::LEVEL_DAYS_PAGE));
+		$now = self::quarterIndex(date('Y-m-d'));
+		// the first attempt and the attempts of the quarter both come from the index on (user_id, created)
+		$first = Util::query('SELECT MIN(created) AS first FROM tsumego_attempt WHERE user_id = ?', [$userID])[0]['first'];
+		$pages = $first === null ? 1 : max(1, $now - self::quarterIndex($first) + 1);
 		$page = min(max(1, $page), $pages);
-		// the days of the page first, from the index alone, then the attempts of those days only: summing all the
-		// player's attempts and paging after reads every row (150 ms for 60000 attempts against 20 ms)
-		$pageDays = array_column(Util::query('
-			SELECT DISTINCT DATE(created) AS day
-			FROM tsumego_attempt
-			WHERE user_id = ?
-			ORDER BY day DESC
-			LIMIT ' . self::LEVEL_DAYS_PAGE . ' OFFSET ' . (($page - 1) * self::LEVEL_DAYS_PAGE), [$userID]), 'day');
-		$days = !$pageDays ? [] : array_map(fn($row) => ['day' => $row['day'], 'Solves' => (int) $row['Solves'], 'Fails' => (int) $row['Fails']], Util::query('
+		$quarter = $now - $page + 1;
+		$from = sprintf('%04d-%02d-01', intdiv($quarter, 4), $quarter % 4 * 3 + 1);
+		$next = date('Y-m-d', strtotime($from . ' +3 months'));
+		$days = array_map(fn($row) => ['day' => $row['day'], 'Solves' => (int) $row['Solves'], 'Fails' => (int) $row['Fails']], Util::query('
 			SELECT
 				DATE(created) AS day,
 				SUM(CASE WHEN solved = 1 THEN 1 ELSE 0 END) AS Solves,
@@ -90,12 +84,12 @@ class UserProfile
 			FROM tsumego_attempt
 			WHERE user_id = ? AND created >= ? AND created < ?
 			GROUP BY DATE(created)
-			ORDER BY day DESC', [$userID, end($pageDays), date('Y-m-d', strtotime($pageDays[0] . ' +1 day'))]));
+			ORDER BY day DESC', [$userID, $from, $next]));
 		return [
 			'page' => $page,
 			'pages' => $pages,
-			'from' => $days ? $days[count($days) - 1]['day'] : null,
-			'until' => $days ? $days[0]['day'] : null,
+			'from' => $from,
+			'until' => date('Y-m-d', strtotime($next . ' -1 day')),
 			'days' => $days];
 	}
 
@@ -147,5 +141,11 @@ class UserProfile
 		if ($avatarChoice === UserTable::AVATAR_GRAVATAR)
 			$og += ['image_width' => Avatar::SHARE_SIZE, 'image_height' => Avatar::SHARE_SIZE];
 		return $og;
+	}
+
+	//The quarters since the year 0 up to the quarter of the date, so the quarters between two dates are a difference
+	private static function quarterIndex(string $date): int
+	{
+		return (int) substr($date, 0, 4) * 4 + intdiv((int) substr($date, 5, 2) - 1, 3);
 	}
 }
