@@ -339,8 +339,11 @@ class PlayResultProcessorComponent extends Component
 		if (TsumegoUtil::isRecentlySolved($previousTsumegoStatus))
 			return;
 
-		// only not solved ones are updated (misplays get accumulated)
-		$continued = $lastTsumegoAttempt && !$lastTsumegoAttempt->solved ? $lastTsumegoAttempt : null;
+		// only not solved ones are updated (misplays get accumulated), and not across a reset: an attempt failed before
+		// the reset of the problem's part belongs to the run the reset ended, the play after it starts an attempt of its own
+		$continued = $lastTsumegoAttempt && !$lastTsumegoAttempt->solved
+			&& !ProgressDeletionTable::resetSince((int) Auth::getUserID(), $previousTsumego->id, $lastTsumegoAttempt->created->format('Y-m-d H:i:s'))
+			? $lastTsumegoAttempt : null;
 		$values = [
 			Auth::getUser()['rating'],
 			$result->xpGained,

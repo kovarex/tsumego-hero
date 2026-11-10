@@ -33,6 +33,25 @@ WHERE sc.id = ?', [$setConnectionID]);
 		return ['set_id' => (int) $rows[0]['set_id'], 'partition' => intdiv((int) $rows[0]['position'], self::$PARTITION_SIZE)];
 	}
 
+	//Whether the user reset a part holding the problem at or after the given time, in any collection it is in: a part
+	//by its number, or every part of the collection by a reset saved before the parts were recorded
+	public static function resetSince(int $userID, int $tsumegoID, string $since): bool
+	{
+		foreach (Util::query('
+SELECT pd.set_partition, sc.id AS set_connection_id
+FROM progress_deletion pd
+JOIN set_connection sc ON sc.set_id = pd.set_id AND sc.tsumego_id = ?
+WHERE pd.user_id = ? AND pd.created >= ?', [$tsumegoID, $userID, $since]) as $row)
+		{
+			if ($row['set_partition'] === null)
+				return true;
+			$part = self::partitionOf((int) $row['set_connection_id'], $tsumegoID);
+			if ($part !== null && $part['partition'] === (int) $row['set_partition'])
+				return true;
+		}
+		return false;
+	}
+
 	//How many problems of a set of the given count are in the part
 	public static function partSize(int $problemCount, int $partition): int
 	{
