@@ -134,7 +134,7 @@ class Board:
         return True
 
 class Engine:
-    def __init__(self, path=os.path.join(os.path.dirname(os.path.abspath(__file__)), 'engine')):
+    def __init__(self, path=os.environ.get('ENGINE') or os.path.join(os.path.dirname(os.path.abspath(__file__)), 'engine')):
         path = os.path.abspath(path)
         self.process = subprocess.Popen([path], stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True, bufsize=1)
 

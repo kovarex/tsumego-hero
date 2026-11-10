@@ -486,20 +486,31 @@ int terminalUncached(const State& s)
           }
         }
       }
-      //a chain touching the region's edge has its real liberties beyond it
+      //and the defender stones next to an attacker chain there that could be captured (not touching the outside wall):
+      //they decide that capture
+      static int seenAttacker[361];
+      vector<int> attackerStones;
       for (int p : active)
-        if (s.c[p] == defender && inArea[p] == areaStamp)
-        {
-          vector<int> stones;
-          if (chain(s, p, &stones, 1000) != 1)
-            continue;
-          bool edge = false;
-          for (int q : stones)
-            for (int k = 0; k < neighbourCount[q]; ++k)
-              edge = edge || s.c[neighbours[q][k]] == OUTSIDE;
-          if (!edge)
-            return KILL;
-        }
+        if (inArea[p] == areaStamp && s.c[p] != attacker)
+          for (int k = 0; k < neighbourCount[p]; ++k)
+          {
+            int r = neighbours[p][k];
+            if (s.c[r] != attacker || seenAttacker[r] == areaStamp)
+              continue;
+            attackerStones.clear();
+            bool outside;
+            chain(s, r, &attackerStones, 1000, &outside);
+            for (int a : attackerStones)
+              seenAttacker[a] = areaStamp;
+            if (!outside)
+              for (int a : attackerStones)
+                for (int j = 0; j < neighbourCount[a]; ++j)
+                  if (s.c[neighbours[a][j]] == defender)
+                    inArea[neighbours[a][j]] = areaStamp;
+          }
+      for (int p : active)
+        if (s.c[p] == defender && inArea[p] == areaStamp && chain(s, p, nullptr, 2) == 1)
+          return KILL;
     }
     return NOKILL;
   }
