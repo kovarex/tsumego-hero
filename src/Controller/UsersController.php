@@ -206,6 +206,7 @@ class UsersController extends AppController
 		$this->set('user', $user);
 
 		$this->set('dailyResults', UserProfile::dailyResults($userID));
+		$this->set('levelDays', UserProfile::levelDays($userID));
 		$this->set('timeModeRanks', UserProfile::timeModeRanks($userID));
 		$this->set('timeGraph', UserProfile::timeModeRuns($userID));
 
@@ -314,6 +315,19 @@ class UsersController extends AppController
 	private static function demotionToken(int $userID): string
 	{
 		return hash_hmac('sha256', 'demote_admin ' . $userID, Configure::read('Security.salt'));
+	}
+
+	//A window of the level chart of a profile as JSON, LEVEL_DAYS_WINDOW days ending on ?until (today by default),
+	//for the Older and Newer of the chart (UserProfile::levelDays)
+	#[HttpGet]
+	public function levelDays(string $userID): Response
+	{
+		$user = UserTable::row((int) $userID);
+		if (!$user)
+			throw new NotFoundException('User not found');
+		$this->assertUserVisible($user);
+		$until = $this->query('until');
+		return $this->respondJson(UserProfile::levelDays((int) $user['id'], is_string($until) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $until) ? $until : null));
 	}
 
 	#[HttpGet]

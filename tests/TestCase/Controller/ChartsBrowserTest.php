@@ -107,6 +107,47 @@ class ChartsBrowserTest extends IntegrationTestCase
 		$browser->assertNoJsErrors();
 	}
 
+	//The level chart shows the last 30 days; Older loads the 30 before, down to the first day with data, and Newer
+	//comes back, disabled on the latest days
+	public function testProfileLevelChartPagesThirtyDaysAtATime(): void
+	{
+		$day = fn(int $daysAgo) => date('Y-m-d', strtotime('-' . $daysAgo . ' days'));
+		$context = new ContextPreparator([
+			'user' => ['name' => 'alice'],
+			'tsumegos' => [[
+				'sets' => [['name' => 'set', 'num' => 1]],
+				'attempts' => [
+					['solved' => true, 'user_rating' => 1500, 'created' => $day(40) . ' 10:00:00'],
+					['solved' => false, 'user_rating' => 1490, 'created' => $day(1) . ' 10:00:00']]]]]);
+
+		$browser = Browser::instance();
+		$browser->get('users/view/' . $context->user['id']);
+		$state = fn() => $browser->driver->executeScript(<<<'JS'
+			const chart = document.getElementById('profile-chart-level');
+			return {
+				days: [...chart.querySelectorAll('.bar-chart__category')].map(category => category.textContent),
+				older: chart.querySelector('.level-chart__older').disabled,
+				newer: chart.querySelector('.level-chart__newer').disabled,
+				range: chart.querySelector('.level-chart__range').textContent};
+			JS);
+		$browser->waitUntilCssSelectorDisplayed('#profile-chart-level .bar-chart__bar');
+		$latest = $state();
+		$this->assertSame([$day(1)], $latest['days'], 'the last 30 days only');
+		$this->assertFalse($latest['older']);
+		$this->assertTrue($latest['newer'], 'no newer days than the latest');
+
+		$browser->clickCssSelect('#profile-chart-level .level-chart__older');
+		$browser->waitUntil(fn() => $state()['days'] === [$day(40)], 10, 'the 30 days before');
+		$this->assertTrue($state()['older'], 'the first day with data is in this window');
+		$this->assertFalse($state()['newer']);
+		$this->assertNotSame($latest['range'], $state()['range']);
+
+		$browser->clickCssSelect('#profile-chart-level .level-chart__newer');
+		$browser->waitUntil(fn() => $state()['days'] === [$day(1)], 10, 'back to the latest');
+		$this->assertTrue($state()['newer']);
+		$browser->assertNoJsErrors();
+	}
+
 	public function testProblemHistoryDrawsTheRatingOfTheProblem(): void
 	{
 		$context = new ContextPreparator([

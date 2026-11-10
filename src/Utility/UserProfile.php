@@ -61,6 +61,37 @@ class UserProfile
 			ORDER BY category DESC', [$userID]);
 	}
 
+	//The days a window of the level chart of the profile spans (LEVEL_DAYS_WINDOW days, the last one included)
+	public const int LEVEL_DAYS_WINDOW = 30;
+
+	//The solves and fails of each day of the window of the level chart that ends on $until (today when null or later),
+	//newest first, only the days with an attempt. With the window's first and last day, and the $until of the window
+	//before it (null when the player has no attempt before it) and of the one after it (null on the latest).
+	/** @return array{from: string, until: string, days: list<array{day: string, Solves: int, Fails: int}>, older: ?string, newer: ?string} */
+	public static function levelDays(int $userID, ?string $until = null): array
+	{
+		$today = date('Y-m-d');
+		$until = $until !== null && strtotime($until) !== false ? min(date('Y-m-d', strtotime($until)), $today) : $today;
+		$from = date('Y-m-d', strtotime($until . ' -' . (self::LEVEL_DAYS_WINDOW - 1) . ' days'));
+		$days = array_map(fn($row) => ['day' => $row['day'], 'Solves' => (int) $row['Solves'], 'Fails' => (int) $row['Fails']], Util::query('
+			SELECT
+				DATE(created) AS day,
+				SUM(CASE WHEN solved = 1 THEN 1 ELSE 0 END) AS Solves,
+				SUM(CASE WHEN solved = 0 THEN 1 ELSE 0 END) AS Fails
+			FROM tsumego_attempt
+			WHERE user_id = ? AND created >= ? AND created < ?
+			GROUP BY DATE(created)
+			ORDER BY day DESC', [$userID, $from, date('Y-m-d', strtotime($until . ' +1 day'))]));
+		// the first attempt ever, through the index on (user_id, created)
+		$first = Util::query('SELECT MIN(created) AS first FROM tsumego_attempt WHERE user_id = ?', [$userID])[0]['first'];
+		return [
+			'from' => $from,
+			'until' => $until,
+			'days' => $days,
+			'older' => $first !== null && substr($first, 0, 10) < $from ? date('Y-m-d', strtotime($from . ' -1 day')) : null,
+			'newer' => $until < $today ? min(date('Y-m-d', strtotime($until . ' +' . self::LEVEL_DAYS_WINDOW . ' days')), $today) : null];
+	}
+
 	//How many different achievements the player has, and how many times the ones earned more than once were earned
 	/** @return array{completed: int, earned_times: int} */
 	public static function achievementCounts(int $userID): array

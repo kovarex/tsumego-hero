@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { formatDate } from '../shared/dates';
 import { formatChartValue, toggled, valueTicks } from './chartScale';
 import { ChartLegend, ChartTooltip } from './ChartParts';
@@ -17,6 +17,8 @@ interface Props
 	//the label of each bar, a date as YYYY-MM-DD
 	categories: string[];
 	series: BarChartSeries[];
+	//shown under the title, above the bars
+	header?: ReactNode;
 }
 
 const MAX_TICKS = 6;
@@ -24,7 +26,7 @@ const MAX_TICKS = 6;
 //Horizontal bars, one for each category, with the series stacked in them, the total at the end of the bar and the
 //values of a bar under the mouse. Plain HTML in a grid of two columns, the labels and the bars; the widths of the bars
 //are percentages of the axis.
-export function BarChart({ title, categories, series }: Props)
+export function BarChart({ title, categories, series, header }: Props)
 {
 	const [shown, setShown] = useState<boolean[]>(() => series.map(() => true));
 	const [hoverIndex, setHoverIndex] = useState<number | null>(null);
@@ -37,6 +39,7 @@ export function BarChart({ title, categories, series }: Props)
 	return (
 		<div className="chart">
 			<div className="chart__title">{title}</div>
+			{header}
 			<div className="bar-chart" onMouseLeave={() => setHoverIndex(null)}>
 				<div className="bar-chart__grid" style={{ gridRow: `1 / ${categories.length + 1}` }}>
 					{ticks.map(tick => <span key={tick} className="bar-chart__grid-line" style={{ left: percent(tick) }} />)}

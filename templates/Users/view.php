@@ -13,6 +13,7 @@ use App\Utility\Util;
  * @var int $achievementCount
  * @var array{completed: int, earned_times: int} $achievementCounts
  * @var array $dailyResults
+ * @var array $levelDays The latest window of the level chart (UserProfile::levelDays())
  * @var array|null $mistakeTraining
  * @var int $solvedProblemCount
  * @var int $solvedPublishedCount
@@ -171,9 +172,7 @@ use App\Utility\Util;
 <div class="profile-charts">
 	<div class="profile-charts__column">
 		<div id="profile-chart-level">
-		<?php echo ChartRenderer::bar('Problems in level mode', array_reverse($dailyResults), 'day', [
-			['label' => 'Solves', 'color' => '#74d14c'],
-			['label' => 'Fails', 'color' => '#d63a49']]); ?>
+		<?php echo ChartRenderer::levelDays((int) $user['id'], $levelDays); ?>
 		</div>
 	</div>
 	<div class="profile-charts__column">

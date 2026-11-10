@@ -1244,6 +1244,31 @@
 	color: var(--color-text);
 	padding: var(--space-1) var(--space-2);
 }
+.level-chart__pages {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: var(--space-1) var(--space-2);
+	padding: 0 var(--space-2) var(--space-2);
+}
+.level-chart__range {
+	flex: 1;
+	min-width: 0;
+	text-align: center;
+	font-size: var(--text-sm);
+	color: var(--color-text-muted);
+	font-variant-numeric: tabular-nums;
+}
+.level-chart__error {
+	flex-basis: 100%;
+	font-size: var(--text-sm);
+	color: var(--color-red);
+}
+.level-chart__empty {
+	margin: 0;
+	padding: var(--space-2);
+	color: var(--color-text-muted);
+}
 .chart__legend {
 	display: flex;
 	justify-content: center;
