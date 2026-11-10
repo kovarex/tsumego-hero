@@ -1,48 +1,38 @@
 <?php
 
-namespace App\Controller;
+namespace App\Utility;
 
-use Cake\Http\Exception\ForbiddenException;
-use Exception;
-use App\Attribute\HttpGet;
+use App\Controller\UsersController;
 use App\Model\Table\AchievementConditionTable;
 use App\Model\Table\TsumegoStatusTable;
-use App\Utility\AchievementId;
-use App\Utility\Live;
-use App\Utility\SchedulePublisher;
-use App\Utility\Trash;
-use App\Utility\Util;
 use Cake\ORM\TableRegistry;
+use Exception;
 
-class CronController extends AppController
+//The daily work of the site, run by `bin/cake cron_daily` (App\Command\CronDailyCommand) at midnight UTC: the day of
+//the site (the user of the day, the daily highscore, the statuses of the problems, the solved counts). The hearts
+//and the hero powers are the player's own day instead, see DailyReset and `bin/cake cron_hourly`.
+class DailyCron
 {
-	/* Supposed to be ran daily to reset hearts and hero powers */
-	#[HttpGet]
-	public function daily(string $secret)
+	//Publishing takes only the entries that are still pending, so it repeats on every run and catches up the days
+	//the cron did not run on; the rest is done once a day, the first run of a day records it (day_record).
+	//Returns whether the work of the day was done by this run.
+	public static function run(): bool
 	{
-		if ($secret != CRON_SECRET)
-			throw new ForbiddenException('Wrong cron secret.');
-
-		// Publishing takes only the entries that are still pending, so it repeats on
-		// every call and catches up the days the cron did not run on.
 		SchedulePublisher::publishDue();
 
-		// Already ran today - the rest of the work is done once a day
-		if ($this->fetchTable('DayRecord')->find()->where(['date' => date('Y-m-d')])->count() > 0)
-			return $this->respond('');
+		if (TableRegistry::getTableLocator()->get('DayRecord')->find()->where(['date' => date('Y-m-d')])->count() > 0)
+			return false;
 
 		self::withReadCommitted(function () {
 			self::dailyTsumegoStatusReset();
 			self::createDayRecord();
-			$this->dailyUsersReset();
-			$this->dailyPotionConditionReset();
+			self::dailyUsersReset();
 			self::updateSolvedCounts();
 			self::dropExpiredAddressChanges();
 			Trash::purgeExpired();
 		});
 		Live::pruneStale();
-
-		return $this->respond('');
+		return true;
 	}
 
 	//The daily updates go through whole tables, no index fits their conditions. Under the default
@@ -87,18 +77,11 @@ class CronController extends AppController
 
 	//Only the players who played that day have anything to reset. The condition leaves the other
 	//rows alone, so they are not written, and not kept locked either.
-	private function dailyUsersReset(): void
+	private static function dailyUsersReset(): void
 	{
-		Util::execute('UPDATE user
-			SET used_refinement = 0, used_sprint = 0, used_rejuvenation = 0, used_potion = 0,
-				used_intuition = 0, used_revelation = 0, damage = 0, daily_xp = 0, daily_solved = 0
-			WHERE used_refinement <> 0 OR used_sprint <> 0 OR used_rejuvenation <> 0 OR used_potion <> 0
-				OR used_intuition <> 0 OR used_revelation <> 0 OR damage <> 0 OR daily_xp <> 0 OR daily_solved <> 0');
-	}
-
-	private function dailyPotionConditionReset(): void
-	{
-		Util::execute('UPDATE achievement_condition SET value = 0 WHERE achievement_condition_category_id = ? AND value <> 0', [AchievementConditionTable::CATEGORY_POTION]);
+		// the hearts and the hero powers come back with the player's own day instead (DailyReset); the XP and the
+		// solves of the day are the day of the site, for its daily highscore and the user of the day
+		Util::execute('UPDATE user SET daily_xp = 0, daily_solved = 0 WHERE daily_xp <> 0 OR daily_solved <> 0');
 	}
 
 	//A failed problem can be tried again (F → V, X → W) and one solved over a week ago gives half
@@ -153,10 +136,10 @@ class CronController extends AppController
 		AchievementId::RUBY->value => 'dan'];
 	private const GEM_DIFFICULTY_NAMES = ['an easy', 'a regular', 'a difficult'];
 
-	private function createDayRecord(): void
+	private static function createDayRecord(): void
 	{
 		$today = date('Y-m-d');
-		$dayRecordTable = $this->fetchTable('DayRecord');
+		$dayRecordTable = TableRegistry::getTableLocator()->get('DayRecord');
 		if ($dayRecordTable->find()->where(['date' => $today])->count() > 0)
 			return;
 
@@ -166,7 +149,7 @@ class CronController extends AppController
 		//Each gem is hidden in an easy, regular or difficult problem of its rank range today, and its
 		//achievement tells which
 		$gemDifficulties = [];
-		$achievementTable = $this->fetchTable('Achievement');
+		$achievementTable = TableRegistry::getTableLocator()->get('Achievement');
 		foreach (self::GEM_RANK_RANGES as $achievementId => $rankRange)
 		{
 			$difficulty = rand(0, 2);

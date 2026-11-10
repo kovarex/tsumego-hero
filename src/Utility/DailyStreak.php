@@ -228,7 +228,7 @@ class DailyStreak
 	}
 
 	//The DATE column comes as a string or as a date object, depending on how the row was read
-	private static function dayOf(mixed $value): ?string
+	public static function dayOf(mixed $value): ?string
 	{
 		if ($value === null || $value === '')
 			return null;

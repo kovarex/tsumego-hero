@@ -13,7 +13,9 @@ use App\Utility\AchievementChecker;
 use App\Utility\AdminActivityLogger;
 use App\Utility\Auth;
 use App\Utility\BoardSelector;
+use App\Utility\Clock;
 use App\Utility\Constants;
+use App\Utility\DailyStreak;
 use App\Utility\HeroPowers;
 use App\Utility\Level;
 use App\Utility\SgfParser;
@@ -203,6 +205,9 @@ class ContextPreparator
 		foreach (['streak_last_day', 'streak_day', 'streak_day_reviews_required', 'streak_day_xp_required'] as $name)
 			$user[$name] = Util::extract($name, $userInput) ?? null;
 		$user['time_zone'] = Util::extract('time_zone', $userInput) ?: null;
+		// the hearts and the hero powers of the fixture are of today, like every player's after the migration of
+		// DailyReset: an earlier day gives them back at the first request
+		$user['daily_reset_day'] = Util::extract('daily_reset_day', $userInput) ?? DailyStreak::today($user['time_zone'], Clock::now());
 
 		// Save user
 		$userTable = TableRegistry::getTableLocator()->get('User');
