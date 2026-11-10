@@ -1168,7 +1168,7 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
   function displayError(e) {
     // shown in the row of the messages like any other, in the red of Incorrect! (play.css)
     besogo.setText("#theComment", e);
-    besogo.setStyle("#theComment", "display", "block");
+    besogo.setStyle("#theComment", "display", "");
     document.querySelector("#theComment")?.classList.add("play-message__error");
   }
 

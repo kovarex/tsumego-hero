@@ -857,7 +857,10 @@ var showComment = function(commentText)
 		let comment = document.getElementById("theComment");
 		if (!comment)
 			return;
-		comment.style.display = commentText.length == 0 ? "none" : "block";
+		// a line break at its end would put an empty line under it in the row
+		commentText = commentText.trimEnd();
+		// shown the way the row lays it out (play.css), inline after Correct! or Incorrect!
+		comment.style.display = commentText.length == 0 ? "none" : "";
 		comment.classList.remove("play-message__error");
 		comment.textContent = besogo.boardInverted ? besogo.swapColorWords(commentText) : commentText;
 	};

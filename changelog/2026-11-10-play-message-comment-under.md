@@ -1,1 +1,1 @@
-Changed: The comment of a move shows under Correct! or Incorrect! in the row above the board, at the same left edge; a long comment makes the row taller and moves the board down instead of covering it.
+Changed: The comment of a move shows right after Correct! or Incorrect! on the same line, in the row above the board; the board doesn't move for it. A comment too long for the line wraps under it inside the row.

@@ -5,8 +5,9 @@ use Facebook\WebDriver\WebDriverDimension;
 
 //Every message of a problem is one of the row of the messages above the board, on the page with no background of its
 //own whatever it says: the goal, Correct!, Incorrect! and the comment of a move ("Correct, but what about this answer?",
-//under Correct! or Incorrect! at the same left edge) are at the left in the same bold size, with Reset and Next at the
-//right, on a computer and on a phone; only their colour differs. The row grows for a longer message, the board under it.
+//after Correct! or Incorrect! on the same line) are at the left in the same bold size, with Reset and Next at the right,
+//on a computer and on a phone; only their colour differs. A short comment leaves the row's height, so the board doesn't
+//move; a comment too long for the line wraps under, at the row's left edge, and only then the row grows.
 #[RetryOnBrowserFailure]
 class PlayMessageRowBrowserTest extends IntegrationTestCase
 {
@@ -44,17 +45,28 @@ class PlayMessageRowBrowserTest extends IntegrationTestCase
 		const textColor = getComputedStyle(text).color;
 		text.remove();
 		const box = element => element.getBoundingClientRect();
+		// the lines of the comment, an inline text after Correct!
+		const lines = [...comment.getClientRects()];
+		const first = lines[0], last = lines[lines.length - 1];
 		return {
 			inTheRow: row.contains(comment),
 			sameStyleAsCorrect: JSON.stringify(style(comment)) === JSON.stringify(style(status)),
 			left: getComputedStyle(comment).textAlign,
 			colorOfTheText: getComputedStyle(comment).color === textColor,
 			noBackground: getComputedStyle(row).backgroundColor === 'rgba(0, 0, 0, 0)' && getComputedStyle(row).backgroundImage === 'none',
-			sameLeftEdge: Math.abs(box(comment).left - box(status).left) < 1,
-			underCorrect: box(comment).top >= box(status).bottom - 1,
+			onTheLineOfCorrect: Math.abs(first.top - box(status).top) < 2 && Math.abs(first.bottom - box(status).bottom) < 2,
+			afterCorrect: first.left >= box(status).right,
+			// a wrapped comment goes on at the left edge of the messages, where Correct! starts
+			wrapsToTheLeftEdge: lines.length === 1 || Math.abs(last.left - box(status).left) < 1,
+			lines: lines.length,
 			insideTheRow: box(comment).top >= box(row).top - 1 && box(comment).bottom <= box(row).bottom + 1,
 			beforeReset: box(comment).right <= box(reset).left,
 			boardUnderTheRow: box(row).bottom <= box(board).top + 1,
+			// as the row was before the move, with the goal only
+			sameHeight: Math.abs(box(row).height - window.rowBefore.height) < 1,
+			// whether the messages need no more height than the row had
+			fitsTheRow: box(row.querySelector('.play-message__text')).height <= window.rowBefore.height + 1,
+			boardStill: Math.abs(box(board).top - window.rowBefore.boardTop) < 1,
 		};
 		JS;
 
@@ -67,6 +79,8 @@ class PlayMessageRowBrowserTest extends IntegrationTestCase
 		$browser->driver->manage()->window()->setSize(new WebDriverDimension($width, $height));
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		$browser->driver->executeScript('document.documentElement.dataset.theme = arguments[0];', [$theme]);
+		$browser->waitForBoard();
+		$browser->driver->executeScript('window.rowBefore = {height: document.querySelector(".play-message").getBoundingClientRect().height, boardTop: document.querySelector(".besogo-board").getBoundingClientRect().top};');
 		$browser->clickBoard(1, 1);
 		$browser->waitUntilJs('document.getElementById("status").textContent.includes("' . ($case === 'incorrect' ? 'Incorrect' : 'Correct!') . '") && document.getElementById("theComment").textContent.length > 0');
 		return $browser;
@@ -92,9 +106,22 @@ class PlayMessageRowBrowserTest extends IntegrationTestCase
 			$browser = $this->playTheCommentedMove($width, $height, $theme, $case);
 
 			$this->assertSame(self::COMMENTS[$case], $browser->find('#theComment')->getText());
+			$layout = $browser->driver->executeScript(self::LAYOUT);
+			$lines = $layout['lines'];
+			$fits = $layout['fitsTheRow'];
+			unset($layout['lines'], $layout['fitsTheRow']);
+			$long = $case === 'long';
 			$this->assertEquals(['inTheRow' => true, 'sameStyleAsCorrect' => true, 'left' => 'left', 'colorOfTheText' => true,
-				'noBackground' => true, 'sameLeftEdge' => true, 'underCorrect' => true, 'insideTheRow' => true, 'beforeReset' => true,
-				'boardUnderTheRow' => true], $browser->driver->executeScript(self::LAYOUT));
+				'noBackground' => true, 'onTheLineOfCorrect' => true, 'afterCorrect' => true, 'wrapsToTheLeftEdge' => true,
+				'insideTheRow' => true, 'beforeReset' => true, 'boardUnderTheRow' => true,
+				// a comment that fits the row leaves the row and the board where they were; only a longer one grows it
+				'sameHeight' => $fits, 'boardStill' => $fits], $layout);
+			if ($long)
+				$this->assertGreaterThan(1, $lines, 'the long comment wraps');
+			if ($case === 'correct')
+				$this->assertTrue($fits, 'a short comment keeps the height of the row');
+			if ($width > 1000 && !$long)
+				$this->assertSame(1, $lines, 'on a computer, the comment fits the line of Correct!');
 			$browser->assertNoJsErrors();
 		}
 		finally
