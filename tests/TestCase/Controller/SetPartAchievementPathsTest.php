@@ -14,6 +14,11 @@ class SetPartAchievementPathsTest extends IntegrationTestCase
 {
 	private const BAND_ACHIEVEMENTS = [AchievementId::ACCURACY_I, AchievementId::ACCURACY_II, AchievementId::ACCURACY_III,
 		AchievementId::SPEED_I, AchievementId::SPEED_II, AchievementId::SPEED_III];
+	//The XP of a collection's achievements lifts the new player's level, and the level achievements it reaches unlock
+	//with them; they are not what these tests are about, so the helpers leave them out
+	private const LEVEL_ACHIEVEMENTS = [AchievementId::LEVEL_UP, AchievementId::FIRST_HERO_POWER, AchievementId::UPGRADED_INTUITION,
+		AchievementId::MORE_POWER, AchievementId::HALF_WAY_TO_TOP, AchievementId::CONGRATS_MORE_PROBLEMS, AchievementId::NICE_LEVEL,
+		AchievementId::DID_LOT_OF_TSUMEGO, AchievementId::STILL_DOING_TSUMEGO, AchievementId::THE_TOP];
 
 	//A collection of the site of $count problems, each part of it solved cleanly in 3 seconds a problem but its last
 	//problem, which the test plays; the problems from $ratedFrom on are rated $otherRating
@@ -50,8 +55,10 @@ class SetPartAchievementPathsTest extends IntegrationTestCase
 
 	private static function unlocked(ContextPreparator $context): array
 	{
-		return array_map(fn($row) => AchievementId::from((int) $row['achievement_id']),
-			Util::query('SELECT achievement_id FROM achievement_status WHERE user_id = ? ORDER BY achievement_id', [$context->user['id']]));
+		return array_values(array_filter(
+			array_map(fn($row) => AchievementId::from((int) $row['achievement_id']),
+				Util::query('SELECT achievement_id FROM achievement_status WHERE user_id = ? ORDER BY achievement_id', [$context->user['id']])),
+			fn(AchievementId $achievement) => !in_array($achievement, self::LEVEL_ACHIEVEMENTS, true)));
 	}
 
 	private static function superiorAccuracyCount(ContextPreparator $context): ?int
@@ -60,10 +67,14 @@ class SetPartAchievementPathsTest extends IntegrationTestCase
 		return $rows ? (int) $rows[0]['value'] : null;
 	}
 
-	//The XP the achievements of the response paid
-	private static function achievementXp(array $response): int
+	//The XP the achievements of the response paid, without the level achievements, or with them
+	private static function achievementXp(array $response, bool $withLevelAchievements = false): int
 	{
-		return array_sum(array_column($response['achievement_updates'] ?? [], 'xp'));
+		$xp = 0;
+		foreach ($response['achievement_updates'] ?? [] as $achievement)
+			if ($withLevelAchievements || !in_array(AchievementId::from((int) $achievement['id']), self::LEVEL_ACHIEVEMENTS, true))
+				$xp += (int) $achievement['xp'];
+		return $xp;
 	}
 
 	//Path 13: a part of 100 problems or more finished cleanly and fast unlocks the accuracy and speed achievements of its
@@ -147,7 +158,8 @@ class SetPartAchievementPathsTest extends IntegrationTestCase
 		$this->assertSame([...self::BAND_ACHIEVEMENTS, AchievementId::SUPERIOR_ACCURACY], self::unlocked($context));
 		$this->assertSame(1, self::superiorAccuracyCount($context), 'counted from the parts at 100% now');
 		$this->assertSame(31000, self::achievementXp($response));
-		$this->assertSame(31000 + (int) $response['xp_gained'], $context->XPGained());
+		$this->assertSame(self::achievementXp($response, true) + (int) $response['xp_gained'], $context->XPGained());
+		$this->assertGreaterThan(31000, self::achievementXp($response, true), 'with the level achievements its XP reaches');
 	}
 
 	//The migration of the test database, run again: back down, then up
