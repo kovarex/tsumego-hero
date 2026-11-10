@@ -245,7 +245,6 @@
   background: var(--set-size-background);
   width: 90px;
   border: 1px solid var(--surface-near-black);
-  padding: 5px;
   border-radius: var(--radius-sm);
   color: var(--surface-muted-text);
   font-size: 16px;
@@ -253,19 +252,10 @@
   padding: 6px 10px;
   margin: 5px;
 }
-#topics-button {
-  border: 1px solid var(--surface-near-black);
-}
-#difficulty-button {
-  border: 1px solid var(--surface-near-black);
-}
+#topics-button,
+#difficulty-button,
 #tags-button {
   border: 1px solid var(--surface-near-black);
-}
-#tags-button:hover,
-#difficulty-button:hover,
-#topics-button:hover {
-  background: var(--set-filter-hover-background);
 }
 #tile-topics-submit {
   color: var(--color-topic);

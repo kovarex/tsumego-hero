@@ -39,11 +39,6 @@
   padding: 0;
   margin: 0;
 }
-.gap10 {
-	float: left;
-	width: 10px;
-	height: 1px;
-}
 .timeTableRight {
   border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
   border-right: 1px solid var(--color-black);
@@ -139,7 +134,6 @@
   font-size: 20px;
 }
 #playTitle {
-  font-size: 20px;
   font-weight: 800;
   color: var(--text-color);
 }
@@ -231,6 +225,8 @@ h1 {
   display: flex;
   justify-content: center;
   margin: 15px 15px 2px 15px;
+  max-width: 100%;
+  overflow-x: auto;
 }
 .besogo-tsumegoPlayTool input[type="button"],
 .besogo-file input[type="button"] {
@@ -354,10 +350,6 @@ h1 {
   flex-basis: 100%;
   max-width: 100%;
   box-sizing: border-box;
-}
-.besogo-tsumegoPlayTool {
-  max-width: 100%;
-  overflow-x: auto;
 }
 .besogo-control {
   width: 33% !important;
@@ -542,10 +534,6 @@ h1 {
 #potionAlerts {
   color: var(--play-dark-text);
 }
-#xpDisplayDiv {
-  height: 48px;
-  margin-bottom: 5px;
-}
 .commentBox2 {
   color: var(--admin-text-color);
 }
@@ -631,15 +619,13 @@ h1 {
 #playTitle {
   grid-column: 1;
   grid-row: 1;
+  text-align: left;
+  font-size: var(--text-lg);
 }
 .play-head__stake {
   position: relative;
   grid-column: 2;
   grid-row: 1;
-}
-#playTitle {
-  text-align: left;
-  font-size: var(--text-lg);
 }
 /* The goal of the problem in the row of the messages, at most two lines, until Correct!, Incorrect! or the comment
    of a move take its place */
@@ -768,12 +754,12 @@ h1 {
   min-width: 0;
   max-height: 100%;
   overflow-y: auto;
-  margin: 0;
   padding: 2px 0;
   border: 0;
   background: none;
   text-align: left;
   white-space: pre-line;
+  color: var(--text-color);
 }
 /* Every message of the row is one: Correct!, Incorrect!, a lock and the comment of a move, at the left in the same
    bold size, the comment in the colour of the text (it can say anything; Correct! or Incorrect! next to it gives the
@@ -785,9 +771,6 @@ h1 {
   font-size: var(--text-lg);
   font-weight: var(--weight-bold);
   line-height: 1.25;
-}
-.play-message #theComment {
-  color: var(--text-color);
 }
 .play-message__status:not(:empty) + #theComment {
   margin-left: var(--space-3);
@@ -984,13 +967,11 @@ h1 {
   margin-top: var(--space-2);
   align-items: flex-start;
   justify-content: flex-start;
+  width: 100%;
 }
 /* The root of the tree is always at the top left, whatever the width of the tree; a wider one scrolls from there.
    The box takes the whole width of the panel, not the width of the tree: sized to the tree, it lost the width of its
    vertical scrollbar to the tree when that showed later, and scrolled sideways for nothing. */
-.play-screen__panel > .besogo-panels {
-  width: 100%;
-}
 .play-screen__panel > .besogo-panels .besogo-tree {
   align-self: flex-start;
   width: 100% !important;

@@ -41,19 +41,13 @@
 .solve-history__failed {
   color: var(--color-red);
 }
-.profileTable tr {
-  padding: 0;
-  margin: 0;
-}
 .profileTable td {
   padding: 0;
-  margin: 0;
   vertical-align: top;
 }
 .profileTable h1 {
   padding: 0;
   margin: 0;
-  color: white;
 }
 .profileTable .h1 {
   margin-left: 20px;

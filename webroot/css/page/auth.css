@@ -10,8 +10,6 @@
   background: var(--color-white);
   border-radius: 2px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
-}
-#login-box {
   max-width: 690px;
   min-height: 450px;
 }
@@ -45,7 +43,6 @@
 }
 .signin input:focus {
 	border-bottom-color: var(--auth-accent);
-	transition: 0.2s ease;
 }
 /* The secondary lines belong to the form and need the same contrast as its text. */
 .signin .hint {
