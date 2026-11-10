@@ -9,12 +9,15 @@ use App\Utility\CookieFlash;
 use App\Utility\Trash;
 use App\Utility\TsumegoUtil;
 use App\Utility\Util;
+use Cake\Console\TestSuite\ConsoleIntegrationTestTrait;
 use Cake\ORM\TableRegistry;
 use App\Model\Entity\Set;
 use App\Model\Entity\Tsumego;
 
 class TrashTest extends IntegrationTestCase
 {
+	use ConsoleIntegrationTestTrait;
+
 	private static function daysAgo(int $days): string
 	{
 		return date('Y-m-d H:i:s', strtotime('-' . $days . ' days'));
@@ -299,7 +302,8 @@ WHERE c.TABLE_SCHEMA = DATABASE() AND c.COLUMN_NAME = 'tsumego_id'");
 		$rejectTable = $this->fetchTable('Reject');
 		$rejectTable->saveOrFail($rejectTable->newEntity(['reject_type_id' => RejectTable::TYPE_PROPOSAL, 'tsumego_id' => $purgedID, 'user_id' => $context->user['id']]));
 
-		$this->get('/cron/daily/' . CRON_SECRET);
+		$this->exec('cron_daily');
+		$this->assertExitSuccess();
 
 		$this->assertNull(self::tsumegoRow($purgedID));
 		foreach (['set_connection', 'tsumego_status', 'tsumego_comment', 'tsumego_variant', 'tsumego_semeai', 'reject'] as $table)

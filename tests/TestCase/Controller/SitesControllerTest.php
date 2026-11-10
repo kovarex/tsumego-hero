@@ -544,12 +544,13 @@ class SitesControllerTest extends IntegrationTestCase
 		$this->assertStringContainsString('site-nav__account', $pageSource, 'Logged-in nav should have an account block');
 		$this->assertStringContainsString('users/logout', $pageSource, 'Logged-in account block should offer Sign Out');
 		$this->assertStringNotContainsString('site-nav__signin-drawer', $pageSource, 'Logged-in nav should not show a Sign In drawer block');
-		$this->assertStringNotContainsString('class="discuss-disabled"', $pageSource, 'Logged-in nav should not show the disabled Discuss link');
+		$this->assertStringContainsString('<li><a href="/forums">Forums</a></li>', $pageSource, 'The menu has the forums');
+		$this->assertStringContainsString('href="/comments">Discuss</a>', $pageSource, 'The comments are under Home');
 	}
 
 	//A logged-out user sees a Sign In link in the nav (both the desktop block and
-	//the drawer entry) and a disabled Discuss link, and no account block.
-	public function testLoggedOutNavShowsSignInAndDisabledDiscuss()
+	//the drawer entry), the forums and no Discuss, and no account block.
+	public function testLoggedOutNavShowsSignInAndTheForums()
 	{
 		new ContextPreparator(['user' => null]);
 
@@ -560,7 +561,8 @@ class SitesControllerTest extends IntegrationTestCase
 		$this->assertStringContainsString('site-nav__signin-drawer', $pageSource, 'Logged-out nav should show a Sign In drawer block');
 		$this->assertStringContainsString('site-nav__signin', $pageSource, 'Logged-out nav should show the desktop Sign In block');
 		$this->assertStringContainsString('id="signInMenu"', $pageSource, 'Logged-out nav should render the Sign In link');
-		$this->assertStringContainsString('class="discuss-disabled"', $pageSource, 'Logged-out nav should show the disabled Discuss link');
+		$this->assertStringContainsString('<li><a href="/forums">Forums</a></li>', $pageSource, 'The menu has the forums');
+		$this->assertStringNotContainsString('>Discuss</a>', $pageSource, 'The comments need a sign-in');
 		$this->assertStringNotContainsString('users/logout', $pageSource, 'Logged-out nav should not offer Sign Out');
 	}
 

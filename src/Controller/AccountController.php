@@ -856,7 +856,7 @@ If you have not asked for this, ignore this email, your account stays as it is.'
 	}
 
 	//An account with no address change pending: the links it was sent with stop working.
-	//CronController::dropExpiredAddressChanges() clears the same columns of the old ones.
+	//DailyCron::dropExpiredAddressChanges() clears the same columns of the old ones.
 	private const array NO_ADDRESS_CHANGE = [
 		'unconfirmed_email' => null,
 		'unconfirmed_email_token' => null,

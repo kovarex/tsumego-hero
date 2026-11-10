@@ -11,7 +11,8 @@ use Exception;
 class Auth
 {
 	//Signs in the user of the row (UserRow, see UserTable::row()) and sets the cookie of the session.
-	//Without a row it takes the user of the auth_token cookie, if there is one.
+	//Without a row it takes the user of the auth_token cookie, if there is one. A player whose day turned since
+	//their last request gets their hearts and hero powers back first (DailyReset).
 	/** @param UserRow|null $user */
 	public static function init(?array $user = null): void
 	{
@@ -22,14 +23,14 @@ class Auth
 			$userData = UserTable::row((int) Util::cookie("hackedLoggedInUserID"));
 			if ($userData && empty($userData['deleted']))
 			{
-				Auth::$user = $userData;
+				Auth::$user = DailyReset::apply($userData);
 				return;
 			}
 		}
 
 		if ($user && empty($user['deleted']))
 		{
-			Auth::$user = $user;
+			Auth::$user = DailyReset::apply($user);
 			// Set JWT cookie for stateless auth
 			JwtAuth::setAuthCookie(Auth::getUserID(), (string) ($user['password_hash'] ?? ''));
 			return;
@@ -42,7 +43,7 @@ class Auth
 			$userData = UserTable::row($userIdFromJwt);
 			if ($userData && empty($userData['deleted']) && self::tokenFitsTheAccount($userData))
 			{
-				Auth::$user = $userData;
+				Auth::$user = DailyReset::apply($userData);
 				return;
 			}
 			// the account was deleted (or doesn't exist anymore), which also ends its existing sessions
