@@ -300,6 +300,36 @@
 	display: flex;
 	gap: var(--space-2);
 }
+/* In the panel of the play page the tabs, the filter, the comments and the issues start and end at the
+   panel's padding (--play-panel-padding), like the hearts and the actions above them, instead of their own
+   inset of 14px */
+.play-panel .tsumego-comments__tabs {
+	padding-inline: 0;
+}
+.play-panel #msg2x {
+	margin-inline: 0;
+}
+.play-panel .sandboxComment {
+	padding: var(--space-3);
+}
+.play-panel :is(.tsumego-comments__anchor-filter, .tsumego-comments__anchor-empty, .tsumego-comment--standalone, .tsumego-issue, .tsumego-comments__form) {
+	margin-inline: 0;
+}
+/* The text of a comment takes the card: the drag handle and the column of the date and the buttons only
+   take what they need */
+/* The date wraps before its time and Make Issue onto two lines, so the column is about as wide as Delete */
+.sandboxTable2 td.sandboxTable2time {
+	width: 5rem;
+	padding-left: var(--space-2);
+}
+.sandboxTable2time > * {
+	display: block;
+	margin-left: auto;
+	text-align: right;
+}
+.sandboxTable2time > * + * {
+	margin-top: var(--space-1);
+}
 /* Sandbox comment box (legacy shared: sandbox page + issue comments) */
 .sandboxComment {
 	background: var(--comment-background);
@@ -311,18 +341,18 @@
 
 /* Drag handle on comments */
 
-.tsumego-comment__drag-handle-cell {
-	width: 36px;
+.sandboxTable2 td.tsumego-comment__drag-handle-cell {
+	width: 1%;
 	vertical-align: middle;
-	padding-right: var(--space-2);
+	padding-right: var(--space-1);
 }
 .tsumego-comment__drag-handle {
 	display: inline-block;
 	cursor: grab;
-	font-size: 24px;
+	font-size: 20px;
 	color: var(--text-softer-color);
 	user-select: none;
-	padding: 8px 10px;
+	padding: 4px 2px;
 	border-radius: var(--radius-sm);
 	transition: color 0.15s, background-color 0.15s;
 }
