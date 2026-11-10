@@ -433,22 +433,22 @@ class UserTest extends AppTestCase
 	// See tests/TestCase/Controller/RegistrationEmailTest.php for those tests.
 
 	// =====================================================================
-	// isGoogleUser Tests
+	// signsInOnlyWithGoogle Tests
 	// =====================================================================
 
 	public function testIsGoogleUserReturnsTrueForGoogleUser()
 	{
 		$user = ['external_id' => 'google123', 'email' => 'test@example.com'];
-		$this->assertTrue(UserTable::isGoogleUser($user));
+		$this->assertTrue(UserTable::signsInOnlyWithGoogle($user));
 	}
 
 	public function testIsGoogleUserReturnsFalseForRegularUser()
 	{
 		$user = ['external_id' => null, 'email' => 'test@example.com'];
-		$this->assertFalse(UserTable::isGoogleUser($user));
+		$this->assertFalse(UserTable::signsInOnlyWithGoogle($user));
 
 		$user2 = ['external_id' => '', 'email' => 'test@example.com'];
-		$this->assertFalse(UserTable::isGoogleUser($user2));
+		$this->assertFalse(UserTable::signsInOnlyWithGoogle($user2));
 	}
 
 	//A display name has to be one the site can store: not empty, and without a character above

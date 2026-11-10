@@ -5,7 +5,6 @@
     opacity: 0.4;
   }
 }
-#show,
 .selectable-text {
   font-size: 16px;
   color: var(--play-link);
@@ -39,11 +38,6 @@
   padding: 0;
   margin: 0;
 }
-.gap10 {
-	float: left;
-	width: 10px;
-	height: 1px;
-}
 .timeTableRight {
   border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
   border-right: 1px solid var(--color-black);
@@ -65,50 +59,10 @@
   position: relative;
   top: 9px;
 }
-.author-notice {
-  font-family: var(--font-family-display);
-  font-size: 12px;
-  color: var(--text-softer-color);
-  padding: 5px 0 0 5px;
-}
 .besogo-blank-space {
   width: 25px;
   height: 25px;
   margin: 12px 5px 0 1px;
-}
-#multipleChoice1,
-#multipleChoice2,
-#multipleChoice3,
-#multipleChoice4 {
-  font-family: var(--font-family-display);
-  padding: 10px 13px;
-  font-size: 18px;
-  font-style: normal;
-  font-variant: normal;
-  font-weight: 800;
-  line-height: 20px;
-
-  background-color: var(--surface-button);
-  color: var(--color-white);
-  text-decoration: none;
-  border-top: 1px solid var(--surface-border-light);
-  border-right: 1px solid var(--surface-border-strong);
-  border-bottom: 1px solid var(--surface-border-strong);
-  border-left: 1px solid var(--surface-border-light);
-  border-bottom-right-radius: 9px;
-  border-bottom-left-radius: 9px;
-  border-top-right-radius: 9px;
-  border-top-left-radius: 9px;
-}
-#multipleChoice1:hover,
-#multipleChoice2:hover,
-#multipleChoice3:hover,
-#multipleChoice4:hover {
-  background-color: var(--surface-button-hover);
-  color: var(--color-white);
-}
-.tag-submit-button {
-  display: none;
 }
 #sandbox {
   color: var(--play-sandbox-text);
@@ -117,7 +71,6 @@
   padding: 10px;
   width: 100%;
   max-width: 600px;
-  box-sizing: border-box;
   font-size: 16px;
 }
 .boards-tile {
@@ -139,13 +92,12 @@
   font-size: 20px;
 }
 #playTitle {
-  font-size: 20px;
   font-weight: 800;
   color: var(--text-color);
 }
 #playTitleA { color: var(--text-color); }
 /* The collection a problem of a class or a query comes from */
-.play-title__origin-line { font-weight: 400; }
+.play-title__origin-line { font-weight: var(--weight-normal); }
 .play-title__origin { color: grey; }
 /* <font size="5px"> was x-large */
 .play-title__time-mode { font-size: x-large; }
@@ -153,10 +105,10 @@
 h1 {
   font-family: var(--font-family-display);
   letter-spacing: 1px;
-  font-size: 18px;
+  font-size: var(--text-lg);
   font-style: normal;
   font-variant: normal;
-  font-weight: 400;
+  font-weight: var(--weight-normal);
   line-height: 19.8px;
 }
 .add-tag-list-anchor {
@@ -176,16 +128,15 @@ h1 {
   max-width: 400px;
   margin: 0 auto;
   padding: 20px;
-  box-sizing: border-box;
   text-align: left;
 }
 .existing-tags-list {
   padding: 20px;
   text-align: center;
 }
-.xpDisplay { align:center; color: var(--xp-display); }
+.xpDisplay { color: var(--xp-display); }
 .solvedXpDisplay { color: var(--xp-display-solved); }
-.goldenTsumegoXpDisplay { color: var(--xp-display-golden); font-weight:800; text-shadow: 0 0 6px rgba(218, 165, 32, 0.4); }
+.goldenTsumegoXpDisplay { color: var(--xp-display-golden); font-weight:var(--weight-heavy); text-shadow: 0 0 6px rgba(218, 165, 32, 0.4); }
 .sprintXpDisplay { color: var(--xp-display-sprint); }
 .eloTooltip {
   position: relative;
@@ -231,13 +182,14 @@ h1 {
   display: flex;
   justify-content: center;
   margin: 15px 15px 2px 15px;
+  max-width: 100%;
+  overflow-x: auto;
 }
-.besogo-tsumegoPlayTool input[type="button"],
 .besogo-file input[type="button"] {
   font-size: 16px;
   font-style: normal;
   font-variant: normal;
-  font-weight: 800;
+  font-weight: var(--weight-heavy);
   text-decoration: none;
   background-color: var(--surface-button);
   color: var(--color-white);
@@ -254,13 +206,11 @@ h1 {
   border-top-left-radius: 9px;
   cursor: pointer;
 }
-#besogo-next-button,
-#besogo-back-button,
-#history-button {
+#besogo-next-button {
   font-size: 16px;
   font-style: normal;
   font-variant: normal;
-  font-weight: 800;
+  font-weight: var(--weight-heavy);
   text-decoration: none;
   background-color: var(--surface-button);
   color: var(--color-white);
@@ -276,6 +226,14 @@ h1 {
   border-top-right-radius: 9px;
   border-top-left-radius: 9px;
   cursor: pointer;
+}
+/* The answers of a multiple choice problem, in a row right under the board (PlayBoard.js) */
+.play-answers {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-1);
+  margin: var(--space-2) 0 0;
 }
 #besogo-multipleChoice1,
 #besogo-multipleChoice2,
@@ -284,7 +242,7 @@ h1 {
   font-size: 16px;
   font-style: normal;
   font-variant: normal;
-  font-weight: 800;
+  font-weight: var(--weight-heavy);
   text-decoration: none;
   background-color: var(--color-purple-deep);
   color: var(--color-white);
@@ -308,23 +266,6 @@ h1 {
 #besogo-multipleChoice4:hover {
   background-color: var(--color-purple-vivid);
 }
-#besogo-reset-button {
-  background-color: var(--surface-button);
-}
-#besogo-reset-button-inactive {
-  background-color: var(--surface-button-inactive);
-  cursor: context-menu;
-  pointer-events: none;
-}
-.besogo-tsumegoPlayTool input:nth-last-child(1) {
-  background-color: var(--surface-button-inactive) !important;
-  cursor: context-menu;
-  border-color: var(--surface-button-inactive) !important;
-}
-#besogo-tsumegoPlayTool-rButton {
-  background-color: var(--surface-button);
-  cursor: pointer;
-}
 .imageContainer1 {
   float: left;
   margin: 15px;
@@ -336,7 +277,7 @@ h1 {
   /* As wide as its text: a full-width block moved 75px right stuck out of the rank button */
   width: fit-content;
   color: var(--color-white);
-  font-weight: 800;
+  font-weight: var(--weight-heavy);
   font-size: 15px;
   text-decoration: none;
 }
@@ -353,11 +294,6 @@ h1 {
   padding: 0px 5px;
   flex-basis: 100%;
   max-width: 100%;
-  box-sizing: border-box;
-}
-.besogo-tsumegoPlayTool {
-  max-width: 100%;
-  overflow-x: auto;
 }
 .besogo-control {
   width: 33% !important;
@@ -417,58 +353,8 @@ h1 {
 .health-counter {
   display: none;
 }
-#besogo-next-button-inactive,
-#besogo-back-button-inactive {
-  background-color: var(--surface-button-inactive);
-  cursor: context-menu;
-  font-size: 16px;
-  font-style: normal;
-  font-variant: normal;
-  font-weight: 800;
-  text-decoration: none;
-  color: var(--color-white);
-  padding: 10px 13px;
-  margin: 5px;
-  border-top: 1px solid var(--surface-border-light);
-  border-right: 1px solid var(--surface-border-strong);
-  border-bottom: 1px solid var(--surface-border-strong);
-  border-left: 1px solid var(--surface-border-light);
-  text-transform: uppercase;
-  border-bottom-right-radius: 9px;
-  border-bottom-left-radius: 9px;
-  border-top-right-radius: 9px;
-  border-top-left-radius: 9px;
-}
-#besogo-pass-button {
-  background-color: var(--color-purple-deep);
-  cursor: context-menu;
-  font-size: 16px;
-  font-style: normal;
-  font-variant: normal;
-  font-weight: 800;
-  text-decoration: none;
-  color: var(--color-white);
-  padding: 10px 13px;
-  margin: 5px;
-  cursor: pointer;
-}
-#besogo-pass-button:hover {
-  background-color: var(--color-purple-vivid);
-}
-#besogo-review-button {
-  background-color: var(--color-red);
-}
-#besogo-review-button-inactive {
-  background-color: var(--surface-button-inactive);
-  cursor: context-menu;
-}
-#besogo-next-button:hover,
-#besogo-reset-button:hover,
-#besogo-back-button:hover {
+#besogo-next-button:hover {
   background-color: var(--surface-button-hover);
-}
-#besogo-review-button:hover {
-  background-color: var(--color-red-muted);
 }
 #levelBarDisplay1 {
   width: 15px;
@@ -486,7 +372,7 @@ h1 {
 }
 #sliderText {
   color: hsl(138, 0%, 47%);
-  font-weight: 400;
+  font-weight: var(--weight-normal);
   font-size: 20px;
 }
 .slider {
@@ -530,7 +416,7 @@ h1 {
   justify-content: center;
   background-color: var(--surface-panel-light);
   text-align: center;
-  font-weight: bold;
+  font-weight: var(--weight-bold);
   padding: 10px;
   margin: 0 auto 5px;
   border: thick double var(--color-gray);
@@ -541,10 +427,6 @@ h1 {
 #multipleChoiceText,
 #potionAlerts {
   color: var(--play-dark-text);
-}
-#xpDisplayDiv {
-  height: 48px;
-  margin-bottom: 5px;
 }
 .commentBox2 {
   color: var(--admin-text-color);
@@ -631,15 +513,13 @@ h1 {
 #playTitle {
   grid-column: 1;
   grid-row: 1;
+  text-align: left;
+  font-size: var(--text-lg);
 }
 .play-head__stake {
   position: relative;
   grid-column: 2;
   grid-row: 1;
-}
-#playTitle {
-  text-align: left;
-  font-size: var(--text-lg);
 }
 /* The goal of the problem in the row of the messages, at most two lines, until Correct!, Incorrect! or the comment
    of a move take its place */
@@ -685,7 +565,6 @@ h1 {
   height: 0.95em;
   border-radius: 50%;
   vertical-align: -0.12em;
-  box-sizing: border-box;
 }
 .play-goal__stone--black {
   background: radial-gradient(circle at 35% 30%, #666, #000 70%);
@@ -751,7 +630,6 @@ h1 {
   max-width: 900px;
   min-height: 48px;
   padding: 0 var(--space-2);
-  box-sizing: border-box;
 }
 .play-message__status {
   min-width: 0;
@@ -768,12 +646,12 @@ h1 {
   min-width: 0;
   max-height: 100%;
   overflow-y: auto;
-  margin: 0;
   padding: 2px 0;
   border: 0;
   background: none;
   text-align: left;
   white-space: pre-line;
+  color: var(--text-color);
 }
 /* Every message of the row is one: Correct!, Incorrect!, a lock and the comment of a move, at the left in the same
    bold size, the comment in the colour of the text (it can say anything; Correct! or Incorrect! next to it gives the
@@ -785,9 +663,6 @@ h1 {
   font-size: var(--text-lg);
   font-weight: var(--weight-bold);
   line-height: 1.25;
-}
-.play-message #theComment {
-  color: var(--text-color);
 }
 .play-message__status:not(:empty) + #theComment {
   margin-left: var(--space-3);
@@ -863,7 +738,6 @@ h1 {
   min-width: 40px;
   height: 40px;
   padding: 0 var(--space-2);
-  box-sizing: border-box;
   border: 1px solid var(--surface-border-muted);
   border-radius: var(--radius-md);
   background: var(--info-box-background);
@@ -894,12 +768,11 @@ h1 {
   gap: 6px;
   margin-left: auto;
 }
-:is(.play-actions__end, .play-actions) > :is(#besogo-pass-button, #besogo-back-button, #besogo-back-button-inactive, #history-button, #besogo-reset-button, #besogo-reset-button-inactive, #besogo-review-button, #besogo-review-button-inactive, #besogo-next-button, #besogo-next-button-inactive) {
+:is(.play-actions__end, .play-actions) > :is(#besogo-pass-button, #history-button, #besogo-reset-button, #besogo-reset-button-inactive, #besogo-review-button, #besogo-review-button-inactive, #besogo-next-button, #besogo-next-button-inactive) {
   min-width: 40px;
   height: 36px;
   margin: 0;
   padding: 0 var(--space-3);
-  box-sizing: border-box;
   border: 1px solid var(--surface-border-muted) !important;
   border-radius: var(--radius-md);
   background: var(--info-box-background) !important;
@@ -912,10 +785,10 @@ h1 {
   text-decoration: none;
   cursor: pointer;
 }
-:is(.play-actions__end, .play-actions) > :is(#besogo-pass-button, #besogo-back-button, #besogo-back-button-inactive, #history-button, #besogo-reset-button, #besogo-reset-button-inactive, #besogo-review-button, #besogo-review-button-inactive, #besogo-next-button, #besogo-next-button-inactive):hover {
+:is(.play-actions__end, .play-actions) > :is(#besogo-pass-button, #history-button, #besogo-reset-button, #besogo-reset-button-inactive, #besogo-review-button, #besogo-review-button-inactive, #besogo-next-button, #besogo-next-button-inactive):hover {
   background: var(--surface-hover) !important;
 }
-:is(.play-actions__end, .play-actions) > :is(#besogo-pass-button, #besogo-back-button, #besogo-back-button-inactive, #history-button, #besogo-reset-button, #besogo-reset-button-inactive, #besogo-review-button, #besogo-review-button-inactive, #besogo-next-button, #besogo-next-button-inactive)[id$="-inactive"] {
+:is(.play-actions__end, .play-actions) > :is(#besogo-pass-button, #history-button, #besogo-reset-button, #besogo-reset-button-inactive, #besogo-review-button, #besogo-review-button-inactive, #besogo-next-button, #besogo-next-button-inactive)[id$="-inactive"] {
   opacity: 0.4;
   cursor: default;
   pointer-events: none;
@@ -984,18 +857,15 @@ h1 {
   margin-top: var(--space-2);
   align-items: flex-start;
   justify-content: flex-start;
+  width: 100%;
 }
 /* The root of the tree is always at the top left, whatever the width of the tree; a wider one scrolls from there.
    The box takes the whole width of the panel, not the width of the tree: sized to the tree, it lost the width of its
    vertical scrollbar to the tree when that showed later, and scrolled sideways for nothing. */
-.play-screen__panel > .besogo-panels {
-  width: 100%;
-}
 .play-screen__panel > .besogo-panels .besogo-tree {
   align-self: flex-start;
   width: 100% !important;
   max-width: 100%;
-  box-sizing: border-box;
   max-height: max(350px, var(--tree-height, 350px));
   margin: 0;
 }
@@ -1105,7 +975,7 @@ h1 {
 		width: auto;
 		margin: var(--space-1) 0 0;
 		text-align: center;
-		font-size: 11px;
+		font-size: var(--text-xs);
 		order: 99;
 	}
 
@@ -1129,11 +999,6 @@ h1 {
 	   that wastes vertical space). The hero-power cell is the crowded one,
 	   so the small side cells are allowed to shrink and the icons are made
 	   tiny enough to sit in one wrap-free row. */
-	.play-header > div,
-	.play-header__cell {
-		padding: 4px 2px;
-	}
-
 	/* Hero power icons: very compact single row inside their narrow cell. */
 	#rejuvenation,
 	#intuition,
@@ -1161,8 +1026,8 @@ h1 {
 	}
 	.health-counter {
 		display: inline-block;
-		font-weight: 800;
-		font-size: 18px;
+		font-weight: var(--weight-heavy);
+		font-size: var(--text-lg);
 		color: var(--text-color);
 	}
 	.health-counter::before {
@@ -1251,7 +1116,6 @@ h1 {
   .play-head,
   .play-message {
     padding: 0 var(--space-3);
-    box-sizing: border-box;
   }
   /* A long name of a collection is cut short with its full name in the title; the part of the collection (#2)
      always shows */

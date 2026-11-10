@@ -25,13 +25,6 @@
     padding: 0;
   }
 }
-.achievement {
-  float: left;
-  width: 33%;
-  opacity: 0.5;
-  color: white;
-  border: 1px solid black;
-}
 .achievement1 {
   float: left;
   border: 1px solid black;
@@ -296,14 +289,6 @@
   top: 15px;
   position: relative;
   width: 40px;
-}
-@keyframes fadeIn2 {
-  0% {
-    opacity: 0;
-  }
-  100% {
-    opacity: 0.9;
-  }
 }
 
 /* The page of one achievement */

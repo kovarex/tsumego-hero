@@ -15,22 +15,22 @@ class AccuracyAchievementTest extends AchievementTestCase
 		// Define all 12 accuracy achievements
 		$testCases = [
 			// Tier 1: 75% accuracy
-			[AchievementId::ACCURACY_I, 1200, 75, '11k'], // Accuracy I - <1300
-			[AchievementId::ACCURACY_IV, 1400, 75, '5k'],  // Accuracy IV - 1300-1499
-			[AchievementId::ACCURACY_VII, 1600, 75, '10k'], // Accuracy VII - 1500-1699
-			[AchievementId::ACCURACY_X, 1750, 75, '1d'],  // Accuracy X - >=1700
+			[AchievementId::ACCURACY_I, 1000, 75, '11k'], // Accuracy I - 11k or lower, below 1050
+			[AchievementId::ACCURACY_IV, 1200, 75, '5k'],  // Accuracy IV - 10k to 8k, 1050-1349
+			[AchievementId::ACCURACY_VII, 1500, 75, '10k'], // Accuracy VII - 7k to 5k, 1350-1649
+			[AchievementId::ACCURACY_X, 1750, 75, '1d'],  // Accuracy X - 4k or higher, from 1650
 
 			// Tier 2: 85% accuracy
-			[AchievementId::ACCURACY_II, 1200, 85, '11k'], // Accuracy II - <1300
-			[AchievementId::ACCURACY_V, 1400, 85, '5k'],  // Accuracy V - 1300-1499
-			[AchievementId::ACCURACY_VIII, 1600, 85, '10k'], // Accuracy VIII - 1500-1699
-			[AchievementId::ACCURACY_XI, 1750, 85, '1d'],  // Accuracy XI - >=1700
+			[AchievementId::ACCURACY_II, 1000, 85, '11k'], // Accuracy II - 11k or lower, below 1050
+			[AchievementId::ACCURACY_V, 1200, 85, '5k'],  // Accuracy V - 10k to 8k, 1050-1349
+			[AchievementId::ACCURACY_VIII, 1500, 85, '10k'], // Accuracy VIII - 7k to 5k, 1350-1649
+			[AchievementId::ACCURACY_XI, 1750, 85, '1d'],  // Accuracy XI - 4k or higher, from 1650
 
 			// Tier 3: 95% accuracy
-			[AchievementId::ACCURACY_III, 1200, 95, '11k'], // Accuracy III - <1300
-			[AchievementId::ACCURACY_VI, 1400, 95, '5k'],  // Accuracy VI - 1300-1499
-			[AchievementId::ACCURACY_IX, 1600, 95, '10k'], // Accuracy IX - 1500-1699
-			[AchievementId::ACCURACY_XII, 1750, 95, '1d'],  // Accuracy XII - >=1700
+			[AchievementId::ACCURACY_III, 1000, 95, '11k'], // Accuracy III - 11k or lower, below 1050
+			[AchievementId::ACCURACY_VI, 1200, 95, '5k'],  // Accuracy VI - 10k to 8k, 1050-1349
+			[AchievementId::ACCURACY_IX, 1500, 95, '10k'], // Accuracy IX - 7k to 5k, 1350-1649
+			[AchievementId::ACCURACY_XII, 1750, 95, '1d'],  // Accuracy XII - 4k or higher, from 1650
 		];
 
 		foreach ($testCases as [$achievementId, $rating, $accuracy, $rank])

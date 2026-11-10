@@ -135,7 +135,7 @@
 	li a
 	{
 		display: block;
-		color: white;
+		color: var(--color-white);
 		text-align: center;
 		padding: 5px 5px;
 		text-decoration: none;
@@ -190,7 +190,6 @@
 	select
 	{
 		width: 100%;
-		box-sizing: border-box;
 		background: var(--color-surface-sunken);
 		color: var(--color-text);
 		border: 1px solid var(--color-border);

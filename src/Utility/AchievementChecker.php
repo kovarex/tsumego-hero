@@ -290,7 +290,7 @@ WHERE rn = 1;", [Auth::getUserID(), TimeModeSessionStatusTable::SOLVED]);
 			return $this;
 		$time = AchievementConditionTable::value(Auth::getUserID(), AchievementConditionTable::CATEGORY_SET_TIME, $sid, $partition);
 
-		$band = array_find(self::SET_BANDS, fn(array $band) => $setRating < $band['below']);
+		$band = array_find(self::SET_BANDS, fn(array $band) => $band['below'] === null || $setRating < Rating::getRankMinimalRatingFromReadableRank($band['below']));
 		foreach ($band['accuracy'] as $minimalAccuracy => $achievementID)
 			if ($accuracy >= $minimalAccuracy)
 				$this->gained($achievementID);
@@ -505,19 +505,19 @@ WHERE rn = 1;", [Auth::getUserID(), TimeModeSessionStatusTable::SOLVED]);
 		[950, TimeModeRankTable::RANK_10K, AchievementId::TIME_MODE_PRECISION_I]];
 
 	//The accuracy and speed achievements of a finished collection of 100+ problems, by the
-	//rating of the collection: below the rating of the band, the accuracy (%) at least, and
-	//the average seconds per problem below.
+	//rating of the collection: below the first rating of the band's rank (the rank edges of Rating), the accuracy (%)
+	//at least, and the average seconds per problem below.
 	private const array SET_BANDS = [
-		['below' => 1300,
+		['below' => '10k',
 			'accuracy' => [75 => AchievementId::ACCURACY_I, 85 => AchievementId::ACCURACY_II, 95 => AchievementId::ACCURACY_III],
 			'seconds' => [15 => AchievementId::SPEED_I, 10 => AchievementId::SPEED_II, 5 => AchievementId::SPEED_III]],
-		['below' => 1500,
+		['below' => '7k',
 			'accuracy' => [75 => AchievementId::ACCURACY_IV, 85 => AchievementId::ACCURACY_V, 95 => AchievementId::ACCURACY_VI],
 			'seconds' => [18 => AchievementId::SPEED_IV, 13 => AchievementId::SPEED_V, 8 => AchievementId::SPEED_VI]],
-		['below' => 1700,
+		['below' => '4k',
 			'accuracy' => [75 => AchievementId::ACCURACY_VII, 85 => AchievementId::ACCURACY_VIII, 95 => AchievementId::ACCURACY_IX],
 			'seconds' => [30 => AchievementId::SPEED_VII, 20 => AchievementId::SPEED_VIII, 10 => AchievementId::SPEED_IX]],
-		['below' => INF,
+		['below' => null,
 			'accuracy' => [75 => AchievementId::ACCURACY_X, 85 => AchievementId::ACCURACY_XI, 95 => AchievementId::ACCURACY_XII],
 			'seconds' => [30 => AchievementId::SPEED_X, 20 => AchievementId::SPEED_XI, 10 => AchievementId::SPEED_XII]]];
 

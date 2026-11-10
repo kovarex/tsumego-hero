@@ -14,21 +14,21 @@ class SpeedAchievementTest extends AchievementTestCase
 	{
 		$testCases = [
 			// Tier 1: fastest tier
-			[AchievementId::SPEED_I, 1200, 14, '11k'], // Speed I - <15s
-			[AchievementId::SPEED_IV, 1400, 17, '5k'],  // Speed IV - <18s
-			[AchievementId::SPEED_VII, 1600, 29, '10k'], // Speed VII - <30s
+			[AchievementId::SPEED_I, 1000, 14, '11k'], // Speed I - <15s
+			[AchievementId::SPEED_IV, 1200, 17, '5k'],  // Speed IV - <18s
+			[AchievementId::SPEED_VII, 1500, 29, '10k'], // Speed VII - <30s
 			[AchievementId::SPEED_X, 1750, 29, '1d'],  // Speed X - <30s
 
 			// Tier 2: medium tier
-			[AchievementId::SPEED_II, 1200, 9, '11k'], // Speed II - <10s
-			[AchievementId::SPEED_V, 1400, 12, '5k'],  // Speed V - <13s
-			[AchievementId::SPEED_VIII, 1600, 19, '10k'], // Speed VIII - <20s
+			[AchievementId::SPEED_II, 1000, 9, '11k'], // Speed II - <10s
+			[AchievementId::SPEED_V, 1200, 12, '5k'],  // Speed V - <13s
+			[AchievementId::SPEED_VIII, 1500, 19, '10k'], // Speed VIII - <20s
 			[AchievementId::SPEED_XI, 1750, 19, '1d'],  // Speed XI - <20s
 
 			// Tier 3: fast tier
-			[AchievementId::SPEED_III, 1200, 4, '11k'], // Speed III - <5s
-			[AchievementId::SPEED_VI, 1400, 7, '5k'],  // Speed VI - <8s
-			[AchievementId::SPEED_IX, 1600, 9, '10k'], // Speed IX - <10s
+			[AchievementId::SPEED_III, 1000, 4, '11k'], // Speed III - <5s
+			[AchievementId::SPEED_VI, 1200, 7, '5k'],  // Speed VI - <8s
+			[AchievementId::SPEED_IX, 1500, 9, '10k'], // Speed IX - <10s
 			[AchievementId::SPEED_XII, 1750, 9, '1d'],  // Speed XII - <10s
 		];
 

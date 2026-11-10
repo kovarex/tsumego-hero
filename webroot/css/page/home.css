@@ -72,7 +72,6 @@
   border-radius: var(--radius-sm);
   border: 1px solid var(--surface-border-muted);
   padding: var(--space-2);
-  height:175px;
   margin-top:6px;
 }
 /* Box art is a content modifier, not a positional descendant selector.
@@ -85,7 +84,9 @@
   height: auto;
   overflow: hidden;
 }
+/* The dark of the picture under it, so its light text reads before the picture has loaded, or when it doesn't */
 .new-tsumego-box--news {
+  background-color: var(--surface-near-black);
   background-image: url("/img/mode-select-bg-right.png");
   background-size: 100% 100%;
   min-height: 175px;
@@ -139,7 +140,6 @@
   padding: 10px;
   font-size: 20px;
   cursor: context-menu;
-  box-sizing: border-box;
 }
 .quote-pick-1 {
   flex: 1 1 0;
@@ -239,7 +239,6 @@
   display: flex;
   align-items: center;
   padding: 5px 5px;
-  box-sizing: border-box;
   background-color: rgba(0, 0, 0, 0.45);
   color: var(--color-white);
   border: 1px solid rgba(255, 255, 255, 0.12);
@@ -305,28 +304,24 @@
 
 .user-pick-q01 {
   color: var(--color-white) !important;
-  left: 316px;
   top: 172px;
   font-family: Comic Sans MS, Times New Roman, verdana;
 }
 
 .user-pick-q02 {
   color: var(--color-white) !important;
-  left: 316px;
   top: 106px;
   font-family: Impact, Times New Roman, verdana;
 }
 
 .user-pick-q03 {
   color: var(--stat-pink) !important;
-  left: 316px;
   top: 89px;
   font-family: Lucida Console, Times New Roman, verdana;
 }
 
 .user-pick-q04 {
   color: var(--color-white) !important;
-  left: 316px;
   top: 189px;
   font-weight: var(--weight-bold);
   font-family: Baskerville, Times New Roman, verdana;
@@ -334,16 +329,14 @@
 
 .user-pick-q05 {
   color: var(--color-white) !important;
-  left: 316px;
   top: 121px;
-  font-size: 22px !important;
+  font-size: 22px;
   font-weight: var(--weight-bold);
   font-family: Geneva, Times New Roman, verdana;
 }
 
 .user-pick-q06 {
   color: var(--stat-brown) !important;
-  left: 316px;
   top: 151px;
   font-weight: var(--weight-bold);
   font-family: Comic Sans MS, Times New Roman, verdana;
@@ -351,7 +344,6 @@
 
 .user-pick-q07 {
   color: var(--stat-peach) !important;
-  left: 342px;
   top: 113px;
   font-weight: var(--weight-bold);
   font-family: Comic Sans MS, Times New Roman, verdana;
@@ -359,7 +351,6 @@
 
 .user-pick-q08 {
   color: var(--color-black) !important;
-  left: 300px;
   top: 22px;
   font-weight: var(--weight-bold);
   font-family: Garamond, Times New Roman, verdana;
@@ -367,14 +358,12 @@
 
 .user-pick-q09 {
   color: var(--color-white) !important;
-  left: 318px;
   top: 53px;
   font-family: Helvetica, Times New Roman, verdana;
 }
 
 .user-pick-q10 {
   color: var(--stat-gold) !important;
-  left: 317px;
   top: 153px;
   font-weight: var(--weight-bold);
   font-family: Helvetica, Times New Roman, verdana;
@@ -382,7 +371,6 @@
 
 .user-pick-q11 {
   color: var(--stat-yellow) !important;
-  left: 321px;
   top: 125px;
   font-size: 15px;
   font-family: Helvetica, Times New Roman, verdana;
@@ -390,34 +378,7 @@
 
 .user-pick-q12 {
   color: var(--stat-red) !important;
-  left: 321px;
   top: 145px;
-  font-family: Helvetica, Times New Roman, verdana;
-}
-
-.user-pick-q13 {
-  color: white !important;
-  left: 321px;
-  top: 118px;
-  font-family: Helvetica, Times New Roman, verdana;
-}
-
-.user-pick-q96 {
-  left: 280px;
-  top: 130px;
-  font-family: Helvetica, Times New Roman, verdana;
-  color: black !important;
-}
-
-.user-pick-q97 {
-  left: 321px;
-  top: 128px;
-  font-family: Helvetica, Times New Roman, verdana;
-}
-
-.user-pick-q99 {
-  left: 321px;
-  top: 210px;
   font-family: Helvetica, Times New Roman, verdana;
 }
 
@@ -439,13 +400,11 @@
 	.quote-pick-wrapper,
 	.achievement-quote-pick {
 		width: 100%;
-		box-sizing: border-box;
 	}
 	.user-pick-all,
 	.quote-pick-1 {
 		width: 100%;
 		max-width: 312px;
-		box-sizing: border-box;
 	}
 	.quote-pick-wrapper {
 		flex-wrap: wrap;
@@ -460,9 +419,6 @@
 		max-width: none;
 		text-align: center;
 		margin-top: var(--space-2);
-	}
-	.new-tsumego-box {
-		height: auto;
 	}
 	/* The achievements stream stays centered over the .achievement-quote-pick
 	   image (the panel is relative). Only the label flows. */

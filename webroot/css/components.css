@@ -59,7 +59,6 @@
 .card
 {
 	border: 3px solid var(--color-border);
-	box-sizing: border-box;
 	padding: var(--space-2);
 }
 
@@ -243,7 +242,6 @@
 {
 	background-color: var(--surface-button-pressed);
 	text-decoration: none;
-	cursor: pointer;
 }
 
 /* On touch a button is at least 40px tall, its text centred */
@@ -561,7 +559,6 @@
 .form-field__control
 {
 	width: 100%;
-	box-sizing: border-box;
 	background: var(--color-surface-sunken);
 	color: var(--color-text);
 	border: 1px solid var(--color-border);
@@ -851,13 +848,9 @@
 
 .pagination__link--active
 {
-	display: inline-block;
-	margin: 0 2px;
-	padding: 5px 10px;
 	background: var(--active-paginator-button-background-color);
 	color: var(--active-paginator-button-text-color);
 	border: 1px solid var(--surface-border-strong);
-	border-radius: 3px;
 }
 
 .pagination__info
@@ -987,7 +980,6 @@
 .data-table__row--self td:first-child
 {
 	border-left: 8px solid var(--color-blue);
-	border-radius: var(--radius-lg) 0 0 var(--radius-lg);
 	color: var(--color-blue);
 	white-space: nowrap;
 }
@@ -1190,7 +1182,7 @@
 	border-top-left-radius: var(--radius-md);
 	border-top-right-radius: var(--radius-md);
 	background: linear-gradient(rgb(100, 100, 100), rgb(36, 36, 36));
-	color: white;
+	color: var(--color-white);
 	height: 31px;
 	width: 100%;
 	font-weight: var(--weight-heavy);
@@ -1198,12 +1190,12 @@
 
 .toast__banner--error
 {
-	background: linear-gradient(rgb(217, 109, 112), rgb(202, 63, 76)) !important;
+	background: linear-gradient(rgb(217, 109, 112), rgb(202, 63, 76));
 }
 
 .toast__banner--success
 {
-	background: linear-gradient(rgb(26, 181, 88), rgb(18, 121, 59)) !important;
+	background: linear-gradient(rgb(26, 181, 88), rgb(18, 121, 59));
 }
 
 .toast__close
@@ -1228,12 +1220,6 @@
 	text-align: left;
 }
 
-.toast__body--wide
-{
-	width: 550px;
-	margin: 20px 10px;
-	text-align: center;
-}
 
 /* Achievement-completed popup (built by AchievementAlerts.js). Reuses the
    .toast base; the color-3 text variants live in page/achievements.css. */

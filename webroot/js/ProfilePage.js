@@ -16,8 +16,12 @@
 		{
 			const active = name === selection;
 			const button = document.getElementById(id + 'Button' + side);
+			//The chart shown is marked the way the highscore boards and the time mode mark theirs
 			if (button)
-				button.classList.toggle('btn--inactive', !active);
+			{
+				button.classList.toggle('btn--inactive', active);
+				button.setAttribute('aria-pressed', active);
+			}
 			const section = document.getElementById(id + side);
 			if (active)
 				Display.fadeIn(section, 250);

@@ -11,7 +11,7 @@ class SetAchievementOwnershipTest extends AchievementTestCase
 	public function testPersonalCollectionDoesNotUnlockSpeedAchievement()
 	{
 		$context = new ContextPreparator();
-		$setId = $this->createSetWithTsumegosAndConnections(1200, 100, 0, $context->user['id']);
+		$setId = $this->createSetWithTsumegosAndConnections(1000, 100, 0, $context->user['id']);
 		$this->saveAverageTime($context->user['id'], $setId, 4);
 
 		$this->get('sets/view/' . $setId);
@@ -22,7 +22,7 @@ class SetAchievementOwnershipTest extends AchievementTestCase
 	public function testSandboxCollectionDoesNotUnlockSpeedAchievement()
 	{
 		$context = new ContextPreparator();
-		$setId = $this->createSetWithTsumegosAndConnections(1200, 100, 0);
+		$setId = $this->createSetWithTsumegosAndConnections(1000, 100, 0);
 		$this->saveAverageTime($context->user['id'], $setId, 4);
 
 		$this->get('sets/view/' . $setId);
@@ -33,7 +33,7 @@ class SetAchievementOwnershipTest extends AchievementTestCase
 	public function testCollectionOfTheSiteUnlocksSpeedAchievement()
 	{
 		$context = new ContextPreparator();
-		$setId = $this->createSetWithTsumegosAndConnections(1200, 100);
+		$setId = $this->createSetWithTsumegosAndConnections(1000, 100);
 		$this->saveAverageTime($context->user['id'], $setId, 4);
 
 		$this->get('sets/view/' . $setId);

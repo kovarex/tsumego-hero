@@ -10,7 +10,6 @@
   position: relative;
 }
 .timeline__event {
-  margin-bottom: 20px;
   position: relative;
   display: flex;
   margin: 20px 0;
@@ -18,16 +17,9 @@
   align-self: center;
   width: 100%;
   max-width: 1050px;
-  box-sizing: border-box;
 }
 .timeline__event:nth-child(2n + 1) {
   flex-direction: row-reverse;
-}
-.timeline__event:nth-child(2n + 1) .timeline__event__date {
-  border-radius: 6px;
-}
-.timeline__event:nth-child(2n + 1) .timeline__event__content {
-  border-radius: 6px;
 }
 .timeline__event:nth-child(2n + 1) .timeline__event__icon:before {
   content: "";
@@ -39,7 +31,6 @@
   left: 50%;
   z-index: -1;
   transform: translateX(-50%);
-  animation: fillTop 2s forwards 4s ease-in-out;
 }
 .timeline__event:nth-child(2n + 1) .timeline__event__icon:after {
   content: "";
@@ -51,7 +42,6 @@
   z-index: -1;
   top: 50%;
   transform: translateY(-50%);
-  animation: fillLeft 2s forwards 4s ease-in-out;
 }
 .timeline__event__title {
   font-size: 1.2rem;
@@ -88,7 +78,6 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 20px;
   align-self: center;
   margin: 0 40px;
   box-shadow: 0 30px 60px -12px rgba(50,50,93,0.25),
@@ -102,15 +91,12 @@
 }
 .timeline__event--type2 .timeline__event__title {
   background: var(--about-blue-gradient);
-  color: transparent;
+  /* The shorthand above resets the clip, so it is set again */
   -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
 }
 .timeline__event--type3 .timeline__event__title {
   background: var(--gradient-heading);
-  color: transparent;
   -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
 }
 .timeline_box_height1 {
   height:120px;

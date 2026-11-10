@@ -54,7 +54,6 @@ body {
   border: 2px solid var(--color-black);
   box-shadow: 10px 10px 15px var(--color-black);
   border-radius:10px;
-  box-sizing: border-box;
 }
 .loader-container {
   display: none;
@@ -175,10 +174,6 @@ li a.menuLi.nav__link--active {
 .titleDescription2 {
   font-size: 22px;
 }
-#pageTitle {
-  font-size: 16pt;
-  font-weight: bold;
-}
 /* The flame of the daily streak and the account bar, side by side at the right of the header */
 .site-header-account {
   position: absolute;
@@ -264,7 +259,6 @@ li a.menuLi.nav__link--active {
   width: 144px;
   background: var(--surface-ink);
   display: inline-block;
-  vertical-align: left;
 }
 #xp-bar-fill {
 	position: absolute;
@@ -429,9 +423,6 @@ input.newCheck {
 #dropdowntable,
 #dropdowntable2 {
   font-family: var(--font-family-body);
-}
-#dropdowntable,
-#dropdowntable2 {
   display: inline-block;
   width: 700px;
   color: var(--color-green);
@@ -586,12 +577,6 @@ input.newCheck {
 #heroLogout li a {
   color: var(--color-green);
 }
-#status h2,
-#status h3,
-#status2 h3 {
-  margin: 0;
-  white-space: nowrap;
-}
 #time-mode-countdown {
   font-size: 21px;
   font-weight: var(--weight-heavy);
@@ -699,16 +684,11 @@ nav ul ul ul li {
 .newMenuLi2 li {
   width: 169px;
 }
-.newMenuLi3 li {
-  width: 159px;
-}
-.newMenuLi3 a {
-  font-weight: var(--weight-normal);
-  font-size: 19px;
-}
+.newMenuLi3 li,
 .newMenuLi4 li {
   width: 159px;
 }
+.newMenuLi3 a,
 .newMenuLi4 a {
   font-weight: var(--weight-normal);
   font-size: 19px;
@@ -764,13 +744,6 @@ nav ul ul ul li {
 }
 .modeSelectorInLevelBar {
   background-image: var(--color-purple-btn-gradient);
-}
-.xpDisplayTable {
-  width: 70%;
-  text-align: center;
-}
-.xpDisplayTable__third {
-  width: 33%;
 }
 /* The rating of the problem under the board: <font size="4"> was large */
 .status-rating {
@@ -868,7 +841,7 @@ nav ul ul ul li {
   padding: 30px;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   text-align: left;
   position: relative;
   z-index: 2;
@@ -882,7 +855,7 @@ nav ul ul ul li {
   margin: 15px 0;
   padding: 10px;
   background: rgba(0, 0, 0, 0.05);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
 }
 .error-page__fact-name {
   color: var(--text-color);
@@ -906,7 +879,7 @@ nav ul ul ul li {
   display: block;
   padding: 10px;
   background: rgba(0, 0, 0, 0.03);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
 }
 .error-page__trace-lines {
   overflow: auto;
@@ -919,11 +892,6 @@ nav ul ul ul li {
   line-height: 1.6;
   margin-top: 10px;
   font-family: var(--font-family-code);
-}
-
-/* Dark overrides */
-[data-theme="dark"] .titleDescription1 font {
-	color: var(--color-gray);
 }
 
 /* Responsive */
@@ -1067,7 +1035,6 @@ nav ul ul ul li {
 		height: 40px;
 		padding: var(--space-2);
 		cursor: pointer;
-		box-sizing: border-box;
 	}
 	.nav-toggle-btn span {
 		display: block;
@@ -1149,7 +1116,6 @@ nav ul ul ul li {
 		color: var(--color-purple-nav);
 		display: block;
 		width: 100%;
-		box-sizing: border-box;
 		text-align: left;
 		white-space: nowrap;
 	}
@@ -1200,7 +1166,6 @@ nav ul ul ul li {
 		width: 100%;
 		height: 48px;
 		padding: 0 var(--space-2);
-		box-sizing: border-box;
 		text-align: center;
 	}
 	.site-nav nav ul > li.menuIcons1 .board-picker {
@@ -1240,7 +1205,6 @@ nav ul ul ul li {
 	.site-nav__account-links li a {
 		display: block;
 		width: 100%;
-		box-sizing: border-box;
 		padding: 10px 8px;
 		font-size: var(--text-lg);
 		color: var(--color-purple-nav);
@@ -1265,13 +1229,12 @@ nav ul ul ul li {
 		height: 24px;
 	}
 	#account-bar-xp-wrapper {
-		box-sizing: border-box;
 		pointer-events: none;
 		text-align: center;
 	}
 	#account-bar-xp {
 		margin-top: 4px;
-		font-size: 11px;
+		font-size: var(--text-xs);
 		letter-spacing: 0;
 	}
 	#heroProfile,

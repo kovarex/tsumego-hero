@@ -252,7 +252,6 @@
 	border-radius: var(--radius-sm);
 	resize: vertical;
 	font-size: var(--text-sm);
-	box-sizing: border-box;
 }
 .tsumego-comments__char-counter {
 	text-align: right;
@@ -528,7 +527,6 @@
 	font-size: var(--text-sm);
 	resize: vertical;
 	min-height: 50px;
-	box-sizing: border-box;
 }
 /* Comments inside issues - remove the inner box styling */
 

@@ -37,19 +37,13 @@
 .solve-history__failed {
   color: var(--color-red);
 }
-.profileTable tr {
-  padding: 0;
-  margin: 0;
-}
 .profileTable td {
   padding: 0;
-  margin: 0;
   vertical-align: top;
 }
 .profileTable h1 {
   padding: 0;
   margin: 0;
-  color: white;
 }
 .profileTable .h1 {
   margin-left: 20px;
@@ -149,6 +143,33 @@
 	font-weight: var(--weight-medium);
 }
 
+/* ── Daily streak (element/profile_daily_streak.php): the flame of the menu, dim until today counted ── */
+.profile-streak__current
+{
+	display: inline-flex;
+	align-items: center;
+	gap: var(--space-1);
+}
+
+.profile-streak__flame
+{
+	width: 20px;
+	height: 20px;
+	margin: -2px 0;
+	fill: var(--color-orange-2);
+	opacity: 0.45;
+}
+
+.profile-streak__current--done .profile-streak__flame
+{
+	opacity: 1;
+}
+
+.profile-streak__none
+{
+	color: var(--text-softer-color);
+}
+
 /* ── Rank display ── */
 .stat td.rank
 {
@@ -179,7 +200,6 @@
 {
 	margin: 0 var(--space-1) var(--space-4);
 	border: 3px solid var(--color-blue);
-	box-sizing: border-box;
 	padding: var(--space-3) var(--space-4);
 }
 
@@ -463,7 +483,6 @@
 {
 	margin: 0 var(--space-1) var(--space-4);
 	border: 3px solid var(--color-green);
-	box-sizing: border-box;
 	padding: var(--space-3) var(--space-4);
 	min-width: 0;
 	color: var(--text-color);

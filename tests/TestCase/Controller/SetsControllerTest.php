@@ -982,6 +982,29 @@ class SetsControllerTest extends IntegrationTestCase
 		$this->assertSame('17k-16k', $boxes[0]->getText());
 	}
 
+	//The Submit of the collection size takes the width of its word: at a fixed 70px the uppercase SUBMIT didn't fit and
+	//was cut
+	public function testCollectionSizeSubmitShowsItsWholeWord(): void
+	{
+		new ContextPreparator(['tsumegos' => [['sets' => [['name' => 'set', 'num' => '1']]]]]);
+		$browser = Browser::instance();
+		$browser->get('sets');
+		$widths = $browser->driver->executeScript(<<<'JS'
+			const button = document.getElementById('submit-size-button');
+			const style = getComputedStyle(button);
+			const word = document.createElement('span');
+			for (const property of ['font-family', 'font-size', 'font-weight', 'font-style', 'letter-spacing', 'text-transform'])
+				word.style.setProperty(property, style.getPropertyValue(property));
+			word.style.whiteSpace = 'pre';
+			word.textContent = button.value;
+			document.body.appendChild(word);
+			const needed = word.getBoundingClientRect().width;
+			word.remove();
+			return {needed: needed, room: button.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight)};
+			JS);
+		$this->assertGreaterThanOrEqual($widths['needed'], $widths['room'] + 0.5, 'The word needs ' . $widths['needed'] . 'px, the button has ' . $widths['room'] . 'px for it');
+	}
+
 	public function testDifficultyPillsSelectSeparateBoxes(): void
 	{
 		$contextParams['tsumegos'] = [];

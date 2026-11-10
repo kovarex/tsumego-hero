@@ -10,8 +10,6 @@
   background: var(--color-white);
   border-radius: 2px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
-}
-#login-box {
   max-width: 690px;
   min-height: 450px;
 }
@@ -29,7 +27,6 @@
 }
 .signin input {
 	display: block;
-	box-sizing: border-box;
 	margin-bottom: 20px;
 	padding: var(--space-1);
 	width: 100%;
@@ -45,7 +42,6 @@
 }
 .signin input:focus {
 	border-bottom-color: var(--auth-accent);
-	transition: 0.2s ease;
 }
 /* The secondary lines belong to the form and need the same contrast as its text. */
 .signin .hint {
@@ -73,19 +69,17 @@
 	background: var(--signin-background);
 }
 .left {
-  box-sizing: border-box;
   padding: 40px;
   padding-top: 20px;
   width: 345px;
   flex: 0 0 345px;
 }
 .right {
-  box-sizing: border-box;
   margin-left: auto;
   padding: 40px;
   width: 345px;
   flex: 0 0 345px;
-  background-color: black;
+  background-color: var(--color-black);
   background-image: url("/img/loginBg3.png");
   background-size: cover;
   background-position: center;

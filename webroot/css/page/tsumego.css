@@ -30,7 +30,6 @@
 	   wheel into a scroll container. The buttons fit on one row since the
 	   max-width cap was removed. */
 	overflow: visible;
-	box-sizing: border-box;
 }
 
 /* A wrapping row of problem-status buttons; `.problem-nav__item` no longer
@@ -61,7 +60,6 @@
 	margin: 0;
 	height: 30px;
 	position: relative;
-	box-sizing: border-box;
 	background-image: url("/img/viewButton1.png");
 }
 
@@ -86,11 +84,6 @@
 	height: 1px;
 	display: block;
 	float: none;
-}
-
-.problem-nav__item--current
-{
-	position: relative;
 }
 
 .problem-nav__item--current::before
@@ -201,11 +194,6 @@
 }
 
 .problem-nav__item--G a
-{
-	color: var(--gold-ink);
-}
-
-.problem-nav__item--G a:hover
 {
 	color: var(--gold-ink);
 }
@@ -449,17 +437,6 @@ a[data-tsumego-id]:hover .tooltip-desc
 .mistake-training__import {
   margin-top: var(--space-3);
 }
-.play-status--training #xpDisplayDiv
-{
-	height: auto;
-}
-
-.play-status--training #status
-{
-	min-height: 72px;
-	padding-bottom: var(--space-2);
-}
-
 .mistake-training-replay
 {
 	max-width: 480px;
