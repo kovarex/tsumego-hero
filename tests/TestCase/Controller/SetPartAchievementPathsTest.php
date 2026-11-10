@@ -30,7 +30,7 @@ class SetPartAchievementPathsTest extends IntegrationTestCase
 		$tsumegos = [];
 		for ($i = 0; $i < $count; $i++)
 		{
-			Util::execute('INSERT INTO tsumego (rating, author) VALUES (?, ?)', [$i >= $ratedFrom ? $otherRating : 1200, '']);
+			Util::execute('INSERT INTO tsumego (rating, author) VALUES (?, ?)', [$i >= $ratedFrom ? $otherRating : 1000, '']);
 			$tsumegos[] = $tsumegoID = (int) Util::query('SELECT LAST_INSERT_ID() AS id')[0]['id'];
 			Util::execute('INSERT INTO set_connection (set_id, tsumego_id, num) VALUES (?, ?, ?)', [$setID, $tsumegoID, $i + 1]);
 			if (($i + 1) % 200 == 0 || $i == $count - 1)
