@@ -193,7 +193,7 @@ use App\Utility\ViteManifest;
 		<?php if ($semeai !== null || ($tv != null && $tv->tsumego_variant_type_id == TsumegoVariantTable::TYPE_MULTIPLE_CHOICE)): ?>
 			<div class="text-center">
 				<br>
-				<a href="<?php echo $resetLink; ?>" title="reset problem" id="besogo-next-button">Reset</a>
+				<a href="<?php echo $resetLink; ?>" title="reset problem" id="multiple-choice-reset" class="btn">Reset</a>
 				<br><br>
 			</div>
 		<?php endif; ?>

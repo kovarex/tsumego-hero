@@ -244,6 +244,17 @@ redrawHearts();
 		actions.after(reviewPanels);
 		fitReviewTree(reviewPanels);
 	}
+	//The answers of a multiple choice problem are the problem itself: they stay in sight, in a row right under the
+	//board, instead of going with the board's settings behind More
+	let answers = row.querySelectorAll('[id^="besogo-multipleChoice"]');
+	let board = document.getElementById("target");
+	if (answers.length && board)
+	{
+		let answerRow = document.createElement("div");
+		answerRow.className = "play-answers";
+		answers.forEach(answer => answerRow.appendChild(answer));
+		board.after(answerRow);
+	}
 	let settings = document.getElementById("boardSettings");
 	if (settings)
 		while (row.firstChild)

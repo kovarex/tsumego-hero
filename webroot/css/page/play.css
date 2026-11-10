@@ -277,6 +277,14 @@ h1 {
   border-top-left-radius: 9px;
   cursor: pointer;
 }
+/* The answers of a multiple choice problem, in a row right under the board (PlayBoard.js) */
+.play-answers {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-1);
+  margin: var(--space-2) 0 0;
+}
 #besogo-multipleChoice1,
 #besogo-multipleChoice2,
 #besogo-multipleChoice3,
