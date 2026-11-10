@@ -174,6 +174,55 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 			'Choosing the correct answer should show a Correct banner');
 	}
 
+	//The answers of a multiple choice problem are in sight under the board, not behind More with the board's
+	//settings, and the page's Reset link doesn't take the id of Next. The answer is clicked as a player clicks it,
+	//without opening any panel first (clickId would open More).
+	public function testMultipleChoiceAnswersAreInSightUnderTheBoard(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'mcSightUser'],
+			'tsumego' => [
+				'set_order' => 1,
+				'sgf' => self::SGF_19,
+				'variants' => [[
+					'tsumego_variant_type_id' => TsumegoVariantTable::TYPE_MULTIPLE_CHOICE,
+					'answer1' => 'White is dead',
+					'answer2' => 'Ko',
+					'answer3' => 'Seki in sente',
+					'answer4' => 'Seki in gote',
+					'correct_answer' => '3',
+				]],
+			],
+		]);
+		$browser = Browser::instance();
+		$browser->get($this->playUrl($context));
+		$this->waitForBoard($browser);
+		$browser->waitUntilJs('document.getElementById("besogo-multipleChoice4") !== null');
+
+		$placement = $browser->driver->executeScript(<<<'JS'
+			const answers = [...document.querySelectorAll('[id^="besogo-multipleChoice"]')];
+			return {
+				count: answers.length,
+				inRow: answers.every(answer => answer.parentElement.classList.contains('play-answers')),
+				behindMore: answers.some(answer => answer.closest('#editSection, #boardSettings') !== null),
+				rowFollowsBoard: document.querySelector('.play-answers')?.previousElementSibling?.id === 'target',
+				nextIds: document.querySelectorAll('[id="besogo-next-button"]').length,
+				resetLink: document.getElementById('multiple-choice-reset')?.textContent.trim()};
+			JS);
+		$this->assertSame(4, $placement['count']);
+		$this->assertTrue($placement['inRow'], 'The answers are in their row');
+		$this->assertFalse($placement['behindMore'], 'No answer is behind More');
+		$this->assertTrue($placement['rowFollowsBoard'], 'The row of the answers is right under the board');
+		$this->assertSame(1, $placement['nextIds'], 'Only Next has the id of Next');
+		$this->assertSame('Reset', $placement['resetLink']);
+		foreach (['1', '2', '3', '4'] as $number)
+			$this->assertTrue($browser->findById('besogo-multipleChoice' . $number)->isDisplayed(), 'Answer ' . $number . ' shows');
+
+		$browser->findById('besogo-multipleChoice3')->click();
+		$browser->waitUntilJs('document.getElementById("status").innerText.includes("Correct")');
+		$browser->assertNoJsErrors();
+	}
+
 	//The explanation of a multiple choice question shows once it is answered correctly
 	public function testMultipleChoiceCorrectAnswerShowsItsExplanation(): void
 	{
