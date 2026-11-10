@@ -40,7 +40,7 @@ class DailyStreak
 	/** @param UserRow $user */
 	public static function ofUser(array $user, ?DateTimeImmutable $now = null): self
 	{
-		return self::stored($user)->asOf(self::today($user['time_zone'] ?? null, $now ?? new DateTimeImmutable()));
+		return self::stored($user)->asOf(self::today($user['time_zone'] ?? null, $now ?? Clock::now()));
 	}
 
 	//The streak as the row keeps it, as of its last day
@@ -104,7 +104,7 @@ class DailyStreak
 	{
 		if ($xp <= 0 && !$solvedReview)
 			return [];
-		$today = self::today($user['time_zone'] ?? null, $now ?? new DateTimeImmutable());
+		$today = self::today($user['time_zone'] ?? null, $now ?? Clock::now());
 		$progress = self::progressOf($user, $today);
 		$reviews = $progress['reviews'] + ($solvedReview ? 1 : 0);
 		$fields = [
@@ -165,7 +165,7 @@ class DailyStreak
 	 */
 	public static function view(array $user, ?DateTimeImmutable $now = null): array
 	{
-		$now ??= new DateTimeImmutable();
+		$now ??= Clock::now();
 		$streak = self::ofUser($user, $now);
 		$progress = self::progressOf($user, self::today($user['time_zone'] ?? null, $now));
 		$xpRequired = $progress['xp_required'] ?? self::xpRequired((float) ($user['rating'] ?? 0));
@@ -243,7 +243,7 @@ class DailyStreak
 		return intdiv(new DateTimeImmutable($to, $utc)->getTimestamp() - new DateTimeImmutable($from, $utc)->getTimestamp(), 86400);
 	}
 
-	private static function addDays(string $day, int $days): string
+	public static function addDays(string $day, int $days): string
 	{
 		return new DateTimeImmutable($day, new DateTimeZone('UTC'))->modify(($days >= 0 ? '+' : '') . $days . ' days')->format('Y-m-d');
 	}
