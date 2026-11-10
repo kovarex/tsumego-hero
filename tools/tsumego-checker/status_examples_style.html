@@ -1,0 +1,62 @@
+<title>Status Leaf Review</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one column of problem cards, each finding shows two go figures side by side (stacked on phones) */
+:root {
+  --paper: #f6f7f8; --ink: #1b2126; --muted: #5b6670; --rule: #d6dbe0; --surface: #ffffff; --accent: #1d5b78;
+  --wood: #ddb97f; --wood-line: #5e4728; --major: #a83a32; --minor: #9a6a00;
+  --body: "IBM Plex Sans", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --paper: #12171b; --ink: #e3e8ec; --muted: #9aa6b0; --rule: #2c353d; --surface: #1a2127; --accent: #7cc0de;
+  --wood: #b8935a; --wood-line: #3a2a14; --major: #ef8a80; --minor: #e2b54f; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --paper: #12171b; --ink: #e3e8ec; --muted: #9aa6b0; --rule: #2c353d; --surface: #1a2127; --accent: #7cc0de;
+  --wood: #b8935a; --wood-line: #3a2a14; --major: #ef8a80; --minor: #e2b54f; color-scheme: dark; }
+body { background: var(--paper); color: var(--ink); font: 15px/1.5 var(--body); }
+.page { max-width: 900px; margin: 0 auto; padding-block: 32px 64px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 18px; }
+h1 { font-size: 1.6rem; margin: 0; }
+.intro { color: var(--muted); max-width: 70ch; margin: 0; }
+.card { background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 14px 16px; display: grid; gap: 14px; }
+.card header { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: baseline; }
+.card header label { font: 600 1.05rem/1.3 var(--body); display: flex; gap: 8px; align-items: center; }
+.card header a { color: var(--accent); }
+.meta { color: var(--muted); font-size: 0.9rem; }
+.finding { display: grid; gap: 8px; border-top: 1px solid var(--rule); padding-top: 12px; }
+.verdict { display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: center; }
+.pill { font: 500 0.75rem/1.6 var(--mono); padding: 0 8px; border-radius: 999px; border: 1px solid currentColor; }
+.pill.major { color: var(--major); } .pill.minor { color: var(--minor); }
+.figures { display: flex; flex-wrap: wrap; gap: 16px; }
+figure { margin: 0; display: grid; gap: 4px; min-width: 0; }
+figcaption { font-size: 0.85rem; color: var(--muted); }
+.notes { font: 0.8rem/1.4 var(--mono); color: var(--muted); max-width: 40ch; }
+.board { width: 100%; max-width: 330px; height: auto; }
+.board .wood { fill: var(--wood); }
+.board .grid { stroke: var(--wood-line); stroke-width: 1; }
+.board .grid.edge { stroke-width: 2; }
+.board .coord { font: 10px var(--mono); fill: var(--wood-line); text-anchor: middle; }
+.board .black { fill: #16191c; stroke: #16191c; }
+.board .white { fill: #f5f5f1; stroke: #3b3a35; stroke-width: 1; }
+.board .number { font: 600 11px var(--mono); text-anchor: middle; }
+.board .on-black { fill: #f5f5f1; } .board .on-white { fill: #16191c; }\n.board .ghost { opacity: 0.35; stroke-dasharray: 3 2; } .board .ghost-number { fill: var(--wood-line); }
+.done:checked + a { text-decoration: line-through; }
+input.done { width: 18px; height: 18px; }
+h2 { font-size: 1.2rem; margin: 18px 0 0; text-wrap: balance; }
+.count { font: 500 0.8rem var(--mono); color: var(--muted); margin-left: 8px; }
+.rest { font: 0.85rem/1.6 var(--mono); margin: 0; padding-left: 20px; }
+.rest a { color: var(--accent); }
+</style>
+<div class="page">
+  <h1>Status Leaf Review</h1>
+  <p class="intro">Leaves of the status problems where the solver gives a different status from the tree's S[] (ALIVE, DEAD, KO, BENT4; SEKI counts as ALIVE, ko signs are on the ko page). TOTAL leaves disagree, from the export of 10 November. These are not reviewed: some are tree errors, some solver mistakes. The first few of each pair are drawn, the rest are listed as links. Left: the tree's path from the start position. Right: the solver's play from the end of that path, every move keeping its verdict.</p>
+  BODY
+</div>
+<script>
+document.querySelectorAll('input.done').forEach(function (box) {
+  var key = 'ko-review-' + box.dataset.id;
+  try { box.checked = localStorage.getItem(key) === '1'; } catch (e) {}
+  box.addEventListener('change', function () { try { localStorage.setItem(key, box.checked ? '1' : '0'); } catch (e) {} });
+});
+</script>
