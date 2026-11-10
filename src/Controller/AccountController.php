@@ -295,7 +295,7 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 
 			// The address may belong to a Google account only, which can't log in here
 			$googleUser = $this->fetchTable('User')->find()->where(['email' => $this->input('username')])->first();
-			if ($googleUser && UserTable::isGoogleUser($googleUser))
+			if ($googleUser && UserTable::signsInOnlyWithGoogle($googleUser))
 				CookieFlash::set('This account uses Google Sign-In. Please use the "Sign in with Google" button.', 'info');
 			else
 				CookieFlash::set('Wrong username or password.', 'error');
@@ -303,7 +303,7 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 		}
 
 		// Google users should use "Sign in with Google" button
-		if (UserTable::isGoogleUser($user))
+		if (UserTable::signsInOnlyWithGoogle($user))
 		{
 			CookieFlash::set('This account uses Google Sign-In. Please use the "Sign in with Google" button.', 'info');
 			return null;
@@ -477,52 +477,52 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 		}
 
 		$newDisplayName = UserTable::normalizeDisplayName($this->input('display_name') ?? '');
-
-		if (empty($newDisplayName))
-		{
-			CookieFlash::set(__('Display name cannot be empty.'), 'error');
-			return $this->redirect('/users/changename');
-		}
-
-		if (UserTable::containsCharactersTheForumCannotStore($newDisplayName))
-		{
-			CookieFlash::set(__('The display name must not contain emoji or other rare symbols.'), 'error');
-			return $this->redirect('/users/changename');
-		}
-
-		// Validate display name length in characters, not bytes: the column holds 50
-		// characters, and a name in another alphabet takes several bytes per character.
-		$displayNameLength = mb_strlen($newDisplayName);
-		if ($displayNameLength < 3 || $displayNameLength > 50)
-		{
-			CookieFlash::set(__('Display name must be between 3 and 50 characters.'), 'error');
-			return $this->redirect('/users/changename');
-		}
-
 		if ($newDisplayName === $user->display_name)
 		{
 			CookieFlash::set(__('Please choose a different display name.'), 'error');
 			return $this->redirect('/users/changename');
 		}
-
-		// Check uniqueness - another user might have this display_name
-		if ($this->fetchTable('User')->exists(['display_name' => $newDisplayName, 'id !=' => $userId]))
+		$problem = $this->displayNameProblem($newDisplayName, $userId);
+		if ($problem)
 		{
-			CookieFlash::set(__('This display name is already taken.'), 'error');
+			CookieFlash::set($problem, 'error');
 			return $this->redirect('/users/changename');
 		}
 
-		// Update display_name (including forum sync)
-		UserTable::updateDisplayName($userId, $newDisplayName);
-
-		AdminActivityLogger::log(AdminActivityTypeTable::DISPLAY_NAME_CHANGE, null, null, $user->display_name, $newDisplayName, $userId);
-
-		// Clear the forced flag and update the session
-		Auth::saveUserField('display_name', $newDisplayName);
-		Auth::saveUserField('needs_display_name_change', false);
-
+		$this->rename($userId, $user->display_name, $newDisplayName);
 		CookieFlash::set(__('Display name updated successfully.'), 'success');
 		return $this->redirect('/sets/');
+	}
+
+	//The message to show for a display name the account can not take, or null when it can.
+	//$displayName: The name as UserTable::normalizeDisplayName() made it
+	private function displayNameProblem(string $displayName, int $userId): ?string
+	{
+		if (empty($displayName))
+			return __('Display name cannot be empty.');
+
+		if (UserTable::containsCharactersTheForumCannotStore($displayName))
+			return __('The display name must not contain emoji or other rare symbols.');
+
+		// Validate display name length in characters, not bytes: the column holds 50
+		// characters, and a name in another alphabet takes several bytes per character.
+		$displayNameLength = mb_strlen($displayName);
+		if ($displayNameLength < 3 || $displayNameLength > 50)
+			return __('Display name must be between 3 and 50 characters.');
+
+		// Check uniqueness - another user might have this display_name
+		if ($this->fetchTable('User')->exists(['display_name' => $displayName, 'id !=' => $userId]))
+			return __('This display name is already taken.');
+		return null;
+	}
+
+	//Give the signed in account the display name (the forum too), and stop asking it for one.
+	private function rename(int $userId, string $oldDisplayName, string $newDisplayName): void
+	{
+		UserTable::updateDisplayName($userId, $newDisplayName);
+		AdminActivityLogger::log(AdminActivityTypeTable::DISPLAY_NAME_CHANGE, null, null, $oldDisplayName, $newDisplayName, $userId);
+		Auth::saveUserField('display_name', $newDisplayName);
+		Auth::saveUserField('needs_display_name_change', false);
 	}
 
 	#[HttpGet]
@@ -588,7 +588,7 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 			$userData['display_name'] = $uniqueDisplayName;
 			$userData['needs_display_name_change'] = ($uniqueDisplayName !== $normalizedName || $droppedCharacters) ? true : false;
 			$userData['email'] = $email;
-			$userData['password_hash'] = 'google_oauth';
+			$userData['password_hash'] = UserTable::NO_PASSWORD;
 			$userData['external_id'] = $externalId;
 			$userData['picture'] = $picture;
 			// A Google account shows the picture of its Google profile until the player
@@ -618,8 +618,9 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 			if ($picture && empty($user->picture))
 				$updates['avatar_setting_id'] = UserTable::AVATAR_GOOGLE;
 
-			// Update email if changed and not empty
-			if ($email && $user->email !== $email)
+			// Update email if changed and not empty. An account switched to email and password
+			// keeps the address it signs in with, whatever the Google account has now.
+			if ($email && $user->email !== $email && UserTable::signsInOnlyWithGoogle($user))
 				$updates['email'] = $email;
 
 			// Apply updates if any changed
@@ -717,7 +718,7 @@ If you have not asked for this, ignore this email, your account stays as it is.'
 		$email = trim((string) ($this->input('email') ?? ''));
 		$password = (string) ($this->input('password') ?? '');
 
-		if (UserTable::isGoogleUser($user))
+		if (UserTable::signsInOnlyWithGoogle($user))
 		{
 			CookieFlash::set('This account signs in through Google, so it uses the address of your Google account.', 'error');
 			return $this->redirect('/users/settings');
@@ -747,6 +748,22 @@ If you have not asked for this, ignore this email, your account stays as it is.'
 			return $this->redirect('/users/settings');
 		}
 
+		if (!$this->askForAddressChange($user['email'], $email))
+		{
+			CookieFlash::set('The mail could not be sent. Please try again in a minute.', 'error');
+			return $this->redirect('/users/settings');
+		}
+
+		CookieFlash::set('We sent a confirmation link to ' . $email . '. The address changes once you open it.', 'success');
+		return $this->redirect('/users/settings');
+	}
+
+	//Start moving the signed in account from $current to the address $email: a confirmation link
+	//goes to the new address and a link cancelling it to the current one. The account keeps
+	//$current until the link is opened (confirmEmailChange). False when a mail could not be sent,
+	//then nothing is asked for.
+	private function askForAddressChange(string $current, string $email): bool
+	{
 		$hours = UsersController::$EMAIL_CHANGE_LINK_VALID_HOURS;
 		$token = bin2hex(random_bytes(32));
 		$cancelToken = bin2hex(random_bytes(32));
@@ -757,14 +774,11 @@ If you have not asked for this, ignore this email, your account stays as it is.'
 			. Router::url('/users/confirmEmailChange/' . $token, true)
 			. "\nIf you have not asked for this, ignore this email.");
 
-		$warningSent = $confirmationSent && $this->linkMailWasSent($this->accountMail($user['email'], 'An address change was asked for on your Tsumego Hero account'), 'Somebody asked to move your Tsumego Hero account to ' . $email . '.'
+		$warningSent = $confirmationSent && $this->linkMailWasSent($this->accountMail($current, 'An address change was asked for on your Tsumego Hero account'), 'Somebody asked to move your Tsumego Hero account to ' . $email . '.'
 			. "\nIf that was not you, cancel it here (valid for $hours hours): "
 			. Router::url('/users/cancelEmailChange/' . $cancelToken, true));
 		if (!$warningSent)
-		{
-			CookieFlash::set('The mail could not be sent. Please try again in a minute.', 'error');
-			return $this->redirect('/users/settings');
-		}
+			return false;
 
 		Auth::saveUserFields([
 			'unconfirmed_email' => $email,
@@ -772,9 +786,7 @@ If you have not asked for this, ignore this email, your account stays as it is.'
 			'unconfirmed_email_cancel_token' => $cancelToken,
 			'unconfirmed_email_created' => date('Y-m-d H:i:s'),
 		]);
-
-		CookieFlash::set('We sent a confirmation link to ' . $email . '. The address changes once you open it.', 'success');
-		return $this->redirect('/users/settings');
+		return true;
 	}
 
 	//Second step of an address change, opened from the link sent to the new address.
@@ -866,7 +878,7 @@ If you have not asked for this, ignore this email, your account stays as it is.'
 		$this->Authorization->authorize('User', 'editPreferences');
 
 		$user = Auth::getUser();
-		if (UserTable::isGoogleUser($user))
+		if (UserTable::signsInOnlyWithGoogle($user))
 		{
 			CookieFlash::set('This account signs in through Google, so it has no password.', 'error');
 			return $this->redirect('/users/settings');
@@ -896,6 +908,117 @@ If you have not asked for this, ignore this email, your account stays as it is.'
 		$this->sendPasswordChangedMail($user['email']);
 		CookieFlash::set('Your password has been changed.', 'success');
 		return $this->redirect('/users/settings');
+	}
+
+	//Switch an account that signs in with Google only to email and password. The player sets a
+	//password, keeps the address of their Google account or gives another one (confirmed by a link,
+	//like any address change), and may pick another display name in the same step. It is the same
+	//account, so everything it has stays, and the Google button keeps signing it in as well. As it
+	//changes how the account signs in, it needs a sign-in with Google from the last few minutes
+	//(Auth::signedInRecently()), so a session left open somewhere is not enough.
+	#[HttpGet]
+	#[HttpPost]
+	public function switchToPassword()
+	{
+		if (!Auth::isLoggedIn())
+			return $this->redirect('/users/login');
+		$user = Auth::getUser();
+		if (!UserTable::signsInOnlyWithGoogle($user))
+		{
+			CookieFlash::set('This account signs in with its email and password already.', 'info');
+			return $this->redirect('/users/settings');
+		}
+
+		$this->set('_page', 'user');
+		$this->set('_title', 'Tsumego Hero - Switch to a username and password');
+		$this->set('user', $user);
+		$this->set('signedInRecently', Auth::signedInRecently());
+		// The Google button of the page comes back here once the player signed in again
+		$here = '/users/switchToPassword';
+		$this->set('googleState', base64_encode((string) json_encode(['redirect' => $here, 'signature' => $this->signRedirectUrl($here)])));
+		$this->set('email', $user['email']);
+		$this->set('displayName', $user['display_name']);
+		// A Google account has no login name, so it picks one here to sign in with, besides the address
+		$needsUsername = empty($user['name']);
+		$this->set('needsUsername', $needsUsername);
+		$this->set('username', $needsUsername ? UserTable::suggestUsername((string) $user['email']) : $user['name']);
+		if (!$this->request->is('post'))
+			return null;
+
+		if (!Auth::signedInRecently())
+		{
+			CookieFlash::set('For your security, sign in with Google again first.', 'error');
+			return $this->redirect($here);
+		}
+
+		$userID = Auth::getUserID();
+		$email = trim((string) ($this->input('email') ?? ''));
+		$displayName = UserTable::normalizeDisplayName((string) ($this->input('display_name') ?? ''));
+		if ($displayName === '')
+			$displayName = $user['display_name'];
+		$username = $needsUsername ? trim((string) ($this->input('username') ?? '')) : (string) $user['name'];
+		// what the player typed stays in the form when something is wrong with it
+		$this->set('email', $email);
+		$this->set('displayName', $displayName);
+		$this->set('username', $username);
+
+		$problem = $this->passwordProblem((string) ($this->input('password1') ?? ''), (string) ($this->input('password2') ?? ''))
+			?? ($needsUsername ? $this->usernameProblem($username, $userID) : null)
+			?? $this->addressProblem($email, $userID)
+			?? ($displayName !== $user['display_name'] ? $this->displayNameProblem($displayName, $userID) : null);
+		if ($problem)
+		{
+			CookieFlash::set($problem, 'error');
+			return null;
+		}
+
+		$addressChanges = $email !== $user['email'];
+		if ($addressChanges && !$this->askForAddressChange($user['email'], $email))
+		{
+			CookieFlash::set('The mail could not be sent. Please try again in a minute.', 'error');
+			return null;
+		}
+		if ($displayName !== $user['display_name'])
+			$this->rename($userID, $user['display_name'], $displayName);
+
+		$hash = password_hash((string) $this->input('password1'), PASSWORD_DEFAULT);
+		Auth::saveUserFields(['name' => $username, 'password_hash' => $hash]);
+		// The tokens of the other devices were issued without the password and stop fitting
+		JwtAuth::setAuthCookie($userID, $hash);
+
+		$emailer = $this->accountMail($user['email'], 'Your Tsumego Hero account now has a password');
+		$this->sendNotification($emailer, 'Your Tsumego Hero account now signs in with its username ' . $username . ' or its email, and a password. Signing in with Google keeps working too.'
+			. "\nIf you did not do this, set a new password at " . Router::url('/users/resetpassword', true) . ' and write to me@tsumego.com.');
+
+		CookieFlash::set('Your account now signs in with the username ' . $username . ' or ' . $user['email'] . ', and your password.'
+			. ($addressChanges ? ' We sent a confirmation link to ' . $email . ', the address changes once you open it.' : ''), 'success');
+		return $this->redirect('/users/settings');
+	}
+
+	//The message to show for a login name the signed in account can not take, or null when it can.
+	//The rules of a sign-up (UserTable::validationDefault(), the unique index), and no "@": signing in
+	//looks for the name before the address, so a name that is an address would hide an account.
+	private function usernameProblem(string $username, int $userID): ?string
+	{
+		$length = mb_strlen($username);
+		if ($length < UserTable::USERNAME_MIN_LENGTH || $length > UserTable::USERNAME_MAX_LENGTH)
+			return 'The username needs ' . UserTable::USERNAME_MIN_LENGTH . ' to ' . UserTable::USERNAME_MAX_LENGTH . ' characters.';
+		if (str_contains($username, '@'))
+			return 'The username must not contain "@".';
+		if ($this->fetchTable('User')->exists(['name' => $username, 'id !=' => $userID]))
+			return 'That username is taken, choose another one.';
+		return null;
+	}
+
+	//The message to show for an address the signed in account can not take, or null when it can.
+	//An address of another account is refused, so no account can take over the sign-in of another.
+	private function addressProblem(string $email, int $userID): ?string
+	{
+		if (mb_strlen($email) > UserTable::EMAIL_MAX_LENGTH || !Validation::email($email))
+			return 'That is not a valid e-mail address.';
+		if ($this->fetchTable('User')->exists(['email' => $email, 'id !=' => $userID]))
+			return 'That address belongs to another account.';
+		return null;
 	}
 
 	//Tell the account by mail that its password changed, so that a change made by
