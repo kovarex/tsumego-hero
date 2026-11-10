@@ -410,8 +410,9 @@ bool bentFour(const State& s)
   return false;
 }
 
-// The attacker kills when no target point holds a defender stone; the defender lives when a target stone escapes
-// to the outside or is in an unconditionally alive chain.
+// The attacker kills when no target point holds a defender stone; the defender lives when a target stone is in an
+// unconditionally alive chain. The outside is the attacker's wall, so reaching it is no escape (a group running out of
+// the region, like 840 towards B10, counts as shut in).
 int terminalUncached(const State& s);
 
 // the end tests repeat for every transposition, so their results are kept by position
