@@ -147,6 +147,33 @@
 	font-weight: var(--weight-medium);
 }
 
+/* ── Daily streak (element/profile_daily_streak.php): the flame of the menu, dim until today counted ── */
+.profile-streak__current
+{
+	display: inline-flex;
+	align-items: center;
+	gap: var(--space-1);
+}
+
+.profile-streak__flame
+{
+	width: 20px;
+	height: 20px;
+	margin: -2px 0;
+	fill: var(--color-orange-2);
+	opacity: 0.45;
+}
+
+.profile-streak__current--done .profile-streak__flame
+{
+	opacity: 1;
+}
+
+.profile-streak__none
+{
+	color: var(--text-softer-color);
+}
+
 /* ── Rank display ── */
 .stat td.rank
 {
