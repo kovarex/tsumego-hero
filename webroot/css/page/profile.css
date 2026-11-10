@@ -177,7 +177,6 @@
 {
 	margin: 0 var(--space-1) var(--space-4);
 	border: 3px solid var(--color-blue);
-	box-sizing: border-box;
 	padding: var(--space-3) var(--space-4);
 }
 
@@ -264,7 +263,6 @@
 {
 	margin: 0 var(--space-1) var(--space-4);
 	border: 3px solid var(--color-green);
-	box-sizing: border-box;
 	padding: var(--space-3) var(--space-4);
 	min-width: 0;
 	color: var(--text-color);

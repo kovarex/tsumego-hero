@@ -59,7 +59,6 @@
 .card
 {
 	border: 3px solid var(--color-border);
-	box-sizing: border-box;
 	padding: var(--space-2);
 }
 
@@ -560,7 +559,6 @@
 .form-field__control
 {
 	width: 100%;
-	box-sizing: border-box;
 	background: var(--color-surface-sunken);
 	color: var(--color-text);
 	border: 1px solid var(--color-border);

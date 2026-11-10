@@ -24,7 +24,6 @@
 	max-width: 900px;
 	margin: 0 auto;
 	padding: var(--space-5) var(--space-4) var(--space-6);
-	box-sizing: border-box;
 }
 
 .changelog-page__title

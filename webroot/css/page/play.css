@@ -71,7 +71,6 @@
   padding: 10px;
   width: 100%;
   max-width: 600px;
-  box-sizing: border-box;
   font-size: 16px;
 }
 .boards-tile {
@@ -129,7 +128,6 @@ h1 {
   max-width: 400px;
   margin: 0 auto;
   padding: 20px;
-  box-sizing: border-box;
   text-align: left;
 }
 .existing-tags-list {
@@ -288,7 +286,6 @@ h1 {
   padding: 0px 5px;
   flex-basis: 100%;
   max-width: 100%;
-  box-sizing: border-box;
 }
 .besogo-control {
   width: 33% !important;
@@ -560,7 +557,6 @@ h1 {
   height: 0.95em;
   border-radius: 50%;
   vertical-align: -0.12em;
-  box-sizing: border-box;
 }
 .play-goal__stone--black {
   background: radial-gradient(circle at 35% 30%, #666, #000 70%);
@@ -626,7 +622,6 @@ h1 {
   max-width: 900px;
   min-height: 48px;
   padding: 0 var(--space-2);
-  box-sizing: border-box;
 }
 .play-message__status {
   min-width: 0;
@@ -735,7 +730,6 @@ h1 {
   min-width: 40px;
   height: 40px;
   padding: 0 var(--space-2);
-  box-sizing: border-box;
   border: 1px solid var(--surface-border-muted);
   border-radius: var(--radius-md);
   background: var(--info-box-background);
@@ -771,7 +765,6 @@ h1 {
   height: 36px;
   margin: 0;
   padding: 0 var(--space-3);
-  box-sizing: border-box;
   border: 1px solid var(--surface-border-muted) !important;
   border-radius: var(--radius-md);
   background: var(--info-box-background) !important;
@@ -865,7 +858,6 @@ h1 {
   align-self: flex-start;
   width: 100% !important;
   max-width: 100%;
-  box-sizing: border-box;
   max-height: max(350px, var(--tree-height, 350px));
   margin: 0;
 }
@@ -1116,7 +1108,6 @@ h1 {
   .play-head,
   .play-message {
     padding: 0 var(--space-3);
-    box-sizing: border-box;
   }
   /* A long name of a collection is cut short with its full name in the title; the part of the collection (#2)
      always shows */
