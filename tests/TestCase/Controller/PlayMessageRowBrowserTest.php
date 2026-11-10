@@ -62,11 +62,9 @@ class PlayMessageRowBrowserTest extends IntegrationTestCase
 			insideTheRow: box(comment).top >= box(row).top - 1 && box(comment).bottom <= box(row).bottom + 1,
 			beforeReset: box(comment).right <= box(reset).left,
 			boardUnderTheRow: box(row).bottom <= box(board).top + 1,
-			// as the row was before the move, with the goal only
-			sameHeight: Math.abs(box(row).height - window.rowBefore.height) < 1,
-			// whether the messages need no more height than the row had
-			fitsTheRow: box(row.querySelector('.play-message__text')).height <= window.rowBefore.height + 1,
-			boardStill: Math.abs(box(board).top - window.rowBefore.boardTop) < 1,
+			// how much taller the row got than with the goal only, before the move, and how far the board moved down
+			growth: box(row).height - window.rowBefore.height,
+			boardShift: box(board).top - window.rowBefore.boardTop,
 		};
 		JS;
 
@@ -108,18 +106,24 @@ class PlayMessageRowBrowserTest extends IntegrationTestCase
 			$this->assertSame(self::COMMENTS[$case], $browser->find('#theComment')->getText());
 			$layout = $browser->driver->executeScript(self::LAYOUT);
 			$lines = $layout['lines'];
-			$fits = $layout['fitsTheRow'];
-			unset($layout['lines'], $layout['fitsTheRow']);
+			$growth = $layout['growth'];
+			$boardShift = $layout['boardShift'];
+			unset($layout['lines'], $layout['growth'], $layout['boardShift']);
 			$long = $case === 'long';
 			$this->assertEquals(['inTheRow' => true, 'sameStyleAsCorrect' => true, 'left' => 'left', 'colorOfTheText' => true,
 				'noBackground' => true, 'onTheLineOfCorrect' => true, 'afterCorrect' => true, 'wrapsToTheLeftEdge' => true,
-				'insideTheRow' => true, 'beforeReset' => true, 'boardUnderTheRow' => true,
-				// a comment that fits the row leaves the row and the board where they were; only a longer one grows it
-				'sameHeight' => $fits, 'boardStill' => $fits], $layout);
+				'insideTheRow' => true, 'beforeReset' => true, 'boardUnderTheRow' => true], $layout);
+			// the board moves down exactly as much as the row grows: nothing covers it, nothing else moves it
+			$this->assertEqualsWithDelta($growth, $boardShift, 1, 'the board follows the row');
 			if ($long)
+			{
 				$this->assertGreaterThan(1, $lines, 'the long comment wraps');
+				$this->assertGreaterThan(1, $growth, 'the row grows for the long comment');
+			}
+			// a short comment keeps the height of the row, so the board doesn't move; whether a middling one fits on a
+			// phone depends on the font of the browser
 			if ($case === 'correct')
-				$this->assertTrue($fits, 'a short comment keeps the height of the row');
+				$this->assertEqualsWithDelta(0, $growth, 1, 'a short comment keeps the height of the row');
 			if ($width > 1000 && !$long)
 				$this->assertSame(1, $lines, 'on a computer, the comment fits the line of Correct!');
 			$browser->assertNoJsErrors();
