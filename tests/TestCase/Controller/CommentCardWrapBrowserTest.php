@@ -110,8 +110,10 @@ class CommentCardWrapBrowserTest extends IntegrationTestCase
 				return result;
 				JS);
 			// the hero powers show beside the hearts on a wide screen, and behind the ⚡ button on a phone
-			$this->assertSame(['hearts', 'actions', 'tabs', 'filter', 'comment', 'form'], array_values(array_diff(array_keys($edges['lefts']), ['powers'])),
-				'the parts of the panel at ' . $width . ' px');
+			// (the browser hands the object back with its keys sorted)
+			$parts = array_values(array_diff(array_keys($edges['lefts']), ['powers']));
+			sort($parts);
+			$this->assertSame(['actions', 'comment', 'filter', 'form', 'hearts', 'tabs'], $parts, 'the parts of the panel at ' . $width . ' px');
 			foreach ($edges['lefts'] as $name => $left)
 				$this->assertEqualsWithDelta($edges['left'], $left, 1, 'the left edge of the ' . $name . ' at ' . $width . ' px');
 			foreach ($edges['rights'] as $name => $right)
