@@ -54,7 +54,6 @@ body {
   border: 2px solid var(--color-black);
   box-shadow: 10px 10px 15px var(--color-black);
   border-radius:10px;
-  box-sizing: border-box;
 }
 .loader-container {
   display: none;
@@ -1067,7 +1066,6 @@ nav ul ul ul li {
 		height: 40px;
 		padding: var(--space-2);
 		cursor: pointer;
-		box-sizing: border-box;
 	}
 	.nav-toggle-btn span {
 		display: block;
@@ -1149,7 +1147,6 @@ nav ul ul ul li {
 		color: var(--color-purple-nav);
 		display: block;
 		width: 100%;
-		box-sizing: border-box;
 		text-align: left;
 		white-space: nowrap;
 	}
@@ -1200,7 +1197,6 @@ nav ul ul ul li {
 		width: 100%;
 		height: 48px;
 		padding: 0 var(--space-2);
-		box-sizing: border-box;
 		text-align: center;
 	}
 	.site-nav nav ul > li.menuIcons1 .board-picker {
@@ -1240,7 +1236,6 @@ nav ul ul ul li {
 	.site-nav__account-links li a {
 		display: block;
 		width: 100%;
-		box-sizing: border-box;
 		padding: 10px 8px;
 		font-size: var(--text-lg);
 		color: var(--color-purple-nav);
@@ -1265,7 +1260,6 @@ nav ul ul ul li {
 		height: 24px;
 	}
 	#account-bar-xp-wrapper {
-		box-sizing: border-box;
 		pointer-events: none;
 		text-align: center;
 	}

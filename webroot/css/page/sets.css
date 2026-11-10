@@ -293,7 +293,6 @@
   margin: 5px auto;
   width: 100%;
   max-width: 1228px;
-  box-sizing: border-box;
 }
 
 /* What a player can do with their own collections, above the cards. */
@@ -942,7 +941,6 @@
 	}
 	.set-index {
 		padding: 0 var(--space-3);
-		box-sizing: border-box;
 	}
 }
 }

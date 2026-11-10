@@ -30,7 +30,6 @@
 	   wheel into a scroll container. The buttons fit on one row since the
 	   max-width cap was removed. */
 	overflow: visible;
-	box-sizing: border-box;
 }
 
 /* A wrapping row of problem-status buttons; `.problem-nav__item` no longer
@@ -61,7 +60,6 @@
 	margin: 0;
 	height: 30px;
 	position: relative;
-	box-sizing: border-box;
 	background-image: url("/img/viewButton1.png");
 }
 

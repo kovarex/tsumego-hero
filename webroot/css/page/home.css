@@ -139,7 +139,6 @@
   padding: 10px;
   font-size: 20px;
   cursor: context-menu;
-  box-sizing: border-box;
 }
 .quote-pick-1 {
   flex: 1 1 0;
@@ -239,7 +238,6 @@
   display: flex;
   align-items: center;
   padding: 5px 5px;
-  box-sizing: border-box;
   background-color: rgba(0, 0, 0, 0.45);
   color: var(--color-white);
   border: 1px solid rgba(255, 255, 255, 0.12);
@@ -439,13 +437,11 @@
 	.quote-pick-wrapper,
 	.achievement-quote-pick {
 		width: 100%;
-		box-sizing: border-box;
 	}
 	.user-pick-all,
 	.quote-pick-1 {
 		width: 100%;
 		max-width: 312px;
-		box-sizing: border-box;
 	}
 	.quote-pick-wrapper {
 		flex-wrap: wrap;

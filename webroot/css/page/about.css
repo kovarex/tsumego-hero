@@ -18,7 +18,6 @@
   align-self: center;
   width: 100%;
   max-width: 1050px;
-  box-sizing: border-box;
 }
 .timeline__event:nth-child(2n + 1) {
   flex-direction: row-reverse;
