@@ -232,7 +232,6 @@ h1 {
   justify-content: center;
   margin: 15px 15px 2px 15px;
 }
-.besogo-tsumegoPlayTool input[type="button"],
 .besogo-file input[type="button"] {
   font-size: 16px;
   font-style: normal;
@@ -254,9 +253,7 @@ h1 {
   border-top-left-radius: 9px;
   cursor: pointer;
 }
-#besogo-next-button,
-#besogo-back-button,
-#history-button {
+#besogo-next-button {
   font-size: 16px;
   font-style: normal;
   font-variant: normal;
@@ -307,23 +304,6 @@ h1 {
 #besogo-multipleChoice3:hover,
 #besogo-multipleChoice4:hover {
   background-color: var(--color-purple-vivid);
-}
-#besogo-reset-button {
-  background-color: var(--surface-button);
-}
-#besogo-reset-button-inactive {
-  background-color: var(--surface-button-inactive);
-  cursor: context-menu;
-  pointer-events: none;
-}
-.besogo-tsumegoPlayTool input:nth-last-child(1) {
-  background-color: var(--surface-button-inactive) !important;
-  cursor: context-menu;
-  border-color: var(--surface-button-inactive) !important;
-}
-#besogo-tsumegoPlayTool-rButton {
-  background-color: var(--surface-button);
-  cursor: pointer;
 }
 .imageContainer1 {
   float: left;
@@ -417,58 +397,8 @@ h1 {
 .health-counter {
   display: none;
 }
-#besogo-next-button-inactive,
-#besogo-back-button-inactive {
-  background-color: var(--surface-button-inactive);
-  cursor: context-menu;
-  font-size: 16px;
-  font-style: normal;
-  font-variant: normal;
-  font-weight: 800;
-  text-decoration: none;
-  color: var(--color-white);
-  padding: 10px 13px;
-  margin: 5px;
-  border-top: 1px solid var(--surface-border-light);
-  border-right: 1px solid var(--surface-border-strong);
-  border-bottom: 1px solid var(--surface-border-strong);
-  border-left: 1px solid var(--surface-border-light);
-  text-transform: uppercase;
-  border-bottom-right-radius: 9px;
-  border-bottom-left-radius: 9px;
-  border-top-right-radius: 9px;
-  border-top-left-radius: 9px;
-}
-#besogo-pass-button {
-  background-color: var(--color-purple-deep);
-  cursor: context-menu;
-  font-size: 16px;
-  font-style: normal;
-  font-variant: normal;
-  font-weight: 800;
-  text-decoration: none;
-  color: var(--color-white);
-  padding: 10px 13px;
-  margin: 5px;
-  cursor: pointer;
-}
-#besogo-pass-button:hover {
-  background-color: var(--color-purple-vivid);
-}
-#besogo-review-button {
-  background-color: var(--color-red);
-}
-#besogo-review-button-inactive {
-  background-color: var(--surface-button-inactive);
-  cursor: context-menu;
-}
-#besogo-next-button:hover,
-#besogo-reset-button:hover,
-#besogo-back-button:hover {
+#besogo-next-button:hover {
   background-color: var(--surface-button-hover);
-}
-#besogo-review-button:hover {
-  background-color: var(--color-red-muted);
 }
 #levelBarDisplay1 {
   width: 15px;
@@ -894,7 +824,7 @@ h1 {
   gap: 6px;
   margin-left: auto;
 }
-:is(.play-actions__end, .play-actions) > :is(#besogo-pass-button, #besogo-back-button, #besogo-back-button-inactive, #history-button, #besogo-reset-button, #besogo-reset-button-inactive, #besogo-review-button, #besogo-review-button-inactive, #besogo-next-button, #besogo-next-button-inactive) {
+:is(.play-actions__end, .play-actions) > :is(#besogo-pass-button, #history-button, #besogo-reset-button, #besogo-reset-button-inactive, #besogo-review-button, #besogo-review-button-inactive, #besogo-next-button, #besogo-next-button-inactive) {
   min-width: 40px;
   height: 36px;
   margin: 0;
@@ -912,10 +842,10 @@ h1 {
   text-decoration: none;
   cursor: pointer;
 }
-:is(.play-actions__end, .play-actions) > :is(#besogo-pass-button, #besogo-back-button, #besogo-back-button-inactive, #history-button, #besogo-reset-button, #besogo-reset-button-inactive, #besogo-review-button, #besogo-review-button-inactive, #besogo-next-button, #besogo-next-button-inactive):hover {
+:is(.play-actions__end, .play-actions) > :is(#besogo-pass-button, #history-button, #besogo-reset-button, #besogo-reset-button-inactive, #besogo-review-button, #besogo-review-button-inactive, #besogo-next-button, #besogo-next-button-inactive):hover {
   background: var(--surface-hover) !important;
 }
-:is(.play-actions__end, .play-actions) > :is(#besogo-pass-button, #besogo-back-button, #besogo-back-button-inactive, #history-button, #besogo-reset-button, #besogo-reset-button-inactive, #besogo-review-button, #besogo-review-button-inactive, #besogo-next-button, #besogo-next-button-inactive)[id$="-inactive"] {
+:is(.play-actions__end, .play-actions) > :is(#besogo-pass-button, #history-button, #besogo-reset-button, #besogo-reset-button-inactive, #besogo-review-button, #besogo-review-button-inactive, #besogo-next-button, #besogo-next-button-inactive)[id$="-inactive"] {
   opacity: 0.4;
   cursor: default;
   pointer-events: none;
