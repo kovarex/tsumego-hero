@@ -20,7 +20,7 @@ use App\Utility\Constants;
 ?>
 <div id="login-box" class="users form">
 	<div class="left signin" id="switch-to-password">
-		<h1>Switch to email and password</h1>
+		<h1>Switch to a username and password</h1>
 		<p>Your account signs in with Google. Give it a username and a password and it signs in with the username or its email, and that password; the Google button keeps working too. Your progress, rating and achievements stay, it is the same account.</p>
 		<?php if (!$signedInRecently): ?>
 			<p id="switch-sign-in-again">For your security, sign in with Google again first (within the last <?php echo intdiv(Auth::RECENT_SIGN_IN_SECONDS, 60); ?> minutes).</p>

@@ -930,7 +930,7 @@ If you have not asked for this, ignore this email, your account stays as it is.'
 		}
 
 		$this->set('_page', 'user');
-		$this->set('_title', 'Tsumego Hero - Switch to email and password');
+		$this->set('_title', 'Tsumego Hero - Switch to a username and password');
 		$this->set('user', $user);
 		$this->set('signedInRecently', Auth::signedInRecently());
 		// The Google button of the page comes back here once the player signed in again
