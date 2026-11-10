@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">35.29% </span>
+                <span class="strong">88.23% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>6/17</span>
+                <span class='fraction'>15/17</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">14.28% </span>
+                <span class="strong">71.42% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>1/7</span>
+                <span class='fraction'>5/7</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">50% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>2/4</span>
+                <span class='fraction'>4/4</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">35.29% </span>
+                <span class="strong">88.23% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>6/17</span>
+                <span class='fraction'>15/17</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line low'></div>
+    <div class='status-line high'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -100,25 +100,25 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">296x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">32x</span>
+<span class="cline-any cline-yes">40x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">32x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">40x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">32x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">40x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -134,23 +134,23 @@ function initImageZoom()
 	{
 		let preview = null;
 &nbsp;
-		img.addEventListener('pointerenter', <span class="fstat-no" title="function not covered" >e </span>=&gt;
+		img.addEventListener('pointerenter', e =&gt;
 		{
 			//On touch a tap would only flash the preview; a preview no bigger than the image would show nothing new
-<span class="cstat-no" title="statement not covered" >			if (preview || e.pointerType !== 'mouse' || img.naturalWidth &lt;= img.clientWidth)</span>
+			<span class="missing-if-branch" title="if path not taken" >I</span>if (preview || e.pointerType !== 'mouse' || img.naturalWidth &lt;= img.clientWidth)
 <span class="cstat-no" title="statement not covered" >				return;</span>
-<span class="cstat-no" title="statement not covered" >			preview = img.cloneNode();</span>
-<span class="cstat-no" title="statement not covered" >			preview.removeAttribute('width');</span>
-<span class="cstat-no" title="statement not covered" >			preview.removeAttribute('height');</span>
-<span class="cstat-no" title="statement not covered" >			preview.removeAttribute('style');</span>
-<span class="cstat-no" title="statement not covered" >			preview.className = 'image-zoom__preview';</span>
-<span class="cstat-no" title="statement not covered" >			document.body.appendChild(preview);</span>
+			preview = img.cloneNode();
+			preview.removeAttribute('width');
+			preview.removeAttribute('height');
+			preview.removeAttribute('style');
+			preview.className = 'image-zoom__preview';
+			document.body.appendChild(preview);
 		});
 &nbsp;
-		img.addEventListener('pointerleave', <span class="fstat-no" title="function not covered" >()</span> =&gt;
+		img.addEventListener('pointerleave', () =&gt;
 		{
-<span class="cstat-no" title="statement not covered" >			preview?.remove();</span>
-<span class="cstat-no" title="statement not covered" >			preview = null;</span>
+			preview?.remove();
+			preview = null;
 		});
 	});
 }
@@ -166,7 +166,7 @@ else
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-11-10T20:27:29.661Z
+                at 2026-11-10T20:33:37.912Z
             </div>
         <script src="../../prettify.js"></script>
         <script>
