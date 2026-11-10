@@ -121,7 +121,10 @@ class ChartsBrowserTest extends IntegrationTestCase
 
 		$browser = Browser::instance();
 		$browser->get('users/view/' . $context->user['id']);
-		$state = fn() => $browser->driver->executeScript(<<<'JS'
+		// WebDriver hands the object back with its keys in no set order, so they are sorted
+		$state = function () use ($browser)
+		{
+			$state = $browser->driver->executeScript(<<<'JS'
 			const chart = document.getElementById('profile-chart-rating');
 			const line = chart.querySelector('.line-chart__line');
 			return {
@@ -129,6 +132,9 @@ class ChartsBrowserTest extends IntegrationTestCase
 				active: chart.querySelector('.rating-chart__range[aria-pressed="true"]')?.textContent ?? null,
 				points: line ? line.getAttribute('d').split('L').length : 0};
 			JS);
+			ksort($state);
+			return $state;
+		};
 		$pick = function (string $range) use ($browser, $state)
 		{
 			$browser->driver->executeScript("[...document.querySelectorAll('#profile-chart-rating .rating-chart__range')].find(button => button.textContent === arguments[0]).click()", [$range]);
@@ -136,7 +142,7 @@ class ChartsBrowserTest extends IntegrationTestCase
 			return $state()['points'];
 		};
 		$browser->waitUntilCssSelectorDisplayed('#profile-chart-rating .line-chart__line');
-		$this->assertSame(['ranges' => ['1M', '6M', '1Y', 'All'], 'active' => '6M', 'points' => 3], $state());
+		$this->assertSame(['active' => '6M', 'points' => 3, 'ranges' => ['1M', '6M', '1Y', 'All']], $state());
 
 		$this->assertSame(4, $pick('1Y'), 'a point a week');
 		$months = count(array_unique(array_map(fn($daysAgo) => substr($day($daysAgo), 0, 7), [1800, 300, 100, 10, 3])));
