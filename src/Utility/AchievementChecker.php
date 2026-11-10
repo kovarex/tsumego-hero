@@ -361,23 +361,31 @@ WHERE rn = 1;", [Auth::getUserID(), TimeModeSessionStatusTable::SOLVED]);
 		$this->checkStandardAchievements()->checkTimeModeAchievements();
 	}
 
+	//Grants the XP of the achievements gained. That XP can raise the level past the threshold of a level
+	//achievement, checked before it, so the level ones are checked again, and their XP granted, until the
+	//level stays.
 	public function finalize(): AchievementChecker
 	{
-		if (empty($this->updated))
-			return $this;
+		$granted = 0;
+		while ($granted < count($this->updated))
+		{
+			$xpBonus = 0;
+			foreach (array_slice($this->updated, $granted) as $achievement)
+				$xpBonus += $achievement->xp;
+			$granted = count($this->updated);
+			if ($xpBonus == 0)
+				break;
 
-		$xpBonus = 0;
-		foreach ($this->updated as $achievement)
-			$xpBonus += $achievement->xp;
-		if ($xpBonus == 0)
-			return $this;
-
-		$user = &Auth::getUser();
-		Level::addXP($user, $xpBonus);
-		Auth::saveUserFields([
-			'xp' => $user['xp'],
-			'level' => $user['level'],
-		]);
+			$user = &Auth::getUser();
+			$level = $user['level'];
+			Level::addXP($user, $xpBonus);
+			Auth::saveUserFields([
+				'xp' => $user['xp'],
+				'level' => $user['level'],
+			]);
+			if ($user['level'] != $level)
+				$this->checkLevelAchievements();
+		}
 		return $this;
 	}
 
