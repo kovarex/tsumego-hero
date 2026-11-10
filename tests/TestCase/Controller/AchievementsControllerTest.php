@@ -60,7 +60,10 @@ class AchievementsControllerTest extends IntegrationTestCase
 
 		$this->assertStringContainsString('27/' . AchievementTable::COMPLETE_SETS_III_SETS_COUNT, $result);
 		$this->assertStringContainsString('27/' . AchievementTable::COMPLETE_SETS_V_SETS_COUNT, $result);
-		$this->assertStringNotContainsString(AchievementTable::COMPLETE_SETS_I_SETS_COUNT . '/' . AchievementTable::COMPLETE_SETS_I_SETS_COUNT, $result, 'Unlocked achievements show their date, not progress');
+		// the card of the unlocked one, up to its closing link, shows its date and no progress
+		$unlockedCard = '#/achievements/view/' . AchievementId::COMPLETE_SETS_I->value . '/\d+">(?:(?!</a>).)*';
+		$this->assertMatchesRegularExpression($unlockedCard . '<time#s', $result);
+		$this->assertDoesNotMatchRegularExpression($unlockedCard . 'progress__label#s', $result, 'Unlocked achievements show their date, not progress');
 		$this->assertStringContainsString('7/' . AchievementTable::GOLD_DIGGER_COUNT, $result, 'The other counter achievements show their progress too');
 	}
 
