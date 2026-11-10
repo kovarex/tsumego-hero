@@ -4,6 +4,7 @@ use App\Model\Table\TimeModeCategoryTable;
 use App\Model\Table\TimeModeSessionStatusTable;
 use App\Model\Table\UserTable;
 use App\Utility\AchievementId;
+use App\Utility\AchievementRarity;
 use App\Utility\Rating;
 use App\Utility\Util;
 
@@ -378,13 +379,16 @@ class UsersControllerTest extends IntegrationTestCase
 		]);
 	}
 
-	//The profile lists the 12 achievements the player got last, newest first.
-	public function testProfileListsTheLatestAchievementsNewestFirst(): void
+	//The profile lists every achievement the player unlocked, the rarest first (ProfileAchievementsTest); equally
+	//rare ones, here only the player's, the latest first.
+	public function testProfileListsEquallyRareAchievementsNewestFirst(): void
 	{
+		AchievementRarity::forget();
 		$achievementIDs = array_slice(array_map(fn($achievement) => $achievement->value, AchievementId::cases()), 0, 13);
 		$context = new ContextPreparator([
 			'user' => [
 				'name' => 'collector',
+				'solved' => 1,
 				'achievement-statuses' => array_map(fn($id) => ['id' => $id], $achievementIDs),
 			],
 		]);
@@ -394,14 +398,14 @@ class UsersControllerTest extends IntegrationTestCase
 
 		$this->get('users/view/' . $context->user['id']);
 
-		$link = fn($achievementID) => 'href="/achievements/view/' . $achievementID . '/' . $context->user['id'] . '"';
-		$this->assertStringNotContainsString($link($achievementIDs[0]), $this->view, 'the oldest is the 13th');
-		$positions = array_map(fn($achievementID) => strpos($this->view, $link($achievementID)), array_reverse(array_slice($achievementIDs, 1)));
-		$this->assertNotContains(false, $positions);
+		$link = fn($achievementID) => 'class="profile-achievement__name" href="/achievements/view/' . $achievementID . '/' . $context->user['id'] . '"';
+		$positions = array_map(fn($achievementID) => strpos($this->view, $link($achievementID)), array_reverse($achievementIDs));
+		$this->assertNotContains(false, $positions, 'all thirteen are listed');
 		$sorted = $positions;
 		sort($sorted);
 		$this->assertSame($sorted, $positions, 'newest first');
 		$this->assertStringContainsString(h($this->fetchTable('Achievement')->get($achievementIDs[12])->name), $this->view);
+		AchievementRarity::forget();
 	}
 
 	//The profile achievement card shows how often a repeatable achievement was earned.
