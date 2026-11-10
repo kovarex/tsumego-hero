@@ -19,6 +19,9 @@ final class AddDailyResetDay extends AbstractMigration
 	{
 		$this->execute("ALTER TABLE user ADD COLUMN IF NOT EXISTS daily_reset_day DATE NULL DEFAULT NULL
 			COMMENT 'The player''s day (DailyStreak::today) of the last reset of the hearts and the hero powers' AFTER streak_day_xp_required");
+		// the hourly reset (DailyReset::resetDuePlayers) lists the zones with a loose scan of it and takes the players
+		// of a zone that are behind with a range of it, so it reads the due rows only
+		$this->execute('ALTER TABLE user ADD INDEX IF NOT EXISTS time_zone_daily_reset_day (time_zone, daily_reset_day)');
 		$now = new DateTimeImmutable();
 		foreach ($this->fetchAll('SELECT DISTINCT time_zone FROM user') as $row)
 		{
@@ -34,6 +37,7 @@ final class AddDailyResetDay extends AbstractMigration
 
 	public function down(): void
 	{
+		$this->execute('ALTER TABLE user DROP INDEX IF EXISTS time_zone_daily_reset_day');
 		$this->execute('ALTER TABLE user DROP COLUMN IF EXISTS daily_reset_day');
 	}
 }

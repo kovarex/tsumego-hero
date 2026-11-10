@@ -65,7 +65,9 @@ class DailyReset
 
 	//Reset every player whose day turned since their last reset, a time zone at a time: the day of a zone is
 	//worked out here, and one UPDATE takes all its players that are behind it, the potions of those players first,
-	//as the condition reads the day before it moves. Returns how many players were reset.
+	//as the condition reads the day before it moves. The index (time_zone, daily_reset_day) lists the zones with a
+	//loose scan and gives each UPDATE a range of the players behind, so a run reads the due rows only and locks no
+	//other player's row. Returns how many players were reset.
 	public static function resetDuePlayers(): int
 	{
 		$now = Clock::now();
