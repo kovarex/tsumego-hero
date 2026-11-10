@@ -600,7 +600,6 @@ a[href="/challenges"],
 	font-weight: var(--weight-bold);
 	opacity: 0.75;
 }
-}
 
 /* The list of players under a field of names (webroot/js/PlayerNameSuggestions.js) */
 .player-suggestions-field
@@ -653,4 +652,5 @@ a[href="/challenges"],
 {
 	color: var(--text-softer-color);
 	font-size: var(--font-size-sm);
+}
 }

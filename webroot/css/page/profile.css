@@ -359,9 +359,6 @@
 	gap: var(--space-1);
 }
 
-/* Dark overrides */
-}
-
 /* ── Friends (templates/Friends/index.php) ── */
 .friends__section
 {
@@ -405,4 +402,5 @@
 .friends__actions form
 {
 	margin: 0;
+}
 }
