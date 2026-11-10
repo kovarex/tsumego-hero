@@ -126,8 +126,7 @@ class ChartsBrowserTest extends IntegrationTestCase
 		$browser = Browser::instance();
 		$browser->get('users/view/' . $context->user['id']);
 		// WebDriver hands the object back with its keys in no set order, so they are sorted
-		$state = function () use ($browser)
-		{
+		$state = function () use ($browser) {
 			$state = $browser->driver->executeScript(<<<'JS'
 			const chart = document.getElementById('profile-chart-level');
 			const pager = chart.querySelector('.level-chart__pager');
