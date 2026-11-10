@@ -3,7 +3,6 @@
 use App\View\Helper\AchievementHelper;
 use App\Model\Table\UserTable;
 use App\Utility\Auth;
-use App\Utility\HeroPowers;
 use App\Utility\Level;
 use App\Utility\Rating;
 use App\Utility\Util;
@@ -13,7 +12,6 @@ use App\Utility\ViteManifest;
  * @var \App\View\AppView $this
  * @var int $achievementCount
  * @var array{completed: int, earned_times: int} $achievementCounts
- * @var array $achievements See UserProfile::achievementsByRarity()
  * @var array $dailyResults
  * @var array|null $mistakeTraining
  * @var int $solvedProblemCount
@@ -167,43 +165,8 @@ use App\Utility\ViteManifest;
 		</table>
 	</div>
 </div>
-<?php
-$heroPowers = HeroPowers::getPowers();
-$maxPowerLevel = max(array_column($heroPowers, 'level'));
-$isPremium = HeroPowers::hasPremiumUnlock($user);
-$hasRevelationBonus = HeroPowers::hasContributionRevelationBonus($user);
-$unlockedCount = 0;
-foreach ($heroPowers as $power)
-	if ($user['level'] >= $power['level'])
-		$unlockedCount++;
-?>
-<div class="hero-powers">
-	<div class="hero-powers__title">Hero Powers: <?php echo $unlockedCount . ' of ' . count($heroPowers); ?> unlocked</div>
-	<div class="hero-powers__timeline">
-		<div class="hero-powers__track">
-			<div class="hero-powers__fill" style="width:<?php echo min(100, round($user['level'] / $maxPowerLevel * 100)); ?>%"></div>
-		</div>
-		<?php foreach ($heroPowers as $power):
-			$pos = round($power['level'] / $maxPowerLevel * 100);
-			$isUnlocked = $user['level'] >= $power['level'];
-		?>
-		<div class="hero-powers__marker<?php echo $isUnlocked ? ' hero-powers__marker--unlocked' : ''; ?>" style="left:<?php echo $pos; ?>%" title="<?php echo $power['description']; ?>">
-			<div class="hero-powers__dot"></div>
-			<div class="hero-powers__name"><?php echo $power['name']; ?></div>
-			<div class="hero-powers__level">Lv <?php echo $power['level']; ?></div>
-			<?php if (!empty($power['premium']) && $isPremium): ?>
-				<div class="badge badge--active" title="Unlocked via premium">Premium</div>
-			<?php endif; ?>
-			<?php if (!empty($power['bonus']) && $hasRevelationBonus): ?>
-				<div class="badge badge--active" title="<?php echo $power['bonus']; ?>">+1 use</div>
-			<?php endif; ?>
-		</div>
-		<?php endforeach; ?>
-	</div>
-</div>
 <?php if ($mistakeTraining !== null)
 	echo $this->element('mistake_training_profile', ['training' => $mistakeTraining]); ?>
-<?php echo $this->element('profile_achievements', compact('user', 'achievements', 'achievementCount')); ?>
 <?php
 	$size = count($dailyResults);
 	if ($size < 10)

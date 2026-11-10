@@ -9,6 +9,7 @@ use App\Model\Table\AchievementTable;
 use App\Model\Table\UserTable;
 use App\Utility\AchievementChecker;
 use App\Utility\AchievementId;
+use App\Utility\AchievementRarity;
 use App\Utility\Auth;
 use App\Utility\DailyStreak;
 use App\Utility\Util;
@@ -38,7 +39,8 @@ class AchievementsController extends AppController
 		$this->render('index');
 	}
 
-	//One card per achievement. Without a viewed user (anonymous visitor) every card is locked.
+	//One row per achievement, the most common first (AchievementRarity). Without a viewed user (anonymous
+	//visitor) every row is locked.
 	/** @param UserRow|null $viewedUser */
 	private function renderAchievementsPage(?array $viewedUser): void
 	{
@@ -61,12 +63,10 @@ class AchievementsController extends AppController
 				'id' => $achievement->id,
 				'url' => '/achievements/view/' . $achievement->id . ($viewedUser ? '/' . $viewedUser['id'] : ''),
 				'name' => $achievement->name,
-				'long_name' => strlen($achievement->name) > 30,
 				'description' => $achievement->description,
-				'xp' => $achievement->xp,
-				'image' => $status ? $achievement->image : 'ac000i',
-				'color' => $status ? $achievement->color : 'achievementColorGray',
+				'image' => $achievement->image,
 				'unlocked' => $status !== null,
+				'percent' => AchievementRarity::percent($achievement->id, $status !== null),
 				'unlocked_at' => $status?->created->format('Y-m-d H:i:s'),
 				//Repeatable achievements are earned more than once: they show how often,
 				//but still count as a single completed achievement.
@@ -82,6 +82,8 @@ class AchievementsController extends AppController
 			$this->fillDailyStreakProgress($achievements, $viewedUser);
 		}
 
+		// usort is stable, so equally common ones keep the order of the achievement table
+		usort($achievements, fn(array $a, array $b) => $b['percent'] <=> $a['percent']);
 		$this->set('achievements', $achievements);
 		$this->set('unlockedCount', count(array_filter(array_column($achievements, 'unlocked'))));
 	}

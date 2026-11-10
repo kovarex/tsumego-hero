@@ -3,11 +3,19 @@
 use App\Model\Table\AchievementConditionTable;
 use App\Model\Table\AchievementTable;
 use App\Utility\AchievementId;
+use App\Utility\AchievementRarity;
 use App\Utility\DailyStreak;
 use App\Utility\Rating;
 
 class AchievementsControllerTest extends IntegrationTestCase
 {
+	//The rows are ordered by rarity, counted once an hour: each test counts its own players
+	public function setUp(): void
+	{
+		parent::setUp();
+		AchievementRarity::forget();
+	}
+
 	public function testAnonymousSeesAchievementsGrid()
 	{
 		new ContextPreparator([]);
@@ -17,9 +25,10 @@ class AchievementsControllerTest extends IntegrationTestCase
 		$result = $this->view;
 
 		$this->assertStringContainsString('Achievements', $result);
-		$this->assertStringContainsString('achievementWrapper', $result);
-		$this->assertGreaterThan(0, substr_count($result, 'acTitle'));
-		$this->assertStringNotContainsString('completed', $result);
+		$this->assertStringContainsString('achievement-list', $result);
+		$this->assertSame($this->fetchTable('Achievement')->find()->count(), substr_count($result, 'class="achievement-row achievement-row--locked"'), 'a guest sees every one locked');
+		$this->assertStringNotContainsString('achievement-row--unlocked', $result);
+		$this->assertDoesNotMatchRegularExpression('#unlocked\s*</h2>#', $result);
 	}
 
 	public function testLoggedInSeesOwnCompletionCount()
@@ -40,8 +49,9 @@ class AchievementsControllerTest extends IntegrationTestCase
 
 		$this->assertStringContainsString('Achievements', $result);
 		$this->assertStringNotContainsString('achiever\'s Achievements', $result);
-		$this->assertMatchesRegularExpression('/You completed 2 of/', $result);
-		$this->assertStringContainsString('achievementColorGray', $result);
+		$this->assertMatchesRegularExpression('#2 / \d+ unlocked#', $result);
+		$this->assertStringContainsString('class="achievement-row achievement-row--locked"', $result);
+		$this->assertSame(2, substr_count($result, 'class="achievement-row achievement-row--unlocked"'));
 	}
 
 	public function testCardsShowProgressOfLockedSetAchievements()
@@ -61,7 +71,7 @@ class AchievementsControllerTest extends IntegrationTestCase
 		$this->assertStringContainsString('27/' . AchievementTable::COMPLETE_SETS_III_SETS_COUNT, $result);
 		$this->assertStringContainsString('27/' . AchievementTable::COMPLETE_SETS_V_SETS_COUNT, $result);
 		// the card of the unlocked one, up to its closing link, shows its date and no progress
-		$unlockedCard = '#/achievements/view/' . AchievementId::COMPLETE_SETS_I->value . '/\d+">(?:(?!</a>).)*';
+		$unlockedCard = '#data-achievement-id="' . AchievementId::COMPLETE_SETS_I->value . '">(?:(?!achievement-row ).)*';
 		$this->assertMatchesRegularExpression($unlockedCard . '<time#s', $result);
 		$this->assertDoesNotMatchRegularExpression($unlockedCard . 'progress__label#s', $result, 'Unlocked achievements show their date, not progress');
 		$this->assertStringContainsString('7/' . AchievementTable::GOLD_DIGGER_COUNT, $result, 'The other counter achievements show their progress too');
@@ -222,10 +232,10 @@ class AchievementsControllerTest extends IntegrationTestCase
 		$this->get('/achievements');
 		$result = $this->view;
 
-		$this->assertMatchesRegularExpression('/You completed 3 of/', $result);
-		// ... the number of repetitions is still shown on the card itself
+		$this->assertMatchesRegularExpression('#3 / \d+ unlocked#', $result);
+		// ... the number of repetitions is still shown on the row itself
 		$this->assertStringContainsString('title="Earned 3 times"', $result);
-		$this->assertStringContainsString('>3x<', $result);
+		$this->assertStringContainsString('>×3<', $result);
 	}
 
 	//The achievement detail page explains the extra completions by showing how
@@ -288,8 +298,7 @@ class AchievementsControllerTest extends IntegrationTestCase
 		$result = $this->view;
 
 		$this->assertStringContainsString('target', $result);
-		$this->assertMatchesRegularExpression('/target completed 1 of/', $result);
-		$this->assertStringNotContainsString('You completed', $result);
+		$this->assertMatchesRegularExpression('#1 / \d+ unlocked#', $result);
 	}
 
 	public function testViewGoogleUserShowsTheirDisplayName()
@@ -337,8 +346,7 @@ class AchievementsControllerTest extends IntegrationTestCase
 		$this->get('/achievements/user/' . $targetUser['id']);
 		$result = $this->view;
 
-		$this->assertMatchesRegularExpression('/target completed 1 of/', $result);
-		$this->assertStringNotContainsString('You completed', $result);
+		$this->assertMatchesRegularExpression('#1 / \d+ unlocked#', $result);
 	}
 
 	public function testViewSelfViaUserRoute()
@@ -356,7 +364,7 @@ class AchievementsControllerTest extends IntegrationTestCase
 		$this->get('/achievements/user/' . $context->user['id']);
 		$result = $this->view;
 
-		$this->assertMatchesRegularExpression('/You completed 1 of/', $result);
+		$this->assertMatchesRegularExpression('#1 / \d+ unlocked#', $result);
 		$this->assertStringNotContainsString('selfviewer\'s Achievements', $result);
 	}
 

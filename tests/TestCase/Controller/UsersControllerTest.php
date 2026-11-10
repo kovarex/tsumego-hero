@@ -4,7 +4,6 @@ use App\Model\Table\TimeModeCategoryTable;
 use App\Model\Table\TimeModeSessionStatusTable;
 use App\Model\Table\UserTable;
 use App\Utility\AchievementId;
-use App\Utility\AchievementRarity;
 use App\Utility\Rating;
 use App\Utility\Util;
 
@@ -377,52 +376,6 @@ class UsersControllerTest extends IntegrationTestCase
 		$browser->checkTable('#final-info-table', $this, [
 			3 => ['Achievements:', '2 of ' . AchievementId::count()],
 		]);
-	}
-
-	//The profile lists every achievement the player unlocked, the rarest first (ProfileAchievementsTest); equally
-	//rare ones, here only the player's, the latest first.
-	public function testProfileListsEquallyRareAchievementsNewestFirst(): void
-	{
-		AchievementRarity::forget();
-		$achievementIDs = array_slice(array_map(fn($achievement) => $achievement->value, AchievementId::cases()), 0, 13);
-		$context = new ContextPreparator([
-			'user' => [
-				'name' => 'collector',
-				'solved' => 1,
-				'achievement-statuses' => array_map(fn($id) => ['id' => $id], $achievementIDs),
-			],
-		]);
-		foreach ($achievementIDs as $index => $achievementID)
-			Util::execute('UPDATE achievement_status SET created = ? WHERE user_id = ? AND achievement_id = ?',
-				[date('Y-m-d H:i:s', strtotime('2026-01-01 +' . $index . ' days')), $context->user['id'], $achievementID]);
-
-		$this->get('users/view/' . $context->user['id']);
-
-		$link = fn($achievementID) => 'class="profile-achievement__name" href="/achievements/view/' . $achievementID . '/' . $context->user['id'] . '"';
-		$positions = array_map(fn($achievementID) => strpos($this->view, $link($achievementID)), array_reverse($achievementIDs));
-		$this->assertNotContains(false, $positions, 'all thirteen are listed');
-		$sorted = $positions;
-		sort($sorted);
-		$this->assertSame($sorted, $positions, 'newest first');
-		$this->assertStringContainsString(h($this->fetchTable('Achievement')->get($achievementIDs[12])->name), $this->view);
-		AchievementRarity::forget();
-	}
-
-	//The profile achievement card shows how often a repeatable achievement was earned.
-	public function testProfileAchievementCardShowsNumberOfEarnings(): void
-	{
-		$context = new ContextPreparator([
-			'user' => [
-				'name' => 'repeater',
-				'achievement-statuses' => [
-					['id' => AchievementId::SUPERIOR_ACCURACY->value, 'value' => 3],
-				],
-			],
-		]);
-
-		$this->get('users/view/' . $context->user['id']);
-
-		$this->assertStringContainsString('title="Earned 3 times"', $this->view);
 	}
 
 	//The achievement count on the profile carries the number of times the repeatable

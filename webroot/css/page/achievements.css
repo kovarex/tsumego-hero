@@ -25,39 +25,6 @@
     padding: 0;
   }
 }
-.achievement1 {
-  float: left;
-  border: 1px solid black;
-  width: 220px;
-  height: 241px;
-  margin: 15px;
-  box-shadow: var(--shadow-card);
-
-  background: var(--achievement-card-background, linear-gradient(
-    0deg,
-    rgb(0% 0% 0% / 0.3) 0%,
-    rgb(44.897% 44.897% 44.897% / 0.4232177734375) 6.25%,
-    rgb(59.989% 59.989% 59.989% / 0.5310546875) 12.5%,
-    rgb(69.948% 69.948% 69.948% / 0.6245361328125) 18.75%,
-    rgb(77.216% 77.216% 77.216% / 0.7046874999999999) 25%,
-    rgb(82.734% 82.734% 82.734% / 0.7725341796874999) 31.25%,
-    rgb(86.99% 86.991% 86.99% / 0.8291015625) 37.5%,
-    rgb(90.281% 90.281% 90.281% / 0.8754150390625) 43.75%,
-    rgb(92.807% 92.807% 92.807% / 0.9124999999999999) 50%,
-    rgb(94.712% 94.712% 94.712% / 0.9413818359374999) 56.25%,
-    rgb(96.112% 96.112% 96.112% / 0.9630859375) 62.5%,
-    rgb(97.098% 97.098% 97.098% / 0.9786376953125) 68.75%,
-    rgb(97.752% 97.752% 97.752% / 0.9890625) 75%,
-    rgb(98.145% 98.145% 98.145% / 0.9953857421874999) 81.25%,
-    rgb(98.347% 98.347% 98.347% / 0.9986328124999999) 87.5%,
-    rgb(98.421% 98.421% 98.421% / 0.9998291015625) 93.75%,
-    rgb(98.431% 98.431% 98.431%) 100%
-  ));
-  border-bottom-right-radius: 20px;
-  border-bottom-left-radius: 20px;
-  border-top-right-radius: 20px;
-  border-top-left-radius: 20px;
-}
 .achievementColorBlack:hover,
 .achievementColorPurple:hover,
 .achievementColorGreen:hover,
@@ -184,9 +151,6 @@
 .achievementsPage {
   text-align: center;
 }
-.acProgress {
-  margin: 0 20px;
-}
 .achievementWrapper {
   height: 600px;
   width: 100%;
@@ -197,10 +161,6 @@
 .acTitle h1 {
   padding: 12px 6px;
   font-weight: var(--weight-bold);
-}
-.acTitle .acTitleLong {
-  font-weight: var(--weight-normal);
-  font-size: 17px;
 }
 .acImg {
   height: 70px;
@@ -241,6 +201,187 @@
   padding: 8px 5px;
   font-size: 14px;
 }
+/* The achievements page (Achievements/index.php): a row each, the most common first */
+.achievement-list
+{
+	max-width: 60rem;
+	margin: 0 auto var(--space-4);
+	padding: 0 var(--space-2);
+	box-sizing: border-box;
+	text-align: left;
+	color: var(--text-color);
+}
+
+.achievement-list__title
+{
+	margin: 0 0 var(--space-2);
+	font-size: 15px;
+	font-weight: var(--weight-heavy);
+	font-variant-numeric: tabular-nums;
+}
+
+/* icon | name and description | day or progress, and rarity; on a phone the rarity goes under the text */
+.achievement-row
+{
+	display: grid;
+	grid-template-columns: 48px minmax(0, 1fr) 12rem;
+	grid-template-areas: "icon text status";
+	gap: var(--space-1) var(--space-3);
+	align-items: center;
+	padding: var(--space-2) 0;
+	border-top: 1px solid var(--color-border);
+}
+
+.achievement-row:first-child
+{
+	border-top: 0;
+}
+
+.achievement-row__icon
+{
+	grid-area: icon;
+	display: block;
+	line-height: 0;
+}
+
+.achievement-row__icon img
+{
+	width: 48px;
+	height: 48px;
+}
+
+.achievement-row__text
+{
+	grid-area: text;
+	min-width: 0;
+}
+
+.achievement-row__name
+{
+	font-weight: var(--weight-bold);
+	color: var(--text-color);
+	text-decoration: none;
+	overflow-wrap: anywhere;
+}
+
+.achievement-row__name:hover,
+.achievement-row__name:focus-visible
+{
+	text-decoration: underline;
+}
+
+.achievement-row__times
+{
+	margin-left: var(--space-1);
+	padding: 0 6px;
+	border-radius: var(--radius-full);
+	font-size: var(--text-xs);
+	font-weight: var(--weight-heavy);
+	color: var(--color-white);
+	background: var(--color-gray-dark);
+}
+
+.achievement-row__description
+{
+	font-size: var(--text-sm);
+	color: var(--text-softer-color);
+	overflow-wrap: anywhere;
+}
+
+.achievement-row__status
+{
+	grid-area: status;
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: 2px var(--space-2);
+	font-size: var(--text-xs);
+	color: var(--text-softer-color);
+	font-variant-numeric: tabular-nums;
+}
+
+.achievement-row__progress
+{
+	flex-basis: 100%;
+	margin: 0;
+}
+
+.achievement-row__percent
+{
+	margin-left: auto;
+	font-weight: var(--weight-medium);
+	color: var(--text-color);
+}
+
+.achievement-row__bar
+{
+	flex-basis: 100%;
+	height: 4px;
+	border-radius: var(--radius-full);
+	background: var(--color-border);
+	overflow: hidden;
+}
+
+.achievement-row__bar-fill
+{
+	height: 100%;
+	min-width: 2px;
+	border-radius: var(--radius-full);
+	background: var(--color-green);
+}
+
+.achievement-row__bar--uncommon .achievement-row__bar-fill
+{
+	background: var(--color-blue);
+}
+
+.achievement-row__bar--rare .achievement-row__bar-fill
+{
+	background: var(--color-yellow);
+}
+
+.achievement-row__bar--ultra-rare .achievement-row__bar-fill
+{
+	background: var(--color-red);
+}
+
+/* A locked one: the icon grey and faint, the text muted */
+.achievement-row--locked .achievement-row__icon img
+{
+	filter: grayscale(1);
+	opacity: 0.45;
+}
+
+.achievement-row--locked .achievement-row__name,
+.achievement-row--locked .achievement-row__percent
+{
+	font-weight: var(--weight-medium);
+	color: var(--text-softer-color);
+}
+
+.achievement-row--locked .achievement-row__bar-fill
+{
+	filter: grayscale(1);
+	opacity: 0.6;
+}
+
+@media (width < 30rem)
+{
+	.achievement-row
+	{
+		grid-template-columns: 40px minmax(0, 1fr);
+		grid-template-areas: "icon text" "icon status";
+		align-items: start;
+	}
+
+	.achievement-row__icon img
+	{
+		width: 40px;
+		height: 40px;
+	}
+}
+
 /* ── Rarity badge ── */
 .acRarity {
 	margin: var(--space-3) 0 0 0;

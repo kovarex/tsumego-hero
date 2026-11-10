@@ -215,7 +215,6 @@ class UsersController extends AppController
 		$this->set('publishedProblemCount', $progress['total']);
 		$this->set('solvedPublishedCount', $progress['solved']);
 
-		$this->set('achievements', UserProfile::achievementsByRarity($userID));
 		$this->set('achievementCounts', UserProfile::achievementCounts($userID));
 		$this->set('achievementCount', $this->fetchTable('Achievement')->find()->count());
 
