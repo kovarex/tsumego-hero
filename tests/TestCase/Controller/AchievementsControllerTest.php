@@ -575,6 +575,6 @@ class AchievementsControllerTest extends IntegrationTestCase
 		$this->get('/achievements');
 		$result = $this->view;
 
-		$this->assertStringContainsString('2024-05-15 12:30:00', $result);
+		$this->assertStringContainsString('datetime="' . date('c', strtotime('2024-05-15 12:30:00')) . '" data-format="date">2024-05-15</time>', $result);
 	}
 }

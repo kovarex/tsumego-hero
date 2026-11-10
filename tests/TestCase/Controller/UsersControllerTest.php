@@ -285,10 +285,9 @@ class UsersControllerTest extends IntegrationTestCase
 			'Solve history link should be present on profile');
 	}
 
-	//Test that profile achievements link to the correct achievement id.
-	//Achievement ids are not contiguous (id 100 is missing), so the profile
-	//must resolve each achievement status to the matching achievement.
-	public function testProfileAchievementLinksToCorrectAchievement(): void
+	//The achievements of a player link to the correct achievement id. Achievement ids are not contiguous
+	//(id 100 is missing), so the page must resolve each achievement status to the matching achievement.
+	public function testPlayersAchievementLinksToCorrectAchievement(): void
 	{
 		// This only breaks because the ids are not contiguous, so pin the
 		// precondition that id 100 is absent from the achievement table.
@@ -306,11 +305,11 @@ class UsersControllerTest extends IntegrationTestCase
 			],
 		]);
 
-		$this->get('users/view/' . $context->user['id']);
+		$this->get('achievements/user/' . $context->user['id']);
 
 		$this->assertStringContainsString('/achievements/view/115', $this->view);
 		$this->assertStringContainsString('/achievements/view/115/' . $context->user['id'], $this->view,
-			'the achievement link keeps the profile it was opened from');
+			'the achievement link keeps the player it was opened from');
 		$this->assertStringContainsString('1000 Weiqi problems 2nd half', $this->view);
 	}
 
