@@ -394,4 +394,41 @@ class SetPartBestPathsTest extends IntegrationTestCase
 		$this->assertEquals(25, $this->viewVariable('avgTime'), '(40 + 10) / 2: the attempt with the miss took 20 + 20 seconds');
 		$this->assertNull($this->viewVariable('bestAccuracy'));
 	}
+
+	private static function attemptsOf(ContextPreparator $context, int $index): array
+	{
+		return array_map(fn($row) => [(int) $row['solved'], (int) $row['misplays']],
+			Util::query('SELECT solved, misplays FROM tsumego_attempt WHERE user_id = ? AND tsumego_id = ? ORDER BY id', [$context->user['id'], $context->tsumegos[$index]['id']]));
+	}
+
+	//A problem failed before the reset of its part and solved cleanly after it: the failed attempt stays in the run the
+	//reset ended, the solve is a clean attempt of its own, and the new run is 100%. Before, the solve continued the
+	//failed attempt, which ended solved with its misplay.
+	public function testAFailBeforeTheResetIsNotCarriedIntoTheNextRun(): void
+	{
+		$context = self::collection(10);
+		$this->play($context, 9, PlayOutcome::Failed);
+		$this->solveCleanly($context, 0, 8);
+		self::anHourPasses();
+		$this->reset($context, 1);
+
+		$this->solveCleanly($context, 0, 9);
+
+		$this->assertSame([[0, 1], [1, 0]], self::attemptsOf($context, 9));
+		$this->assertEquals(100, self::accuracy($context, 0));
+	}
+
+	//The reset of another part doesn't end the attempt: the solve after it still takes in the miss before it
+	public function testTheResetOfAnotherPartKeepsTheAttemptGoing(): void
+	{
+		$context = self::collection(20);
+		$this->play($context, 0, PlayOutcome::Failed);
+		$this->solveCleanly($context, 10, 19);
+		self::anHourPasses();
+		$this->reset($context, 2);
+
+		$this->play($context, 0, PlayOutcome::SolvedAfterMistake);
+
+		$this->assertSame([[1, 1]], self::attemptsOf($context, 0));
+	}
 }
