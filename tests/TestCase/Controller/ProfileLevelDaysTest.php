@@ -2,7 +2,7 @@
 
 use App\Utility\UserProfile;
 
-//The level chart of the profile pages through the days 30 at a time (UserProfile::levelDays, /users/level_days):
+//The level chart of the profile pages through the days 30 at a time (UserProfile::levelDays, /users/levelDays):
 //the latest window by default, Older and Newer to the windows around it, no Older before the first day with data
 //and no Newer on the latest window.
 class ProfileLevelDaysTest extends IntegrationTestCase
@@ -81,11 +81,11 @@ class ProfileLevelDaysTest extends IntegrationTestCase
 		$context = $this->prepare();
 		$this->logout();
 
-		$this->get('/users/level_days/' . $context->user['id'] . '?until=' . self::day(30));
+		$this->get('/users/levelDays/' . $context->user['id'] . '?until=' . self::day(30));
 		$this->assertResponseOk();
 		$this->assertSame(UserProfile::levelDays((int) $context->user['id'], self::day(30)), json_decode($this->view, true));
 
-		$this->get('/users/level_days/' . $context->user['id'] . '?until=nonsense');
+		$this->get('/users/levelDays/' . $context->user['id'] . '?until=nonsense');
 		$this->assertSame(self::day(0), json_decode($this->view, true)['until'], 'an until that is no day is today');
 	}
 
@@ -93,7 +93,7 @@ class ProfileLevelDaysTest extends IntegrationTestCase
 	{
 		new ContextPreparator([]);
 
-		$this->get('/users/level_days/999999');
+		$this->get('/users/levelDays/999999');
 		$this->assertResponseCode(404);
 	}
 

@@ -42,7 +42,7 @@ export function LevelChart({ playerId, window: initial }: Props)
 		setFailed(false);
 		try
 		{
-			setPage(await get<LevelDaysWindow>(`/users/level_days/${playerId}?until=${until}`));
+			setPage(await get<LevelDaysWindow>(`/users/levelDays/${playerId}?until=${until}`));
 		}
 		catch
 		{
