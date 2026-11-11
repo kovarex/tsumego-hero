@@ -5,9 +5,40 @@
 @layer page
 {
 /* ── Problem-status navigation (play, set view, duplicatesearch, comments) ── */
+/* The row of the play page shows as many neighbours of the open problem as its width holds, on one line: the
+   server sends the first, the last and 10 neighbours (play.php marks those a row of 5 or of 9 leaves out), a button
+   is 58px with 2px between, 4px of padding at each end and 6px after the first and before the last (.gap10). So
+   13 buttons (5 on each side) need 802px, which the row has from a 1280px window, 9 buttons (3 on each side)
+   562px and 5 buttons 322px; below that the buttons narrow instead of wrapping. */
 .problem-nav
 {
 	width: 100%;
+	container-type: inline-size;
+}
+
+@container (width < 802px)
+{
+	.problem-nav__item.problem-nav__item--beyond9
+	{
+		display: none;
+	}
+}
+
+@container (width < 562px)
+{
+	.problem-nav__item.problem-nav__item--beyond5
+	{
+		display: none;
+	}
+}
+
+@container (width < 322px)
+{
+	.problem-nav__inner .problem-nav__item
+	{
+		flex: 0 1 58px;
+		min-width: 40px;
+	}
 }
 
 .problem-nav__inner
@@ -16,8 +47,8 @@
 	height: 50px;
 	padding-top: 10px;
 	margin: 0 auto;
-	padding-left: 11px;
-	padding-right: 11px;
+	padding-left: 4px;
+	padding-right: 4px;
 	display: flex;
 	flex-wrap: nowrap;
 	align-items: center;
@@ -79,8 +110,8 @@
 /* The spacer between groups uses flex spacing instead of float. */
 .gap10
 {
-	flex: 0 0 10px;
-	width: 10px;
+	flex: 0 0 6px;
+	width: 6px;
 	height: 1px;
 	display: block;
 	float: none;
@@ -408,15 +439,6 @@ a[data-tsumego-id]:hover .tooltip-desc
 	pointer-events: none;
 }
 
-
-@media (width < 64rem)
-{
-	.problem-nav__inner
-	{
-		flex-wrap: wrap;
-		height: auto;
-	}
-}
 
 /* Mistake training: the status keeps room for its two lines, so the board does not
    move when a result shows, and stays clear of the board */
