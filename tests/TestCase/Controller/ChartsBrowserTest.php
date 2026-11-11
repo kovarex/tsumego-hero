@@ -39,17 +39,18 @@ class ChartsBrowserTest extends IntegrationTestCase
 
 	public function testProfileDrawsTheSolvesFailsRatingAndTimeModeRunsOfThePlayer(): void
 	{
-		$twoDaysAgo = date('Y-m-d', strtotime('-2 days'));
-		$yesterday = date('Y-m-d', strtotime('-1 day'));
+		// the first two days of the current quarter, the page the level chart opens on, whatever the day of the run
+		$first = date('Y') . '-' . sprintf('%02d', intdiv((int) date('n') - 1, 3) * 3 + 1) . '-01';
+		$second = date('Y-m-d', strtotime($first . ' +1 day'));
 		$context = new ContextPreparator([
 			'user' => ['name' => 'alice'],
 			'tsumegos' => [[
 				'sets' => [['name' => 'set', 'num' => 1]],
 				'attempts' => [
-					['solved' => true, 'user_rating' => 1500, 'created' => $twoDaysAgo . ' 10:00:00'],
-					['solved' => true, 'user_rating' => 1510, 'created' => $twoDaysAgo . ' 11:00:00'],
-					['solved' => false, 'user_rating' => 1490, 'created' => $twoDaysAgo . ' 12:00:00'],
-					['solved' => false, 'user_rating' => 1480, 'created' => $yesterday . ' 10:00:00']]]],
+					['solved' => true, 'user_rating' => 1500, 'created' => $first . ' 10:00:00'],
+					['solved' => true, 'user_rating' => 1510, 'created' => $first . ' 11:00:00'],
+					['solved' => false, 'user_rating' => 1490, 'created' => $first . ' 12:00:00'],
+					['solved' => false, 'user_rating' => 1480, 'created' => $second . ' 10:00:00']]]],
 			'time-mode-ranks' => ['5k'],
 			'time-mode-sessions' => [
 				['category' => TimeModeCategoryTable::BLITZ, 'status' => TimeModeSessionStatusTable::SOLVED, 'rank' => '5k'],
@@ -61,7 +62,7 @@ class ChartsBrowserTest extends IntegrationTestCase
 		// all three at once: the level mode on the left, the newest day first
 		$browser->waitUntilCssSelectorDisplayed('#profile-chart-level .bar-chart__bar');
 		$texts = fn(string $selector) => array_map(fn($element) => $element->getText(), $browser->getElements('#profile-chart-level ' . $selector));
-		$this->assertSame([$yesterday, $twoDaysAgo], $texts('.bar-chart__category'));
+		$this->assertSame([$second, $first], $texts('.bar-chart__category'));
 		$this->assertSame(['1', '3'], $texts('.bar-chart__total'));
 		$this->assertSame(['2'], $texts("[data-label='Solves']"));
 		$this->assertSame(['1', '1'], $texts("[data-label='Fails']"));
@@ -107,6 +108,111 @@ class ChartsBrowserTest extends IntegrationTestCase
 		$browser->assertNoJsErrors();
 	}
 
+	//The ranges above the rating chart, all printed with the page: 6M first, a click switches, a point a week for a year and a
+	//point a month for all of five years; the value axis is in ranks
+	public function testProfileRatingChartSwitchesRanges(): void
+	{
+		$day = fn(int $daysAgo) => date('Y-m-d', strtotime('-' . $daysAgo . ' days'));
+		$context = new ContextPreparator([
+			'user' => ['name' => 'alice'],
+			'tsumegos' => [['sets' => [['name' => 'set', 'num' => 1]], 'attempts' => array_map(fn($rating) => [
+				'solved' => true,
+				'user_rating' => $rating[1],
+				'created' => $day($rating[0]) . ' 10:00:00'], [[1800, 1200], [300, 1300], [100, 1400], [10, 1500], [3, 1490]])]]]);
+
+		$browser = Browser::instance();
+		$browser->get('users/view/' . $context->user['id']);
+		// WebDriver hands the object back with its keys in no set order, so they are sorted
+		$state = function () use ($browser) {
+			$state = $browser->driver->executeScript(<<<'JS'
+			const chart = document.getElementById('profile-chart-rating');
+			const line = chart.querySelector('.line-chart__line');
+			return {
+				ranges: [...chart.querySelectorAll('.rating-chart__range')].map(button => button.textContent),
+				active: chart.querySelector('.rating-chart__range[aria-pressed="true"]')?.textContent ?? null,
+				points: line ? line.getAttribute('d').split('L').length : 0,
+				ranks: [...chart.querySelectorAll(".line-chart__tick[text-anchor='end']")].map(tick => tick.textContent)};
+			JS);
+			ksort($state);
+			return $state;
+		};
+		$pick = function (string $range) use ($browser, $state) {
+			$browser->driver->executeScript("[...document.querySelectorAll('#profile-chart-rating .rating-chart__range')].find(button => button.textContent === arguments[0]).click()", [$range]);
+			$browser->waitUntil(fn() => $state()['active'] === $range, 10, 'the range ' . $range);
+			return $state()['points'];
+		};
+		$browser->waitUntilCssSelectorDisplayed('#profile-chart-rating .line-chart__line');
+		// the axis names the ranks at their lower edges around the ratings of half a year, 1400 to 1500
+		$this->assertSame(['active' => '6M', 'points' => 3, 'ranges' => ['1M', '6M', '1Y', 'All'], 'ranks' => ['7k', '6k', '5k']], $state());
+
+		$this->assertSame(4, $pick('1Y'), 'a point a week');
+		$months = count(array_unique(array_map(fn($daysAgo) => substr($day($daysAgo), 0, 7), [1800, 300, 100, 10, 3])));
+		$this->assertSame($months, $pick('All'), 'a point a month');
+		$this->assertSame(2, $pick('1M'));
+		$this->assertSame(3, $pick('6M'), 'back to the range of the page');
+		$browser->assertNoJsErrors();
+	}
+
+	//The level chart shows a calendar quarter a page, with a pager under the title: page 1 the current quarter, < off on
+	//it, > off on the last, the current page marked, a quarter without attempts empty; a player of one page has no pager
+	public function testProfileLevelChartPagesAQuarterAtATime(): void
+	{
+		$quarterStart = fn(int $quartersAgo) => date('Y-m-d', strtotime(date('Y') . '-' . sprintf('%02d', intdiv((int) date('n') - 1, 3) * 3 + 1) . '-01 -' . (3 * $quartersAgo) . ' months'));
+		$attempt = fn(string $day) => ['solved' => true, 'user_rating' => 1500, 'created' => $day . ' 10:00:00'];
+		$context = new ContextPreparator([
+			'user' => ['name' => 'alice'],
+			'other-users' => [['name' => 'bob']],
+			'tsumegos' => [['sets' => [['name' => 'set', 'num' => 1]], 'attempts' => [
+				$attempt($quarterStart(0)),
+				$attempt(date('Y-m-d', strtotime($quarterStart(0) . ' +1 day'))),
+				$attempt($quarterStart(1)),
+				$attempt($quarterStart(4))]]]]);
+		$label = fn(int $quartersAgo) => date('M', strtotime($quarterStart($quartersAgo))) . ' – ' . date('M Y', strtotime($quarterStart($quartersAgo) . ' +2 months'));
+
+		$browser = Browser::instance();
+		$browser->get('users/view/' . $context->user['id']);
+		// WebDriver hands the object back with its keys in no set order, so they are sorted
+		$state = function () use ($browser) {
+			$state = $browser->driver->executeScript(<<<'JS'
+			const chart = document.getElementById('profile-chart-level');
+			const pager = chart.querySelector('.level-chart__pager');
+			return {
+				range: chart.querySelector('.level-chart__range')?.textContent ?? null,
+				days: chart.querySelectorAll('.bar-chart__category').length,
+				empty: chart.querySelector('.level-chart__empty')?.textContent ?? null,
+				items: pager ? [...pager.children].map(item => item.textContent) : null,
+				current: pager?.querySelector('[aria-current="page"]')?.textContent ?? null,
+				previous: pager?.querySelector('.level-chart__previous').disabled ?? null,
+				next: pager?.querySelector('.level-chart__next').disabled ?? null};
+			JS);
+			ksort($state);
+			return $state;
+		};
+		$browser->waitUntilCssSelectorDisplayed('#profile-chart-level .level-chart__pager');
+		$this->assertSame(['current' => '1', 'days' => 2, 'empty' => null, 'items' => ['<', '1', '2', '…', '5', '>'], 'next' => false, 'previous' => true, 'range' => $label(0)], $state());
+
+		$browser->clickCssSelect('#profile-chart-level .level-chart__page:nth-of-type(3)');
+		$browser->waitUntil(fn() => $state()['current'] === '2', 10, 'page 2');
+		$this->assertSame(['days' => 1, 'items' => ['<', '1', '2', '3', '…', '5', '>'], 'previous' => false, 'range' => $label(1)], array_intersect_key($state(), array_flip(['range', 'days', 'items', 'previous'])));
+
+		$browser->clickCssSelect('#profile-chart-level .level-chart__next');
+		$browser->waitUntil(fn() => $state()['current'] === '3', 10, 'an empty quarter');
+		$this->assertSame(['days' => 0, 'empty' => 'No problems in level mode this quarter.', 'range' => $label(2)], array_intersect_key($state(), array_flip(['range', 'days', 'empty'])));
+
+		$browser->driver->executeScript("[...document.querySelectorAll('#profile-chart-level .level-chart__page')].find(button => button.textContent === '5').click()");
+		$browser->waitUntil(fn() => $state()['current'] === '5', 10, 'the last page');
+		$this->assertSame(['days' => 1, 'next' => true, 'range' => $label(4)], array_intersect_key($state(), array_flip(['range', 'days', 'next'])));
+
+		$browser->clickCssSelect('#profile-chart-level .level-chart__previous');
+		$browser->waitUntil(fn() => $state()['current'] === '4', 10, 'back to page 4');
+
+		// one page needs no pager
+		$browser->get('users/view/' . $context->otherUsers[0]['id']);
+		$browser->waitUntilCssSelectorDisplayed('#profile-chart-level .chart__title');
+		$this->assertSame([null, 'No problems in level mode yet.'], [$state()['items'], $state()['empty']]);
+		$browser->assertNoJsErrors();
+	}
+
 	public function testProblemHistoryDrawsTheRatingOfTheProblem(): void
 	{
 		$context = new ContextPreparator([
@@ -121,10 +227,21 @@ class ChartsBrowserTest extends IntegrationTestCase
 		$browser->get('tsumegos/history/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		$browser->waitUntilCssSelectorDisplayed('.timeGraph .line-chart__line');
 		$this->assertSame('Rating history', $browser->find('.timeGraph .chart__title')->getText());
-		// the value axis fits the rating instead of starting at zero
+		// the value axis fits the rating instead of starting at zero, with its ticks at the edges of the ranks around it:
+		// 9k from 1150, 8k from 1250
 		$valueTicks = array_map(fn($tick) => $tick->getText(), $browser->getElements(".timeGraph .line-chart__tick[text-anchor='end']"));
-		$this->assertSame('1,200', $valueTicks[0]);
-		$this->assertSame('1,250', end($valueTicks));
+		$this->assertSame(['9k', '8k'], $valueTicks);
+		// the ranks are in the chart's text colour like the dates under it, not the green of the line
+		$colors = $browser->driver->executeScript("return [...document.querySelectorAll('.timeGraph .line-chart__tick')].map(tick => getComputedStyle(tick).fill)");
+		$this->assertCount(1, array_unique($colors), implode(', ', $colors));
+		// the tooltip of the last day: the rating as a plain number, with its rank
+		$browser->driver->executeScript(<<<'JS'
+			const svg = document.querySelector('.timeGraph svg');
+			const box = svg.getBoundingClientRect();
+			svg.dispatchEvent(new MouseEvent('mousemove', {bubbles: true, clientX: box.right - 2, clientY: box.top + box.height / 2}));
+			JS);
+		$browser->waitUntilCssSelectorDisplayed('.timeGraph .chart__tooltip');
+		$this->assertStringContainsString('Rating: 1250 (8k)', $browser->find('.timeGraph .chart__tooltip')->getText());
 		$browser->assertNoJsErrors();
 	}
 }
