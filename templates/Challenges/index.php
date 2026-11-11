@@ -21,8 +21,6 @@ use App\Utility\ViteManifest;
 
 ?>
 <div class="challenges">
-	<h1 class="challenges__title">Challenges</h1>
-
 	<?php // what waits for the player comes first, one row each with the way in ?>
 	<?php if (!empty($waiting)): ?>
 	<section class="card card--green challenges__section challenges__waiting" id="challenges-waiting" aria-labelledby="challenges-waiting-heading">

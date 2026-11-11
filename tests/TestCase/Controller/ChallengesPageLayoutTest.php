@@ -57,6 +57,7 @@ class ChallengesPageLayoutTest extends IntegrationTestCase
 		$this->prepare();
 		$this->get('/challenges');
 		$this->assertTextNotContains('id="challenges-waiting"', $this->view, 'nothing waits yet');
+		$this->assertTextNotContains('<h1', $this->view, 'no page title, what waits comes first');
 
 		$challengeId = $this->challengeForTheFriend();
 		$this->login('friend');

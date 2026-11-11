@@ -738,7 +738,8 @@ class ChallengesControllerTest extends IntegrationTestCase
 
 		$toggle->click();
 		$this->assertTrue($panel->isDisplayed());
-		$browser->find('.challenges__title')->click();
+		// a tap anywhere else closes it
+		$browser->find('.challenges__intro')->click();
 		$this->assertFalse($panel->isDisplayed());
 		$browser->assertNoJsErrors();
 	}
