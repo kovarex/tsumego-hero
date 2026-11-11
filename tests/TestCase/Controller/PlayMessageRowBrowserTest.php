@@ -78,6 +78,26 @@ class PlayMessageRowBrowserTest extends IntegrationTestCase
 		}
 	}
 
+	//A comment whose SGF starts it with a line break (C[+\nThe marked stones…]) starts on the line of Correct!, not
+	//under it
+	public function testACommentStartingWithALineBreakIsOnTheLineOfCorrect(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['mode' => Constants::$LEVEL_MODE],
+			'tsumego' => ['set_order' => 1, 'sgf' => ['data' => "(;GM[1]FF[4]SZ[19]AB[dd]AW[bb];B[aa]C[+\n\nThe marked stones are useless.\n])", 'first_move_color' => 'B']]]);
+		$browser = Browser::instance();
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		$browser->clickBoard(1, 1);
+		$browser->waitUntilJs('document.getElementById("status").textContent.includes("Correct!") && document.getElementById("theComment").textContent.length > 0');
+		$this->assertSame('The marked stones are useless.', $browser->driver->executeScript('return document.getElementById("theComment").textContent;'));
+		$this->assertTrue($browser->driver->executeScript(<<<'JS'
+			const comment = document.getElementById('theComment').getBoundingClientRect();
+			const status = document.querySelector('#status h2').getBoundingClientRect();
+			return Math.abs(comment.top - status.top) <= 2;
+			JS), 'the comment starts on the line of Correct!');
+		$browser->assertNoJsErrors();
+	}
+
 	//A comment with no Correct! or Incorrect! yet, the comment of the problem shown when it opens, has no background
 	//either
 	public function testACommentAloneHasNoBackground(): void

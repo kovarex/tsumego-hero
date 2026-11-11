@@ -857,6 +857,8 @@ var showComment = function(commentText)
 		let comment = document.getElementById("theComment");
 		if (!comment)
 			return;
+		// the blank lines a comment can start or end with in its SGF would push its text below Correct!
+		commentText = (commentText || '').trim();
 		comment.style.display = commentText.length == 0 ? "none" : "block";
 		comment.classList.remove("play-message__error");
 		comment.textContent = besogo.boardInverted ? besogo.swapColorWords(commentText) : commentText;
