@@ -1,11 +1,12 @@
 import { useLayoutEffect, useRef, useState } from 'react';
-import type { MouseEvent } from 'react';
+import type { MouseEvent, ReactNode } from 'react';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import { formatDate } from '../shared/dates';
 import { formatChartValue, monthStart, monthTicks, parseChartDate, toggled, valueTicks } from './chartScale';
 import type { ChartDate } from './chartScale';
 import { ChartLegend, ChartTooltip } from './ChartParts';
+import { getReadableRankFromRating, rankTicks } from '../shared/rank';
 
 dayjs.extend(utc);
 
@@ -27,9 +28,15 @@ interface Props
 	series: LineChartSeries[];
 	height: number;
 	//what one point stands for, it names the date under the mouse
-	period: 'month' | 'day';
+	period: 'month' | 'week' | 'day';
 	//false fits the value axes to the values, for a rating that never gets near zero
 	startAtZero: boolean;
+	//under the title, as the ranges of the rating chart
+	header?: ReactNode;
+	//the left axis of a rating in go ranks: its ticks and grid lines at the lower edges of the ranks, named like "5k"
+	//in the chart's text colour rather than the colour of the series, and the tooltip gives the rating as a plain
+	//number with its rank, "2875 (12d)"
+	rankAxis?: boolean;
 }
 
 interface Point
@@ -62,7 +69,7 @@ function stretchesOf(points: [string, number | null][]): Point[][]
 
 //A line chart over a time axis drawn as an SVG, with up to two value axes, a legend that hides a series on a click
 //and the values of the date under the mouse.
-export function LineChart({ title, series, height, period, startAtZero }: Props)
+export function LineChart({ title, series, height, period, startAtZero, header, rankAxis = false }: Props)
 {
 	const plotRef = useRef<HTMLDivElement>(null);
 	const [width, setWidth] = useState(0);
@@ -94,14 +101,18 @@ export function LineChart({ title, series, height, period, startAtZero }: Props)
 			return null;
 		const values = stretches.flatMap((seriesStretches, index) => onAxis[index] ? seriesStretches.flat().map(point => point.value) : []);
 		const min = startAtZero || values.length === 0 ? 0 : Math.min(...values);
-		return valueTicks(min, Math.max(min, ...values), Math.floor((height - MARGIN_TOP - MARGIN_BOTTOM) / TICK_SPACING_Y));
+		const count = Math.floor((height - MARGIN_TOP - MARGIN_BOTTOM) / TICK_SPACING_Y);
+		return rankAxis && axis === 'left' && values.length > 0
+			? rankTicks(min, Math.max(min, ...values), count)
+			: valueTicks(min, Math.max(min, ...values), count);
 	};
+	const leftLabel = (tick: number) => rankAxis ? getReadableRankFromRating(tick) : formatChartValue(tick);
 	const leftTicks = axisTicks('left');
 	const rightTicks = axisTicks('right');
-	const axisWidth = (ticks: number[] | null) =>
-		ticks ? Math.max(...ticks.map(tick => formatChartValue(tick).length)) * CHARACTER_WIDTH + AXIS_GAP : AXIS_GAP;
-	const left = axisWidth(leftTicks);
-	const right = width - axisWidth(rightTicks);
+	const axisWidth = (ticks: number[] | null, label: (tick: number) => string) =>
+		ticks ? Math.max(...ticks.map(tick => label(tick).length)) * CHARACTER_WIDTH + AXIS_GAP : AXIS_GAP;
+	const left = axisWidth(leftTicks, leftLabel);
+	const right = width - axisWidth(rightTicks, formatChartValue);
 	const top = MARGIN_TOP;
 	const bottom = height - MARGIN_BOTTOM;
 
@@ -138,6 +149,7 @@ export function LineChart({ title, series, height, period, startAtZero }: Props)
 	return (
 		<div className="chart">
 			{title && <div className="chart__title">{title}</div>}
+			{header}
 			{series.length > 1 && <ChartLegend series={series} shown={shown} onToggle={index => setShown(previous => toggled(previous, index))} />}
 			<div className="line-chart__plot" ref={plotRef} style={{ height }}>
 				{width > 0 && (
@@ -150,14 +162,14 @@ export function LineChart({ title, series, height, period, startAtZero }: Props)
 							<g key={'month' + month}>
 								<line className="line-chart__grid" x1={x(monthStart(month))} x2={x(monthStart(month))} y1={top} y2={bottom} />
 								<text className="line-chart__tick" x={x(monthStart(month))} y={bottom + 17} textAnchor="middle">
-									{dayjs.utc(monthStart(month)).format(period === 'day' ? 'MMM YYYY' : 'MMM YY')}
+									{dayjs.utc(monthStart(month)).format(period === 'month' ? 'MMM YY' : 'MMM YYYY')}
 								</text>
 							</g>
 						))}
 						{leftTicks && leftTicks.map(tick => (
 							<text key={'left' + tick} className="line-chart__tick" x={left - AXIS_GAP / 2} y={y(tick, leftTicks) + 4} textAnchor="end"
-								style={{ fill: series.find(oneSeries => oneSeries.axis === 'left')?.color }}>
-								{formatChartValue(tick)}
+								style={rankAxis ? undefined : { fill: series.find(oneSeries => oneSeries.axis === 'left')?.color }}>
+								{leftLabel(tick)}
 							</text>
 						))}
 						{rightTicks && rightTicks.map(tick => (
@@ -186,8 +198,9 @@ export function LineChart({ title, series, height, period, startAtZero }: Props)
 				)}
 				{hovered && hoveredValues.length > 0 && (
 					<ChartTooltip
-						title={period === 'day' ? formatDate(hovered.date, 'date') : dayjs.utc(hovered.at.time).format('MMM YYYY')}
+						title={period === 'month' ? dayjs.utc(hovered.at.time).format('MMM YYYY') : (period === 'week' ? 'Week of ' : '') + formatDate(hovered.date, 'date')}
 						values={hoveredValues}
+						format={rankAxis ? value => `${Math.round(value)} (${getReadableRankFromRating(value)})` : undefined}
 						style={hoveredX > width / 2 ? { right: width - hoveredX + TOOLTIP_OFFSET } : { left: hoveredX + TOOLTIP_OFFSET }}
 					/>
 				)}

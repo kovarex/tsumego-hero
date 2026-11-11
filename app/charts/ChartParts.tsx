@@ -39,7 +39,7 @@ export function ChartLegend({ series, shown, onToggle }: { series: ChartSeriesLa
 	);
 }
 
-export function ChartTooltip({ title, values, style }: { title: string; values: { series: ChartSeriesLabel; value: number }[]; style: CSSProperties })
+export function ChartTooltip({ title, values, style, format = formatChartValue }: { title: string; values: { series: ChartSeriesLabel; value: number }[]; style: CSSProperties; format?: (value: number) => string })
 {
 	return (
 		<div className="chart__tooltip" style={style}>
@@ -47,7 +47,7 @@ export function ChartTooltip({ title, values, style }: { title: string; values: 
 			{values.map(({ series, value }) => (
 				<div key={series.label}>
 					<ChartSwatch color={series.color} />
-					{series.label}: {formatChartValue(value)}
+					{series.label}: {format(value)}
 				</div>
 			))}
 		</div>
