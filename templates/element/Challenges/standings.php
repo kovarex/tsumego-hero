@@ -77,15 +77,15 @@ $cellSymbols = ['failed' => '✗', 'timeout' => '⏱', 'skipped' => '–', 'queu
 						?>
 						<?php
 							$failedLine = $attempt['failedLine'] ?? null;
-							// the whole cell is the link to its problem, once the problems show (the viewer finished their run)
-							$problemButton = $problemButtons[$order] ?? null;
+							// the whole cell is the link to its problem (the columns of the problems are there once they show)
+							$problemButton = $problemButtons[$order];
 						?>
-						<td class="challenges__cell challenges__cell--<?= h($status) ?><?= $failedLine ? ' challenges__cell--line' : '' ?><?= $problemButton ? ' challenges__cell--link' : '' ?>"
-							<?= $failedLine ? ($problemButton ? '' : ' tabindex="0"') . ' data-failed-line="' . h(json_encode($failedLine)) . '"' : '' ?>>
-							<?php if ($problemButton): ?><a class="challenges__cell-link" href="<?= h($problemButton->linkPrefix . $problemButton->setConnectionID) ?>" title="Problem <?= (int) $order ?>"><?php endif; ?>
-							<?= $status === 'solved' ? ChallengeTable::formatPoints((float) $attempt['points']) : $cellSymbols[$status] ?? '' ?>
-							<?php if ($failedLine): ?><span class="tooltip-box challenges__line-board"></span><?php endif; ?>
-							<?php if ($problemButton): ?></a><?php endif; ?>
+						<td class="challenges__cell challenges__cell--link challenges__cell--<?= h($status) ?><?= $failedLine ? ' challenges__cell--line' : '' ?>"
+							<?= $failedLine ? ' data-failed-line="' . h(json_encode($failedLine)) . '"' : '' ?>>
+							<a class="challenges__cell-link" href="<?= h($problemButton->linkPrefix . $problemButton->setConnectionID) ?>" title="Problem <?= (int) $order ?>">
+								<?= $status === 'solved' ? ChallengeTable::formatPoints((float) $attempt['points']) : $cellSymbols[$status] ?? '' ?>
+								<?php if ($failedLine): ?><span class="tooltip-box challenges__line-board"></span><?php endif; ?>
+							</a>
 						</td>
 						<?php endforeach; ?>
 					</tr>
