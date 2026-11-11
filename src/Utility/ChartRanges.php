@@ -32,8 +32,8 @@ class ChartRanges
 			$length = (strtotime($now) - strtotime($from)) / 86400;
 			$period = $length <= self::POINTS ? 'day' : ($length / 7 <= self::POINTS ? 'week' : 'month');
 			$buckets = [];
+			// an average counts every day of the range, a day without a value as 0, up to the last day that is over
 			if ($average && $period !== 'day')
-				// every day of the range counts, a day without a value as 0, up to the last day that is over
 				for ($day = $from; $day < $now && $day !== $today; $day = date('Y-m-d', strtotime($day . ' +1 day')))
 					$buckets[self::periodStart($day, $period)][] = $days[$day] ?? 0;
 			else
