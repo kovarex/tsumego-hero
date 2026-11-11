@@ -1,6 +1,8 @@
 <?php
 
 use App\Model\Table\ChallengeTable;
+use App\Model\Table\UserTable;
+use App\Utility\Auth;
 use App\Utility\Util;
 use App\Utility\ViteManifest;
 
@@ -13,63 +15,93 @@ use App\Utility\ViteManifest;
  * @var array<\App\Model\Entity\TimeModeRank> $ranks The rows of time_mode_rank, the easiest first
  * @var int|null $defaultRankID The rank of the player, to start the form with
  * @var string|null $opponent The name of the player to invite, from the button on a profile
+ * @var array $waiting The rows of $challenges waiting for the player (ChallengeTable::isWaitingFor())
+ * @var bool $formOpen Whether the form to start a challenge shows unfolded
  */
 
 ?>
 <div class="challenges">
 	<h1 class="challenges__title">Challenges</h1>
+
+	<?php // what waits for the player comes first, one row each with the way in ?>
+	<?php if (!empty($waiting)): ?>
+	<section class="card card--green challenges__section challenges__waiting" id="challenges-waiting" aria-labelledby="challenges-waiting-heading">
+		<h2 class="challenges__heading" id="challenges-waiting-heading">Waiting for you (<?= count($waiting) ?>)</h2>
+		<div class="challenges__waiting-list" role="list">
+			<?php foreach ($waiting as $challenge): ?>
+			<?php $challengeId = (int) $challenge['id']; ?>
+			<div class="challenges__waiting-row" role="listitem" data-challenge-id="<?= $challengeId ?>">
+				<div class="challenges__waiting-what">
+					<a class="challenges__waiting-title" href="/challenges/<?= $challengeId ?>"><?= h(ChallengeTable::title($challenge)) ?></a>
+					<span class="hint">by <?= (int) $challenge['created_by_user_id'] === Auth::getUserID() ? 'you' : UserTable::renderLink($challenge) ?>,
+						<?= h(ChallengeTable::describe($challenge)) ?>, <?= $this->element('Challenges/list_time', ['time' => $challenge['created']]) ?></span>
+				</div>
+				<div class="challenges__waiting-actions">
+					<a class="btn btn--success" href="/challenges/<?= $challengeId ?>" id="challenge-open-<?= $challengeId ?>">Open challenge</a>
+					<form class="challenges__inline-form" method="post" action="/challenges/decline/<?= $challengeId ?>" onsubmit="return confirm('Decline the challenge?');"><button class="btn btn--small btn--neutral" type="submit">Decline</button></form>
+				</div>
+			</div>
+			<?php endforeach; ?>
+		</div>
+	</section>
+	<?php endif; ?>
+
 	<p class="hint challenges__intro">Challenge your friends: everyone gets the same problems with the same time for each, like in the time mode,
 		and plays them whenever they like. The table of the challenge shows who has the most points.</p>
 
-	<section class="card card--purple challenges__section" id="challenges-create">
-		<h2 class="challenges__heading">New challenge</h2>
-		<form method="post" action="/challenges/create">
-			<div class="form-field">
-				<label class="form-field__label" for="challenge-name">Name <span class="hint">(optional)</span></label>
-				<input class="form-field__control" type="text" id="challenge-name" name="name" maxlength="<?= ChallengeTable::NAME_MAXIMUM_LENGTH ?>" placeholder="Like Tea house or At home, otherwise it gets a number" autocomplete="off">
-			</div>
-			<div class="challenges__form-row">
+	<?php // folded behind its button; the summary is the button that opens and closes it ?>
+	<details class="challenges__create" id="challenges-create"<?= $formOpen ? ' open' : '' ?>>
+		<summary class="btn" id="challenges-new"><span class="challenges__create-open">New challenge</span><span class="challenges__create-close">Close</span></summary>
+		<section class="card card--purple challenges__section">
+			<h2 class="challenges__heading">New challenge</h2>
+			<form method="post" action="/challenges/create">
 				<div class="form-field">
-					<label class="form-field__label" for="challenge-minimum-rank">Problems from</label>
-					<select class="form-field__control" id="challenge-minimum-rank" name="minimum_rank">
-						<?php foreach ($ranks as $rank): ?>
-						<option value="<?= $rank->id ?>"<?= $rank->id === $defaultRankID ? ' selected' : '' ?>><?= h($rank->name) ?></option>
-						<?php endforeach; ?>
-					</select>
+					<label class="form-field__label" for="challenge-name">Name <span class="hint">(optional)</span></label>
+					<input class="form-field__control" type="text" id="challenge-name" name="name" maxlength="<?= ChallengeTable::NAME_MAXIMUM_LENGTH ?>" placeholder="Like Tea house or At home, otherwise it gets a number" autocomplete="off">
+				</div>
+				<div class="challenges__form-row">
+					<div class="form-field">
+						<label class="form-field__label" for="challenge-minimum-rank">Problems from</label>
+						<select class="form-field__control" id="challenge-minimum-rank" name="minimum_rank">
+							<?php foreach ($ranks as $rank): ?>
+							<option value="<?= $rank->id ?>"<?= $rank->id === $defaultRankID ? ' selected' : '' ?>><?= h($rank->name) ?></option>
+							<?php endforeach; ?>
+						</select>
+					</div>
+					<div class="form-field">
+						<label class="form-field__label" for="challenge-maximum-rank">to</label>
+						<select class="form-field__control" id="challenge-maximum-rank" name="maximum_rank">
+							<?php foreach ($ranks as $rank): ?>
+							<option value="<?= $rank->id ?>"<?= $rank->id === $defaultRankID ? ' selected' : '' ?>><?= h($rank->name) ?></option>
+							<?php endforeach; ?>
+						</select>
+					</div>
+					<div class="form-field">
+						<label class="form-field__label" for="challenge-seconds">Time for a problem</label>
+						<select class="form-field__control" id="challenge-seconds" name="seconds_per_problem">
+							<?php foreach (ChallengeTable::SECONDS_PER_PROBLEM_CHOICES as $seconds): ?>
+							<option value="<?= $seconds ?>"<?= $seconds === ChallengeTable::DEFAULT_SECONDS_PER_PROBLEM ? ' selected' : '' ?>><?= ChallengeTable::formatTimeForAProblem($seconds) ?></option>
+							<?php endforeach; ?>
+						</select>
+					</div>
+					<div class="form-field">
+						<label class="form-field__label" for="challenge-problem-count">Problems</label>
+						<select class="form-field__control" id="challenge-problem-count" name="problem_count">
+							<?php foreach (ChallengeTable::PROBLEM_COUNT_CHOICES as $count): ?>
+							<option value="<?= $count ?>"<?= $count === ChallengeTable::DEFAULT_PROBLEM_COUNT ? ' selected' : '' ?>><?= $count ?></option>
+							<?php endforeach; ?>
+						</select>
+					</div>
 				</div>
 				<div class="form-field">
-					<label class="form-field__label" for="challenge-maximum-rank">to</label>
-					<select class="form-field__control" id="challenge-maximum-rank" name="maximum_rank">
-						<?php foreach ($ranks as $rank): ?>
-						<option value="<?= $rank->id ?>"<?= $rank->id === $defaultRankID ? ' selected' : '' ?>><?= h($rank->name) ?></option>
-						<?php endforeach; ?>
-					</select>
+					<label class="form-field__label" for="challenge-players">Invite players</label>
+					<input class="form-field__control" type="text" id="challenge-players" name="players" value="<?= h((string) $opponent) ?>" placeholder="Names of the players, separated by commas" data-player-suggestions="/challenges/players">
 				</div>
-				<div class="form-field">
-					<label class="form-field__label" for="challenge-seconds">Time for a problem</label>
-					<select class="form-field__control" id="challenge-seconds" name="seconds_per_problem">
-						<?php foreach (ChallengeTable::SECONDS_PER_PROBLEM_CHOICES as $seconds): ?>
-						<option value="<?= $seconds ?>"<?= $seconds === ChallengeTable::DEFAULT_SECONDS_PER_PROBLEM ? ' selected' : '' ?>><?= ChallengeTable::formatTimeForAProblem($seconds) ?></option>
-						<?php endforeach; ?>
-					</select>
-				</div>
-				<div class="form-field">
-					<label class="form-field__label" for="challenge-problem-count">Problems</label>
-					<select class="form-field__control" id="challenge-problem-count" name="problem_count">
-						<?php foreach (ChallengeTable::PROBLEM_COUNT_CHOICES as $count): ?>
-						<option value="<?= $count ?>"<?= $count === ChallengeTable::DEFAULT_PROBLEM_COUNT ? ' selected' : '' ?>><?= $count ?></option>
-						<?php endforeach; ?>
-					</select>
-				</div>
-			</div>
-			<div class="form-field">
-				<label class="form-field__label" for="challenge-players">Invite players</label>
-				<input class="form-field__control" type="text" id="challenge-players" name="players" value="<?= h((string) $opponent) ?>" placeholder="Names of the players, separated by commas" data-player-suggestions="/challenges/players">
-			</div>
-			<button class="btn" type="submit" id="challenge-create">Create challenge</button>
-			<p class="hint">The invited players find the challenge in their challenges. You can also send them the link, anyone who opens it can join.</p>
-		</form>
-	</section>
+				<button class="btn" type="submit" id="challenge-create">Create challenge</button>
+				<p class="hint">The invited players find the challenge in their challenges. You can also send them the link, anyone who opens it can join.</p>
+			</form>
+		</section>
+	</details>
 
 	<section class="card challenges__section" id="challenges-list">
 		<h2 class="challenges__heading">Your challenges</h2>
@@ -92,7 +124,7 @@ use App\Utility\ViteManifest;
 				<?php foreach ($challenges as $challenge): ?>
 				<?php
 					$challengeId = (int) $challenge['id'];
-					$canDecline = $challenge['my_run_status_id'] === null && $challenge['my_declined'] === null && $challenge['my_removed'] === null;
+					$canDecline = ChallengeTable::isWaitingFor($challenge);
 					// a challenge in progress has no places yet: its standings list who finished, without the places
 					$isFinished = ChallengeTable::isFinished($challenge);
 					$placing = $places[$challengeId] ?? null;

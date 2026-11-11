@@ -274,6 +274,14 @@ class ChallengeTable extends AppTable
 			[$userId]);
 	}
 
+	//Whether a row of ofPlayer() is a challenge waiting for the player: in it, not played, declined nor removed;
+	//the same challenges countWaitingFor() counts for the menu.
+	/** @param array<string, mixed> $challenge */
+	public static function isWaitingFor(array $challenge): bool
+	{
+		return $challenge['my_run_status_id'] === null && $challenge['my_declined'] === null && $challenge['my_removed'] === null;
+	}
+
 	//The challenges a player is in and hasn't played nor declined yet, for the badge of the menu.
 	public static function countWaitingFor(int $userId): int
 	{

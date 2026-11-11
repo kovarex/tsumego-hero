@@ -166,7 +166,10 @@ class ChallengesControllerTest extends IntegrationTestCase
 		$this->login('challenger');
 
 		$this->assertNull($this->create(['minimum_rank' => $this->rankId('1d'), 'maximum_rank' => $this->rankId('1d')]));
-		$this->assertStringEndsWith('/challenges', $this->headerValue('Location'));
+		// back to the list with the form open, to pick other ranks
+		$this->assertStringEndsWith('/challenges?new=1', $this->headerValue('Location'));
+		$this->get('/challenges?new=1');
+		$this->assertTextContains('<details class="challenges__create" id="challenges-create" open>', $this->view);
 	}
 
 	public function testAnUnknownTimeForAProblemIsRefused(): void

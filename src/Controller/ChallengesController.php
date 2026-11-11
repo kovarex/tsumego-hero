@@ -36,7 +36,9 @@ class ChallengesController extends AppController
 
 		$this->set('_page', 'challenges');
 		$this->set('_title', 'Tsumego Hero - Challenges');
-		$this->set('challenges', ChallengeTable::ofPlayer(Auth::getUserID()));
+		$challenges = ChallengeTable::ofPlayer(Auth::getUserID());
+		$this->set('challenges', $challenges);
+		$this->set('waiting', array_values(array_filter($challenges, ChallengeTable::isWaitingFor(...))));
 		$this->set('places', ChallengeTable::placesOfPlayer(Auth::getUserID()));
 
 		$ranks = $this->fetchTable('TimeModeRank')->find()->orderBy('id')->toArray();
@@ -49,6 +51,8 @@ class ChallengesController extends AppController
 				if ($opponentRow->deleted === null && $opponentID !== Auth::getUserID())
 					$opponent = $opponentRow->display_name;
 		$this->set('opponent', $opponent);
+		// the form to start a challenge is folded, open for a player picked on a profile and after a failed try
+		$this->set('formOpen', $opponent !== null || $this->query('new') !== null);
 		return null;
 	}
 
@@ -78,7 +82,7 @@ class ChallengesController extends AppController
 		if ($challengeID === null)
 		{
 			CookieFlash::set('There are no problems of these ranks, pick other ones.', 'error');
-			return $this->redirect('/challenges');
+			return $this->redirect('/challenges?new=1');
 		}
 		$this->inviteByNames($challengeID, (string) ($data['players'] ?? ''));
 		return $this->redirect(self::challengeUrl($challengeID));
