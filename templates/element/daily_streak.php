@@ -1,5 +1,6 @@
 <?php
 
+use App\Utility\Util;
 use App\Utility\Auth;
 use App\Utility\DailyStreak;
 
@@ -27,16 +28,16 @@ $todoText = 'To keep the streak today:';
 		<path class="daily-streak__spark" d="M18.5 2.5l.7 1.8 1.8.7-1.8.7-.7 1.8-.7-1.8-1.8-.7 1.8-.7z"/>
 		<circle class="daily-streak__burst" cx="12" cy="14" r="9"/>
 	</svg>
-	<span class="daily-streak__length" data-streak-count="length"><?php echo $streak['length']; ?></span>
+	<span class="daily-streak__length" data-streak-count="length"><?php echo Util::formatNumber($streak['length']); ?></span>
 	<div id="daily-streak-details" class="daily-streak__details" role="tooltip">
 		<div class="daily-streak__title">Daily streak</div>
 		<div>Streak: <span data-streak-days="length"><?php echo $days($streak['length']); ?></span>, best <span data-streak-days="best"><?php echo $days($streak['best']); ?></span></div>
-		<div>Freezes: <span data-streak-count="freezes"><?php echo $streak['freezes']; ?></span></div>
+		<div>Freezes: <span data-streak-count="freezes"><?php echo Util::formatNumber($streak['freezes']); ?></span></div>
 		<div class="daily-streak__today" data-streak-today data-done-text="<?php echo h($doneText); ?>" data-todo-text="<?php echo h($todoText); ?>"><?php echo h($streak['done_today'] ? $doneText : $todoText); ?></div>
 		<div class="daily-streak__progress-of-day">
-			<div>XP: <span data-streak-count="xp"><?php echo $streak['xp']; ?></span> of <span data-streak-count="xp_required"><?php echo $streak['xp_required']; ?></span></div>
+			<div>XP: <span data-streak-count="xp"><?php echo Util::formatNumber($streak['xp']); ?></span> of <span data-streak-count="xp_required"><?php echo Util::formatNumber($streak['xp_required']); ?></span></div>
 			<progress class="daily-streak__progress" aria-label="Today's XP" max="<?php echo $streak['xp_required']; ?>" value="<?php echo $streak['done_today'] ? $streak['xp_required'] : min($streak['xp'], $streak['xp_required']); ?>"></progress>
-			<div>Mistake training reviews: <span data-streak-count="reviews"><?php echo $streak['reviews']; ?></span> of <span data-streak-count="reviews_required"><?php echo $streak['reviews_required']; ?></span></div>
+			<div>Mistake training reviews: <span data-streak-count="reviews"><?php echo Util::formatNumber($streak['reviews']); ?></span> of <span data-streak-count="reviews_required"><?php echo Util::formatNumber($streak['reviews_required']); ?></span></div>
 		</div>
 		<div class="daily-streak__rules">
 			A day asks the XP of <?php echo DailyStreak::PROBLEMS_A_DAY; ?> problems of your rank and <?php echo DailyStreak::REVIEWS_A_DAY; ?> mistake training reviews, or as many as are due.

@@ -1,5 +1,6 @@
 <?php
 
+use App\Utility\Util;
 use App\View\Helper\HighscoreHelper;
 
 /**
@@ -18,8 +19,8 @@ echo HighscoreHelper::renderTable(
 	'Daily Highscore<br><span class="highscore__date"><time datetime="' . date('Y-m-d') . '" data-format="date">' . date('Y-m-d') . '</time></span>',
 	$users,
 	[
-		['label' => 'Solved', 'render' => fn($row) => $row['daily_solved']],
-		['label' => 'XP', 'render' => fn($row) => number_format($row['daily_xp'])],
+		['label' => 'Solved', 'render' => fn($row) => Util::formatNumber($row['daily_solved'])],
+		['label' => 'XP', 'render' => fn($row) => Util::formatNumber($row['daily_xp'])],
 	],
 	$totalUsers,
 );

@@ -1,5 +1,6 @@
 <?php
 
+use App\Utility\Util;
 use App\View\Helper\HighscoreHelper;
 
 /**
@@ -16,7 +17,7 @@ use App\View\Helper\HighscoreHelper;
 	'Rating Highscore',
 	$users,
 	[
-		['label' => 'Rating', 'render' => fn($user) => number_format($user['rating'])],
+		['label' => 'Rating', 'render' => fn($user) => Util::formatNumber($user['rating'])],
 	],
 	$totalUsers,
 ); ?>

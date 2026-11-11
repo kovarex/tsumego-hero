@@ -43,7 +43,7 @@ function updateMistakeTrainingButton(button, xp)
 		if (rewardText)
 		{
 			rewardText.className = "xpDisplay solvedXpDisplay";
-			rewardText.textContent = earned > 0 ? "+" + Number(earned) + " XP" : "";
+			rewardText.textContent = earned > 0 ? "+" + formatNumber(earned) + " XP" : "";
 		}
 		if (reward)
 		{

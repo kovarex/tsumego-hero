@@ -315,6 +315,28 @@ class Util
 		return ($value < 0 ? '-' : '') . $text;
 	}
 
+	//The separator of thousands: a narrow no-break space, so "12 345" never breaks across lines
+	public const THOUSANDS_SEPARATOR = "\u{202F}";
+
+	//A quantity for players: 999, 1000, 9999, then 12 345 and 1 234 567 (thousands get a narrow no-break space
+	//from five digits on, never a comma), a point before $decimals digits, rounded half away from zero. The same as
+	//formatNumber() of webroot/js/formatNumber.js and app/shared/formatNumber.ts.
+	public static function formatNumber(int|float|string|null $value, int $decimals = 0): string
+	{
+		// a count or a sum straight from the database can be a numeric string or null
+		if (!is_int($value))
+			$value = (float) $value;
+		if (!is_finite((float) $value))
+			return (string) $value;
+		$text = number_format(abs($value), $decimals, '.', '');
+		$parts = explode('.', $text);
+		if (strlen($parts[0]) >= 5)
+			$parts[0] = preg_replace('/\B(?=(\d{3})+$)/', self::THOUSANDS_SEPARATOR, $parts[0]);
+		// a value that rounds to zero has no minus
+		$negative = $value < 0 && trim($text, '0.') !== '';
+		return ($negative ? '-' : '') . implode('.', $parts);
+	}
+
 	//A place in a table in words: 1st, 2nd, 3rd, 4th, 11th, 21st…
 	public static function ordinal(int $number): string
 	{

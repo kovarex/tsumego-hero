@@ -79,7 +79,7 @@ class AccountWidget
 		this.accountBar.className = 'account-bar-level';
 		this.modeSelector.className = 'modeSelectorInLevelBar';
 		this.setBarRatio(this.xp / this.xpForNextLevel(this.level));
-		this.barCaption.innerHTML = this.hovered ? (this.xp + '/' + this.xpForNextLevel(this.level)) : 'Level ' + this.level;
+		this.barCaption.innerHTML = this.hovered ? (formatNumber(this.xp) + '/' + formatNumber(this.xpForNextLevel(this.level))) : 'Level ' + this.level;
 	}
 
 	showRating()

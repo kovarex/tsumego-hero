@@ -123,8 +123,8 @@ class ChartsBrowserTest extends IntegrationTestCase
 		$this->assertSame('Rating history', $browser->find('.timeGraph .chart__title')->getText());
 		// the value axis fits the rating instead of starting at zero
 		$valueTicks = array_map(fn($tick) => $tick->getText(), $browser->getElements(".timeGraph .line-chart__tick[text-anchor='end']"));
-		$this->assertSame('1,200', $valueTicks[0]);
-		$this->assertSame('1,250', end($valueTicks));
+		$this->assertSame('1200', $valueTicks[0]);
+		$this->assertSame('1250', end($valueTicks));
 		$browser->assertNoJsErrors();
 	}
 }

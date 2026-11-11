@@ -36,9 +36,9 @@ class DailyStreak
 		element.querySelectorAll('[data-streak-count]').forEach(node =>
 		{
 			if (tickLater && node.classList.contains('daily-streak__length'))
-				setTimeout(() => node.textContent = streak[node.dataset.streakCount], DailyStreak.TICK_DELAY_MS);
+				setTimeout(() => node.textContent = formatNumber(streak[node.dataset.streakCount]), DailyStreak.TICK_DELAY_MS);
 			else
-				node.textContent = streak[node.dataset.streakCount];
+				node.textContent = formatNumber(streak[node.dataset.streakCount]);
 		});
 		let progress = element.querySelector('.daily-streak__progress');
 		if (progress)
