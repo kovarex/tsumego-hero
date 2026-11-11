@@ -207,7 +207,9 @@ class DailyResetTest extends IntegrationTestCase
 		$this->exec('cron_hourly');
 
 		$this->assertExitSuccess();
-		$this->assertOutputContains('Reset 5 players.');
+		// silent when it works, as the scheduler mails any output
+		$this->assertOutputEmpty();
+		$this->assertErrorEmpty();
 		// 03:30 in New York, 08:30 in London and in UTC: everyone is on the 10th
 		$this->assertSame([0, 0, 0, 0, 0], array_values(array_map(fn(array $player) => $player[0], self::stored($ids))));
 	}
