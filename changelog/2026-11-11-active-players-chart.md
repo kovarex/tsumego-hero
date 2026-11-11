@@ -1,0 +1,1 @@
+Added: The Site Growth chart of the home page can switch to the active players: how many players solved a problem each day, in level mode or in the time mode, for the last month, six months, year or all of it; the longer ranges show the average players a day of each week or month, and today's point counts the day so far.

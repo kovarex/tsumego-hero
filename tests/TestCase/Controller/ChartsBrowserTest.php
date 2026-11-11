@@ -2,6 +2,7 @@
 
 use App\Model\Table\TimeModeCategoryTable;
 use App\Model\Table\TimeModeSessionStatusTable;
+use App\Utility\ActivePlayers;
 use App\Utility\SiteGrowth;
 use Facebook\WebDriver\WebDriverBy;
 use PHPUnit\Framework\Attributes\Group;
@@ -22,6 +23,9 @@ class ChartsBrowserTest extends IntegrationTestCase
 
 		$browser = Browser::instance();
 		$browser->get('/');
+		// the chart opens on the growth unless the visitor picked the active players before
+		$browser->driver->executeScript("localStorage.removeItem('siteGrowthView')");
+		$browser->get('/');
 		$browser->waitUntil(fn() => count($browser->getElements('.chart-box .line-chart__series')) === 2, 10, 'both lines drawn');
 		$this->assertSame(['Problems', 'Users'], array_map(
 			fn($series) => $series->getAttribute('data-label'),
@@ -34,6 +38,81 @@ class ChartsBrowserTest extends IntegrationTestCase
 		$browser->driver->findElement(WebDriverBy::xpath("//button[contains(@class, 'chart__legend-item') and normalize-space() = 'Users']"))->click();
 		$browser->waitUntil(fn() => count($browser->getElements('.chart-box .line-chart__series')) === 1, 10, 'the users line hidden');
 		$this->assertSame('Problems', $browser->find('.chart-box .line-chart__series')->getAttribute('data-label'));
+		$browser->assertNoJsErrors();
+	}
+
+	//The active players are behind the toggle of the Site Growth chart: it opens on the growth, the toggle switches to
+	//the players who solved a problem each day, 6M first with today as the last point "so far", the ranges and the
+	//toggle switch without a request, and the choice is kept for the next visit; the right column has no chart
+	public function testHomePageTogglesTheSiteGrowthToTheActivePlayers(): void
+	{
+		$day = fn(int $daysAgo) => date('Y-m-d', strtotime('-' . $daysAgo . ' days'));
+		$solve = fn(int $daysAgo) => ['solved' => true, 'created' => $day($daysAgo) . ' 10:00:00'];
+		new ContextPreparator([
+			'user' => ['name' => 'alice'],
+			'tsumegos' => [['sets' => [['name' => 'public set', 'num' => 1]], 'attempts' => [$solve(300), $solve(20), $solve(5), $solve(0)]]]]);
+		SiteGrowth::forget();
+		ActivePlayers::forget();
+
+		$browser = Browser::instance();
+		$browser->get('/');
+		$browser->driver->executeScript("localStorage.removeItem('siteGrowthView')");
+		$browser->get('/');
+		$state = function () use ($browser) {
+			$state = $browser->driver->executeScript(<<<'JS'
+			const chart = document.querySelector('.chart-box');
+			const buttons = [...chart.querySelectorAll('.range-chart__range')];
+			return {
+				buttons: buttons.map(button => button.textContent),
+				pressed: buttons.filter(button => button.getAttribute('aria-pressed') === 'true').map(button => button.textContent),
+				series: [...chart.querySelectorAll('.line-chart__series')].map(series => series.getAttribute('data-label')),
+				points: chart.querySelector('.line-chart__line')?.getAttribute('d').split('L').length ?? 0,
+				requests: performance.getEntriesByType('resource').filter(entry => ['fetch', 'xmlhttprequest'].includes(entry.initiatorType)).length,
+				rightColumnCharts: document.querySelectorAll('.split > :nth-child(2) [data-range-chart-root], .split > :nth-child(2) .line-chart__plot').length};
+			JS);
+			ksort($state);
+			return $state;
+		};
+		$click = fn(string $text) => $browser->driver->executeScript("[...document.querySelectorAll('.chart-box .range-chart__range')].find(button => button.textContent === arguments[0]).click()", [$text]);
+		$browser->waitUntil(fn() => count($state()['series']) === 2, 10, 'the growth drawn');
+		$opened = $state();
+		$this->assertSame([['Growth', 'Active players'], ['Growth'], ['Problems', 'Users'], 0],
+			[$opened['buttons'], $opened['pressed'], $opened['series'], $opened['rightColumnCharts']], 'it opens on the growth, the right column has no chart');
+
+		$click('Active players');
+		$browser->waitUntil(fn() => $state()['series'] === ['Players'], 10, 'the active players');
+		// a point a day from 300 days ago is more than half a year, so 6M starts with the range itself
+		$sixMonths = (int) round((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('-6 months')))) / 86400) + 1;
+		$active = $state();
+		$this->assertSame([['Growth', 'Active players', '1M', '6M', '1Y', 'All'], ['Active players', '6M'], $sixMonths],
+			[$active['buttons'], $active['pressed'], $active['points']]);
+
+		// today, the last point, is "so far"
+		$browser->driver->executeScript(<<<'JS'
+			const svg = document.querySelector('.chart-box svg');
+			const box = svg.getBoundingClientRect();
+			svg.dispatchEvent(new MouseEvent('mousemove', {bubbles: true, clientX: box.right - 2, clientY: box.top + box.height / 2}));
+			JS);
+		$browser->waitUntilCssSelectorDisplayed('.chart-box .chart__tooltip');
+		$this->assertSame("Today so far\nPlayers: 1", $browser->find('.chart-box .chart__tooltip')->getText());
+		// one axis: its numbers in the chart's text colour like the dates, not the blue of the line
+		$colors = $browser->driver->executeScript("return [...document.querySelectorAll('.chart-box .line-chart__tick')].map(tick => getComputedStyle(tick).fill)");
+		$this->assertCount(1, array_unique($colors), implode(', ', $colors));
+
+		$click('1Y');
+		$browser->waitUntil(fn() => $state()['pressed'] === ['Active players', '1Y'], 10, 'the range 1Y');
+		$this->assertGreaterThan(50, $state()['points'], 'a point a week of the year');
+		$this->assertLessThan(56, $state()['points']);
+
+		$click('Growth');
+		$browser->waitUntil(fn() => $state()['series'] === ['Problems', 'Users'], 10, 'back to the growth');
+		$this->assertSame($opened['requests'], $state()['requests'], 'no request for any of it');
+
+		// the choice is kept: the next visit opens on the view picked last
+		$click('Active players');
+		$browser->get('/');
+		$browser->waitUntil(fn() => $state()['series'] === ['Players'], 10, 'opens on the active players');
+		$browser->driver->executeScript("localStorage.removeItem('siteGrowthView')");
 		$browser->assertNoJsErrors();
 	}
 
@@ -128,8 +207,8 @@ class ChartsBrowserTest extends IntegrationTestCase
 			const chart = document.getElementById('profile-chart-rating');
 			const line = chart.querySelector('.line-chart__line');
 			return {
-				ranges: [...chart.querySelectorAll('.rating-chart__range')].map(button => button.textContent),
-				active: chart.querySelector('.rating-chart__range[aria-pressed="true"]')?.textContent ?? null,
+				ranges: [...chart.querySelectorAll('.range-chart__range')].map(button => button.textContent),
+				active: chart.querySelector('.range-chart__range[aria-pressed="true"]')?.textContent ?? null,
 				points: line ? line.getAttribute('d').split('L').length : 0,
 				ranks: [...chart.querySelectorAll(".line-chart__tick[text-anchor='end']")].map(tick => tick.textContent)};
 			JS);
@@ -137,7 +216,7 @@ class ChartsBrowserTest extends IntegrationTestCase
 			return $state;
 		};
 		$pick = function (string $range) use ($browser, $state) {
-			$browser->driver->executeScript("[...document.querySelectorAll('#profile-chart-rating .rating-chart__range')].find(button => button.textContent === arguments[0]).click()", [$range]);
+			$browser->driver->executeScript("[...document.querySelectorAll('#profile-chart-rating .range-chart__range')].find(button => button.textContent === arguments[0]).click()", [$range]);
 			$browser->waitUntil(fn() => $state()['active'] === $range, 10, 'the range ' . $range);
 			return $state()['points'];
 		};

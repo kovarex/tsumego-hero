@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Model\Table\AchievementStatusTable;
 use App\Model\Table\UserTable;
+use App\Utility\ActivePlayers;
 use App\Utility\Auth;
 use App\Utility\FriendActivity;
 use App\Utility\SiteGrowth;
@@ -45,6 +46,7 @@ class SitesController extends AppController
 
 		$this->set('tsumegoButtonsOfPublishedTsumegos', $tsumegoButtonsOfPublishedTsumegos);
 		$this->set('chartData', SiteGrowth::chartData());
+		$this->set('activePlayers', ActivePlayers::ranges());
 		$this->set('latestPublishDate', $latestPublishDate);
 		$this->set('quote', $currentQuote);
 

@@ -31,6 +31,30 @@ class CronDailyCommandTest extends IntegrationTestCase
 			$this->assertSame(1, $user[$name], $name);
 	}
 
+	//The daily run stores the active players of yesterday for the chart of the home page, and of the days a missed run
+	//left out; a second run changes nothing
+	public function testCronStoresTheActivePlayersOfThePastDays()
+	{
+		$day = fn(int $daysAgo) => date('Y-m-d', strtotime('-' . $daysAgo . ' days'));
+		new ContextPreparator([
+			'user' => ['mode' => Constants::$LEVEL_MODE],
+			'tsumegos' => [['sets' => [['name' => 'set', 'num' => 1]], 'attempts' => [
+				['solved' => true, 'created' => $day(3) . ' 10:00:00'],
+				['solved' => false, 'created' => $day(2) . ' 10:00:00'],
+				['solved' => true, 'created' => $day(1) . ' 10:00:00'],
+				['solved' => true, 'created' => $day(0) . ' 00:00:01']]]]]);
+		$stored = fn() => array_map('intval', array_column(Util::query('SELECT day, players FROM active_players_day ORDER BY day'), 'players', 'day'));
+
+		$this->exec('cron_daily');
+		$this->assertExitSuccess();
+		$expected = [$day(3) => 1, $day(2) => 0, $day(1) => 1];
+		$this->assertSame($expected, $stored(), 'yesterday and the days before it, today not yet');
+
+		$this->exec('cron_daily');
+		$this->assertExitSuccess();
+		$this->assertSame($expected, $stored());
+	}
+
 	//The daily run takes the change stamps of a week ago (Live::pruneStale())
 	public function testCronPrunesTheStaleChangeStamps()
 	{

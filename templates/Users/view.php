@@ -176,7 +176,7 @@ use App\Utility\Util;
 		</div>
 	</div>
 	<div class="profile-charts__column">
-		<div id="profile-chart-rating"><?php echo ChartRenderer::ratingRanges((int) $user['id'], $ratingRanges); ?></div>
+		<div id="profile-chart-rating"><?php echo ChartRenderer::ratingRanges($ratingRanges); ?></div>
 		<div id="profile-chart-time">
 		<?php echo ChartRenderer::bar('Time mode runs', $timeGraph, 'category', [
 			['label' => 'Passes', 'color' => '#c8723d'],

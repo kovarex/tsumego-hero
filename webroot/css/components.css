@@ -1312,21 +1312,21 @@
 	text-decoration: line-through;
 	opacity: 0.5;
 }
-/* the ranges above the rating chart of the profile (app/charts/RatingChart.tsx), one segmented row */
-.rating-chart__header {
+/* the range buttons above a chart over time (app/charts/RangeChart.tsx), one segmented row */
+.range-chart__header {
 	display: flex;
 	flex-wrap: wrap;
 	align-items: center;
 	gap: var(--space-2);
 	padding: 0 var(--space-2) var(--space-1);
 }
-.rating-chart__ranges {
+.range-chart__ranges {
 	display: inline-flex;
 	border: 1px solid var(--color-border);
 	border-radius: 3px;
 	overflow: hidden;
 }
-.rating-chart__range {
+.range-chart__range {
 	margin: 0;
 	padding: 3px 12px;
 	border: none;
@@ -1337,13 +1337,13 @@
 	font-size: var(--text-sm);
 	cursor: pointer;
 }
-.rating-chart__range:first-child {
+.range-chart__range:first-child {
 	border-left: none;
 }
-.rating-chart__range:hover {
+.range-chart__range:hover {
 	text-decoration: underline;
 }
-.rating-chart__range--active {
+.range-chart__range--active {
 	background: var(--active-paginator-button-background-color);
 	color: var(--active-paginator-button-text-color);
 	cursor: default;
@@ -1376,6 +1376,9 @@
 }
 .line-chart__plot {
 	position: relative;
+	/* the svg is drawn at the width the plot had; until it is drawn again at a new width (a resized window, a column
+	   that moved beside another), it is cut at the plot rather than widening the page */
+	overflow: hidden;
 }
 .line-chart__plot > svg {
 	display: block;

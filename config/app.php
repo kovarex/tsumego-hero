@@ -38,6 +38,7 @@ return [
 	'Cache' => [
 		'default' => ['className' => FileEngine::class, 'path' => CACHE],
 		'long' => ['className' => FileEngine::class, 'path' => CACHE, 'duration' => '+1 day', 'prefix' => 'long_'],
+		'short' => ['className' => FileEngine::class, 'path' => CACHE, 'duration' => '+5 minutes', 'prefix' => 'short_'],
 		'_cake_translations_' => [
 			'className' => FileEngine::class,
 			'prefix' => 'myapp_cake_translations_',

@@ -37,6 +37,8 @@ interface Props
 	//in the chart's text colour rather than the colour of the series, and the tooltip gives the rating as a plain
 	//number with its rank, "2875 (12d)"
 	rankAxis?: boolean;
+	//the date of a point still going on, which the tooltip names "Today so far"
+	partialDate?: string;
 }
 
 interface Point
@@ -69,7 +71,7 @@ function stretchesOf(points: [string, number | null][]): Point[][]
 
 //A line chart over a time axis drawn as an SVG, with up to two value axes, a legend that hides a series on a click
 //and the values of the date under the mouse.
-export function LineChart({ title, series, height, period, startAtZero, header, rankAxis = false }: Props)
+export function LineChart({ title, series, height, period, startAtZero, header, rankAxis = false, partialDate }: Props)
 {
 	const plotRef = useRef<HTMLDivElement>(null);
 	const [width, setWidth] = useState(0);
@@ -109,6 +111,9 @@ export function LineChart({ title, series, height, period, startAtZero, header, 
 	const leftLabel = (tick: number) => rankAxis ? getReadableRankFromRating(tick) : formatChartValue(tick);
 	const leftTicks = axisTicks('left');
 	const rightTicks = axisTicks('right');
+	//With an axis on each side the labels take the colour of their series, to tell the axes apart; a single axis is in
+	//the chart's text colour, which reads better
+	const twoAxes = leftTicks !== null && rightTicks !== null;
 	const axisWidth = (ticks: number[] | null, label: (tick: number) => string) =>
 		ticks ? Math.max(...ticks.map(tick => label(tick).length)) * CHARACTER_WIDTH + AXIS_GAP : AXIS_GAP;
 	const left = axisWidth(leftTicks, leftLabel);
@@ -168,13 +173,13 @@ export function LineChart({ title, series, height, period, startAtZero, header, 
 						))}
 						{leftTicks && leftTicks.map(tick => (
 							<text key={'left' + tick} className="line-chart__tick" x={left - AXIS_GAP / 2} y={y(tick, leftTicks) + 4} textAnchor="end"
-								style={rankAxis ? undefined : { fill: series.find(oneSeries => oneSeries.axis === 'left')?.color }}>
+								style={twoAxes ? { fill: series.find(oneSeries => oneSeries.axis === 'left')?.color } : undefined}>
 								{leftLabel(tick)}
 							</text>
 						))}
 						{rightTicks && rightTicks.map(tick => (
 							<text key={'right' + tick} className="line-chart__tick" x={right + AXIS_GAP / 2} y={y(tick, rightTicks) + 4} textAnchor="start"
-								style={{ fill: series.find(oneSeries => oneSeries.axis === 'right')?.color }}>
+								style={twoAxes ? { fill: series.find(oneSeries => oneSeries.axis === 'right')?.color } : undefined}>
 								{formatChartValue(tick)}
 							</text>
 						))}
@@ -198,7 +203,7 @@ export function LineChart({ title, series, height, period, startAtZero, header, 
 				)}
 				{hovered && hoveredValues.length > 0 && (
 					<ChartTooltip
-						title={period === 'month' ? dayjs.utc(hovered.at.time).format('MMM YYYY') : (period === 'week' ? 'Week of ' : '') + formatDate(hovered.date, 'date')}
+						title={hovered.date === partialDate ? 'Today so far' : period === 'month' ? dayjs.utc(hovered.at.time).format('MMM YYYY') : (period === 'week' ? 'Week of ' : '') + formatDate(hovered.date, 'date')}
 						values={hoveredValues}
 						format={rankAxis ? value => `${Math.round(value)} (${getReadableRankFromRating(value)})` : undefined}
 						style={hoveredX > width / 2 ? { right: width - hoveredX + TOOLTIP_OFFSET } : { left: hoveredX + TOOLTIP_OFFSET }}

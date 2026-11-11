@@ -525,7 +525,7 @@ class SitesControllerTest extends IntegrationTestCase
 
 		$chartData = SiteGrowth::chartData();
 		$this->assertNotEmpty($chartData);
-		$props = json_decode($browser->find('.chart-box[data-line-chart-root]')->getAttribute('data-props'), true);
+		$props = json_decode($browser->find('.chart-box[data-growth-chart-root]')->getAttribute('data-props'), true)['growth'];
 		$this->assertSame(['Problems', 'Users'], array_column($props['series'], 'label'));
 		$this->assertSame(array_map(fn($month) => [$month['date'], $month['problems']], $chartData), $props['series'][0]['points']);
 		$this->assertSame(array_map(fn($month) => [$month['date'], $month['users']], $chartData), $props['series'][1]['points']);
