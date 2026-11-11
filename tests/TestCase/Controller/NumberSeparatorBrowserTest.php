@@ -1,7 +1,5 @@
 <?php
 
-use App\Utility\Util;
-
 //Numbers of five digits and more read 12 345, the thousands apart by a narrow no-break space, never a comma;
 //four digits stay plain. Once as the server writes them, once as the account bar's script does.
 #[RetryOnBrowserFailure]
