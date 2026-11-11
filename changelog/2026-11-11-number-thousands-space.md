@@ -1,0 +1,1 @@
+Changed: Big numbers read 12 345 and 1 505 786, with a thin space between the thousands instead of a comma; numbers of four digits, like ratings, stay as they are. This covers the highscores, the profile, the account bar, the daily streak, the collections and the charts.

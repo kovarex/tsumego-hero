@@ -8,6 +8,7 @@ namespace App\View\Helper;
 //Gap rows (⋮) and self-view highlighting are handled automatically.
 use App\Model\Table\UserTable;
 use App\Utility\Auth;
+use App\Utility\Util;
 
 class HighscoreHelper extends AppHelper
 {
@@ -87,7 +88,7 @@ class HighscoreHelper extends AppHelper
 
 		// Footer with total user count
 		if ($totalUsers !== null)
-			$html .= '<tr class="data-table__row--separator"><td colspan="' . $totalColumns . '" class="legacy-center highscore-table__total">' . $totalUsers . ' users total</td></tr>';
+			$html .= '<tr class="data-table__row--separator"><td colspan="' . $totalColumns . '" class="legacy-center highscore-table__total">' . Util::formatNumber($totalUsers) . ' users total</td></tr>';
 
 		$html .= '</table>';
 		return $html;

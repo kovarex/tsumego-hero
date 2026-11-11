@@ -1,3 +1,4 @@
+import { formatNumber } from '../shared/formatNumber';
 //The arithmetic of the charts: where the ticks of the axes go and how a value reads. Kept apart from the drawing, so that
 //it reads on its own.
 
@@ -52,8 +53,8 @@ export function valueTicks(min: number, max: number, maxCount: number): number[]
 	return ticks;
 }
 
-//Values are shown as whole numbers with the separators of the browser's language.
-export const formatChartValue = (value: number) => value.toLocaleString(undefined, { maximumFractionDigits: 0 });
+//Values are shown as whole numbers, 12 345 with a space from five digits on (formatNumber)
+export const formatChartValue = (value: number) => formatNumber(value);
 
 //Which series of a chart are shown, after the legend toggled the one at index.
 export function toggled(shown: boolean[], index: number): boolean[]

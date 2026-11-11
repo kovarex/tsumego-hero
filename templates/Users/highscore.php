@@ -1,5 +1,6 @@
 <?php
 
+use App\Utility\Util;
 use App\View\Helper\HighscoreHelper;
 use App\Utility\Level;
 
@@ -18,8 +19,8 @@ use App\Utility\Level;
 	$users,
 	[
 		['label' => 'Level', 'render' => fn($user) => $user['level']],
-		['label' => 'XP', 'render' => fn($user) => number_format(Level::getOverallXPGained($user))],
-		['label' => 'Solved', 'render' => fn($user) => number_format($user['solved'])],
+		['label' => 'XP', 'render' => fn($user) => Util::formatNumber(Level::getOverallXPGained($user))],
+		['label' => 'Solved', 'render' => fn($user) => Util::formatNumber($user['solved'])],
 	],
 	$totalUsers,
 ); ?>

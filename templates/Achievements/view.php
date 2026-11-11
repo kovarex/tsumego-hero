@@ -1,5 +1,6 @@
 <?php
 
+use App\Utility\Util;
 use App\View\Helper\AchievementHelper;
 use App\Model\Table\SetTable;
 use App\Model\Entity\Achievement;
@@ -57,7 +58,7 @@ $markedCollections = count(array_filter($collections, fn(array $collection) => $
 			<img src="/img/<?php echo $displayImage; ?>.png">
 			<?php echo AchievementHelper::renderEarnedBadge($earnedCount); ?>
 			<div class="acImgXp">
-			<?php echo $achievement->xp; ?> XP
+			<?php echo Util::formatNumber($achievement->xp); ?> XP
 			</div>
 		</div>
 		<div class="acDesc">

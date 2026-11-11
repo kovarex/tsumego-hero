@@ -41,7 +41,7 @@ use App\Utility\Util;
 			</tr>
 			<tr>
 				<td>Next level:</td>
-				<td><?php echo $user['xp'] . '/' . Level::getXPForNext($user['level']) . ' XP'; ?></td>
+				<td><?php echo Util::formatNumber($user['xp']) . '/' . Util::formatNumber(Level::getXPForNext($user['level'])) . ' XP'; ?></td>
 			</tr>
 			<tr>
 				<td colspan="2">
@@ -107,7 +107,7 @@ use App\Utility\Util;
 			foreach ($timeModeRanks as $timeModeRank)
 			{
 				echo '<tr><td>' . $timeModeRank['category_name'] . ' mode rank:</td><td>' . ($timeModeRank['best_solved_rank_name'] ?: 'N/A') . '</td></tr>';
-				echo '<tr><td>' . $timeModeRank['category_name'] . ' mode runs:</td><td>' . $timeModeRank['session_count'] . '</td></tr>';
+				echo '<tr><td>' . $timeModeRank['category_name'] . ' mode runs:</td><td>' . Util::formatNumber($timeModeRank['session_count']) . '</td></tr>';
 			}?>
 		</table>
 	</div>
@@ -122,7 +122,7 @@ use App\Utility\Util;
 			<?php endif; ?>
 			<tr>
 				<td>Completed:</td>
-				<td><?php echo $solvedProblemCount . ' of ' . $tsumegoCount; ?></td>
+				<td><?php echo Util::formatNumber($solvedProblemCount) . ' of ' . Util::formatNumber($tsumegoCount); ?></td>
 			</tr>
 			<tr>
 				<td colspan="2">
@@ -139,12 +139,12 @@ use App\Utility\Util;
 					<div class="progress">
 						<?php if ($publishedProblemCount < $tsumegoCount): ?>
 						<div class="progress__drafts" style="left:<?php echo $publishedShare; ?>%"
-							title="From here on: <?php echo $tsumegoCount - $publishedProblemCount; ?> problems of collections the site does not publish yet, level evaluation and other drafts."></div>
+							title="From here on: <?php echo Util::formatNumber($tsumegoCount - $publishedProblemCount); ?> problems of collections the site does not publish yet, level evaluation and other drafts."></div>
 						<?php endif; ?>
 						<div class="progress__fill" style="width:<?php echo $publishedPercent; ?>%"></div>
 						<?php if ($solvedDrafts > 0): ?>
 						<div class="progress__fill progress__fill--drafts" style="left:<?php echo $publishedShare; ?>%;width:<?php echo $draftsPercent; ?>%"
-							title="<?php echo $solvedDrafts; ?> of those problems solved"></div>
+							title="<?php echo Util::formatNumber($solvedDrafts); ?> of those problems solved"></div>
 						<?php endif; ?>
 						<div class="progress__label"><?php echo $completedPercent; ?>%</div>
 					</div>

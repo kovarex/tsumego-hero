@@ -1,5 +1,6 @@
 <?php
 
+use App\Utility\Util;
 use App\Utility\Constants;
 use App\Utility\Rating;
 use App\Utility\SetsSelector;
@@ -116,7 +117,7 @@ use App\Utility\ViteManifest;
 			</div>
 		</div>
 		<div class="set-buttons" id="problems-found">
-			Problems found: <?php echo $setsSelector->problemsFound; ?>
+			Problems found: <?php echo Util::formatNumber($setsSelector->problemsFound); ?>
 		</div>
 		<form method="post" action="/sets/changeCollectionSize">
 		<div class="set-buttons-right">

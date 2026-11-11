@@ -45,6 +45,24 @@ class UtilTest extends AppTestCase
 		$this->assertSame('5.6', Util::formatSignificant(5.62));
 	}
 
+	//The cases of tests/formatNumberCases.json, which scripts/formatNumber.test.mjs runs on both JS copies
+	public static function numberCases(): array
+	{
+		return json_decode(file_get_contents(__DIR__ . '/../../formatNumberCases.json'), true);
+	}
+
+	#[\PHPUnit\Framework\Attributes\DataProvider('numberCases')]
+	public function testFormatNumber(int|float $value, int $decimals, string $expected): void
+	{
+		$this->assertSame($expected, Util::formatNumber($value, $decimals));
+	}
+
+	public function testFormatNumberHasNoDecimalsByDefault(): void
+	{
+		$this->assertSame("1\u{202F}234\u{202F}567", Util::formatNumber(1234567.4));
+		$this->assertSame('2875', Util::formatNumber(2875));
+	}
+
 	public function testIsHttpUrl(): void
 	{
 		$this->assertTrue(Util::isHttpUrl('https://senseis.xmp.net/?Snapback'));

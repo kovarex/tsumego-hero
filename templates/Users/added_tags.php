@@ -1,5 +1,6 @@
 <?php
 
+use App\Utility\Util;
 use App\View\Helper\HighscoreHelper;
 
 /**
@@ -17,7 +18,7 @@ use App\View\Helper\HighscoreHelper;
 	'Tags Added',
 	$tagContributors,
 	[
-		['label' => 'Tags', 'render' => fn($row) => $row['tag_count']],
+		['label' => 'Tags', 'render' => fn($row) => Util::formatNumber($row['tag_count'])],
 	],
 	$totalUsers,
 ); ?>

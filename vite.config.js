@@ -15,6 +15,7 @@ const isCoverageBuild = process.env.VITE_COVERAGE === 'true';
 const LEGACY_APP_FILES = [
 	'webroot/js/util.js',
 	'webroot/js/formatSignificant.js',
+	'webroot/js/formatNumber.js',
 	'webroot/js/Display.js',
 	'webroot/js/AchievementAlerts.js',
 	'webroot/js/Rating.js',

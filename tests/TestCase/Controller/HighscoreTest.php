@@ -26,9 +26,9 @@ class HighscoreTest extends IntegrationTestCase
 
 		// Row 0 = header, rows 1-3 = users
 		$this->assertGreaterThanOrEqual(4, count($rows));
-		$this->assertRowContains($rows[1], '#1', 'DN_TopPlayer', '2,800');
-		$this->assertRowContains($rows[2], '#2', 'DN_MidPlayer', '2,200');
-		$this->assertRowContains($rows[3], '#3', 'DN_LowPlayer', '1,500');
+		$this->assertRowContains($rows[1], '#1', 'DN_TopPlayer', '2800');
+		$this->assertRowContains($rows[2], '#2', 'DN_MidPlayer', '2200');
+		$this->assertRowContains($rows[3], '#3', 'DN_LowPlayer', '1500');
 	}
 
 	//Rating highscore shows correct rank labels per rating.
