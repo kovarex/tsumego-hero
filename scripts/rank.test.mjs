@@ -58,3 +58,15 @@ test('a flat line still gets two ticks', () =>
 {
 	assert.deepEqual(rankTicks(1500, 1500, 8), [1450, 1550]);
 });
+
+test('the axis ends at the first rank edge at or over the highest rating', () =>
+{
+	for (const [min, max] of [[1100, 3180], [2600, 3100], [1400, 1500], [2000, 2050]])
+	{
+		const ticks = rankTicks(min, max, 7);
+		const end = ticks[ticks.length - 1];
+		assert.ok(end >= max, `${min}-${max}: ${ticks.join(',')}`);
+		assert.ok(getRankMinimalRating(getRankFromRating(end) - 1) < max, `${min}-${max}: no rank edge between the highest rating and the end, ${ticks.join(',')}`);
+	}
+	assert.deepEqual(rankTicks(1100, 3180, 7).map(getReadableRankFromRating), ['10k', '1d', '11d', '23d'], 'not 31d, the next tenth rank');
+});

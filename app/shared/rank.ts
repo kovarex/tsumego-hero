@@ -28,35 +28,34 @@ export function getRankMinimalRating(rank: number): number
 	return (rank - 38) * 30 + 2750;
 }
 
-//The ticks of a value axis at the lower edges of the ranks, from an edge at or under min to one at or over max, at
-//most maxCount of them: every rank, or every 2nd, 5th or 10th one counted from 1d, so 1d stays a tick when it is
-//on the axis.
+//The ticks of a value axis at the lower edges of the ranks, at most maxCount of them: from an edge at or under min,
+//every rank, or every 2nd, 5th, 10th or 20th one counted from 1d so 1d stays a tick when it is on the axis, and the
+//axis ends at the first edge at or over max, whichever rank it is, so no empty band is left over the line.
 export function rankTicks(min: number, max: number, maxCount: number): number[]
 {
 	const lowest = getRankFromRating(min);
-	const highest = Math.max(lowest + 1, getRankFromRating(max) + (getRankMinimalRating(getRankFromRating(max)) < max ? 1 : 0));
+	const top = Math.max(lowest + 1, getRankFromRating(max) + (getRankMinimalRating(getRankFromRating(max)) < max ? 1 : 0));
 	for (const step of [1, 2, 5, 10, 20])
 	{
-		const first = 31 + Math.floor((lowest - 31) / step) * step;
-		const last = 31 + Math.ceil((highest - 31) / step) * step;
-		if ((last - first) / step + 1 <= Math.max(2, maxCount) || step === 20)
+		const first = Math.max(1, 31 + Math.floor((lowest - 31) / step) * step);
+		const ranks: number[] = [];
+		for (let rank = first; rank < top; rank += step)
+			ranks.push(rank);
+		ranks.push(top);
+		if (ranks.length <= Math.max(2, maxCount) || step === 20)
 		{
-			const edges: number[] = [];
-			for (let rank = Math.max(1, first); rank <= last; rank += step)
-				edges.push(getRankMinimalRating(rank));
-			if (edges.length < 2)
-				return [edges[0], getRankMinimalRating(Math.max(1, first) + step)];
-			// from 8d up the ranks are 30 wide, not 100, so their edges crowd together: an edge too close to the one
-			// under it is left out, the top one stays as the end of the axis
+			const edges = ranks.map(getRankMinimalRating);
+			// from 8d up the ranks are 30 wide, not 100, so their edges crowd together, as does the top edge with the
+			// step under it: an edge too close to the one under it is left out, the top one stays as the end of the axis
 			const gap = (edges[edges.length - 1] - edges[0]) / Math.max(2, maxCount) * 0.6;
 			const ticks = [edges[0]];
 			for (const edge of edges.slice(1, -1))
 				if (edge - ticks[ticks.length - 1] >= gap)
 					ticks.push(edge);
-			const top = edges[edges.length - 1];
-			if (top - ticks[ticks.length - 1] < gap && ticks.length > 1)
+			const end = edges[edges.length - 1];
+			if (end - ticks[ticks.length - 1] < gap && ticks.length > 1)
 				ticks.pop();
-			ticks.push(top);
+			ticks.push(end);
 			return ticks;
 		}
 	}
