@@ -33,8 +33,8 @@ interface Props
 	startAtZero: boolean;
 	//under the title, as the ranges of the rating chart
 	header?: ReactNode;
-	//the left axis of a rating in go ranks: its ticks and grid lines at the lower edges of the ranks, named like "5k",
-	//and the tooltip adds the rank to the rating
+	//the left axis of a rating in go ranks: its ticks and grid lines at the lower edges of the ranks, named like "5k"
+	//in the chart's text colour rather than the colour of the series, and the tooltip adds the rank to the rating
 	rankAxis?: boolean;
 }
 
@@ -167,7 +167,7 @@ export function LineChart({ title, series, height, period, startAtZero, header, 
 						))}
 						{leftTicks && leftTicks.map(tick => (
 							<text key={'left' + tick} className="line-chart__tick" x={left - AXIS_GAP / 2} y={y(tick, leftTicks) + 4} textAnchor="end"
-								style={{ fill: series.find(oneSeries => oneSeries.axis === 'left')?.color }}>
+								style={rankAxis ? undefined : { fill: series.find(oneSeries => oneSeries.axis === 'left')?.color }}>
 								{leftLabel(tick)}
 							</text>
 						))}

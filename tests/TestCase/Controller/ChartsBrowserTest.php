@@ -231,6 +231,9 @@ class ChartsBrowserTest extends IntegrationTestCase
 		// 9k from 1150, 8k from 1250
 		$valueTicks = array_map(fn($tick) => $tick->getText(), $browser->getElements(".timeGraph .line-chart__tick[text-anchor='end']"));
 		$this->assertSame(['9k', '8k'], $valueTicks);
+		// the ranks are in the chart's text colour like the dates under it, not the green of the line
+		$colors = $browser->driver->executeScript("return [...document.querySelectorAll('.timeGraph .line-chart__tick')].map(tick => getComputedStyle(tick).fill)");
+		$this->assertCount(1, array_unique($colors), implode(', ', $colors));
 		$browser->assertNoJsErrors();
 	}
 }
