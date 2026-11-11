@@ -4,6 +4,7 @@ use App\Utility\ActivePlayers;
 use App\Utility\ChartRanges;
 use App\Utility\UserDay;
 use App\Utility\Util;
+use Cake\Cache\Cache;
 
 //The active players of the home page (ActivePlayers): the players who solved a problem each day, the days before
 //today kept for the day in the cache, today counted live, and the weeks and months as averages a day
@@ -69,18 +70,28 @@ class ActivePlayersTest extends IntegrationTestCase
 	//or once the cache is dropped; today is always counted again
 	public function testTheDaysBeforeTodayAreKeptForTheDay(): void
 	{
-		$context = $this->prepare();
-		$today = date('Y-m-d');
-		$before = ActivePlayers::history($today);
+		// the tests run without the cache (core.local.php), this one is about it
+		Cache::enable();
+		try
+		{
+			$context = $this->prepare();
+			$today = date('Y-m-d');
+			$before = ActivePlayers::history($today);
 
-		$this->attempts($context, [['solved' => true, 'created' => self::day(1) . ' 10:00:00', 'user_id' => (int) $context->otherUsers[1]['id']]]);
-		$this->attempts($context, [['solved' => true, 'created' => $today . ' 11:00:00', 'user_id' => (int) $context->otherUsers[1]['id']]]);
+			$this->attempts($context, [['solved' => true, 'created' => self::day(1) . ' 10:00:00', 'user_id' => (int) $context->otherUsers[1]['id']]]);
+			$this->attempts($context, [['solved' => true, 'created' => $today . ' 11:00:00', 'user_id' => (int) $context->otherUsers[1]['id']]]);
 
-		$this->assertSame($before, ActivePlayers::history($today), 'kept');
-		$this->assertSame(2, ActivePlayers::count($today), 'today is live');
-		$this->assertSame(1, ActivePlayers::history(date('Y-m-d', strtotime('+1 day')))[self::day(1)], 'counted again on the next day');
-		ActivePlayers::forget();
-		$this->assertSame(1, ActivePlayers::history($today)[self::day(1)], 'or once it is dropped');
+			$this->assertSame($before, ActivePlayers::history($today), 'kept');
+			$this->assertSame(2, ActivePlayers::count($today), 'today is live');
+			$this->assertSame(1, ActivePlayers::history(date('Y-m-d', strtotime('+1 day')))[self::day(1)], 'counted again on the next day');
+			ActivePlayers::forget();
+			$this->assertSame(1, ActivePlayers::history($today)[self::day(1)], 'or once it is dropped');
+		}
+		finally
+		{
+			ActivePlayers::forget();
+			Cache::disable();
+		}
 	}
 
 	//A week or a month is the average players a day of its days, a day without a solve counting as 0, and the day
