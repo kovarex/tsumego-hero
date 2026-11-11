@@ -2,10 +2,11 @@
 
 namespace App\Utility;
 
-//The days each player played in level mode, in user_day: a row for each day with an attempt, with the highest rating
-//written to an attempt that day (null when none had one) and whether one of them was solved. The rating chart of the
-//profile (UserProfile::ratingRanges) and the active players of the home page (ActivePlayers) read it instead of
-//grouping tsumego_attempt. A day is DATE(created) of the attempts on the server clock.
+//The days each player played, in user_day: a row for each day with an attempt in level mode or a solve in the time
+//mode, with the highest rating written to a level mode attempt that day (null when none had one) and whether a problem
+//was solved. The rating chart of the profile (UserProfile::ratingRanges) and the active players of the home page
+//(ActivePlayers) read it instead of grouping tsumego_attempt. A day is DATE(created) of the attempts, or of the time
+//mode solve, on the server clock.
 class UserDay
 {
 	//Keeps an attempt of the day: its rating if it is the day's highest so far, and the day as solved if it is

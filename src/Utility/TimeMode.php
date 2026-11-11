@@ -280,8 +280,12 @@ class TimeMode
 		if (!$currentAttempt)
 			return; // this tsumego is not related to our time mode session, we ignore it
 		$seconds = $timeout ? $this->overallSecondsToSolve : min($seconds, $this->overallSecondsToSolve);
-		self::recordAttempt($currentAttempt, self::deduceAttemptStatus($solved, $timeout), $seconds,
-			$solved ? self::calculatePoints($seconds, $this->overallSecondsToSolve) : 0);
+		$status = self::deduceAttemptStatus($solved, $timeout);
+		self::recordAttempt($currentAttempt, $status, $seconds, $solved ? self::calculatePoints($seconds, $this->overallSecondsToSolve) : 0);
+		// a solve makes the day one the player was active on (UserDay, the active players of the home page); the day's
+		// rating is the level mode's, the time mode leaves it as it is
+		if ($status === TimeModeAttemptStatusTable::SOLVED)
+			UserDay::record((int) $this->currentSession->user_id, date('Y-m-d'), null, true);
 		if (!$solved && $challengeFailedLine !== null && $this->currentSession->challenge_id !== null)
 			$challengeFailedLine->store($currentAttempt->id);
 		self::bumpChallengeOf($this->currentSession);

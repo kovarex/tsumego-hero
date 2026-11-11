@@ -65,12 +65,6 @@ foreach ($tsumegoButtonsOfPublishedTsumegos as $tsumegoButton)
 				class: 'chart-box'); ?>
 			<br>
 		</div>
-
-		<p class="title4">Active players</p>
-		<div class="new1">
-			<?php echo ChartRenderer::activePlayers($activePlayers); ?>
-			<br>
-		</div>
 	</div>
 
 	<div>
@@ -96,6 +90,13 @@ foreach ($tsumegoButtonsOfPublishedTsumegos as $tsumegoButton)
 				</div>
 			<?php endif; ?>
 		</div>
+
+		<section>
+			<p class="title4">Active players</p>
+			<div class="new1">
+				<?php echo ChartRenderer::activePlayers($activePlayers); ?>
+			</div>
+		</section>
 
 		<section>
 			<p class="title4">What's new | <time datetime="2026-10-28" data-format="date">2026-10-28</time></p>

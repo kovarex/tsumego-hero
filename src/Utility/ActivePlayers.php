@@ -4,9 +4,8 @@ namespace App\Utility;
 
 use Cake\Cache\Cache;
 
-//The "Active players" chart of the home page: how many players solved at least one problem each day, in level mode
-//(an attempt solved that day, user_day.solved), by DATE(created) on the server clock. The time mode and the mistake
-//training write no tsumego_attempt, so their solves don't count.
+//The "Active players" chart of the home page: how many players solved at least one problem each day, in level mode or
+//in the time mode (user_day.solved), on the server clock. The mistake training does not count.
 //The days before today are counted once, into active_players_day, by the daily cron (DailyCron), and read from there
 //once a day into the 'long' cache; today is counted live, and the ranges built from both are kept 5 minutes in the
 //'short' cache, so a view of the home page reads only the cache.
