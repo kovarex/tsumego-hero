@@ -10,7 +10,8 @@ use Cake\Console\ConsoleOptionParser;
 use Throwable;
 
 //bin/cake cron_daily: the daily work of the site (DailyCron), run by the scheduler at midnight UTC. Running it again
-//the same day only publishes what is due. A failure exits with an error code and its message, for the task's log.
+//the same day only publishes what is due. It prints nothing unless it fails, as the scheduler mails any output: a
+//failure exits with an error code and its message.
 class CronDailyCommand extends Command
 {
 	public static function defaultName(): string
@@ -27,7 +28,7 @@ class CronDailyCommand extends Command
 	{
 		try
 		{
-			$io->out(DailyCron::run() ? 'Did the work of the day.' : 'The day was done already, published what was due.');
+			DailyCron::run();
 			return static::CODE_SUCCESS;
 		}
 		catch (Throwable $exception)

@@ -11,8 +11,8 @@ use Throwable;
 
 //bin/cake cron_hourly: gives the players whose day turned since the last run their hearts and hero powers back
 //(DailyReset::resetDuePlayers()), as each player's day turns at 03:00 in their own time zone. Run every hour, or more
-//often; a run with nobody behind changes nothing. A failure exits with an error code and its message, for the
-//task's log.
+//often; a run with nobody behind changes nothing. It prints nothing unless it fails, as the scheduler mails any
+//output: a failure exits with an error code and its message.
 class CronHourlyCommand extends Command
 {
 	public static function defaultName(): string
@@ -29,7 +29,7 @@ class CronHourlyCommand extends Command
 	{
 		try
 		{
-			$io->out('Reset ' . DailyReset::resetDuePlayers() . ' players.');
+			DailyReset::resetDuePlayers();
 			return static::CODE_SUCCESS;
 		}
 		catch (Throwable $exception)

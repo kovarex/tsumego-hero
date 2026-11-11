@@ -168,10 +168,13 @@ class CronDailyCommandTest extends IntegrationTestCase
 
 		$this->exec('cron_daily');
 		$this->assertExitSuccess();
-		$this->assertOutputContains('Did the work of the day.');
+		// silent when it works, as the scheduler mails any output
+		$this->assertOutputEmpty();
+		$this->assertErrorEmpty();
 		$this->exec('cron_daily');
 		$this->assertExitSuccess();
-		$this->assertOutputContains('The day was done already, published what was due.');
+		$this->assertOutputEmpty();
+		$this->assertErrorEmpty();
 
 		$this->assertSame(1, $this->fetchTable('DayRecord')->find()->count());
 		$this->assertSame(1, $this->fetchTable('AchievementCondition')->find()->where(['achievement_condition_category_id' => AchievementConditionTable::CATEGORY_USER_OF_THE_DAY])->count());
