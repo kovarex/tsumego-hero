@@ -5,6 +5,7 @@ use App\Model\Table\ChallengeTable;
 use App\Model\Table\TimeModeCategoryTable;
 use App\Model\Table\TimeModeAttemptStatusTable;
 use App\Model\Table\TimeModeSessionStatusTable;
+use App\Utility\ActivePlayers;
 use App\Utility\Auth;
 use App\Utility\Constants;
 use App\Utility\CookieFlash;
@@ -778,6 +779,23 @@ class ChallengesControllerTest extends IntegrationTestCase
 
 	//A fail and a time-out keep the line played, in the coordinates of the version played; a line that
 	//isn't one, or one on a version of another problem, is left out and the result still counts
+	//A challenge run is a time mode session, so a problem solved in it makes the day one the player was active on
+	//(user_day.solved, the active players of the home page), and a run of fails only does not
+	public function testASolveInAChallengeMakesTheDayActive(): void
+	{
+		$this->prepare(4);
+		$solvedOn = fn() => array_map(fn($row) => (int) $row['solved'], Util::query('SELECT solved FROM user_day WHERE user_id = ? AND day = ?', [$this->userId('challenger'), date('Y-m-d')]));
+
+		// a player has one run in a challenge, so the run of fails is in a challenge of its own
+		$this->playRun($this->create(['problem_count' => 2]), [[PlayOutcome::Failed, 10], [PlayOutcome::Failed, 10]]);
+		$this->assertSame([], $solvedOn(), 'fails do not');
+		$this->playRun($this->create(['problem_count' => 2]), [[PlayOutcome::Failed, 10], [PlayOutcome::SolvedClean, 10]]);
+
+		$this->assertSame([1], $solvedOn());
+		$this->assertSame([], Util::query('SELECT id FROM tsumego_attempt WHERE user_id = ?', [$this->userId('challenger')]), 'through the time mode, not a level mode attempt');
+		$this->assertSame(1, ActivePlayers::count(date('Y-m-d')));
+	}
+
 	public function testAFailedProblemKeepsTheLinePlayed(): void
 	{
 		$this->prepare(12, self::SGF);
