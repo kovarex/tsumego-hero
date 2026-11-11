@@ -56,7 +56,7 @@
 }
 
 /* Room for the icons: the menu buttons are a little narrower */
-@media (width >= 64rem)
+@media (width >= 77.5rem)
 {
 	/* As wide as its buttons, so they start right after the logo instead of centred in a fixed box */
 	.site-nav
@@ -84,7 +84,7 @@
 	}
 }
 
-@media (width < 64rem)
+@media (width < 77.5rem)
 {
 	.header-icons
 	{

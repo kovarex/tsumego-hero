@@ -296,7 +296,7 @@
 	font-size: 12px;
 }
 
-@media (width < 64rem)
+@media (width < 77.5rem)
 {
 	.daily-streak
 	{
