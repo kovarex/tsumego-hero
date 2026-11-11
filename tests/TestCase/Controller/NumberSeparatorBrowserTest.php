@@ -24,14 +24,18 @@ class NumberSeparatorBrowserTest extends IntegrationTestCase
 
 	public function testTheAccountBarGroupsTheXpOnHover(): void
 	{
-		new ContextPreparator(['user' => ['name' => 'Veteran', 'level' => 100, 'xp' => 12345]]);
+		$context = new ContextPreparator(['user' => ['name' => 'Veteran', 'level' => 100, 'xp' => 12345]]);
 		$browser = Browser::instance();
 		$browser->setCookie('showInAccountWidget', 'level');
 		$browser->get('users/highscore');
 		$browser->hover($browser->find('#account-bar-wrapper'));
 		$browser->waitUntilJs('document.getElementById("account-bar-xp").textContent.includes("/")');
 		[$xp, $next] = explode('/', $browser->find('#account-bar-xp')->getText());
-		$this->assertSame('12' . Util::THOUSANDS_SEPARATOR . '345', $xp);
+		// the page load grants the level achievements and their XP, so the bar shows the XP the row has after it
+		$stored = (int) Util::query('SELECT xp FROM user WHERE id = ?', [$context->user['id']])[0]['xp'];
+		$this->assertGreaterThanOrEqual(10000, $stored);
+		$this->assertSame(Util::formatNumber($stored), $xp);
+		$this->assertMatchesRegularExpression(self::GROUPED, $xp);
 		$this->assertMatchesRegularExpression(self::GROUPED, $next);
 		$browser->assertNoJsErrors();
 	}
