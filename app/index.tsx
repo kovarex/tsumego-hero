@@ -12,6 +12,7 @@ import { LineChart } from './charts/LineChart';
 import { BarChart } from './charts/BarChart';
 import { LevelChart } from './charts/LevelChart';
 import { RangeChart } from './charts/RangeChart';
+import { GrowthChart } from './charts/GrowthChart';
 import { syncMenuNewBadge } from './changelog/changelogCount';
 import { queryClient } from './queryClient';
 import { localizeTimeElements } from './shared/dates';
@@ -31,6 +32,7 @@ function initializeApp()
 	mountApp('[data-line-chart-root]', LineChart);
 	mountApp('[data-bar-chart-root]', BarChart);
 	mountApp('[data-range-chart-root]', RangeChart);
+	mountApp('[data-growth-chart-root]', GrowthChart);
 	mountApp('[data-level-chart-root]', LevelChart);
 
 	syncMenuNewBadge();

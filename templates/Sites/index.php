@@ -10,7 +10,7 @@ use App\Utility\TsumegoUtil;
 /**
  * @var \App\View\AppView $this
  * @var array<int, array{date: string, problems: int|null, users: int|null}> $chartData
- * @var array $activePlayers The players who solved a problem each day, every range (ActivePlayers::ranges())
+ * @var array $activePlayers The players who solved a problem each day, every range (ActivePlayers::ranges()), behind the toggle of the Site Growth chart
  * @var string|null $latestPublishDate
  * @var string $quote
  * @var array $recentAchievements
@@ -54,15 +54,7 @@ foreach ($tsumegoButtonsOfPublishedTsumegos as $tsumegoButton)
 
 		<p class="title4">Site Growth</p>
 		<div class="new1">
-			<?php echo ChartRenderer::line(
-				title: null,
-				series: [
-					['label' => 'Problems', 'color' => '#d19fe4', 'axis' => 'left', 'fill' => true, 'points' => array_map(fn($month) => [$month['date'], $month['problems']], $chartData)],
-					['label' => 'Users', 'color' => '#5b9bd5', 'axis' => 'right', 'fill' => false, 'points' => array_map(fn($month) => [$month['date'], $month['users']], $chartData)]],
-				period: 'month',
-				height: 360,
-				startAtZero: true,
-				class: 'chart-box'); ?>
+			<?php echo ChartRenderer::siteGrowth($chartData, $activePlayers); ?>
 			<br>
 		</div>
 	</div>
@@ -90,13 +82,6 @@ foreach ($tsumegoButtonsOfPublishedTsumegos as $tsumegoButton)
 				</div>
 			<?php endif; ?>
 		</div>
-
-		<section>
-			<p class="title4">Active players</p>
-			<div class="new1">
-				<?php echo ChartRenderer::activePlayers($activePlayers); ?>
-			</div>
-		</section>
 
 		<section>
 			<p class="title4">What's new | <time datetime="2026-10-28" data-format="date">2026-10-28</time></p>

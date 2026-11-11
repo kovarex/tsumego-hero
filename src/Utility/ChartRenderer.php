@@ -47,10 +47,20 @@ class ChartRenderer
 		return self::ranges('Overall rating', 'Rating', '#74d14c', $ranges, true, false, 'timeGraph');
 	}
 
-	//The players who solved a problem each day, ActivePlayers::ranges(), for the home page, under its heading
-	public static function activePlayers(array $ranges): string
+	//The "Site Growth" chart of the home page (app/charts/GrowthChart.tsx): the problems and the users month by month
+	//(SiteGrowth::chartData()), and behind a toggle the players who solved a problem each day with their ranges
+	//(ActivePlayers::ranges()), both printed with the page
+	/** @param array<int, array{date: string, problems: int|null, users: int|null}> $growth */
+	public static function siteGrowth(array $growth, array $activeRanges): string
 	{
-		return self::ranges(null, 'Players', '#5b9bd5', $ranges, false, true, 'active-players-chart');
+		return self::mount('data-growth-chart-root', 'chart-box', [
+			'growth' => [
+				'series' => [
+					['label' => 'Problems', 'color' => '#d19fe4', 'axis' => 'left', 'fill' => true, 'points' => array_map(fn($month) => [$month['date'], $month['problems']], $growth)],
+					['label' => 'Users', 'color' => '#5b9bd5', 'axis' => 'right', 'fill' => false, 'points' => array_map(fn($month) => [$month['date'], $month['users']], $growth)]],
+				'period' => 'month',
+				'height' => 360],
+			'active' => ['label' => 'Players', 'color' => '#5b9bd5', 'ranges' => $activeRanges, 'initial' => ChartRanges::DEFAULT]]);
 	}
 
 	//Horizontal stacked bars, one for each of the $rows, labeled by the date in its $categoryColumn; a series takes its
