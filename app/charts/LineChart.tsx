@@ -108,6 +108,9 @@ export function LineChart({ title, series, height, period, startAtZero, header, 
 			? rankTicks(min, Math.max(min, ...values), count)
 			: valueTicks(min, Math.max(min, ...values), count);
 	};
+	//With an axis on each side the labels take the colour of their series, to tell the axes apart; a single axis is in
+	//the chart's text colour, which reads better
+	const twoAxes = leftTicks !== null && rightTicks !== null;
 	const leftLabel = (tick: number) => rankAxis ? getReadableRankFromRating(tick) : formatChartValue(tick);
 	const leftTicks = axisTicks('left');
 	const rightTicks = axisTicks('right');
@@ -170,13 +173,13 @@ export function LineChart({ title, series, height, period, startAtZero, header, 
 						))}
 						{leftTicks && leftTicks.map(tick => (
 							<text key={'left' + tick} className="line-chart__tick" x={left - AXIS_GAP / 2} y={y(tick, leftTicks) + 4} textAnchor="end"
-								style={rankAxis ? undefined : { fill: series.find(oneSeries => oneSeries.axis === 'left')?.color }}>
+								style={twoAxes ? { fill: series.find(oneSeries => oneSeries.axis === 'left')?.color } : undefined}>
 								{leftLabel(tick)}
 							</text>
 						))}
 						{rightTicks && rightTicks.map(tick => (
 							<text key={'right' + tick} className="line-chart__tick" x={right + AXIS_GAP / 2} y={y(tick, rightTicks) + 4} textAnchor="start"
-								style={{ fill: series.find(oneSeries => oneSeries.axis === 'right')?.color }}>
+								style={twoAxes ? { fill: series.find(oneSeries => oneSeries.axis === 'right')?.color } : undefined}>
 								{formatChartValue(tick)}
 							</text>
 						))}

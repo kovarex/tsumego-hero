@@ -78,6 +78,9 @@ class ChartsBrowserTest extends IntegrationTestCase
 			JS);
 		$browser->waitUntilCssSelectorDisplayed('.active-players-chart .chart__tooltip');
 		$this->assertSame("Today so far\nPlayers: 1", $browser->find('.active-players-chart .chart__tooltip')->getText());
+		// one axis: its numbers in the chart's text colour like the dates, not the blue of the line
+		$colors = $browser->driver->executeScript("return [...document.querySelectorAll('.active-players-chart .line-chart__tick')].map(tick => getComputedStyle(tick).fill)");
+		$this->assertCount(1, array_unique($colors), implode(', ', $colors));
 
 		$browser->driver->executeScript("[...document.querySelectorAll('.active-players-chart .range-chart__range')].find(button => button.textContent === '1Y').click()");
 		$browser->waitUntil(fn() => $state()['active'] === '1Y', 10, 'the range 1Y');
