@@ -14,6 +14,7 @@ use App\Utility\Util;
 use Cake\Log\Log;
 use Cake\ORM\TableRegistry;
 use Cake\Validation\Validator;
+use Cake\Chronos\ChronosDate;
 use DateTimeInterface;
 use RuntimeException;
 use Throwable;
@@ -138,6 +139,9 @@ class UserTable extends AppTable
 		foreach ($row as $field => $value)
 			if ($value instanceof DateTimeInterface)
 				$row[$field] = $value->format('Y-m-d H:i:s');
+			// a DATE column (streak_last_day, streak_day, daily_reset_day) is a ChronosDate, which isn't a DateTimeInterface
+			elseif ($value instanceof ChronosDate)
+				$row[$field] = $value->format('Y-m-d');
 		return $row;
 	}
 

@@ -8,9 +8,6 @@ Configure::write('debug', 2);
 // Disable cache
 Configure::write('Cache.disable', true);
 
-// Dummy cron secret for tests
-define('CRON_SECRET', 'ci-test-secret');
-
 // The salt of the CI runs only; no server uses it
 Configure::write('Security.salt', 'ci-only-salt-of-the-test-runs-not-used-by-any-server');
 

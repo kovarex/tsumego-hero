@@ -15,7 +15,7 @@ class AchievementConditionTable extends AppTable
 	public const CATEGORY_SET_TIME = 2; // the best average seconds per problem on a part of the set
 	public const CATEGORY_SET_ACCURACY = 3; // the best accuracy on a part of the set, in percent
 	public const CATEGORY_NO_ERROR_STREAK = 4; // problems solved in a row without a mistake
-	public const CATEGORY_POTION = 5; // potions drunk today, the daily cron resets it
+	public const CATEGORY_POTION = 5; // potions drunk on the player's day, DailyReset sets it back
 	public const CATEGORY_SPRINT = 6; // problems solved in a row during a sprint
 	public const CATEGORY_GOLDEN = 7; // golden problems solved in a row
 	public const CATEGORY_USER_OF_THE_DAY = 8; // 1 once the player was the user of the day

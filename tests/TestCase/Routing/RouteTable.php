@@ -258,10 +258,6 @@ return [
 		'/comments/index' => ['Comments', 'index', []],
 		'/comments/index/7' => ['Comments', 'index', ['7']],
 
-		'/cron' => ['Cron', 'index', []],
-		'/cron/daily' => ['Cron', 'daily', []],
-		'/cron/daily/7' => ['Cron', 'daily', ['7']],
-
 		'/editor/index' => ['Editor', 'index', []],
 		'/editor/index/7' => ['Editor', 'index', ['7']],
 
@@ -532,6 +528,8 @@ return [
 		'/users/restore_account/7' => ['Users', 'restore_account', ['7']],
 		'/users/settings' => ['Users', 'settings', []],
 		'/users/settings/7' => ['Users', 'settings', ['7']],
+		'/users/levelDays' => ['Users', 'levelDays', []],
+		'/users/levelDays/7' => ['Users', 'levelDays', ['7']],
 		'/users/solveHistory' => ['Users', 'solveHistory', []],
 		'/users/solveHistory/7' => ['Users', 'solveHistory', ['7']],
 		'/users/time_mode' => ['Users', 'time_mode', []],
