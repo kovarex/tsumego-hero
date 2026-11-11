@@ -82,7 +82,7 @@ $cellSymbols = ['failed' => '✗', 'timeout' => '⏱', 'skipped' => '–', 'queu
 						?>
 						<td class="challenges__cell challenges__cell--link challenges__cell--<?= h($status) ?><?= $failedLine ? ' challenges__cell--line' : '' ?>"
 							<?= $failedLine ? ' data-failed-line="' . h(json_encode($failedLine)) . '"' : '' ?>>
-							<a class="challenges__cell-link" href="<?= h($problemButton->linkPrefix . $problemButton->setConnectionID) ?>" title="Problem <?= (int) $order ?>">
+							<a class="challenges__cell-link" href="<?= h($problemButton->linkPrefix . $problemButton->setConnectionID) ?>">
 								<?= $status === 'solved' ? ChallengeTable::formatPoints((float) $attempt['points']) : $cellSymbols[$status] ?? '' ?>
 								<?php if ($failedLine): ?><span class="tooltip-box challenges__line-board"></span><?php endif; ?>
 							</a>

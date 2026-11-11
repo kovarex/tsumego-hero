@@ -515,6 +515,8 @@ class ChallengesControllerTest extends IntegrationTestCase
 		$browser->get('/challenges/' . $challengeId);
 		$this->assertCount(10, $browser->getElements('#challenge-standings td.challenges__cell--link'), 'the cells of both players, also of the one who hasn\'t played');
 		$this->assertSame($secondProblem, $browser->driver->executeScript('return document.querySelector(arguments[0] + " a.challenges__cell-link").pathname;', [$myCell]));
+		// the moves of a failed line are the cell's only tooltip, the link has none of its own
+		$this->assertSame(0, $browser->driver->executeScript('return document.querySelectorAll("#challenge-standings a.challenges__cell-link[title]").length;'));
 		$fills = $browser->driver->executeScript('const cell = document.querySelector(arguments[0]).getBoundingClientRect(), link = document.querySelector(arguments[0] + " a").getBoundingClientRect(); return [Math.round(link.width - cell.width), Math.round(link.left - cell.left)];', [$myCell]);
 		// within the cell's border
 		$this->assertEqualsWithDelta(0, $fills[0], 2, 'the link spans the width of the cell');
