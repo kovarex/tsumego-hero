@@ -75,11 +75,17 @@ $cellSymbols = ['failed' => '✗', 'timeout' => '⏱', 'skipped' => '–', 'queu
 							$attempt = $row['session_id'] === null ? null : ($attemptsByRun[(int) $row['session_id']][$order] ?? null);
 							$status = $attempt['status'] ?? 'queued';
 						?>
-						<?php $failedLine = $attempt['failedLine'] ?? null; ?>
-						<td class="challenges__cell challenges__cell--<?= h($status) ?><?= $failedLine ? ' challenges__cell--line' : '' ?>"
-							<?= $failedLine ? ' tabindex="0" data-failed-line="' . h(json_encode($failedLine)) . '"' : '' ?>>
-							<?= $status === 'solved' ? ChallengeTable::formatPoints((float) $attempt['points']) : $cellSymbols[$status] ?? '' ?>
-							<?php if ($failedLine): ?><span class="tooltip-box challenges__line-board"></span><?php endif; ?>
+						<?php
+							$failedLine = $attempt['failedLine'] ?? null;
+							// the whole cell is the link to its problem (the columns of the problems are there once they show)
+							$problemButton = $problemButtons[$order];
+						?>
+						<td class="challenges__cell challenges__cell--link challenges__cell--<?= h($status) ?><?= $failedLine ? ' challenges__cell--line' : '' ?>"
+							<?= $failedLine ? ' data-failed-line="' . h(json_encode($failedLine)) . '"' : '' ?>>
+							<a class="challenges__cell-link" href="<?= h($problemButton->linkPrefix . $problemButton->setConnectionID) ?>" title="Problem <?= (int) $order ?>">
+								<?= $status === 'solved' ? ChallengeTable::formatPoints((float) $attempt['points']) : $cellSymbols[$status] ?? '' ?>
+								<?php if ($failedLine): ?><span class="tooltip-box challenges__line-board"></span><?php endif; ?>
+							</a>
 						</td>
 						<?php endforeach; ?>
 					</tr>
@@ -92,7 +98,7 @@ $cellSymbols = ['failed' => '✗', 'timeout' => '⏱', 'skipped' => '–', 'queu
 			<span class="challenges__cell challenges__cell--failed">✗</span> failed
 			<span class="challenges__cell challenges__cell--timeout">⏱</span> out of time
 			<span class="challenges__cell challenges__cell--skipped">–</span> skipped.
-			Point at or tap a ✗ or ⏱ to see the moves played until then.</p>
+			A cell opens its problem; point at a ✗ or ⏱ to see the moves played until then (on a phone, tap it once to see them and again to open the problem).</p>
 		<?php elseif ($finishedCount > 0): ?>
 		<p class="hint">How everyone did with each problem shows once you finish your run.</p>
 		<?php endif; ?>

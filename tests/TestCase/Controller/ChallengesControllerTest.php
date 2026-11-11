@@ -166,7 +166,10 @@ class ChallengesControllerTest extends IntegrationTestCase
 		$this->login('challenger');
 
 		$this->assertNull($this->create(['minimum_rank' => $this->rankId('1d'), 'maximum_rank' => $this->rankId('1d')]));
-		$this->assertStringEndsWith('/challenges', $this->headerValue('Location'));
+		// back to the list with the form open, to pick other ranks
+		$this->assertStringEndsWith('/challenges?new=1', $this->headerValue('Location'));
+		$this->get('/challenges?new=1');
+		$this->assertTextContains('<details class="challenges__create" id="challenges-create" open>', $this->view);
 	}
 
 	public function testAnUnknownTimeForAProblemIsRefused(): void
@@ -498,6 +501,35 @@ class ChallengesControllerTest extends IntegrationTestCase
 		$browser->assertNoJsErrors();
 	}
 
+	//Once the problems show, the whole cell of a problem is a link to it: a real link (so the middle button
+	//and a new tab work) that fills the cell, and a click on the rest of a taller cell opens it too.
+	public function testTheWholeCellOfAProblemOpensIt(): void
+	{
+		$this->prepare();
+		$challengeId = $this->create(['problem_count' => 5, 'players' => 'DN_friend']);
+		$this->playRun($challengeId, array_fill(0, 5, [PlayOutcome::SolvedClean, 10]));
+		$secondProblem = '/' . SetConnectionTable::findDisplaySetConnection(ChallengeTable::problemIDs($challengeId)[1])->id;
+		$myCell = '#challenge-standings tr[data-user-id="' . $this->userId('challenger') . '"] td.challenges__cell--link:nth-last-child(4)';
+
+		$browser = Browser::instance();
+		$browser->get('/challenges/' . $challengeId);
+		$this->assertCount(10, $browser->getElements('#challenge-standings td.challenges__cell--link'), 'the cells of both players, also of the one who hasn\'t played');
+		$this->assertSame($secondProblem, $browser->driver->executeScript('return document.querySelector(arguments[0] + " a.challenges__cell-link").pathname;', [$myCell]));
+		$fills = $browser->driver->executeScript('const cell = document.querySelector(arguments[0]).getBoundingClientRect(), link = document.querySelector(arguments[0] + " a").getBoundingClientRect(); return [Math.round(link.width - cell.width), Math.round(link.left - cell.left)];', [$myCell]);
+		// within the cell's border
+		$this->assertEqualsWithDelta(0, $fills[0], 2, 'the link spans the width of the cell');
+		$this->assertEqualsWithDelta(0, $fills[1], 1);
+
+		// a click on the cell itself, outside the link, as on the rest of a cell taller than its link
+		$browser->driver->executeScript('document.querySelector(arguments[0]).dispatchEvent(new MouseEvent("click", {bubbles: true, cancelable: true}));', [$myCell]);
+		$browser->waitUntilJs('location.pathname === ' . json_encode($secondProblem));
+
+		$browser->get('/challenges/' . $challengeId);
+		$browser->find($myCell)->click();
+		$browser->waitUntilJs('location.pathname === ' . json_encode($secondProblem));
+		$browser->assertNoJsErrors();
+	}
+
 	//The table the refresh puts in has the lines of the fails too, and pointing at a failed cell of it
 	//shows its board: the listeners are on the section, which stays.
 	public function testAFailedLineShowsOnTheTableTheRefreshPutsIn(): void
@@ -706,7 +738,8 @@ class ChallengesControllerTest extends IntegrationTestCase
 
 		$toggle->click();
 		$this->assertTrue($panel->isDisplayed());
-		$browser->find('.challenges__title')->click();
+		// a tap anywhere else closes it
+		$browser->find('.challenges__intro')->click();
 		$this->assertFalse($panel->isDisplayed());
 		$browser->assertNoJsErrors();
 	}

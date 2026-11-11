@@ -23,6 +23,8 @@ class PlayerNameSuggestionsBrowserTest extends IntegrationTestCase
 		FriendshipTable::accept((int) ContextPreparator::getUserIdFromName('inviter'), (int) ContextPreparator::getUserIdFromName('friend'));
 		$browser = Browser::instance();
 		$browser->get('challenges');
+		// the form is folded behind its button
+		$browser->clickId('challenges-new');
 
 		$field = $browser->find('#challenge-players');
 		$this->assertSame('combobox', $field->getAttribute('role'));

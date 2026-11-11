@@ -105,6 +105,87 @@
 	}
 }
 
+/* The challenges waiting for the player, first on the page: a row each, what it is on the left, the way in
+   on the right; on a phone the buttons go under it. Divs, not a <ul>: base.css still floats every li. */
+.challenges__waiting-row
+{
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: var(--space-2) var(--space-4);
+	padding: var(--space-3) 0;
+	border-top: 1px solid var(--color-border);
+}
+
+.challenges__waiting-row:first-child
+{
+	border-top: none;
+	padding-top: 0;
+}
+
+.challenges__waiting-what
+{
+	display: flex;
+	flex-direction: column;
+	gap: var(--space-1);
+	min-width: 0;
+	flex: 1 1 18rem;
+}
+
+.challenges__waiting-title
+{
+	font-weight: var(--weight-bold);
+	overflow-wrap: anywhere;
+}
+
+.challenges__waiting-actions
+{
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: var(--space-2);
+}
+
+.challenges__waiting-actions .challenges__inline-form
+{
+	margin-left: 0;
+}
+
+/* The form to start a challenge, folded behind its button (a <details>, its summary the button) */
+.challenges__create
+{
+	margin-bottom: var(--space-4);
+	text-align: center;
+}
+
+.challenges__create > summary
+{
+	list-style: none;
+	cursor: pointer;
+}
+
+.challenges__create > summary::-webkit-details-marker
+{
+	display: none;
+}
+
+.challenges__create[open] > summary
+{
+	margin-bottom: var(--space-3);
+}
+
+.challenges__create > .challenges__section
+{
+	text-align: left;
+}
+
+.challenges__create:not([open]) .challenges__create-close,
+.challenges__create[open] .challenges__create-open
+{
+	display: none;
+}
+
 /* The player's challenges (Challenges/index.php): a table on a computer, a few lines for each
    challenge on a phone. */
 .challenges__list
@@ -537,9 +618,40 @@
 }
 
 .challenges__cell--line:hover .challenges__line-board,
-.challenges__cell--line:focus .challenges__line-board
+.challenges__cell--line:focus .challenges__line-board,
+.challenges__cell--line:focus-within .challenges__line-board
 {
 	opacity: 1;
+}
+
+/* Once the problems show, the whole cell is the link to its problem: the link fills it, with the cell's
+   padding, and points and focus show as the focus ring inside the cell (outside it the scrolling wrapper
+   of the table would cut it off). */
+.challenges__table td.challenges__cell--link
+{
+	padding: 0;
+	cursor: pointer;
+}
+
+.challenges__cell-link
+{
+	display: block;
+	padding: var(--space-1) var(--space-2);
+	min-height: 100%;
+	text-decoration: none;
+	cursor: pointer;
+}
+
+.challenges__cell-link:hover
+{
+	box-shadow: inset 0 0 0 2px var(--color-focus);
+	text-decoration: underline;
+}
+
+.challenges__cell-link:focus-visible
+{
+	outline: 2px solid var(--color-focus);
+	outline-offset: -2px;
 }
 
 .challenges__cell--skipped
