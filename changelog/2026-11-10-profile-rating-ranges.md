@@ -1,1 +1,1 @@
-Added: The rating chart of the profile has buttons to show the last month, six months, year or all of it; the longer ranges show the best rating of each week or month.
+Added: The rating chart of the profile has buttons to show the last month, six months, year or all of it; the longer ranges show the best rating of each week or month. Its axis, and that of a problem's rating history, is marked with the ranks, and the tooltip names the rank of the rating.

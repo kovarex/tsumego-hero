@@ -108,7 +108,7 @@ class ChartsBrowserTest extends IntegrationTestCase
 	}
 
 	//The ranges above the rating chart: 6M with the page, a click on another loads it, a point a week for a year and a
-	//point a month for all of five years
+	//point a month for all of five years; the value axis is in ranks
 	public function testProfileRatingChartSwitchesRanges(): void
 	{
 		$day = fn(int $daysAgo) => date('Y-m-d', strtotime('-' . $daysAgo . ' days'));
@@ -129,7 +129,8 @@ class ChartsBrowserTest extends IntegrationTestCase
 			return {
 				ranges: [...chart.querySelectorAll('.rating-chart__range')].map(button => button.textContent),
 				active: chart.querySelector('.rating-chart__range[aria-pressed="true"]')?.textContent ?? null,
-				points: line ? line.getAttribute('d').split('L').length : 0};
+				points: line ? line.getAttribute('d').split('L').length : 0,
+				ranks: [...chart.querySelectorAll(".line-chart__tick[text-anchor='end']")].map(tick => tick.textContent)};
 			JS);
 			ksort($state);
 			return $state;
@@ -140,7 +141,8 @@ class ChartsBrowserTest extends IntegrationTestCase
 			return $state()['points'];
 		};
 		$browser->waitUntilCssSelectorDisplayed('#profile-chart-rating .line-chart__line');
-		$this->assertSame(['active' => '6M', 'points' => 3, 'ranges' => ['1M', '6M', '1Y', 'All']], $state());
+		// the axis names the ranks at their lower edges around the ratings of half a year, 1400 to 1500
+		$this->assertSame(['active' => '6M', 'points' => 3, 'ranges' => ['1M', '6M', '1Y', 'All'], 'ranks' => ['7k', '6k', '5k']], $state());
 
 		$this->assertSame(4, $pick('1Y'), 'a point a week');
 		$months = count(array_unique(array_map(fn($daysAgo) => substr($day($daysAgo), 0, 7), [1800, 300, 100, 10, 3])));
@@ -164,10 +166,10 @@ class ChartsBrowserTest extends IntegrationTestCase
 		$browser->get('tsumegos/history/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		$browser->waitUntilCssSelectorDisplayed('.timeGraph .line-chart__line');
 		$this->assertSame('Rating history', $browser->find('.timeGraph .chart__title')->getText());
-		// the value axis fits the rating instead of starting at zero
+		// the value axis fits the rating instead of starting at zero, with its ticks at the edges of the ranks around it:
+		// 9k from 1150, 8k from 1250
 		$valueTicks = array_map(fn($tick) => $tick->getText(), $browser->getElements(".timeGraph .line-chart__tick[text-anchor='end']"));
-		$this->assertSame('1,200', $valueTicks[0]);
-		$this->assertSame('1,250', end($valueTicks));
+		$this->assertSame(['9k', '8k'], $valueTicks);
 		$browser->assertNoJsErrors();
 	}
 }

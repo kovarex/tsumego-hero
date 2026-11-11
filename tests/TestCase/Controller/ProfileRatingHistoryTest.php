@@ -1,9 +1,11 @@
 <?php
 
 use App\Utility\UserProfile;
+use App\Utility\Util;
 
 //The rating chart of the profile in ranges (UserProfile::ratingHistory, /users/ratingHistory/{id}?range=1M|6M|1Y|All):
-//the highest rating of each day, or of each week or month once a range would draw more than RATING_POINTS days.
+//the highest rating of each day, or of each week or month once a range would draw more than RATING_POINTS days, from
+//the kept day ratings (user_rating_day), which the fixture writes with each attempt as the site does.
 class ProfileRatingHistoryTest extends IntegrationTestCase
 {
 	private static function day(int $daysAgo): string
@@ -66,6 +68,19 @@ class ProfileRatingHistoryTest extends IntegrationTestCase
 
 		$this->assertSame(UserProfile::ratingHistory($userID, '6M'), UserProfile::ratingHistory($userID, '2W'));
 		$this->assertSame(UserProfile::ratingHistory($userID, '6M'), UserProfile::ratingHistory($userID));
+	}
+
+	//The ranges read the kept day ratings (user_rating_day), not the attempts: before the backfill a day played
+	//before the table was is not on the chart, and All starts with the first kept day
+	public function testTheRangesReadTheKeptDays(): void
+	{
+		$userID = (int) $this->prepare()->user['id'];
+		Util::execute('DELETE FROM user_rating_day WHERE day < ?', [self::day(50)]);
+		Util::execute('UPDATE user_rating_day SET rating = 1700 WHERE day = ?', [self::day(3)]);
+
+		$this->assertSame([[self::day(10), 1520], [self::day(3), 1700]], UserProfile::ratingHistory($userID, '1M')['points'], 'the kept rating, not the attempts\'');
+		$all = UserProfile::ratingHistory($userID, 'All');
+		$this->assertSame(['day', [[self::day(10), 1520], [self::day(3), 1700]]], [$all['period'], $all['points']], 'all of it is the ten days kept, a point a day');
 	}
 
 	public function testAPlayerWithoutAttemptsHasNoPoints(): void

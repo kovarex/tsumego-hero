@@ -80,6 +80,7 @@ export function RatingChart({ playerId, ranges, history }: Props)
 			period={shown.period}
 			height={360}
 			startAtZero={false}
+			rankAxis
 		/>
 	);
 }
