@@ -108,12 +108,12 @@ export function LineChart({ title, series, height, period, startAtZero, header, 
 			? rankTicks(min, Math.max(min, ...values), count)
 			: valueTicks(min, Math.max(min, ...values), count);
 	};
-	//With an axis on each side the labels take the colour of their series, to tell the axes apart; a single axis is in
-	//the chart's text colour, which reads better
-	const twoAxes = leftTicks !== null && rightTicks !== null;
 	const leftLabel = (tick: number) => rankAxis ? getReadableRankFromRating(tick) : formatChartValue(tick);
 	const leftTicks = axisTicks('left');
 	const rightTicks = axisTicks('right');
+	//With an axis on each side the labels take the colour of their series, to tell the axes apart; a single axis is in
+	//the chart's text colour, which reads better
+	const twoAxes = leftTicks !== null && rightTicks !== null;
 	const axisWidth = (ticks: number[] | null, label: (tick: number) => string) =>
 		ticks ? Math.max(...ticks.map(tick => label(tick).length)) * CHARACTER_WIDTH + AXIS_GAP : AXIS_GAP;
 	const left = axisWidth(leftTicks, leftLabel);
