@@ -783,13 +783,13 @@ class ChallengesControllerTest extends IntegrationTestCase
 	//(user_day.solved, the active players of the home page), and a run of fails only does not
 	public function testASolveInAChallengeMakesTheDayActive(): void
 	{
-		$this->prepare(4);
+		$this->prepare();
 		$solvedOn = fn() => array_map(fn($row) => (int) $row['solved'], Util::query('SELECT solved FROM user_day WHERE user_id = ? AND day = ?', [$this->userId('challenger'), date('Y-m-d')]));
 
 		// a player has one run in a challenge, so the run of fails is in a challenge of its own
-		$this->playRun($this->create(['problem_count' => 2]), [[PlayOutcome::Failed, 10], [PlayOutcome::Failed, 10]]);
+		$this->playRun($this->create(['problem_count' => 5]), array_fill(0, 5, [PlayOutcome::Failed, 10]));
 		$this->assertSame([], $solvedOn(), 'fails do not');
-		$this->playRun($this->create(['problem_count' => 2]), [[PlayOutcome::Failed, 10], [PlayOutcome::SolvedClean, 10]]);
+		$this->playRun($this->create(['problem_count' => 5]), [...array_fill(0, 4, [PlayOutcome::Failed, 10]), [PlayOutcome::SolvedClean, 10]]);
 
 		$this->assertSame([1], $solvedOn());
 		$this->assertSame([], Util::query('SELECT id FROM tsumego_attempt WHERE user_id = ?', [$this->userId('challenger')]), 'through the time mode, not a level mode attempt');

@@ -1376,6 +1376,9 @@
 }
 .line-chart__plot {
 	position: relative;
+	/* the svg is drawn at the width the plot had; until it is drawn again at a new width (a resized window, a column
+	   that moved beside another), it is cut at the plot rather than widening the page */
+	overflow: hidden;
 }
 .line-chart__plot > svg {
 	display: block;
