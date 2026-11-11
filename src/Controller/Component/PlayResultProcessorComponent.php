@@ -29,7 +29,7 @@ use App\Utility\SetPartBestScores;
 use App\Utility\TimeMode;
 use App\Utility\TsumegoUtil;
 use App\Utility\TsumegoXPAndRating;
-use App\Utility\UserRatingDay;
+use App\Utility\UserDay;
 use App\Utility\Util;
 use Cake\ORM\TableRegistry;
 
@@ -361,9 +361,9 @@ class PlayResultProcessorComponent extends Component
 		else
 			Util::execute('INSERT INTO tsumego_attempt (user_rating, gain, seconds, solved, tsumego_rating, misplays, created, user_id, tsumego_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
 				[...$values, Auth::getUserID(), $previousTsumego->id]);
-		// the rating chart reads the day's highest rating from user_rating_day; a continued attempt moves to today, and
-		// the day it was on keeps its rating, the player's real rating that day
-		UserRatingDay::record((int) Auth::getUserID(), substr($values[6], 0, 10), $values[0]);
+		// the day the player played (user_day): its highest rating for the rating chart, and whether a problem was solved
+		// for the active players; a continued attempt moves to today, and the day it was on keeps what it had
+		UserDay::record((int) Auth::getUserID(), substr($values[6], 0, 10), $values[0], $result->solved);
 	}
 
 	private static function processRatingChangeStep(float &$userRating, float &$tsumegoRating, bool $isWin): void

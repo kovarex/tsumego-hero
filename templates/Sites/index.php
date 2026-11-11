@@ -10,6 +10,7 @@ use App\Utility\TsumegoUtil;
 /**
  * @var \App\View\AppView $this
  * @var array<int, array{date: string, problems: int|null, users: int|null}> $chartData
+ * @var array $activePlayers The players who solved a problem each day, every range (ActivePlayers::ranges())
  * @var string|null $latestPublishDate
  * @var string $quote
  * @var array $recentAchievements
@@ -62,6 +63,12 @@ foreach ($tsumegoButtonsOfPublishedTsumegos as $tsumegoButton)
 				height: 360,
 				startAtZero: true,
 				class: 'chart-box'); ?>
+			<br>
+		</div>
+
+		<p class="title4">Active players</p>
+		<div class="new1">
+			<?php echo ChartRenderer::activePlayers($activePlayers); ?>
 			<br>
 		</div>
 	</div>

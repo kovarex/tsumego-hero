@@ -19,7 +19,7 @@ use App\Utility\DailyStreak;
 use App\Utility\HeroPowers;
 use App\Utility\Level;
 use App\Utility\SgfParser;
-use App\Utility\UserRatingDay;
+use App\Utility\UserDay;
 use App\Utility\Util;
 use Cake\ORM\TableRegistry;
 
@@ -41,7 +41,7 @@ class ContextPreparator
 			'day_record', 'sgf_review', 'sgf', 'challenge_failed_line', 'time_mode_attempt', 'time_mode_session', 'challenge_participant', 'challenge_problem', 'challenge',
 			'tsumego_comment', 'tsumego_issue', 'admin_activity', 'admin_overview_seen', 'message',
 			'achievement_condition', 'achievement_status', 'set_connection',
-			'tsumego_attempt', 'user_rating_day', 'tsumego_status', 'mistake_training_review', 'mistake_training_day', 'mistake_training_pool',
+			'tsumego_attempt', 'user_day', 'tsumego_status', 'mistake_training_review', 'mistake_training_day', 'mistake_training_pool',
 			'tsumego_variant', 'tsumego_semeai', 'reject', 'user_avatar', 'user', 'time_mode_rank',
 			'tsumego', 'set', 'phpbb_users', 'phpbb_topics',
 		] as $table)
@@ -328,9 +328,9 @@ class ContextPreparator
 		$tsumegoAttempt['created'] = Util::extract('created', $tsumegoAttemptInput) ?: date('Y-m-d H:i:s');
 		$tsumegoAttemptTable = TableRegistry::getTableLocator()->get('TsumegoAttempt');
 		$tsumegoAttemptTable->saveOrFail($tsumegoAttemptTable->newEntity($tsumegoAttempt));
-		// the day's rating, as the site keeps it with each attempt it writes
+		// the day the player played, as the site keeps it with each attempt it writes
 		$created = $tsumegoAttempt['created'];
-		UserRatingDay::record((int) $tsumegoAttempt['user_id'], is_string($created) ? substr($created, 0, 10) : $created->format('Y-m-d'), $tsumegoAttempt['user_rating']);
+		UserDay::record((int) $tsumegoAttempt['user_id'], is_string($created) ? substr($created, 0, 10) : $created->format('Y-m-d'), $tsumegoAttempt['user_rating'], (bool) $tsumegoAttempt['solved']);
 		$this->checkOptionsConsumed($tsumegoAttemptInput);
 	}
 

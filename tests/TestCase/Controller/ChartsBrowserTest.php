@@ -2,6 +2,7 @@
 
 use App\Model\Table\TimeModeCategoryTable;
 use App\Model\Table\TimeModeSessionStatusTable;
+use App\Utility\ActivePlayers;
 use App\Utility\SiteGrowth;
 use Facebook\WebDriver\WebDriverBy;
 use PHPUnit\Framework\Attributes\Group;
@@ -34,6 +35,54 @@ class ChartsBrowserTest extends IntegrationTestCase
 		$browser->driver->findElement(WebDriverBy::xpath("//button[contains(@class, 'chart__legend-item') and normalize-space() = 'Users']"))->click();
 		$browser->waitUntil(fn() => count($browser->getElements('.chart-box .line-chart__series')) === 1, 10, 'the users line hidden');
 		$this->assertSame('Problems', $browser->find('.chart-box .line-chart__series')->getAttribute('data-label'));
+		$browser->assertNoJsErrors();
+	}
+
+	//The active players under the site growth: the players who solved a problem each day, 6M first with today as the
+	//last point "so far", a click on a range switches without a request
+	public function testHomePageDrawsTheActivePlayersInRanges(): void
+	{
+		$day = fn(int $daysAgo) => date('Y-m-d', strtotime('-' . $daysAgo . ' days'));
+		$solve = fn(int $daysAgo) => ['solved' => true, 'created' => $day($daysAgo) . ' 10:00:00'];
+		new ContextPreparator([
+			'user' => ['name' => 'alice'],
+			'tsumegos' => [['sets' => [['name' => 'public set', 'num' => 1]], 'attempts' => [$solve(300), $solve(20), $solve(5), $solve(0)]]]]);
+		SiteGrowth::forget();
+		ActivePlayers::forget();
+
+		$browser = Browser::instance();
+		$browser->get('/');
+		$state = function () use ($browser) {
+			$state = $browser->driver->executeScript(<<<'JS'
+			const chart = document.querySelector('.active-players-chart');
+			const line = chart.querySelector('.line-chart__line');
+			return {
+				ranges: [...chart.querySelectorAll('.range-chart__range')].map(button => button.textContent),
+				active: chart.querySelector('.range-chart__range[aria-pressed="true"]')?.textContent ?? null,
+				points: line ? line.getAttribute('d').split('L').length : 0,
+				label: chart.querySelector('.line-chart__series')?.getAttribute('data-label') ?? null};
+			JS);
+			ksort($state);
+			return $state;
+		};
+		$browser->waitUntilCssSelectorDisplayed('.active-players-chart .line-chart__line');
+		// a point a day from 300 days ago is more than half a year, so 6M starts with the range itself
+		$sixMonths = (int) round((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('-6 months')))) / 86400) + 1;
+		$this->assertSame(['active' => '6M', 'label' => 'Players', 'points' => $sixMonths, 'ranges' => ['1M', '6M', '1Y', 'All']], $state());
+
+		// today, the last point, is "so far"
+		$browser->driver->executeScript(<<<'JS'
+			const svg = document.querySelector('.active-players-chart svg');
+			const box = svg.getBoundingClientRect();
+			svg.dispatchEvent(new MouseEvent('mousemove', {bubbles: true, clientX: box.right - 2, clientY: box.top + box.height / 2}));
+			JS);
+		$browser->waitUntilCssSelectorDisplayed('.active-players-chart .chart__tooltip');
+		$this->assertSame("Today so far\nPlayers: 1", $browser->find('.active-players-chart .chart__tooltip')->getText());
+
+		$browser->driver->executeScript("[...document.querySelectorAll('.active-players-chart .range-chart__range')].find(button => button.textContent === '1Y').click()");
+		$browser->waitUntil(fn() => $state()['active'] === '1Y', 10, 'the range 1Y');
+		$this->assertGreaterThan(50, $state()['points'], 'a point a week of the year');
+		$this->assertLessThan(56, $state()['points']);
 		$browser->assertNoJsErrors();
 	}
 
@@ -128,8 +177,8 @@ class ChartsBrowserTest extends IntegrationTestCase
 			const chart = document.getElementById('profile-chart-rating');
 			const line = chart.querySelector('.line-chart__line');
 			return {
-				ranges: [...chart.querySelectorAll('.rating-chart__range')].map(button => button.textContent),
-				active: chart.querySelector('.rating-chart__range[aria-pressed="true"]')?.textContent ?? null,
+				ranges: [...chart.querySelectorAll('.range-chart__range')].map(button => button.textContent),
+				active: chart.querySelector('.range-chart__range[aria-pressed="true"]')?.textContent ?? null,
 				points: line ? line.getAttribute('d').split('L').length : 0,
 				ranks: [...chart.querySelectorAll(".line-chart__tick[text-anchor='end']")].map(tick => tick.textContent)};
 			JS);
@@ -137,7 +186,7 @@ class ChartsBrowserTest extends IntegrationTestCase
 			return $state;
 		};
 		$pick = function (string $range) use ($browser, $state) {
-			$browser->driver->executeScript("[...document.querySelectorAll('#profile-chart-rating .rating-chart__range')].find(button => button.textContent === arguments[0]).click()", [$range]);
+			$browser->driver->executeScript("[...document.querySelectorAll('#profile-chart-rating .range-chart__range')].find(button => button.textContent === arguments[0]).click()", [$range]);
 			$browser->waitUntil(fn() => $state()['active'] === $range, 10, 'the range ' . $range);
 			return $state()['points'];
 		};

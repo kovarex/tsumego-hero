@@ -1,0 +1,1 @@
+Added: The home page shows how many players solved a problem each day, under the site growth, for the last month, six months, year or all of it; the longer ranges show the average players a day of each week or month, and today's point counts the day so far.

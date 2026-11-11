@@ -9,39 +9,14 @@ use Cake\Routing\Router;
 //What the profile page (UsersController::view) shows of a player besides the user row.
 class UserProfile
 {
-	//The ranges of the rating chart of the profile, by name: how far back it goes, null for all of it
-	public const array RATING_RANGES = ['1M' => '-1 month', '6M' => '-6 months', '1Y' => '-1 year', 'All' => null];
-	//The range shown when the page opens
-	public const string DEFAULT_RATING_RANGE = '6M';
-	//The most points a range draws: a longer one has a point a week or a month, the highest rating of it
-	public const int RATING_POINTS = 200;
-
-	//Every range of the rating chart, by name, all printed with the page: the highest rating of each day, week or
-	//month of the range, oldest first. The period is the shortest that keeps the range at RATING_POINTS points; a point
-	//is dated by the first day of its period. All of them come from one read of the player's kept day ratings
-	//(user_rating_day, UserRatingDay) through its primary key, a few hundred rows a year of play; All starts with
-	//the first of them.
-	/** @return array<string, array{period: 'day'|'week'|'month', points: list<array{0: string, 1: int}>}> */
+	//Every range of the rating chart (ChartRanges), all printed with the page: the highest rating of each day, week or
+	//month, from one read of the player's days (user_day, UserDay) through its primary key, a few hundred rows a year
+	//of play; a day without a rating is left out, and All starts with the first day with one.
+	/** @return array<string, array{period: 'day'|'week'|'month', points: list<array{0: string, 1: int|float}>, partial: ?string}> */
 	public static function ratingRanges(int $userID): array
 	{
-		$days = array_map('intval', array_column(Util::query('SELECT day, rating FROM user_rating_day WHERE user_id = ? ORDER BY day', [$userID]), 'rating', 'day'));
-		$today = date('Y-m-d');
-		$ranges = [];
-		foreach (self::RATING_RANGES as $name => $back)
-		{
-			$from = $back !== null ? date('Y-m-d', strtotime($back)) : (array_key_first($days) ?? $today);
-			$length = (strtotime($today) - strtotime($from)) / 86400;
-			$period = $length <= self::RATING_POINTS ? 'day' : ($length / 7 <= self::RATING_POINTS ? 'week' : 'month');
-			$points = [];
-			foreach ($days as $day => $rating)
-				if ($day >= $from)
-				{
-					$start = self::periodStart((string) $day, $period);
-					$points[$start] = max($points[$start] ?? $rating, $rating);
-				}
-			$ranges[$name] = ['period' => $period, 'points' => array_map(fn($start) => [(string) $start, $points[$start]], array_keys($points))];
-		}
-		return $ranges;
+		return ChartRanges::build(array_map('intval', array_column(
+			Util::query('SELECT day, rating FROM user_day WHERE user_id = ? AND rating IS NOT NULL ORDER BY day', [$userID]), 'rating', 'day')));
 	}
 
 	//For each time mode category: the best rank a run was passed at (null for none) and the number of runs
@@ -166,15 +141,5 @@ class UserProfile
 	private static function quarterIndex(string $date): int
 	{
 		return (int) substr($date, 0, 4) * 4 + intdiv((int) substr($date, 5, 2) - 1, 3);
-	}
-
-	//The first day of the day's week (Monday) or month, or the day itself
-	private static function periodStart(string $day, string $period): string
-	{
-		if ($period === 'week')
-			return date('Y-m-d', strtotime($day . ' -' . (date('N', strtotime($day)) - 1) . ' days'));
-		if ($period === 'month')
-			return substr($day, 0, 7) . '-01';
-		return $day;
 	}
 }

@@ -26,14 +26,31 @@ class ChartRenderer
 		return self::line($title, [['label' => 'Rating', 'color' => '#74d14c', 'axis' => 'left', 'fill' => false, 'points' => $points]], 'day', 360, false, 'timeGraph', true);
 	}
 
-	//The rating chart of a profile with its ranges (app/charts/RatingChart.tsx), every range of
-	//UserProfile::ratingRanges() printed with the page, so the buttons switch without a request
-	public static function ratingRanges(int $playerID, array $ranges): string
+	//A line over time with the range buttons 1M · 6M · 1Y · All above it (app/charts/RangeChart.tsx), every range of
+	//ChartRanges::build() printed with the page, so the buttons switch without a request. $rankAxis names the ticks of
+	//the value axis by the go ranks, for a rating.
+	public static function ranges(?string $title, string $label, string $color, array $ranges, bool $rankAxis, bool $startAtZero, string $class): string
 	{
-		return self::mount('data-rating-chart-root', 'timeGraph', [
-			'playerId' => $playerID,
+		return self::mount('data-range-chart-root', $class, [
+			'title' => $title,
+			'label' => $label,
+			'color' => $color,
 			'ranges' => $ranges,
-			'initial' => UserProfile::DEFAULT_RATING_RANGE]);
+			'initial' => ChartRanges::DEFAULT,
+			'rankAxis' => $rankAxis,
+			'startAtZero' => $startAtZero]);
+	}
+
+	//The rating chart of a profile, UserProfile::ratingRanges(), on an axis of ranks
+	public static function ratingRanges(array $ranges): string
+	{
+		return self::ranges('Overall rating', 'Rating', '#74d14c', $ranges, true, false, 'timeGraph');
+	}
+
+	//The players who solved a problem each day, ActivePlayers::ranges(), for the home page, under its heading
+	public static function activePlayers(array $ranges): string
+	{
+		return self::ranges(null, 'Players', '#5b9bd5', $ranges, false, true, 'active-players-chart');
 	}
 
 	//Horizontal stacked bars, one for each of the $rows, labeled by the date in its $categoryColumn; a series takes its

@@ -14,7 +14,8 @@
   gap: var(--space-2);
   padding: var(--space-2) var(--space-2) var(--space-1);
 }
-.chart-box {
+.chart-box,
+.active-players-chart {
   width: 100%;
 }
 .gradient-heading {
