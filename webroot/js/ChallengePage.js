@@ -52,6 +52,24 @@
 		shownLineCell = cell;
 		placeFailedLine(cell);
 	}
+	// A cell of a problem is a link to it (the link fills the cell, so the middle button and a new tab work);
+	// a click on the rest of a taller cell opens it too. On a touch screen, which has no pointing, the first
+	// tap on a failed cell shows its moves and the next one opens the problem.
+	var tappedLineCell = null;
+	standings.addEventListener('click', function(event)
+	{
+		var cell = event.target.closest('.challenges__cell--link');
+		if (!cell)
+			return;
+		if (cell.classList.contains('challenges__cell--line') && window.matchMedia('(hover: none)').matches && tappedLineCell !== cell)
+		{
+			tappedLineCell = cell;
+			event.preventDefault();
+			return;
+		}
+		if (!event.target.closest('a'))
+			window.location.href = cell.querySelector('.challenges__cell-link').href;
+	});
 	standings.addEventListener('mouseover', showFailedLine);
 	standings.addEventListener('focusin', showFailedLine);
 	standings.addEventListener('click', showFailedLine);

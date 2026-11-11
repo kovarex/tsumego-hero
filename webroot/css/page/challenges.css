@@ -618,9 +618,40 @@
 }
 
 .challenges__cell--line:hover .challenges__line-board,
-.challenges__cell--line:focus .challenges__line-board
+.challenges__cell--line:focus .challenges__line-board,
+.challenges__cell--line:focus-within .challenges__line-board
 {
 	opacity: 1;
+}
+
+/* Once the problems show, the whole cell is the link to its problem: the link fills it, with the cell's
+   padding, and points and focus show as the focus ring inside the cell (outside it the scrolling wrapper
+   of the table would cut it off). */
+.challenges__table td.challenges__cell--link
+{
+	padding: 0;
+	cursor: pointer;
+}
+
+.challenges__cell-link
+{
+	display: block;
+	padding: var(--space-1) var(--space-2);
+	min-height: 100%;
+	text-decoration: none;
+	cursor: pointer;
+}
+
+.challenges__cell-link:hover
+{
+	box-shadow: inset 0 0 0 2px var(--color-focus);
+	text-decoration: underline;
+}
+
+.challenges__cell-link:focus-visible
+{
+	outline: 2px solid var(--color-focus);
+	outline-offset: -2px;
 }
 
 .challenges__cell--skipped
