@@ -11,53 +11,37 @@ class UserProfile
 {
 	//The ranges of the rating chart of the profile, by name: how far back it goes, null for all of it
 	public const array RATING_RANGES = ['1M' => '-1 month', '6M' => '-6 months', '1Y' => '-1 year', 'All' => null];
+	//The range shown when the page opens
 	public const string DEFAULT_RATING_RANGE = '6M';
 	//The most points a range draws: a longer one has a point a week or a month, the highest rating of it
 	public const int RATING_POINTS = 200;
 
-	//The highest rating of each day, week or month of a range of the rating chart, oldest first. The period is the
-	//shortest that keeps the range at RATING_POINTS points; a point is dated by the first day of its period. An
-	//unknown range is the default one.
-	/** @return array{range: string, period: 'day'|'week'|'month', points: list<array{0: string, 1: int}>} */
-	public static function ratingHistory(int $userID, string $range = self::DEFAULT_RATING_RANGE): array
+	//Every range of the rating chart, by name, all printed with the page: the highest rating of each day, week or
+	//month of the range, oldest first. The period is the shortest that keeps the range at RATING_POINTS points; a point
+	//is dated by the first day of its period. All of them come from one read of the player's kept day ratings
+	//(user_rating_day, UserRatingDay) through its primary key, a few hundred rows a year of play; All starts with
+	//the first of them.
+	/** @return array<string, array{period: 'day'|'week'|'month', points: list<array{0: string, 1: int}>}> */
+	public static function ratingRanges(int $userID): array
 	{
-		if (!array_key_exists($range, self::RATING_RANGES))
-			$range = self::DEFAULT_RATING_RANGE;
-		$back = self::RATING_RANGES[$range];
-		// the days come from user_rating_day (UserRatingDay), read through its primary key (user_id, day): a few
-		// hundred rows a year of play instead of every attempt; all of it starts with the first day there
-		$from = $back !== null
-			? date('Y-m-d', strtotime($back))
-			: Util::query('SELECT MIN(day) AS first FROM user_rating_day WHERE user_id = ?', [$userID])[0]['first'] ?? date('Y-m-d');
-		$days = (time() - strtotime($from)) / 86400;
-		$period = $days <= self::RATING_POINTS ? 'day' : ($days / 7 <= self::RATING_POINTS ? 'week' : 'month');
-		$start = [
-			'day' => 'day',
-			'week' => 'day - INTERVAL WEEKDAY(day) DAY',
-			'month' => "DATE_FORMAT(day, '%Y-%m-01')"][$period];
-		$points = array_map(fn($row) => [(string) $row['start'], (int) $row['rating']], Util::query('
-			SELECT ' . $start . ' AS start, MAX(rating) AS rating
-			FROM user_rating_day
-			WHERE user_id = ? AND day >= ?
-			GROUP BY start
-			ORDER BY start', [$userID, $from]));
-		return ['range' => $range, 'period' => $period, 'points' => $points];
-	}
-
-	//The solves, the fails and the highest rating of each day of the last half year, oldest first
-	/** @return array<int, array{day: string, Solves: int|string, Fails: int|string, Rating: float|string|null}> */
-	public static function dailyResults(int $userID): array
-	{
-		return Util::query('
-			SELECT
-				DATE(created) AS day,
-				SUM(CASE WHEN solved = 1 THEN 1 ELSE 0 END) AS Solves,
-				SUM(CASE WHEN solved = 0 THEN 1 ELSE 0 END) AS Fails,
-				MAX(user_rating) AS Rating
-			FROM tsumego_attempt
-			WHERE user_id = ? AND created > ?
-			GROUP BY DATE(created)
-			ORDER BY day ASC', [$userID, date('Y-m-d', strtotime('-183 days'))]);
+		$days = array_map('intval', array_column(Util::query('SELECT day, rating FROM user_rating_day WHERE user_id = ? ORDER BY day', [$userID]), 'rating', 'day'));
+		$today = date('Y-m-d');
+		$ranges = [];
+		foreach (self::RATING_RANGES as $name => $back)
+		{
+			$from = $back !== null ? date('Y-m-d', strtotime($back)) : (array_key_first($days) ?? $today);
+			$length = (strtotime($today) - strtotime($from)) / 86400;
+			$period = $length <= self::RATING_POINTS ? 'day' : ($length / 7 <= self::RATING_POINTS ? 'week' : 'month');
+			$points = [];
+			foreach ($days as $day => $rating)
+				if ($day >= $from)
+				{
+					$start = self::periodStart((string) $day, $period);
+					$points[$start] = max($points[$start] ?? $rating, $rating);
+				}
+			$ranges[$name] = ['period' => $period, 'points' => array_map(fn($start) => [(string) $start, $points[$start]], array_keys($points))];
+		}
+		return $ranges;
 	}
 
 	//For each time mode category: the best rank a run was passed at (null for none) and the number of runs
@@ -94,6 +78,38 @@ class UserProfile
 			WHERE user_id = ? AND challenge_id IS NULL
 			GROUP BY DATE(created)
 			ORDER BY category DESC', [$userID]);
+	}
+
+	//How many days with attempts a page of the level chart of the profile shows
+	//A page of the level chart: the solves and fails of each day with attempts of a calendar quarter, newest first.
+	//Page 1 is the current quarter, the last the quarter of the first attempt; a page number out of range is the
+	//nearest page. With the count of pages and the first and last day of the quarter.
+	/** @return array{page: int, pages: int, from: string, until: string, days: list<array{day: string, Solves: int, Fails: int}>} */
+	public static function levelDays(int $userID, int $page = 1): array
+	{
+		$now = self::quarterIndex(date('Y-m-d'));
+		// the first attempt and the attempts of the quarter both come from the index on (user_id, created)
+		$first = Util::query('SELECT MIN(created) AS first FROM tsumego_attempt WHERE user_id = ?', [$userID])[0]['first'];
+		$pages = $first === null ? 1 : max(1, $now - self::quarterIndex($first) + 1);
+		$page = min(max(1, $page), $pages);
+		$quarter = $now - $page + 1;
+		$from = sprintf('%04d-%02d-01', intdiv($quarter, 4), $quarter % 4 * 3 + 1);
+		$next = date('Y-m-d', strtotime($from . ' +3 months'));
+		$days = array_map(fn($row) => ['day' => $row['day'], 'Solves' => (int) $row['Solves'], 'Fails' => (int) $row['Fails']], Util::query('
+			SELECT
+				DATE(created) AS day,
+				SUM(CASE WHEN solved = 1 THEN 1 ELSE 0 END) AS Solves,
+				SUM(CASE WHEN solved = 0 THEN 1 ELSE 0 END) AS Fails
+			FROM tsumego_attempt
+			WHERE user_id = ? AND created >= ? AND created < ?
+			GROUP BY DATE(created)
+			ORDER BY day DESC', [$userID, $from, $next]));
+		return [
+			'page' => $page,
+			'pages' => $pages,
+			'from' => $from,
+			'until' => date('Y-m-d', strtotime($next . ' -1 day')),
+			'days' => $days];
 	}
 
 	//How many different achievements the player has, and how many times the ones earned more than once were earned
@@ -144,5 +160,21 @@ class UserProfile
 		if ($avatarChoice === UserTable::AVATAR_GRAVATAR)
 			$og += ['image_width' => Avatar::SHARE_SIZE, 'image_height' => Avatar::SHARE_SIZE];
 		return $og;
+	}
+
+	//The quarters since the year 0 up to the quarter of the date, so the quarters between two dates are a difference
+	private static function quarterIndex(string $date): int
+	{
+		return (int) substr($date, 0, 4) * 4 + intdiv((int) substr($date, 5, 2) - 1, 3);
+	}
+
+	//The first day of the day's week (Monday) or month, or the day itself
+	private static function periodStart(string $day, string $period): string
+	{
+		if ($period === 'week')
+			return date('Y-m-d', strtotime($day . ' -' . (date('N', strtotime($day)) - 1) . ' days'));
+		if ($period === 'month')
+			return substr($day, 0, 7) . '-01';
+		return $day;
 	}
 }

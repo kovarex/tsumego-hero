@@ -26,14 +26,14 @@ class ChartRenderer
 		return self::line($title, [['label' => 'Rating', 'color' => '#74d14c', 'axis' => 'left', 'fill' => false, 'points' => $points]], 'day', 360, false, 'timeGraph', true);
 	}
 
-	//The rating chart of a profile with its ranges (app/charts/RatingChart.tsx), from the range of
-	//UserProfile::ratingHistory() it starts with
-	public static function ratingHistory(int $playerID, array $history): string
+	//The rating chart of a profile with its ranges (app/charts/RatingChart.tsx), every range of
+	//UserProfile::ratingRanges() printed with the page, so the buttons switch without a request
+	public static function ratingRanges(int $playerID, array $ranges): string
 	{
 		return self::mount('data-rating-chart-root', 'timeGraph', [
 			'playerId' => $playerID,
-			'ranges' => array_keys(UserProfile::RATING_RANGES),
-			'history' => $history]);
+			'ranges' => $ranges,
+			'initial' => UserProfile::DEFAULT_RATING_RANGE]);
 	}
 
 	//Horizontal stacked bars, one for each of the $rows, labeled by the date in its $categoryColumn; a series takes its
@@ -45,6 +45,13 @@ class ChartRenderer
 			'title' => $title,
 			'categories' => array_column($rows, $categoryColumn),
 			'series' => array_map(fn($oneSeries) => $oneSeries + ['values' => array_map(fn($row) => (int) $row[$oneSeries['label']], $rows)], $series)]);
+	}
+
+	//The level chart of a profile, a calendar quarter a page with a pager (app/charts/LevelChart.tsx),
+	//from the first page of UserProfile::levelDays()
+	public static function levelDays(int $playerID, array $page): string
+	{
+		return self::mount('data-level-chart-root', '', ['playerId' => $playerID, 'page' => $page]);
 	}
 
 	private static function mount(string $attribute, string $class, array $props): string

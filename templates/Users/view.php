@@ -12,8 +12,8 @@ use App\Utility\Util;
  * @var \App\View\AppView $this
  * @var int $achievementCount
  * @var array{completed: int, earned_times: int} $achievementCounts
- * @var array $dailyResults
- * @var array $ratingHistory The default range of the rating chart (UserProfile::ratingHistory())
+ * @var array $levelDays The current quarter of the level chart (UserProfile::levelDays())
+ * @var array $ratingRanges Every range of the rating chart (UserProfile::ratingRanges())
  * @var array|null $mistakeTraining
  * @var int $solvedProblemCount
  * @var int $solvedPublishedCount
@@ -172,13 +172,11 @@ use App\Utility\Util;
 <div class="profile-charts">
 	<div class="profile-charts__column">
 		<div id="profile-chart-level">
-		<?php echo ChartRenderer::bar('Problems in level mode', array_reverse($dailyResults), 'day', [
-			['label' => 'Solves', 'color' => '#74d14c'],
-			['label' => 'Fails', 'color' => '#d63a49']]); ?>
+		<?php echo ChartRenderer::levelDays((int) $user['id'], $levelDays); ?>
 		</div>
 	</div>
 	<div class="profile-charts__column">
-		<div id="profile-chart-rating"><?php echo ChartRenderer::ratingHistory((int) $user['id'], $ratingHistory); ?></div>
+		<div id="profile-chart-rating"><?php echo ChartRenderer::ratingRanges((int) $user['id'], $ratingRanges); ?></div>
 		<div id="profile-chart-time">
 		<?php echo ChartRenderer::bar('Time mode runs', $timeGraph, 'category', [
 			['label' => 'Passes', 'color' => '#c8723d'],

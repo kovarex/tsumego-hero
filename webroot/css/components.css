@@ -1244,6 +1244,53 @@
 	color: var(--color-text);
 	padding: var(--space-1) var(--space-2);
 }
+.level-chart__header {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: var(--space-1) var(--space-2);
+	padding: 0 var(--space-2) var(--space-2);
+}
+.level-chart__range {
+	font-size: var(--text-sm);
+	color: var(--color-text-muted);
+	font-variant-numeric: tabular-nums;
+}
+.level-chart__pager {
+	margin: 0;
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 2px;
+}
+/* The pager's buttons look like the links of PaginationHelper */
+.level-chart__pager .pagination__link {
+	margin: 0;
+	background: none;
+	font: inherit;
+	font-variant-numeric: tabular-nums;
+	cursor: pointer;
+}
+.level-chart__pager .pagination__link--active {
+	background: var(--active-paginator-button-background-color);
+	cursor: default;
+}
+.level-chart__pager .pagination__link:disabled:not(.pagination__link--active) {
+	opacity: 0.4;
+	cursor: default;
+	text-decoration: none;
+}
+.level-chart__error {
+	flex-basis: 100%;
+	font-size: var(--text-sm);
+	color: var(--color-red);
+}
+.level-chart__empty {
+	margin: 0;
+	padding: var(--space-2);
+	color: var(--color-text-muted);
+}
 .chart__legend {
 	display: flex;
 	justify-content: center;
@@ -1293,7 +1340,7 @@
 .rating-chart__range:first-child {
 	border-left: none;
 }
-.rating-chart__range:hover:not(:disabled) {
+.rating-chart__range:hover {
 	text-decoration: underline;
 }
 .rating-chart__range--active {
@@ -1301,14 +1348,7 @@
 	color: var(--active-paginator-button-text-color);
 	cursor: default;
 }
-.rating-chart__range:disabled:not(.rating-chart__range--active) {
-	opacity: 0.6;
-	cursor: default;
-}
-.rating-chart__error {
-	font-size: var(--text-sm);
-	color: var(--color-red);
-}
+
 .chart__swatch {
 	width: var(--space-3);
 	height: var(--space-3);
