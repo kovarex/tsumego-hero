@@ -234,6 +234,14 @@ class ChartsBrowserTest extends IntegrationTestCase
 		// the ranks are in the chart's text colour like the dates under it, not the green of the line
 		$colors = $browser->driver->executeScript("return [...document.querySelectorAll('.timeGraph .line-chart__tick')].map(tick => getComputedStyle(tick).fill)");
 		$this->assertCount(1, array_unique($colors), implode(', ', $colors));
+		// the tooltip of the last day: the rating as a plain number, with its rank
+		$browser->driver->executeScript(<<<'JS'
+			const svg = document.querySelector('.timeGraph svg');
+			const box = svg.getBoundingClientRect();
+			svg.dispatchEvent(new MouseEvent('mousemove', {bubbles: true, clientX: box.right - 2, clientY: box.top + box.height / 2}));
+			JS);
+		$browser->waitUntilCssSelectorDisplayed('.timeGraph .chart__tooltip');
+		$this->assertStringContainsString('Rating: 1250 (8k)', $browser->find('.timeGraph .chart__tooltip')->getText());
 		$browser->assertNoJsErrors();
 	}
 }

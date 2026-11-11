@@ -34,7 +34,8 @@ interface Props
 	//under the title, as the ranges of the rating chart
 	header?: ReactNode;
 	//the left axis of a rating in go ranks: its ticks and grid lines at the lower edges of the ranks, named like "5k"
-	//in the chart's text colour rather than the colour of the series, and the tooltip adds the rank to the rating
+	//in the chart's text colour rather than the colour of the series, and the tooltip gives the rating as a plain
+	//number with its rank, "2875 (12d)"
 	rankAxis?: boolean;
 }
 
@@ -199,7 +200,7 @@ export function LineChart({ title, series, height, period, startAtZero, header, 
 					<ChartTooltip
 						title={period === 'month' ? dayjs.utc(hovered.at.time).format('MMM YYYY') : (period === 'week' ? 'Week of ' : '') + formatDate(hovered.date, 'date')}
 						values={hoveredValues}
-						format={rankAxis ? value => `${formatChartValue(value)} (${getReadableRankFromRating(value)})` : undefined}
+						format={rankAxis ? value => `${Math.round(value)} (${getReadableRankFromRating(value)})` : undefined}
 						style={hoveredX > width / 2 ? { right: width - hoveredX + TOOLTIP_OFFSET } : { left: hoveredX + TOOLTIP_OFFSET }}
 					/>
 				)}
