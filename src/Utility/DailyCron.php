@@ -9,8 +9,9 @@ use Cake\ORM\TableRegistry;
 use Exception;
 
 //The daily work of the site, run by `bin/cake cron_daily` (App\Command\CronDailyCommand) at midnight UTC: the day of
-//the site (the user of the day, the daily highscore, the statuses of the problems, the solved counts). The hearts
-//and the hero powers are the player's own day instead, see DailyReset and `bin/cake cron_hourly`.
+//the site (the user of the day, the daily highscore, the statuses of the problems, the solved counts, the active
+//players of the day before). The hearts and the hero powers are the player's own day instead, see DailyReset and
+//`bin/cake cron_hourly`.
 class DailyCron
 {
 	//Publishing takes only the entries that are still pending, so it repeats on every run and catches up the days
@@ -32,6 +33,9 @@ class DailyCron
 			Trash::purgeExpired();
 		});
 		Live::pruneStale();
+		// yesterday's active players, and the days a missed run left out, for the chart of the home page
+		ActivePlayers::storeDays(date('Y-m-d'));
+		ActivePlayers::forget();
 		return true;
 	}
 

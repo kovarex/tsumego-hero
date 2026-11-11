@@ -7,7 +7,7 @@ use App\Utility\Util;
 use Cake\Cache\Cache;
 
 //The active players of the home page (ActivePlayers): the players who solved a problem each day, the days before
-//today kept for the day in the cache, today counted live, and the weeks and months as averages a day
+//today stored in active_players_day, today counted live and kept 5 minutes, and the weeks and months as averages a day
 class ActivePlayersTest extends IntegrationTestCase
 {
 	private static function day(int $daysAgo): string
@@ -43,6 +43,20 @@ class ActivePlayersTest extends IntegrationTestCase
 		}
 	}
 
+	//Today's players as the chart has them, the last point of the month
+	private static function today(): int|float
+	{
+		$points = ActivePlayers::ranges()['1M']['points'];
+		return $points[count($points) - 1][1];
+	}
+
+	/** @return array<string, int> */
+	private static function stored(): array
+	{
+		return array_map('intval', array_column(Util::query('SELECT day, players FROM active_players_day ORDER BY day'), 'players', 'day'));
+	}
+
+	//The days before today come from the stored days, which the first read stores when the cron has not
 	public function testThePlayersOfEachDayBeforeToday(): void
 	{
 		$this->prepare();
@@ -52,6 +66,7 @@ class ActivePlayersTest extends IntegrationTestCase
 		$expected[self::day(3)] = 1;
 		$expected[self::day(2)] = 1;
 		$this->assertSame($expected, ActivePlayers::history(date('Y-m-d')), 'a day nobody solved is 0, a fail is no solve');
+		$this->assertSame($expected, self::stored(), 'stored, today is not');
 		$this->assertSame(1, ActivePlayers::count(date('Y-m-d')), 'today so far');
 	}
 
@@ -66,26 +81,54 @@ class ActivePlayersTest extends IntegrationTestCase
 		$this->assertCount(11, $month['points'], 'every day from the first solve, the days without one at 0');
 	}
 
-	//The days before today are counted once a day: a solve of yesterday written after the count shows the next day,
-	//or once the cache is dropped; today is always counted again
-	public function testTheDaysBeforeTodayAreKeptForTheDay(): void
+	//A stored day is read, never counted again: a solve written into it later does not change it
+	public function testTheChartReadsTheStoredDays(): void
 	{
-		// the tests run without the cache (core.local.php), this one is about it
+		$context = $this->prepare();
+		$today = date('Y-m-d');
+		ActivePlayers::storeDays($today);
+		Util::execute('UPDATE active_players_day SET players = 42 WHERE day = ?', [self::day(5)]);
+		$this->attempts($context, [['solved' => true, 'created' => self::day(1) . ' 10:00:00', 'user_id' => (int) $context->otherUsers[1]['id']]]);
+
+		$history = ActivePlayers::history($today);
+
+		$this->assertSame(42, $history[self::day(5)], 'the stored count');
+		$this->assertSame(0, $history[self::day(1)], 'not counted again');
+	}
+
+	//The cron stores the days after the last one stored up to yesterday, so it catches up the days it missed, and a
+	//second run stores nothing
+	public function testStoringCatchesUpAndASecondRunChangesNothing(): void
+	{
+		$this->prepare();
+		$today = date('Y-m-d');
+
+		$this->assertSame(10, ActivePlayers::storeDays($today), 'every day from the first solve to yesterday');
+		$stored = self::stored();
+		$this->assertSame(0, ActivePlayers::storeDays($today));
+		$this->assertSame($stored, self::stored());
+
+		Util::execute('DELETE FROM active_players_day WHERE day >= ?', [self::day(3)]);
+		$this->assertSame(3, ActivePlayers::storeDays($today), 'the three days missed');
+		$this->assertSame($stored, self::stored());
+	}
+
+	//A view reads the ranges from the cache for 5 minutes, today's count with them; the tests run without the cache
+	//(core.local.php), this one is about it
+	public function testTodayIsCachedForFiveMinutes(): void
+	{
 		Cache::enable();
 		try
 		{
 			$context = $this->prepare();
-			$today = date('Y-m-d');
-			$before = ActivePlayers::history($today);
+			$this->assertSame(1, self::today());
 
-			$this->attempts($context, [['solved' => true, 'created' => self::day(1) . ' 10:00:00', 'user_id' => (int) $context->otherUsers[1]['id']]]);
-			$this->attempts($context, [['solved' => true, 'created' => $today . ' 11:00:00', 'user_id' => (int) $context->otherUsers[1]['id']]]);
+			$this->attempts($context, [['solved' => true, 'created' => date('Y-m-d') . ' 11:00:00', 'user_id' => (int) $context->otherUsers[0]['id']]]);
+			$this->assertSame(1, self::today(), 'today as the cache has it');
+			$this->assertSame(2, ActivePlayers::count(date('Y-m-d')), 'while the count is 2');
 
-			$this->assertSame($before, ActivePlayers::history($today), 'kept');
-			$this->assertSame(2, ActivePlayers::count($today), 'today is live');
-			$this->assertSame(1, ActivePlayers::history(date('Y-m-d', strtotime('+1 day')))[self::day(1)], 'counted again on the next day');
-			ActivePlayers::forget();
-			$this->assertSame(1, ActivePlayers::history($today)[self::day(1)], 'or once it is dropped');
+			Cache::clear('short');
+			$this->assertSame(2, self::today(), 'once the 5 minutes are over');
 		}
 		finally
 		{
