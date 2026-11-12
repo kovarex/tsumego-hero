@@ -66,6 +66,16 @@ class TsumegoButton
 		echo '</li>';
 	}
 
+	//A button that can't be opened yet, which shows "?" and nothing about the problem: no link, no id,
+	//no preview, no tooltip. The mistake training overview shows it for a problem due today and not
+	//solved yet, so the list doesn't give away which one it is.
+	public static function renderLocked(string $accessibleName): void
+	{
+		echo '<li class="problem-nav__item problem-nav__item--N problem-nav__item--locked">'
+			. '<span class="problem-nav__locked" role="img" aria-disabled="true" aria-label="' . h($accessibleName) . '">'
+			. '<span class="problem-nav__number">?</span></span></li>';
+	}
+
 	//The badge of a training button: the rank insignia of the rung (see
 	//RungInsignia), chevrons for the first rungs and stars for the last reviews
 	//before graduation, and a crown for a graduation of today, so the row tells a

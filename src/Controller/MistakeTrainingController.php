@@ -58,7 +58,8 @@ class MistakeTrainingController extends AppController
 		$this->set('_title', 'Tsumego Hero - Mistake Training');
 		// what is due, what is in the training and what comes when, from the one list of the pool
 		$poolRows = MistakeTraining::poolRows($userId);
-		$this->set('poolRows', $poolRows);
+		// the list names only what can be opened: a problem still due today comes without its collection or id
+		$this->set('problems', MistakeTraining::overviewProblems($poolRows));
 		$dueToday = count(array_filter($poolRows, fn(array $row) => $row['due']));
 		$this->set('dueToday', $dueToday);
 		$this->set('totalInTraining', count($poolRows));

@@ -1,0 +1,1 @@
+Added: The problems in your [mistake training](/mistake-training/overview) can be opened from its list in the normal play page, with their rank shown; one still to review today stays hidden until you solve it there.

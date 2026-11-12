@@ -8,6 +8,7 @@ use App\Utility\MistakeTraining;
 use App\Utility\PlayOutcome;
 use App\Utility\Rating;
 use Facebook\WebDriver\WebDriverBy;
+use Facebook\WebDriver\WebDriverDimension;
 
 class MistakeTrainingControllerTest extends IntegrationTestCase
 {
@@ -607,7 +608,7 @@ class MistakeTrainingControllerTest extends IntegrationTestCase
 
 	public function testTheOverviewListsTheProblemsInTraining()
 	{
-		new ContextPreparator([
+		$context = new ContextPreparator([
 			'user' => ['name' => 'testuser'],
 			'tsumegos' => [
 				['set_order' => 7, 'status' => ['name' => 'V', 'mistake_training_due' => MistakeTraining::today() . ' 00:00:00']],
@@ -617,12 +618,125 @@ class MistakeTrainingControllerTest extends IntegrationTestCase
 
 		$this->get(MistakeTraining::$OVERVIEW_LINK);
 		$html = $this->view;
+		$rows = self::overviewRows($html);
 
 		$this->assertStringContainsString('<summary>Problems in training (2)</summary>', $html);
-		$this->assertMatchesRegularExpression('~#7</td>\s*<td><span class="training-overview__insignia training-overview__insignia--chevron" role="img" aria-label="' . MistakeTraining::rungName(0) . '"~', $html);
-		$this->assertMatchesRegularExpression('~title="' . MistakeTraining::rungName(4) . '">.*?</span></td>\s*<td>'
-			. preg_quote(MistakeTraining::dayHtml(MistakeTraining::today() . ' +10 days')) . '</td>~s', $html, 'With the rung as insignia and the day of the next review');
-		$this->assertLessThan(strpos($html, '#3</td>'), strpos($html, '#7</td>'), 'Soonest review first');
+		$this->assertCount(2, $rows);
+		$this->assertStringContainsString('problem-nav__item--locked', $rows[0], 'Soonest review first: the one due today');
+		$this->assertMatchesRegularExpression('~<td><span class="training-overview__insignia training-overview__insignia--chevron" role="img" aria-label="' . MistakeTraining::rungName(0) . '"~', $rows[0]);
+		$this->assertStringContainsString('href="/' . self::setConnectionId($context, 1) . '"', $rows[1]);
+		$this->assertMatchesRegularExpression('~title="' . MistakeTraining::rungName(4) . '">.*?</span></td>\s*<td class="mistake-training-pool__next">'
+			. preg_quote(MistakeTraining::dayHtml(MistakeTraining::today() . ' +10 days')) . '</td>~s', $rows[1], 'With the rung as insignia and the day of the next review');
+	}
+
+	//The rows of the list of problems on the overview, in their order
+	private static function overviewRows(string $html): array
+	{
+		preg_match_all('~<tr class="mistake-training-pool__row">.*?</tr>~s', $html, $matches);
+		return $matches[0];
+	}
+
+	//A problem opens from the overview in the normal play page, where the review shows the solution, so
+	//one still to be solved in today's training is locked: due today and untried, or missed today. One
+	//solved today and one due another day open.
+	public function testTheOverviewOpensOnlyWhatTodaysTrainingIsDone()
+	{
+		$today = MistakeTraining::today() . ' 00:00:00';
+		$context = new ContextPreparator([
+			'user' => ['name' => 'testuser'],
+			'tsumegos' => [
+				['sets' => [['name' => 'Due Collection', 'num' => 41]], 'rating' => 1500, 'status' => ['name' => 'V', 'mistake_training_due' => $today]],
+				['sets' => [['name' => 'Missed Collection', 'num' => 42]], 'rating' => 1500, 'status' => ['name' => 'V'] + self::reviewedToday(MistakeTraining::REVIEW_MISSED)],
+				['sets' => [['name' => 'Solved Collection', 'num' => 43]], 'rating' => 1500, 'status' => ['name' => 'V'] + self::reviewedToday(MistakeTraining::REVIEW_SOLVED)],
+				['sets' => [['name' => 'Later Collection', 'num' => 44]], 'rating' => 1500,
+					'status' => ['name' => 'V', 'mistake_training_due' => date('Y-m-d', strtotime(MistakeTraining::today() . ' +5 days')) . ' 00:00:00']],
+			],
+		]);
+
+		$this->get(MistakeTraining::$OVERVIEW_LINK);
+		$rows = self::overviewRows($this->view);
+
+		$this->assertCount(4, $rows);
+		foreach ([0 => 'Due', 1 => 'Missed'] as $index => $name)
+		{
+			$row = $rows[$index];
+			$this->assertStringContainsString('<li class="problem-nav__item problem-nav__item--N problem-nav__item--locked">', $row, "$name today: locked");
+			$this->assertMatchesRegularExpression('~<span class="problem-nav__number">\?</span>~', $row, "$name today: shows only ?");
+			foreach (['Due Collection', 'Missed Collection', '#4', '>41<', '>42<', 'href=', 'data-', 'tooltip', '/sets/view/'] as $leak)
+				$this->assertStringNotContainsString($leak, $row, "$name today: the row doesn't give away $leak");
+			foreach ([0, 1] as $hidden)
+			{
+				$this->assertStringNotContainsString('/' . self::setConnectionId($context, $hidden) . '"', $this->view, 'No link to a locked problem anywhere');
+				$this->assertStringNotContainsString('data-tsumego-id="' . $context->tsumegos[$hidden]['id'] . '"', $this->view, 'No id of a locked problem anywhere');
+			}
+		}
+		$this->assertStringNotContainsString('Due Collection', $this->view, 'The collection of a locked problem is nowhere on the page');
+		$this->assertStringNotContainsString('Missed Collection', $this->view, 'The collection of a locked problem is nowhere on the page');
+
+		foreach ([2 => 'Solved', 3 => 'Later'] as $index => $name)
+		{
+			$row = $rows[$index];
+			$this->assertStringNotContainsString('problem-nav__item--locked', $row, "$name: opens");
+			$this->assertStringContainsString('<a class="tooltip" href="/' . self::setConnectionId($context, $index) . '" data-tsumego-id="' . $context->tsumegos[$index]['id'] . '"', $row,
+				"$name: the normal problem button, leading to the normal play page");
+			$this->assertStringContainsString('<div class="problem-nav__number">' . (41 + $index) . '</div>', $row, "$name: with its number in the collection");
+			$this->assertStringContainsString('>' . $name . ' Collection</a>', $row, "$name: with its collection");
+		}
+	}
+
+	public function testTheOverviewShowsTheRankOfEveryProblem()
+	{
+		new ContextPreparator([
+			'user' => ['name' => 'testuser'],
+			'tsumegos' => [
+				['set_order' => 1, 'rating' => 1500, 'status' => ['name' => 'V', 'mistake_training_due' => MistakeTraining::today() . ' 00:00:00']],
+				['set_order' => 2, 'rating' => 2300, 'status' => ['name' => 'V', 'mistake_training_due' => date('Y-m-d', strtotime(MistakeTraining::today() . ' +4 days')) . ' 00:00:00']],
+			],
+		]);
+
+		$this->get(MistakeTraining::$OVERVIEW_LINK);
+		$rows = self::overviewRows($this->view);
+
+		$this->assertStringContainsString('<th>Rank</th>', $this->view);
+		$this->assertStringContainsString('<td class="mistake-training-pool__rank">' . Rating::getReadableRankFromRating(1500) . '</td>', $rows[0], 'Also of a locked problem');
+		$this->assertStringContainsString('<td class="mistake-training-pool__rank">' . Rating::getReadableRankFromRating(2300) . '</td>', $rows[1]);
+		$this->assertNotSame(Rating::getReadableRankFromRating(1500), Rating::getReadableRankFromRating(2300));
+	}
+
+	//The list, with its buttons, its collections and the rank, fits a narrow phone without a sideways scroll.
+	public function testTheOverviewFitsANarrowPhone(): void
+	{
+		new ContextPreparator([
+			'user' => ['name' => 'testuser'],
+			'tsumegos' => [
+				['sets' => [['name' => 'A collection with a rather long name for a narrow phone', 'num' => 128]], 'rating' => 2300,
+					'status' => ['name' => 'V', 'mistake_training_due' => date('Y-m-d', strtotime(MistakeTraining::today() . ' +3 days')) . ' 00:00:00']],
+				['set_order' => 2, 'status' => ['name' => 'V', 'mistake_training_due' => MistakeTraining::today() . ' 00:00:00']],
+			],
+		]);
+		$browser = Browser::instance();
+		$window = $browser->driver->manage()->window();
+		$originalSize = $window->getSize();
+		try
+		{
+			$window->setSize(new WebDriverDimension(320, 700));
+			$browser->get(substr(MistakeTraining::$OVERVIEW_LINK, 1));
+			$layout = $browser->driver->executeScript(<<<'JS'
+				const width = document.documentElement.clientWidth;
+				const parts = [...document.querySelectorAll('.mistake-training-pool *')];
+				return {
+					rows: document.querySelectorAll('.mistake-training-pool__row').length,
+					overflow: document.documentElement.scrollWidth - width,
+					outside: parts.filter(part => part.getBoundingClientRect().right > width + 0.5).length,
+				};
+				JS);
+			$this->assertEquals(['rows' => 2, 'outside' => 0, 'overflow' => 0], $layout);
+			$browser->assertNoJsErrors();
+		}
+		finally
+		{
+			$window->setSize($originalSize);
+		}
 	}
 
 	public function testTheOverviewIsAllCaughtUpOnceNothingIsDue()
@@ -809,7 +923,7 @@ class MistakeTrainingControllerTest extends IntegrationTestCase
 			]);
 			$browser = Browser::instance();
 			$browser->get(substr(MistakeTraining::$OVERVIEW_LINK, 1));
-			$rows = $browser->getElements('.mistake-training-pool__table tr[data-tsumego] td:last-child');
+			$rows = $browser->getElements('.mistake-training-pool__row td:last-child');
 
 			$this->assertSame(date('l', strtotime($near)) . ' (' . $format($near) . ')', $rows[0]->getText(),
 				"A review within the week is named and dated, in format $dateFormat");

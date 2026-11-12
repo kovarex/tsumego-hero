@@ -107,6 +107,27 @@
 	color: var(--color-white);
 }
 
+/* A button that can't be opened yet (TsumegoButton::renderLocked()): "?" on the
+   grey of an unsolved problem, laid out like the link of an open one, faded and
+   with no hover. */
+.problem-nav__item.problem-nav__item--locked,
+.problem-nav__item.problem-nav__item--locked:hover
+{
+	background-color: var(--status-n-color);
+	opacity: 0.6;
+	cursor: not-allowed;
+}
+
+.problem-nav__locked
+{
+	position: absolute;
+	inset: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: var(--color-white);
+}
+
 /* The spacer between groups uses flex spacing instead of float. */
 .gap10
 {
@@ -509,5 +530,30 @@ a[data-tsumego-id]:hover .tooltip-desc
 .mistake-training-pool__table .training-overview__insignia
 {
 	display: inline-flex;
+}
+
+/* The problem: its button, and the collection it opens in beside it. */
+.mistake-training-pool__problem
+{
+	display: flex;
+	align-items: center;
+	gap: var(--space-2);
+}
+
+.mistake-training-pool__problem .problem-nav__buttons
+{
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.mistake-training-pool__set
+{
+	overflow-wrap: anywhere;
+}
+
+.mistake-training-pool__rank
+{
+	white-space: nowrap;
 }
 }
