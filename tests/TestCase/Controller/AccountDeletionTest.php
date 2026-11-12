@@ -319,6 +319,82 @@ class AccountDeletionTest extends IntegrationTestCase
 		$this->assertNull($oldAccount['deleted_name']);
 	}
 
+	private function signUp(string $name, string $email): void
+	{
+		$this->post('/users/add', [
+			'name' => $name,
+			'email' => $email,
+			'password1' => 'secretChest42',
+			'password2' => 'secretChest42']);
+	}
+
+	public function testNewAccountCanSignUpWithEmailAndNameOfDeletedOne(): void
+	{
+		$context = new ContextPreparator(['user' => ['name' => 'kovarex', 'email' => 'kovarex@example.com']]);
+		$oldAccountID = $context->user['id'];
+		$this->deleteOwnAccount();
+		$this->logout();
+
+		$this->signUp('kovarex', 'kovarex@example.com');
+
+		$this->assertRedirect();
+		$newAccount = ContextPreparator::findUserRow(['name' => 'kovarex']);
+		$this->assertNotEmpty($newAccount);
+		$this->assertNotEquals($oldAccountID, $newAccount['id']);
+		$this->assertSame('kovarex@example.com', $newAccount['email']);
+		$this->assertSame('kovarex@example.com', $this->userRow($oldAccountID)['email'], 'The deleted account keeps it for restoring');
+	}
+
+	public function testEmailOfAccountNotDeletedStaysTaken(): void
+	{
+		new ContextPreparator(['user' => null, 'other-users' => [['name' => 'kovarex', 'email' => 'kovarex@example.com']]]);
+		$this->signUp('newkovarex', 'kovarex@example.com');
+		$this->assertNoRedirect();
+		$this->assertEmpty(ContextPreparator::findUserRow(['name' => 'newkovarex']));
+	}
+
+	public function testNewAccountSignsInWithEmailOfDeletedOne(): void
+	{
+		new ContextPreparator(['user' => ['name' => 'kovarex', 'email' => 'kovarex@example.com']]);
+		$this->deleteOwnAccount();
+		$this->logout();
+		$this->signUp('newkovarex', 'kovarex@example.com');
+		$newAccount = ContextPreparator::findUserRow(['name' => 'newkovarex']);
+		$this->logout();
+
+		// the older deleted account with the same address doesn't shadow the new one
+		$this->post('/users/login', ['username' => 'kovarex@example.com', 'password' => 'secretChest42']);
+		$this->assertRedirect();
+		$this->assertSame($newAccount['id'], Auth::getUserID());
+		$this->assertSame($newAccount['id'], UserTable::findLocalUserByEmail('kovarex@example.com')?->id, 'A password reset goes to the new account');
+	}
+
+	public function testEmailOfDeletedAccountIsNotTaken(): void
+	{
+		new ContextPreparator(['user' => ['name' => 'kovarex', 'email' => 'kovarex@example.com'], 'other-users' => [['name' => 'ghost', 'email' => 'ghost@example.com', 'deleted' => true]]]);
+		$this->assertFalse(UserTable::emailTaken('ghost@example.com'));
+		$this->assertTrue(UserTable::emailTaken('kovarex@example.com'));
+		$this->assertFalse(UserTable::emailTaken('kovarex@example.com', Auth::getUserID()), 'Its own address is not taken for the account itself');
+	}
+
+	public function testDeletedAccountWithReusedEmailCanBeRestored(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'kovarex', 'email' => 'kovarex@example.com'],
+			'other-users' => [['name' => 'admin', 'admin' => true]]]);
+		$oldAccountID = $context->user['id'];
+		$this->deleteOwnAccount();
+		$this->logout();
+		$this->signUp('newkovarex', 'kovarex@example.com');
+
+		$this->login('admin');
+		$this->restoreAccount($oldAccountID);
+		$oldAccount = $this->userRow($oldAccountID);
+		$this->assertNull($oldAccount['deleted']);
+		$this->assertSame('kovarex', $oldAccount['name']);
+		$this->assertSame('kovarex@example.com', $oldAccount['email']);
+	}
+
 	public function testRestoreFailsWhenGoogleAccountIsLinkedToAnotherAccount(): void
 	{
 		$context = new ContextPreparator([
