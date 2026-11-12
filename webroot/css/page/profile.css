@@ -220,13 +220,13 @@
 
 .training-overview__value
 {
-	font-size: var(--font-size-lg);
+	font-size: var(--text-md);
 	font-weight: var(--weight-bold);
 }
 
 .training-overview__label
 {
-	font-size: var(--font-size-sm);
+	font-size: var(--text-xs);
 	color: var(--text-softer-color);
 }
 
@@ -275,7 +275,7 @@
 
 .training-overview__count
 {
-	font-size: var(--font-size-md);
+	font-size: var(--text-sm);
 	font-weight: var(--weight-bold);
 }
 
@@ -348,7 +348,7 @@
 	flex-wrap: wrap;
 	gap: var(--space-1) var(--space-4);
 	margin-top: var(--space-2);
-	font-size: var(--font-size-sm);
+	font-size: var(--text-xs);
 	color: var(--text-softer-color);
 }
 
@@ -368,7 +368,7 @@
 
 .friends__heading
 {
-	font-size: var(--font-size-md);
+	font-size: var(--text-sm);
 	text-transform: uppercase;
 	letter-spacing: 0.05em;
 	color: var(--text-softer-color);

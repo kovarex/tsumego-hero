@@ -22,7 +22,7 @@
 .signin .input label {
 	display: block;
 	margin-bottom: var(--space-1);
-	font-size: var(--font-size-md);
+	font-size: var(--text-sm);
 	color: var(--text-color);
 }
 .signin input {
@@ -61,7 +61,7 @@
 	border: none;
 	color: var(--text-softer-color);
 	font-family: var(--font-family-ui);
-	font-size: var(--font-size-md);
+	font-size: var(--text-sm);
 	text-decoration: underline;
 	cursor: pointer;
 }

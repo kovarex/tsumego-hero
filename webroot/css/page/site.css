@@ -758,7 +758,7 @@ nav ul ul ul li {
   font-size: large;
 }
 .status-rating__number {
-  color: grey;
+  color: var(--color-gray);
 }
 /* The running text of the privacy policy and the authors page */
 .info-page__text {

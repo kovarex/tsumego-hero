@@ -201,7 +201,7 @@
 	form .error
 	{
 		color: var(--color-danger);
-		font-size: var(--font-size-sm);
+		font-size: var(--text-xs);
 	}
 
 	form .required label::after

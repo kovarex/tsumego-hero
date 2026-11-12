@@ -92,7 +92,7 @@
   font-size: 20px;
 }
 #playTitle {
-  font-weight: 800;
+  font-weight: var(--weight-heavy);
   color: var(--text-color);
 }
 #playTitleA { color: var(--text-color); }
