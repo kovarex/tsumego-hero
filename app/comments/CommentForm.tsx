@@ -128,7 +128,7 @@ export function CommentForm({
 						type="submit"
 						id="submitBtn-tsumegoCommentForm"
 						disabled={!form.text.trim() || isSubmitting}
-						className="btn"
+						className="btn btn--primary"
 					>
 						{isSubmitting ? (
 							<>

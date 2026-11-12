@@ -47,7 +47,7 @@ $finishedCount = count(array_filter($standings, fn(array $row) => $row['run'] ==
 				<label class="visually-hidden" for="challenge-rename-name">Name of the challenge</label>
 				<input class="form-field__control" type="text" id="challenge-rename-name" name="name" value="<?= h((string) ($challenge['name'] ?? '')) ?>"
 					maxlength="<?= ChallengeTable::NAME_MAXIMUM_LENGTH ?>" placeholder="Challenge #<?= $challengeId ?>" autocomplete="off">
-				<button class="btn btn--small" type="submit" id="challenge-rename-save">Save</button>
+				<button class="btn btn--small btn--primary" type="submit" id="challenge-rename-save">Save</button>
 			</form>
 		</details>
 		<?php endif; ?>
@@ -121,7 +121,7 @@ $finishedCount = count(array_filter($standings, fn(array $row) => $row['run'] ==
 				<label class="form-field__label" for="invite-players">Names of the players, separated by commas</label>
 				<input class="form-field__control" type="text" id="invite-players" name="players" data-player-suggestions="/challenges/players" required>
 			</div>
-			<button class="btn" type="submit">Invite</button>
+			<button class="btn btn--primary" type="submit">Invite</button>
 		</form>
 		<div class="form-field challenges__join-link">
 			<label class="form-field__label" for="join-link">Or send this link, anyone who opens it can join</label>

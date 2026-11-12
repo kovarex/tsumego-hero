@@ -19,5 +19,5 @@ $userID = (int) $user['id'];
 			<option value="<?php echo $roleID; ?>"<?php echo $roleID === (int) $user['user_role_id'] ? ' selected' : ''; ?>><?php echo $roleName; ?></option>
 		<?php endforeach; ?>
 	</select>
-	<button type="submit" class="btn btn--small" id="role-submit-<?php echo $userID; ?>">Change role</button>
+	<button type="submit" class="btn btn--small btn--primary" id="role-submit-<?php echo $userID; ?>">Change role</button>
 </form>

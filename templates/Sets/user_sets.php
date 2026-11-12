@@ -13,7 +13,7 @@
 	<?php if ($isOwn): ?>
 		<div class="set-index-intro">
 			<p>Your personal problem sets. Create sets to organize your favorites.</p>
-			<a class="btn" href="/sets/create">Create Set</a>
+			<a class="btn btn--primary" href="/sets/create">Create Set</a>
 		</div>
 	<?php endif; ?>
 

@@ -61,7 +61,7 @@ export function ProblemPicker({ collectionId, pickedTsumegoIds, pickedCountBySet
 					)}
 			</div>
 			<div className="classes__picker-footer">
-				<button className="btn" type="button" onClick={() => dialogRef.current?.close()}>Done</button>
+				<button className="btn btn--primary" type="button" onClick={() => dialogRef.current?.close()}>Done</button>
 			</div>
 		</dialog>
 	);

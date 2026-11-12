@@ -149,7 +149,7 @@ if ($currentColor !== '' && !in_array(strtolower($currentColor), array_map('strt
 						<option value="no">no</option>
 					</select>
 				</div>
-				<input type="submit" class="btn" value="Apply">
+				<input type="submit" class="btn btn--primary" value="Apply">
 			</form>
 			<?php if ($isSandbox): ?>
 				<p><a class="btn" href="/users/userstats3/<?php echo $setId; ?>">Activities</a></p>

@@ -109,7 +109,7 @@ use App\Utility\ViteManifest;
 					?>
 					<form method="post" action="/users/avatarUpload" enctype="multipart/form-data" id="avatar-upload">
 						<input type="file" name="avatar" accept="image/jpeg,image/png,image/webp,image/gif" aria-label="Picture to upload" required="required">
-						<button type="submit" class="btn">Upload</button>
+						<button type="submit" class="btn btn--primary">Upload</button>
 						<div class="hint">Your own picture: JPEG, PNG, WebP or GIF up to <?php echo UploadedAvatar::maxSize(); ?>. The middle square of it is shown.</div>
 					</form>
 					<?php if (!empty($user['uploaded_avatar_hash'])): ?>
@@ -204,9 +204,9 @@ use App\Utility\ViteManifest;
 		<div class="card__title">Progress</div>
 		<div class="stack">
 			<?php if ($canResetOldTsumegoStatuses): ?>
-				<a class="btn" href="#" data-reset-count="<?php echo $tsumegoStatusToRestCount; ?>" id="reset-statuses-button">Reset old progress (<?php echo $tsumegoStatusToRestCount; ?>)</a>
+				<a class="btn btn--danger" href="#" data-reset-count="<?php echo $tsumegoStatusToRestCount; ?>" id="reset-statuses-button">Reset old progress (<?php echo $tsumegoStatusToRestCount; ?>)</a>
 			<?php else: ?>
-				<a class="btn btn--disabled" href="#" id="reset-statuses-button">Reset old progress (<?php echo $tsumegoStatusToRestCount; ?>)</a>
+				<a class="btn btn--danger btn--disabled" href="#" id="reset-statuses-button">Reset old progress (<?php echo $tsumegoStatusToRestCount; ?>)</a>
 				<span class="hint">Available after <?php echo Constants::$MINIMUM_PERCENT_OF_TSUMEGOS_TO_BE_SOLVED_BEFORE_RESET_IS_ALLOWED; ?>% completion</span>
 			<?php endif; ?>
 			<span class="hint">Progress on problems you have not touched for a year.</span>

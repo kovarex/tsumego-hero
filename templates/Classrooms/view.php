@@ -45,7 +45,7 @@ $isPupil = $membershipStatus === ClassroomMemberStatusTable::ACCEPTED;
 		<form method="post" action="/classes/remove-member/<?= $membership->id ?>"><button class="btn btn--neutral" type="submit">Take back</button></form>
 		<?php else: ?>
 		<p>Ask to join and you are in once the teacher accepts. The teacher will see which of the problems they give to the class you solve.</p>
-		<form method="post" action="/classes/join/<?= $classroomId ?>"><button class="btn" type="submit">Ask to join</button></form>
+		<form method="post" action="/classes/join/<?= $classroomId ?>"><button class="btn btn--primary" type="submit">Ask to join</button></form>
 		<?php endif; ?>
 	</section>
 	<?php endif; ?>
@@ -56,7 +56,7 @@ $isPupil = $membershipStatus === ClassroomMemberStatusTable::ACCEPTED;
 			<h2 class="classes__heading">Assignments</h2>
 			<?php if ($isTeacher): ?>
 			<form method="post" action="/classes/create-assignment/<?= $classroomId ?>">
-				<button class="btn" type="submit" id="new-assignment">New assignment</button>
+				<button class="btn btn--primary" type="submit" id="new-assignment">New assignment</button>
 			</form>
 			<?php endif; ?>
 		</div>
@@ -113,7 +113,7 @@ $isPupil = $membershipStatus === ClassroomMemberStatusTable::ACCEPTED;
 				<label class="form-field__label" for="invite-name">Invite a player</label>
 				<input class="form-field__control" type="text" id="invite-name" name="name" placeholder="Name of the player" required>
 			</div>
-			<button class="btn" type="submit">Invite</button>
+			<button class="btn btn--primary" type="submit">Invite</button>
 		</form>
 		<div class="form-field classes__join-link">
 			<label class="form-field__label" for="join-link">Or send this link, and accept the players who ask to join</label>

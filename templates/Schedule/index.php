@@ -73,7 +73,7 @@ $today = date('Y-m-d');
 					<td>
 						<form method="post" action="/schedule/cancel/<?php echo $row['id']; ?>" class="inline-form"
 							onsubmit="return confirm('Cancel scheduling this problem?')">
-							<button class="btn btn--danger" type="submit">Cancel</button>
+							<button class="btn" type="submit">Cancel</button>
 						</form>
 					</td>
 				</tr>

@@ -49,7 +49,7 @@ use App\Utility\ViteManifest;
 
 	<?php // folded behind its button; the summary is the button that opens and closes it ?>
 	<details class="challenges__create" id="challenges-create"<?= $formOpen ? ' open' : '' ?>>
-		<summary class="btn" id="challenges-new"><span class="challenges__create-open">New challenge</span><span class="challenges__create-close">Close</span></summary>
+		<summary class="btn btn--ghost" id="challenges-new"><span class="challenges__create-open">New challenge</span><span class="challenges__create-close">Close</span></summary>
 		<section class="card card--purple challenges__section">
 			<h2 class="challenges__heading">New challenge</h2>
 			<form method="post" action="/challenges/create">

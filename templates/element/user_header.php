@@ -74,7 +74,7 @@ if (Auth::getUserID() === $userID)
 		<?php if ($friendship === FriendshipTable::NONE): ?>
 		<button type="submit" class="btn btn--small" formaction="/friends/add/<?php echo $userID; ?>">Add friend</button>
 		<?php elseif ($friendship === FriendshipTable::ASKED_BY_OTHER): ?>
-		<button type="submit" class="btn btn--small" formaction="/friends/accept/<?php echo $userID; ?>">Accept friend request</button>
+		<button type="submit" class="btn btn--small btn--primary" formaction="/friends/accept/<?php echo $userID; ?>">Accept friend request</button>
 		<button type="submit" class="btn btn--small" formaction="/friends/remove/<?php echo $userID; ?>">Decline</button>
 		<?php elseif ($friendship === FriendshipTable::ASKED_BY_VIEWER): ?>
 		<span class="profile-header__friend-state">Friend request sent</span>

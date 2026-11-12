@@ -120,7 +120,7 @@ export function AssignmentEditor(props: AssignmentEditorProps)
 				)}
 				{props.isPublished
 					? (
-						<button className="btn" type="button" disabled={save.isPending || isTooLong || problemCount === 0} onClick={() => save.mutate(false)}>
+						<button className="btn btn--primary" type="button" disabled={save.isPending || isTooLong || problemCount === 0} onClick={() => save.mutate(false)}>
 							Save changes
 						</button>
 					)
