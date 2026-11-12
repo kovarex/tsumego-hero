@@ -402,6 +402,16 @@ class MistakeTraining
 		return self::isRowDue($row) || self::wasSolvedToday($row);
 	}
 
+	//Whether the normal play page may show a problem the way it shows a solved one, with its review (the answer) and
+	//its comments, given its pool row (null when the problem is not in the training). Not while it is due: solving it
+	//is the review the training waits for, so the answer would give the review away. That holds for a problem missed
+	//earlier today and for one overdue since an earlier day as well. A problem solved today (then it is due on a later
+	//day), one due on a later day and a graduated one can be looked at.
+	public static function allowsNormalView(?array $poolRow): bool
+	{
+		return $poolRow === null || !self::isRowDue($poolRow);
+	}
+
 	//Number of tsumegos currently due for review. Counts only what the training can
 	//serve, like todaysTraining(): a problem that is deleted or in no set is left out.
 	public static function dueCount(int $userId): int
@@ -608,17 +618,17 @@ class MistakeTraining
 	}
 
 	//The problems of a player in the training, soonest review first, for the list on
-	//the overview: each with the collection it will open in and its number, its rung and
-	//its next review. A graduated problem has left the training, and one the training
-	//cannot serve is not shown, like in todaysTraining().
-	/** @return list<array{tsumego_id: int, set_title: string, num: int, rung: int, next_due: string, due: bool, missed_today: bool}> */
+	//the overview: each with the collection it will open in, its number there and that set connection, its rating,
+	//its rung, its next review and whether it may be opened outside the training (allowsNormalView()). A graduated
+	//problem has left the training, and one the training cannot serve is not shown, like in todaysTraining().
+	/** @return list<array{tsumego_id: int, set_connection_id: int, set_title: string, num: int, rating: float, rung: int, next_due: string, due: bool, missed_today: bool, normal_view: bool}> */
 	public static function poolRows(int $userId): array
 	{
-		// Each problem with its first playable connection in the display order: one sort of the
-		// connections of the pool, where a subquery per problem sorted them problem by problem.
+		//Each problem with its first playable connection in the display order: one sort of the
+		//connections of the pool, where a subquery per problem sorted them problem by problem.
 		$rows = Util::query(
-			'SELECT user_id, tsumego_id, rung, next_due, last_review_day, last_mistake_training_result_id, set_title, num FROM ('
-			. 'SELECT p.id, p.user_id, p.tsumego_id, p.rung, p.next_due, p.last_review_day, p.last_mistake_training_result_id, st.title AS set_title, sc.num,'
+			'SELECT user_id, tsumego_id, set_connection_id, rating, rung, next_due, last_review_day, last_mistake_training_result_id, set_title, num FROM ('
+			. 'SELECT p.id, p.user_id, p.tsumego_id, sc.id AS set_connection_id, t.rating, p.rung, p.next_due, p.last_review_day, p.last_mistake_training_result_id, st.title AS set_title, sc.num,'
 			. ' ROW_NUMBER() OVER (PARTITION BY p.tsumego_id ORDER BY ' . SetConnectionTable::displayOrderForSetSql('st') . ', sc.id) AS rn'
 			. ' FROM mistake_training_pool p'
 			. ' JOIN tsumego t ON t.id = p.tsumego_id AND t.deleted IS NULL'
@@ -630,12 +640,15 @@ class MistakeTraining
 		);
 		return array_map(fn(array $row) => [
 			'tsumego_id' => (int) $row['tsumego_id'],
+			'set_connection_id' => (int) $row['set_connection_id'],
 			'set_title' => (string) $row['set_title'],
 			'num' => (int) $row['num'],
+			'rating' => (float) $row['rating'],
 			'rung' => (int) $row['rung'],
 			'next_due' => (string) $row['next_due'],
 			'due' => self::isRowDue($row),
 			'missed_today' => self::wasMissedToday($row),
+			'normal_view' => self::allowsNormalView($row),
 		], $rows);
 	}
 

@@ -242,6 +242,90 @@ class MistakeTrainingControllerTest extends IntegrationTestCase
 		$this->assertStringContainsString('Already solved today. This try does not count.', $this->view);
 	}
 
+	//The replay of a problem solved today offers its normal page, where its review shows the answer; a problem that
+	//is due, missed today included, offers nothing of the kind.
+	public function testOnlyAProblemSolvedTodayOffersItsPageOutsideTheTraining()
+	{
+		$context = $this->prepareTraining([], self::reviewedToday(MistakeTraining::REVIEW_SOLVED), self::reviewedToday(MistakeTraining::REVIEW_MISSED));
+
+		$this->get(MistakeTraining::$PLAY_LINK_PREFIX . self::setConnectionId($context, 1));
+		$this->assertStringContainsString('<a class="btn btn--small btn--navigation" id="mistake-training-normal-view" href="/'
+			. self::setConnectionId($context, 1) . '">Open outside the training</a>', $this->view);
+
+		foreach ([0 => 'due today', 2 => 'missed today'] as $index => $state)
+		{
+			$this->get(MistakeTraining::$PLAY_LINK_PREFIX . self::setConnectionId($context, $index));
+			$this->assertStringContainsString('Mistake Training', $this->view);
+			$this->assertStringNotContainsString('mistake-training-normal-view', $this->view, "A problem $state opens only in the training");
+		}
+	}
+
+	//The normal page of a problem the training has due shows it unsolved, whatever its status says: no review, which
+	//shows the answer, no comments, which may tell it, until it is solved, which is its review. Due today, missed
+	//today and overdue since an earlier day are all due.
+	public function testTheNormalPageOfADueProblemKeepsItsAnswerClosed()
+	{
+		$context = $this->prepareTraining(
+			['name' => 'S'],
+			['name' => 'S'] + self::reviewedToday(MistakeTraining::REVIEW_MISSED),
+			['name' => 'S', 'mistake_training_due' => date('Y-m-d', strtotime(MistakeTraining::today() . ' -2 days')) . ' 00:00:00']);
+
+		foreach ([0 => 'due today', 1 => 'missed today', 2 => 'overdue'] as $index => $state)
+		{
+			$this->get('/' . self::setConnectionId($context, $index));
+			$this->assertFalse($this->playPage()['problem']['solved'], "A problem $state opens unsolved, its review closed");
+			$this->assertStringContainsString('title="The comments open once the problem is solved"', $this->view, "And its comments closed ($state)");
+		}
+	}
+
+	//Once the training solved a problem today, or while it waits for a later day, its normal page shows it as any
+	//solved problem: its review and its comments are open.
+	public function testTheNormalPageOfAProblemNotDueShowsItSolved()
+	{
+		$context = $this->prepareTraining(
+			['name' => 'S'] + self::reviewedToday(MistakeTraining::REVIEW_SOLVED),
+			['name' => 'S', 'mistake_training_due' => date('Y-m-d', strtotime(MistakeTraining::today() . ' +1 day')) . ' 00:00:00']);
+
+		foreach ([0 => 'solved today', 1 => 'due tomorrow'] as $index => $state)
+		{
+			$this->get('/' . self::setConnectionId($context, $index));
+			$this->assertTrue($this->playPage()['problem']['solved'], "A problem $state opens solved, with its review");
+			$this->assertStringNotContainsString('The comments open once the problem is solved', $this->view, "And its comments ($state)");
+		}
+	}
+
+	//The way out of the training, in the browser: the overview opens the problem solved today on its normal page,
+	//with its review. The one still due opens there with its review closed, and solving it there is its review,
+	//which opens the review.
+	public function testTheOverviewOpensOutsideTheTrainingOnlyWhatIsNotDue()
+	{
+		$context = $this->prepareTraining(['name' => 'S'], ['name' => 'S'] + self::reviewedToday(MistakeTraining::REVIEW_SOLVED));
+		$userId = (int) $context->user['id'];
+		$dueTsumegoId = (int) $context->tsumegos[0]['id'];
+		$reviewState = fn(Browser $browser) => (string) $browser->driver->executeScript(
+			'return document.getElementById("besogo-review-button") ? "active" : (document.getElementById("besogo-review-button-inactive") ? "inactive" : "none");');
+
+		$browser = Browser::instance();
+		$browser->get(substr(MistakeTraining::$OVERVIEW_LINK, 1));
+		$buttons = $browser->getElements('.mistake-training-pool__table a.btn--navigation');
+		$this->assertCount(1, $buttons, 'Only the problem solved today opens outside the training');
+		$this->assertSame('Open', $buttons[0]->getText());
+		$buttons[0]->click();
+		$browser->waitUntil(fn() => str_ends_with($browser->driver->getCurrentURL(), '/' . self::setConnectionId($context, 1)), context: 'the normal page of the problem');
+		$browser->waitForBoard();
+		$this->assertSame('active', $reviewState($browser), 'Its review is open');
+
+		$browser->get((string) self::setConnectionId($context, 0));
+		$browser->waitForBoard();
+		$this->assertSame('inactive', $reviewState($browser), 'The review of the problem that is due stays closed');
+		$browser->playWithResult('S');
+		$browser->waitUntil(fn() => $reviewState($browser) === 'active', context: 'the review opened by the solve');
+		$row = MistakeTraining::getPoolRow($userId, $dueTsumegoId);
+		$this->assertFalse(MistakeTraining::isDue($userId, $dueTsumegoId), 'The solve on the normal page was its review');
+		$this->assertSame(MistakeTraining::REVIEW_SOLVED, $row['last_mistake_training_result_id']);
+		$this->assertSame(1, (int) $row['rung'], 'A clean review climbs a rung');
+	}
+
 	//The colour of the row comes from what today did, so a problem missed and then
 	//solved on a retry is green when the page is drawn again, whatever its status.
 	public function testAProblemSolvedOnARetryIsGreenInTheRow()
@@ -619,10 +703,44 @@ class MistakeTrainingControllerTest extends IntegrationTestCase
 		$html = $this->view;
 
 		$this->assertStringContainsString('<summary>Problems in training (2)</summary>', $html);
-		$this->assertMatchesRegularExpression('~#7</td>\s*<td><span class="training-overview__insignia training-overview__insignia--chevron" role="img" aria-label="' . MistakeTraining::rungName(0) . '"~', $html);
+		$this->assertMatchesRegularExpression('~#7</td>\s*<td>\d+[kd]</td>\s*<td><span class="training-overview__insignia training-overview__insignia--chevron" role="img" aria-label="' . MistakeTraining::rungName(0) . '"~', $html);
 		$this->assertMatchesRegularExpression('~title="' . MistakeTraining::rungName(4) . '">.*?</span></td>\s*<td>'
 			. preg_quote(MistakeTraining::dayHtml(MistakeTraining::today() . ' +10 days')) . '</td>~s', $html, 'With the rung as insignia and the day of the next review');
 		$this->assertLessThan(strpos($html, '#3</td>'), strpos($html, '#7</td>'), 'Soonest review first');
+	}
+
+	//The rank of each problem, as the problem page shows it, and the way to its normal page for the ones that are not
+	//due today
+	public function testTheOverviewShowsTheRankAndOpensWhatIsNotDue()
+	{
+		$today = MistakeTraining::today();
+		$context = new ContextPreparator([
+			'user' => ['name' => 'testuser'],
+			'tsumegos' => [
+				['set_order' => 1, 'rating' => 1500, 'status' => ['name' => 'S', 'mistake_training_due' => $today . ' 00:00:00']],
+				['set_order' => 2, 'rating' => 2200, 'status' => ['name' => 'S'] + self::reviewedToday(MistakeTraining::REVIEW_SOLVED)],
+				['set_order' => 3, 'rating' => 600, 'status' => ['name' => 'S', 'mistake_training_due' => date('Y-m-d', strtotime($today . ' +5 days')) . ' 00:00:00']],
+			],
+		]);
+
+		$this->get(MistakeTraining::$OVERVIEW_LINK);
+
+		$this->assertStringContainsString('<tr><th>Problem</th><th>Rank</th><th>Rung</th><th>Next review</th>', $this->view);
+		$rows = [];
+		preg_match_all('~<tr data-tsumego="(\d+)">(.*?)</tr>~s', $this->view, $matches, PREG_SET_ORDER);
+		foreach ($matches as [, $tsumegoId, $cells])
+			$rows[(int) $tsumegoId] = $cells;
+		$row = fn(int $index) => $rows[(int) $context->tsumegos[$index]['id']];
+		$this->assertCount(3, $rows);
+		foreach ([0 => '6k', 1 => '2d', 2 => '15k'] as $index => $rank)
+		{
+			$this->assertSame($rank, Rating::getReadableRankFromRating([1500, 2200, 600][$index]), 'The rank as the rest of the site writes it');
+			$this->assertMatchesRegularExpression('~#' . ($index + 1) . '</td>\s*<td>' . $rank . '</td>~', $row($index));
+		}
+		$this->assertStringNotContainsString('btn--navigation', $row(0), 'Due today, it opens only in the training');
+		foreach ([1 => 'solved today', 2 => 'due on a later day'] as $index => $state)
+			$this->assertStringContainsString('<a class="btn btn--small btn--navigation" href="/' . self::setConnectionId($context, $index) . '"', $row($index),
+				"A problem $state opens on its normal page");
 	}
 
 	public function testTheOverviewIsAllCaughtUpOnceNothingIsDue()

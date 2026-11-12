@@ -1,6 +1,7 @@
 <?php
 
 use App\Utility\MistakeTraining;
+use App\Utility\Rating;
 use App\Utility\RungInsignia;
 
 /**
@@ -89,20 +90,24 @@ use App\Utility\RungInsignia;
 	<details class="mistake-training-pool" open>
 		<summary>Problems in training (<?php echo count($poolRows); ?>)</summary>
 		<table class="mistake-training-pool__table">
-			<tr><th>Problem</th><th>Rung</th><th>Next review</th></tr>
+			<tr><th>Problem</th><th>Rank</th><th>Rung</th><th>Next review</th><th><span class="visually-hidden">Outside the training</span></th></tr>
 			<?php foreach ($poolRows as $row):
 				[$kind, $symbols] = RungInsignia::of($row['rung'], count(MistakeTraining::ladder()));
 				$rungName = MistakeTraining::rungName($row['rung']);
-				// HTML: the day as a <time> the page formats
+				$problem = h($row['set_title']) . ' #' . $row['num'];
+				//HTML: the day as a <time> the page formats
 				if ($row['due'])
 					$nextReview = $row['missed_today'] ? 'today, missed' : 'today';
 				else
 					$nextReview = MistakeTraining::describeDayWithDate(substr($row['next_due'], 0, 10));
 			?>
 			<tr data-tsumego="<?php echo $row['tsumego_id']; ?>">
-				<td><?php echo htmlspecialchars($row['set_title'], ENT_QUOTES, 'UTF-8'); ?> #<?php echo $row['num']; ?></td>
+				<td><?php echo $problem; ?></td>
+				<td><?php echo Rating::getReadableRankFromRating($row['rating']); ?></td>
 				<td><span class="training-overview__insignia training-overview__insignia--<?php echo $kind; ?>" role="img" aria-label="<?php echo $rungName; ?>" title="<?php echo $rungName; ?>"><?php echo RungInsignia::render($kind, $symbols); ?></span></td>
 				<td><?php echo $nextReview; ?></td>
+				<?php //A problem that is due opens only in the training, whose review its answer would give away ?>
+				<td><?php if ($row['normal_view']): ?><a class="btn btn--small btn--navigation" href="/<?php echo $row['set_connection_id']; ?>" aria-label="Open <?php echo $problem; ?> outside the training" title="The problem's own page, outside the training">Open</a><?php endif; ?></td>
 			</tr>
 			<?php endforeach; ?>
 		</table>

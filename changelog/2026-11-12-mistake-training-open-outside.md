@@ -1,0 +1,2 @@
+Added: In [Mistake Training](/mistake-training/overview), a problem you already reviewed today, or whose next review is on a later day, can be opened on its normal problem page, from its Open button in the overview's list or from the problem itself.
+Changed: A problem that is due today in Mistake Training keeps its review and comments closed on its normal problem page until you solve it, so the answer can't give its review away.

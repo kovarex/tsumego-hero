@@ -430,6 +430,66 @@ class MistakeTrainingTest extends IntegrationTestCase
 		$this->assertFalse(MistakeTraining::isDue($userId, 999999), 'A problem outside the pool is never due');
 	}
 
+	//The normal play page may show the answer of a problem of the training only when it cannot give a review away:
+	//not while the problem is due on the player's day, but once the training solved it today, and before its day.
+	public function testANormalViewIsAllowedOnlyWhenTheProblemIsNotDue(): void
+	{
+		$today = MistakeTraining::today();
+		$day = fn(int $daysAhead) => date('Y-m-d', strtotime($today . ' ' . sprintf('%+d', $daysAhead) . ' days')) . ' 00:00:00';
+		$context = new ContextPreparator([
+			'user' => ['name' => 'testuser'],
+			'tsumegos' => [
+				['set_order' => 1, 'status' => ['name' => 'S', 'mistake_training_due' => $day(0)]],
+				['set_order' => 2, 'status' => ['name' => 'S', 'mistake_training_due' => $day(-3)]],
+				['set_order' => 3, 'status' => ['name' => 'S', 'mistake_training_due' => $day(0),
+					'mistake_training_review_day' => $today, 'mistake_training_review_result' => MistakeTraining::REVIEW_MISSED]],
+				['set_order' => 4, 'status' => ['name' => 'S', 'mistake_training_due' => $day(1)]],
+				['set_order' => 5, 'status' => ['name' => 'S', 'mistake_training_due' => $day(8)]],
+				['set_order' => 6, 'status' => 'S'],
+			],
+		]);
+		$userId = (int) $context->user['id'];
+		$allows = fn(int $index) => MistakeTraining::allowsNormalView($this->poolRow($userId, (int) $context->tsumegos[$index]['id']));
+
+		$this->assertFalse($allows(0), 'Due today and not solved yet: the answer would give the review away');
+		$this->assertFalse($allows(1), 'Overdue since an earlier day, it is due today');
+		$this->assertFalse($allows(2), 'Missed today, it waits in today\'s training until it is solved');
+		$this->assertTrue($allows(3), 'Due tomorrow, on the player\'s day');
+		$this->assertTrue($allows(4), 'Due on a later day');
+		$this->assertTrue($allows(5), 'Not in the training');
+
+		MistakeTraining::recordResult($userId, (int) $context->tsumegos[0]['id'], PlayOutcome::SolvedClean, 'S', true);
+		$this->assertTrue($allows(0), 'Solved today in the training, its review of today is done');
+		MistakeTraining::recordResult($userId, (int) $context->tsumegos[2]['id'], PlayOutcome::SolvedClean, 'S', true);
+		$this->assertTrue($allows(2), 'A retry solved today is done for the day too');
+
+		MistakeTraining::graduateNow($userId, (int) $context->tsumegos[4]['id']);
+		$this->assertTrue($allows(4), 'Graduated, it has no more reviews');
+	}
+
+	//The list of the overview has what its rows show and link to in the one query: the rating of the problem, the
+	//set connection it opens in, and whether it may be opened outside the training.
+	public function testThePoolListsTheRatingAndTheNormalViewOfEachProblem(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'testuser'],
+			'tsumegos' => [
+				['set_order' => 1, 'rating' => 1500, 'status' => ['name' => 'S', 'mistake_training_due' => MistakeTraining::today() . ' 00:00:00']],
+				['set_order' => 2, 'rating' => 2200, 'status' => ['name' => 'S', 'mistake_training_due' => date('Y-m-d', strtotime(MistakeTraining::today() . ' +4 days')) . ' 00:00:00']],
+			],
+		]);
+
+		$rows = MistakeTraining::poolRows((int) $context->user['id']);
+
+		$this->assertCount(2, $rows);
+		$this->assertSame(1500.0, $rows[0]['rating']);
+		$this->assertSame(2200.0, $rows[1]['rating']);
+		$this->assertSame((int) $context->tsumegos[0]['set-connections'][0]['id'], $rows[0]['set_connection_id']);
+		$this->assertSame((int) $context->tsumegos[1]['set-connections'][0]['id'], $rows[1]['set_connection_id']);
+		$this->assertFalse($rows[0]['normal_view'], 'Due today, it opens only in the training');
+		$this->assertTrue($rows[1]['normal_view'], 'Due on a later day, it opens outside the training too');
+	}
+
 	public function testUpcomingByDayCountsWholeDaysAndLimitsDays(): void
 	{
 		$dueDays = [1, 1, 1, 2, 3, 3, 4, 5, 6, 7];
