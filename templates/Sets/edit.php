@@ -77,7 +77,7 @@ if ($currentColor !== '' && !in_array(strtolower($currentColor), array_map('strt
 					<input class="form-field__control" type="number" id="SetOrder" name="order" value="<?php echo h($set->order ?? ''); ?>">
 					<p class="hint">Low numbers are on top, high numbers at the bottom.</p>
 				</div>
-			<div class="submit"><input class="btn" type="submit" value="Save"/></div></form>
+			<div class="submit"><input class="btn btn--primary" type="submit" value="Save"/></div></form>
 		</div>
 
 		<div class="card card--purple set-edit__section">

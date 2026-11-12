@@ -25,8 +25,11 @@ $tabs = [
 		<div class="legacy-center">
 		<br>
 		<?php foreach ($tabs as $name => $url): ?>
-			<?php $class = ($name === $activeTab) ? 'btn--inactive' : ''; ?>
-			<a class="btn <?php echo $class; ?>" href="<?php echo $url; ?>"><?php echo $name; ?></a>
+			<?php if ($name === $activeTab): ?>
+				<a class="btn btn--pill is-selected" href="<?php echo $url; ?>" aria-current="page"><?php echo ucfirst($name); ?></a>
+			<?php else: ?>
+				<a class="btn btn--pill" href="<?php echo $url; ?>"><?php echo ucfirst($name); ?></a>
+			<?php endif; ?>
 		<?php endforeach; ?>
 		<br><br>
 		</div>

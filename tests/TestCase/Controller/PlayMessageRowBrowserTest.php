@@ -168,7 +168,7 @@ class PlayMessageRowBrowserTest extends IntegrationTestCase
 				status: document.getElementById('status').textContent,
 				comment: document.getElementById('theComment').textContent,
 				solved: document.querySelector('.play-message').classList.contains('play-message--solved'),
-				greenNext: next !== null && getComputedStyle(next).backgroundColor === (() => { const probe = document.createElement('div'); probe.style.background = 'var(--color-green-dark)'; document.body.append(probe); const color = getComputedStyle(probe).backgroundColor; probe.remove(); return color; })(),
+				greenNext: next !== null && getComputedStyle(next).backgroundColor === (() => { const probe = document.createElement('div'); probe.style.background = 'var(--color-brand-fill)'; document.body.append(probe); const color = getComputedStyle(probe).backgroundColor; probe.remove(); return color; })(),
 				greenGlow: [...document.querySelectorAll('.besogo-board')].some(board => getComputedStyle(board).boxShadow.includes('67, 255, 40')),
 			};
 			JS);

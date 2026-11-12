@@ -75,7 +75,7 @@ const scoreViews = {
 function showScoreView(name) {
 	for (const [viewName, view] of Object.entries(scoreViews)) {
 		const shown = viewName === name;
-		document.querySelectorAll(view.button).forEach(button => button.classList.toggle("btn--inactive", shown));
+		document.querySelectorAll(view.button).forEach(button => button.classList.toggle("is-selected", shown));
 		if (shown) {
 			Display.fadeIn(view.info, 250);
 			Display.fadeIn(view.detail, 200);
@@ -93,7 +93,7 @@ document.querySelectorAll("[data-score-view]").forEach(button => button.addEvent
 // the numbers are shown at first, by the markup itself
 Display.hide("#ratioInfo");
 Display.hide("#timeInfo");
-document.querySelectorAll("#numbersButton").forEach(button => button.classList.add("btn--inactive"));
+document.querySelectorAll("#numbersButton").forEach(button => button.classList.add("is-selected"));
 
 // the sharing is saved as soon as it is switched
 document.querySelectorAll(".set-view__share-toggle input[type=checkbox]").forEach(checkbox => checkbox.addEventListener("change", function() {

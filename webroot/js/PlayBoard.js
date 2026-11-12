@@ -226,17 +226,23 @@ redrawHearts();
 	{
 		let button = row.querySelector("#" + id);
 		if (button)
+		{
+			button.classList.add("btn");
 			end.appendChild(button);
+		}
 	}
 	//Review goes to the panel, right after More
 	let more = document.getElementById("editToggle");
 	for (let review of row.querySelectorAll("#besogo-review-button, #besogo-review-button-inactive"))
+	{
+		review.classList.add("btn", "btn--danger");
 		more ? more.after(review) : actions.appendChild(review);
+	}
 	//Next of a problem (not the Skip of the time mode) says what it does, it needs no tooltip
 	if (mode == playPage.page.modes.level || mode == playPage.page.modes.mistakeTraining)
 		end.querySelectorAll("#besogo-next-button, #besogo-next-button-inactive").forEach(next => next.removeAttribute("title"));
 	if (problemSolved)
-		document.querySelector(".play-message")?.classList.add("play-message--solved");
+		markSolvedInTheRow();
 	//The review's tree goes to the panel too, where it shows beside the board with the comments under it
 	let reviewPanels = document.querySelector("#target .besogo-panels");
 	if (reviewPanels)
@@ -260,6 +266,13 @@ redrawHearts();
 		while (row.firstChild)
 			settings.appendChild(row.firstChild);
 })();
+
+//The problem is solved: the row of the messages says so, and Next becomes the main action (PlayPage.js too)
+function markSolvedInTheRow()
+{
+	document.querySelector(".play-message")?.classList.add("play-message--solved");
+	document.querySelector("#besogo-next-button, #besogo-next-button-inactive")?.classList.add("btn--primary");
+}
 
 //On a PC the review's tree gets room. The panel widens to show the whole tree, taking first the room the board
 //leaves unused in its column (a board as tall as the window is narrower than its column), then the empty margins

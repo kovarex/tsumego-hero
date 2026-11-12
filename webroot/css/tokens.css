@@ -217,7 +217,6 @@
 		--surface-button-hover: #737477;
 		--surface-button-pressed: #36383b;
 		--surface-button-inactive: #8f9092;
-		--text-button-inactive: #b0d999;
 		--surface-translucent: rgba(255, 255, 255, 0.1);
 
 		/* ── Accent / feedback tokens (auto-adapt light ↔ dark) ── */

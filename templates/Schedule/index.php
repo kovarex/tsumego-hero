@@ -158,7 +158,7 @@ $today = date('Y-m-d');
 				<input class="form-field__control" type="date" id="schedule-date" name="start_date" value="<?php echo $today; ?>" min="<?php echo $today; ?>" required>
 				<span class="hint">Starting today publishes right away.</span>
 			</div>
-			<button class="btn" type="submit" id="schedule-submit">Schedule</button>
+			<button class="btn btn--primary" type="submit" id="schedule-submit">Schedule</button>
 		</form>
 		<div class="schedule-page__preview">
 			<label class="schedule-page__preview-toggle" title="Toggle board previews">

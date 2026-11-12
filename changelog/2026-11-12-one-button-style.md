@@ -1,0 +1,1 @@
+Changed: Buttons across the site share one look in sentence case: a plain button for most actions, green for the main one, red for deleting, and rounded pills for switching between boards and views, the chosen one filled. On the play page the buttons above the board and in the panel look alike, and Review is outlined in red.

@@ -105,7 +105,7 @@ if ($tsumegoFilters->query != 'topics')
 				<br><br>
 					<?php
 					if ($startingSetConnectionID !== null)
-						echo '<a class="btn set-view__start" href="/' . $startingSetConnectionID . '">Start</a>';
+						echo '<a class="btn btn--primary set-view__start" href="/' . $startingSetConnectionID . '">Start</a>';
 ?>
 				</div>
 			</td>
@@ -162,7 +162,7 @@ if ($tsumegoFilters->query != 'topics')
 					echo 'Type "reset" to remove all your progress on this collection.<br><br>';
 					echo '<form action="/sets/resetProgress/' . $set->id . '/' . ($partition + 1) . '" method="post">';
 					echo '<input type="text" name="reset-check" id="reset-textfield" placeholder="reset">';
-					echo '<input type="submit" value="submit" id="reset-submit">';
+					echo '<input type="submit" class="btn btn--danger" value="Reset" id="reset-submit">';
 					echo '</form>';
 					echo '</div>';
 				}
@@ -179,9 +179,9 @@ if ($tsumegoFilters->query != 'topics')
 			<div class="legacy-center">
 			<br>
 			<br>
-			<a id="numbersButton" class="btn" data-score-view="numbers">Numbers</a>
-			<a id="ratioButton" class="btn" data-score-view="ratio">Accuracy</a>
-			<a id="timeButton" class="btn" data-score-view="time">Time</a>
+			<a id="numbersButton" class="btn btn--pill" data-score-view="numbers">Numbers</a>
+			<a id="ratioButton" class="btn btn--pill" data-score-view="ratio">Accuracy</a>
+			<a id="timeButton" class="btn btn--pill" data-score-view="time">Time</a>
 			<br>
 			<br>
 			<div id="numbersInfo">

@@ -24,8 +24,12 @@ foreach ($timeModeCategories as $timeModeCategory)
 </div>
 <br>
 <div class="legacy-center">
-	<a class="btn btn--inactive" href="#">Select</a>
-	<a class="btn<?php echo $hasFinishedSesssion ? '' : ' btn--inactive'; ?>" href="<?php echo $hasFinishedSesssion ? '/timeMode/result' : '#'; ?>">Results</a>
+	<a class="btn btn--pill is-selected" href="#" aria-current="page">Select</a>
+	<?php if ($hasFinishedSesssion): ?>
+		<a class="btn btn--pill" href="/timeMode/result">Results</a>
+	<?php else: ?>
+		<a class="btn btn--pill" aria-disabled="true" title="No finished session yet">Results</a>
+	<?php endif; ?>
 	<a class="btn" href="/challenges">Challenge a friend</a>
 </div>
 <?php if ($challengeInProgressID): ?>

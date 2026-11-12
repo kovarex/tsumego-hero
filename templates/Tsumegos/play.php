@@ -100,18 +100,18 @@ use App\Utility\ViteManifest;
 		<?php //The actions keep their places in every state, so no button moves under the finger; on a phone the board leaves room for them under it (besogo.js keepBoardInWindowHeight()) ?>
 		<div class="play-actions" data-keep-in-view="(width < 64rem)">
 			<?php if (!Auth::isInMistakeTrainingMode() && Auth::isLoggedIn()): ?>
-				<a id="heroPowersToggle" class="play-actions__button" href="#" data-toggle="heroPowersTray" title="Hero powers" aria-label="Hero powers">&#9889;</a>
+				<a id="heroPowersToggle" class="btn btn--icon play-actions__button" href="#" data-toggle="heroPowersTray" title="Hero powers" aria-label="Hero powers">&#9889;</a>
 			<?php endif; ?>
 			<?php if ($commentCounts !== null): ?>
-				<a id="commentsToggle" class="play-actions__button<?php echo $commentsVisible ? '' : ' play-actions__button--disabled'; ?>" href="#" data-toggle="commentsPanel"
+				<a id="commentsToggle" class="btn play-actions__button<?php echo $commentsVisible ? '' : ' play-actions__button--disabled'; ?>" href="#" data-toggle="commentsPanel"
 					title="<?php echo $commentsVisible ? 'Comments' : 'The comments open once the problem is solved'; ?>" aria-label="Comments"<?php echo $commentsVisible ? '' : ' aria-disabled="true"'; ?>>&#128172;<?php
 					if (($summary = TsumegoIssueTable::commentSummary($commentCounts)) !== '')
 						echo '<span id="moreCommentSummary" class="play-more__summary"' . ($commentsVisible ? '' : ' style="visibility: hidden;"') . '>' . h($summary) . '</span>';
 				?></a>
 			<?php endif; ?>
-			<a id="editToggle" class="play-actions__button" href="#" data-toggle="editSection" title="The problem: info, tags, similar problems" >More</a>
+			<a id="editToggle" class="btn play-actions__button" href="#" data-toggle="editSection" title="The problem: info, tags, similar problems" >More</a>
 			<?php //Filters only when the problems are filtered ?>
-			<a id="showFilters" class="play-actions__button play-filters-toggle"<?php echo empty($tsumegoFilters->sets) && empty($tsumegoFilters->ranks) && empty($tsumegoFilters->tags) ? ' style="display: none;"' : ''; ?> href="#" data-toggle="msgFilters">Filters</a>
+			<a id="showFilters" class="btn play-actions__button play-filters-toggle"<?php echo empty($tsumegoFilters->sets) && empty($tsumegoFilters->ranks) && empty($tsumegoFilters->tags) ? ' style="display: none;"' : ''; ?> href="#" data-toggle="msgFilters">Filters</a>
 		</div>
 		<div class="filters-outer">
 			<div id="msgFilters" class="play-filters" style="display: none;">

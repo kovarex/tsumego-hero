@@ -62,7 +62,7 @@ use App\Utility\ViteManifest;
 						echo '<div class="input"><input type="email" name="email" placeholder="New e-mail" aria-label="New e-mail" maxlength="' . UserTable::EMAIL_MAX_LENGTH . '" class="settings-account__field" required="required"></div>';
 						echo '<div class="input"><input type="password" name="password" placeholder="Password" aria-label="Password" autocomplete="current-password" class="settings-account__field" required="required"></div>';
 						echo '<div class="hint">The address changes once you open the link sent to it.</div>';
-						echo '<div class="submit"><input class="btn" value="Submit" type="submit"></div>';
+						echo '<div class="submit"><input class="btn btn--primary" value="Submit" type="submit"></div>';
 						echo '</form>';
 						?>
 					</div>
@@ -81,7 +81,7 @@ use App\Utility\ViteManifest;
 						echo '<div class="input"><input type="password" name="new1" placeholder="New password" aria-label="New password" autocomplete="new-password" class="settings-account__field" required="required"></div>';
 						echo '<div class="input"><input type="password" name="new2" placeholder="New password again" aria-label="New password again" autocomplete="new-password" class="settings-account__field" required="required"></div>';
 						echo '<div class="hint">At least ' . Constants::$MINIMUM_PASSWORD_LENGTH . ' characters.</div>';
-						echo '<div class="submit"><input class="btn" value="Submit" type="submit"></div>';
+						echo '<div class="submit"><input class="btn btn--primary" value="Submit" type="submit"></div>';
 						echo '</form>';
 						?>
 					</div>

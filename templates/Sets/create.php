@@ -21,6 +21,6 @@ use App\Utility\Util;
 				<input class="form-field__control" type="text" id="SetTitle" name="title" placeholder="My set name" required>
 			</div>
 			<p class="hint">You can add a description, color and image after creating, in the set editor.</p>
-		<div class="submit"><input class="btn" type="submit" value="Create Set"/></div></form>
+		<div class="submit"><input class="btn btn--primary" type="submit" value="Create Set"/></div></form>
 	</div>
 </div>

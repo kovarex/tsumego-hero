@@ -673,7 +673,7 @@ function displayResult(result, incorrectDetail = '')
 		}
 		updateCurrentNavigationButton('S');
 		document.getElementById("status").innerHTML = "<h2>Correct!</h2>";
-		document.querySelector(".play-message")?.classList.add("play-message--solved");
+		markSolvedInTheRow();
 		let glow = light ? "0 2px 14px 0 rgba(67, 255, 40, 0.7), 0 6px 20px 0 rgba(0, 0, 0, 0.2)" : "0 2px 14px 0 rgba(67, 255, 40, 0.7), 0 6px 20px 0 rgba(80, 255, 0, 0.2)";
 		document.querySelectorAll(".besogo-board").forEach(board => board.style.boxShadow = glow);
 		enableReview();

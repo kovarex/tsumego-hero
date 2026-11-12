@@ -14,7 +14,7 @@
 		<form action="/users/updatename" id="UserUpdatenameForm" method="post" accept-charset="utf-8"><div hidden><input type="hidden" name="_method" value="POST"/></div>
 		<div class="input text required"><label for="UserDisplayName">Display name</label><input name="display_name" placeholder="Your display name" maxlength="50" autocomplete="off" type="text" id="UserDisplayName" required="required"/></div>
 		<p class="hint">Must be 3-50 characters and unique.</p>
-		<div class="submit"><input type="submit" value="Save"/></div></form>
+		<div class="submit"><input type="submit" class="btn btn--primary" value="Save"/></div></form>
 		<p><a href="/users/logout">Log out</a></p>
 	</div>
 </div>

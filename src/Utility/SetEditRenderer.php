@@ -16,7 +16,7 @@ class SetEditRenderer
 		echo '<input type="file" name="adminUpload" accept=".sgf" style="margin-bottom: 10px;"><br>';
 		echo '<label style="font-weight: normal;">or paste SGF:</label><br>';
 		echo '<input id="sgf" type="textarea" placeholder="(;GM[1]FF[4]...)" rows="3">';
-		echo '<input type="submit" value="Add" />';
+		echo '<input type="submit" class="btn btn--sm btn--primary" value="Add" />';
 		echo '</div>';
 		echo '</form>';
 	}
