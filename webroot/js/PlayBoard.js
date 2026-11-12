@@ -235,7 +235,7 @@ redrawHearts();
 	let more = document.getElementById("editToggle");
 	for (let review of row.querySelectorAll("#besogo-review-button, #besogo-review-button-inactive"))
 	{
-		review.classList.add("btn", "btn--danger");
+		review.classList.add("btn");
 		more ? more.after(review) : actions.appendChild(review);
 	}
 	//Next of a problem (not the Skip of the time mode) says what it does, it needs no tooltip

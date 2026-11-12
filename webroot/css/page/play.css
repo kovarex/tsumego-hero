@@ -727,8 +727,8 @@ h1 {
 }
 
 /* The buttons of the board (PlayBoard.js): Reset and Next at the right of the row of the messages, Review in
-   the panel after More, as .btn (Next --primary once the problem is solved, Review --danger); an inactive one
-   is dimmed and can't be pressed */
+   the panel after More, as .btn (Next --primary once the problem is solved, Review red once it opens); an
+   inactive one is dimmed and can't be pressed */
 .play-actions__end {
   display: flex;
   flex: none;
@@ -743,6 +743,21 @@ h1 {
   opacity: 0.4;
   cursor: default;
   pointer-events: none;
+}
+/* Review is a plain button until the problem can be reviewed (its id loses -inactive: PlayPage.js enableReview(),
+   util.js after a revelation), then filled red, as before the buttons were unified. The red of the button
+   (--color-red), not the danger token, which white text on it would not reach 4.5:1. */
+.play-actions .btn#besogo-review-button {
+  border-color: var(--color-red);
+  background: var(--color-red);
+  color: var(--color-white);
+}
+@media (hover: hover) {
+  .play-actions .btn#besogo-review-button:hover {
+    border-color: var(--color-red-dark);
+    background: var(--color-red-dark);
+    color: var(--color-white);
+  }
 }
 /* After a fail, Reset is the thing to do: it keeps its look, with a thin outline in the red of Incorrect! (and
    the keyboard focus, PlayPage.js markFailed()) until the reset */
