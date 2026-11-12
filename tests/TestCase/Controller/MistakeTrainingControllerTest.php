@@ -8,10 +8,11 @@ use App\Utility\MistakeTraining;
 use App\Utility\PlayOutcome;
 use App\Utility\Rating;
 use Facebook\WebDriver\WebDriverBy;
-use Facebook\WebDriver\WebDriverDimension;
 
 class MistakeTrainingControllerTest extends IntegrationTestCase
 {
+	private const SGF = '(;GM[1]FF[4]CA[UTF-8]AP[CGoban:3]ST[2]SZ[19]KM[0.00]AW[cc][cd][dc][ed]AB[cb][db][eb][fc])';
+
 	public function testRequiresLogin()
 	{
 		new ContextPreparator(['user' => null]);
@@ -645,10 +646,10 @@ class MistakeTrainingControllerTest extends IntegrationTestCase
 		$context = new ContextPreparator([
 			'user' => ['name' => 'testuser'],
 			'tsumegos' => [
-				['sets' => [['name' => 'Due Collection', 'num' => 41]], 'rating' => 1500, 'status' => ['name' => 'V', 'mistake_training_due' => $today]],
-				['sets' => [['name' => 'Missed Collection', 'num' => 42]], 'rating' => 1500, 'status' => ['name' => 'V'] + self::reviewedToday(MistakeTraining::REVIEW_MISSED)],
-				['sets' => [['name' => 'Solved Collection', 'num' => 43]], 'rating' => 1500, 'status' => ['name' => 'V'] + self::reviewedToday(MistakeTraining::REVIEW_SOLVED)],
-				['sets' => [['name' => 'Later Collection', 'num' => 44]], 'rating' => 1500,
+				['sgf' => self::SGF, 'sets' => [['name' => 'Due Collection', 'num' => 41]], 'rating' => 1500, 'status' => ['name' => 'V', 'mistake_training_due' => $today]],
+				['sgf' => self::SGF, 'sets' => [['name' => 'Missed Collection', 'num' => 42]], 'rating' => 1500, 'status' => ['name' => 'V'] + self::reviewedToday(MistakeTraining::REVIEW_MISSED)],
+				['sgf' => self::SGF, 'sets' => [['name' => 'Solved Collection', 'num' => 43]], 'rating' => 1500, 'status' => ['name' => 'V'] + self::reviewedToday(MistakeTraining::REVIEW_SOLVED)],
+				['sgf' => self::SGF, 'sets' => [['name' => 'Later Collection', 'num' => 44]], 'rating' => 1500,
 					'status' => ['name' => 'V', 'mistake_training_due' => date('Y-m-d', strtotime(MistakeTraining::today() . ' +5 days')) . ' 00:00:00']],
 			],
 		]);
@@ -681,6 +682,7 @@ class MistakeTrainingControllerTest extends IntegrationTestCase
 				"$name: the normal problem button, leading to the normal play page");
 			$this->assertStringContainsString('<div class="problem-nav__number">' . (41 + $index) . '</div>', $row, "$name: with its number in the collection");
 			$this->assertStringContainsString('>' . $name . ' Collection</a>', $row, "$name: with its collection");
+			$this->assertStringContainsString(' data-sgf-preview=', $row, "$name: with the board in its tooltip");
 		}
 	}
 
@@ -711,32 +713,41 @@ class MistakeTrainingControllerTest extends IntegrationTestCase
 			'tsumegos' => [
 				['sets' => [['name' => 'A collection with a rather long name for a narrow phone', 'num' => 128]], 'rating' => 2300,
 					'status' => ['name' => 'V', 'mistake_training_due' => date('Y-m-d', strtotime(MistakeTraining::today() . ' +3 days')) . ' 00:00:00']],
+				['sets' => [['name' => 'Gokyo Shumyo', 'num' => 23]], 'rating' => 2100,
+					'status' => ['name' => 'V', 'mistake_training_due' => date('Y-m-d', strtotime(MistakeTraining::today() . ' +4 days')) . ' 00:00:00']],
+				['sets' => [['name' => 'Capturing Race', 'num' => 4]], 'rating' => 2500,
+					'status' => ['name' => 'V', 'mistake_training_rung' => 6, 'mistake_training_due' => date('Y-m-d', strtotime(MistakeTraining::today() . ' +20 days')) . ' 00:00:00']],
 				['set_order' => 2, 'status' => ['name' => 'V', 'mistake_training_due' => MistakeTraining::today() . ' 00:00:00']],
 			],
 		]);
+		// The browser window doesn't get narrower than about 490 pixels, so the page is measured in a frame of 320.
 		$browser = Browser::instance();
-		$window = $browser->driver->manage()->window();
-		$originalSize = $window->getSize();
-		try
-		{
-			$window->setSize(new WebDriverDimension(320, 700));
-			$browser->get(substr(MistakeTraining::$OVERVIEW_LINK, 1));
-			$layout = $browser->driver->executeScript(<<<'JS'
-				const width = document.documentElement.clientWidth;
-				const parts = [...document.querySelectorAll('.mistake-training-pool *')];
-				return {
-					rows: document.querySelectorAll('.mistake-training-pool__row').length,
-					overflow: document.documentElement.scrollWidth - width,
+		$browser->get(substr(MistakeTraining::$OVERVIEW_LINK, 1));
+		$layout = $browser->driver->executeAsyncScript(<<<'JS'
+			const done = arguments[arguments.length - 1];
+			const frame = document.createElement('iframe');
+			frame.style.cssText = 'width: 320px; height: 700px; border: 0';
+			frame.onload = () =>
+			{
+				const page = frame.contentDocument;
+				// a phone's scrollbar lies over the page
+				page.documentElement.style.scrollbarWidth = 'none';
+				const width = page.documentElement.clientWidth;
+				const parts = [...page.querySelectorAll('.mistake-training-pool *')];
+				done({
+					width,
+					rows: page.querySelectorAll('.mistake-training-pool__row').length,
+					squashedSets: [...page.querySelectorAll('.mistake-training-pool__set')].filter(set => set.getBoundingClientRect().width < 50).length,
+					overflow: page.documentElement.scrollWidth - width,
 					outside: parts.filter(part => part.getBoundingClientRect().right > width + 0.5).length,
-				};
-				JS);
-			$this->assertEquals(['rows' => 2, 'outside' => 0, 'overflow' => 0], $layout);
-			$browser->assertNoJsErrors();
-		}
-		finally
-		{
-			$window->setSize($originalSize);
-		}
+				});
+			};
+			frame.src = location.href;
+			document.body.prepend(frame);
+			JS);
+		$this->assertEquals(['width' => 320, 'rows' => 4, 'squashedSets' => 0, 'outside' => 0, 'overflow' => 0], $layout,
+			'The collection wraps between its words, under the button if need be');
+		$browser->assertNoJsErrors();
 	}
 
 	public function testTheOverviewIsAllCaughtUpOnceNothingIsDue()
