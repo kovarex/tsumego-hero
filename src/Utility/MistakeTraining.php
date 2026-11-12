@@ -402,6 +402,16 @@ class MistakeTraining
 		return self::isRowDue($row) || self::wasSolvedToday($row);
 	}
 
+	//Whether the normal play page may show a problem the way it shows a solved one, with its review (the answer) and
+	//its comments, given its pool row (null when the problem is not in the training). Not while it is due: solving it
+	//is the review the training waits for, so the answer would give the review away. That holds for a problem missed
+	//earlier today and for one overdue since an earlier day as well. A problem solved today (then it is due on a later
+	//day), one due on a later day and a graduated one can be looked at.
+	public static function allowsNormalView(?array $poolRow): bool
+	{
+		return $poolRow === null || !self::isRowDue($poolRow);
+	}
+
 	//Number of tsumegos currently due for review. Counts only what the training can
 	//serve, like todaysTraining(): a problem that is deleted or in no set is left out.
 	public static function dueCount(int $userId): int
@@ -608,35 +618,76 @@ class MistakeTraining
 	}
 
 	//The problems of a player in the training, soonest review first, for the list on
-	//the overview: each with the collection it will open in and its number, its rung and
-	//its next review. A graduated problem has left the training, and one the training
-	//cannot serve is not shown, like in todaysTraining().
-	/** @return list<array{tsumego_id: int, set_title: string, num: int, rung: int, next_due: string, due: bool, missed_today: bool}> */
+	//the overview: each with the connection it will open in (its collection and number), its rating,
+	//its rung, its next review and whether it may be opened outside the training (allowsNormalView()). A graduated
+	//problem has left the training, and one the training cannot serve is not shown, like in todaysTraining().
+	/** @return list<array{tsumego_id: int, set_connection_id: int, set_id: int, set_title: string, num: int, rating: float, status: string, rung: int, next_due: string, due: bool, missed_today: bool, normal_view: bool}> */
 	public static function poolRows(int $userId): array
 	{
-		// Each problem with its first playable connection in the display order: one sort of the
-		// connections of the pool, where a subquery per problem sorted them problem by problem.
+		//Each problem with its first playable connection in the display order: one sort of the
+		//connections of the pool, where a subquery per problem sorted them problem by problem.
 		$rows = Util::query(
-			'SELECT user_id, tsumego_id, rung, next_due, last_review_day, last_mistake_training_result_id, set_title, num FROM ('
-			. 'SELECT p.id, p.user_id, p.tsumego_id, p.rung, p.next_due, p.last_review_day, p.last_mistake_training_result_id, st.title AS set_title, sc.num,'
+			'SELECT x.user_id, x.tsumego_id, x.set_connection_id, x.set_id, x.rung, x.next_due, x.last_review_day, x.last_mistake_training_result_id,'
+			. ' x.set_title, x.num, x.rating, ts.status FROM ('
+			. 'SELECT p.id, p.user_id, p.tsumego_id, p.rung, p.next_due, p.last_review_day, p.last_mistake_training_result_id,'
+			. ' sc.id AS set_connection_id, st.id AS set_id, st.title AS set_title, sc.num, t.rating,'
 			. ' ROW_NUMBER() OVER (PARTITION BY p.tsumego_id ORDER BY ' . SetConnectionTable::displayOrderForSetSql('st') . ', sc.id) AS rn'
 			. ' FROM mistake_training_pool p'
 			. ' JOIN tsumego t ON t.id = p.tsumego_id AND t.deleted IS NULL'
 			. ' JOIN set_connection sc ON sc.tsumego_id = p.tsumego_id'
 			. ' JOIN `set` st ON st.id = sc.set_id AND ' . SetConnectionTable::playableSql('st')
 			. ' WHERE p.user_id = ? AND p.next_due IS NOT NULL'
-			. ') x WHERE rn = 1 ORDER BY next_due ASC, id ASC',
+			. ') x LEFT JOIN tsumego_status ts ON ts.user_id = x.user_id AND ts.tsumego_id = x.tsumego_id'
+			. ' WHERE x.rn = 1 ORDER BY x.next_due ASC, x.id ASC',
 			[$userId]
 		);
 		return array_map(fn(array $row) => [
 			'tsumego_id' => (int) $row['tsumego_id'],
+			'set_connection_id' => (int) $row['set_connection_id'],
+			'set_id' => (int) $row['set_id'],
 			'set_title' => (string) $row['set_title'],
 			'num' => (int) $row['num'],
+			'rating' => (float) $row['rating'],
+			'status' => (string) ($row['status'] ?? ''),
 			'rung' => (int) $row['rung'],
 			'next_due' => (string) $row['next_due'],
 			'due' => self::isRowDue($row),
 			'missed_today' => self::wasMissedToday($row),
+			'normal_view' => self::allowsNormalView($row),
 		], $rows);
+	}
+
+	//The list of the overview, made from poolRows(): the problem button and the collection of a problem
+	//that can be opened outside the training (allowsNormalView()), and for a locked one nothing that says which problem
+	//it is: no button, no collection, no number, no id, so the page can't show them by mistake. The rank,
+	//the rung and the next review show for every problem.
+	/**
+	 * @param list<array<string, mixed>> $poolRows What poolRows() returned
+	 * @return list<array{button: ?TsumegoButton, set_id: ?int, set_title: ?string, rank: string, rung: int, next_due: string, due: bool, missed_today: bool}>
+	 */
+	public static function overviewProblems(array $poolRows): array
+	{
+		$openable = array_filter($poolRows, fn(array $row) => $row['normal_view']);
+		$previews = $openable ? TsumegoButtons::currentPreviews(array_column($openable, 'tsumego_id')) : [];
+		return array_map(function (array $row) use ($previews) {
+			$isOpenable = $row['normal_view'];
+			$button = null;
+			if ($isOpenable)
+			{
+				$button = new TsumegoButton($row['tsumego_id'], $row['set_connection_id'], $row['num'], $row['status'] ?: 'N', $row['rating'], null);
+				$button->preview = $previews[$row['tsumego_id']] ?? '';
+			}
+			return [
+				'button' => $button,
+				'set_id' => $isOpenable ? $row['set_id'] : null,
+				'set_title' => $isOpenable ? $row['set_title'] : null,
+				'rank' => Rating::getReadableRankFromRating($row['rating']),
+				'rung' => $row['rung'],
+				'next_due' => $row['next_due'],
+				'due' => $row['due'],
+				'missed_today' => $row['missed_today'],
+			];
+		}, $poolRows);
 	}
 
 	//Move every review of a player by $days days, so a test can let weeks pass.

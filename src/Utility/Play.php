@@ -258,9 +258,9 @@ class Play
 		$goldenTsumego = $tsumegoStatus == TsumegoStatusTable::$GOLDEN;
 		$amountOfOtherCollection = TsumegoUtil::countTsumegosFromSet((int) $set->id);
 		$sgf = self::acceptedSgf($tsumegoID);
-		//Solved for the current mode: in time mode every problem is presented fresh, so this stays
-		//false until it is solved
-		$solved = TsumegoUtil::isSolvedForCurrentMode($tsumegoStatus);
+		//Solved for the current mode: in time mode every problem is presented fresh, and so is one the mistake
+		//training has due, so this stays false until it is solved
+		$solved = TsumegoUtil::isSolvedForCurrentMode($tsumegoStatus, $tsumegoID);
 
 		$this->problem['og'] = self::openGraph($setConnection, $set, $tsumego, $sgf, $amountOfOtherCollection);
 		if ($semeai !== null)

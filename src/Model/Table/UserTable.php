@@ -221,7 +221,8 @@ class UserTable extends AppTable
 	}
 
 	//Marks the account as deleted. Everything it created stays, but its name and Google id move to the
-	//deleted_* columns, so they are free for a new account, and it can't sign in anymore.
+	//deleted_* columns, so they are free for a new account, and it can't sign in anymore. The email
+	//stays, but a deleted account doesn't hold it (see emailTaken), so a new account can use it as well.
 	public static function deleteAccount(int $userID): void
 	{
 		Util::execute("UPDATE user SET
@@ -237,6 +238,7 @@ class UserTable extends AppTable
 	}
 
 	//Restores a deleted account, unless its name or Google id was taken by another account in the meantime.
+	//Its email may be used by another account by then, which is fine, the address is not unique.
 	//Returns why the account can't be restored, null when it was restored
 	public static function restoreAccount(int $userID): ?string
 	{
@@ -552,7 +554,19 @@ class UserTable extends AppTable
 		return !empty($externalID) && $passwordHash === self::NO_PASSWORD;
 	}
 
-	//Find an account that signs in with a password, by its email.
+	//Whether an account that is not deleted uses the address. A deleted account keeps its address (for
+	//restoring and its avatar), but it doesn't hold it, so a new account can sign up with it.
+	//$exceptUserID: The account asking, its own address doesn't count
+	public static function emailTaken(string $email, ?int $exceptUserID = null): bool
+	{
+		$conditions = ['email' => $email, 'deleted IS' => null];
+		if ($exceptUserID !== null)
+			$conditions['id !='] = $exceptUserID;
+		return TableRegistry::getTableLocator()->get('User')->exists($conditions);
+	}
+
+	//Find an account that signs in with a password, by its email. A deleted account is skipped, so it
+	//can't shadow a new account that signed up with its address.
 	//Use this for password login and password reset to exclude the accounts that sign in with Google only.
 	//The address is not unique in the database, so the order makes the result of
 	//several matching accounts deterministic (the oldest account wins).
@@ -560,7 +574,7 @@ class UserTable extends AppTable
 	public static function findLocalUserByEmail(string $email): ?User
 	{
 		return TableRegistry::getTableLocator()->get('User')->find()
-			->where(['email' => $email, 'password_hash !=' => self::NO_PASSWORD])
+			->where(['email' => $email, 'password_hash !=' => self::NO_PASSWORD, 'deleted IS' => null])
 			->orderBy(['id' => 'ASC'])
 			->first();
 	}
