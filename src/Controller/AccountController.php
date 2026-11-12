@@ -294,7 +294,7 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 			password_verify((string) ($this->input('password') ?? ''), self::$DUMMY_PASSWORD_HASH);
 
 			// The address may belong to a Google account only, which can't log in here
-			$googleUser = $this->fetchTable('User')->find()->where(['email' => $this->input('username')])->first();
+			$googleUser = $this->fetchTable('User')->find()->where(['email' => $this->input('username'), 'deleted IS' => null])->first();
 			if ($googleUser && UserTable::signsInOnlyWithGoogle($googleUser))
 				CookieFlash::set('This account uses Google Sign-In. Please use the "Sign in with Google" button.', 'info');
 			else
@@ -385,7 +385,7 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 		}
 
 		$userTable = $this->fetchTable('User');
-		if ($userTable->exists(['email' => $this->input('email')]))
+		if (UserTable::emailTaken((string) $this->input('email')))
 		{
 			CookieFlash::set('Email already exists', 'error');
 			return;
@@ -736,7 +736,7 @@ If you have not asked for this, ignore this email, your account stays as it is.'
 			return $this->redirect('/users/settings');
 		}
 
-		if ($this->fetchTable('User')->exists(['email' => $email]))
+		if (UserTable::emailTaken($email))
 		{
 			CookieFlash::set('That address belongs to another account.', 'error');
 			return $this->redirect('/users/settings');
@@ -809,7 +809,7 @@ If you have not asked for this, ignore this email, your account stays as it is.'
 		$newAddress = (string) $user->unconfirmed_email;
 		// The address was free when it was asked for, but the link works for a day, so
 		// another account may have taken it in between.
-		if ($this->fetchTable('User')->exists(['email' => $newAddress]))
+		if (UserTable::emailTaken($newAddress))
 		{
 			$this->forgetAddressChange($userID);
 			CookieFlash::set('That address belongs to another account now, so it was not used. Ask for another one in your settings.', 'error');
@@ -1016,7 +1016,7 @@ If you have not asked for this, ignore this email, your account stays as it is.'
 	{
 		if (mb_strlen($email) > UserTable::EMAIL_MAX_LENGTH || !Validation::email($email))
 			return 'That is not a valid e-mail address.';
-		if ($this->fetchTable('User')->exists(['email' => $email, 'id !=' => $userID]))
+		if (UserTable::emailTaken($email, $userID))
 			return 'That address belongs to another account.';
 		return null;
 	}
