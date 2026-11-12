@@ -551,6 +551,7 @@ a[data-tsumego-id]:hover .tooltip-desc
 
 .mistake-training-pool__set
 {
+	flex: 1 1 10em;
 	overflow-wrap: break-word;
 }
 
