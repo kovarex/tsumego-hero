@@ -2,17 +2,20 @@
 
 use App\Utility\MistakeTraining;
 use App\Utility\RungInsignia;
+use App\Utility\TsumegoButton;
 
 /**
  * Mistake Training - the overview
  * What is due today and the way into it, "All caught up!" once nothing is, and
  * "Nothing to review yet" to a player who never had a problem in the training;
- * below that what comes up next, and the calendar of the profile.
+ * below that what comes up next, the calendar of the profile, and the problems in
+ * the training. A problem opens from there in the normal play page, except one still
+ * due today, which shows as a locked "?" (MistakeTraining::allowsNormalView()).
  *
  * @var \App\View\AppView $this
  * @var int $dueToday
  * @var array|null $training What MistakeTraining::profile() returned
- * @var array $poolRows What MistakeTraining::poolRows() returned
+ * @var array $problems What MistakeTraining::overviewProblems() returned
  * @var bool $everTrained
  * @var int $totalInTraining
  * @var array $upcomingDays
@@ -85,26 +88,41 @@ use App\Utility\RungInsignia;
 		<?php echo $this->element('mistake_training_profile', ['training' => $training, 'title' => 'Your progress']); ?>
 	</div>
 	<?php endif; ?>
-	<?php if (!empty($poolRows)): ?>
+	<?php if (!empty($problems)): ?>
 	<details class="mistake-training-pool" open>
-		<summary>Problems in training (<?php echo count($poolRows); ?>)</summary>
+		<summary>Problems in training (<?php echo count($problems); ?>)</summary>
 		<table class="mistake-training-pool__table">
-			<tr><th>Problem</th><th>Rung</th><th>Next review</th></tr>
-			<?php foreach ($poolRows as $row):
-				[$kind, $symbols] = RungInsignia::of($row['rung'], count(MistakeTraining::ladder()));
-				$rungName = MistakeTraining::rungName($row['rung']);
+			<thead><tr><th>Problem</th><th>Rank</th><th>Rung</th><th>Next review</th></tr></thead>
+			<tbody>
+			<?php foreach ($problems as $problem):
+				[$kind, $symbols] = RungInsignia::of($problem['rung'], count(MistakeTraining::ladder()));
+				$rungName = MistakeTraining::rungName($problem['rung']);
 				// HTML: the day as a <time> the page formats
-				if ($row['due'])
-					$nextReview = $row['missed_today'] ? 'today, missed' : 'today';
+				if ($problem['due'])
+					$nextReview = $problem['missed_today'] ? 'today, missed' : 'today';
 				else
-					$nextReview = MistakeTraining::describeDayWithDate(substr($row['next_due'], 0, 10));
+					$nextReview = MistakeTraining::describeDayWithDate(substr($problem['next_due'], 0, 10));
 			?>
-			<tr data-tsumego="<?php echo $row['tsumego_id']; ?>">
-				<td><?php echo htmlspecialchars($row['set_title'], ENT_QUOTES, 'UTF-8'); ?> #<?php echo $row['num']; ?></td>
+			<tr class="mistake-training-pool__row">
+				<td>
+					<div class="mistake-training-pool__problem">
+						<ul class="problem-nav__buttons"><?php
+							if ($problem['button'])
+								$problem['button']->render();
+							else
+								TsumegoButton::renderLocked('Due today, opens once solved in today\'s training');
+						?></ul>
+						<?php if ($problem['button']): ?>
+						<a class="mistake-training-pool__set" href="/sets/view/<?php echo $problem['set_id']; ?>"><?php echo h($problem['set_title']); ?></a>
+						<?php endif; ?>
+					</div>
+				</td>
+				<td class="mistake-training-pool__rank"><?php echo h($problem['rank']); ?></td>
 				<td><span class="training-overview__insignia training-overview__insignia--<?php echo $kind; ?>" role="img" aria-label="<?php echo $rungName; ?>" title="<?php echo $rungName; ?>"><?php echo RungInsignia::render($kind, $symbols); ?></span></td>
-				<td><?php echo $nextReview; ?></td>
+				<td class="mistake-training-pool__next"><?php echo $nextReview; ?></td>
 			</tr>
 			<?php endforeach; ?>
+			</tbody>
 		</table>
 	</details>
 	<?php endif; ?>
