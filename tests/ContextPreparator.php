@@ -25,6 +25,9 @@ use Cake\ORM\TableRegistry;
 
 class ContextPreparator
 {
+	//UTC+14, the first zone where a day starts
+	private const string ZONE_FURTHEST_AHEAD = 'Pacific/Kiritimati';
+
 	//Held for the whole process, so no second run can empty the tables in the middle of a run.
 	private static $testDatabaseLock = null;
 
@@ -206,9 +209,10 @@ class ContextPreparator
 		foreach (['streak_last_day', 'streak_day', 'streak_day_reviews_required', 'streak_day_xp_required'] as $name)
 			$user[$name] = Util::extract($name, $userInput) ?? null;
 		$user['time_zone'] = Util::extract('time_zone', $userInput) ?: null;
-		// the hearts and the hero powers of the fixture are of today, like every player's after the migration of
-		// DailyReset: an earlier day gives them back at the first request
-		$user['daily_reset_day'] = Util::extract('daily_reset_day', $userInput) ?? DailyStreak::today($user['time_zone'], Clock::now());
+		// the hearts and the hero powers of the fixture are of today, so no reset of DailyReset gives them back in the
+		// middle of a test: today of the zone furthest ahead, which the day of no zone (the fixture's, or Prague's that
+		// the test browser reports) is past at any hour
+		$user['daily_reset_day'] = Util::extract('daily_reset_day', $userInput) ?? DailyStreak::today(self::ZONE_FURTHEST_AHEAD, Clock::now());
 
 		// Save user
 		$userTable = TableRegistry::getTableLocator()->get('User');

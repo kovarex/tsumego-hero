@@ -4,10 +4,9 @@ use App\Utility\ActivePlayers;
 use App\Utility\ChartRanges;
 use App\Utility\UserDay;
 use App\Utility\Util;
-use Cake\Cache\Cache;
 
-//The active players of the home page (ActivePlayers): the players who solved a problem each day, the days before
-//today stored in active_players_day, today counted live and kept 5 minutes, and the weeks and months as averages a day
+//The active players of the home page (ActivePlayers): the players who solved a problem each day, the days that are
+//over, stored in active_players_day (today, still going on, isn't drawn), and the weeks and months as averages a day
 class ActivePlayersTest extends IntegrationTestCase
 {
 	private static function day(int $daysAgo): string
@@ -43,13 +42,6 @@ class ActivePlayersTest extends IntegrationTestCase
 		}
 	}
 
-	//Today's players as the chart has them, the last point of the month
-	private static function today(): int|float
-	{
-		$points = ActivePlayers::ranges()['1M']['points'];
-		return $points[count($points) - 1][1];
-	}
-
 	/** @return array<string, int> */
 	private static function stored(): array
 	{
@@ -70,15 +62,16 @@ class ActivePlayersTest extends IntegrationTestCase
 		$this->assertSame(1, ActivePlayers::count(date('Y-m-d')), 'today so far');
 	}
 
-	//Today is the last point of the ranges in days, marked as partial
-	public function testTodayIsAPointSoFar(): void
+	//The chart ends with yesterday: today, still going on, would be its lowest point at the right end
+	public function testTheLastPointIsYesterday(): void
 	{
 		$this->prepare();
 
 		$month = ActivePlayers::ranges()['1M'];
-		$this->assertSame(['day', date('Y-m-d')], [$month['period'], $month['partial']]);
-		$this->assertSame([date('Y-m-d'), 1], end($month['points']));
-		$this->assertCount(11, $month['points'], 'every day from the first solve, the days without one at 0');
+		$this->assertSame(['day', null], [$month['period'], $month['partial']]);
+		$this->assertSame([self::day(1), 0], end($month['points']), 'yesterday, when nobody solved');
+		$this->assertNotContains(date('Y-m-d'), array_column($month['points'], 0), 'alice solved today, and today is not drawn');
+		$this->assertCount(10, $month['points'], 'every day from the first solve to yesterday, the days without one at 0');
 	}
 
 	//A stored day is read, never counted again: a solve written into it later does not change it
@@ -113,28 +106,17 @@ class ActivePlayersTest extends IntegrationTestCase
 		$this->assertSame($stored, self::stored());
 	}
 
-	//A view reads the ranges from the cache for 5 minutes, today's count with them; the tests run without the cache
-	//(core.local.php), this one is about it
-	public function testTodayIsCachedForFiveMinutes(): void
+	//A solve today doesn't change the chart, which has the days that are over
+	public function testASolveTodayIsNotInTheChart(): void
 	{
-		Cache::enable();
-		try
-		{
-			$context = $this->prepare();
-			$this->assertSame(1, self::today());
+		$context = $this->prepare();
+		$before = ActivePlayers::ranges();
 
-			$this->attempts($context, [['solved' => true, 'created' => date('Y-m-d') . ' 11:00:00', 'user_id' => (int) $context->otherUsers[0]['id']]]);
-			$this->assertSame(1, self::today(), 'today as the cache has it');
-			$this->assertSame(2, ActivePlayers::count(date('Y-m-d')), 'while the count is 2');
+		$this->attempts($context, [['solved' => true, 'created' => date('Y-m-d') . ' 11:00:00', 'user_id' => (int) $context->otherUsers[0]['id']]]);
+		ActivePlayers::forget();
 
-			Cache::clear('short');
-			$this->assertSame(2, self::today(), 'once the 5 minutes are over');
-		}
-		finally
-		{
-			ActivePlayers::forget();
-			Cache::disable();
-		}
+		$this->assertSame(2, ActivePlayers::count(date('Y-m-d')), 'two players solved today');
+		$this->assertSame($before, ActivePlayers::ranges());
 	}
 
 	//A week or a month is the average players a day of its days, a day without a solve counting as 0, and the day

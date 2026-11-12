@@ -6,15 +6,17 @@ use Cake\Cache\Cache;
 
 //The "Active players" chart of the home page: how many players solved at least one problem each day, in level mode or
 //in the time mode (user_day.solved), on the server clock. The mistake training does not count.
-//The days before today are counted once, into active_players_day, by the daily cron (DailyCron), and read from there
-//once a day into the 'long' cache; today is counted live, and the ranges built from both are kept 5 minutes in the
-//'short' cache, so a view of the home page reads only the cache.
+//Only days that are over are drawn: today, counted while it goes on, was always the lowest point at the right end.
+//The days are counted once, into active_players_day, by the daily cron (DailyCron), and read from there once a day
+//into the 'long' cache; the ranges built from them are kept 5 minutes in the 'short' cache, so a view of the home page
+//reads only the cache.
 class ActivePlayers
 {
 	private const string HISTORY_KEY = 'active_players';
 	private const string RANGES_KEY = 'active_players_ranges';
 
-	//Every range of the chart (ChartRanges): the players of each day, or the average players a day of each week or month
+	//Every range of the chart (ChartRanges): the players of each day up to yesterday, or the average players a day of
+	//each week or month
 	/** @return array<string, array{period: 'day'|'week'|'month', points: list<array{0: string, 1: int|float}>, partial: ?string}> */
 	public static function ranges(): array
 	{
@@ -22,9 +24,7 @@ class ActivePlayers
 		$cached = Cache::read(self::RANGES_KEY, 'short');
 		if (is_array($cached) && ($cached['today'] ?? null) === $today)
 			return $cached['ranges'];
-		$days = self::history($today);
-		$days[$today] = self::count($today);
-		$ranges = ChartRanges::build($days, true, $today);
+		$ranges = ChartRanges::build(self::history($today), true);
 		Cache::write(self::RANGES_KEY, ['today' => $today, 'ranges' => $ranges], 'short');
 		return $ranges;
 	}
