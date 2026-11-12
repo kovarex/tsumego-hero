@@ -337,7 +337,7 @@ class AccountDeletionTest extends IntegrationTestCase
 
 		$this->signUp('kovarex', 'kovarex@example.com');
 
-		$this->assertNotSame('Email already exists', CookieFlash::get());
+		$this->assertRedirect();
 		$newAccount = ContextPreparator::findUserRow(['name' => 'kovarex']);
 		$this->assertNotEmpty($newAccount);
 		$this->assertNotEquals($oldAccountID, $newAccount['id']);
@@ -349,7 +349,7 @@ class AccountDeletionTest extends IntegrationTestCase
 	{
 		new ContextPreparator(['user' => null, 'other-users' => [['name' => 'kovarex', 'email' => 'kovarex@example.com']]]);
 		$this->signUp('newkovarex', 'kovarex@example.com');
-		$this->assertSame('Email already exists', CookieFlash::get());
+		$this->assertNoRedirect();
 		$this->assertEmpty(ContextPreparator::findUserRow(['name' => 'newkovarex']));
 	}
 
