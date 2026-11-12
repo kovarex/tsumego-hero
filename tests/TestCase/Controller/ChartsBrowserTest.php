@@ -42,7 +42,7 @@ class ChartsBrowserTest extends IntegrationTestCase
 	}
 
 	//The active players are behind the toggle of the Site Growth chart: it opens on the growth, the toggle switches to
-	//the players who solved a problem each day, 6M first with today as the last point "so far", the ranges and the
+	//the players who solved a problem each day, 6M first, up to yesterday (today, not over, isn't drawn), the ranges and the
 	//toggle switch without a request, and the choice is kept for the next visit; the right column has no chart
 	public function testHomePageTogglesTheSiteGrowthToTheActivePlayers(): void
 	{
@@ -81,20 +81,22 @@ class ChartsBrowserTest extends IntegrationTestCase
 
 		$click('Active players');
 		$browser->waitUntil(fn() => $state()['series'] === ['Players'], 10, 'the active players');
-		// a point a day from 300 days ago is more than half a year, so 6M starts with the range itself
-		$sixMonths = (int) round((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('-6 months')))) / 86400) + 1;
+		// a point a day from 300 days ago is more than half a year, so 6M starts with the range itself, and ends yesterday
+		$sixMonths = (int) round((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('-6 months')))) / 86400);
 		$active = $state();
 		$this->assertSame([['Growth', 'Active players', '1M', '6M', '1Y', 'All'], ['Active players', '6M'], $sixMonths],
 			[$active['buttons'], $active['pressed'], $active['points']]);
 
-		// today, the last point, is "so far"
+		// the last point is yesterday, when nobody solved: alice's solve today isn't drawn
 		$browser->driver->executeScript(<<<'JS'
 			const svg = document.querySelector('.chart-box svg');
 			const box = svg.getBoundingClientRect();
 			svg.dispatchEvent(new MouseEvent('mousemove', {bubbles: true, clientX: box.right - 2, clientY: box.top + box.height / 2}));
 			JS);
 		$browser->waitUntilCssSelectorDisplayed('.chart-box .chart__tooltip');
-		$this->assertSame("Today so far\nPlayers: 1", $browser->find('.chart-box .chart__tooltip')->getText());
+		$tooltip = $browser->find('.chart-box .chart__tooltip')->getText();
+		$this->assertStringNotContainsString('Today so far', $tooltip);
+		$this->assertStringEndsWith("\nPlayers: 0", $tooltip);
 		// one axis: its numbers in the chart's text colour like the dates, not the blue of the line
 		$colors = $browser->driver->executeScript("return [...document.querySelectorAll('.chart-box .line-chart__tick')].map(tick => getComputedStyle(tick).fill)");
 		$this->assertCount(1, array_unique($colors), implode(', ', $colors));
