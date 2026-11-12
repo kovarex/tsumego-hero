@@ -402,6 +402,16 @@ class MistakeTraining
 		return self::isRowDue($row) || self::wasSolvedToday($row);
 	}
 
+	//Whether the normal play page may show a problem the way it shows a solved one, with its review (the answer) and
+	//its comments, given its pool row (null when the problem is not in the training). Not while it is due: solving it
+	//is the review the training waits for, so the answer would give the review away. That holds for a problem missed
+	//earlier today and for one overdue since an earlier day as well. A problem solved today (then it is due on a later
+	//day), one due on a later day and a graduated one can be looked at.
+	public static function allowsNormalView(?array $poolRow): bool
+	{
+		return $poolRow === null || !self::isRowDue($poolRow);
+	}
+
 	//Number of tsumegos currently due for review. Counts only what the training can
 	//serve, like todaysTraining(): a problem that is deleted or in no set is left out.
 	public static function dueCount(int $userId): int
@@ -608,14 +618,14 @@ class MistakeTraining
 	}
 
 	//The problems of a player in the training, soonest review first, for the list on
-	//the overview: each with the connection it will open in (its collection and number),
-	//its rating, its rung and its next review. A graduated problem has left the training,
-	//and one the training cannot serve is not shown, like in todaysTraining().
-	/** @return list<array{tsumego_id: int, set_connection_id: int, set_id: int, set_title: string, num: int, rating: float, status: string, rung: int, next_due: string, due: bool, missed_today: bool, solved_today: bool}> */
+	//the overview: each with the connection it will open in (its collection and number), its rating,
+	//its rung, its next review and whether it may be opened outside the training (allowsNormalView()). A graduated
+	//problem has left the training, and one the training cannot serve is not shown, like in todaysTraining().
+	/** @return list<array{tsumego_id: int, set_connection_id: int, set_id: int, set_title: string, num: int, rating: float, status: string, rung: int, next_due: string, due: bool, missed_today: bool, normal_view: bool}> */
 	public static function poolRows(int $userId): array
 	{
-		// Each problem with its first playable connection in the display order: one sort of the
-		// connections of the pool, where a subquery per problem sorted them problem by problem.
+		//Each problem with its first playable connection in the display order: one sort of the
+		//connections of the pool, where a subquery per problem sorted them problem by problem.
 		$rows = Util::query(
 			'SELECT x.user_id, x.tsumego_id, x.set_connection_id, x.set_id, x.rung, x.next_due, x.last_review_day, x.last_mistake_training_result_id,'
 			. ' x.set_title, x.num, x.rating, ts.status FROM ('
@@ -643,21 +653,12 @@ class MistakeTraining
 			'next_due' => (string) $row['next_due'],
 			'due' => self::isRowDue($row),
 			'missed_today' => self::wasMissedToday($row),
-			'solved_today' => self::wasSolvedToday($row),
+			'normal_view' => self::allowsNormalView($row),
 		], $rows);
 	}
 
-	//Whether the overview may name a problem of the pool and open it in the normal play page, where
-	//the review shows the solution: once today's training solved it, or when its review is another
-	//day. A problem due today and not solved yet stays hidden, so the overview never gives away an
-	//answer the player is still to find today.
-	public static function isOpenableFromOverview(array $poolRow): bool
-	{
-		return $poolRow['solved_today'] || !$poolRow['due'];
-	}
-
 	//The list of the overview, made from poolRows(): the problem button and the collection of a problem
-	//that can be opened (isOpenableFromOverview()), and for a locked one nothing that says which problem
+	//that can be opened outside the training (allowsNormalView()), and for a locked one nothing that says which problem
 	//it is: no button, no collection, no number, no id, so the page can't show them by mistake. The rank,
 	//the rung and the next review show for every problem.
 	/**
@@ -666,10 +667,10 @@ class MistakeTraining
 	 */
 	public static function overviewProblems(array $poolRows): array
 	{
-		$openable = array_filter($poolRows, fn(array $row) => self::isOpenableFromOverview($row));
+		$openable = array_filter($poolRows, fn(array $row) => $row['normal_view']);
 		$previews = $openable ? TsumegoButtons::currentPreviews(array_column($openable, 'tsumego_id')) : [];
 		return array_map(function (array $row) use ($previews) {
-			$isOpenable = self::isOpenableFromOverview($row);
+			$isOpenable = $row['normal_view'];
 			$button = null;
 			if ($isOpenable)
 			{

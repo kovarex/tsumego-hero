@@ -1,1 +1,2 @@
-Added: The problems in your [mistake training](/mistake-training/overview) can be opened from its list in the normal play page, with their rank shown; one still to review today stays hidden until you solve it there.
+Added: In [Mistake Training](/mistake-training/overview), a problem you already reviewed today, or whose next review is on a later day, can be opened on its normal problem page, from its button in the overview's list or from the problem itself; the list also shows each problem's rank.
+Changed: A problem that is due today in Mistake Training keeps its review and comments closed on its normal problem page, and stays a "?" in the overview's list, until you solve it.

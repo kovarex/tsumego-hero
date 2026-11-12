@@ -10,7 +10,7 @@ use App\Utility\TsumegoButton;
  * "Nothing to review yet" to a player who never had a problem in the training;
  * below that what comes up next, the calendar of the profile, and the problems in
  * the training. A problem opens from there in the normal play page, except one still
- * due today, which shows as a locked "?" (MistakeTraining::isOpenableFromOverview()).
+ * due today, which shows as a locked "?" (MistakeTraining::allowsNormalView()).
  *
  * @var \App\View\AppView $this
  * @var int $dueToday

@@ -103,9 +103,10 @@ class MistakeTrainingController extends AppController
 	//Render the shared play page for a problem of today's training. A problem that
 	//is due is its review, also when it was missed earlier today. One solved today
 	//stays in the row, so it can be opened again, but only as a replay that counts
-	//for nothing, and the page says so. A link that stopped holding, because the
-	//problem left the training or its collection is not open to the player, leads
-	//back to the queue instead of the refusal of the play page.
+	//for nothing, and the page says so and offers to open it outside the training,
+	//where its review shows the answer (MistakeTraining::allowsNormalView()). A link
+	//that stopped holding, because the problem left the training or its collection is
+	//not open to the player, leads back to the queue instead of the refusal of the play page.
 	private function playSetConnection(int $setConnectionID): mixed
 	{
 		$setConnection = $this->fetchTable('SetConnection')->find()->where(['id' => $setConnectionID])->first();
@@ -122,7 +123,8 @@ class MistakeTrainingController extends AppController
 			// Same problem, same address for search engines, whichever route got here.
 			'canonicalPath' => '/' . $setConnectionID,
 			'_page' => 'mistake-training',
-			'mistakeTrainingReplay' => !MistakeTraining::isRowDue($pool)]);
+			'mistakeTrainingReplay' => !MistakeTraining::isRowDue($pool),
+			'mistakeTrainingNormalViewLink' => MistakeTraining::allowsNormalView($pool) ? '/' . $setConnectionID : null]);
 		return null;
 	}
 }

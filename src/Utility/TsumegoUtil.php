@@ -66,14 +66,16 @@ LIMIT 1', [$set['id']]);
 		return (int) $rows[0]['total'];
 	}
 
-	// Whether the problem is solved for the current mode. Time mode and mistake
-	// training always present the problem as a fresh challenge, so this stays
-	// false at page load even for a problem the player has already solved.
-	public static function isSolvedForCurrentMode(string $status): bool
+	//Whether the problem is solved for the current mode, which opens its review and its comments. Time mode and mistake
+	//training always present the problem as a fresh challenge, so this stays false at page load even for a problem the
+	//player has already solved, and so does every mode for a problem the player's mistake training has due, whose
+	//answer would give its review away (MistakeTraining::allowsNormalView()).
+	public static function isSolvedForCurrentMode(string $status, int $tsumegoID): bool
 	{
 		return !Auth::isInTimeMode()
 			&& !Auth::isInMistakeTrainingMode()
-			&& TsumegoUtil::isRecentlySolved($status);
+			&& TsumegoUtil::isRecentlySolved($status)
+			&& (!Auth::isLoggedIn() || MistakeTraining::allowsNormalView(MistakeTraining::getPoolRow((int) Auth::getUserID(), $tsumegoID)));
 	}
 
 	public static function isRecentlySolved(?string $status): bool

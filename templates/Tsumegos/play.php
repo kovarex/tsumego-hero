@@ -25,6 +25,7 @@ use App\Utility\ViteManifest;
  * @var string $lightDark
  * @var int $maxHealth
  * @var bool $mistakeTrainingReplay Set by the training route: the problem was solved today already
+ * @var string|null $mistakeTrainingNormalViewLink Set by the training route: the problem's page outside the training, null while it is due
  * @var \App\Model\Entity\Set $set
  * @var \App\Model\Entity\SetConnection $setConnection
  * @var array $setConnections
@@ -157,7 +158,13 @@ use App\Utility\ViteManifest;
 			</div>
 		</div>
 		<?php if (Auth::isInMistakeTrainingMode() && !empty($mistakeTrainingReplay)): ?>
-			<div class="alert alert-info mistake-training-replay" role="status">Already solved today. This try does not count.</div>
+			<div class="alert alert-info mistake-training-replay" role="status">
+				Already solved today. This try does not count.
+				<?php //Outside the training a solved problem opens with its review and comments, which the training opens only after a solve ?>
+				<?php if (($mistakeTrainingNormalViewLink ?? null) !== null): ?>
+					<a class="btn btn--small btn--navigation" id="mistake-training-normal-view" href="<?php echo h($mistakeTrainingNormalViewLink); ?>">Open outside the training</a>
+				<?php endif; ?>
+			</div>
 		<?php endif; ?>
 		<?php //Every message of the problem has one place, right above the board: Correct, Incorrect, what a status problem adds, the comment of a move ?>
 		<?php //The comment of the move played ("Correct, but what about this answer?") shares the row, so it doesn't move the board either ?>
