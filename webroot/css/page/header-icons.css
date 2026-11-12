@@ -45,7 +45,7 @@
 	right: -6px;
 	min-width: 16px;
 	padding: 0 4px;
-	border-radius: 8px;
+	border-radius: var(--radius-md);
 	background: var(--color-red);
 	color: var(--color-white);
 	font-family: var(--font-family-account);

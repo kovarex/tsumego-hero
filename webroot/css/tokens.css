@@ -250,10 +250,25 @@
 		--radius-lg: 12px;
 		--radius-full: 999px;
 
+		/* ── Controls and cards: the sizes of the one system (the style audit, U2 to U7 put them to use) ── */
+		--control-height: 32px;
+		--control-height-small: 26px;
+		--control-padding: 0 var(--space-3);
+		--control-padding-small: 0 var(--space-2);
+		--control-radius: var(--radius-md);
+		--control-radius-small: var(--radius-sm);
+		--control-font: var(--weight-bold) 14px/1 var(--font-family-ui);
+		--control-font-small: var(--weight-bold) 12px/1 var(--font-family-ui);
+		--card-radius: var(--radius-md);
+		--card-padding: var(--space-3);
+		--card-border: 1px solid var(--color-border);
+
 		/* ── Shadows: the ones the site uses more than once ── */
 		--shadow-popover: 0 4px 12px rgba(0, 0, 0, 0.2);
 		--shadow-card: 2px 2px 4px black;
 		--shadow-achievement: 5px 5px 8px black;
+		/* The two of the system: a card lifted a little, and what floats over the page (--shadow-popover) */
+		--shadow-soft: 0 1px 3px rgba(0, 0, 0, 0.25);
 
 		/* ── Stacking: what sits above what across the page. Small local values (a pseudo
 		   element behind its box, a header cell above its column) stay numbers. ── */
@@ -323,15 +338,6 @@
 		/* Code: pre, code, file paths and stack traces. */
 		--font-family-code: var(--font-family-mono);
 
-		/* Fluid type scale: the viewport-relative term grows the size on wide
-		   screens; the clamp() caps keep the minimum (mobile) size readable
-		   without the text ballooning on very large monitors. */
-		--font-size-xs: clamp(8px, 0.5rem + 0.3vw, 9px);
-		--font-size-sm: clamp(10px, 0.6rem + 0.4vw, 11px);
-		--font-size-base: clamp(11px, 0.65rem + 0.5vw, 12px);
-		--font-size-md: clamp(12px, 0.7rem + 0.5vw, 13px);
-		--font-size-lg: clamp(14px, 0.8rem + 0.6vw, 15px);
-		--font-size-xl: clamp(17px, 1rem + 0.8vw, 20px);
 		/* The type scale. Each size is one in use today: xs, sm, lg and 3xl are fixed, md, xl and 2xl are
 		   the fluid sizes of the body, h4 and h2 */
 		--text-xs: 11px;
@@ -345,8 +351,14 @@
 		--weight-medium: 600;
 		--weight-bold: 700;
 		--weight-heavy: 800;
-		/* Older names: the weights are aliases; no --text-* size equals a --font-size-* above, so those
-		   keep their values until moving them is decided */
+		/* Older names, kept as aliases: the weights, and the second, smaller type scale (8 to 20px), which
+		   now takes the nearest step of the one above, the larger one where two are as near */
+		--font-size-xs: var(--text-xs);
+		--font-size-sm: var(--text-xs);
+		--font-size-base: var(--text-sm);
+		--font-size-md: var(--text-sm);
+		--font-size-lg: var(--text-md);
+		--font-size-xl: var(--text-xl);
 		--font-weight-bold: var(--weight-bold);
 		--font-weight-heavy: var(--weight-heavy);
 
@@ -391,6 +403,10 @@
 		/* The green of a text action ("change") on white: the green of the site at 1.9:1 is darkened to 4.5:1 */
 		--color-action-link: #408622;
 		--color-border: #ccc;
+		/* The border of a control, darker than the lines between things */
+		--color-border-strong: #999;
+		/* The filled green of a primary button under white text (5.2:1) */
+		--color-brand-fill: #3d7a26;
 		--chart-text-color: #999;
 		--chart-grid-color: rgba(0, 0, 0, 0.08);
 		--chart-background: transparent;
@@ -518,6 +534,8 @@
 		--color-link: var(--color-blue);
 		--color-action-link: var(--color-green);
 		--color-border: #444;
+		--color-border-strong: #666;
+		--color-brand-fill: #3d7a26;
 		--chart-grid-color: rgba(255, 255, 255, 0.08);
 		--chart-background: #2a2a2a;
 		--chart-separator-color: #2a2a2a;

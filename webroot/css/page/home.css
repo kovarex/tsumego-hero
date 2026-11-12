@@ -100,7 +100,7 @@
   text-align: left;
 }
 .friend-activity__title {
-  font-size: var(--font-size-md);
+  font-size: var(--text-sm);
   margin: 0 0 var(--space-2);
 }
 .friend-activity__today {

@@ -329,13 +329,13 @@
 .set-edit__crumb
 {
 	color: var(--text-softer-color);
-	font-size: var(--font-size-sm);
+	font-size: var(--text-xs);
 	margin-bottom: var(--space-2);
 }
 
 .set-edit-title
 {
-	font-size: var(--font-size-lg);
+	font-size: var(--text-md);
 	margin: var(--space-2) 0;
 }
 
@@ -359,7 +359,7 @@
 
 .set-edit__heading
 {
-	font-size: var(--font-size-md);
+	font-size: var(--text-sm);
 	text-transform: uppercase;
 	letter-spacing: 0.05em;
 	color: var(--text-softer-color);
@@ -384,7 +384,7 @@
 
 .set-edit__remove
 {
-	font-size: var(--font-size-sm);
+	font-size: var(--text-xs);
 	cursor: pointer;
 }
 
@@ -406,7 +406,7 @@
 .set-edit__preview-toggle
 {
 	cursor: pointer;
-	font-size: var(--font-size-sm);
+	font-size: var(--text-xs);
 	color: var(--text-softer-color);
 	white-space: nowrap;
 }
@@ -450,7 +450,7 @@
 .set-edit__rating
 {
 	color: var(--text-softer-color);
-	font-size: var(--font-size-sm);
+	font-size: var(--text-xs);
 }
 
 .set-edit__actions
@@ -569,7 +569,7 @@
 .set-edit__mode-hint
 {
 	color: var(--text-softer-color);
-	font-size: var(--font-size-sm);
+	font-size: var(--text-xs);
 	min-width: 60px;
 }
 
@@ -580,7 +580,7 @@
 	border: 1px solid var(--current-border-color);
 	border-radius: var(--radius-sm);
 	padding: var(--space-1) var(--space-2);
-	font-size: var(--font-size-sm);
+	font-size: var(--text-xs);
 }
 
 @media (width < 43.75rem)

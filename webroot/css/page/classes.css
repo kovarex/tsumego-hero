@@ -19,13 +19,13 @@
 .classes__crumb
 {
 	color: var(--text-softer-color);
-	font-size: var(--font-size-sm);
+	font-size: var(--text-xs);
 	margin-bottom: var(--space-2);
 }
 
 .classes__title
 {
-	font-size: var(--font-size-lg);
+	font-size: var(--text-md);
 	margin: var(--space-2) 0;
 	text-align: center;
 }
@@ -38,7 +38,7 @@
 
 .classes__heading
 {
-	font-size: var(--font-size-md);
+	font-size: var(--text-sm);
 	text-transform: uppercase;
 	letter-spacing: 0.05em;
 	color: var(--text-softer-color);
@@ -254,7 +254,7 @@ a[href="/sets"]
 	border-radius: var(--radius-sm);
 	background: var(--color-yellow);
 	color: var(--color-black);
-	font-size: var(--font-size-sm);
+	font-size: var(--text-xs);
 	text-transform: uppercase;
 }
 
@@ -403,7 +403,7 @@ a[href="/sets"]
 
 .classes__picker-group
 {
-	font-size: var(--font-size-md);
+	font-size: var(--text-sm);
 	margin: var(--space-3) 0 0;
 }
 

@@ -253,7 +253,7 @@
 
 .problem-nav__rung-link .problem-nav__number
 {
-	font-size: var(--font-size-md);
+	font-size: var(--text-sm);
 	line-height: 1;
 }
 
@@ -463,7 +463,7 @@ a[data-tsumego-id]:hover .tooltip-desc
 	max-width: 480px;
 	margin: 0 auto var(--space-3);
 	text-align: center;
-	font-size: var(--font-size-md);
+	font-size: var(--text-sm);
 }
 
 /* The calendar and streak of the profile under the overview of the training */
