@@ -51,7 +51,7 @@ def figures(c):
 def solver_text(c):
     return c.get('solver_sign') or c['solver']
 
-def card(c, number, kind):
+def card(c, kind):
     a = c.get('analysis') or {}
     right = a.get('correct_status') or '?'
     checks = c.get('checks') or []
@@ -73,33 +73,49 @@ def card(c, number, kind):
     body = '<p class="why">%s</p>' % html.escape(a.get('summary', ''))
     if kind != 'error' and a.get('question'):
         body += '<p class="question"><b>To decide:</b> %s</p>' % html.escape(a['question'])
-    if kind == 'disputed':
-        for k in checks:
-            body += '<p class="dissent"><b>%s:</b> %s</p>' % ('Reviewer agrees' if k.get('holds') else 'Reviewer disagrees', html.escape(k.get('explanation') or k.get('reason', '')))
     try:
         body += '<div class="figures">%s</div>' % figures(c)
     except Exception as error:
         body += '<p class="meta">(diagram failed: %s)</p>' % html.escape(repr(error))
+    if kind != 'error':
+        for k in checks:
+            body += '<p class="dissent"><b>%s:</b> %s</p>' % ('Reviewer agrees' if k.get('holds') else 'Reviewer disagrees', html.escape(k.get('explanation') or ''))
+    more = ''
+    for label, value in (('Variations', a.get('variations')), ('Solver checks', a.get('solver_checks'))):
+        if value:
+            more += '<p><b>%s:</b> %s</p>' % (label, html.escape(value))
+    if kind == 'error':
+        for k in checks:
+            more += '<p><b>Reviewer:</b> %s</p>' % html.escape(k.get('explanation') or '')
+    if more:
+        body += '<details class="more"><summary>%s</summary>%s</details>' % ('Variations, solver checks and reviews' if kind == 'error' and checks else 'Variations and solver checks', more)
     return head + body + '</section>'
 
+GROUPS = (('definition', 'Definition questions', 'How a status should be labelled, or what the problem asks beyond the target\'s life.'),
+          ('disputed', 'Reviewers split', 'The reviewers did not agree with each other, or with the analysis.'),
+          ('refuted', 'Error claims both reviewers rejected', 'The analysis called the tree wrong; both reviewers found a hole or were not sure.'),
+          ('unclear', 'Not settled', 'The analysis could not settle these within its time.'))
 errors = [c for c in results if c['final'] == 'site_error']
-decide = [c for c in results if c['final'] in ('disputed', 'definition', 'unclear')]
-solver = [c for c in results if c['final'] in ('solver_error', 'refuted')]
+decide = [c for c in results if c['final'] in [g[0] for g in GROUPS]]
+solver = [c for c in results if c['final'] == 'solver_error']
 order = lambda c: (int(c['id']), c['line'])
 body = '<h2>Clear status errors on the site <span class="count">%d</span></h2>' % len(errors)
 body += '<p class="intro">The analysis and two independent reviewers agree the tree\'s S[] is wrong here.</p>'
-body += '\n'.join(card(c, i, 'error') for i, c in enumerate(sorted(errors, key=order)))
+body += '\n'.join(card(c, 'error') for c in sorted(errors, key=order))
 body += '<h2>Unclear or to be decided <span class="count">%d</span></h2>' % len(decide)
-body += '<p class="intro">Definition questions (how a status should be labelled), cases the reviewers disputed, and cases the analysis could not settle.</p>'
-body += '\n'.join(card(c, i, 'disputed' if c['final'] == 'disputed' else 'decide') for i, c in enumerate(sorted(decide, key=order)))
-body += '<details><summary>Solver errors, no change needed (%d)</summary><ul class="rest">%s</ul></details>' % (len(solver), ''.join(
+for final, title, note in GROUPS:
+    group = sorted([c for c in decide if c['final'] == final], key=order)
+    if group:
+        body += '<h3>%s <span class="count">%d</span></h3><p class="intro">%s</p>' % (title, len(group), note)
+        body += '\n'.join(card(c, final) for c in group)
+body += '<details><summary>Solver errors, the tree is right (%d)</summary><ul class="rest">%s</ul></details>' % (len(solver), ''.join(
     '<li><a href="https://tsumego.com/%s">%s</a> %s, tree %s, solver %s: %s</li>' % (c['id'], c['id'], html.escape(c['line']), html.escape(c['authored']), html.escape(solver_text(c)), html.escape((c.get('analysis') or {}).get('summary', ''))) for c in sorted(solver, key=order)))
 style = open(os.path.join(here, 'status_examples_style.html')).read()
 style = style.replace('<title>Status Leaf Review</title>', '<title>Status Disagreement Research</title>').replace('<h1>Status Leaf Review</h1>', '<h1>Status Disagreement Research</h1>')
 start = style.index('<p class="intro">Leaves of the status problems'); end = style.index('</p>', start) + 4
 intro = '<p class="intro">Every leaf of the status problems where the solver and the tree disagree (export of 10 November), checked one by one: an analyst read each position step by step with the solver as a calculator, and reviewers tried to refute every conclusion. %d leaves: %d clear errors on the site, %d to decide, %d solver errors.</p>' % (len(results), len(errors), len(decide), len(solver))
 style = style[:start] + intro + style[end:]
-style = style.replace('</style>', '.why { margin: 0; } .question { margin: 0; color: var(--ink); } .dissent { margin: 0; color: var(--muted); font-size: 0.9rem; }\ndetails summary { cursor: pointer; font-weight: 600; margin-top: 8px; }\n</style>', 1)
+style = style.replace('</style>', '.why { margin: 0; } .question { margin: 0; color: var(--ink); } .dissent { margin: 0; color: var(--muted); font-size: 0.9rem; }\ndetails summary { cursor: pointer; font-weight: 600; margin-top: 8px; }\nh3 { font-size: 1.05rem; margin: 10px 0 0; } .more { font-size: 0.9rem; color: var(--muted); } .more summary { font-weight: 500; margin: 0; } .more p { margin: 6px 0 0; }\n</style>', 1)
 style = style.replace("'ko-review-'", "'status-research-'")
 open(sys.argv[2], 'w').write(style.replace('BODY', body).replace('TOTAL', str(len(results))))
 print(len(results), 'cases:', len(errors), 'errors,', len(decide), 'to decide,', len(solver), 'solver errors')
