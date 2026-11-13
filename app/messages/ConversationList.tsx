@@ -71,7 +71,7 @@ function ConversationRow({ conversation, userId, selected, onSelect }: Conversat
 				<span className="messages-list__name">
 					<Avatar url={partner.avatarUrl} fallbackUrl={`/avatar/${partner.id}`} />
 					{partner.displayName ?? DELETED_NAME}
-					{unreadCount > 0 && <span className="messages-list__unread">{unreadCount}</span>}
+					{unreadCount > 0 && <span className="badge badge--alert messages-list__unread">{unreadCount}</span>}
 				</span>
 				<time className="messages-list__date" dateTime={lastMessage.created}>{shortDate(lastMessage.created)}</time>
 				<span className="messages-list__preview">

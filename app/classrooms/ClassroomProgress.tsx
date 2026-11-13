@@ -114,7 +114,7 @@ export function ClassroomProgress({ assignmentId, isTeacher }: ClassroomProgress
 
 	return (
 		<div className="classes__progress">
-			<table className="classes__table">
+			<table className="result-grid classes__table">
 				<thead>
 					<tr>
 						{isTeacher && <th className="classes__pupil" rowSpan={2}>Pupil</th>}

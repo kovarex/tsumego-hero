@@ -25,7 +25,7 @@ $cellSymbols = ['failed' => '✗', 'timeout' => '⏱', 'skipped' => '–', 'queu
 ?>
 		<h2 class="challenges__heading">Players</h2>
 		<div class="challenges__table-wrapper">
-			<table class="challenges__table">
+			<table class="result-grid challenges__table">
 				<thead>
 					<tr>
 						<?php if ($isFinished): ?>
