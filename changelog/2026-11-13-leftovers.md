@@ -1,0 +1,1 @@
+Changed: Small clean-ups with no visible change on most pages: the streak flame of the profile is the yellow of the menu, the account menu and the lists are styled by their own classes, and the privacy policy's list lost its uneven gaps.

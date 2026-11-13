@@ -15,11 +15,11 @@ use App\Utility\Auth;
 
 $userID = Auth::getUserID();
 ?>
-<div id="heroProfile"><li><a href="/users/view/<?php echo $userID; ?>">Profile</a></li></div>
-<div id="heroBar"><li><a id="textBarInMenu"><?php echo $bar['switchText']; ?></a></li></div>
-<div id="heroAchievements"><li><a href="/achievements">Achievements</a></li></div>
-<div id="heroMessages"><li><a href="/messages">Messages <?php echo AccountWidget::unreadMessagesBadge($unreadMessageCount); ?></a></li></div>
-<div id="heroFriends"><li><a href="/friends">Friends<?php echo $friendsBadge; ?></a></li></div>
-<div id="heroSettings"><li><a href="/users/settings">Settings</a></li></div>
-<div id="heroLogout"><li><a href="/users/logout">Sign Out</a></li></div>
+<div id="heroProfile" class="account-menu__item account-menu__item--first"><li><a href="/users/view/<?php echo $userID; ?>">Profile</a></li></div>
+<div id="heroBar" class="account-menu__item account-menu__item--row1"><li><a id="textBarInMenu"><?php echo $bar['switchText']; ?></a></li></div>
+<div id="heroAchievements" class="account-menu__item account-menu__item--row2"><li><a href="/achievements">Achievements</a></li></div>
+<div id="heroMessages" class="account-menu__item account-menu__item--row3"><li><a href="/messages">Messages <?php echo AccountWidget::unreadMessagesBadge($unreadMessageCount); ?></a></li></div>
+<div id="heroFriends" class="account-menu__item account-menu__item--row4"><li><a href="/friends">Friends<?php echo $friendsBadge; ?></a></li></div>
+<div id="heroSettings" class="account-menu__item account-menu__item--row5"><li><a href="/users/settings">Settings</a></li></div>
+<div id="heroLogout" class="account-menu__item account-menu__item--row6 account-menu__item--last"><li><a href="/users/logout">Sign Out</a></li></div>
 <div id="modeSelector" class="<?php echo $bar['modeSelectorClass']; ?>"></div>

@@ -18,7 +18,7 @@
 
 .classes__crumb
 {
-	color: var(--text-softer-color);
+	color: var(--color-text-muted);
 	font-size: var(--text-xs);
 	margin-bottom: var(--space-2);
 }
@@ -44,7 +44,7 @@
 	justify-content: space-between;
 	gap: var(--space-2);
 	padding: var(--space-2) 0;
-	border-bottom: 1px solid var(--current-border-color);
+	border-bottom: 1px solid var(--color-border);
 }
 
 .classes__actions
@@ -238,7 +238,7 @@ a[href="/sets"]
 
 .classes__count
 {
-	color: var(--text-color);
+	color: var(--color-text);
 }
 
 .classes__error
@@ -257,7 +257,7 @@ a[href="/sets"]
 .classes__editor-collection
 {
 	padding: var(--space-2) 0 var(--space-3);
-	border-bottom: 1px solid var(--current-border-color);
+	border-bottom: 1px solid var(--color-border);
 }
 
 .classes__editor-collection-header
@@ -313,10 +313,10 @@ a[href="/sets"]
 	width: min(1100px, 95vw);
 	height: min(800px, 90vh);
 	padding: 0;
-	border: 3px solid var(--current-border-color);
+	border: 3px solid var(--color-border);
 	border-radius: var(--radius-md);
-	background: var(--surface-bar);
-	color: var(--text-color);
+	background: var(--color-surface-sunken);
+	color: var(--color-text);
 }
 
 .classes__picker[open]
@@ -344,7 +344,7 @@ a[href="/sets"]
 	display: flex;
 	justify-content: flex-end;
 	padding: var(--space-3) var(--space-4);
-	border-top: 1px solid var(--current-border-color);
+	border-top: 1px solid var(--color-border);
 }
 
 .classes__picker-header

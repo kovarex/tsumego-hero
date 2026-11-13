@@ -146,7 +146,7 @@ if ($tsumegoFilters->query != 'topics')
 				else
 				{
 					echo '<div id="msg1x"><a id="showx">Reset<img id="greyArrow1" src="/img/greyArrow1.png"></a></div>';
-					echo '<div id="msg2x">';
+					echo '<div id="msg2x" class="set-view__reset-form">';
 					echo 'Type "reset" to remove all your progress on this collection.<br><br>';
 					echo '<form action="/sets/resetProgress/' . $set->id . '/' . ($partition + 1) . '" method="post">';
 					echo '<input type="text" name="reset-check" id="reset-textfield" placeholder="reset">';

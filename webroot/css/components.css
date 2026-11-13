@@ -267,7 +267,7 @@
 	border: 1px solid var(--color-border-strong);
 	border-radius: var(--control-radius);
 	background: var(--color-surface);
-	color: var(--text-color);
+	color: var(--color-text);
 	font: var(--control-font);
 	text-align: center;
 	text-decoration: none;
@@ -311,7 +311,7 @@
 	padding-inline: var(--space-1);
 	border-color: transparent;
 	background: none;
-	color: var(--link-color);
+	color: var(--color-link);
 }
 
 .btn--pill
@@ -321,8 +321,8 @@
 
 .btn--pill.is-selected
 {
-	border-color: var(--text-color);
-	background: var(--text-color);
+	border-color: var(--color-text);
+	background: var(--color-text);
 	color: var(--color-surface);
 	cursor: default;
 }
@@ -359,8 +359,8 @@
 {
 	.btn:not(:disabled, [aria-disabled="true"], .btn--disabled, .is-selected):hover
 	{
-		background: var(--surface-hover);
-		color: var(--text-color);
+		background: var(--color-surface-hover);
+		color: var(--color-text);
 		text-decoration: none;
 	}
 
@@ -388,7 +388,7 @@
 	.btn--ghost:not(:disabled, [aria-disabled="true"], .btn--disabled):hover
 	{
 		background: none;
-		color: var(--link-color);
+		color: var(--color-link);
 		text-decoration: underline;
 	}
 }
@@ -957,7 +957,7 @@
 	border: 1px solid var(--color-border-strong);
 	border-radius: var(--radius-full);
 	background: var(--color-surface);
-	color: var(--text-color);
+	color: var(--color-text);
 	font: var(--control-font-small);
 	font-variant-numeric: tabular-nums;
 	text-decoration: none;
@@ -966,8 +966,8 @@
 
 :is(.pagination__link--active, .range-chart__range--active, .issues-filter--active, .tsumego-comments__tab.active, .tsumego-comments__anchor-btn.active)
 {
-	border-color: var(--text-color);
-	background: var(--text-color);
+	border-color: var(--color-text);
+	background: var(--color-text);
 	color: var(--color-surface);
 	cursor: default;
 }
@@ -976,8 +976,8 @@
 {
 	:is(.pagination__link, .range-chart__range, .issues-filter, .tsumego-comments__tab, .tsumego-comments__anchor-btn):not(:disabled, .pagination__link--active, .range-chart__range--active, .issues-filter--active, .active):hover
 	{
-		background: var(--surface-hover);
-		color: var(--text-color);
+		background: var(--color-surface-hover);
+		color: var(--color-text);
 		text-decoration: none;
 	}
 }
@@ -1419,7 +1419,7 @@
 	padding: 0;
 	border: none;
 	background: none;
-	color: var(--text-color);
+	color: var(--color-text);
 	font: inherit;
 	cursor: pointer;
 }

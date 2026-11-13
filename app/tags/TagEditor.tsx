@@ -143,7 +143,7 @@ export function TagEditor({ tsumegoId, isTimeMode, problemSolved, canAddMoreTags
 					)}
 				</span>
 			))}
-			{hiddenCount > 0 && <span style={{ color: 'var(--text-softer-color)', fontSize: 12 }}>({hiddenCount} hidden)</span>}
+			{hiddenCount > 0 && <span style={{ color: 'var(--color-text-muted)', fontSize: 12 }}>({hiddenCount} hidden)</span>}
 		</div>
 	);
 
@@ -157,11 +157,11 @@ export function TagEditor({ tsumegoId, isTimeMode, problemSolved, canAddMoreTags
 		<>
 
 			{!canTag && (
-				<div style={{ color: 'var(--text-softer-color)', fontSize: 14 }} data-testid="tag-solve-first">Solve the problem to add tags.</div>
+				<div style={{ color: 'var(--color-text-muted)', fontSize: 14 }} data-testid="tag-solve-first">Solve the problem to add tags.</div>
 			)}
 
 			{canTag && !canAddMoreTags && (
-				<div style={{ color: 'var(--text-softer-color)', fontSize: 14 }}>Daily limit reached.</div>
+				<div style={{ color: 'var(--color-text-muted)', fontSize: 14 }}>Daily limit reached.</div>
 			)}
 
 			{canTag && canAddMoreTags && !error && (
@@ -176,20 +176,20 @@ export function TagEditor({ tsumegoId, isTimeMode, problemSolved, canAddMoreTags
 					onChange={e => { setQuery(e.target.value); setOpen(true); }}
 					onFocus={() => setOpen(true)}
 					onKeyDown={handleKeyDown}
-					style={{ width: '100%', maxWidth: 300, padding: '6px 10px', background: 'var(--info-box-background)', border: '1px solid var(--current-border-color)', borderRadius: 4, color: 'var(--text-color)', fontSize: 14 }}
+					style={{ width: '100%', maxWidth: 300, padding: '6px 10px', background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 4, color: 'var(--color-text)', fontSize: 14 }}
 				/>
 
 				{open && visible.length > 0 && (
 					<div
 						ref={dropdownRef}
-						style={{ position: 'absolute', top: '100%', left: 0, zIndex: 50, width: '100%', maxWidth: 300, maxHeight: 200, overflowY: 'auto', background: 'var(--info-box-background)', border: '1px solid var(--current-border-color)', borderRadius: 4, marginTop: 2, boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}
+						style={{ position: 'absolute', top: '100%', left: 0, zIndex: 50, width: '100%', maxWidth: 300, maxHeight: 200, overflowY: 'auto', background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 4, marginTop: 2, boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}
 					>
 						{visible.map((tag, i) => {
 							const tagStyle: React.CSSProperties = {
 								padding: '6px 10px',
 								cursor: 'pointer',
 								fontSize: 14,
-								color: 'var(--text-color)',
+								color: 'var(--color-text)',
 								background: i === selectedIndex ? 'rgba(128, 128, 128, 0.15)' : 'transparent',
 							};
 
@@ -197,8 +197,8 @@ export function TagEditor({ tsumegoId, isTimeMode, problemSolved, canAddMoreTags
 						{
 							const label = tag.isMine ? 'pending' : 'already proposed';
 							return (
-								<div key={tag.id} data-testid={makeIdValidName('nonaddable ' + tag.name)} style={{ ...tagStyle, color: tag.isMine ? 'var(--text-softer-color)' : 'var(--feedback-error)', cursor: 'default' }}>
-									{tag.name} <span style={{ color: 'var(--text-softer-color)', fontSize: 12 }}>({label})</span>
+								<div key={tag.id} data-testid={makeIdValidName('nonaddable ' + tag.name)} style={{ ...tagStyle, color: tag.isMine ? 'var(--color-text-muted)' : 'var(--color-danger)', cursor: 'default' }}>
+									{tag.name} <span style={{ color: 'var(--color-text-muted)', fontSize: 12 }}>({label})</span>
 								</div>
 							);
 						}
@@ -213,7 +213,7 @@ export function TagEditor({ tsumegoId, isTimeMode, problemSolved, canAddMoreTags
 									id={makeIdValidName(tag.name)}
 									role="option"
 								>
-									{tag.name}{tag.isHint && <span style={{ color: 'var(--text-softer-color)', fontSize: 12 }}> (hint)</span>}
+									{tag.name}{tag.isHint && <span style={{ color: 'var(--color-text-muted)', fontSize: 12 }}> (hint)</span>}
 								</div>
 							);
 						})}
@@ -222,7 +222,7 @@ export function TagEditor({ tsumegoId, isTimeMode, problemSolved, canAddMoreTags
 			</div>
 
 			<div style={{ marginTop: 6 }}>
-				<a href="/tags/add" style={{ color: 'var(--text-softer-color)', fontSize: 12 }} id="create-new-tag">+ New tag</a>
+				<a href="/tags/add" style={{ color: 'var(--color-text-muted)', fontSize: 12 }} id="create-new-tag">+ New tag</a>
 			</div>
 			</>
 			)}
@@ -235,7 +235,7 @@ export function TagEditor({ tsumegoId, isTimeMode, problemSolved, canAddMoreTags
 		<div data-testid="tag-editor">
 			{tagList}
 			{/* next to the tags, so an error of removing one shows while the edit section is closed */}
-			{error && <div style={{ color: 'var(--feedback-error)', marginBottom: 6 }} data-testid="tag-error">{error}</div>}
+			{error && <div style={{ color: 'var(--color-danger)', marginBottom: 6 }} data-testid="tag-error">{error}</div>}
 			{addingTarget ? createPortal(adding, addingTarget) : adding}
 		</div>
 	);

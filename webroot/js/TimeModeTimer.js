@@ -37,7 +37,7 @@ class TimeModeTimer
 
 			let countdown = document.getElementById("time-mode-countdown");
 			if (countdown)
-				countdown.style.color = "var(--feedback-error)";
+				countdown.style.color = "var(--color-danger)";
 			document.getElementById("status").style.color = "var(--play-message-incorrect)";
 			document.getElementById("status").innerHTML = "<h2>Time's up!</h2>";
 			this.stop();

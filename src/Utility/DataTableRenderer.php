@@ -19,7 +19,7 @@ abstract class DataTableRenderer
 	public function render(): void
 	{
 		echo PaginationHelper::render($this->page, $this->pageCount, $this->name);
-		echo '<table border="0" class="data-table data-table--compact" style="border-collapse:collapse;">';
+		echo '<table class="data-table data-table--compact">';
 		if ($this->caption !== null)
 			echo '<caption id="' . $this->name . '_header">' . $this->caption . ' (' . $this->count . ')</caption>';
 		$this->renderHeader();

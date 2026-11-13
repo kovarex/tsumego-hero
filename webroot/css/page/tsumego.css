@@ -144,7 +144,7 @@
 	position: absolute;
 	inset: -5px;
 	border-radius: 9px;
-	border: 3px solid var(--text-color);
+	border: 3px solid var(--color-text);
 	z-index: 20;
 	pointer-events: none;
 }
@@ -301,7 +301,7 @@
    one not tried yet */
 .problem-nav__rung--missed
 {
-	box-shadow: 0 0 0 2px var(--feedback-error);
+	box-shadow: 0 0 0 2px var(--color-danger);
 }
 
 .preview-zoomed .problem-nav__number,

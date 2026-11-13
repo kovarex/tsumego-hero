@@ -41,7 +41,7 @@
 	border: 1px solid var(--color-border);
 	border-top: none;
 	padding: var(--space-3);
-	color: var(--text-color);
+	color: var(--color-text);
 }
 /* The site floats every li (site.css), the list of the news keeps one item under the other. */
 .whats-new-list {
@@ -57,7 +57,7 @@
 .whats-new-list > li > a {
 	display: inline;
 	padding: 0;
-	color: var(--link-color);
+	color: var(--color-link);
 	text-align: left;
 	text-decoration: underline;
 }
@@ -108,7 +108,7 @@
 }
 .friend-activity__event {
   padding: var(--space-1) 0;
-  border-bottom: 1px solid var(--current-border-color);
+  border-bottom: 1px solid var(--color-border);
 }
 .friend-activity__event:last-child {
   border-bottom: none;

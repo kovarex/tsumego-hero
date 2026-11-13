@@ -23,7 +23,7 @@
 	display: block;
 	margin-bottom: var(--space-1);
 	font-size: var(--text-sm);
-	color: var(--text-color);
+	color: var(--color-text);
 }
 /* The site's field; only its place in the form is the sign-in's own */
 .signin input:not([type="hidden"], [type="checkbox"], [type="radio"], [type="submit"]) {
@@ -32,7 +32,7 @@
 }
 /* The secondary lines belong to the form and need the same contrast as its text. */
 .signin .hint {
-	color: var(--text-color);
+	color: var(--color-text);
 }
 .signin .btn {
 	margin-top: var(--space-5);
@@ -46,7 +46,7 @@
 	padding: 0;
 	background: none;
 	border: none;
-	color: var(--text-color);
+	color: var(--color-text);
 	font-family: var(--font-family-ui);
 	font-size: var(--text-sm);
 	text-decoration: underline;

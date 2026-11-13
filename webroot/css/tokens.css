@@ -363,46 +363,12 @@
 		--weight-medium: 600;
 		--weight-bold: 700;
 		--weight-heavy: 800;
-		/* Older names, kept as aliases: the weights, and the second, smaller type scale (8 to 20px), which
-		   now takes the nearest step of the one above, the larger one where two are as near */
-		--font-size-xs: var(--text-xs);
-		--font-size-sm: var(--text-xs);
-		--font-size-base: var(--text-sm);
-		--font-size-md: var(--text-sm);
-		--font-size-lg: var(--text-md);
-		--font-size-xl: var(--text-xl);
-		--font-weight-bold: var(--weight-bold);
-		--font-weight-heavy: var(--weight-heavy);
-
 		/* ── Neutral colors ── */
 		--color-white: #fff;
 		--color-gray-dark: #4a4a4a;
 		--color-red-dark: #8b3a3a;
 		--color-red-darker: #4a2020;
 		--color-red-light: #ff8080;
-	}
-
-	/* ── Colour roles: what a colour is for. Components and new rules use these; the theme blocks
-	   below give them their light and dark values. The names on the left are the older ones,
-	   kept as aliases until no rule uses them. ── */
-	:root
-	{
-		--text-color: var(--color-text);
-		--text-softer-color: var(--color-text-muted);
-		--link-color: var(--color-link);
-		--current-border-color: var(--color-border);
-		--info-box-background: var(--color-surface);
-		--surface-bar: var(--color-surface-sunken);
-		--surface-hover: var(--color-surface-hover);
-		--surface-hover-strong: var(--color-surface-hover-strong);
-		--feedback-error: var(--color-danger);
-		--feedback-warning: var(--color-warning);
-		--surface-danger: var(--color-danger-surface);
-		--color-brand: var(--color-green);
-		--color-brand-strong: var(--color-green-dark);
-		--color-accent: var(--color-purple);
-		--color-info: var(--color-blue);
-		--color-on-fill: var(--color-white);
 	}
 
 	/* ── Theme tokens: light is default (:root) ── */
@@ -462,8 +428,8 @@
 		/* Pages that look different in the dark theme: the light value here, the dark one below */
 		--board-red-glow: 0 2px 14px 0 rgba(183, 19, 19, 0.8), 0 6px 20px 0 rgba(183, 19, 19, 0.2);
 		--board-tree-line: black;
-		--play-link: var(--text-softer-color);
-		--play-comment-time: var(--text-softer-color);
+		--play-link: var(--color-text-muted);
+		--play-comment-time: var(--color-text-muted);
 		--play-sandbox-text: var(--color-black);
 		--play-sandbox-background: var(--color-white);
 		--play-dark-text: currentColor;
@@ -510,13 +476,13 @@
 		/* Comments and issues under a problem (comments.css): the light value here, the dark one below */
 		--comment-coord-white: rgba(0, 0, 0, 0.04);
 		--comment-coord-hover: rgba(30, 107, 184, 0.2);
-		--comment-tab-empty-text: var(--text-softer-color);
-		--comment-form-background: var(--surface-bar);
+		--comment-tab-empty-text: var(--color-text-muted);
+		--comment-form-background: var(--color-surface-sunken);
 		--comment-form-muted: currentColor;
-		--comment-textarea-border: var(--current-border-color);
+		--comment-textarea-border: var(--color-border);
 		/* A comment: a card a step off the surface, flat */
 		--comment-background: var(--color-surface-sunken);
-		--comment-delete-text: var(--feedback-error);
+		--comment-delete-text: var(--color-danger);
 		/* An issue: a card with a yellow stripe, it waits for someone to fix it */
 		--issue-background: var(--color-surface);
 		--issue-accent: var(--color-yellow);
@@ -525,11 +491,11 @@
 		--issue-closed-background: var(--comment-success-bg);
 		--issue-closed-text: var(--comment-success-fg);
 		--issue-comment-divider: rgba(128, 128, 128, 0.2);
-		--issue-reply-hover-background: var(--surface-bar);
-		--issue-reply-hover-text: var(--text-softer-color);
-		--issue-reply-form-background: var(--surface-bar);
-		--issue-reply-form-border: var(--surface-hover);
-		--issue-reply-textarea-background: var(--surface-bar);
+		--issue-reply-hover-background: var(--color-surface-sunken);
+		--issue-reply-hover-text: var(--color-text-muted);
+		--issue-reply-form-background: var(--color-surface-sunken);
+		--issue-reply-form-border: var(--color-surface-hover);
+		--issue-reply-textarea-background: var(--color-surface-sunken);
 		--issues-empty-text: currentColor;
 	}
 
@@ -576,9 +542,9 @@
 
 		--board-red-glow: 0 2px 14px 0 rgb(225, 34, 34), 0 6px 20px 0 rgba(253, 59, 59, 0.58);
 		--board-tree-line: var(--text-on-dark);
-		--play-link: var(--link-color);
+		--play-link: var(--color-link);
 		--play-comment-time: var(--text-on-dark-soft);
-		--play-sandbox-text: var(--link-color);
+		--play-sandbox-text: var(--color-link);
 		--play-sandbox-background: var(--surface-button);
 		--play-dark-text: var(--color-black);
 		--play-rating-bar-accent: var(--color-mode-rating);
@@ -602,7 +568,7 @@
 		--training-title: var(--color-green);
 		--time-mode-table-text: var(--color-black);
 		--signin-background: var(--surface-dark);
-		--schedule-link: var(--link-color);
+		--schedule-link: var(--color-link);
 		--dropdown-tile-muted: var(--surface-translucent);
 		--toast-text: var(--color-black);
 		--achievement-card-background: var(--ach-silver-gradient);
@@ -629,23 +595,23 @@
 		--comment-coord-white: rgba(255, 255, 255, 0.12);
 		--comment-coord-hover: rgba(109, 179, 242, 0.25);
 		--comment-tab-empty-text: #b3b3b3; /* 5.4:1 on the tab, 4.6:1 under the pointer */
-		--comment-form-background: var(--surface-hover);
-		--comment-form-muted: var(--text-softer-color);
-		--comment-textarea-border: var(--surface-hover-strong);
+		--comment-form-background: var(--color-surface-hover);
+		--comment-form-muted: var(--color-text-muted);
+		--comment-textarea-border: var(--color-surface-hover-strong);
 		--comment-background: #333;
 		--comment-delete-text: var(--color-white);
 		--issue-background: var(--color-surface);
 		--issue-accent: var(--color-yellow-dark);
-		--issue-opened-background: var(--surface-danger);
-		--issue-opened-text: var(--feedback-error);
+		--issue-opened-background: var(--color-danger-surface);
+		--issue-opened-text: var(--color-danger);
 		--issue-closed-background: var(--alert-success-bg);
 		--issue-closed-text: var(--alert-success-fg);
 		--issue-comment-divider: rgba(255, 255, 255, 0.1);
-		--issue-reply-hover-background: var(--surface-hover-strong);
-		--issue-reply-hover-text: var(--text-color);
+		--issue-reply-hover-background: var(--color-surface-hover-strong);
+		--issue-reply-hover-text: var(--color-text);
 		--issue-reply-form-background: var(--surface-border-strong);
-		--issue-reply-form-border: var(--surface-hover-strong);
-		--issue-reply-textarea-background: var(--info-box-background);
-		--issues-empty-text: var(--text-softer-color);
+		--issue-reply-form-border: var(--color-surface-hover-strong);
+		--issue-reply-textarea-background: var(--color-surface);
+		--issues-empty-text: var(--color-text-muted);
 	}
 }
