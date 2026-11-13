@@ -16,6 +16,12 @@ interface BesogoEditor
 	//Get the current move node in the game tree.
 	getCurrent(): BesogoNode;
 
+	//Whether the review mode is on: the tree shows and the board navigates it.
+	getReviewMode(): boolean;
+
+	//Whether the review may be opened, e.g. once the problem is solved.
+	getReviewEnabled(): boolean;
+
 	//Get the root node of the game tree.
 	getRoot(): BesogoNode;
 

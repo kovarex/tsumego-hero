@@ -129,6 +129,9 @@ export function Comment({
 		const editor = window.besogo?.editor;
 		if (!editor || !comment.position || !editor.showCommentPosition(comment.position))
 			return;
+		//The review's tree shows which branch the position is on, where the review is open to the player (the Review button lays out the board for it)
+		if (editor.getReviewEnabled() && !editor.getReviewMode())
+			document.getElementById('besogo-review-button')?.click();
 		(document.querySelector('.besogo-container') ?? document.getElementById('board'))?.scrollIntoView({ behavior: 'smooth', block: 'center' });
 	};
 
