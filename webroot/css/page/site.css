@@ -330,8 +330,16 @@ li a.menuLi.nav__link--active {
   border-radius: 5px;
   -webkit-filter: blur(5px);
 }
-.sitesTable td {
-  vertical-align: top;
+/* The help page's lists of an icon and what it means: the icons in a column, each meaning beside its icon */
+.sites-legend {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--space-3) var(--space-3);
+  align-items: start;
+  margin: 0 0 var(--space-4);
+}
+.sites-legend dd {
+  margin: 0;
 }
 #darkButton {
   cursor: pointer;

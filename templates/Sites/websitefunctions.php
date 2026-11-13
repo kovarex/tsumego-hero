@@ -28,54 +28,23 @@ $percent = fn(float $share): string => round($share * 100) . '%';
 					The hearts are your lives that you have for trying to solve the problems. Each time you fail at solving a problem, you lose a heart.
 			When you have no hearts left and fail at a problem, the problem is locked until the next day. Hearts increase with your level.<br><br>
 			<b>(2) Hero Powers</b><br><br>
-		<table class="sitesTable" >
-		<tr>
-			<td>
-				<img id="sprint" title="Sprint: Double XP for 2 minutes." alt="Sprint" src="/img/hp1.png">
-			</td>
-			<td>
-				<b>Sprint (Level 20)</b><br>
-				Double XP for 2 minutes on all solved problems.<br><br>
-			</td>
-		</tr>
-		<tr>
-			<td>
-				<img id="sprint" title="Intuition: Shows the first correct move." alt="Intuition" src="/img/hp2.png">
-			</td>
-			<td>
-				<b>Intuition (Level 30)</b><br>
-				Shows the first correct move.<br><br>
-			</td>
-		</tr>
-		<tr>
-			<td>
-				<img id="sprint" title="Rejuvenation: Restores health, Intuition and locks." alt="Rejuvenation" src="/img/hp3.png">
-			</td>
-			<td>
-				<b>Rejuvenation (Level 40)</b><br>
-				Restores health, Intuition and locks.<br><br>
-			</td>
-		</tr>
-		<tr>
-			<td>
-				<img id="sprint" title="Potion: If you misplay and have no hearts left, you have a small chance to restore your health." alt="Potion" src="/img/hp5.png">
-			</td>
-			<td>
-				<b>Potion (Level 50 or Premium)</b><br>
-				If you misplay and have no hearts left, you have a small chance to restore your health.<br><br>
-			</td>
-		</tr>
-		<tr>
-			<td>
-				<img id="sprint" title="Refinement: Gives you a chance to solve a golden tsumego." alt="Refinement" src="/img/hp4.png">
-			</td>
-			<td>
-				<b>Refinement (Level 100 or Premium)</b><br>
-				Gives you a chance to solve a golden tsumego.<br><br>
-			</td>
-		</tr>
-
-		</table>
+		<dl class="sites-legend">
+			<dt><img title="Sprint: Double XP for 2 minutes." alt="Sprint" src="/img/hp1.png"></dt>
+			<dd><b>Sprint (Level 20)</b><br>
+				Double XP for 2 minutes on all solved problems.</dd>
+			<dt><img title="Intuition: Shows the first correct move." alt="Intuition" src="/img/hp2.png"></dt>
+			<dd><b>Intuition (Level 30)</b><br>
+				Shows the first correct move.</dd>
+			<dt><img title="Rejuvenation: Restores health, Intuition and locks." alt="Rejuvenation" src="/img/hp3.png"></dt>
+			<dd><b>Rejuvenation (Level 40)</b><br>
+				Restores health, Intuition and locks.</dd>
+			<dt><img title="Potion: If you misplay and have no hearts left, you have a small chance to restore your health." alt="Potion" src="/img/hp5.png"></dt>
+			<dd><b>Potion (Level 50 or Premium)</b><br>
+				If you misplay and have no hearts left, you have a small chance to restore your health.</dd>
+			<dt><img title="Refinement: Gives you a chance to solve a golden tsumego." alt="Refinement" src="/img/hp4.png"></dt>
+			<dd><b>Refinement (Level 100 or Premium)</b><br>
+				Gives you a chance to solve a golden tsumego.</dd>
+		</dl>
 		<br>
 
 		<b>(3) Player color and board orientation</b><br><br>
@@ -90,21 +59,15 @@ $percent = fn(float $share): string => round($share * 100) . '%';
 		</div>
 			<br>
 			<b>(5) Problem colors</b><br><br>
-		<table class="sitesTable">
+		<dl class="sites-legend">
 		<?php
 		foreach (TsumegoStatusTable::$labels as $status => $label):
 			$description = TsumegoStatusTable::$descriptions[$status] ?? '';
 		?>
-		<tr>
-			<td>
-								<span class="badge badge--status-<?php echo $status; ?>"><?php echo h($label); ?></span>
-			</td>
-			<td>
-				<?php echo h($description); ?><br><br>
-			</td>
-		</tr>
+			<dt><span class="badge badge--status-<?php echo $status; ?>"><?php echo h($label); ?></span></dt>
+			<dd><?php echo h($description); ?></dd>
 		<?php endforeach; ?>
-		</table>
+		</dl>
 
 		</div>
 
