@@ -433,6 +433,35 @@
 	}
 }
 
+/* ── Result grid ── */
+/* Who did what with each problem: the challenge standings and the progress of a class. Every cell the same
+   size, a line around each; a solved cell filled with the brand green (white on it 5.2:1) */
+.result-grid
+{
+	border-collapse: collapse;
+}
+
+.result-grid th,
+.result-grid td
+{
+	min-width: 2em;
+	padding: var(--space-1) 6px;
+	border: 1px solid var(--color-border);
+	text-align: center;
+	white-space: nowrap;
+}
+
+.result-grid th
+{
+	color: var(--color-text-muted);
+	font-weight: var(--weight-normal);
+}
+
+.result-grid a
+{
+	color: inherit;
+}
+
 /* ── Badge ── */
 .badge
 {
@@ -446,6 +475,25 @@
 	border: 1px solid var(--color-border);
 	border-radius: var(--radius-full);
 	color: var(--color-text-muted);
+}
+
+/* A count beside a link or a row: a number in a small pill, outlined, or filled red when it asks for attention */
+.badge--count,
+.badge--alert
+{
+	min-width: 1.6em;
+	margin: 0;
+	padding: 0 var(--space-1);
+	line-height: 16px;
+	letter-spacing: 0;
+	text-align: center;
+}
+
+.badge--alert
+{
+	border-color: var(--color-alert-fill);
+	background: var(--color-alert-fill);
+	color: var(--color-white);
 }
 
 .badge--active

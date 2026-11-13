@@ -17,7 +17,7 @@ use App\Utility\Auth;
 $renderLink = function (string $url, string $label, int $count = 0, string $countMeaning = ''): void {
 	echo '<li><a class="admin-area__link" href="' . $url . '">' . $label;
 	if ($count > 0)
-		echo '<span class="admin-area__badge" title="' . h($countMeaning) . '">' . $count . '</span>';
+		echo '<span class="badge badge--alert admin-area__badge" title="' . h($countMeaning) . '">' . $count . '</span>';
 	echo '</a></li>';
 };
 ?>
@@ -44,7 +44,7 @@ $renderLink = function (string $url, string $label, int $count = 0, string $coun
 		$renderLink('/users/userstats', 'User activities');
 		$renderLink('/tsumegos/mergeForm', 'Merge duplicates');
 		echo '<li><a class="admin-area__link" href="/admin/deleted-accounts">Deleted accounts'
-			. ($deletedAccountCount > 0 ? '<span class="admin-area__count">' . $deletedAccountCount . '</span>' : '') . '</a></li>';
+			. ($deletedAccountCount > 0 ? '<span class="badge badge--count admin-area__count">' . $deletedAccountCount . '</span>' : '') . '</a></li>';
 		if (Auth::isOwner())
 			$renderLink('/roles', 'Admins and owners');
 		?>

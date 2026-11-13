@@ -500,31 +500,6 @@
 	max-width: none;
 }
 
-.challenges__table
-{
-	border-collapse: collapse;
-}
-
-.challenges__table th,
-.challenges__table td
-{
-	padding: var(--space-1) var(--space-2);
-	text-align: center;
-	border: 1px solid var(--current-border-color);
-	white-space: nowrap;
-}
-
-.challenges__table th
-{
-	color: var(--text-softer-color);
-	font-weight: var(--weight-normal);
-}
-
-.challenges__table a
-{
-	color: inherit;
-}
-
 .challenges__table th.challenges__problem
 {
 	padding: 2px;
@@ -563,11 +538,6 @@
 	background: color-mix(in srgb, var(--color-green) 15%, transparent);
 }
 
-.challenges__cell
-{
-	min-width: 2.5em;
-}
-
 .challenges__legend .challenges__cell
 {
 	display: inline-block;
@@ -579,7 +549,7 @@
 
 .challenges__cell--solved
 {
-	background: var(--color-green);
+	background: var(--color-brand-fill);
 	color: var(--color-white);
 	font-weight: var(--weight-bold);
 }

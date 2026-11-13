@@ -47,7 +47,7 @@ class AccountWidget
 	//every badge on the page (data-unread-messages) once it marks a conversation read.
 	public static function unreadMessagesBadge(int $unreadMessageCount): string
 	{
-		return '<span class="messages-unread-count" data-unread-messages title="Unread messages"' . ($unreadMessageCount ? '' : ' hidden') . '>'
+		return '<span class="badge badge--alert messages-unread-count" data-unread-messages title="Unread messages"' . ($unreadMessageCount ? '' : ' hidden') . '>'
 			. $unreadMessageCount . '</span>';
 	}
 

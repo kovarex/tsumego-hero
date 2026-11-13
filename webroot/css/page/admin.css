@@ -108,24 +108,9 @@
 .admin-area__links--tools .admin-area__link {
   font-size: 16px;
 }
-.admin-area__badge,
-.admin-area__count {
-  margin: -4px 0; /* a link with a count is as tall as one without */
-  min-width: 1.6em;
-  padding: 1px 6px;
-  border-radius: var(--radius-full);
-  font-size: 14px;
-  font-weight: var(--weight-bold);
-  line-height: 1.4;
-  text-align: center;
-}
-.admin-area__badge {
-  color: var(--color-white);
-  background: var(--color-red);
-}
-.admin-area__count {
-  color: var(--text-softer-color);
-  border: 1px solid var(--current-border-color);
+/* A link with a count is as tall as one without */
+.admin-area__link .badge {
+  margin: -4px 0;
 }
 /* The SGF changes (SgfChangesRenderer): the tick of the admin and the avatars of the others who reviewed a change */
 .sgf-changes__lists {

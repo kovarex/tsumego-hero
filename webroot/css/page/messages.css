@@ -106,21 +106,6 @@
 	color: var(--text-softer-color);
 }
 
-.messages-list__unread,
-.messages-unread-count
-{
-	display: inline-block;
-	min-width: 16px;
-	padding: 0 var(--space-1);
-	font-size: var(--text-xs);
-	font-weight: var(--weight-bold);
-	line-height: 16px;
-	text-align: center;
-	color: var(--color-white);
-	background: var(--color-red);
-	border-radius: var(--radius-md);
-}
-
 .messages-unread-count[hidden]
 {
 	display: none;

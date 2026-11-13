@@ -123,7 +123,7 @@ $classesBadge = $classesAwaitingAnswer > 0
 	? '<span class="nav__new-badge nav__new-badge--visible" title="Waiting for your answer in Classes">' . $classesAwaitingAnswer . '</span>'
 	: '';
 $friendsBadge = $friendRequests > 0
-	? ' <span class="messages-unread-count" title="Players asking to be your friend">' . $friendRequests . '</span>'
+	? ' <span class="badge badge--alert messages-unread-count" title="Players asking to be your friend">' . $friendRequests . '</span>'
 	: '';
 ?>
 <div id="container" class="legacy-center">

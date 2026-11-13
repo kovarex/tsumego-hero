@@ -17,7 +17,7 @@ class AdminControllerTest extends IntegrationTestCase
 	{
 		$this->get('/admin');
 		$this->assertMatchesRegularExpression('~<a class="admin-area__link" href="' . preg_quote($url, '~') . '">~', $this->view, $url . ' is linked');
-		preg_match('~href="' . preg_quote($url, '~') . '">[^<]*<span class="admin-area__badge"[^>]*>(\d+)</span>~', $this->view, $match);
+		preg_match('~href="' . preg_quote($url, '~') . '">[^<]*<span class="[^"]*admin-area__badge"[^>]*>(\d+)</span>~', $this->view, $match);
 		return (int) ($match[1] ?? 0);
 	}
 
