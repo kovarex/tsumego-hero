@@ -123,8 +123,7 @@ class MistakeTrainingController extends AppController
 			// Same problem, same address for search engines, whichever route got here.
 			'canonicalPath' => '/' . $setConnectionID,
 			'_page' => 'mistake-training',
-			'mistakeTrainingReplay' => !MistakeTraining::isRowDue($pool),
-			'mistakeTrainingNormalViewLink' => MistakeTraining::allowsNormalView($pool) ? '/' . $setConnectionID : null]);
+			'mistakeTrainingReplay' => !MistakeTraining::isRowDue($pool)]);
 		return null;
 	}
 }

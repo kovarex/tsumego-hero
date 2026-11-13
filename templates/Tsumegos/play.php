@@ -24,8 +24,7 @@ use App\Utility\ViteManifest;
  * @var bool $isSandbox
  * @var string $lightDark
  * @var int $maxHealth
- * @var bool $mistakeTrainingReplay Set by the training route: the problem was solved today already
- * @var string|null $mistakeTrainingNormalViewLink Set by the training route: the problem's page outside the training, null while it is due
+ * @var bool $mistakeTrainingReplay Set by the training route: the problem was solved today already, so a try is a replay
  * @var \App\Model\Entity\Set $set
  * @var \App\Model\Entity\SetConnection $setConnection
  * @var array $setConnections
@@ -157,12 +156,13 @@ use App\Utility\ViteManifest;
 				<?php $tsumegoXPAndRating->render(); ?>
 			</div>
 		</div>
-		<?php if (Auth::isInMistakeTrainingMode() && !empty($mistakeTrainingReplay)): ?>
-			<div class="alert alert-info mistake-training-replay" role="status">
+		<?php //Hidden while the problem is due: a solve on the page makes the next try a replay, which Reset shows with the link (PlayPage.js resetTrainingTry()) ?>
+		<?php if (Auth::isInMistakeTrainingMode() && isset($mistakeTrainingReplay)): ?>
+			<div class="alert alert-info mistake-training-replay" role="status"<?php echo $mistakeTrainingReplay ? '' : ' hidden'; ?>>
 				Already solved today. This try does not count.
 				<?php //Outside the training a solved problem opens with its review and comments, which the training opens only after a solve ?>
-				<?php if (($mistakeTrainingNormalViewLink ?? null) !== null): ?>
-					<a class="btn btn--small btn--navigation" id="mistake-training-normal-view" href="<?php echo h($mistakeTrainingNormalViewLink); ?>">Open outside the training</a>
+				<?php if ($mistakeTrainingReplay): ?>
+					<a class="btn btn--small btn--navigation" id="mistake-training-normal-view" href="/<?php echo (int) $setConnection->id; ?>">Open outside the training</a>
 				<?php endif; ?>
 			</div>
 		<?php endif; ?>

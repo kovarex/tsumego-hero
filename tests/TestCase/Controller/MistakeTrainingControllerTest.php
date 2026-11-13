@@ -454,9 +454,10 @@ class MistakeTrainingControllerTest extends IntegrationTestCase
 	}
 
 	//A mistake locks the board, but the problem stays in today's training, so Reset
-	//must open a fresh try of it. The solve that follows is the retry: it earns no
-	//rung, and the button turns green because today is done with the problem. The
-	//page is not reloaded after a result, so the result itself redraws the button.
+	//must start a fresh try of it, on the board as it is, without loading the page again.
+	//The solve that follows is the retry: it earns no rung, and the button turns green
+	//because today is done with the problem. The page is not reloaded after a result, so
+	//the result itself redraws the button.
 	public function testAMistakeInTheTrainingCanBeTriedAgainWithReset()
 	{
 		$context = new ContextPreparator([
@@ -481,11 +482,11 @@ class MistakeTrainingControllerTest extends IntegrationTestCase
 			$browser->find('.problem-nav__item--current .problem-nav__rung')->getAttribute('aria-label'),
 			'The button shows the bottom rung the mistake took the problem to, ringed as missed');
 
-		$status = $browser->find('#status');
+		$browser->driver->executeScript('window.pageBeforeReset = true;');
 		$browser->clickId('besogo-reset-button');
-		$browser->waitUntilStale($status);
+		$this->assertTrue((bool) $browser->driver->executeScript('return window.pageBeforeReset === true;'), 'Reset does not load the page again');
 		$this->assertStringEndsWith(MistakeTraining::$PLAY_LINK_PREFIX . $context->tsumegos[0]['set-connections'][0]['id'], $browser->driver->getCurrentURL(),
-			'Reset opens the problem again on the training route');
+			'The problem stays on the training route');
 		$this->assertStringNotContainsString('Incorrect', $browser->find('#status')->getText(), 'Reset opens a fresh try');
 		$this->assertCount(0, $browser->driver->findElements(WebDriverBy::id('besogo-back-button-inactive')),
 			'The training has no Back, the problem buttons lead back');
@@ -509,6 +510,114 @@ class MistakeTrainingControllerTest extends IntegrationTestCase
 		$this->assertStringContainsString('problem-nav__item--S', $browser->find('.problem-nav__item--current')->getAttribute('class'),
 			'Solved today shows green');
 		$this->assertStringContainsString('Already solved today', $browser->pageText(), 'Opened again, it is only a replay');
+	}
+
+	//Reset in the training rewinds the board where it is, as in the level mode, so with the random colours and corner
+	//the problem keeps the ones it was shown with, try after try; only another problem picks them again.
+	public function testResetInTheTrainingKeepsTheColoursAndTheCorner()
+	{
+		new ContextPreparator([
+			'user' => ['name' => 'testuser', 'player_color_setting' => UserTable::PLAYER_COLOR_SETTING_RANDOM, 'board_orientation_setting' => UserTable::BOARD_ORIENTATION_SETTING_RANDOM],
+			'tsumego' => [
+				'set_order' => 1,
+				'status' => ['name' => 'S', 'mistake_training_due' => date('Y-m-d H:i:s', strtotime('-1 day')), 'mistake_training_rung' => 3],
+			],
+		]);
+
+		$browser = Browser::instance();
+		$browser->get('mistake-training');
+		$browser->waitForBoard();
+		$shown = 'return [besogo.playerColor, besogo.boardInverted, besogo.boardParameters.corner].join("|");';
+		$before = $browser->driver->executeScript($shown);
+		$browser->driver->executeScript('window.pageBeforeReset = true;');
+		for ($try = 0; $try < 5; $try++)
+		{
+			$browser->playWithResult('F');
+			$browser->clickId('besogo-reset-button');
+			$this->assertSame($before, $browser->driver->executeScript($shown), 'The colours and the corner stay after reset ' . ($try + 1));
+		}
+		$this->assertTrue((bool) $browser->driver->executeScript('return window.pageBeforeReset === true;'), 'No reset loaded the page again');
+	}
+
+	//The tries after Reset count as the tries of a reloaded page did: every fail is sent (the first miss of the day
+	//is the one the ladder counts), a reset with nothing lost sends nothing, and the solve after the
+	//mistakes is sent as a clean one of its own try.
+	public function testEachTryAfterResetInTheTrainingIsAFreshOne()
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'testuser'],
+			'tsumego' => [
+				'set_order' => 1,
+				'status' => ['name' => 'S', 'mistake_training_due' => date('Y-m-d H:i:s', strtotime('-1 day')), 'mistake_training_rung' => 3],
+			],
+		]);
+		$userId = (int) $context->user['id'];
+		$tsumegoId = (int) $context->tsumegos[0]['id'];
+
+		$browser = Browser::instance();
+		$browser->get('mistake-training');
+		//the outcomes the page sends, in order
+		$browser->driver->executeScript(<<<'JS'
+			window.sentOutcomes = [];
+			let send = window.fetch;
+			window.fetch = function (input, init) {
+				if (String(input).includes('/tsumegos/result'))
+					window.sentOutcomes.push(JSON.parse(init.body).outcome);
+				return send.apply(window, arguments);
+			};
+			JS);
+		$browser->playWithResult('F');
+		$browser->clickId('besogo-reset-button');
+		$browser->playWithResult('F');
+		$browser->clickId('besogo-reset-button');
+		//a reset with nothing played sends nothing
+		$browser->clickId('besogo-reset-button');
+		$browser->playWithResult('S');
+
+		$this->assertSame([PlayOutcome::Failed->value, PlayOutcome::Failed->value, PlayOutcome::SolvedClean->value],
+			$browser->driver->executeScript('return window.sentOutcomes;'), 'Each fail is sent, and the solve is a clean one of its own try');
+		$row = MistakeTraining::getPoolRow($userId, $tsumegoId);
+		$this->assertSame(0, (int) $row['rung'], 'The mistakes of the day took the problem to the bottom');
+		$this->assertSame(MistakeTraining::REVIEW_SOLVED, $row['last_mistake_training_result_id']);
+		$this->assertFalse(MistakeTraining::isDue($userId, $tsumegoId), 'The solve finishes the problem for today');
+	}
+
+	//A problem solved on the page is done for today, so Reset after the solve starts a replay: the page says so, as it
+	//does when the problem is opened again, offers the problem outside the training, and the review closes until the
+	//replay is solved. The replay changes nothing in the training.
+	public function testResetAfterASolveInTheTrainingIsAReplay()
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'testuser'],
+			'tsumego' => [
+				'set_order' => 1,
+				'status' => ['name' => 'S', 'mistake_training_due' => date('Y-m-d H:i:s', strtotime('-1 day')), 'mistake_training_rung' => 3],
+			],
+		]);
+		$userId = (int) $context->user['id'];
+		$tsumegoId = (int) $context->tsumegos[0]['id'];
+		$setConnectionId = $context->tsumegos[0]['set-connections'][0]['id'];
+
+		$browser = Browser::instance();
+		$browser->get('mistake-training');
+		$this->assertFalse($browser->find('.mistake-training-replay')->isDisplayed(), 'A problem that is due is no replay');
+		$browser->playWithResult('S');
+		$rowAfterSolve = MistakeTraining::getPoolRow($userId, $tsumegoId);
+		$this->assertCount(1, $browser->driver->findElements(WebDriverBy::id('besogo-review-button')), 'The solve opens the review');
+
+		$browser->clickId('besogo-reset-button');
+		$this->assertTrue($browser->find('.mistake-training-replay')->isDisplayed(), 'The next try is a replay, and the page says so');
+		$this->assertStringContainsString('Already solved today. This try does not count.', $browser->find('.mistake-training-replay')->getText());
+		$this->assertStringEndsWith('/' . $setConnectionId, (string) $browser->find('#mistake-training-normal-view')->getAttribute('href'),
+			'It offers the problem outside the training');
+		$this->assertCount(1, $browser->driver->findElements(WebDriverBy::id('besogo-review-button-inactive')), 'The review closes for the replay');
+
+		$browser->playWithResult('F');
+		$browser->clickId('besogo-reset-button');
+		$browser->playWithResult('S');
+		$this->assertCount(1, $browser->driver->findElements(WebDriverBy::cssSelector('#mistake-training-normal-view')), 'The link is offered once');
+		$this->assertEquals($rowAfterSolve, MistakeTraining::getPoolRow($userId, $tsumegoId), 'The replay changes nothing in the training');
+		$browser->assertNoJsErrors();
 	}
 
 	public function testSkipsDeletedTsumegos()
