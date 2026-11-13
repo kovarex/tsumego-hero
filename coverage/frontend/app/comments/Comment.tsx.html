@@ -253,9 +253,7 @@
 <a name='L188'></a><a href='#L188'>188</a>
 <a name='L189'></a><a href='#L189'>189</a>
 <a name='L190'></a><a href='#L190'>190</a>
-<a name='L191'></a><a href='#L191'>191</a>
-<a name='L192'></a><a href='#L192'>192</a>
-<a name='L193'></a><a href='#L193'>193</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L191'></a><a href='#L191'>191</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -430,14 +428,12 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -584,57 +580,55 @@ export function Comment({
 	return (
 		&lt;div className={`tsumego-comment${canDrag ? ' tsumego-comment--draggable' : ''}`} data-comment-id={comment.id}&gt;
 			&lt;div className="sandboxComment"&gt;
-				&lt;table className="sandboxTable2" width="100%"&gt;
-					&lt;tr&gt;
-						{canDrag &amp;&amp; (
-							&lt;td className="tsumego-comment__drag-handle-cell"&gt;
-								&lt;span className="tsumego-comment__drag-handle" title="Drag to move comment"&gt;
-									☰
-								&lt;/span&gt;
-							&lt;/td&gt;
+				&lt;div className="tsumego-comment__body"&gt;
+					{canDrag &amp;&amp; (
+						&lt;div className="tsumego-comment__drag-handle-cell"&gt;
+							&lt;span className="tsumego-comment__drag-handle" title="Drag to move comment"&gt;
+								☰
+							&lt;/span&gt;
+						&lt;/div&gt;
+					)}
+					&lt;div&gt;
+						&lt;div className={commentColorClass}&gt;
+							&lt;span className="tsumego-comment__author"&gt;
+								&lt;UserLink
+									userId={comment.user_id}
+									name={comment.user_display_name}
+									avatarUrl={comment.user_avatar_url}
+									rating={comment.user_rating}
+								/&gt;
+								:
+							&lt;/span&gt;
+							&lt;br /&gt;
+							&lt;span className="comment__text"&gt;{commentContent}&lt;/span&gt;
+						&lt;/div&gt;
+					&lt;/div&gt;
+					&lt;div className="sandboxTable2time"&gt;
+						&lt;time className="tsumego-comment__date" dateTime={comment.created}&gt;
+							{formatDate(comment.created)}
+						&lt;/time&gt;
+						{comment.position &amp;&amp; (
+							&lt;button
+								type="button"
+								className="tsumego-comment__position-label"
+								onClick={navigateToPosition}
+								title="Go to this position on the board"
+							&gt;
+								📌{anchoredMoveNumber ? ` Move ${anchoredMoveNumber}` : <span class="branch-1 cbranch-no" title="branch not covered" >' Position'}</span>
+							&lt;/button&gt;
 						)}
-						&lt;td&gt;
-							&lt;div className={commentColorClass}&gt;
-								&lt;span className="tsumego-comment__author"&gt;
-									&lt;UserLink
-										userId={comment.user_id}
-										name={comment.user_display_name}
-										avatarUrl={comment.user_avatar_url}
-										rating={comment.user_rating}
-									/&gt;
-									:
-								&lt;/span&gt;
-								&lt;br /&gt;
-								&lt;span className="comment__text"&gt;{commentContent}&lt;/span&gt;
-							&lt;/div&gt;
-						&lt;/td&gt;
-						&lt;td align="right" className="sandboxTable2time"&gt;
-							&lt;time className="tsumego-comment__date" dateTime={comment.created}&gt;
-								{formatDate(comment.created)}
-							&lt;/time&gt;
-							{comment.position &amp;&amp; (
-								&lt;button
-									type="button"
-									className="tsumego-comment__position-label"
-									onClick={navigateToPosition}
-									title="Go to this position on the board"
-								&gt;
-									📌{anchoredMoveNumber ? ` Move ${anchoredMoveNumber}` : <span class="branch-1 cbranch-no" title="branch not covered" >' Position'}</span>
-								&lt;/button&gt;
-							)}
-							{canDelete &amp;&amp; (
-								&lt;button className="deleteComment" onClick={() =&gt; onDelete(comment.id)}&gt;
-									Delete
-								&lt;/button&gt;
-							)}
-							{canMakeIssue &amp;&amp; (
-								&lt;button className="btn btn--small" onClick={<span class="fstat-no" title="function not covered" >() =&gt; <span class="cstat-no" title="statement not covered" >o</span>nMakeIssue(comment.id)}&gt;</span>
-									📋 Make Issue
-								&lt;/button&gt;
-							)}
-						&lt;/td&gt;
-					&lt;/tr&gt;
-				&lt;/table&gt;
+						{canDelete &amp;&amp; (
+							&lt;button className="deleteComment" onClick={() =&gt; onDelete(comment.id)}&gt;
+								Delete
+							&lt;/button&gt;
+						)}
+						{canMakeIssue &amp;&amp; (
+							&lt;button className="btn btn--small" onClick={<span class="fstat-no" title="function not covered" >() =&gt; <span class="cstat-no" title="statement not covered" >o</span>nMakeIssue(comment.id)}&gt;</span>
+								📋 Make Issue
+							&lt;/button&gt;
+						)}
+					&lt;/div&gt;
+				&lt;/div&gt;
 			&lt;/div&gt;
 		&lt;/div&gt;
 	);
@@ -646,7 +640,7 @@ export function Comment({
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-11-13T11:06:40.405Z
+                at 2026-11-13T11:37:07.547Z
             </div>
         <script src="../../prettify.js"></script>
         <script>
