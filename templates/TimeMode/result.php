@@ -33,26 +33,23 @@ use App\Utility\ViteManifest;
 		</div>
 		</label>
 	<?php endif; ?>
-	<table class="timeModeTable">
+	<div class="timeModeTable">
 	<?php foreach ($sessionsToShow as $categoryToShow): ?>
 		<?php foreach ($categoryToShow as $rankToShow):
 			$isOpen = isset($rankToShow['current']);
 			// the row of the rank is the best run, or the run just finished when it has no other
 			$headerSession = $rankToShow['best'] ?? $rankToShow['current'];
 		?>
-		<tr>
-			<td>
+		<div class="time-result__rank-block">
 				<div class="tScoreTitle <?php echo $headerSession['status'] == 'passed' ? 'tScoreTitle1' : 'tScoreTitle2'; ?>" id="title<?php echo $headerSession['id']; ?>">
-					<table class="timeModeTable2">
-						<tr>
-							<td class="time-result__category"><?php echo $headerSession['category']; ?></td>
-							<td class="time-result__rank"><?php echo $headerSession['rank']; ?></td>
-							<td class="time-result__status"><b><?php echo $headerSession['status']; ?></b></td>
-							<td class="time-result__points"><?php echo $headerSession['points']; ?> points</td>
-							<td class="timeModeTable2td"><time datetime="<?php echo Util::toIso8601($headerSession['created']); ?>" data-format="datetime"><?php echo $headerSession['created']; ?></time></td>
-							<td class="time-result__arrow timeModeTable2td"><img class="rankArrow" src="<?php echo $isOpen ? $rankArrowOpened : $rankArrowClosed; ?>"></td>
-						</tr>
-					</table>
+					<div class="timeModeTable2">
+							<span class="time-result__category"><?php echo $headerSession['category']; ?></span>
+							<span class="time-result__rank"><?php echo $headerSession['rank']; ?></span>
+							<span class="time-result__status"><b><?php echo $headerSession['status']; ?></b></span>
+							<span class="time-result__points"><?php echo $headerSession['points']; ?> points</span>
+							<span class="timeModeTable2td"><time datetime="<?php echo Util::toIso8601($headerSession['created']); ?>" data-format="datetime"><?php echo $headerSession['created']; ?></time></span>
+							<span class="time-result__arrow timeModeTable2td"><img class="rankArrow" src="<?php echo $isOpen ? $rankArrowOpened : $rankArrowClosed; ?>" alt=""></span>
+					</div>
 				</div>
 				<div class="timeModeTable3" style="display: <?php echo $isOpen ? '' : 'none'; ?>;" id="results_<?php echo $headerSession['category']; ?>_<?php echo $headerSession['rank']; ?>">
 					<table class="scoreTable time-result__runs">
@@ -83,11 +80,10 @@ use App\Utility\ViteManifest;
 					<?php endif; ?>
 					</table>
 				</div>
-			</td>
-		</tr>
+		</div>
 		<?php endforeach; ?>
 	<?php endforeach; ?>
-	</table>
+	</div>
 	<br>
 	</div>
 	<?php echo ViteManifest::legacyScript('time-mode'); ?>
