@@ -153,15 +153,6 @@
 		padding: 3px;
 	}
 
-	li a
-	{
-		display: block;
-		color: var(--color-white);
-		text-align: center;
-		padding: 5px 5px;
-		text-decoration: none;
-	}
-
 	ul
 	{
 		list-style-type: none;
@@ -169,11 +160,10 @@
 		padding: 0;
 	}
 
-	/* The items of the old menus sit side by side; a list that wants them stacked says so in its own rule */
-	li
+	/* An ordered list keeps its indent but no numbers: the site's ol are filled by its scripts */
+	ol
 	{
 		list-style-type: none;
-		float: left;
 	}
 
 	/* FormHelper (CakePHP) element defaults. The design-system form styling

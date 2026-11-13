@@ -454,8 +454,16 @@ input.newCheck {
   cursor: pointer;
   display: none;
 }
+.account-menu__item li {
+  float: left;
+  list-style: none;
+}
 .account-menu__item li a {
+  display: block;
+  padding: 5px;
   color: var(--color-green);
+  text-align: center;
+  text-decoration: none;
 }
 .account-menu__item--first {
   border-top: none;
