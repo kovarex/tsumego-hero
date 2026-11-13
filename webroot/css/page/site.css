@@ -49,6 +49,14 @@ body {
   box-shadow: 10px 10px 15px var(--color-black);
   border-radius:10px;
 }
+/* On a phone the page runs edge to edge: no frame, corners or shadow eating the narrow width */
+@media (width < 40rem) {
+  .whitebox2 {
+    border-width: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+}
 .loader-container {
   display: none;
   position: absolute;
