@@ -39,3 +39,19 @@ the export is; `RESULTS` and `REPORT_DIR` do the same for `build_report.py`.
 - `gen_trees.py`, `gen_status.py`, `inject_eval.py`: trees with planted errors, to test the pipeline.
 - `build_report.py`, `report_body.html`, `report_style.html`: the research report.
 - `export-problems.sh`: the read-only export of the current version of every problem.
+- `probe_leaf.py`, `tally_status.py`: one leaf's verdict as `status_eval.py` computes it; the tallies of a status run
+  (disagreement pairs, ko signs).
+- `status_examples.py`, `status_examples_style.html`: the review page of the status leaves the solver disagrees with.
+- `evidence.py`: everything about one position of a status problem, for checking a disagreement by hand: the tree's
+  leaves, the boards with the search area, the solver's verdict in both areas, a one-move table, ko tables.
+
+## Disagreement research
+
+Every leaf where the solver and the tree disagree, checked by an analyst agent that reads the position with the
+solver as a calculator, then by reviewers who try to refute each verdict (`research/BRIEF.md`, `research/workflow.js`).
+
+```sh
+python3 research/make_cases.py 'status.*.jsonl' problems.jsonl cases.json
+PROBLEMS=problems.jsonl python3 research/precompute.py cases.json evidence 0 1
+PROBLEMS=problems.jsonl python3 research/render_research.py results.json research.html
+```
