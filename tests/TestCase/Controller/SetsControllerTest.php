@@ -862,7 +862,7 @@ class SetsControllerTest extends IntegrationTestCase
 
 		$this->get(SetTable::url($setId));
 		$dom = $this->getStringDom();
-		$pageLinks = array_map(fn($node) => $node->textContent, iterator_to_array($dom->querySelectorAll('.pagination a, .pagination strong')));
+		$pageLinks = array_map(fn($node) => $node->textContent, iterator_to_array($dom->querySelectorAll('.pagination .pagination__link')));
 		$this->assertSame(['1', '2'], $pageLinks);
 		$this->assertCount(10, $dom->querySelectorAll('.problem-nav__number'));
 

@@ -281,9 +281,9 @@ if ($totalPages > 1):
 	<div class="pagination">
 <?php for ($page = 1; $page <= $totalPages; $page++): ?>
 <?php if ($page === $currentPage): ?>
-		<strong><?php echo $page; ?></strong>
+		<span class="pagination__link pagination__link--active" aria-current="page"><?php echo $page; ?></span>
 <?php else: ?>
-			<a href="<?php echo SetTable::url($set->id, $page); ?>"><?php echo $page; ?></a>
+		<a class="pagination__link" href="<?php echo SetTable::url($set->id, $page); ?>"><?php echo $page; ?></a>
 <?php endif; ?>
 <?php endfor; ?>
 	</div>

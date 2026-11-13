@@ -33,7 +33,7 @@ $viewerSeesEverything = Auth::getUserID() === $userID || Auth::isAdmin();
 
 $tabs = [
 	'profile' => ['url' => '/users/view/' . $userID, 'label' => 'Profile'],
-	'solveHistory' => ['url' => '/users/solveHistory/' . $userID, 'label' => 'Solve History'],
+	'solveHistory' => ['url' => '/users/solveHistory/' . $userID, 'label' => 'Solve history'],
 	'contributions' => [
 		'url' => '/tags/user/' . $userID,
 		'label' => 'Contributions',

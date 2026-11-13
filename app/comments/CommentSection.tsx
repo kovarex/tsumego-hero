@@ -21,15 +21,15 @@ function openTabText(counts: CommentCounts): string
 {
 	const parts = [];
 	if (counts.comments > 0)
-		parts.push(`${counts.comments} COMMENT${counts.comments > 1 ? 'S' : ''}`);
+		parts.push(`${counts.comments} comment${counts.comments > 1 ? 's' : ''}`);
 	if (counts.openIssues > 0)
-		parts.push(`🔴 ${counts.openIssues} OPEN ISSUE${counts.openIssues > 1 ? 'S' : ''}`);
-	return parts.length > 0 ? parts.join(' ') : 'COMMENTS';
+		parts.push(`🔴 ${counts.openIssues} open issue${counts.openIssues > 1 ? 's' : ''}`);
+	return parts.length > 0 ? parts.join(' ') : 'Comments';
 }
 
 function closedTabText(closedCount: number): string
 {
-	return closedCount === 0 ? 'CLOSED ISSUES' : `${closedCount} CLOSED ISSUE${closedCount > 1 ? 'S' : ''}`;
+	return closedCount === 0 ? 'Closed issues' : `${closedCount} closed issue${closedCount > 1 ? 's' : ''}`;
 }
 
 interface CommentSectionProps

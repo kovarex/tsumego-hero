@@ -449,9 +449,6 @@
 		--training-day-trained: #b3e29b;
 		--training-day-cleared: #3b9b2a;
 		--training-day-missed: #d1242f;
-		--paginator-button-text-color: #333;
-		--active-paginator-button-background-color: #333;
-		--active-paginator-button-text-color: #fff;
 		--paginator-info-text-color: #666;
 
 		/* Pages that look different in the dark theme: the light value here, the dark one below */
@@ -506,16 +503,7 @@
 		/* Comments and issues under a problem (comments.css): the light value here, the dark one below */
 		--comment-coord-white: rgba(0, 0, 0, 0.04);
 		--comment-coord-hover: rgba(30, 107, 184, 0.2);
-		--comment-tab-background: var(--surface-bar);
-		--comment-tab-border: var(--current-border-color);
-		--comment-tab-text: currentColor;
-		--comment-tab-active-background: var(--text-softer-color);
-		--comment-tab-active-border: var(--text-softer-color);
-		--comment-tab-active-text: var(--color-white);
-		--comment-tab-hover-background: var(--surface-hover);
-		--comment-tab-empty-background: var(--info-box-background);
 		--comment-tab-empty-text: var(--text-softer-color);
-		--comment-tab-empty-border: var(--current-border-color);
 		--comment-form-background: var(--surface-bar);
 		--comment-form-muted: currentColor;
 		--comment-textarea-border: var(--current-border-color);
@@ -534,7 +522,6 @@
 		--issue-reply-form-background: var(--surface-bar);
 		--issue-reply-form-border: var(--surface-hover);
 		--issue-reply-textarea-background: var(--surface-bar);
-		--issues-filter-text: var(--text-color);
 		--issues-empty-text: currentColor;
 	}
 
@@ -574,9 +561,6 @@
 		--training-day-trained: #2c5a22;
 		--training-day-cleared: #5cc23d;
 		--training-day-missed: #f85149;
-		--paginator-button-text-color: #ccc;
-		--active-paginator-button-background-color: #ccc;
-		--active-paginator-button-text-color: #000;
 		--paginator-info-text-color: #999;
 
 		--board-red-glow: 0 2px 14px 0 rgb(225, 34, 34), 0 6px 20px 0 rgba(253, 59, 59, 0.58);
@@ -636,16 +620,7 @@
 
 		--comment-coord-white: rgba(255, 255, 255, 0.12);
 		--comment-coord-hover: rgba(109, 179, 242, 0.25);
-		--comment-tab-background: var(--surface-hover);
-		--comment-tab-border: var(--surface-hover-strong);
-		--comment-tab-text: var(--text-color);
-		--comment-tab-active-background: var(--surface-hover-strong);
-		--comment-tab-active-border: var(--surface-hover-strong);
-		--comment-tab-active-text: var(--text-color);
-		--comment-tab-hover-background: var(--surface-hover-strong);
-		--comment-tab-empty-background: var(--surface-hover);
 		--comment-tab-empty-text: #b3b3b3; /* 5.4:1 on the tab, 4.6:1 under the pointer */
-		--comment-tab-empty-border: var(--surface-hover-strong);
 		--comment-form-background: var(--surface-hover);
 		--comment-form-muted: var(--text-softer-color);
 		--comment-textarea-border: var(--surface-hover-strong);
@@ -664,7 +639,6 @@
 		--issue-reply-form-background: var(--surface-border-strong);
 		--issue-reply-form-border: var(--surface-hover-strong);
 		--issue-reply-textarea-background: var(--info-box-background);
-		--issues-filter-text: var(--text-softer-color);
 		--issues-empty-text: var(--text-softer-color);
 	}
 }

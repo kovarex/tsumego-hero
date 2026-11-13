@@ -12,7 +12,7 @@ use App\Utility\Constants;
 #[RetryOnBrowserFailure]
 class ButtonContrastBrowserTest extends IntegrationTestCase
 {
-	private const string BUTTONS = '.btn, button, input[type=submit], input[type=button], summary, .subnav__link, .dropdown__tile, .pagination__link, .chart__legend-item';
+	private const string BUTTONS = '.btn, button, input[type=submit], input[type=button], summary, .subnav__link, .dropdown__tile, .pagination__link, .chart__legend-item, .range-chart__range, .issues-filter, .tsumego-comments__tab, .tsumego-comments__anchor-btn';
 
 	//Tags the buttons shown with data-contrast and returns how many there are
 	private const string PREPARE = <<<'JS'
@@ -71,7 +71,7 @@ class ButtonContrastBrowserTest extends IntegrationTestCase
 	private const string LOOK = <<<'JS'
 		const el = document.querySelector('[data-contrast="' + arguments[0] + '"]');
 		if (el.disabled || el.getAttribute('aria-disabled') === 'true' || el.classList.contains('btn--disabled') || /-inactive$/.test(el.id)
-			|| el.classList.contains('is-selected') || el.getAttribute('aria-current') === 'page' || el.classList.contains('subnav__link--active') || el.classList.contains('active'))
+			|| el.classList.contains('is-selected') || el.getAttribute('aria-current') === 'page' || el.classList.contains('subnav__link--active') || el.classList.contains('active') || [...el.classList].some(c => c.endsWith('--active')))
 			return null;
 		const look = n => { const s = getComputedStyle(n); return [s.backgroundColor, s.backgroundImage, s.color, s.borderTopColor, s.borderBottomColor, s.textDecorationLine, s.boxShadow, s.outlineStyle, s.transform, s.opacity].join('|'); };
 		return [el, ...el.querySelectorAll('*')].map(look).join(';');
@@ -112,7 +112,9 @@ class ButtonContrastBrowserTest extends IntegrationTestCase
 			'settings' => ['/users/settings', null],
 			'highscore' => ['/users/highscore', null],
 			'friends' => ['/friends', null],
-			'challenges' => ['/challenges', null]];
+			'challenges' => ['/challenges', null],
+			'profile' => ['/users/view/' . $context->user['id'], null],
+			'issues' => ['/tsumego-issues', null]];
 		foreach ($pages as $name => $page)
 			$failures = array_merge($failures, $this->failuresOf($browser, $name, $page[0], $page[1], $theme, $page[2] ?? null));
 		Auth::logout();
