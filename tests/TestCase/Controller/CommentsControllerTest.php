@@ -364,6 +364,24 @@ class CommentsControllerTest extends IntegrationTestCase
 			'var current = besogo.editor.getCurrent(); return {x: current.move.x, y: current.move.y, localEdit: current.localEdit};'));
 	}
 
+	//Clicking the pin opens the review so the tree shows which branch the position is on, with its node current.
+	public function testPositionButtonOpensTheReviewTree()
+	{
+		$browser = Browser::instance();
+		$this->openSolvedTsumego($browser, [
+			'sgf' => self::SOLVED_SGF,
+			'comments' => [['message' => 'anchored note', 'position' => '1/2/1/1/2/1/2/1/sgf|1/1+1/2']]], self::STORED_BOARD);
+		$browser->expandComments();
+		$this->assertFalse($browser->driver->executeScript('return besogo.editor.getReviewMode();'), 'the review starts closed');
+
+		$browser->find('.tsumego-comment__position-label')->click();
+		$browser->waitUntilJs('besogo.editor.getReviewMode() && besogo.editor.getCurrent().moveNumber === 2');
+		//the tree panel shows and the anchored node is the current one
+		$this->assertTrue($browser->find('.besogo-tree')->isDisplayed(), 'the review tree is visible');
+		$this->assertNotSame('none', $browser->driver->executeScript(
+			'return getComputedStyle(document.querySelector(".besogo-panels")).display;'), 'the review panels are shown');
+	}
+
 	//When the tree changed since the comment was written, its moves are played again on the board.
 	public function testPositionButtonPlaysMovesNoLongerInTheTree()
 	{
