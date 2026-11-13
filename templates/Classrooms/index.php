@@ -22,7 +22,7 @@ $classes = $memberships[ClassroomMemberStatusTable::ACCEPTED];
 
 	<?php if (!empty($invitations)): ?>
 	<section class="card card--green classes__section" id="classes-invitations">
-		<h2 class="classes__heading">Invitations</h2>
+		<h2 class="card__title classes__heading">Invitations</h2>
 		<?php foreach ($invitations as $invitation): ?>
 		<div class="classes__row">
 			<span><?= UserTable::renderLink($invitation) ?> invites you to <a href="/classes/<?= (int) $invitation['classroom_id'] ?>"><?= h($invitation['name']) ?></a></span>
@@ -36,7 +36,7 @@ $classes = $memberships[ClassroomMemberStatusTable::ACCEPTED];
 	<?php endif; ?>
 
 	<section class="card classes__section" id="classes-joined">
-		<h2 class="classes__heading">Classes you are in</h2>
+		<h2 class="card__title classes__heading">Classes you are in</h2>
 		<?php if (empty($classes)): ?>
 		<p class="hint">None yet. To join a class, open the link your teacher sends you and ask to join, or accept an invitation from your teacher.</p>
 		<?php endif; ?>
@@ -58,7 +58,7 @@ $classes = $memberships[ClassroomMemberStatusTable::ACCEPTED];
 	</section>
 
 	<section class="card card--purple classes__section" id="classes-taught">
-		<h2 class="classes__heading">Classes you teach</h2>
+		<h2 class="card__title classes__heading">Classes you teach</h2>
 		<?php foreach ($taught as $class): ?>
 		<div class="classes__row">
 			<span><a href="/classes/<?= $class['id'] ?>"><?= h($class['name']) ?></a></span>
@@ -82,7 +82,7 @@ $classes = $memberships[ClassroomMemberStatusTable::ACCEPTED];
 
 	<section class="card classes__section" id="classes-print">
 		<div class="classes__section-header">
-			<h2 class="classes__heading">Problems on paper</h2>
+			<h2 class="card__title classes__heading">Problems on paper</h2>
 			<a class="btn btn--neutral" href="/print">Print problems</a>
 		</div>
 		<p class="hint">Pick problems the same way as for a class and print them, with an answer key if you like.</p>

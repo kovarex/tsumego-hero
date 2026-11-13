@@ -53,7 +53,7 @@ $isPupil = $membershipStatus === ClassroomMemberStatusTable::ACCEPTED;
 	<?php if ($isTeacher || $isPupil): ?>
 	<section class="classes__section" id="classes-assignments">
 		<div class="classes__section-header">
-			<h2 class="classes__heading">Assignments</h2>
+			<h2 class="card__title classes__heading">Assignments</h2>
 			<?php if ($isTeacher): ?>
 			<form method="post" action="/classes/create-assignment/<?= $classroomId ?>">
 				<button class="btn btn--primary" type="submit" id="new-assignment">New assignment</button>
@@ -78,7 +78,7 @@ $isPupil = $membershipStatus === ClassroomMemberStatusTable::ACCEPTED;
 
 	<?php if ($isTeacher): ?>
 	<section class="card card--purple classes__section" id="classes-pupils">
-		<h2 class="classes__heading">Pupils</h2>
+		<h2 class="card__title classes__heading">Pupils</h2>
 		<?php foreach ($members[ClassroomMemberStatusTable::REQUESTED] as $member): ?>
 		<div class="classes__row classes__row--request">
 			<span><?= UserTable::renderLink($member) ?> <span class="hint">asks to join</span></span>

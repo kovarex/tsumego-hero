@@ -24,7 +24,7 @@ $date = fn(string $datetime): string => '<time datetime="' . Util::toIso8601($da
 <div class="friends">
 	<?php if (!empty($lists['requestsToMe'])): ?>
 	<section class="card card--green friends__section" id="friend-requests">
-		<h2 class="friends__heading">Asking to be your friend</h2>
+		<h2 class="card__title friends__heading">Asking to be your friend</h2>
 		<?php foreach ($lists['requestsToMe'] as $request): ?>
 		<div class="friends__row">
 			<span><?= UserTable::renderLink($request) ?> <span class="hint">since <?= $date($request['created']) ?></span></span>
@@ -38,7 +38,7 @@ $date = fn(string $datetime): string => '<time datetime="' . Util::toIso8601($da
 	<?php endif; ?>
 
 	<section class="card friends__section" id="friends-list">
-		<h2 class="friends__heading">Friends</h2>
+		<h2 class="card__title friends__heading">Friends</h2>
 		<?php if (empty($lists['friends'])): ?>
 		<p class="hint">None yet. To ask a player to be your friend, open their profile and press Add friend. Once they accept, the homepage shows you what your friends did lately, and shows them what you did.</p>
 		<?php endif; ?>
@@ -55,7 +55,7 @@ $date = fn(string $datetime): string => '<time datetime="' . Util::toIso8601($da
 
 	<?php if (!empty($lists['requestsFromMe'])): ?>
 	<section class="card friends__section" id="friend-requests-sent">
-		<h2 class="friends__heading">Waiting for their answer</h2>
+		<h2 class="card__title friends__heading">Waiting for their answer</h2>
 		<?php foreach ($lists['requestsFromMe'] as $request): ?>
 		<div class="friends__row">
 			<span><?= UserTable::renderLink($request) ?> <span class="hint">asked <?= $date($request['created']) ?></span></span>

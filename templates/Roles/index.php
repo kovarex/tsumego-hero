@@ -6,7 +6,7 @@
  */
 ?>
 <div class="roles">
-	<h1 class="title4">Admins and owners</h1>
+	<h1 class="page-title">Admins and owners</h1>
 	<p>An admin edits the problems and collections and decides the proposals. An owner can do everything an admin can, and decides who is an admin or an owner. To give someone a role, use the role box on their profile.</p>
 
 	<table class="data-table data-table--compact" id="roles-users">

@@ -20,7 +20,7 @@ $renderRestore = fn(string $action, string $id): string
 		. '<button type="submit" class="btn btn--small" id="' . $id . '">Restore</button></form></td>';
 ?>
 <div class="trash">
-	<h1 class="title4">Trash</h1>
+	<h1 class="page-title">Trash</h1>
 	<p>Deleted problems and collections stay here for <?php echo Trash::$RETENTION_DAYS; ?> days, then they are removed for good, with everything that belongs to them.</p>
 
 	<table class="data-table data-table--compact" id="trash-sets">

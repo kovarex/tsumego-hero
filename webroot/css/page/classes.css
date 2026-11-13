@@ -36,15 +36,6 @@
 	padding: var(--space-4);
 }
 
-.classes__heading
-{
-	font-size: var(--text-sm);
-	text-transform: uppercase;
-	letter-spacing: 0.05em;
-	color: var(--text-softer-color);
-	margin: 0 0 var(--space-3);
-}
-
 .classes__row
 {
 	display: flex;

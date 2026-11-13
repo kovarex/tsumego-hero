@@ -81,15 +81,6 @@
 	padding: var(--space-4);
 }
 
-.challenges__heading
-{
-	font-size: var(--text-sm);
-	text-transform: uppercase;
-	letter-spacing: 0.05em;
-	color: var(--text-softer-color);
-	margin: 0 0 var(--space-3);
-}
-
 .challenges__form-row
 {
 	display: grid;

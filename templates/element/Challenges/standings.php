@@ -23,7 +23,7 @@ $challengeId = (int) $challenge['id'];
 $finishedCount = count(array_filter($standings, fn(array $row) => $row['run'] === ChallengeTable::RUN_FINISHED));
 $cellSymbols = ['failed' => '✗', 'timeout' => '⏱', 'skipped' => '–', 'queued' => ''];
 ?>
-		<h2 class="challenges__heading">Players</h2>
+		<h2 class="card__title challenges__heading">Players</h2>
 		<div class="challenges__table-wrapper">
 			<table class="result-grid challenges__table">
 				<thead>

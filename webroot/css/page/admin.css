@@ -75,9 +75,6 @@
   max-width: 800px;
   margin: 0 auto;
 }
-.admin-area .title4 {
-  margin-bottom: var(--space-3);
-}
 .admin-area--wide {
   max-width: none;
 }

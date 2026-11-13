@@ -194,10 +194,10 @@
 }
 
 /* ── Mistake training ── */
+/* A green .card */
 .training-overview
 {
 	margin: 0 var(--space-1) var(--space-4);
-	border: 3px solid var(--color-green);
 	padding: var(--space-3) var(--space-4);
 	min-width: 0;
 	color: var(--text-color);
@@ -372,15 +372,6 @@
 {
 	margin-bottom: var(--space-4);
 	padding: var(--space-4);
-}
-
-.friends__heading
-{
-	font-size: var(--text-sm);
-	text-transform: uppercase;
-	letter-spacing: 0.05em;
-	color: var(--text-softer-color);
-	margin: 0 0 var(--space-3);
 }
 
 .friends__row
