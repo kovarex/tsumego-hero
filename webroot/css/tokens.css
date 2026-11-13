@@ -431,9 +431,10 @@
 		--chart-tooltip-text-color: #fff;
 		--color-surface-sunken: #f5f5f5;
 		--dark-button-icon: url("/img/light-icon1x.png");
-		--new1-gradient: linear-gradient(#fff, #f2f2f2);
+		/* A card: its body on the surface, its header a flat band a step darker */
+		--card-body-background: var(--color-surface);
 		--surface-button-neutral-hover: #d6d6d6;
-		--title4-gradient: linear-gradient(#e1e1e1, #bdbdbd);
+		--card-header-background: #ebebeb;
 		--body-background-gradient: linear-gradient(#282828, #424141);
 		--status-s-color: #3ecf78;
 		--status-c-color: #27ae60;
@@ -549,9 +550,9 @@
 		--chart-separator-color: #2a2a2a;
 		--color-surface-sunken: #303030;
 		--dark-button-icon: url("/img/dark-icon1.png");
-		--new1-gradient: linear-gradient(#3c3c3c, #2a2a2a);
+		--card-body-background: var(--color-surface);
 		--surface-button-neutral-hover: #555;
-		--title4-gradient: linear-gradient(#737373, #4a4a4a);
+		--card-header-background: #3a3a3a;
 		--body-background-gradient: linear-gradient(#2a2a2a, #111);
 		--status-s-color: #0a4;
 		--status-c-color: #083;
