@@ -230,7 +230,8 @@ class MistakeTrainingControllerTest extends IntegrationTestCase
 		$this->get('/mistake-training/play/' . self::setConnectionId($context, 0));
 
 		$this->assertStringContainsString('Mistake Training 1/1', $this->view, 'A miss stays in today\'s training');
-		$this->assertStringNotContainsString('This try does not count', $this->view, 'Trying a missed problem again is its review');
+		//the note of a replay waits hidden, for a solve on the page
+		$this->assertStringContainsString('<div class="alert alert-info mistake-training-replay" role="status" hidden>', $this->view, 'Trying a missed problem again is its review');
 		$this->assertStringContainsString('problem-nav__item--N', $this->view, 'It stays grey until it is solved');
 	}
 
@@ -483,10 +484,10 @@ class MistakeTrainingControllerTest extends IntegrationTestCase
 			'The button shows the bottom rung the mistake took the problem to, ringed as missed');
 
 		$browser->driver->executeScript('window.pageBeforeReset = true;');
+		$urlBeforeReset = $browser->driver->getCurrentURL();
 		$browser->clickId('besogo-reset-button');
 		$this->assertTrue((bool) $browser->driver->executeScript('return window.pageBeforeReset === true;'), 'Reset does not load the page again');
-		$this->assertStringEndsWith(MistakeTraining::$PLAY_LINK_PREFIX . $context->tsumegos[0]['set-connections'][0]['id'], $browser->driver->getCurrentURL(),
-			'The problem stays on the training route');
+		$this->assertSame($urlBeforeReset, $browser->driver->getCurrentURL(), 'The problem stays on the training route');
 		$this->assertStringNotContainsString('Incorrect', $browser->find('#status')->getText(), 'Reset opens a fresh try');
 		$this->assertCount(0, $browser->driver->findElements(WebDriverBy::id('besogo-back-button-inactive')),
 			'The training has no Back, the problem buttons lead back');
