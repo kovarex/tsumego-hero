@@ -135,57 +135,55 @@ export function Comment({
 	return (
 		<div className={`tsumego-comment${canDrag ? ' tsumego-comment--draggable' : ''}`} data-comment-id={comment.id}>
 			<div className="sandboxComment">
-				<table className="sandboxTable2" width="100%">
-					<tr>
-						{canDrag && (
-							<td className="tsumego-comment__drag-handle-cell">
-								<span className="tsumego-comment__drag-handle" title="Drag to move comment">
-									☰
-								</span>
-							</td>
+				<div className="tsumego-comment__body">
+					{canDrag && (
+						<div className="tsumego-comment__drag-handle-cell">
+							<span className="tsumego-comment__drag-handle" title="Drag to move comment">
+								☰
+							</span>
+						</div>
+					)}
+					<div>
+						<div className={commentColorClass}>
+							<span className="tsumego-comment__author">
+								<UserLink
+									userId={comment.user_id}
+									name={comment.user_display_name}
+									avatarUrl={comment.user_avatar_url}
+									rating={comment.user_rating}
+								/>
+								:
+							</span>
+							<br />
+							<span className="comment__text">{commentContent}</span>
+						</div>
+					</div>
+					<div className="sandboxTable2time">
+						<time className="tsumego-comment__date" dateTime={comment.created}>
+							{formatDate(comment.created)}
+						</time>
+						{comment.position && (
+							<button
+								type="button"
+								className="tsumego-comment__position-label"
+								onClick={navigateToPosition}
+								title="Go to this position on the board"
+							>
+								📌{anchoredMoveNumber ? ` Move ${anchoredMoveNumber}` : ' Position'}
+							</button>
 						)}
-						<td>
-							<div className={commentColorClass}>
-								<span className="tsumego-comment__author">
-									<UserLink
-										userId={comment.user_id}
-										name={comment.user_display_name}
-										avatarUrl={comment.user_avatar_url}
-										rating={comment.user_rating}
-									/>
-									:
-								</span>
-								<br />
-								<span className="comment__text">{commentContent}</span>
-							</div>
-						</td>
-						<td align="right" className="sandboxTable2time">
-							<time className="tsumego-comment__date" dateTime={comment.created}>
-								{formatDate(comment.created)}
-							</time>
-							{comment.position && (
-								<button
-									type="button"
-									className="tsumego-comment__position-label"
-									onClick={navigateToPosition}
-									title="Go to this position on the board"
-								>
-									📌{anchoredMoveNumber ? ` Move ${anchoredMoveNumber}` : ' Position'}
-								</button>
-							)}
-							{canDelete && (
-								<button className="deleteComment" onClick={() => onDelete(comment.id)}>
-									Delete
-								</button>
-							)}
-							{canMakeIssue && (
-								<button className="btn btn--small" onClick={() => onMakeIssue(comment.id)}>
-									📋 Make Issue
-								</button>
-							)}
-						</td>
-					</tr>
-				</table>
+						{canDelete && (
+							<button className="deleteComment" onClick={() => onDelete(comment.id)}>
+								Delete
+							</button>
+						)}
+						{canMakeIssue && (
+							<button className="btn btn--small" onClick={() => onMakeIssue(comment.id)}>
+								📋 Make Issue
+							</button>
+						)}
+					</div>
+				</div>
 			</div>
 		</div>
 	);

@@ -291,8 +291,17 @@
 /* The text of a comment takes the card: the drag handle and the column of the date and the buttons only
    take what they need */
 /* The date wraps before its time and Make Issue onto two lines, so the column is about as wide as Delete */
-.sandboxTable2 td.sandboxTable2time {
-	width: 5rem;
+/* A comment of the play page: its text, and the column of its date and buttons on the right (with the
+   handle on the left when it can be dragged) */
+.tsumego-comment__body {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) 5rem;
+	align-items: start;
+}
+.tsumego-comment--draggable .tsumego-comment__body {
+	grid-template-columns: auto minmax(0, 1fr) 5rem;
+}
+.tsumego-comment__body > .sandboxTable2time {
 	padding-left: var(--space-2);
 }
 .sandboxTable2time > * {
@@ -314,9 +323,8 @@
 
 /* Drag handle on comments */
 
-.sandboxTable2 td.tsumego-comment__drag-handle-cell {
-	width: 1%;
-	vertical-align: middle;
+.tsumego-comment__drag-handle-cell {
+	align-self: center;
 	padding-right: var(--space-1);
 }
 .tsumego-comment__drag-handle {

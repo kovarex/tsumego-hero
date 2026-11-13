@@ -19,24 +19,8 @@
 #showx99 {
   display: none;
 }
-.sandboxTable2 {
-  width: 100%;
-  padding: 0;
-  margin: 0;
-}
-.sandboxTable2__comment {
-  width: 73%;
-}
 .sandboxTable2__heading {
   padding-bottom: 7px;
-}
-.sandboxTable2 tr {
-  padding: 0;
-  margin: 0;
-}
-.sandboxTable2 td {
-  padding: 0;
-  margin: 0;
 }
 .timeTableRight {
   border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
