@@ -154,7 +154,10 @@
 	width: 20px;
 	height: 20px;
 	margin: -2px 0;
-	fill: var(--color-orange-2);
+	/* The flame of the menu, edged in gold so the yellow holds on a white card */
+	fill: var(--color-streak-flame);
+	stroke: var(--color-gold);
+	stroke-width: 1px;
 	opacity: 0.45;
 }
 
