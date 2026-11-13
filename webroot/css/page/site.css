@@ -45,7 +45,6 @@ body {
   margin: auto;
   padding: 0;
   background-color: var(--info-box-background);
-  min-height: 700px;
   border: 2px solid var(--color-black);
   box-shadow: 10px 10px 15px var(--color-black);
   border-radius:10px;

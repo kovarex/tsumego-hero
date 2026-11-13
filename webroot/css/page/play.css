@@ -430,7 +430,6 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr) var(--play-panel);
   align-items: stretch;
-  min-height: 700px;
   text-align: left;
 }
 .play-screen__main {

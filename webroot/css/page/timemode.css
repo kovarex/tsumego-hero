@@ -99,13 +99,12 @@
 #timeMode3 {
   margin: 0 25px;
 }
-/* A category's rank buttons float; the box holds them (flow-root) and grows past its 900px when they need
-   more, so what follows - the footer - is never squeezed beside the last row of buttons */
+/* A category's rank buttons float; the box holds them (flow-root), so what follows - the footer - is
+   never squeezed beside the last row of buttons */
 #time-mode1,
 #time-mode2,
 #time-mode3 {
   display: flow-root;
-  min-height: 900px;
 }
 .timeModeIcons {
   position: relative;
