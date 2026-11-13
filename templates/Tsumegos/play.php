@@ -24,7 +24,7 @@ use App\Utility\ViteManifest;
  * @var bool $isSandbox
  * @var string $lightDark
  * @var int $maxHealth
- * @var bool $mistakeTrainingReplay Set by the training route: the problem was solved today already, so a try is a replay
+ * @var bool|null $mistakeTrainingReplay Set by the training route (null on any other): the problem was solved today already, so a try is a replay
  * @var \App\Model\Entity\Set $set
  * @var \App\Model\Entity\SetConnection $setConnection
  * @var array $setConnections
