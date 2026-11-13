@@ -169,15 +169,15 @@
    query cookie) and the matching button text/icon + border is colored. */
 .set-search-menu.query-topics #topics-button .set-button-text,
 .set-search-menu.query-topics #set-button-icon-topics .animate-icon {
-  color: var(--color-topic);
+  color: var(--set-filter-topic);
 }
 .set-search-menu.query-difficulty #difficulty-button .set-button-text,
 .set-search-menu.query-difficulty #set-button-icon-difficulty .animate-icon {
-  color: var(--color-difficulty);
+  color: var(--set-filter-difficulty);
 }
 .set-search-menu.query-tags #tags-button .set-button-text,
 .set-search-menu.query-tags #set-button-icon-tags .animate-icon {
-  color: var(--color-tag);
+  color: var(--set-filter-tag);
 }
 .set-search-menu.query-topics #topics-button {
   border: 1px solid var(--color-tile-green);
@@ -255,21 +255,21 @@
   border: 1px solid var(--surface-near-black);
 }
 #tile-topics-submit {
-  color: var(--color-topic);
+  color: var(--set-filter-topic);
   border: 1px solid var(--color-tile-green);
 }
 #tile-difficulty-submit {
   border: 1px solid var(--color-tile-purple);
-  color: var(--color-difficulty);
+  color: var(--set-filter-difficulty);
 }
 #tile-tags-submit {
   border: 1px solid var(--color-tile-brown);
-  color: var(--color-tag);
+  color: var(--set-filter-tag);
 }
 #tags-button:hover,
 #difficulty-button:hover,
 #topics-button:hover {
-  background: var(--surface-border-strong);
+  background: var(--set-filter-hover-background);
 }
 .set-index {
   display: flex;

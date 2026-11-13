@@ -59,7 +59,7 @@
 	padding: 0;
 	background: none;
 	border: none;
-	color: var(--text-softer-color);
+	color: var(--text-color);
 	font-family: var(--font-family-ui);
 	font-size: var(--text-sm);
 	text-decoration: underline;

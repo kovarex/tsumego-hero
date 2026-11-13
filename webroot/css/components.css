@@ -344,6 +344,13 @@
 		color: var(--color-white);
 	}
 
+	/* the filter bar keeps its light text on its dark fill */
+	.btn--filter:not(:disabled, [aria-disabled="true"], .btn--disabled):hover
+	{
+		background: var(--set-filter-hover-background);
+		color: var(--set-filter-text);
+	}
+
 	.btn--ghost:not(:disabled, [aria-disabled="true"], .btn--disabled):hover
 	{
 		background: none;
@@ -386,9 +393,11 @@
 	transition: color 0.2s, border-color 0.2s;
 }
 
+/* Under the pointer the tab takes the colour of the text (the green of the brand is too light for text on white)
+   and the green underline */
 .subnav__link:hover
 {
-	color: var(--color-green);
+	color: var(--color-text);
 	border-bottom-color: var(--color-green);
 }
 
@@ -753,9 +762,12 @@
 	transition: background-color 0.12s ease, transform 0.12s ease;
 }
 
+/* Under the pointer the tile darkens and gets a ring of its rank's colour: a lighter fill took the light rank colours
+   of the labels below 4.5:1 */
 .dropdown__tile--difficulty:hover
 {
-	background-color: rgba(255, 255, 255, 0.14);
+	background-color: rgba(0, 0, 0, 0.6);
+	box-shadow: 0 0 0 1px var(--rank-color, var(--color-white));
 	transform: translateY(-1px);
 }
 
@@ -1309,12 +1321,16 @@
 	padding: 0;
 	border: none;
 	background: none;
-	color: inherit;
+	color: var(--text-color);
 	font: inherit;
 	cursor: pointer;
 }
+/* a hidden series: struck through, its swatch faded; the label stays readable */
 .chart__legend-item--hidden {
 	text-decoration: line-through;
+	color: var(--color-text-muted);
+}
+.chart__legend-item--hidden .chart__swatch {
 	opacity: 0.5;
 }
 /* the range buttons above a chart over time (app/charts/RangeChart.tsx), one segmented row */

@@ -34,6 +34,10 @@
 		--color-topic: #77c14a;
 		--color-difficulty: #be6cdd;
 		--color-tag: #d5795a;
+		/* the three accents as text on the dark fill of the collections filter bar, lighter so they reach 4.5:1 on it */
+		--set-filter-topic: #8fd36a;
+		--set-filter-difficulty: #d29be8;
+		--set-filter-tag: #e89a7d;
 		--color-mode-rating: #c240f7;
 		--mode-glow-level: #8cff2e;
 		--mode-glow-rating: #e05cff;
@@ -222,7 +226,7 @@
 		/* ── Accent / feedback tokens (auto-adapt light ↔ dark) ── */
 		--color-blue-accent: #007bff;
 		--color-blue-accent-hover: #0056b3;
-		--color-danger: #e03c4b;
+		--color-danger: #c8303f; /* 5.3:1 on white, 4.6:1 on the hover grey */
 		--color-warning: #f0ad4e;
 		--color-danger-surface: #fee;
 		--color-surface-hover: #eee;
@@ -463,9 +467,9 @@
 		--set-accuracy: var(--set-accent-purple);
 		--set-time: var(--set-accent-orange);
 		--set-size-background: var(--surface-dark);
-		--set-filter-background: var(--surface-dark);
+		--set-filter-background: var(--surface-border-strong);
 		--set-filter-text: var(--color-white);
-		--set-filter-hover-background: var(--surface-dark);
+		--set-filter-hover-background: var(--surface-ink);
 		--set-card-hover-shade: linear-gradient(rgba(200, 200, 200, 0.6), rgba(33, 33, 33, 0.65));
 		/* the gold of a finished set card's frame and percent, the same in both themes */
 		--set-card-gold-text: #ffe08a;
@@ -500,6 +504,7 @@
 		--comment-tab-active-text: var(--color-white);
 		--comment-tab-hover-background: var(--surface-hover);
 		--comment-tab-empty-background: var(--info-box-background);
+		--comment-tab-empty-text: var(--text-softer-color);
 		--comment-tab-empty-border: var(--current-border-color);
 		--comment-form-background: var(--surface-bar);
 		--comment-form-muted: currentColor;
@@ -627,6 +632,7 @@
 		--comment-tab-active-text: var(--text-color);
 		--comment-tab-hover-background: var(--surface-hover-strong);
 		--comment-tab-empty-background: var(--surface-hover);
+		--comment-tab-empty-text: #b3b3b3; /* 5.4:1 on the tab, 4.6:1 under the pointer */
 		--comment-tab-empty-border: var(--surface-hover-strong);
 		--comment-form-background: var(--surface-hover);
 		--comment-form-muted: var(--text-softer-color);
