@@ -1,5 +1,6 @@
 <?php
 
+use App\Utility\Constants;
 use Facebook\WebDriver\WebDriverDimension;
 
 #[RetryOnBrowserFailure]
@@ -136,5 +137,29 @@ class PlayReviewTreeBrowserTest extends IntegrationTestCase
 		{
 			$window->setSize($originalSize);
 		}
+	}
+
+	//Review is a plain button, dimmed, while the problem can't be reviewed, and turns red once it can (a solve opens it)
+	public function testReviewIsPlainUntilItOpensThenRed(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['mode' => Constants::$LEVEL_MODE],
+			'tsumego' => ['set_order' => 1, 'sgf' => ['data' => '(;GM[1]FF[4]SZ[19]AW[bb]AB[dd];B[ca]C[+])', 'first_move_color' => 'B']]]);
+		$browser = Browser::instance();
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		$browser->waitForBoard();
+		$look = <<<'JS'
+			const review = document.querySelector('#besogo-review-button, #besogo-review-button-inactive');
+			const colorOf = (value) => { const probe = document.createElement('div'); probe.style.background = value; document.body.append(probe); const color = getComputedStyle(probe).backgroundColor; probe.remove(); return color; };
+			const style = getComputedStyle(review);
+			return {id: review.id, plain: review.classList.contains('btn') && !review.classList.contains('btn--danger'),
+				background: style.backgroundColor === colorOf('var(--color-red)') ? 'red' : (style.backgroundColor === colorOf('var(--color-surface)') ? 'surface' : style.backgroundColor),
+				white: style.color === 'rgb(255, 255, 255)'};
+			JS;
+		$this->assertEquals(['id' => 'besogo-review-button-inactive', 'plain' => true, 'background' => 'surface', 'white' => false], $browser->driver->executeScript($look));
+
+		$browser->clickBoard(3, 1);
+		$browser->waitUntilJs('document.getElementById("besogo-review-button") !== null');
+		$this->assertEquals(['id' => 'besogo-review-button', 'plain' => true, 'background' => 'red', 'white' => true], $browser->driver->executeScript($look));
 	}
 }

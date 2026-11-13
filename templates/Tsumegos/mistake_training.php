@@ -30,7 +30,7 @@ use App\Utility\TsumegoButton;
 	<?php if ($dueToday > 0): ?>
 	<p class="info-box__title" id="mistake-training-due"><?php echo $dueToday; ?> problem<?php echo $dueToday == 1 ? '' : 's'; ?> to review today</p>
 	<p class="mistake-training__block">
-		<a class="btn" id="mistake-training-start" href="<?php echo MistakeTraining::$QUEUE_LINK; ?>"><?php echo $solvedToday > 0 ? 'Continue training' : 'Start training'; ?></a>
+		<a class="btn btn--primary" id="mistake-training-start" href="<?php echo MistakeTraining::$QUEUE_LINK; ?>"><?php echo $solvedToday > 0 ? 'Continue training' : 'Start training'; ?></a>
 	</p>
 	<?php elseif (!$everTrained): ?>
 	<p class="info-box__title">Nothing to review yet</p>

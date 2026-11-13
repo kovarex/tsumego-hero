@@ -59,11 +59,15 @@
 	padding: 0;
 	background: none;
 	border: none;
-	color: var(--text-softer-color);
+	color: var(--text-color);
 	font-family: var(--font-family-ui);
 	font-size: var(--text-sm);
 	text-decoration: underline;
 	cursor: pointer;
+}
+/* already underlined, it loses the underline under the pointer, so the pointer shows it can be pressed */
+.signin .password-toggle:hover {
+	text-decoration: none;
 }
 .signin {
 	background: var(--signin-background);

@@ -103,6 +103,17 @@
 		text-decoration: none;
 	}
 
+	/* The label of a disclosure (<details>) can be pressed: under the pointer it is underlined, like a link */
+	summary
+	{
+		cursor: pointer;
+	}
+
+	summary:hover
+	{
+		text-decoration: underline;
+	}
+
 	/* The ring around what the keyboard acts on. A mouse click on a button or a link doesn't
 	   match :focus-visible, so only keyboard users see it; a text field shows it as you type. */
 	:focus-visible

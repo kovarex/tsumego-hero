@@ -29,7 +29,7 @@
 		echo '<input type="hidden" name="demote" value="' . h($demotionToken) . '" id="UserDemote"/>';
 	}
 
-	echo '<div class="submit"><input type="submit" value="Submit"/></div></form>';
+	echo '<div class="submit"><input type="submit" class="btn btn--danger" value="Submit"/></div></form>';
 	echo '<br>';
 	if ($error !== null)
 		echo '<p class="demote-admin__error">' . h($error) . '</p>';

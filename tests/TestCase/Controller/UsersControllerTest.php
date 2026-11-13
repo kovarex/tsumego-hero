@@ -212,7 +212,7 @@ class UsersControllerTest extends IntegrationTestCase
 			['100%']]);
 
 		$browser->get('users/settings');
-		$this->assertSame('RESET OLD PROGRESS (1)', $browser->find('#reset-statuses-button')->getText());
+		$this->assertSame('Reset old progress (1)', $browser->find('#reset-statuses-button')->getText());
 
 		// clicking reset removes the status
 		$this->assertNotEmpty($this->fetchTable('TsumegoStatus')->find()->where(['tsumego_id' => $context->tsumegos[1]['id']])->first());
@@ -240,7 +240,7 @@ class UsersControllerTest extends IntegrationTestCase
 		$browser = Browser::instance();
 
 		$browser->get('users/settings');
-		$this->assertSame('RESET OLD PROGRESS (1)', $browser->find('#reset-statuses-button')->getText());
+		$this->assertSame('Reset old progress (1)', $browser->find('#reset-statuses-button')->getText());
 
 		$browser->driver->executeScript("window.confirm = function(msg) {return true;};");
 		$browser->clickId('reset-statuses-button');
@@ -530,7 +530,7 @@ class UsersControllerTest extends IntegrationTestCase
 
 		$browser = Browser::instance();
 		$browser->get('users/settings');
-		$this->assertSame('RESET OLD PROGRESS (1)', $browser->findById('reset-statuses-button')->getText());
+		$this->assertSame('Reset old progress (1)', $browser->findById('reset-statuses-button')->getText());
 
 		$browser->driver->executeScript("window.confirm = function() { return true; }");
 		$browser->findById('reset-statuses-button')->click();
@@ -604,14 +604,14 @@ class UsersControllerTest extends IntegrationTestCase
 		$this->assertTextContains('900.00', $this->view);
 		$this->assertTextNotContains('600.00', $this->view);
 		$this->assertTextNotContains('750.00', $this->view);
-		$this->assertTextContains('btn--inactive">Slow</a>', $this->view);
+		$this->assertTextContains('is-selected" aria-current="page">Slow</a>', $this->view);
 		$this->assertTextContains('category=1', $this->view); // Fast link preserves rank
 
 		// Fast/15k: shows 600, not 900 or 750
 		$this->get('users/time_mode?category=1&rank=15k');
 		$this->assertTextContains('600.00', $this->view);
 		$this->assertTextNotContains('900.00', $this->view);
-		$this->assertTextContains('btn--inactive">Fast</a>', $this->view);
+		$this->assertTextContains('is-selected" aria-current="page">Fast</a>', $this->view);
 
 		// Slow/10k: shows 750, not 900
 		$this->get('users/time_mode?category=2&rank=10k');

@@ -105,14 +105,14 @@ if ($tsumegoFilters->query != 'topics')
 				<br><br>
 					<?php
 					if ($startingSetConnectionID !== null)
-						echo '<a class="btn set-view__start" href="/' . $startingSetConnectionID . '">Start</a>';
+						echo '<a class="btn btn--primary set-view__start" href="/' . $startingSetConnectionID . '">Start</a>';
 ?>
 				</div>
 			</td>
 		</tr>
 		<?php if ($tsumegoFilters->query == 'topics'): ?>
 		<tr class="set-view__stats-toggle-row">
-			<td colspan="2"><button type="button" class="btn set-view__stats-toggle" aria-expanded="false">Stats &amp; display</button></td>
+			<td colspan="2"><button type="button" class="btn btn--ghost set-view__stats-toggle" aria-expanded="false">Stats &amp; display</button></td>
 		</tr>
 		<?php //The scores, each on one line with the best of a completed run beside it ?>
 		<tr class="set-view__stats">
@@ -162,7 +162,7 @@ if ($tsumegoFilters->query != 'topics')
 					echo 'Type "reset" to remove all your progress on this collection.<br><br>';
 					echo '<form action="/sets/resetProgress/' . $set->id . '/' . ($partition + 1) . '" method="post">';
 					echo '<input type="text" name="reset-check" id="reset-textfield" placeholder="reset">';
-					echo '<input type="submit" value="submit" id="reset-submit">';
+					echo '<input type="submit" class="btn btn--danger" value="Reset" id="reset-submit">';
 					echo '</form>';
 					echo '</div>';
 				}
@@ -179,9 +179,9 @@ if ($tsumegoFilters->query != 'topics')
 			<div class="legacy-center">
 			<br>
 			<br>
-			<a id="numbersButton" class="btn" data-score-view="numbers">Numbers</a>
-			<a id="ratioButton" class="btn" data-score-view="ratio">Accuracy</a>
-			<a id="timeButton" class="btn" data-score-view="time">Time</a>
+			<a id="numbersButton" class="btn btn--pill" data-score-view="numbers">Numbers</a>
+			<a id="ratioButton" class="btn btn--pill" data-score-view="ratio">Accuracy</a>
+			<a id="timeButton" class="btn btn--pill" data-score-view="time">Time</a>
 			<br>
 			<br>
 			<div id="numbersInfo">
@@ -210,7 +210,7 @@ if ($tsumegoFilters->query != 'topics')
 									<input type="checkbox" name="shared" value="1"<?php echo $set->public == 1 ? ' checked' : ''; ?>>
 									Anyone with the link can open this collection
 								</label>
-								<noscript><button type="submit" class="btn">Save sharing</button></noscript>
+								<noscript><button type="submit" class="btn btn--primary">Save sharing</button></noscript>
 								<?php if ($set->public == 1): ?>
 									<span class="set-view__share-link-row">
 										<input class="form-field__control set-view__share-link" type="text" id="SetShareLink" readonly value="<?php echo h(SetTable::url((int) $set->id, 1, true)); ?>">

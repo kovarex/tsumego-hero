@@ -1155,7 +1155,7 @@ class ChallengesControllerTest extends IntegrationTestCase
 		$page = $this->view;
 
 		// with no run of the time mode there are no results of it to open
-		$this->assertTextContains('btn btn--inactive" href="#">Results', $page);
+		$this->assertTextContains('aria-disabled="true" title="No finished session yet">Results', $page);
 	}
 
 	public function testTheProfileOffersToChallengeThePlayer(): void

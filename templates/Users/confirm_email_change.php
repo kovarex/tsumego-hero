@@ -25,7 +25,7 @@
 	</p>
 	<br>
 	<form method="post" action="/users/confirmEmailChange/<?php echo h($token); ?>">
-		<button type="submit" class="btn" id="confirm-email-change-button">Use this address</button>
+		<button type="submit" class="btn btn--primary" id="confirm-email-change-button">Use this address</button>
 	</form>
 <?php endif; ?>
 </div>

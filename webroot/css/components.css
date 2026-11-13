@@ -209,49 +209,43 @@
 }
 
 /* ── Button ── */
-/* The one button. Default: the grey box with green text. Variants by role:
-   --primary   filled green, the one main action of a page (alias: --success)
-   --secondary the neutral grey gradient (alias: --neutral)
-   --danger    red text, for deleting and leaving
-   --link      blue, goes somewhere rather than doing something (alias: --navigation)
-   --small     less padding and text, for buttons in rows and tables
-   --filter    the filter toggles of the collections page
-   --inactive  the current tab of a row of buttons
-   Disabled through the disabled attribute or aria-disabled="true" (alias: --disabled). */
+/* The one button: six kinds in two sizes, labels in sentence case in the interface sans.
+   .btn          secondary, every action but the main one: the surface, a strong border, the text colour
+                 (aliases --secondary, --neutral, --link, --navigation)
+   --primary     filled brand green, the one main action of a screen (alias --success)
+   --danger      red text and border, filled red on hover: deletes and leaves
+   --ghost       no box, the link colour: a quiet action inside text or a row
+   --pill        fully rounded, one of a set; .is-selected fills the chosen one
+   --icon        square, a picture that acts
+   --sm          26px instead of 32, for rows and tables (alias --small)
+   Under a finger every button is at least 40px tall. Disabled through the disabled attribute or
+   aria-disabled="true" (alias --disabled). */
 .btn
 {
-	display: inline-block;
-	font-size: 16px;
-	font-weight: var(--weight-heavy);
-	text-decoration: none;
-	text-transform: uppercase;
-	background-color: var(--surface-button);
-	color: var(--color-green);
-	padding: 8px 10px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: var(--space-1);
+	box-sizing: border-box;
+	min-height: var(--control-height);
 	margin: 2px;
-	border: 1px solid var(--surface-border-strong);
-	border-top-color: var(--surface-border-light);
-	border-left-color: var(--surface-border-light);
-	border-radius: var(--radius-md);
-	cursor: pointer;
-	transition: background 0.2s;
-}
-
-/* The background shows the hover, the text keeps its colour and a link-button is never underlined. */
-.btn:hover
-{
-	background-color: var(--surface-button-pressed);
+	padding: var(--space-1) var(--space-3);
+	border: 1px solid var(--color-border-strong);
+	border-radius: var(--control-radius);
+	background: var(--color-surface);
+	color: var(--text-color);
+	font: var(--control-font);
+	text-align: center;
 	text-decoration: none;
+	text-transform: none;
+	vertical-align: middle;
+	cursor: pointer;
 }
 
-/* On touch a button is at least 40px tall, its text centred */
 @media (pointer: coarse)
 {
 	.btn
 	{
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
 		min-height: 40px;
 	}
 }
@@ -264,79 +258,105 @@
 	cursor: not-allowed;
 }
 
-.btn:disabled:hover,
-.btn[aria-disabled="true"]:hover,
-.btn--disabled:hover
-{
-	background-color: var(--surface-button);
-	cursor: not-allowed;
-}
-
 .btn--primary,
 .btn--success
 {
-	background: var(--color-green-dark);
-	border-color: var(--color-green-dark);
+	border-color: var(--color-brand-fill);
+	background: var(--color-brand-fill);
 	color: var(--color-white);
-}
-
-.btn--primary:hover,
-.btn--success:hover
-{
-	background: var(--color-green);
-	color: var(--color-white);
-}
-
-.btn--secondary,
-.btn--neutral
-{
-	background: var(--new1-gradient);
-	color: var(--color-text);
-	border: 1px solid var(--color-black);
-	border-radius: 5px;
-}
-
-.btn--secondary:hover,
-.btn--neutral:hover
-{
-	background: var(--surface-button-neutral-hover);
 }
 
 .btn--danger
 {
-	border-color: var(--color-red-dark);
-	color: var(--color-red-muted);
+	border-color: var(--color-danger);
+	color: var(--color-danger);
 }
 
-.btn--danger:hover
+.btn--ghost
 {
-	background: var(--color-red-darker);
+	padding-inline: var(--space-1);
+	border-color: transparent;
+	background: none;
+	color: var(--link-color);
 }
 
-.btn--link,
-.btn--navigation
+.btn--pill
 {
-	background: var(--color-blue-dark);
-	border-color: var(--color-blue-dark);
-	color: var(--color-white);
+	border-radius: var(--radius-full);
 }
 
-.btn--link:hover,
-.btn--navigation:hover
+.btn--pill.is-selected
 {
-	background: var(--color-blue-darker);
+	border-color: var(--text-color);
+	background: var(--text-color);
+	color: var(--color-surface);
+	cursor: default;
 }
 
-.btn--link:is(:disabled, [aria-disabled="true"], .btn--disabled):hover,
-.btn--navigation:is(:disabled, [aria-disabled="true"], .btn--disabled):hover
+.btn--icon
 {
-	background: var(--color-blue-dark);
+	min-width: var(--control-height);
+	padding-inline: 0;
 }
 
+.btn--sm,
 .btn--small
 {
-	padding: 3px 8px;
-	font-size: var(--text-xs);
+	min-height: var(--control-height-small);
+	padding: 2px var(--space-2);
+	border-radius: var(--control-radius-small);
+	font: var(--control-font-small);
+}
+
+.btn--icon:is(.btn--sm, .btn--small)
+{
+	min-width: var(--control-height-small);
+	padding-inline: 0;
+}
+
+.btn--pill:is(.btn--sm, .btn--small)
+{
+	border-radius: var(--radius-full);
+}
+
+/* Hover only where there is a pointer that hovers (on touch a tap would leave the look stuck), and not on a
+   disabled button or the chosen one of a set */
+@media (hover: hover)
+{
+	.btn:not(:disabled, [aria-disabled="true"], .btn--disabled, .is-selected):hover
+	{
+		background: var(--surface-hover);
+		color: var(--text-color);
+		text-decoration: none;
+	}
+
+	.btn:is(.btn--primary, .btn--success):not(:disabled, [aria-disabled="true"], .btn--disabled):hover
+	{
+		border-color: var(--color-green-dark);
+		background: var(--color-green-dark);
+		color: var(--color-white);
+	}
+
+	.btn--danger:not(:disabled, [aria-disabled="true"], .btn--disabled):hover
+	{
+		border-color: var(--color-red);
+		background: var(--color-red);
+		color: var(--color-white);
+	}
+
+	/* the filter bar keeps its light text on its dark fill */
+	.btn--filter:not(:disabled, [aria-disabled="true"], .btn--disabled):hover
+	{
+		background: var(--set-filter-hover-background);
+		color: var(--set-filter-hover-text);
+	}
+
+	.btn--ghost:not(:disabled, [aria-disabled="true"], .btn--disabled):hover
+	{
+		background: none;
+		color: var(--link-color);
+		text-decoration: underline;
+	}
 }
 
 /* A toggle that opens a filter menu (collections page): a flatter box in the filter colours */
@@ -348,14 +368,6 @@
 	border-radius: 5px;
 	background: var(--set-filter-background);
 	color: var(--set-filter-text);
-}
-
-.btn--inactive,
-.btn--inactive:hover
-{
-	background-color: var(--surface-button-inactive);
-	background-image: none;
-	color: var(--text-button-inactive);
 }
 
 /* ── Sub-navigation ── */
@@ -381,9 +393,11 @@
 	transition: color 0.2s, border-color 0.2s;
 }
 
+/* Under the pointer the tab turns green, in the green of the brand as text (the brand green itself is 1.9:1 on white),
+   with the green underline */
 .subnav__link:hover
 {
-	color: var(--color-green);
+	color: var(--color-brand-text);
 	border-bottom-color: var(--color-green);
 }
 
@@ -715,8 +729,11 @@
 	background-image: linear-gradient(rgba(200, 200, 200, 0.15), rgba(33, 33, 33, 0.2));
 }
 
+/* Under the pointer a tile is clearly lighter (twice the luminance of its resting fill on the dark menu), its white
+   text still 5:1 */
 .dropdown__tile:hover
 {
+	background-color: var(--dropdown-tile-hover);
 	background-image: linear-gradient(rgba(200, 200, 200, 0.35), rgba(33, 33, 33, 0.4));
 }
 
@@ -748,9 +765,13 @@
 	transition: background-color 0.12s ease, transform 0.12s ease;
 }
 
+/* Under the pointer the tile takes its rank's colour, mixed into the dark fill, and its label turns white: a fill
+   1.65:1 and more from the resting one, the label 6:1 and more on it (the light rank colours of the resting labels
+   would fall below 4.5:1 on any fill that changes that much) */
 .dropdown__tile--difficulty:hover
 {
-	background-color: rgba(255, 255, 255, 0.14);
+	background-color: color-mix(in srgb, var(--rank-color, var(--color-white)) 45%, #161616);
+	color: var(--color-white);
 	transform: translateY(-1px);
 }
 
@@ -759,12 +780,14 @@
 	background-color: var(--tag-color, var(--surface-translucent));
 }
 
+/* The chosen rank: its colour mixed further into the dark fill than under the pointer, a white label (4.8:1 and more;
+   dark text on the full rank colour fell to 3.75:1 on the bright blues) and a white ring */
 .dropdown__tile--difficulty.is-selected
 {
-	background-color: var(--rank-color);
+	background-color: color-mix(in srgb, var(--rank-color, var(--color-white)) 55%, #161616);
 	border-color: var(--color-white);
-	color: #101010;
-	box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.4);
+	color: var(--color-white);
+	box-shadow: 0 0 0 2px var(--color-white);
 	transform: translateY(-1px);
 }
 
@@ -821,6 +844,12 @@
 	border: 0;
 	padding: 0;
 	font: inherit;
+}
+
+/* under the pointer a text action is underlined, like a link */
+.link:hover
+{
+	text-decoration: underline;
 }
 
 /* ── Pagination ── */
@@ -1304,12 +1333,16 @@
 	padding: 0;
 	border: none;
 	background: none;
-	color: inherit;
+	color: var(--text-color);
 	font: inherit;
 	cursor: pointer;
 }
+/* a hidden series: struck through, its swatch faded; the label stays readable */
 .chart__legend-item--hidden {
 	text-decoration: line-through;
+	color: var(--color-text-muted);
+}
+.chart__legend-item--hidden .chart__swatch {
 	opacity: 0.5;
 }
 /* the range buttons above a chart over time (app/charts/RangeChart.tsx), one segmented row */

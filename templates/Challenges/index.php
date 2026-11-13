@@ -49,7 +49,7 @@ use App\Utility\ViteManifest;
 
 	<?php // folded behind its button; the summary is the button that opens and closes it ?>
 	<details class="challenges__create" id="challenges-create"<?= $formOpen ? ' open' : '' ?>>
-		<summary class="btn" id="challenges-new"><span class="challenges__create-open">New challenge</span><span class="challenges__create-close">Close</span></summary>
+		<summary class="btn btn--ghost" id="challenges-new"><span class="challenges__create-open">New challenge</span><span class="challenges__create-close">Close</span></summary>
 		<section class="card card--purple challenges__section">
 			<h2 class="challenges__heading">New challenge</h2>
 			<form method="post" action="/challenges/create">
@@ -95,7 +95,7 @@ use App\Utility\ViteManifest;
 					<label class="form-field__label" for="challenge-players">Invite players</label>
 					<input class="form-field__control" type="text" id="challenge-players" name="players" value="<?= h((string) $opponent) ?>" placeholder="Names of the players, separated by commas" data-player-suggestions="/challenges/players">
 				</div>
-				<button class="btn" type="submit" id="challenge-create">Create challenge</button>
+				<button class="btn btn--primary" type="submit" id="challenge-create">Create challenge</button>
 				<p class="hint">The invited players find the challenge in their challenges. You can also send them the link, anyone who opens it can join.</p>
 			</form>
 		</section>

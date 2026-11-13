@@ -40,7 +40,7 @@
   margin-right: 2px;
 }
 .solve-history__solved {
-  color: var(--color-green);
+  color: var(--color-brand-text);
 }
 .solve-history__failed {
   color: var(--color-red);

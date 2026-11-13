@@ -54,12 +54,14 @@
 /* Empty state for COMMENTS tab - no content */
 
 .tsumego-comments__tab--empty {
-	color: var(--text-softer-color);
+	color: var(--comment-tab-empty-text);
 	background: var(--comment-tab-empty-background);
 	border-color: var(--comment-tab-empty-border);
 }
+/* under the pointer the muted text of an empty tab would fall below 4.5:1 on the grey, so it takes the text colour */
 .tsumego-comments__tab--empty:hover {
 	background: var(--surface-hover);
+	color: var(--text-color);
 }
 /* Anchor-scope filter (All / General / On board) */
 

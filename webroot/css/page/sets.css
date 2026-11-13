@@ -169,15 +169,15 @@
    query cookie) and the matching button text/icon + border is colored. */
 .set-search-menu.query-topics #topics-button .set-button-text,
 .set-search-menu.query-topics #set-button-icon-topics .animate-icon {
-  color: var(--color-topic);
+  color: var(--set-filter-topic);
 }
 .set-search-menu.query-difficulty #difficulty-button .set-button-text,
 .set-search-menu.query-difficulty #set-button-icon-difficulty .animate-icon {
-  color: var(--color-difficulty);
+  color: var(--set-filter-difficulty);
 }
 .set-search-menu.query-tags #tags-button .set-button-text,
 .set-search-menu.query-tags #set-button-icon-tags .animate-icon {
-  color: var(--color-tag);
+  color: var(--set-filter-tag);
 }
 .set-search-menu.query-topics #topics-button {
   border: 1px solid var(--color-tile-green);
@@ -234,6 +234,10 @@
   border: 1px solid var(--surface-near-black);
   background: var(--set-size-background);
 }
+#submit-size-button:not(:disabled):hover {
+  background: var(--set-size-hover-background);
+  color: var(--set-filter-hover-text);
+}
 #submit-size-button:disabled {
   background: var(--color-white);
   color: var(--color-white);
@@ -255,21 +259,37 @@
   border: 1px solid var(--surface-near-black);
 }
 #tile-topics-submit {
-  color: var(--color-topic);
+  color: var(--set-filter-topic);
   border: 1px solid var(--color-tile-green);
 }
 #tile-difficulty-submit {
   border: 1px solid var(--color-tile-purple);
-  color: var(--color-difficulty);
+  color: var(--set-filter-difficulty);
 }
 #tile-tags-submit {
   border: 1px solid var(--color-tile-brown);
-  color: var(--color-tag);
+  color: var(--set-filter-tag);
 }
-#tags-button:hover,
-#difficulty-button:hover,
+/* on the lighter fill of a tile under the pointer the accent of Search would fall below 4.5:1, so it turns white */
+:is(#tile-topics-submit, #tile-difficulty-submit, #tile-tags-submit):hover {
+  color: var(--set-filter-hover-text);
+}
+/* Under the pointer a filter button is filled with a deep shade of its colour, bordered in its accent, its text white
+   (also the accent of the chosen one): the change reads at a glance and the text keeps 5:1 */
 #topics-button:hover {
-  background: var(--surface-border-strong);
+  border-color: var(--set-filter-topic);
+  background: var(--set-filter-hover-topic);
+}
+#difficulty-button:hover {
+  border-color: var(--set-filter-difficulty);
+  background: var(--set-filter-hover-difficulty);
+}
+#tags-button:hover {
+  border-color: var(--set-filter-tag);
+  background: var(--set-filter-hover-tag);
+}
+.set-search-menu :is(#topics-button, #difficulty-button, #tags-button):hover :is(.set-button-text, .animate-icon) {
+  color: var(--set-filter-hover-text);
 }
 .set-index {
   display: flex;

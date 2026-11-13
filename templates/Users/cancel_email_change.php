@@ -25,7 +25,7 @@
 	</p>
 	<br>
 	<form method="post" action="/users/cancelEmailChange/<?php echo h($token); ?>">
-		<button type="submit" class="btn btn--danger" id="cancel-email-change-button">Cancel the change</button>
+		<button type="submit" class="btn btn--primary" id="cancel-email-change-button">Cancel the change</button>
 	</form>
 <?php endif; ?>
 </div>

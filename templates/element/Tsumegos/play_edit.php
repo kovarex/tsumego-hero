@@ -148,7 +148,7 @@ $variantType = $tv ? (int) $tv->tsumego_variant_type_id : null;
 					</tr>
 				<?php endif; ?>
 			</table>
-			<input type="submit" value="Submit" id="tsumego-edit-submit">
+			<input type="submit" class="btn btn--primary" value="Submit" id="tsumego-edit-submit">
 		</form>
 	<?php endif; ?>
 </div>

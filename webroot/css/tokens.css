@@ -34,6 +34,17 @@
 		--color-topic: #77c14a;
 		--color-difficulty: #be6cdd;
 		--color-tag: #d5795a;
+		/* the three accents as text on the dark fill of the collections filter bar, lighter so they reach 4.5:1 on it */
+		--set-filter-topic: #8fd36a;
+		--set-filter-difficulty: #d29be8;
+		--set-filter-tag: #e89a7d;
+		/* under the pointer a filter button takes a deep shade of its tile colour, white text on it 5:1 and more, a change
+		   of 2:1 and more in luminance from its resting fill in both themes; the other buttons of the bar #555 */
+		--set-filter-hover-topic: #4a7a2e;
+		--set-filter-hover-difficulty: #9440b5;
+		--set-filter-hover-tag: #96492f;
+		--set-filter-hover-text: var(--color-white);
+		--dropdown-tile-hover: rgba(255, 255, 255, 0.3);
 		--color-mode-rating: #c240f7;
 		--mode-glow-level: #8cff2e;
 		--mode-glow-rating: #e05cff;
@@ -217,13 +228,12 @@
 		--surface-button-hover: #737477;
 		--surface-button-pressed: #36383b;
 		--surface-button-inactive: #8f9092;
-		--text-button-inactive: #b0d999;
 		--surface-translucent: rgba(255, 255, 255, 0.1);
 
 		/* ── Accent / feedback tokens (auto-adapt light ↔ dark) ── */
 		--color-blue-accent: #007bff;
 		--color-blue-accent-hover: #0056b3;
-		--color-danger: #e03c4b;
+		--color-danger: #c8303f; /* 5.3:1 on white, 4.6:1 on the hover grey */
 		--color-warning: #f0ad4e;
 		--color-danger-surface: #fee;
 		--color-surface-hover: #eee;
@@ -400,8 +410,10 @@
 		/* The muted grey reaches 4.5:1 on white (grey was 3.95:1) */
 		--color-text-muted: #767676;
 		--color-link: #0000EE;
-		/* The green of a text action ("change") on white: the green of the site at 1.9:1 is darkened to 4.5:1 */
-		--color-action-link: #408622;
+		/* The green of the brand as text on a light background: 5.2:1 on white, 4.5:1 on the hover grey (the green of
+		   the site is 1.9:1 on white); a text action ("change") uses it too */
+		--color-brand-text: #3d7a26;
+		--color-action-link: var(--color-brand-text);
 		--color-border: #ccc;
 		/* The border of a control, darker than the lines between things */
 		--color-border-strong: #999;
@@ -464,7 +476,8 @@
 		--set-accuracy: var(--set-accent-purple);
 		--set-time: var(--set-accent-orange);
 		--set-size-background: var(--surface-dark);
-		--set-filter-background: var(--surface-dark);
+		--set-size-hover-background: var(--surface-border-strong);
+		--set-filter-background: var(--surface-border-strong);
 		--set-filter-text: var(--color-white);
 		--set-filter-hover-background: var(--surface-dark);
 		--set-card-hover-shade: linear-gradient(rgba(200, 200, 200, 0.6), rgba(33, 33, 33, 0.65));
@@ -501,6 +514,7 @@
 		--comment-tab-active-text: var(--color-white);
 		--comment-tab-hover-background: var(--surface-hover);
 		--comment-tab-empty-background: var(--info-box-background);
+		--comment-tab-empty-text: var(--text-softer-color);
 		--comment-tab-empty-border: var(--current-border-color);
 		--comment-form-background: var(--surface-bar);
 		--comment-form-muted: currentColor;
@@ -532,7 +546,8 @@
 		--color-text-muted: #9a9a9a;
 		/* Links are blue in dark too, not near-white like the text around them */
 		--color-link: var(--color-blue);
-		--color-action-link: var(--color-green);
+		--color-brand-text: var(--color-green);
+		--color-action-link: var(--color-brand-text);
 		--color-border: #444;
 		--color-border-strong: #666;
 		--color-brand-fill: #3d7a26;
@@ -585,9 +600,10 @@
 		--set-accuracy: var(--set-accent-purple-dark);
 		--set-time: var(--set-accent-orange-dark);
 		--set-size-background: var(--surface-ink2);
+		--set-size-hover-background: var(--surface-dark);
 		--set-filter-background: var(--surface-ink);
 		--set-filter-text: var(--surface-muted-text);
-		--set-filter-hover-background: var(--surface-border-strong);
+		--set-filter-hover-background: var(--surface-dark);
 		--set-card-hover-shade: linear-gradient(rgba(200, 200, 200, 0.3), rgba(33, 33, 33, 0.35));
 		--training-title: var(--color-green);
 		--time-mode-table-text: var(--color-black);
@@ -628,6 +644,7 @@
 		--comment-tab-active-text: var(--text-color);
 		--comment-tab-hover-background: var(--surface-hover-strong);
 		--comment-tab-empty-background: var(--surface-hover);
+		--comment-tab-empty-text: #b3b3b3; /* 5.4:1 on the tab, 4.6:1 under the pointer */
 		--comment-tab-empty-border: var(--surface-hover-strong);
 		--comment-form-background: var(--surface-hover);
 		--comment-form-muted: var(--text-softer-color);

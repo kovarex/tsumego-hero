@@ -62,7 +62,7 @@ use App\Utility\ViteManifest;
 						echo '<div class="input"><input type="email" name="email" placeholder="New e-mail" aria-label="New e-mail" maxlength="' . UserTable::EMAIL_MAX_LENGTH . '" class="settings-account__field" required="required"></div>';
 						echo '<div class="input"><input type="password" name="password" placeholder="Password" aria-label="Password" autocomplete="current-password" class="settings-account__field" required="required"></div>';
 						echo '<div class="hint">The address changes once you open the link sent to it.</div>';
-						echo '<div class="submit"><input class="btn" value="Submit" type="submit"></div>';
+						echo '<div class="submit"><input class="btn btn--primary" value="Submit" type="submit"></div>';
 						echo '</form>';
 						?>
 					</div>
@@ -81,7 +81,7 @@ use App\Utility\ViteManifest;
 						echo '<div class="input"><input type="password" name="new1" placeholder="New password" aria-label="New password" autocomplete="new-password" class="settings-account__field" required="required"></div>';
 						echo '<div class="input"><input type="password" name="new2" placeholder="New password again" aria-label="New password again" autocomplete="new-password" class="settings-account__field" required="required"></div>';
 						echo '<div class="hint">At least ' . Constants::$MINIMUM_PASSWORD_LENGTH . ' characters.</div>';
-						echo '<div class="submit"><input class="btn" value="Submit" type="submit"></div>';
+						echo '<div class="submit"><input class="btn btn--primary" value="Submit" type="submit"></div>';
 						echo '</form>';
 						?>
 					</div>
@@ -109,7 +109,7 @@ use App\Utility\ViteManifest;
 					?>
 					<form method="post" action="/users/avatarUpload" enctype="multipart/form-data" id="avatar-upload">
 						<input type="file" name="avatar" accept="image/jpeg,image/png,image/webp,image/gif" aria-label="Picture to upload" required="required">
-						<button type="submit" class="btn">Upload</button>
+						<button type="submit" class="btn btn--primary">Upload</button>
 						<div class="hint">Your own picture: JPEG, PNG, WebP or GIF up to <?php echo UploadedAvatar::maxSize(); ?>. The middle square of it is shown.</div>
 					</form>
 					<?php if (!empty($user['uploaded_avatar_hash'])): ?>
@@ -204,9 +204,9 @@ use App\Utility\ViteManifest;
 		<div class="card__title">Progress</div>
 		<div class="stack">
 			<?php if ($canResetOldTsumegoStatuses): ?>
-				<a class="btn" href="#" data-reset-count="<?php echo $tsumegoStatusToRestCount; ?>" id="reset-statuses-button">Reset old progress (<?php echo $tsumegoStatusToRestCount; ?>)</a>
+				<a class="btn btn--danger" href="#" data-reset-count="<?php echo $tsumegoStatusToRestCount; ?>" id="reset-statuses-button">Reset old progress (<?php echo $tsumegoStatusToRestCount; ?>)</a>
 			<?php else: ?>
-				<a class="btn btn--disabled" href="#" id="reset-statuses-button">Reset old progress (<?php echo $tsumegoStatusToRestCount; ?>)</a>
+				<a class="btn btn--danger btn--disabled" href="#" id="reset-statuses-button">Reset old progress (<?php echo $tsumegoStatusToRestCount; ?>)</a>
 				<span class="hint">Available after <?php echo Constants::$MINIMUM_PERCENT_OF_TSUMEGOS_TO_BE_SOLVED_BEFORE_RESET_IS_ALLOWED; ?>% completion</span>
 			<?php endif; ?>
 			<span class="hint">Progress on problems you have not touched for a year.</span>

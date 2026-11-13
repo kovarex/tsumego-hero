@@ -132,7 +132,7 @@ function MessageForm({ partnerUserId, maxLength }: { partnerUserId: number; maxL
 			{send.error && <p className="hint hint--danger messages-form__error">{send.error.message}</p>}
 			<div className="messages-form__actions">
 				<span className="hint">Ctrl+Enter sends</span>
-				<button type="submit" className="btn btn--small" disabled={!text.trim() || send.isPending}>Send</button>
+				<button type="submit" className="btn btn--small btn--primary" disabled={!text.trim() || send.isPending}>Send</button>
 			</div>
 		</form>
 	);

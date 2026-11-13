@@ -49,7 +49,7 @@ use App\Utility\ViteManifest;
 				echo '  <form action="/tsumegos/mergeFinalForm" method="post">';
 				echo '    <input type="hidden" name="master-id" id="master-id" value="' . $sourceTsumegoButton->setConnectionID . '">';
 				echo '    <input type="hidden" name="slave-id" id="slave-id" value="' . $item->tsumegoButton->setConnectionID . '">';
-				echo '    <input type="submit" value="Start merge" id="submit">';
+				echo '    <input type="submit" class="btn btn--sm btn--primary" value="Start merge" id="submit">';
 				echo '  </form>';
 			}
 			else

@@ -75,7 +75,7 @@ $classes = $memberships[ClassroomMemberStatusTable::ACCEPTED];
 				<label class="form-field__label" for="classroom-name">Start a class</label>
 				<input class="form-field__control" type="text" id="classroom-name" name="name" maxlength="<?= ClassroomTable::MAXIMUM_NAME_LENGTH ?>" placeholder="Lukas, Thursday" required>
 			</div>
-			<button class="btn" type="submit">Create class</button>
+			<button class="btn btn--primary" type="submit">Create class</button>
 			<p class="hint">Then invite your pupils on the page of the class, or send them its link so they ask to join. Give them problems from one of your collections or of the site, and see who solved what.</p>
 		</form>
 	</section>

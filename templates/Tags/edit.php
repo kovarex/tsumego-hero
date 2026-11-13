@@ -34,7 +34,7 @@ use App\Model\Entity\Tag;
 			<label class="field__option"><input type="radio" id="tag_hint_true" name="tag_hint" value="1"<?php echo $tag->hint ? ' checked="checked"' : ''; ?>> yes</label>
 			<label class="field__option"><input type="radio" id="tag_hint_false" name="tag_hint" value="0"<?php echo $tag->hint ? '' : ' checked="checked"'; ?>> no</label>
 		</div>
-		<input type="submit" value="submit" id="submit_tag">
+		<input type="submit" class="btn btn--primary" value="Submit" id="submit_tag">
 	</div>
 </form>
 

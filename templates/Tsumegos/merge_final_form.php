@@ -56,6 +56,6 @@ use App\Utility\TsumegoButton;
 	<form action="/tsumegos/performMerge" method="post">
 		<input type="hidden" name="master-tsumego-id" value="<?php echo $masterTsumegoID; ?>">
 		<input type="hidden" name="slave-tsumego-id" value="<?php echo $slaveTsumegoID; ?>">
-		<input type="submit" value="PERFORM!" id="submit">
+		<input type="submit" class="btn btn--primary" value="Merge" id="submit">
 	</form>
 </div>

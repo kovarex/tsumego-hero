@@ -214,27 +214,6 @@ h1 {
   border-top-left-radius: 9px;
   cursor: pointer;
 }
-#besogo-next-button {
-  font-size: 16px;
-  font-style: normal;
-  font-variant: normal;
-  font-weight: var(--weight-heavy);
-  text-decoration: none;
-  background-color: var(--surface-button);
-  color: var(--color-white);
-  padding: 10px 13px;
-  margin: 5px;
-  border-top: 1px solid var(--surface-border-light);
-  border-right: 1px solid var(--surface-border-strong);
-  border-bottom: 1px solid var(--surface-border-strong);
-  border-left: 1px solid var(--surface-border-light);
-  text-transform: uppercase;
-  border-bottom-right-radius: 9px;
-  border-bottom-left-radius: 9px;
-  border-top-right-radius: 9px;
-  border-top-left-radius: 9px;
-  cursor: pointer;
-}
 /* The answers of a multiple choice problem, in a row right under the board (PlayBoard.js) */
 .play-answers {
   display: flex;
@@ -360,9 +339,6 @@ h1 {
    heart images is shown; shown instead of the hearts on mobile. */
 .health-counter {
   display: none;
-}
-#besogo-next-button:hover {
-  background-color: var(--surface-button-hover);
 }
 #levelBarDisplay1 {
   width: 15px;
@@ -602,6 +578,9 @@ h1 {
   cursor: pointer;
   border-bottom: 1px dotted currentColor;
 }
+.play-stake__rank:hover {
+  border-bottom-style: solid;
+}
 .play-stake__details {
   display: none;
   position: absolute;
@@ -738,29 +717,11 @@ h1 {
   gap: var(--space-2);
   margin: var(--space-2) 0;
 }
-.play-actions__button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-1);
-  min-width: 40px;
-  height: 40px;
-  padding: 0 var(--space-2);
-  border: 1px solid var(--surface-border-muted);
-  border-radius: var(--radius-md);
-  background: var(--info-box-background);
-  color: var(--text-color);
-  font-size: var(--text-md);
-  font-weight: var(--weight-bold);
-  text-decoration: none;
-  cursor: pointer;
-}
-.play-actions__button:hover {
-  background: var(--surface-hover);
-}
+/* The toggles of the panel are .btn (Tsumegos/play.php); an open one is filled like a chosen pill */
 .play-actions__button[data-open="1"] {
+  border-color: var(--text-color);
   background: var(--text-color);
-  color: var(--info-box-background);
+  color: var(--color-surface);
 }
 .play-actions__button--disabled {
   opacity: 0.4;
@@ -769,77 +730,42 @@ h1 {
 }
 
 /* The buttons of the board (PlayBoard.js): Reset and Next at the right of the row of the messages, Review in
-   the panel after More, in the look of the actions; an inactive one is dimmed and can't be pressed */
+   the panel after More, as .btn (Next --primary once the problem is solved, Review red once it opens); an
+   inactive one is dimmed and can't be pressed */
 .play-actions__end {
   display: flex;
   flex: none;
   gap: 6px;
   margin-left: auto;
 }
-:is(.play-actions__end, .play-actions) > :is(#besogo-pass-button, #history-button, #besogo-reset-button, #besogo-reset-button-inactive, #besogo-review-button, #besogo-review-button-inactive, #besogo-next-button, #besogo-next-button-inactive) {
-  min-width: 40px;
-  height: 36px;
+.play-actions__end .btn,
+.play-actions .btn {
   margin: 0;
-  padding: 0 var(--space-3);
-  border: 1px solid var(--surface-border-muted) !important;
-  border-radius: var(--radius-md);
-  background: var(--info-box-background) !important;
-  color: var(--text-color) !important;
-  font-family: inherit;
-  font-size: var(--text-md);
-  font-weight: var(--weight-bold);
-  line-height: 34px;
-  text-transform: none;
-  text-decoration: none;
-  cursor: pointer;
 }
-:is(.play-actions__end, .play-actions) > :is(#besogo-pass-button, #history-button, #besogo-reset-button, #besogo-reset-button-inactive, #besogo-review-button, #besogo-review-button-inactive, #besogo-next-button, #besogo-next-button-inactive):hover {
-  background: var(--surface-hover) !important;
-}
-:is(.play-actions__end, .play-actions) > :is(#besogo-pass-button, #history-button, #besogo-reset-button, #besogo-reset-button-inactive, #besogo-review-button, #besogo-review-button-inactive, #besogo-next-button, #besogo-next-button-inactive)[id$="-inactive"] {
+.btn[id$="-inactive"] {
   opacity: 0.4;
   cursor: default;
   pointer-events: none;
 }
-
-/* Review is red while the problem can be reviewed (an inactive one is dimmed, above); Next turns green once
-   the problem is solved */
-.play-actions > :is(#besogo-review-button, #besogo-review-button-inactive) {
-  height: 32px;
-  line-height: 30px;
+/* Review is a plain button until the problem can be reviewed (its id loses -inactive: PlayPage.js enableReview(),
+   util.js after a revelation), then filled red, as before the buttons were unified. The red of the button
+   (--color-red), not the danger token, which white text on it would not reach 4.5:1. */
+.play-actions .btn#besogo-review-button {
+  border-color: var(--color-red);
+  background: var(--color-red);
+  color: var(--color-white);
 }
-/* The buttons of the panel are a little lower than those above the board, so they don't outweigh them; a
-   finger gets 40px */
-.play-actions__button {
-  height: 32px;
-}
-@media (pointer: coarse) {
-  .play-actions__button,
-  .play-actions > :is(#besogo-review-button, #besogo-review-button-inactive) {
-    height: 40px;
-    line-height: 38px;
+@media (hover: hover) {
+  .play-actions .btn#besogo-review-button:hover {
+    border-color: var(--color-red-dark);
+    background: var(--color-red-dark);
+    color: var(--color-white);
   }
-}
-.play-actions #besogo-review-button {
-  border-color: var(--color-red) !important;
-  background: var(--color-red) !important;
-  color: var(--color-white) !important;
-}
-.play-actions #besogo-review-button:hover {
-  background: var(--color-red-dark) !important;
-}
-.play-screen:has(.play-message--solved) .play-actions__end #besogo-next-button {
-  border-color: var(--color-green-dark) !important;
-  background: var(--color-green-dark) !important;
-  color: var(--color-white) !important;
-}
-.play-screen:has(.play-message--solved) .play-actions__end #besogo-next-button:hover {
-  background: var(--color-green-btn-gradient) !important;
 }
 /* After a fail, Reset is the thing to do: it keeps its look, with a thin outline in the red of Incorrect! (and
    the keyboard focus, PlayPage.js markFailed()) until the reset */
-.play-screen:has(.play-message--failed) .play-actions__end #besogo-reset-button {
-  border-color: var(--feedback-error) !important;
+.play-message--failed #besogo-reset-button {
+  border-color: var(--feedback-error);
   box-shadow: 0 0 0 1px var(--feedback-error);
 }
 
@@ -1160,8 +1086,8 @@ h1 {
   .play-actions__end {
     gap: 4px;
   }
-  .play-actions__end :is(#history-button, #besogo-pass-button, #besogo-reset-button, #besogo-reset-button-inactive, #besogo-review-button, #besogo-review-button-inactive, #besogo-next-button, #besogo-next-button-inactive) {
-    padding: 0 var(--space-2);
+  .play-actions__end .btn {
+    padding-inline: var(--space-2);
     font-size: var(--text-sm);
   }
 }

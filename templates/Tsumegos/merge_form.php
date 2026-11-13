@@ -14,7 +14,7 @@
 				<label class="form-field__label" for="slave-id">Slave id:</label>
 				<input class="form-field__control" type="text" name="slave-id" id="slave-id">
 			</div>
-			<input type="submit" value="Proceed to step 2" id="submit">
+			<input type="submit" class="btn btn--primary" value="Proceed to step 2" id="submit">
 		</div>
 	</form>
 </div>
