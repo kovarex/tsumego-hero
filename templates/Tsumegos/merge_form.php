@@ -3,7 +3,7 @@
  * @var \App\View\AppView $this
  */
 ?>
-<div>
+<div class="merge-form">
 	<form action="/tsumegos/mergeFinalForm" method="post">
 		<div class="stack">
 			<div class="form-field">

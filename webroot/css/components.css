@@ -557,25 +557,24 @@
 /* ── Form field (stacked label + control) ── */
 .form-field
 {
-	margin-bottom: var(--space-4);
+	margin-bottom: var(--space-3);
 }
 
 .form-field__label
 {
 	display: block;
+	font-family: var(--font-family-ui);
+	font-size: var(--text-sm);
 	font-weight: var(--weight-bold);
 	margin-bottom: var(--space-1);
 	color: var(--color-text);
 }
 
-.form-field__control
+.form-field__help
 {
-	width: 100%;
-	background: var(--color-surface-sunken);
-	color: var(--color-text);
-	border: 1px solid var(--color-border);
-	border-radius: var(--radius-sm);
-	padding: var(--space-2);
+	margin-top: var(--space-1);
+	font-size: 12px;
+	color: var(--color-text-muted);
 }
 
 /* ── Color input (raw <input type="color">, set color picker) ── */

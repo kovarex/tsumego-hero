@@ -252,4 +252,11 @@
 .demote-admin__error {
   color: #d63a49;
 }
+
+/* Step 1 of merging two problems: a short form, not stretched over the page */
+.merge-form
+{
+	max-width: 360px;
+	padding: var(--space-4);
+}
 }
