@@ -474,7 +474,6 @@
 		--alert-error-border: currentColor;
 		--alert-warning-border: currentColor;
 		--alert-info-border: currentColor;
-		--title-text: var(--color-black);
 		--set-accuracy: var(--set-accent-purple);
 		--set-time: var(--set-accent-orange);
 		--set-size-background: var(--surface-dark);
@@ -587,7 +586,6 @@
 		--alert-error-border: var(--color-red-dark);
 		--alert-warning-border: var(--color-yellow-dark);
 		--alert-info-border: var(--color-blue-dark);
-		--title-text: var(--color-white);
 		--set-accuracy: var(--set-accent-purple-dark);
 		--set-time: var(--set-accent-orange-dark);
 		--set-size-background: var(--surface-ink2);

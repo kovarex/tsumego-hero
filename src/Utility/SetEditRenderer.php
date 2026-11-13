@@ -6,7 +6,7 @@ class SetEditRenderer
 {
 	public static function renderAddProblemForm(int $setId, int $highestOrder): void
 	{
-		echo '<h2 class="set-edit__heading">Add Problem</h2>';
+		echo '<h2 class="card__title set-edit__heading">Add Problem</h2>';
 		echo '<form id="TsumegoViewForm" method="post" action="/sets/createAndAddTsumego/' . $setId . '" enctype="multipart/form-data">';
 		echo '<div class="form-field"><label class="form-field__label" for="order">Order:</label>';
 		echo '<input type="text" name="order" id="order" value="' . ($highestOrder + 1) . '" placeholder="Order" /></div>';

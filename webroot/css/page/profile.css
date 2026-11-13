@@ -374,15 +374,6 @@
 	padding: var(--space-4);
 }
 
-.friends__heading
-{
-	font-size: var(--text-sm);
-	text-transform: uppercase;
-	letter-spacing: 0.05em;
-	color: var(--text-softer-color);
-	margin: 0 0 var(--space-3);
-}
-
 .friends__row
 {
 	display: flex;

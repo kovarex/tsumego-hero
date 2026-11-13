@@ -86,15 +86,6 @@
 /* <font size="5px"> was x-large */
 .play-title__time-mode { font-size: x-large; }
 #descriptionText { color: var(--text-softer-color); }
-h1 {
-  font-family: var(--font-family-display);
-  letter-spacing: 1px;
-  font-size: var(--text-lg);
-  font-style: normal;
-  font-variant: normal;
-  font-weight: var(--weight-normal);
-  line-height: 19.8px;
-}
 .add-tag-list-anchor {
   color: var(--text-softer-color);
   font-size: 14px;

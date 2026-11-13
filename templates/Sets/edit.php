@@ -36,7 +36,7 @@ if ($currentColor !== '' && !in_array(strtolower($currentColor), array_map('strt
 
 	<div class="set-edit__grid">
 		<div class="card card--green set-edit__section">
-			<h2 class="set-edit__heading">Details</h2>
+			<h2 class="card__title set-edit__heading">Details</h2>
 			<form action="/sets/edit/<?php echo $setId; ?>" id="set-edit-details" enctype="multipart/form-data" method="post" accept-charset="utf-8"><div hidden><input type="hidden" name="_method" value="POST"/></div>
 				<div class="form-field">
 					<label class="form-field__label" for="SetTitle">Title</label>
@@ -82,7 +82,7 @@ if ($currentColor !== '' && !in_array(strtolower($currentColor), array_map('strt
 
 		<div class="card card--purple set-edit__section">
 			<div class="set-edit__problems-head">
-				<h2 class="set-edit__heading">Problems (<?php echo $problemCount; ?>)</h2>
+				<h2 class="card__title set-edit__heading">Problems (<?php echo $problemCount; ?>)</h2>
 				<label class="set-edit__preview-toggle" title="Toggle board previews"><input type="checkbox" class="preview-zoom-toggle">🔍 Preview</label>
 			</div>
 			<?php if ($problemCount === 0): ?>
@@ -131,15 +131,15 @@ if ($currentColor !== '' && !in_array(strtolower($currentColor), array_map('strt
 
 	<?php if ($canEditSettings): ?>
 		<div class="card card--purple set-edit__section">
-			<h2 class="set-edit__heading">Admin</h2>
+			<h2 class="card__title set-edit__heading">Admin</h2>
 			<?php SetEditRenderer::renderAddProblemForm($setId, $highestOrder); ?>
 			<form method="post" action="/sets/edit/<?php echo $setId; ?>" id="set-edit-settings" class="set-edit__settings">
-				<h3 class="set-edit__heading">Re-rate Problems</h3>
+				<h3 class="card__title set-edit__heading">Re-rate Problems</h3>
 				<label for="SetSetDifficulty">Rating</label>
 				<input type="text" id="SetSetDifficulty" name="setDifficulty" placeholder="<?php echo h((string) $setRating); ?>">
 				<p class="hint">Sets the rating of every problem in this collection. Problems are shared, so this changes their rating everywhere. Leave empty to skip.</p>
 
-				<h3 class="set-edit__heading">Solve Modes</h3>
+				<h3 class="card__title set-edit__heading">Solve Modes</h3>
 				<div class="set-edit__mode">
 					<span class="set-edit__mode-label">Passing</span>
 					<span class="set-edit__mode-hint"><?php echo $allPassActive ? 'all on' : ($allPassInactive ? 'all off' : 'mixed'); ?></span>
@@ -159,7 +159,7 @@ if ($currentColor !== '' && !in_array(strtolower($currentColor), array_map('strt
 
 	<?php if (!empty($canDelete)): ?>
 		<div class="card set-edit__section set-edit__section--danger">
-			<h2 class="set-edit__heading">Danger Zone</h2>
+			<h2 class="card__title set-edit__heading">Danger Zone</h2>
 			<?php if ($set->user_id === null): ?>
 				<?php // a collection of the site goes to the trash with its problems, a big step, so it is confirmed by typing its title ?>
 				<form method="post" action="/sets/delete/<?php echo $setId; ?>" id="set-delete">

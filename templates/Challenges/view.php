@@ -115,7 +115,7 @@ $finishedCount = count(array_filter($standings, fn(array $row) => $row['run'] ==
 
 	<?php if ($isParticipant): ?>
 	<section class="card card--purple challenges__section" id="challenge-invite">
-		<h2 class="challenges__heading">Invite more players</h2>
+		<h2 class="card__title challenges__heading">Invite more players</h2>
 		<form method="post" action="/challenges/invite/<?= $challengeId ?>">
 			<div class="form-field">
 				<label class="form-field__label" for="invite-players">Names of the players, separated by commas</label>

@@ -22,7 +22,7 @@ $renderLink = function (string $url, string $label, int $count = 0, string $coun
 };
 ?>
 <div class="admin-area">
-	<h1 class="title4">Admin</h1>
+	<h1 class="page-title">Admin</h1>
 
 	<ul class="admin-area__links" id="admin-links">
 		<?php

@@ -24,7 +24,7 @@ use App\Utility\ViteManifest;
 	<?php // what waits for the player comes first, one row each with the way in ?>
 	<?php if (!empty($waiting)): ?>
 	<section class="card card--green challenges__section challenges__waiting" id="challenges-waiting" aria-labelledby="challenges-waiting-heading">
-		<h2 class="challenges__heading" id="challenges-waiting-heading">Waiting for you (<?= count($waiting) ?>)</h2>
+		<h2 class="card__title challenges__heading" id="challenges-waiting-heading">Waiting for you (<?= count($waiting) ?>)</h2>
 		<div class="challenges__waiting-list" role="list">
 			<?php foreach ($waiting as $challenge): ?>
 			<?php $challengeId = (int) $challenge['id']; ?>
@@ -51,7 +51,7 @@ use App\Utility\ViteManifest;
 	<details class="challenges__create" id="challenges-create"<?= $formOpen ? ' open' : '' ?>>
 		<summary class="btn btn--ghost" id="challenges-new"><span class="challenges__create-open">New challenge</span><span class="challenges__create-close">Close</span></summary>
 		<section class="card card--purple challenges__section">
-			<h2 class="challenges__heading">New challenge</h2>
+			<h2 class="card__title challenges__heading">New challenge</h2>
 			<form method="post" action="/challenges/create">
 				<div class="form-field">
 					<label class="form-field__label" for="challenge-name">Name <span class="hint">(optional)</span></label>
@@ -102,7 +102,7 @@ use App\Utility\ViteManifest;
 	</details>
 
 	<section class="card challenges__section" id="challenges-list">
-		<h2 class="challenges__heading">Your challenges</h2>
+		<h2 class="card__title challenges__heading">Your challenges</h2>
 		<?php if (empty($challenges)): ?>
 		<p class="hint">None yet.</p>
 		<?php else: ?>

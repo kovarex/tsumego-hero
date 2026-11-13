@@ -378,10 +378,6 @@
 
 .set-edit__heading
 {
-	font-size: var(--text-sm);
-	text-transform: uppercase;
-	letter-spacing: 0.05em;
-	color: var(--text-softer-color);
 	margin: 0;
 }
 

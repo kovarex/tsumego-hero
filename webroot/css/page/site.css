@@ -152,18 +152,6 @@ li a.menuLi.nav__link--active {
   background-color: var(--color-gray);
   color: var(--color-green);
 }
-.title {
-  color: var(--title-text);
-  padding: 0px;
-  margin-top: 7px;
-  margin-bottom: 0px;
-  font-size: 24px;
-  font-style: normal;
-  font-variant: normal;
-  font-weight: var(--weight-heavy);
-  line-height: 22px;
-  text-decoration: underline;
-}
 #header {
   margin-bottom: 2px;
   padding: 2px;
