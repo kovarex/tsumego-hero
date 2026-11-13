@@ -578,6 +578,9 @@ h1 {
   cursor: pointer;
   border-bottom: 1px dotted currentColor;
 }
+.play-stake__rank:hover {
+  border-bottom-style: solid;
+}
 .play-stake__details {
   display: none;
   position: absolute;
