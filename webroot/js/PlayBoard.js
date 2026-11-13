@@ -33,8 +33,6 @@ window._submitResultPromise = null;
 
 var previousButtonLink = playPage.problem.previousLink;
 var nextButtonLink = playPage.problem.nextLink;
-// A training try ends at the first mistake, Reset opens the problem again for the next one
-var resetButtonLink = playPage.problem.resetLink;
 var noSkipNextButtonLink = playPage.problem.noSkipNextLink;
 var timeModeTimer = (mode == playPage.page.modes.time ? new TimeModeTimer(playPage.page.timeModeSecondsToSolve) : null);
 var author = playPage.problem.author;

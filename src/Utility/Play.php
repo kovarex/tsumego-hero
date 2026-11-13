@@ -116,7 +116,6 @@ class Play
 				'requestSolution' => (bool) $problem['requestSolution'],
 				'previousLink' => $problem['previousLink'] ?? '',
 				'nextLink' => $problem['nextLink'] ?? '',
-				'resetLink' => $problem['resetLink'],
 				'noSkipNextLink' => $problem['noSkipNextLink'] ?? '',
 				'author' => $tsumego->author,
 				'userSets' => $problem['userSets'],
@@ -297,8 +296,8 @@ class Play
 		$this->problem['solved'] = $solved;
 		//A problem solved before is played again for a class assignment, which counts the solve on its own
 		$this->problem['assignmentReplay'] = $this->classroomAssignment !== null && $solved && empty($this->problem['solvedForAssignment']);
-		//Reset opens the problem again on the route it is played from, so a retry in the training or
-		//in a class assignment stays there
+		//The Reset of a multiple choice or a semeai opens the problem again on the route it is played
+		//from, so a retry in the training or in a class assignment stays there
 		if ($this->classroomAssignment !== null)
 			$this->problem['resetLink'] = ClassroomAssignmentTable::playLink((int) $this->classroomAssignment['id'], (int) $setConnection->id);
 		else

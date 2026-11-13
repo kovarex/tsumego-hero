@@ -486,6 +486,10 @@ a[data-tsumego-id]:hover .tooltip-desc
 	text-align: center;
 	font-size: var(--text-sm);
 }
+.mistake-training-replay[hidden]
+{
+	display: none;
+}
 
 /* The calendar and streak of the profile under the overview of the training */
 .mistake-training-progress

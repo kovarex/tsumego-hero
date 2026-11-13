@@ -805,6 +805,11 @@ function setCountdownColor(color)
 
 function resetParameters(isAtStart)
 {
+	if (mode == playPage.page.modes.mistakeTraining)
+	{
+		resetTrainingTry();
+		return;
+	}
 	tStatus = playPage.problem.status;
 	if(tStatus=="S" || tStatus=="C")
 		heartLoss = false;
@@ -832,6 +837,51 @@ function resetParameters(isAtStart)
 		redrawHearts();
 	}
 	failAlreadyReported = false;
+}
+
+//A try of the training ends at its first mistake, and Reset starts the next one where the board is, so the problem
+//keeps its colours and its corner. The try starts as the reload of the problem started it before: nothing is counted
+//for a line given up before it was lost (a lost one was sent when it was lost), the next result is of a fresh try
+//(clean or after a mistake of its own), and the review opens again only with a solve. A problem solved on the page is
+//done for today, so the next try is a replay that counts for nothing, which the server knows and the page says.
+function resetTrainingTry()
+{
+	if (unrevealedFail)
+	{
+		showResultResponse(playOutcome.failed, unrevealedFail.response);
+		unrevealedFail = null;
+	}
+	if (problemSolved)
+		showTrainingReplay();
+	problemSolved = false;
+	hadMisplay = false;
+	failAlreadyReported = false;
+	freePlayMode = false;
+	besogo.editor.setReviewEnabled(false);
+	let review = document.getElementById("besogo-review-button");
+	if (review)
+		review.id = "besogo-review-button-inactive";
+	startClock();
+	bonusSeconds = 0;
+	timeToFirstClick = null;
+}
+
+//The note that the problem was solved today, with its page outside the training, which shows its review now that it is
+//not due (Tsumegos/play.php)
+function showTrainingReplay()
+{
+	let note = document.querySelector(".mistake-training-replay");
+	if (!note)
+		return;
+	note.removeAttribute("hidden");
+	if (document.getElementById("mistake-training-normal-view"))
+		return;
+	let link = document.createElement("a");
+	link.className = "btn btn--small btn--navigation";
+	link.id = "mistake-training-normal-view";
+	link.href = "/" + playPage.problem.setConnectionID;
+	link.textContent = "Open outside the training";
+	note.append(link);
 }
 
 //The board is created by PlayBoard.js; it gets the page's callbacks, now that they are all defined

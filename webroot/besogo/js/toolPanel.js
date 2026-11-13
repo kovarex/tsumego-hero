@@ -322,7 +322,9 @@ besogo.makeToolPanel = function (container, editor) {
         );
       }
 
-	  if (mode == 1 || mode == 2)
+	  // In the training Reset rewinds the board too, so the problem keeps the colours and the corner it was shown
+	  // with; resetParameters() starts the next try as a fresh one there (resetTrainingTry())
+	  if (mode == 1 || mode == 2 || mode == 5)
 	  {
 		  makeButtonText(
 			"Reset",
@@ -373,17 +375,6 @@ besogo.makeToolPanel = function (container, editor) {
 			  },
 			"besogo-reset-button"
 			);
-	  }
-	  else if (mode == 5)
-	  {
-		// A training try ends at the first mistake. Reset opens the problem again, so
-		// the next try is a fresh one and the server counts it as such.
-		makeButtonText(
-		  "Reset",
-		  "try the problem again",
-		  function () { window.location.href = resetButtonLink; },
-		  "besogo-reset-button"
-		);
 	  }
 	  if (mode == 1 || mode == 2 || mode == 5)
 	  {
