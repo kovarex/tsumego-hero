@@ -18,22 +18,12 @@ $tabs = [
 	'daily' => '/users/leaderboard',
 ];
 ?>
-<table class="highscore-nav">
-<tr>
-	<td class="highscore-nav__side valign-top"></td>
-	<td class="highscore-nav__middle valign-top">
-		<div class="legacy-center">
-		<br>
-		<?php foreach ($tabs as $name => $url): ?>
-			<?php if ($name === $activeTab): ?>
-				<a class="btn btn--pill is-selected" href="<?php echo $url; ?>" aria-current="page"><?php echo ucfirst($name); ?></a>
-			<?php else: ?>
-				<a class="btn btn--pill" href="<?php echo $url; ?>"><?php echo ucfirst($name); ?></a>
-			<?php endif; ?>
-		<?php endforeach; ?>
-		<br><br>
-		</div>
-	</td>
-	<td class="highscore-nav__side valign-top"></td>
-</tr>
-</table>
+<nav class="highscore-nav" aria-label="Highscores">
+	<?php foreach ($tabs as $name => $url): ?>
+		<?php if ($name === $activeTab): ?>
+			<a class="btn btn--pill is-selected" href="<?php echo $url; ?>" aria-current="page"><?php echo ucfirst($name); ?></a>
+		<?php else: ?>
+			<a class="btn btn--pill" href="<?php echo $url; ?>"><?php echo ucfirst($name); ?></a>
+		<?php endif; ?>
+	<?php endforeach; ?>
+</nav>

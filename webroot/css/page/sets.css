@@ -7,14 +7,19 @@
   padding: 3px;
   display: inline-block;
 }
-.set-view__table {
-  width: 100%;
+/* The head of a collection: rows of the text and the cover (195px), the count and the difficulty
+   side by side under it */
+.set-view__row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 195px;
+  align-items: start;
 }
-.set-view__cover-cell {
-  width: 195px;
+.set-view__counts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
 }
-.set-view__half {
-  width: 50%;
+.set-view__half--bottom {
+  align-self: end;
 }
 .sandbox-page {
   padding-top: 10px;
@@ -494,7 +499,7 @@
 
 .set-view__img-bottom
 {
-	vertical-align: bottom;
+	align-self: end;
 	padding-bottom: 17px;
 }
 
@@ -817,19 +822,15 @@
    their button (SetsViewPage.js) */
 @media (width < 64rem)
 {
-	.set-view__info,
-	.set-view__info > tbody,
-	.set-view__info > tbody > tr,
-	.set-view__info > tbody > tr > td {
+	.set-view__row {
 		display: block;
-		width: auto;
 	}
-	.set-view__info > tbody > tr.set-view__intro {
+	.set-view__info > .set-view__intro {
 		display: flex;
 		align-items: flex-start;
 		gap: var(--space-3);
 	}
-	.set-view__intro > td:first-child {
+	.set-view__intro > .set-view__main {
 		flex: 1;
 		min-width: 0;
 	}
@@ -865,7 +866,7 @@
 		cursor: pointer;
 	}
 	/* Opened: the whole description under the cover at its size */
-	.set-view--expanded > tbody > tr.set-view__intro {
+	.set-view--expanded > .set-view__intro {
 		flex-direction: column-reverse;
 		align-items: center;
 	}
@@ -881,7 +882,7 @@
 	.set-view--expanded .set-view__description {
 		display: block;
 	}
-	.set-view__info > tbody > tr.set-view__summary {
+	.set-view__info > .set-view__summary {
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
@@ -891,15 +892,9 @@
 	.set-view__summary br {
 		display: none;
 	}
-	.set-view__summary .set-view__table,
-	.set-view__summary .set-view__table > tbody,
-	.set-view__summary .set-view__table > tbody > tr {
+	.set-view__summary .set-view__counts {
 		display: flex;
 		gap: var(--space-3);
-		width: auto;
-	}
-	.set-view__summary .set-view__half {
-		width: auto;
 	}
 	.set-view__summary b {
 		margin-right: 0.4em;
@@ -907,15 +902,15 @@
 	.set-view__start {
 		top: 0;
 	}
-	.set-view__info > tbody > tr.set-view__stats-toggle-row {
+	.set-view__info > .set-view__stats-toggle-row {
 		display: block;
 		margin-top: var(--space-2);
 		text-align: center;
 	}
-	.set-view__info > tbody > tr.set-view__stats {
+	.set-view__info > .set-view__stats {
 		display: none;
 	}
-	.set-view--stats-open > tbody > tr.set-view__stats {
+	.set-view--stats-open > .set-view__stats {
 		display: block;
 	}
 	.set-view__stats br {

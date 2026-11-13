@@ -1,0 +1,1 @@
+Changed: The pages laid out with tables (the highscore boards, a collection, the comments, the time mode results and the site functions page) are laid out with the page's own grid, so they fit a phone without tables.

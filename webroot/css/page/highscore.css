@@ -36,17 +36,15 @@
   color: #999;
   padding: 8px 0;
 }
+/* The boards: a centred row of pills, wrapping on a phone */
 .highscore-nav
 {
-  width: 100%;
-}
-.highscore-nav__side
-{
-  width: 23%;
-}
-.highscore-nav__middle
-{
-  width: 53%;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-1);
+  max-width: 34rem;
+  margin: var(--space-4) auto var(--space-5);
 }
 /* The date under the title of the daily board */
 .highscore__date

@@ -48,47 +48,42 @@ use App\Utility\ViteManifest;
 		?>
 		<div class="new1">
 		<?php //On a phone the description is cut to its beginning and More opens it with the cover; the stats and the views of the scores open from their button (sets.css, SetsViewPage.js), so the problems are in sight at once ?>
-		<table class="set-view__table set-view__info">
-		<tr class="set-view__intro">
-			<td class="valign-top">
+		<div class="set-view__info">
+		<div class="set-view__row set-view__intro">
+			<div class="set-view__main">
 				<div class="set-view__description"><?php
 echo HtmlSanitizer::sanitize((string) ($set->description ?? ''));
 ?></div>
 				<button type="button" class="set-view__expand" aria-expanded="false">More</button>
-			</td>
+			</div>
 				<?php
 // an empty collection has no problem to start with, so its cover and Start lead nowhere
 $startHref = $startingSetConnectionID === null ? '' : ' href="/' . $startingSetConnectionID . '"';
 // a cover whose name has a dash at its third letter sits at the bottom of its cell
 if ($tsumegoFilters->query == 'topics' && $set->image)
-	echo '<td class="set-view__cover-cell ' . ($set->image[2] != '-' ? 'valign-top' : 'set-view__img-bottom') . '"><div class="legacy-center set-view__cover">
+	echo '<div class="set-view__cover-cell' . ($set->image[2] != '-' ? '' : ' set-view__img-bottom') . '"><div class="legacy-center set-view__cover">
 						<a' . $startHref . '>
 						<img height="252" width="182" src="/img/' . h($set->image) . '"
 						alt="Tsumego Collection: ' . h($setTitle) . '" title="Tsumego Collection: ' . h($setTitle) . '">
-						</a></div></td>';
+						</a></div></div>';
 elseif ($tsumegoFilters->query == 'difficulty')
-	echo '<td class="set-view__cover-cell valign-top"><div class="legacy-center set-view__cover set-view__cover--rank">
+	echo '<div class="set-view__cover-cell"><div class="legacy-center set-view__cover set-view__cover--rank">
 						<a' . $startHref . '>
 						<span class="rank-icon rank-icon-large' . (str_contains((string) $set->id, '-') ? ' rank-icon-large--range' : '') . '">' . h((string) $set->id) . '</span>
-						</a></div></td>';
+						</a></div></div>';
 else
-	echo '<td class="set-view__cover-cell valign-top"><div class="legacy-center"></div></td>';
+	echo '<div class="set-view__cover-cell"></div>';
 ?>
-		</tr>
-		<tr class="set-view__summary">
-			<td class="valign-top">
-				<table class="set-view__table">
-					<tr>
-						<td class="set-view__half valign-top">
-						<div class="legacy-center">
+		</div>
+		<div class="set-view__row set-view__summary">
+			<div class="set-view__counts">
+						<div class="set-view__half legacy-center">
 						<br>
 						<?php
 echo '<b>' . count($tsumegoButtons) . ' Problems</b><br>';
 ?>
 						</div>
-						</td>
-						<td class="set-view__half valign-bottom">
-						<div class="legacy-center">
+						<div class="set-view__half set-view__half--bottom legacy-center">
 							<br>
 							Difficulty: <?php
 	echo '<b>' . Rating::getReadableRankFromRating($setRating) . '</b>';
@@ -96,11 +91,7 @@ if ($tsumegoFilters->query != 'topics')
 	echo '<br><br>Solved: <b>' . $problemSolvedPercent . '%</b>';
 ?>
 						</div>
-						</td>
-					</tr>
-				</table>
-			</td>
-			<td class="valign-top">
+			</div>
 				<div class="legacy-center">
 				<br><br>
 					<?php
@@ -108,15 +99,12 @@ if ($tsumegoFilters->query != 'topics')
 						echo '<a class="btn btn--primary set-view__start" href="/' . $startingSetConnectionID . '">Start</a>';
 ?>
 				</div>
-			</td>
-		</tr>
+		</div>
 		<?php if ($tsumegoFilters->query == 'topics'): ?>
-		<tr class="set-view__stats-toggle-row">
-			<td colspan="2"><button type="button" class="btn btn--ghost set-view__stats-toggle" aria-expanded="false">Stats &amp; display</button></td>
-		</tr>
+		<div class="set-view__stats-toggle-row"><button type="button" class="btn btn--ghost set-view__stats-toggle" aria-expanded="false">Stats &amp; display</button></div>
 		<?php //The scores, each on one line with the best of a completed run beside it ?>
-		<tr class="set-view__stats">
-			<td>
+		<div class="set-view__row set-view__stats">
+			<div>
 			<br>
 			<div class="legacy-center">
 				<?php if(Auth::isLoggedIn())
@@ -169,11 +157,10 @@ if ($tsumegoFilters->query != 'topics')
 			}
 			?>
 			</div>
-			</td>
-			<td></td>
-			</tr>
-			<tr class="set-view__stats">
-			<td>
+			</div>
+			</div>
+			<div class="set-view__row set-view__stats">
+			<div>
 			<?php if($scoring)
 			{ ?>
 			<div class="legacy-center">
@@ -196,12 +183,10 @@ if ($tsumegoFilters->query != 'topics')
 			</div>
 			<br>
 			<?php } ?>
-			</td>
-			<td></td>
-			</tr>
+			</div>
+			</div>
 			<?php if (isset($canEdit) && $canEdit): ?>
-				<tr>
-					<td colspan="2" class="set-view__edit-row">
+					<div class="set-view__edit-row">
 						<a class="btn" href="/sets/edit/<?php echo (int) $set->id; ?>">Edit Set</a>
 						<?php if (!empty($canShare)): ?>
 							<form method="post" action="/sets/share/<?php echo (int) $set->id; ?>" class="set-view__share">
@@ -220,12 +205,11 @@ if ($tsumegoFilters->query != 'topics')
 								<?php endif; ?>
 							</form>
 						<?php endif; ?>
-					</td>
-				</tr>
+					</div>
 			<?php endif; ?>
 		<?php endif; ?>
 
-		</table>
+		</div>
 		</div>
 		<div class="set-view__gap"><br><br><br><br><br><br><br></div>
 	</div>

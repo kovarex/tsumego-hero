@@ -13,34 +13,31 @@
 .versionColor {
   background: var(--time-table-gradient);
 }
+/* The ranks played, one under the other: the row of a rank opens its runs and problems */
 .timeModeTable {
-  width: 100%;
+  display: grid;
+  gap: var(--space-1);
   max-width: 900px;
+  margin: 0 auto;
 }
+/* The row of a rank: its category, rank, outcome, points, date and arrow, in the columns of the runs under it */
 .timeModeTable2 {
+  display: grid;
+  grid-template-columns: 9fr 46fr 15fr 13fr 14fr 3fr;
+  align-items: center;
+  gap: var(--space-1);
   color: var(--time-mode-table-text);
+  text-align: left;
 }
-.timeModeTable2,
 .time-result__runs {
   width: 100%;
 }
-/* The columns of a rank's row and of the runs and problems under it */
-.time-result__category,
+/* The columns of the runs and problems under a rank */
 .time-result__order {
   width: 9%;
 }
-.time-result__rank,
 .time-result__problem {
   width: 46%;
-}
-.time-result__status {
-  width: 15%;
-}
-.time-result__points {
-  width: 13%;
-}
-.time-result__arrow {
-  width: 3%;
 }
 .time-result__outcome {
   width: 7%;
