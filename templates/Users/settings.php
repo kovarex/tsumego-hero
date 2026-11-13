@@ -28,7 +28,7 @@ use App\Utility\ViteManifest;
 <div class="cluster">
 	<div class="card card--green">
 		<div class="card__title">Account</div>
-		<table class="stat" id="name-and-email-table">
+		<table class="settings-account" id="name-and-email-table">
 			<tr>
 				<td><strong>Email:</strong> <?php echo h($user['email']); ?></td>
 				<td>

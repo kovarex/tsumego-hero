@@ -188,27 +188,17 @@
 
 /* The player's challenges (Challenges/index.php): a table on a computer, a few lines for each
    challenge on a phone. */
+/* A .data-table, the width of the card */
 .challenges__list
 {
 	width: 100%;
-	border-collapse: collapse;
 }
 
-.challenges__list th,
-.challenges__list td
+/* The name of a challenge is the one link of its row, so it keeps the look of a link */
+.challenges__list-title a
 {
-	padding: var(--space-2);
-	text-align: left;
-	vertical-align: middle;
-	border-bottom: 1px solid var(--current-border-color);
-}
-
-.challenges__list th
-{
-	color: var(--text-softer-color);
-	font-size: var(--text-xs);
-	font-weight: var(--weight-normal);
-	white-space: nowrap;
+	color: var(--color-link);
+	text-decoration: underline;
 }
 
 .challenges__list-title

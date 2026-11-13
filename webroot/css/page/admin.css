@@ -13,10 +13,6 @@
   margin: 0 auto;
   text-align: left;
 }
-/* A tag's problem list sits in the row under it, so the rows are not striped. */
-.tag-overview .data-table tr:nth-child(even) td {
-  background: var(--info-box-background);
-}
 .tag-overview__toggle {
   padding: 0;
   border: none;

@@ -23,8 +23,16 @@
 .settings-account__field {
   width: 150px;
 }
-/* A long e-mail address breaks instead of pushing the card wider than a phone */
-#name-and-email-table td {
+/* Settings: each detail of the account and the action beside it; a long e-mail address breaks instead of
+   pushing the card wider than a phone */
+.settings-account {
+  width: 100%;
+}
+.settings-account td {
+  vertical-align: top;
+  padding: var(--space-2);
+  text-align: left;
+  width: 50%;
   overflow-wrap: anywhere;
 }
 /* Solve history */
