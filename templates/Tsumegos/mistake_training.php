@@ -91,7 +91,7 @@ use App\Utility\TsumegoButton;
 	<?php if (!empty($problems)): ?>
 	<details class="mistake-training-pool" open>
 		<summary>Problems in training (<?php echo count($problems); ?>)</summary>
-		<table class="mistake-training-pool__table">
+		<table class="data-table data-table--compact mistake-training-pool__table">
 			<thead><tr><th>Problem</th><th>Rank</th><th>Rung</th><th>Next review</th></tr></thead>
 			<tbody>
 			<?php foreach ($problems as $problem):

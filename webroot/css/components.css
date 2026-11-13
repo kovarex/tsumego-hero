@@ -123,17 +123,31 @@
 }
 
 /* ── Stat list ── */
+/* Pairs of a name and its value: the name small and muted, the value in the text colour, bold */
 .stat
 {
 	width: 100%;
+	border-collapse: collapse;
 }
 
 .stat td
 {
-	vertical-align: top;
-	padding: var(--space-2);
+	vertical-align: baseline;
+	padding: var(--space-1) var(--space-2);
 	text-align: left;
 	width: 50%;
+}
+
+.stat td:first-child:not([colspan])
+{
+	color: var(--color-text-muted);
+	font-size: var(--text-sm);
+}
+
+.stat td:nth-child(2)
+{
+	color: var(--color-text);
+	font-weight: var(--weight-bold);
 }
 
 /* ── Progress bar ── */
@@ -913,45 +927,42 @@
 }
 
 /* ── Data table ── */
+/* The one table of data: a line between the rows, no card around each row (the achievements list, #797),
+   the header in small muted text above a stronger line */
 .data-table
 {
 	table-layout: auto;
+	border-collapse: collapse;
 }
 
 .data-table th
 {
-	color: var(--color-text-muted);
 	position: sticky;
 	top: 0;
-	background: var(--color-surface);
 	z-index: 1;
+	padding: var(--space-2) var(--space-3);
+	border-bottom: 1px solid var(--color-border-strong);
+	background: var(--color-surface);
+	color: var(--color-text-muted);
+	font-size: var(--text-sm);
+	font-weight: var(--weight-bold);
+	text-align: left;
+	white-space: nowrap;
 }
 
 .data-table td
 {
-	padding: 15px;
-	border-top: 1px solid var(--color-border);
+	padding: var(--space-2) var(--space-3);
 	border-bottom: 1px solid var(--color-border);
-	background: var(--color-surface);
 	color: var(--color-text);
 	font-weight: var(--weight-normal);
+	vertical-align: middle;
 }
 
-.data-table td:first-child
+.data-table .data-table__num
 {
-	border-radius: var(--radius-lg) 0 0 var(--radius-lg);
-	border-left: 1px solid var(--color-border);
-}
-
-.data-table td:last-child
-{
-	border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
-	border-right: 1px solid var(--color-border);
-}
-
-.data-table tr:nth-child(even) td
-{
-	background: var(--color-surface-sunken);
+	text-align: right;
+	font-variant-numeric: tabular-nums;
 }
 
 /* On a phone a table fits the screen: small text, no fixed column widths, less padding (compact tables keep
@@ -993,9 +1004,10 @@
 	}
 }
 
+.data-table--compact th,
 .data-table--compact td
 {
-	padding: 6px;
+	padding: var(--space-1) var(--space-2);
 }
 
 .data-table a:not(.btn)
@@ -1026,26 +1038,25 @@
 
 .data-table__row--self td:first-child
 {
-	border-left: 8px solid var(--color-blue);
-	color: var(--color-blue);
+	box-shadow: inset 4px 0 0 var(--color-blue);
 	white-space: nowrap;
 }
 
 .data-table__row--medal-gold td
 {
-	background: var(--medal-gold-gradient) !important;
+	background: var(--medal-gold-gradient);
 	color: var(--medal-gold-fg);
 }
 
 .data-table__row--medal-silver td
 {
-	background: var(--medal-silver-gradient) !important;
+	background: var(--medal-silver-gradient);
 	color: var(--medal-silver-fg);
 }
 
 .data-table__row--medal-bronze td
 {
-	background: var(--medal-bronze-gradient) !important;
+	background: var(--medal-bronze-gradient);
 	color: var(--medal-bronze-fg);
 }
 

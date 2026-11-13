@@ -513,18 +513,10 @@ a[data-tsumego-id]:hover .tooltip-desc
 	margin-bottom: var(--space-2);
 }
 
+/* A compact .data-table, the width of the card */
 .mistake-training-pool__table
 {
 	width: 100%;
-	border-collapse: collapse;
-}
-
-.mistake-training-pool__table th,
-.mistake-training-pool__table td
-{
-	padding: var(--space-1) var(--space-2);
-	border-bottom: 1px solid var(--current-border-color);
-	text-align: left;
 }
 
 .mistake-training-pool__table .training-overview__insignia

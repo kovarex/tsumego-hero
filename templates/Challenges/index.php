@@ -107,7 +107,7 @@ use App\Utility\ViteManifest;
 		<p class="hint">None yet.</p>
 		<?php else: ?>
 		<?php // a table on a computer; on a phone each row stacks into a few lines, with the words of the headers it hides (.challenges__list-label) ?>
-		<table class="challenges__list">
+		<table class="data-table challenges__list">
 			<thead>
 				<tr>
 					<th scope="col">Challenge</th>

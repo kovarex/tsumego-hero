@@ -19,8 +19,8 @@ use App\Utility\ViteManifest;
 		Similar problem search:
 	<p>Search took: <?php echo round($result->elapsed, 1); ?> seconds</p>
 </div>
-<table class="phone-scroll-x">
-	<thead><th>Difference</th><th>Preview</th><th>Moves</th><th>Merge</th></th><th>Problem</th></thead>
+<table class="data-table data-table--compact phone-scroll-x">
+	<thead><tr><th>Difference</th><th>Preview</th><th class="data-table__num">Moves</th><th>Merge</th><th>Problem</th></tr></thead>
 	<tr>
 		<td><b>Source</b></td>
 		<td id="previewMaster"><span></span></td>
