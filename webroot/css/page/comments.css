@@ -13,17 +13,27 @@
 }
 /* Comments index table (Comments/index) */
 
+/* The comments page: all the comments and the player's own side by side, one above the other on a phone */
 .co-table {
-  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+  gap: var(--space-2);
 }
-.co-table__half {
-  width: 50%;
+@media (width < 48rem) {
+  .co-table {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 .co-table__all {
   margin-bottom: 15px;
 }
-.co-table tr td {
-	vertical-align: top;
+/* A comment of the page: its text, and its date and time on the right */
+.comments-page__head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 5rem;
+  gap: var(--space-2);
+  text-align: left;
 }
 /* Tab Navigation */
 
