@@ -232,8 +232,9 @@
 		--surface-translucent: rgba(255, 255, 255, 0.1);
 
 		/* ── Accent / feedback tokens (auto-adapt light ↔ dark) ── */
-		--color-blue-accent: #007bff;
-		--color-blue-accent-hover: #0056b3;
+		/* The accent blue of the comments, the issues and the changelog is the link blue */
+		--color-blue-accent: var(--color-link);
+		--color-blue-accent-hover: var(--color-link-hover);
 		--color-danger: #c8303f; /* 5.3:1 on white, 4.6:1 on the hover grey */
 		--color-warning: #f0ad4e;
 		--color-danger-surface: #fee;
@@ -410,7 +411,9 @@
 		--color-text: #222;
 		/* The muted grey reaches 4.5:1 on white (grey was 3.95:1) */
 		--color-text-muted: #767676;
-		--color-link: #0000EE;
+		/* One link blue: 6.3:1 on white, 5.8:1 on the sunken grey (the browser's #0000EE was harsh) */
+		--color-link: #1a5fb4;
+		--color-link-hover: #12457f;
 		/* The green of the brand as text on a light background: 5.2:1 on white, 4.5:1 on the hover grey (the green of
 		   the site is 1.9:1 on white); a text action ("change") uses it too */
 		--color-brand-text: #3d7a26;
@@ -536,8 +539,9 @@
 		--color-text: #ddd;
 		/* The muted grey reaches 4.5:1 on the dark surface (grey was 3.6:1) */
 		--color-text-muted: #9a9a9a;
-		/* Links are blue in dark too, not near-white like the text around them */
-		--color-link: var(--color-blue);
+		/* Links are blue in dark too, not near-white like the text around them: 6.2:1 on the surface, 5.4:1 on a comment */
+		--color-link: #6db3f2;
+		--color-link-hover: #9dd0ff;
 		--color-brand-text: var(--color-green);
 		--color-action-link: var(--color-brand-text);
 		--color-border: #444;
@@ -605,8 +609,6 @@
 		--admin-text-color: #7EE0FF;
 		--color-surface: #2a2a2a;
 		--color-focus: #6db3f2;
-		--color-blue-accent: #6db3f2;
-		--color-blue-accent-hover: #9dd0ff;
 		--color-danger: #ff6b6b;
 		--color-warning: #c87f0a;
 		--color-danger-surface: #3a2020;
