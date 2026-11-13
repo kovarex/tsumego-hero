@@ -511,11 +511,12 @@
 		--comment-form-background: var(--surface-bar);
 		--comment-form-muted: currentColor;
 		--comment-textarea-border: var(--current-border-color);
-		--comment-background: var(--surface-hover-strong);
-		--comment-shadow: var(--text-softer-color);
+		/* A comment: a card a step off the surface, flat */
+		--comment-background: var(--color-surface-sunken);
 		--comment-delete-text: var(--feedback-error);
-		--issue-background: var(--info-box-background);
-		--issue-border: var(--current-border-color);
+		/* An issue: a card with a yellow stripe, it waits for someone to fix it */
+		--issue-background: var(--color-surface);
+		--issue-accent: var(--color-yellow);
 		--issue-opened-background: var(--comment-error-bg);
 		--issue-opened-text: var(--comment-error-fg);
 		--issue-closed-background: var(--comment-success-bg);
@@ -629,11 +630,10 @@
 		--comment-form-background: var(--surface-hover);
 		--comment-form-muted: var(--text-softer-color);
 		--comment-textarea-border: var(--surface-hover-strong);
-		--comment-background: var(--time-dark-gradient);
-		--comment-shadow: var(--color-black);
+		--comment-background: #333;
 		--comment-delete-text: var(--color-white);
-		--issue-background: linear-gradient(var(--surface-hover), var(--info-box-background));
-		--issue-border: var(--surface-hover-strong);
+		--issue-background: var(--color-surface);
+		--issue-accent: var(--color-yellow-dark);
 		--issue-opened-background: var(--surface-danger);
 		--issue-opened-text: var(--feedback-error);
 		--issue-closed-background: var(--alert-success-bg);
