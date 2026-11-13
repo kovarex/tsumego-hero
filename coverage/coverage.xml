@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1794574933">
-  <project timestamp="1794574933">
+<coverage generated="1794577616">
+  <project timestamp="1794577616">
     <package name="App">
       <file name="/home/runner/work/tsumego-hero/tsumego-hero/src/Application.php">
         <class name="App\Application" namespace="App">
@@ -8716,8 +8716,8 @@
         <line num="240" type="method" name="daysBetween" visibility="private" complexity="1" crap="1" count="123"/>
         <line num="242" type="stmt" count="123"/>
         <line num="243" type="stmt" count="123"/>
-        <line num="246" type="method" name="addDays" visibility="public" complexity="2" crap="2" count="1630"/>
-        <line num="248" type="stmt" count="1630"/>
+        <line num="246" type="method" name="addDays" visibility="public" complexity="2" crap="2" count="119"/>
+        <line num="248" type="stmt" count="119"/>
         <metrics loc="251" ncloc="189" classes="1" methods="17" coveredmethods="17" conditionals="0" coveredconditionals="0" statements="97" coveredstatements="97" elements="114" coveredelements="114"/>
       </file>
       <file name="/home/runner/work/tsumego-hero/tsumego-hero/src/Utility/DataTableRenderer.php">
@@ -10020,11 +10020,11 @@
         <line num="342" type="stmt" count="398"/>
         <line num="343" type="stmt" count="22"/>
         <line num="344" type="stmt" count="380"/>
-        <line num="347" type="method" name="swapColorWords" visibility="public" complexity="1" crap="1" count="69"/>
-        <line num="349" type="stmt" count="69"/>
-        <line num="350" type="stmt" count="69"/>
-        <line num="351" type="stmt" count="69"/>
-        <line num="352" type="stmt" count="69"/>
+        <line num="347" type="method" name="swapColorWords" visibility="public" complexity="1" crap="1" count="75"/>
+        <line num="349" type="stmt" count="75"/>
+        <line num="350" type="stmt" count="75"/>
+        <line num="351" type="stmt" count="75"/>
+        <line num="352" type="stmt" count="75"/>
         <line num="357" type="method" name="tsumegoStatus" visibility="private" complexity="5" crap="5" count="400"/>
         <line num="359" type="stmt" count="400"/>
         <line num="360" type="stmt" count="10"/>
@@ -10417,8 +10417,8 @@
         <line num="11" type="method" name="default" visibility="public" complexity="4" crap="4" count="121"/>
         <line num="13" type="stmt" count="121"/>
         <line num="14" type="stmt" count="121"/>
-        <line num="15" type="stmt" count="71"/>
-        <line num="16" type="stmt" count="52"/>
+        <line num="15" type="stmt" count="62"/>
+        <line num="16" type="stmt" count="54"/>
         <line num="17" type="stmt" count="121"/>
         <line num="18" type="stmt" count="121"/>
         <line num="21" type="method" name="isEmpty" visibility="public" complexity="1" crap="1" count="433"/>
@@ -12774,7 +12774,7 @@
         <line num="239" type="stmt" count="338"/>
         <line num="240" type="stmt" count="312"/>
         <line num="242" type="stmt" count="338"/>
-        <line num="243" type="stmt" count="49"/>
+        <line num="243" type="stmt" count="48"/>
         <line num="244" type="stmt" count="338"/>
         <line num="245" type="stmt" count="73"/>
         <line num="246" type="stmt" count="338"/>
