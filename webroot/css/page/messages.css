@@ -135,16 +135,6 @@
 	border-bottom: 1px solid var(--current-border-color);
 }
 
-.messages-search__input
-{
-	width: 100%;
-	padding: 6px var(--space-2);
-	border: 1px solid var(--current-border-color);
-	border-radius: var(--radius-sm);
-	background: var(--surface-bar);
-	color: var(--text-color);
-}
-
 .messages-search__results
 {
 	position: absolute;

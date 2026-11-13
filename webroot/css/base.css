@@ -192,21 +192,90 @@
 		color: var(--color-text);
 	}
 
-	input[type="text"],
-	input[type="password"],
-	input[type="email"],
-	input[type="number"],
-	input[type="url"],
+	/* The one text field: the native fields and .form-field__control. 32px high (40 on a touch screen, 16px text
+	   so a phone doesn't zoom in), its border 3:1 against the page like any control */
+	input:is(:not([type]), [type="text"], [type="password"], [type="email"], [type="number"], [type="url"], [type="search"], [type="tel"], [type="date"], [type="time"], [type="datetime-local"]),
 	textarea,
-	select
+	select,
+	.form-field__control
 	{
+		box-sizing: border-box;
 		width: 100%;
+		min-height: var(--control-height);
+		padding: 5px var(--space-2);
 		background: var(--color-surface-sunken);
 		color: var(--color-text);
-		border: 1px solid var(--color-border);
+		border: 1px solid var(--color-field-border);
 		border-radius: var(--radius-sm);
-		padding: var(--space-2);
-		font: inherit;
+		font: var(--weight-normal) 14px/1.4 var(--font-family-ui);
+	}
+
+	input::placeholder,
+	textarea::placeholder
+	{
+		color: var(--color-field-placeholder);
+		opacity: 1;
+	}
+
+	:is(input, textarea, select):focus-visible
+	{
+		border-color: var(--color-focus);
+		outline-offset: 0;
+	}
+
+	:is(input, textarea, select):disabled
+	{
+		opacity: .6;
+		cursor: not-allowed;
+	}
+
+	@media (pointer: coarse)
+	{
+		input:is(:not([type]), [type="text"], [type="password"], [type="email"], [type="number"], [type="url"], [type="search"], [type="tel"], [type="date"], [type="time"], [type="datetime-local"]),
+		textarea,
+		select,
+		.form-field__control
+		{
+			min-height: 40px;
+			font-size: 16px;
+		}
+	}
+
+	/* Radios and checkboxes in the brand green */
+	input:is([type="radio"], [type="checkbox"])
+	{
+		accent-color: var(--color-brand-fill);
+	}
+
+	/* A file field: the choose button is a plain button, the chosen file's name beside it */
+	/* Shrinks with its column: the chosen name is cut, the columns beside it keep their width */
+	input[type="file"]
+	{
+		width: 100%;
+		min-width: 0;
+		color: var(--color-text);
+		font: var(--weight-normal) 14px/1.4 var(--font-family-ui);
+	}
+
+	input[type="file"]::file-selector-button
+	{
+		min-height: var(--control-height);
+		margin-right: var(--space-2);
+		padding: var(--space-1) var(--space-3);
+		border: 1px solid var(--color-border-strong);
+		border-radius: var(--control-radius);
+		background: var(--color-surface);
+		color: var(--text-color);
+		font: var(--control-font);
+		cursor: pointer;
+	}
+
+	@media (hover: hover)
+	{
+		input[type="file"]:not(:disabled)::file-selector-button:hover
+		{
+			background: var(--surface-hover);
+		}
 	}
 
 	form .error

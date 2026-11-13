@@ -188,7 +188,6 @@
 		--set-accent-orange: #b34717;
 		--set-accent-purple-dark: #c234ff;
 		--set-accent-orange-dark: #d55e29;
-		--auth-accent: #d19fbb;
 		--surface-ink: #222;
 		--surface-muted-text: #bfc1c4;
 		--surface-dark: #555555;
@@ -417,6 +416,9 @@
 		--color-border: #ccc;
 		/* The border of a control, darker than the lines between things */
 		--color-border-strong: #999;
+		/* A field's border, 3:1 on the field and the page; its placeholder 4.5:1 */
+		--color-field-border: #858585;
+		--color-field-placeholder: #6b6b6b;
 		/* The filled green of a primary button under white text (5.2:1) */
 		--color-brand-fill: #3d7a26;
 		--chart-text-color: #999;
@@ -537,6 +539,8 @@
 		--color-action-link: var(--color-brand-text);
 		--color-border: #444;
 		--color-border-strong: #666;
+		--color-field-border: #808080;
+		--color-field-placeholder: #9a9a9a;
 		--color-brand-fill: #3d7a26;
 		--chart-grid-color: rgba(255, 255, 255, 0.08);
 		--chart-background: #2a2a2a;

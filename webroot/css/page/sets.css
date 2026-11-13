@@ -242,15 +242,9 @@
   background: var(--color-white);
   color: var(--color-white);
 }
+/* The site's field, narrow, in the filter bar */
 #set-size-input {
-  background: var(--set-size-background);
   width: 90px;
-  border: 1px solid var(--surface-near-black);
-  border-radius: var(--radius-sm);
-  color: var(--surface-muted-text);
-  font-size: 16px;
-  font-weight: var(--weight-heavy);
-  padding: 6px 10px;
   margin: 5px;
 }
 #topics-button,
