@@ -198,7 +198,7 @@
 
 .classes__cell--earlier
 {
-	color: var(--color-green);
+	color: var(--color-brand-text);
 }
 
 .classes__cell--tried

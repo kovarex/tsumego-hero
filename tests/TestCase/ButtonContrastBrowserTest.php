@@ -6,7 +6,9 @@ use App\Utility\Constants;
 //Every button and toggle reads at WCAG AA, at rest and under the pointer, in the light and the dark theme: 4.5:1 for its
 //text, 3:1 for a large or bold label of 18.66px and more. The colours are taken from the label itself and from the fills
 //really behind it, a transparent fill resolved through its parents. A disabled one is exempt, as in WCAG. The controls of
-//the collections filter bar and its menus also change their fill clearly under the pointer, 1.5:1 in luminance at least.
+//the collections filter bar and its menus also change their fill clearly under the pointer, 1.5:1 in luminance at least,
+//and every other button changes something one can see (its fill, text colour, border, underline, shadow or place), but
+//the chosen one of a set.
 #[RetryOnBrowserFailure]
 class ButtonContrastBrowserTest extends IntegrationTestCase
 {
@@ -65,6 +67,29 @@ class ButtonContrastBrowserTest extends IntegrationTestCase
 		return 0.2126 * v[0] + 0.7152 * v[1] + 0.0722 * v[2];
 		JS;
 
+	//What a button looks like, to tell whether the pointer changes it: null for a disabled one or the chosen one of a set
+	private const string LOOK = <<<'JS'
+		const el = document.querySelector('[data-contrast="' + arguments[0] + '"]');
+		if (el.disabled || el.getAttribute('aria-disabled') === 'true' || el.classList.contains('btn--disabled') || /-inactive$/.test(el.id)
+			|| el.classList.contains('is-selected') || el.getAttribute('aria-current') === 'page' || el.classList.contains('subnav__link--active') || el.classList.contains('active'))
+			return null;
+		const look = n => { const s = getComputedStyle(n); return [s.backgroundColor, s.backgroundImage, s.color, s.borderTopColor, s.borderBottomColor, s.textDecorationLine, s.boxShadow, s.outlineStyle, s.transform, s.opacity].join('|'); };
+		return [el, ...el.querySelectorAll('*')].map(look).join(';');
+		JS;
+
+	//The test browser has no pointer that hovers ((hover: none)), so the hover looks the site keeps for one, in
+	//@media (hover: hover), are copied out of the query into the same cascade layer, as a computer with a mouse applies them
+	private const string HOVER_AS_WITH_A_MOUSE = <<<'JS'
+		const copies = [];
+		const layerOf = rule => { const names = []; for (let r = rule.parentRule; r; r = r.parentRule) if (r instanceof CSSLayerBlockRule) names.unshift(r.name); return names.join('.'); };
+		const walk = rules => { for (const rule of rules) { if (rule instanceof CSSMediaRule && /\(hover:\s*hover\)/.test(rule.conditionText)) copies.push([layerOf(rule), [...rule.cssRules].map(r => r.cssText).join('\n')]); else if (rule.cssRules) walk(rule.cssRules); } };
+		for (const sheet of document.styleSheets) { try { walk(sheet.cssRules); } catch (e) {} }
+		const style = document.createElement('style');
+		style.textContent = copies.map(([layer, css]) => layer ? '@layer ' + layer + ' {\n' + css + '\n}' : css).join('\n');
+		document.head.append(style);
+		return copies.length;
+		JS;
+
 	public static function themes(): array
 	{
 		return ['light' => ['light'], 'dark' => ['dark']];
@@ -103,6 +128,7 @@ class ButtonContrastBrowserTest extends IntegrationTestCase
 		$browser->get($url);
 		if ($open !== null)
 			$browser->find($open)->click();
+		$this->assertGreaterThan(0, $browser->driver->executeScript(self::HOVER_AS_WITH_A_MOUSE), 'the hover looks of the site on ' . $name);
 		$browser->driver->executeScript('document.documentElement.dataset.theme = arguments[0];'
 			. 'const style = document.createElement("style"); style.textContent = "*,*::before,*::after{transition:none!important;animation:none!important}"; document.head.append(style);', [$theme]);
 		$count = (int) $browser->driver->executeScript(self::PREPARE, [self::BUTTONS]);
@@ -115,9 +141,13 @@ class ButtonContrastBrowserTest extends IntegrationTestCase
 			$browser->driver->executeScript('if (document.activeElement) document.activeElement.blur();');
 			$rest = $browser->driver->executeScript(self::MEASURE, [$i]);
 			$restFill = $browser->driver->executeScript(self::FILL, [$i, self::FILTER_CONTROLS]);
+			$restLook = $browser->driver->executeScript(self::LOOK, [$i]);
 			$browser->hover($element);
 			$hover = $browser->driver->executeScript(self::MEASURE, [$i]);
 			$hoverFill = $browser->driver->executeScript(self::FILL, [$i, self::FILTER_CONTROLS]);
+			$hoverLook = $browser->driver->executeScript(self::LOOK, [$i]);
+			if ($restLook !== null && $restLook === $hoverLook && $hover !== null)
+				$failures[] = $name . ': "' . $hover['label'] . '" does not change under the pointer';
 			if ($restFill !== null && $hover !== null)
 			{
 				$change = (max($restFill, $hoverFill) + 0.05) / (min($restFill, $hoverFill) + 0.05);

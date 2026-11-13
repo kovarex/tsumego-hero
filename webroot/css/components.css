@@ -393,11 +393,11 @@
 	transition: color 0.2s, border-color 0.2s;
 }
 
-/* Under the pointer the tab takes the colour of the text (the green of the brand is too light for text on white)
-   and the green underline */
+/* Under the pointer the tab turns green, in the green of the brand as text (the brand green itself is 1.9:1 on white),
+   with the green underline */
 .subnav__link:hover
 {
-	color: var(--color-text);
+	color: var(--color-brand-text);
 	border-bottom-color: var(--color-green);
 }
 
@@ -844,6 +844,12 @@
 	border: 0;
 	padding: 0;
 	font: inherit;
+}
+
+/* under the pointer a text action is underlined, like a link */
+.link:hover
+{
+	text-decoration: underline;
 }
 
 /* ── Pagination ── */
