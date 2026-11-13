@@ -359,13 +359,13 @@
 	}
 }
 
-/* A toggle that opens a filter menu (collections page): a flatter box in the filter colours */
+/* A toggle that opens a filter menu (collections page): a pill in the filter colours */
 .btn--filter
 {
 	display: flex;
-	padding: 6px 10px;
+	padding: 6px var(--space-3);
 	margin: 5px;
-	border-radius: 5px;
+	border-radius: var(--radius-full);
 	background: var(--set-filter-background);
 	color: var(--set-filter-text);
 }
@@ -386,8 +386,6 @@
 	text-decoration: none;
 	font-weight: var(--weight-bold);
 	font-size: var(--text-md);
-	text-transform: uppercase;
-	letter-spacing: 0.03em;
 	border-bottom: 3px solid transparent;
 	margin-bottom: -2px;
 	transition: color 0.2s, border-color 0.2s;
@@ -496,12 +494,12 @@
 {
 	display: inline-block;
 	margin: 0 6px 4px 0;
-	padding: 2px 8px;
-	border-radius: var(--radius-lg);
+	padding: 2px var(--space-2);
+	border-radius: var(--radius-full);
 	font-size: var(--text-sm);
 	background: var(--color-surface);
 	color: var(--color-text);
-	border: 1px solid var(--color-border);
+	border: 1px solid var(--color-border-strong);
 }
 
 .tag-pill a
@@ -855,31 +853,52 @@
 /* ── Pagination ── */
 .pagination
 {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	align-items: center;
+	gap: var(--space-1);
 	margin: 15px 0;
-	text-align: center;
 }
 
-.pagination__link
+/* ── Pill: one of a set (the pill of the buttons, 26px) ──
+   The pages of a list, the ranges of a chart, the filters of the issues, the tabs and the filter of the comments:
+   fully rounded, the surface with a strong border, the chosen one filled with the text colour. */
+:is(.pagination__link, .range-chart__range, .issues-filter, .tsumego-comments__tab, .tsumego-comments__anchor-btn)
 {
-	display: inline-block;
-	margin: 0 2px;
-	padding: 5px 10px;
-	border: 1px solid var(--color-border);
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	box-sizing: border-box;
+	min-height: var(--control-height-small);
+	margin: 0;
+	padding: 2px var(--space-3);
+	border: 1px solid var(--color-border-strong);
+	border-radius: var(--radius-full);
+	background: var(--color-surface);
+	color: var(--text-color);
+	font: var(--control-font-small);
+	font-variant-numeric: tabular-nums;
 	text-decoration: none;
-	color: var(--paginator-button-text-color);
-	border-radius: 3px;
+	cursor: pointer;
 }
 
-.pagination__link:hover
+:is(.pagination__link--active, .range-chart__range--active, .issues-filter--active, .tsumego-comments__tab.active, .tsumego-comments__anchor-btn.active)
 {
-	text-decoration: underline;
+	border-color: var(--text-color);
+	background: var(--text-color);
+	color: var(--color-surface);
+	cursor: default;
 }
 
-.pagination__link--active
+@media (hover: hover)
 {
-	background: var(--active-paginator-button-background-color);
-	color: var(--active-paginator-button-text-color);
-	border: 1px solid var(--surface-border-strong);
+	:is(.pagination__link, .range-chart__range, .issues-filter, .tsumego-comments__tab, .tsumego-comments__anchor-btn):not(:disabled, .pagination__link--active, .range-chart__range--active, .issues-filter--active, .active):hover
+	{
+		background: var(--surface-hover);
+		color: var(--text-color);
+		text-decoration: none;
+	}
 }
 
 .pagination__info
@@ -1293,18 +1312,7 @@
 	align-items: center;
 	gap: 2px;
 }
-/* The pager's buttons look like the links of PaginationHelper */
-.level-chart__pager .pagination__link {
-	margin: 0;
-	background: none;
-	font: inherit;
-	font-variant-numeric: tabular-nums;
-	cursor: pointer;
-}
-.level-chart__pager .pagination__link--active {
-	background: var(--active-paginator-button-background-color);
-	cursor: default;
-}
+/* The pager's buttons are the pills of PaginationHelper's links; < and > are dimmed at the ends */
 .level-chart__pager .pagination__link:disabled:not(.pagination__link--active) {
 	opacity: 0.4;
 	cursor: default;
@@ -1345,6 +1353,15 @@
 .chart__legend-item--hidden .chart__swatch {
 	opacity: 0.5;
 }
+/* a legend item shows or hides its series: under the pointer it is underlined (a hidden one keeps its strike) */
+@media (hover: hover) {
+	.chart__legend-item:hover {
+		text-decoration: underline;
+	}
+	.chart__legend-item--hidden:hover {
+		text-decoration: underline line-through;
+	}
+}
 /* the range buttons above a chart over time (app/charts/RangeChart.tsx), one segmented row */
 .range-chart__header {
 	display: flex;
@@ -1355,31 +1372,8 @@
 }
 .range-chart__ranges {
 	display: inline-flex;
-	border: 1px solid var(--color-border);
-	border-radius: 3px;
-	overflow: hidden;
-}
-.range-chart__range {
-	margin: 0;
-	padding: 3px 12px;
-	border: none;
-	border-left: 1px solid var(--color-border);
-	background: none;
-	color: var(--paginator-button-text-color);
-	font: inherit;
-	font-size: var(--text-sm);
-	cursor: pointer;
-}
-.range-chart__range:first-child {
-	border-left: none;
-}
-.range-chart__range:hover {
-	text-decoration: underline;
-}
-.range-chart__range--active {
-	background: var(--active-paginator-button-background-color);
-	color: var(--active-paginator-button-text-color);
-	cursor: default;
+	flex-wrap: wrap;
+	gap: var(--space-1);
 }
 
 .chart__swatch {
