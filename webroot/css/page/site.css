@@ -35,13 +35,8 @@ body {
   color: var(--color-white);
   font-weight: var(--weight-bold);
   /* Reserve header space so the absolutely-positioned logo/nav don't overlap
-     the content below. The old outerMenu2 (height:65px) did this implicitly. */
-  height: 65px;
-}
-@media (width < 77.5rem) {
-  .whitebox1 {
-    height: 56px;
-  }
+     the content below: one 54px bar on every screen. */
+  height: 54px;
 }
 .whitebox2 {
   width: 100%;
@@ -108,10 +103,10 @@ body {
 li a.menuLi {
   font-family: var(--font-family-display);
   letter-spacing: 1px;
-  padding: 7px 9px 10px 9px;
-  margin: 13px 6px 0 6px;
+  padding: 6px 8px 7px 8px;
+  margin: 10px 4px 0 4px;
   color: var(--color-purple-bright);
-  font-size: 24px;
+  font-size: 18px;
   font-style: normal;
   font-variant: normal;
   font-weight: var(--weight-bold);
@@ -627,10 +622,10 @@ nav ul li {
   border-left: 2px solid var(--surface-border-light);
 }
 nav ul .menuIcons1 {
-  height: 40px;
+  height: 34px;
 }
 .menuIcons2 {
-  padding: 5px 12px;
+  padding: 4px 10px;
 }
 .historyLink {
   color: var(--color-red) !important;
@@ -642,8 +637,8 @@ nav ul .menuIcons1 {
 /* :where keeps the specificity of nav a, a button in the menu keeps its own look */
 nav a:not(:where(.btn)) {
   display: block;
-  font-size: 22px;
-  padding: 5px 16px;
+  font-size: 18px;
+  padding: 5px 12px;
   color: var(--color-purple-nav);
   text-align: center;
   text-decoration: none;
@@ -653,7 +648,7 @@ nav a:not(:where(.btn)) {
    own ascent puts it, so a family swap moves it up or down and the bar changes
    height with it. The submenus keep their own line box. */
 nav > ul > li > a {
-  line-height: 26px;
+  line-height: 24px;
 }
 nav ul ul {
   display: none;
@@ -939,7 +934,7 @@ nav ul ul ul li {
    (the base.css img{height:auto} rule would otherwise let it render at natural
    size); on mobile it is scaled down to fit the header bar beside the hamburger. */
 #logo1 {
-	height: 55px;
+	height: 46px;
 	width: auto;
 }
 @media (width < 77.5rem) {
