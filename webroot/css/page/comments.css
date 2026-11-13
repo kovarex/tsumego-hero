@@ -279,7 +279,7 @@
 .play-panel .tsumego-comments__tabs {
 	padding-inline: 0;
 }
-.play-panel #msg2x {
+.play-panel .tsumego-comments__content {
 	margin-inline: 0;
 }
 .play-panel .sandboxComment {

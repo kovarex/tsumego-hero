@@ -434,155 +434,43 @@ input.newCheck {
   color: var(--color-green);
   padding: 5px;
 }
-#heroProfile {
-  color: var(--color-green);
+/* The menu of the account bar: one item per row under the bar, shown while the bar is hovered
+   (AccountWidget.js), the first with the top corners, the last with the bottom ones */
+.account-menu__item {
   position: absolute;
   right: 0;
   left: auto;
+  top: calc(54px + 28px * var(--account-menu-row, 0));
   width: 144px;
-  top: 54px;
-  background: var(--color-hero-gradient);
   padding: 1px 10px;
+  border-top: 1px solid var(--surface-ink);
+  background: var(--color-hero-gradient);
+  color: var(--color-green);
   font-family: var(--font-family-display);
   letter-spacing: 1px;
   font-size: 14px;
   font-weight: var(--weight-medium);
   z-index: var(--layer-account-menu);
   cursor: pointer;
+  display: none;
+}
+.account-menu__item li a {
+  color: var(--color-green);
+}
+.account-menu__item--first {
+  border-top: none;
   border-radius: var(--radius-sm) var(--radius-sm) 0 0;
-  display: none;
 }
-#heroProfile li a {
-  color: var(--color-green);
-}
-#heroBar {
-  color: var(--color-green);
-  position: absolute;
-  right: 0;
-  left: auto;
-  width: 144px;
-  top: 82px;
-  background: var(--color-hero-gradient);
-  padding: 1px 10px;
-  font-family: var(--font-family-display);
-  letter-spacing: 1px;
-  font-size: 14px;
-  font-weight: var(--weight-medium);
-  z-index: var(--layer-account-menu);
-  cursor: pointer;
-  border-top: 1px solid var(--surface-ink);
-  display: none;
-}
-#heroBar li a {
-  color: var(--color-green);
-}
-#heroAchievements {
-  color: var(--color-green);
-  position: absolute;
-  right: 0;
-  left: auto;
-  width: 144px;
-  top: 110px;
-  background: var(--color-hero-gradient);
-  padding: 1px 10px;
-  font-family: var(--font-family-display);
-  letter-spacing: 1px;
-  font-size: 14px;
-  font-weight: var(--weight-medium);
-  z-index: var(--layer-account-menu);
-  border-top: 1px solid var(--surface-ink);
-  cursor: pointer;
-  display: none;
-}
-#heroAchievements li a {
-  color: var(--color-green);
-}
-#heroMessages {
-  color: var(--color-green);
-  position: absolute;
-  right: 0;
-  left: auto;
-  width: 144px;
-  top: 138px;
-  background: var(--color-hero-gradient);
-  padding: 1px 10px;
-  font-family: var(--font-family-display);
-  letter-spacing: 1px;
-  font-size: 14px;
-  font-weight: var(--weight-medium);
-  z-index: var(--layer-account-menu);
-  border-top: 1px solid var(--surface-ink);
-  cursor: pointer;
-  display: none;
-}
-#heroMessages li a {
-  color: var(--color-green);
-}
-#heroFriends {
-  color: var(--color-green);
-  position: absolute;
-  right: 0;
-  left: auto;
-  width: 144px;
-  top: 166px;
-  background: var(--color-hero-gradient);
-  padding: 1px 10px;
-  font-family: var(--font-family-display);
-  letter-spacing: 1px;
-  font-size: 14px;
-  font-weight: var(--weight-medium);
-  z-index: var(--layer-account-menu);
-  border-top: 1px solid var(--surface-ink);
-  cursor: pointer;
-  display: none;
-}
-#heroFriends li a {
-  color: var(--color-green);
-}
-#heroSettings {
-  color: var(--color-green);
-  position: absolute;
-  right: 0;
-  left: auto;
-  width: 144px;
-  top: 194px;
-  background: var(--color-hero-gradient);
-  padding: 1px 10px;
-  font-family: var(--font-family-display);
-  letter-spacing: 1px;
-  font-size: 14px;
-  font-weight: var(--weight-medium);
-  z-index: var(--layer-account-menu);
-  border-top: 1px solid var(--surface-ink);
-  cursor: pointer;
-  display: none;
-}
-#heroSettings li a {
-  color: var(--color-green);
-}
-#heroLogout {
-  color: var(--color-green);
-  position: absolute;
-  right: 0;
-  left: auto;
-  width: 144px;
-  top: 222px;
-  background: var(--color-hero-gradient);
-  padding: 1px 10px;
-  font-family: var(--font-family-display);
-  letter-spacing: 1px;
-  font-size: 14px;
-  font-weight: var(--weight-medium);
-  z-index: var(--layer-account-menu);
-  cursor: pointer;
-  border-top: 1px solid var(--surface-ink);
+.account-menu__item--last {
   white-space: nowrap;
   border-radius: 0 0 var(--radius-sm) var(--radius-sm);
-  display: none;
 }
-#heroLogout li a {
-  color: var(--color-green);
-}
+.account-menu__item--row1 { --account-menu-row: 1; }
+.account-menu__item--row2 { --account-menu-row: 2; }
+.account-menu__item--row3 { --account-menu-row: 3; }
+.account-menu__item--row4 { --account-menu-row: 4; }
+.account-menu__item--row5 { --account-menu-row: 5; }
+.account-menu__item--row6 { --account-menu-row: 6; }
 #time-mode-countdown {
   font-size: 21px;
   font-weight: var(--weight-heavy);
@@ -899,34 +787,6 @@ nav ul ul ul li {
 
 /* Responsive */
 @media (width < 81.25rem) {
-	#heroProfile {
-		right: 0;
-		left: auto;
-	}
-	#heroBar {
-		right: 0;
-		left: auto;
-	}
-	#heroAchievements {
-		right: 0;
-		left: auto;
-	}
-	#heroMessages {
-		right: 0;
-		left: auto;
-	}
-	#heroFriends {
-		right: 0;
-		left: auto;
-	}
-	#heroSettings {
-		right: 0;
-		left: auto;
-	}
-	#heroLogout {
-		right: 0;
-		left: auto;
-	}
 	#boardsInMenu {
 		padding-top: 3px;
 		padding-bottom: 3px;
@@ -1234,13 +1094,7 @@ nav ul ul ul li {
 		font-size: var(--text-xs);
 		letter-spacing: 0;
 	}
-	#heroProfile,
-	#heroBar,
-	#heroAchievements,
-	#heroMessages,
-	#heroFriends,
-	#heroSettings,
-	#heroLogout,
+	.account-menu__item,
 	#modeSelector {
 		display: none !important;
 	}

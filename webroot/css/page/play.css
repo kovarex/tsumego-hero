@@ -38,7 +38,9 @@
   top: 10px;
   left: 57px;
 }
-#msg2x {
+/* The comments under the problem, and the reset form of a collection under its link */
+.tsumego-comments__content,
+.set-view__reset-form {
   margin: 2px 14px;
   position: relative;
   top: 9px;
