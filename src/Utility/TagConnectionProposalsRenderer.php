@@ -65,7 +65,7 @@ OFFSET " . $this->offset, [Auth::getUserID()]);
 
 	protected function renderHeader(): void
 	{
-		echo '<tr><th>User</th><th>Tag</th><th style="min-width:200px">Problem</th><th><label title="Toggle board previews"><input type="checkbox" class="preview-zoom-toggle">🔍</label></th><th></th><th>Date</th></tr>';
+		echo '<tr><th>User</th><th>Tag</th><th class="tag-proposals__problem">Problem</th><th><label title="Toggle board previews"><input type="checkbox" class="preview-zoom-toggle">🔍</label></th><th></th><th>Date</th></tr>';
 	}
 
 	public function renderItem(int $index, array $item): void
@@ -84,6 +84,6 @@ OFFSET " . $this->offset, [Auth::getUserID()]);
 			'tag-connection-reject-' . $item['tag_connection_id'],
 			'tag-connection-comment-' . $item['tag_connection_id']);
 		echo '</td>';
-		echo '<td style="font-size:13px"><time datetime="' . Util::toIso8601($item['created']) . '" data-format="datetime">' . $item['created'] . '</time></td>';
+		echo '<td class="tag-proposals__when"><time datetime="' . Util::toIso8601($item['created']) . '" data-format="datetime">' . $item['created'] . '</time></td>';
 	}
 }

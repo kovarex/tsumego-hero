@@ -91,11 +91,11 @@ OFFSET " . $this->offset, [Auth::getUserID()]);
 			echo '<a href="/' . $item['set_connection_id'] . '">' . h($item['set_title']) . ' - ' . h($item['num']) . '</a>';
 		else
 			echo '(Set-wide)';
-		echo '<div style="color:#666; margin-top:5px;">' . AdminActivityTable::renderChange($item) . '</div>
+		echo '<div class="admin-activity__change">' . AdminActivityTable::renderChange($item) . '</div>
 				</td>
 				<td>
 					<div><time datetime="' . Util::toIso8601($item['created']) . '" data-format="datetime">' . h($item['created']) . '</time></div>
-					<div style="font-size:0.9em; color:#666; margin-top:2px;">' . UserTable::renderLink($item) . '</div>
+					<div class="admin-activity__by">' . UserTable::renderLink($item) . '</div>
 				</td>';
 	}
 }

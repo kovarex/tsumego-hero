@@ -12,6 +12,12 @@
 	color: var(--color-text-muted);
 }
 
+/* A cell or a phrase that stays on one line */
+.text-nowrap
+{
+	white-space: nowrap;
+}
+
 /* Alignment */
 .text-center
 {

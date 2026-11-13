@@ -237,4 +237,22 @@
 	max-width: 360px;
 	padding: var(--space-4);
 }
+
+/* The admin activity: what changed under the problem, who changed it under the date, both muted */
+.admin-activity__change {
+  margin-top: 5px;
+  color: var(--color-text-muted);
+}
+.admin-activity__by {
+  margin-top: 2px;
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+/* The tag proposals: room for the problem's button, the date small */
+.tag-proposals__problem {
+  min-width: 200px;
+}
+.tag-proposals__when {
+  font-size: var(--text-sm);
+}
 }

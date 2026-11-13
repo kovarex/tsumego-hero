@@ -80,7 +80,7 @@ OFFSET " . $this->offset);
 		echo '<td>' . UserTable::renderLink($item) . '</td>';
 		echo '<td><a class="adminpanel-link" href="/' . $item['set_connection_id'] . '">' . h($item['set_title']) . ' - ' . h($item['num']) . '</a></td>';
 		echo '<td class="proposal-description">' . SgfDescription::render($item['description']) . '</td>';
-		echo '<td style="white-space:nowrap">';
+		echo '<td class="text-nowrap">';
 		echo '<a href="/editor/?sgfID=' . $item['current_id'] . '">current</a> | <a href="/editor/?sgfID=' . $item['rejected_id'] . '">proposal</a> | <a href="/editor/?sgfID=' . $item['rejected_id'] . '&diffID=' . $item['current_id'] . '">diff</a>';
 		echo '</td>';
 		echo '<td class="proposal-description" id="rejection-' . $item['rejected_id'] . '">';
