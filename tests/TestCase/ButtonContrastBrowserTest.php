@@ -5,7 +5,8 @@ use App\Utility\Constants;
 
 //Every button and toggle reads at WCAG AA, at rest and under the pointer, in the light and the dark theme: 4.5:1 for its
 //text, 3:1 for a large or bold label of 18.66px and more. The colours are taken from the label itself and from the fills
-//really behind it, a transparent fill resolved through its parents. A disabled one is exempt, as in WCAG.
+//really behind it, a transparent fill resolved through its parents. A disabled one is exempt, as in WCAG. The controls of
+//the collections filter bar and its menus also change their fill clearly under the pointer, 1.5:1 in luminance at least.
 #[RetryOnBrowserFailure]
 class ButtonContrastBrowserTest extends IntegrationTestCase
 {
@@ -47,6 +48,23 @@ class ButtonContrastBrowserTest extends IntegrationTestCase
 		return worst;
 		JS;
 
+	private const string FILTER_CONTROLS = '.set-search-menu .btn--filter, .set-search-menu .set-search, .dropdown__tile';
+
+	//The luminance of the fill behind a button, its own and its parents', when it is one of the filter controls; null otherwise
+	private const string FILL = <<<'JS'
+		const el = document.querySelector('[data-contrast="' + arguments[0] + '"]');
+		if (!el.matches(arguments[1]))
+			return null;
+		const parse = c => { let m = c.match(/color\(srgb ([^)]+)\)/); if (m) { const p = m[1].split(/[ /]+/).filter(Boolean).map(Number); return [p[0] * 255, p[1] * 255, p[2] * 255, p.length > 3 ? p[3] : 1]; } m = c.match(/rgba?\(([^)]+)\)/); if (!m) return [0, 0, 0, 0]; const p = m[1].split(/[ ,/]+/).filter(Boolean).map(Number); return [p[0], p[1], p[2], p.length > 3 ? p[3] : 1]; };
+		const over = (top, bottom) => { const a = top[3] + bottom[3] * (1 - top[3]); return a === 0 ? [0, 0, 0, 0] : [0, 1, 2].map(i => (top[i] * top[3] + bottom[i] * bottom[3] * (1 - top[3])) / a).concat([a]); };
+		const canvas = getComputedStyle(document.documentElement).colorScheme.includes('dark') ? [0, 0, 0, 1] : [255, 255, 255, 1];
+		const layers = [];
+		for (let m = el; m && m.nodeType === 1; m = m.parentElement) layers.push(parse(getComputedStyle(m).backgroundColor));
+		const fill = layers.reverse().reduce((b, l) => over(l, b), canvas);
+		const v = fill.slice(0, 3).map(x => { x /= 255; return x <= 0.03928 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4; });
+		return 0.2126 * v[0] + 0.7152 * v[1] + 0.0722 * v[2];
+		JS;
+
 	public static function themes(): array
 	{
 		return ['light' => ['light'], 'dark' => ['dark']];
@@ -64,13 +82,14 @@ class ButtonContrastBrowserTest extends IntegrationTestCase
 		$pages = [
 			'collections, filtered by difficulty' => ['/sets', 'difficulty'],
 			'collections, filtered by tag' => ['/sets', 'tags'],
+			'collections, the difficulty menu open' => ['/sets', null, '#difficulty-button'],
 			'play' => ['/' . $context->tsumegos[0]['set-connections'][0]['id'], null],
 			'settings' => ['/users/settings', null],
 			'highscore' => ['/users/highscore', null],
 			'friends' => ['/friends', null],
 			'challenges' => ['/challenges', null]];
-		foreach ($pages as $name => [$url, $query])
-			$failures = array_merge($failures, $this->failuresOf($browser, $name, $url, $query, $theme));
+		foreach ($pages as $name => $page)
+			$failures = array_merge($failures, $this->failuresOf($browser, $name, $page[0], $page[1], $theme, $page[2] ?? null));
 		Auth::logout();
 		$browser->logoff();
 		$failures = array_merge($failures, $this->failuresOf($browser, 'sign in', '/users/login', null, $theme));
@@ -78,10 +97,12 @@ class ButtonContrastBrowserTest extends IntegrationTestCase
 	}
 
 	/** @return list<string> */
-	private function failuresOf(Browser $browser, string $name, string $url, ?string $query, string $theme): array
+	private function failuresOf(Browser $browser, string $name, string $url, ?string $query, string $theme, ?string $open = null): array
 	{
 		$browser->setCookie('query', $query ?? 'clear');
 		$browser->get($url);
+		if ($open !== null)
+			$browser->find($open)->click();
 		$browser->driver->executeScript('document.documentElement.dataset.theme = arguments[0];'
 			. 'const style = document.createElement("style"); style.textContent = "*,*::before,*::after{transition:none!important;animation:none!important}"; document.head.append(style);', [$theme]);
 		$count = (int) $browser->driver->executeScript(self::PREPARE, [self::BUTTONS]);
@@ -89,10 +110,20 @@ class ButtonContrastBrowserTest extends IntegrationTestCase
 		for ($i = 0; $i < $count; $i++)
 		{
 			$element = $browser->driver->findElement(Facebook\WebDriver\WebDriverBy::cssSelector('[data-contrast="' . $i . '"]'));
+			// at rest: the pointer away from the buttons, on the logo, and nothing focused
+			$browser->hover($browser->driver->findElement(Facebook\WebDriver\WebDriverBy::cssSelector('#logo1')));
 			$browser->driver->executeScript('if (document.activeElement) document.activeElement.blur();');
 			$rest = $browser->driver->executeScript(self::MEASURE, [$i]);
+			$restFill = $browser->driver->executeScript(self::FILL, [$i, self::FILTER_CONTROLS]);
 			$browser->hover($element);
 			$hover = $browser->driver->executeScript(self::MEASURE, [$i]);
+			$hoverFill = $browser->driver->executeScript(self::FILL, [$i, self::FILTER_CONTROLS]);
+			if ($restFill !== null && $hover !== null)
+			{
+				$change = (max($restFill, $hoverFill) + 0.05) / (min($restFill, $hoverFill) + 0.05);
+				if ($change < 1.5)
+					$failures[] = $name . ': "' . $hover['label'] . '" changes its fill only ' . round($change, 2) . ':1 under the pointer (needs 1.5)';
+			}
 			foreach (['at rest' => $rest, 'under the pointer' => $hover] as $state => $result)
 				if ($result !== null && $result['ratio'] < $result['threshold'])
 					$failures[] = $name . ': "' . $result['label'] . '" ' . $state . ', ' . $result['ratio'] . ':1 (needs ' . $result['threshold'] . ')';

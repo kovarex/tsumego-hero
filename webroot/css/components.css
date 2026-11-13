@@ -348,7 +348,7 @@
 	.btn--filter:not(:disabled, [aria-disabled="true"], .btn--disabled):hover
 	{
 		background: var(--set-filter-hover-background);
-		color: var(--set-filter-text);
+		color: var(--set-filter-hover-text);
 	}
 
 	.btn--ghost:not(:disabled, [aria-disabled="true"], .btn--disabled):hover
@@ -729,8 +729,11 @@
 	background-image: linear-gradient(rgba(200, 200, 200, 0.15), rgba(33, 33, 33, 0.2));
 }
 
+/* Under the pointer a tile is clearly lighter (twice the luminance of its resting fill on the dark menu), its white
+   text still 5:1 */
 .dropdown__tile:hover
 {
+	background-color: var(--dropdown-tile-hover);
 	background-image: linear-gradient(rgba(200, 200, 200, 0.35), rgba(33, 33, 33, 0.4));
 }
 
@@ -762,12 +765,13 @@
 	transition: background-color 0.12s ease, transform 0.12s ease;
 }
 
-/* Under the pointer the tile darkens and gets a ring of its rank's colour: a lighter fill took the light rank colours
-   of the labels below 4.5:1 */
+/* Under the pointer the tile takes its rank's colour, mixed into the dark fill, and its label turns white: a fill
+   1.65:1 and more from the resting one, the label 6:1 and more on it (the light rank colours of the resting labels
+   would fall below 4.5:1 on any fill that changes that much) */
 .dropdown__tile--difficulty:hover
 {
-	background-color: rgba(0, 0, 0, 0.6);
-	box-shadow: 0 0 0 1px var(--rank-color, var(--color-white));
+	background-color: color-mix(in srgb, var(--rank-color, var(--color-white)) 45%, #161616);
+	color: var(--color-white);
 	transform: translateY(-1px);
 }
 
@@ -776,12 +780,14 @@
 	background-color: var(--tag-color, var(--surface-translucent));
 }
 
+/* The chosen rank: its colour mixed further into the dark fill than under the pointer, a white label (4.8:1 and more;
+   dark text on the full rank colour fell to 3.75:1 on the bright blues) and a white ring */
 .dropdown__tile--difficulty.is-selected
 {
-	background-color: var(--rank-color);
+	background-color: color-mix(in srgb, var(--rank-color, var(--color-white)) 55%, #161616);
 	border-color: var(--color-white);
-	color: #101010;
-	box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.4);
+	color: var(--color-white);
+	box-shadow: 0 0 0 2px var(--color-white);
 	transform: translateY(-1px);
 }
 

@@ -38,6 +38,13 @@
 		--set-filter-topic: #8fd36a;
 		--set-filter-difficulty: #d29be8;
 		--set-filter-tag: #e89a7d;
+		/* under the pointer a filter button takes a deep shade of its tile colour, white text on it 5:1 and more, a change
+		   of 2:1 and more in luminance from its resting fill in both themes; the other buttons of the bar #555 */
+		--set-filter-hover-topic: #4a7a2e;
+		--set-filter-hover-difficulty: #9440b5;
+		--set-filter-hover-tag: #96492f;
+		--set-filter-hover-text: var(--color-white);
+		--dropdown-tile-hover: rgba(255, 255, 255, 0.3);
 		--color-mode-rating: #c240f7;
 		--mode-glow-level: #8cff2e;
 		--mode-glow-rating: #e05cff;
@@ -467,9 +474,10 @@
 		--set-accuracy: var(--set-accent-purple);
 		--set-time: var(--set-accent-orange);
 		--set-size-background: var(--surface-dark);
+		--set-size-hover-background: var(--surface-border-strong);
 		--set-filter-background: var(--surface-border-strong);
 		--set-filter-text: var(--color-white);
-		--set-filter-hover-background: var(--surface-ink);
+		--set-filter-hover-background: var(--surface-dark);
 		--set-card-hover-shade: linear-gradient(rgba(200, 200, 200, 0.6), rgba(33, 33, 33, 0.65));
 		/* the gold of a finished set card's frame and percent, the same in both themes */
 		--set-card-gold-text: #ffe08a;
@@ -589,9 +597,10 @@
 		--set-accuracy: var(--set-accent-purple-dark);
 		--set-time: var(--set-accent-orange-dark);
 		--set-size-background: var(--surface-ink2);
+		--set-size-hover-background: var(--surface-dark);
 		--set-filter-background: var(--surface-ink);
 		--set-filter-text: var(--surface-muted-text);
-		--set-filter-hover-background: var(--surface-border-strong);
+		--set-filter-hover-background: var(--surface-dark);
 		--set-card-hover-shade: linear-gradient(rgba(200, 200, 200, 0.3), rgba(33, 33, 33, 0.35));
 		--training-title: var(--color-green);
 		--time-mode-table-text: var(--color-black);

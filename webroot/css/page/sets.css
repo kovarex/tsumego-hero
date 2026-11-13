@@ -234,6 +234,10 @@
   border: 1px solid var(--surface-near-black);
   background: var(--set-size-background);
 }
+#submit-size-button:not(:disabled):hover {
+  background: var(--set-size-hover-background);
+  color: var(--set-filter-hover-text);
+}
 #submit-size-button:disabled {
   background: var(--color-white);
   color: var(--color-white);
@@ -266,10 +270,26 @@
   border: 1px solid var(--color-tile-brown);
   color: var(--set-filter-tag);
 }
-#tags-button:hover,
-#difficulty-button:hover,
+/* on the lighter fill of a tile under the pointer the accent of Search would fall below 4.5:1, so it turns white */
+:is(#tile-topics-submit, #tile-difficulty-submit, #tile-tags-submit):hover {
+  color: var(--set-filter-hover-text);
+}
+/* Under the pointer a filter button is filled with a deep shade of its colour, bordered in its accent, its text white
+   (also the accent of the chosen one): the change reads at a glance and the text keeps 5:1 */
 #topics-button:hover {
-  background: var(--set-filter-hover-background);
+  border-color: var(--set-filter-topic);
+  background: var(--set-filter-hover-topic);
+}
+#difficulty-button:hover {
+  border-color: var(--set-filter-difficulty);
+  background: var(--set-filter-hover-difficulty);
+}
+#tags-button:hover {
+  border-color: var(--set-filter-tag);
+  background: var(--set-filter-hover-tag);
+}
+.set-search-menu :is(#topics-button, #difficulty-button, #tags-button):hover :is(.set-button-text, .animate-icon) {
+  color: var(--set-filter-hover-text);
 }
 .set-index {
   display: flex;
