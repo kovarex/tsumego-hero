@@ -39,7 +39,7 @@
 .solve-history__preview-toggle {
   cursor: pointer;
   font-size: var(--text-xs);
-  color: var(--text-softer-color);
+  color: var(--color-text-muted);
   font-weight: var(--weight-normal);
   text-transform: none;
 }
@@ -168,7 +168,7 @@
 
 .profile-streak__none
 {
-	color: var(--text-softer-color);
+	color: var(--color-text-muted);
 }
 
 /* ── Rank display ── */
@@ -193,7 +193,7 @@
 	font-weight: var(--weight-bold);
 	text-transform: uppercase;
 	letter-spacing: 0.12em;
-	color: var(--text-softer-color);
+	color: var(--color-text-muted);
 }
 
 /* ── Mistake training ── */
@@ -203,7 +203,7 @@
 	margin: 0 var(--space-1) var(--space-4);
 	padding: var(--space-3) var(--space-4);
 	min-width: 0;
-	color: var(--text-color);
+	color: var(--color-text);
 }
 
 .training-overview__title
@@ -238,7 +238,7 @@
 .training-overview__label
 {
 	font-size: var(--text-xs);
-	color: var(--text-softer-color);
+	color: var(--color-text-muted);
 }
 
 .training-overview__rungs
@@ -312,7 +312,7 @@
 {
 	font-size: 10px;
 	line-height: 11px;
-	color: var(--text-softer-color);
+	color: var(--color-text-muted);
 	white-space: nowrap;
 }
 
@@ -360,7 +360,7 @@
 	gap: var(--space-1) var(--space-4);
 	margin-top: var(--space-2);
 	font-size: var(--text-xs);
-	color: var(--text-softer-color);
+	color: var(--color-text-muted);
 }
 
 .training-calendar__key
@@ -385,7 +385,7 @@
 	justify-content: space-between;
 	gap: var(--space-2);
 	padding: var(--space-2) 0;
-	border-bottom: 1px solid var(--current-border-color);
+	border-bottom: 1px solid var(--color-border);
 }
 
 .friends__row:last-child

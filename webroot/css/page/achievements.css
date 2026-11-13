@@ -209,7 +209,7 @@
 	padding: 0 var(--space-2);
 	box-sizing: border-box;
 	text-align: left;
-	color: var(--text-color);
+	color: var(--color-text);
 }
 
 .achievement-list__title
@@ -259,7 +259,7 @@
 .achievement-row__name
 {
 	font-weight: var(--weight-bold);
-	color: var(--text-color);
+	color: var(--color-text);
 	text-decoration: none;
 	overflow-wrap: anywhere;
 }
@@ -284,7 +284,7 @@
 .achievement-row__description
 {
 	font-size: var(--text-sm);
-	color: var(--text-softer-color);
+	color: var(--color-text-muted);
 	overflow-wrap: anywhere;
 }
 
@@ -297,7 +297,7 @@
 	justify-content: space-between;
 	gap: 2px var(--space-2);
 	font-size: var(--text-xs);
-	color: var(--text-softer-color);
+	color: var(--color-text-muted);
 	font-variant-numeric: tabular-nums;
 }
 
@@ -311,7 +311,7 @@
 {
 	margin-left: auto;
 	font-weight: var(--weight-medium);
-	color: var(--text-color);
+	color: var(--color-text);
 }
 
 .achievement-row__bar
@@ -357,7 +357,7 @@
 .achievement-row--locked .achievement-row__percent
 {
 	font-weight: var(--weight-medium);
-	color: var(--text-softer-color);
+	color: var(--color-text-muted);
 }
 
 .achievement-row--locked .achievement-row__bar-fill
@@ -452,7 +452,7 @@
 .acCollections__hint {
 	margin: 0 0 var(--space-2) 0;
 	font-size: var(--text-sm);
-	color: var(--text-softer-color);
+	color: var(--color-text-muted);
 }
 .acCollections__list {
 	columns: 3;
@@ -463,7 +463,7 @@
 	display: block;
 	padding: 2px 0;
 	font-size: var(--text-sm);
-	color: var(--text-softer-color);
+	color: var(--color-text-muted);
 	text-decoration: none;
 	break-inside: avoid;
 }

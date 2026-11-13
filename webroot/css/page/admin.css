@@ -23,7 +23,7 @@
   cursor: pointer;
 }
 .tag-overview__note {
-  color: var(--text-softer-color);
+  color: var(--color-text-muted);
 }
 .tag-overview__problems ol {
   margin: 0;
@@ -92,10 +92,10 @@
   justify-content: space-between;
   gap: var(--space-2);
   padding: 10px 14px;
-  border: 1px solid var(--current-border-color);
+  border: 1px solid var(--color-border);
   border-radius: 6px;
-  background: var(--info-box-background);
-  color: var(--text-color); /* not the white of the menu links (li a in base.css) */
+  background: var(--color-surface);
+  color: var(--color-text); /* not the white of the menu links (li a in base.css) */
   font-size: var(--text-lg);
   text-decoration: none;
 }
@@ -114,7 +114,7 @@
   margin: var(--space-1) 0 var(--space-3);
 }
 .sgf-changes__unknown {
-  color: var(--text-softer-color);
+  color: var(--color-text-muted);
   font-style: italic;
 }
 .sgf-review {
@@ -125,10 +125,10 @@
   height: 28px;
   margin-right: var(--space-1);
   padding: 0;
-  border: 2px solid var(--current-border-color);
+  border: 2px solid var(--color-border);
   border-radius: 50%;
   background: transparent;
-  color: var(--current-border-color);
+  color: var(--color-border);
   font-size: 16px;
   font-weight: var(--weight-bold);
   line-height: 1;

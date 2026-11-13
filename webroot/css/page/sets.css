@@ -347,7 +347,7 @@
 
 .set-edit__crumb
 {
-	color: var(--text-softer-color);
+	color: var(--color-text-muted);
 	font-size: var(--text-xs);
 	margin-bottom: var(--space-2);
 }
@@ -393,7 +393,7 @@
 	width: 90px;
 	height: 60px;
 	object-fit: cover;
-	border: 1px solid var(--current-border-color);
+	border: 1px solid var(--color-border);
 	border-radius: var(--radius-sm);
 }
 
@@ -422,7 +422,7 @@
 {
 	cursor: pointer;
 	font-size: var(--text-xs);
-	color: var(--text-softer-color);
+	color: var(--color-text-muted);
 	white-space: nowrap;
 }
 
@@ -432,7 +432,7 @@
 	align-items: center;
 	gap: var(--space-3);
 	padding: var(--space-1) 0;
-	border-bottom: 1px solid var(--current-border-color);
+	border-bottom: 1px solid var(--color-border);
 }
 
 .set-edit__problem-button
@@ -459,12 +459,12 @@
 .set-edit__problem-id
 {
 	font-weight: var(--weight-bold);
-	color: var(--text-color);
+	color: var(--color-text);
 }
 
 .set-edit__rating
 {
-	color: var(--text-softer-color);
+	color: var(--color-text-muted);
 	font-size: var(--text-xs);
 }
 
@@ -483,7 +483,7 @@
 
 .set-view__cover img
 {
-	border: 1px solid var(--current-border-color);
+	border: 1px solid var(--color-border);
 	object-fit: cover;
 }
 
@@ -508,7 +508,7 @@
 .set-view__owner
 {
 	font-size: smaller;
-	color: var(--text-softer-color);
+	color: var(--color-text-muted);
 }
 
 .set-view__share
@@ -549,7 +549,7 @@
 	display: block;
 	min-height: 1.2em;
 	margin-top: var(--space-1);
-	color: var(--text-softer-color);
+	color: var(--color-text-muted);
 }
 
 .set-view__cover--rank
@@ -559,9 +559,9 @@
 
 .set-edit__settings input[type="text"]
 {
-	background: var(--surface-bar);
-	color: var(--text-color);
-	border: 1px solid var(--current-border-color);
+	background: var(--color-surface-sunken);
+	color: var(--color-text);
+	border: 1px solid var(--color-border);
 	border-radius: var(--radius-sm);
 	padding: var(--space-1) var(--space-2);
 }
@@ -572,7 +572,7 @@
 	align-items: center;
 	gap: var(--space-3);
 	padding: var(--space-2) 0;
-	border-bottom: 1px solid var(--current-border-color);
+	border-bottom: 1px solid var(--color-border);
 }
 
 .set-edit__mode-label
@@ -583,16 +583,16 @@
 
 .set-edit__mode-hint
 {
-	color: var(--text-softer-color);
+	color: var(--color-text-muted);
 	font-size: var(--text-xs);
 	min-width: 60px;
 }
 
 .set-edit__mode select
 {
-	background: var(--surface-bar);
-	color: var(--text-color);
-	border: 1px solid var(--current-border-color);
+	background: var(--color-surface-sunken);
+	color: var(--color-text);
+	border: 1px solid var(--color-border);
 	border-radius: var(--radius-sm);
 	padding: var(--space-1) var(--space-2);
 	font-size: var(--text-xs);
@@ -856,7 +856,7 @@
 		padding: 0;
 		border: 0;
 		background: none;
-		color: var(--link-color, inherit);
+		color: var(--color-link, inherit);
 		font: inherit;
 		text-decoration: underline;
 		cursor: pointer;

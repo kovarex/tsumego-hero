@@ -50,7 +50,7 @@
 }
 @media (hover: hover) {
 	.tsumego-comments__tab--empty:not(.active):hover {
-		color: var(--text-color);
+		color: var(--color-text);
 	}
 }
 /* Anchor-scope filter (All / General / On board) */
@@ -64,12 +64,12 @@
 }
 .tsumego-comments__anchor-label {
 	font-size: 12px;
-	color: var(--text-softer-color);
+	color: var(--color-text-muted);
 	margin-right: 2px;
 }
 .tsumego-comments__anchor-empty {
 	margin: 0 14px 12px 14px;
-	color: var(--text-softer-color);
+	color: var(--color-text-muted);
 	font-size: var(--text-sm);
 	font-style: italic;
 }
@@ -78,7 +78,7 @@
 .tsumego-comment--standalone {
 	margin: 10px 14px;
 	padding-bottom: 10px;
-	border-bottom: 1px dotted var(--current-border-color);
+	border-bottom: 1px dotted var(--color-border);
 }
 .tsumego-comment--standalone:last-child {
 	border-bottom: none;
@@ -100,7 +100,7 @@
 }
 .tsumego-comment__date {
 	font-size: var(--text-xs);
-	color: var(--text-softer-color);
+	color: var(--color-text-muted);
 }
 /* Position-anchored comment "Move N" chip (clickable -> jumps to position) */
 
@@ -110,8 +110,8 @@
 	padding: 1px 7px;
 	border: none;
 	border-radius: 10px;
-	background: var(--info-box-background);
-	color: var(--text-softer-color);
+	background: var(--color-surface);
+	color: var(--color-text-muted);
 	font-size: var(--text-xs);
 	white-space: nowrap;
 	cursor: pointer;
@@ -119,8 +119,8 @@
 	vertical-align: middle;
 }
 .tsumego-comment__position-label:hover {
-	background: var(--surface-hover);
-	color: var(--text-color);
+	background: var(--color-surface-hover);
+	color: var(--color-text);
 }
 /* Comment content / text */
 
@@ -180,7 +180,7 @@
 
 .deleteComment {
 	background: transparent;
-	border: 1px solid var(--feedback-error);
+	border: 1px solid var(--color-danger);
 	font-size: var(--text-xs);
 	cursor: pointer;
 	padding: 2px 6px;
@@ -190,7 +190,7 @@
 	transition: background-color 0.15s, color 0.15s;
 }
 .deleteComment:hover {
-	background: var(--feedback-error);
+	background: var(--color-danger);
 	color: var(--color-white);
 }
 /* Login prompt */
@@ -198,7 +198,7 @@
 .tsumego-comments__login-prompt {
 	padding: 15px;
 	text-align: center;
-	color: var(--text-softer-color);
+	color: var(--color-text-muted);
 }
 .tsumego-comments__login-prompt a {
 	color: var(--color-blue-accent);
@@ -214,14 +214,14 @@
 .tsumego-comments__form h4 {
 	margin: 0 0 10px 0;
 	font-size: 14px;
-	color: var(--text-color);
+	color: var(--color-text);
 }
 .tsumego-comments__form textarea {
 	width: 100%;
 	min-height: 80px;
 	padding: var(--space-2);
-	background: var(--info-box-background);
-	color: var(--text-color);
+	background: var(--color-surface);
+	color: var(--color-text);
 	border: 1px solid var(--comment-textarea-border);
 	border-radius: var(--radius-sm);
 	resize: vertical;
@@ -230,7 +230,7 @@
 .tsumego-comments__char-counter {
 	text-align: right;
 	font-size: var(--text-xs);
-	color: var(--text-softer-color);
+	color: var(--color-text-muted);
 	margin-top: 2px;
 	margin-bottom: var(--space-2);
 }
@@ -261,7 +261,7 @@
 }
 .tsumego-comments__form textarea::placeholder,
 .tsumego-issue__reply-form textarea::placeholder {
-	color: var(--text-softer-color);
+	color: var(--color-text-muted);
 }
 .tsumego-comments__position-toggle input {
 	accent-color: var(--color-green);
@@ -331,19 +331,19 @@
 	display: inline-block;
 	cursor: grab;
 	font-size: 20px;
-	color: var(--text-softer-color);
+	color: var(--color-text-muted);
 	user-select: none;
 	padding: 4px 2px;
 	border-radius: var(--radius-sm);
 	transition: color 0.15s, background-color 0.15s;
 }
 .tsumego-comment__drag-handle:hover {
-	color: var(--text-softer-color);
+	color: var(--color-text-muted);
 	background-color: rgba(0, 0, 0, 0.1);
 }
 .tsumego-comment__drag-handle:active {
 	cursor: grabbing;
-	color: var(--text-color);
+	color: var(--color-text);
 }
 /* Comment being dragged */
 
@@ -388,7 +388,7 @@
 
 .tsumego-issue__drop-overlay--source {
 	background: rgba(240, 173, 78, 0.85);
-	border-color: var(--feedback-warning);
+	border-color: var(--color-warning);
 }
 .tsumego-issue__drop-overlay--source.tsumego-issue__drop-overlay--active {
 	background: rgba(200, 127, 10, 0.9);
@@ -434,12 +434,12 @@
 	gap: 10px;
 	padding-bottom: 10px;
 	margin-bottom: 10px;
-	border-bottom: 1px solid var(--current-border-color);
+	border-bottom: 1px solid var(--color-border);
 }
 .tsumego-issue__title {
 	font-weight: var(--weight-bold);
 	font-size: 14px;
-	color: var(--text-color);
+	color: var(--color-text);
 }
 .tsumego-issue__title a {
 	color: var(--color-blue-accent);
@@ -464,12 +464,12 @@
 	color: var(--issue-closed-text);
 }
 .tsumego-issue__meta {
-	color: var(--text-softer-color);
+	color: var(--color-text-muted);
 	font-size: 12px;
 	font-style: italic;
 }
 .tsumego-issue__date {
-	color: var(--text-softer-color);
+	color: var(--color-text-muted);
 	font-size: 12px;
 }
 .tsumego-issue__actions {
@@ -483,16 +483,16 @@
 }
 .tsumego-issue__reply-btn {
 	background: transparent;
-	border: 1px solid var(--text-softer-color);
+	border: 1px solid var(--color-text-muted);
 	border-radius: var(--radius-sm);
 	padding: 5px 12px;
 	font-size: 12px;
 	cursor: pointer;
-	color: var(--text-softer-color);
+	color: var(--color-text-muted);
 }
 .tsumego-issue__reply-btn:hover {
 	background: var(--issue-reply-hover-background);
-	border-color: var(--text-softer-color);
+	border-color: var(--color-text-muted);
 	color: var(--issue-reply-hover-text);
 }
 .tsumego-issue__reply-form {
@@ -504,7 +504,7 @@
 	width: 100%;
 	padding: var(--space-2);
 	background: var(--issue-reply-textarea-background);
-	color: var(--text-color);
+	color: var(--color-text);
 	border: 1px solid var(--comment-textarea-border);
 	border-radius: var(--radius-sm);
 	font-size: var(--text-sm);
@@ -531,7 +531,7 @@
 	padding: 20px;
 }
 .issues-page__description {
-	color: var(--text-softer-color);
+	color: var(--color-text-muted);
 	margin-bottom: 20px;
 }
 .issues-page__filters {
@@ -548,7 +548,7 @@
 /* Problem reference header in global issues list */
 
 .issues-list__problem-ref {
-	background: var(--surface-hover);
+	background: var(--color-surface-hover);
 	padding: 8px 14px;
 	margin: 15px 0 0 0;
 	border-radius: 6px 6px 0 0;

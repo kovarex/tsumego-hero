@@ -21,9 +21,9 @@
 	display: flex;
 	flex-direction: column;
 	min-height: 0;
-	border: 1px solid var(--current-border-color);
+	border: 1px solid var(--color-border);
 	border-radius: var(--radius-md);
-	background: var(--info-box-background);
+	background: var(--color-surface);
 }
 
 .messages-list__items
@@ -55,9 +55,9 @@
 	width: 100%;
 	padding: var(--space-2) var(--space-3);
 	border: 0;
-	border-bottom: 1px solid var(--current-border-color);
+	border-bottom: 1px solid var(--color-border);
 	background: none;
-	color: var(--text-color);
+	color: var(--color-text);
 	font: inherit;
 	text-align: left;
 	cursor: pointer;
@@ -65,12 +65,12 @@
 
 .messages-list__item:hover
 {
-	background: var(--surface-hover);
+	background: var(--color-surface-hover);
 }
 
 .messages-list__item--selected
 {
-	background: var(--surface-bar);
+	background: var(--color-surface-sunken);
 	box-shadow: inset 3px 0 0 var(--color-green);
 }
 
@@ -93,7 +93,7 @@
 .messages-list__date
 {
 	font-size: var(--text-xs);
-	color: var(--text-softer-color);
+	color: var(--color-text-muted);
 }
 
 .messages-list__preview
@@ -103,7 +103,7 @@
 	white-space: nowrap;
 	text-overflow: ellipsis;
 	font-size: var(--text-sm);
-	color: var(--text-softer-color);
+	color: var(--color-text-muted);
 }
 
 .messages-unread-count[hidden]
@@ -117,7 +117,7 @@
 {
 	position: relative;
 	padding: var(--space-2);
-	border-bottom: 1px solid var(--current-border-color);
+	border-bottom: 1px solid var(--color-border);
 }
 
 .messages-search__results
@@ -129,9 +129,9 @@
 	margin: 2px 0 0;
 	padding: 0;
 	list-style: none;
-	border: 1px solid var(--current-border-color);
+	border: 1px solid var(--color-border);
 	border-radius: var(--radius-sm);
-	background: var(--info-box-background);
+	background: var(--color-surface);
 	box-shadow: var(--shadow-popover);
 }
 
@@ -144,7 +144,7 @@
 	padding: 6px var(--space-2);
 	border: 0;
 	background: none;
-	color: var(--text-color);
+	color: var(--color-text);
 	font: inherit;
 	text-align: left;
 	cursor: pointer;
@@ -153,13 +153,13 @@
 .messages-search__result:hover,
 .messages-search__result:focus
 {
-	background: var(--surface-hover);
+	background: var(--color-surface-hover);
 }
 
 .messages-search__empty
 {
 	padding: 6px var(--space-2);
-	color: var(--text-softer-color);
+	color: var(--color-text-muted);
 }
 
 /* ── One conversation ── */
@@ -169,9 +169,9 @@
 	display: flex;
 	flex-direction: column;
 	min-height: 0;
-	border: 1px solid var(--current-border-color);
+	border: 1px solid var(--color-border);
 	border-radius: var(--radius-md);
-	background: var(--info-box-background);
+	background: var(--color-surface);
 }
 
 .messages-conversation--none
@@ -186,7 +186,7 @@
 	align-items: center;
 	gap: var(--space-3);
 	padding: var(--space-2) var(--space-3);
-	border-bottom: 1px solid var(--current-border-color);
+	border-bottom: 1px solid var(--color-border);
 	font-weight: var(--weight-bold);
 }
 
@@ -230,8 +230,8 @@
 	max-width: 75%;
 	padding: 6px 10px;
 	border-radius: var(--radius-md);
-	background: var(--surface-bar);
-	border: 1px solid var(--current-border-color);
+	background: var(--color-surface-sunken);
+	border: 1px solid var(--color-border);
 }
 
 .message--own
@@ -251,14 +251,14 @@
 	display: block;
 	margin-top: 2px;
 	font-size: var(--text-xs);
-	color: var(--text-softer-color);
+	color: var(--color-text-muted);
 	text-align: right;
 }
 
 .messages-form
 {
 	padding: var(--space-2) var(--space-3);
-	border-top: 1px solid var(--current-border-color);
+	border-top: 1px solid var(--color-border);
 }
 
 .messages-form__text

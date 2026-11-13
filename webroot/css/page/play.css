@@ -31,7 +31,7 @@
 /* as wide as its link: a full-width block shifted right would stick out of the page on a phone */
 #msg1x {
   display: inline-block;
-  color: var(--text-softer-color);
+  color: var(--color-text-muted);
   margin: 2px 14px;
   cursor: pointer;
   position: relative;
@@ -79,17 +79,17 @@
 }
 #playTitle {
   font-weight: var(--weight-heavy);
-  color: var(--text-color);
+  color: var(--color-text);
 }
-#playTitleA { color: var(--text-color); }
+#playTitleA { color: var(--color-text); }
 /* The collection a problem of a class or a query comes from */
 .play-title__origin-line { font-weight: var(--weight-normal); }
 .play-title__origin { color: grey; }
 /* <font size="5px"> was x-large */
 .play-title__time-mode { font-size: x-large; }
-#descriptionText { color: var(--text-softer-color); }
+#descriptionText { color: var(--color-text-muted); }
 .add-tag-list-anchor {
-  color: var(--text-softer-color);
+  color: var(--color-text-muted);
   font-size: 14px;
   text-decoration: underline;
   cursor: pointer;
@@ -308,7 +308,7 @@
   position: absolute;
   font-family: var(--font-family-display);
   font-size: 12px;
-  color: var(--text-softer-color);
+  color: var(--color-text-muted);
   right: 207px;
   margin-top: 18px;
 }
@@ -403,7 +403,7 @@
 /* The board themes (board-dark.css) set the background of the board box, and a rule in the
    light theme would cover it, so this one stays a dark-only rule. */
 [data-theme="dark"] .besogo-container {
-	background: var(--info-box-background);
+	background: var(--color-surface);
 }
 
 /* The play screen: the board column (where the problem is, its goal and stake, the one row of
@@ -501,14 +501,14 @@
 }
 /* on the grey of the row: the goal in the colour of the text, its hint a little softer, the white stone outlined */
 .play-message__goal #descriptionText {
-  color: var(--text-color);
+  color: var(--color-text);
 }
 .play-message__goal #hintText {
-  color: var(--text-color);
+  color: var(--color-text);
   opacity: 0.8;
 }
 .play-message__goal .play-goal__stone--white {
-  border-color: var(--text-color);
+  border-color: var(--color-text);
 }
 .play-message #theComment:empty {
   flex: 0;
@@ -538,7 +538,7 @@
   flex-direction: column;
   align-items: flex-end;
   gap: 2px;
-  color: var(--text-color);
+  color: var(--color-text);
   font-size: var(--text-md);
   text-align: right;
 }
@@ -566,7 +566,7 @@
   padding: var(--space-2) var(--space-3);
   border: 1px solid var(--surface-border-muted);
   border-radius: var(--radius-md);
-  background: var(--info-box-background);
+  background: var(--color-surface);
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
   text-align: left;
   white-space: nowrap;
@@ -614,7 +614,7 @@
   background: none;
   text-align: left;
   white-space: pre-line;
-  color: var(--text-color);
+  color: var(--color-text);
 }
 /* Every message of the row is one: Correct!, Incorrect!, a lock and the comment of a move, at the left in the same
    bold size, the comment in the colour of the text (it can say anything; Correct! or Incorrect! next to it gives the
@@ -695,8 +695,8 @@
 }
 /* The toggles of the panel are .btn (Tsumegos/play.php); an open one is filled like a chosen pill */
 .play-actions__button[data-open="1"] {
-  border-color: var(--text-color);
-  background: var(--text-color);
+  border-color: var(--color-text);
+  background: var(--color-text);
   color: var(--color-surface);
 }
 .play-actions__button--disabled {
@@ -741,8 +741,8 @@
 /* After a fail, Reset is the thing to do: it keeps its look, with a thin outline in the red of Incorrect! (and
    the keyboard focus, PlayPage.js markFailed()) until the reset */
 .play-message--failed #besogo-reset-button {
-  border-color: var(--feedback-error);
-  box-shadow: 0 0 0 1px var(--feedback-error);
+  border-color: var(--color-danger);
+  box-shadow: 0 0 0 1px var(--color-danger);
 }
 
 /* The board's own settings, moved into the info of the problem */
@@ -932,14 +932,14 @@
 		display: inline-block;
 		font-weight: var(--weight-heavy);
 		font-size: var(--text-lg);
-		color: var(--text-color);
+		color: var(--color-text);
 	}
 	.health-counter::before {
 		content: "\2665";
 		display: inline-block;
 		font-size: 22px;
 		line-height: 1;
-		color: var(--feedback-error);
+		color: var(--color-danger);
 		margin-right: 5px;
 		vertical-align: -2px;
 	}
@@ -973,10 +973,10 @@
 .play-more__summary {
   margin-left: 6px;
   font-size: 0.85em;
-  color: var(--text-softer-color);
+  color: var(--color-text-muted);
 }
 .play-edit__proposal-sent {
-  color: var(--text-softer-color);
+  color: var(--color-text-muted);
 }
 .play-edit__field {
   width: 100%;

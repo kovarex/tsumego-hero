@@ -718,7 +718,7 @@ function displayResult(result, incorrectDetail = '')
 			document.querySelectorAll(".besogo-board").forEach(board => board.classList.add("besogo-board-red-glow"));
 			if (mode==3)
 			{
-				setCountdownColor("var(--feedback-error)");
+				setCountdownColor("var(--color-danger)");
 				toggleBoardLock(true);
 				enableReview();
 			}

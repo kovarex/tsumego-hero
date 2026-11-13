@@ -9,7 +9,7 @@ body {
 	background-repeat: no-repeat;
 	background-position: center center;
 	background-attachment: fixed;
-	color: var(--text-color);
+	color: var(--color-text);
 	/* Respect notched/rounded phones: pull content in from the safe area.
 	   env() is 0 on non-notch devices, so this is a no-op there. */
 	padding-left: env(safe-area-inset-left);
@@ -44,7 +44,7 @@ body {
   position: relative;
   margin: auto;
   padding: 0;
-  background-color: var(--info-box-background);
+  background-color: var(--color-surface);
   border: 2px solid var(--color-black);
   box-shadow: 10px 10px 15px var(--color-black);
   border-radius:10px;
@@ -351,7 +351,7 @@ li a.menuLi.nav__link--active {
 	background: var(--card-header-background);
 	border-radius: var(--radius-md) var(--radius-md) 0 0;
 	border: 1px solid var(--color-border);
-	color: var(--text-color);
+	color: var(--color-text);
 }
 .title4date3 {
   padding: var(--space-2);
@@ -712,7 +712,7 @@ nav ul ul ul li {
 .error-page__code--danger { color: var(--error-code-danger); }
 .error-page__title {
   font-size: 36px;
-  color: var(--text-color);
+  color: var(--color-text);
   margin: 60px 0 20px 0;
   position: relative;
   z-index: 2;
@@ -722,7 +722,7 @@ nav ul ul ul li {
 }
 .error-page__message,
 .error-page__details {
-  color: var(--text-softer-color);
+  color: var(--color-text-muted);
   line-height: 1.6;
   position: relative;
   z-index: 2;
@@ -746,7 +746,7 @@ nav ul ul ul li {
   z-index: 2;
 }
 .error-page__debug-title {
-  color: var(--text-color);
+  color: var(--color-text);
   margin-top: 0;
   margin-bottom: 20px;
 }
@@ -757,10 +757,10 @@ nav ul ul ul li {
   border-radius: var(--radius-sm);
 }
 .error-page__fact-name {
-  color: var(--text-color);
+  color: var(--color-text);
 }
 .error-page__fact-value {
-  color: var(--feedback-error);
+  color: var(--color-danger);
   background: rgba(0, 0, 0, 0.04);
   padding: 4px 8px;
   border-radius: 3px;
@@ -774,7 +774,7 @@ nav ul ul ul li {
   margin-top: 20px;
 }
 .error-page__trace-title {
-  color: var(--text-color);
+  color: var(--color-text);
   display: block;
   padding: 10px;
   background: rgba(0, 0, 0, 0.03);

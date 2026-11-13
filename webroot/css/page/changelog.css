@@ -30,7 +30,7 @@
 {
 	font-size: var(--text-xl);
 	font-weight: var(--weight-bold);
-	color: var(--text-color);
+	color: var(--color-text);
 	margin: 0 0 var(--space-4);
 }
 
@@ -92,14 +92,14 @@
 	z-index: 1;
 	font-size: var(--text-lg);
 	font-weight: var(--weight-bold);
-	color: var(--text-color);
+	color: var(--color-text);
 	letter-spacing: 0.02em;
 	/* The heading is painted over the entries, so it needs its own opaque fill to
 	   hide the lines scrolling under it. Same colour as the panel (.whitebox2). */
-	background: var(--info-box-background);
+	background: var(--color-surface);
 	margin: 0 0 var(--space-3);
 	padding: var(--space-2) 0;
-	border-bottom: 1px solid var(--current-border-color);
+	border-bottom: 1px solid var(--color-border);
 }
 
 /* Count of new entries on the "What's new" menu item, shown once a player has
@@ -192,7 +192,7 @@ a[href="/changelog"]
 	flex: 1 1 auto;
 	min-width: 0;
 	font-size: inherit;
-	color: var(--text-color);
+	color: var(--color-text);
 	line-height: 1.5;
 }
 
