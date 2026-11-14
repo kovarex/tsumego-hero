@@ -274,6 +274,7 @@ function rejuvenation(){
 		if (!response.ok)
 			return;
 		currentHealth = maxHealth;
+		healthAtServer = maxHealth;
 		redrawHearts();
 		disableRejuvenation();
 		enableIntuition();
@@ -565,8 +566,94 @@ function sendResult(outcome)
 		keepalive: true,
 	}).then(response => response.json());
 	window._submitResultPromise = response.catch(err => console.error('submitResult failed:', err));
+	rememberResultStatus(outcome);
 	return response;
 }
+
+//The next page can be opened before the server stored the result (a quick Next), and its button of this problem would
+//show the status from before. So the status the result leads to is remembered for the next page to show (showRecentResultStatus()).
+const recentResultKey = "recentResultStatus";
+const recentResultMilliseconds = 30000;
+//the status shown when the page was opened, the one the server has (opening the problem made it visited) and the ones
+//the results sent since lead to, the last of them the status now
+var statusesOfThisProblem = [tStatus || 'N'];
+if (statusesOfThisProblem[0] == 'N')
+	statusesOfThisProblem.push('V');
+
+//The status a result leaves the problem in, as PlayResultProcessorComponent::getNewStatus() decides it
+function statusAfterResult(status, solved, outOfHearts)
+{
+	if (solved)
+	{
+		if (status == 'W')
+			return 'C';
+		if (status == 'G' || status == 'V' || status == 'N')
+			return 'S';
+		return status;
+	}
+	if (status == 'V' || status == 'N')
+		return outOfHearts ? 'F' : 'V';
+	if (status == 'W')
+		return outOfHearts ? 'X' : 'W';
+	if (status == 'G')
+		return 'V';
+	return status;
+}
+
+function rememberResultStatus(outcome)
+{
+	//the training keeps the statuses as they are
+	if (mode == playPage.page.modes.mistakeTraining)
+		return;
+	let solved = isSolved(outcome);
+	//only the level mode costs hearts
+	if (!solved && mode == playPage.page.modes.level)
+		healthAtServer--;
+	let before = statusesOfThisProblem[statusesOfThisProblem.length - 1];
+	let after = statusAfterResult(before, solved, mode == playPage.page.modes.level && healthAtServer < 0);
+	if (after == before)
+		return;
+	statusesOfThisProblem.push(after);
+	try
+	{
+		sessionStorage.setItem(recentResultKey, JSON.stringify({tsumegoID: tsumegoID, from: statusesOfThisProblem, status: after, time: Date.now()}));
+	}
+	catch (error) { /*no storage, the button shows what the server says*/ }
+}
+
+//The button of the problem of the last result, when it shows a status from before that result
+function showRecentResultStatus()
+{
+	let recent = null;
+	try
+	{
+		recent = JSON.parse(sessionStorage.getItem(recentResultKey));
+		sessionStorage.removeItem(recentResultKey);
+	}
+	catch (error) { return; }
+	//the problem opened again is drawn from what the server has, the board included, and the buttons of the training
+	//show the rungs of its reviews instead
+	if (!recent || Date.now() - recent.time > recentResultMilliseconds || recent.tsumegoID == tsumegoID
+		|| mode == playPage.page.modes.mistakeTraining)
+		return;
+	document.querySelectorAll('.problem-nav__item a[data-tsumego-id="' + Number(recent.tsumegoID) + '"]').forEach(link => {
+		let item = link.parentElement;
+		let shown = [...item.classList].find(name => /^problem-nav__item--[A-Z]$/.test(name));
+		if (!shown || !recent.from.includes(shown.slice(-1)) || shown.slice(-1) == recent.status)
+			return;
+		item.classList.replace(shown, "problem-nav__item--" + recent.status);
+		let label = link.querySelector(".tooltip-label");
+		if (label)
+		{
+			label.className = "tooltip-label status" + recent.status;
+			label.textContent = playPage.page.statusLabels[recent.status] ?? "";
+		}
+		let description = link.querySelector(".tooltip-desc");
+		if (description)
+			description.textContent = playPage.page.statusDescriptions[recent.status] ?? "";
+	});
+}
+showRecentResultStatus();
 
 // Shows the player what the result changed: the account bar, the XP, a potion and achievements
 function showResultResponse(outcome, response)
@@ -595,6 +682,7 @@ function showResultResponse(outcome, response)
 		if (result.potion_triggered)
 		{
 			currentHealth = maxHealth;
+			healthAtServer = maxHealth;
 			redrawHearts();
 			Display.fadeIn("#potionAlerts", 500);
 		}

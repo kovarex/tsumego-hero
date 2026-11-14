@@ -98,6 +98,9 @@ class Play
 					'timedOut' => PlayOutcome::TimedOut->value],
 				'mistakeTrainingQueueLink' => MistakeTraining::$QUEUE_LINK,
 				'light' => $lightDark,
+				//the tooltips of the problem buttons, for the button of a result the server may not have stored yet (PlayPage.js)
+				'statusLabels' => TsumegoStatusTable::$labels,
+				'statusDescriptions' => TsumegoStatusTable::$descriptions,
 				'boardPanels' => Auth::isAdmin() ? 'tree+control+tool+comment+file' : 'tree+control',
 				//The tiles of the filters the player chose, but those of the filter the collection is chosen by
 				'activeTopicTiles' => $tsumegoFilters->query != 'topics' ? array_values($tsumegoFilters->sets) : [],

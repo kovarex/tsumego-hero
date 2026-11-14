@@ -6,6 +6,9 @@
 var hadMisplay = false;
 var tryAgainTomorrow = false;
 var currentHealth = playPage.page.currentHealth;
+//The hearts as the server counts them once it has stored the results sent from this page, which decide whether a fail
+//locks the problem (statusAfterResult())
+var healthAtServer = playPage.page.currentHealth;
 var maxHealth = playPage.page.maxHealth;
 var fullHeart = playPage.page.fullHeart;
 var emptyHeart = playPage.page.emptyHeart;
