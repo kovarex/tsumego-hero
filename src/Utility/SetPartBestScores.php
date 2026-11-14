@@ -5,12 +5,13 @@ namespace App\Utility;
 use App\Model\Table\AchievementConditionTable;
 use App\Model\Table\ProgressDeletionTable;
 use App\Model\Table\SetTable;
+use App\Model\Table\TsumegoStatusTable;
 
 //The scores of a player's run through a part of a collection, kept as the player's best of that part
 //(AchievementConditionTable::CATEGORY_SET_ACCURACY and CATEGORY_SET_TIME). A part is what a reset clears: the problems
 //of the collection ordered by number, deleted ones left out, in parts of ProgressDeletionTable::$PARTITION_SIZE,
 //whatever collection size the player picked. A run is the attempts since the latest reset of the part, and it counts
-//once every problem of the part is solved, so 100% accuracy is the part solved since its reset without a mistake.
+//once every problem of the part is solved (one the reset put back in Review solved again), so 100% accuracy is the part solved since its reset without a mistake.
 final class SetPartBestScores
 {
 	//$accuracy: The share of the attempts that solved their problem, in percent; the misplays of an attempt are its
@@ -51,6 +52,12 @@ final class SetPartBestScores
 			}
 			$failed[$tsumegoID] = ($failed[$tsumegoID] ?? 0) + max((int) $attempt['misplays'], $attempt['solved'] ? 0 : 1);
 		}
+
+		// a problem the reset put back in Review is part of the run once it is solved again
+		if ($since !== '')
+			foreach ($problems as $tsumegoID => $problem)
+				if ($problem['status'] == TsumegoStatusTable::$REVIEW && empty($solved[$tsumegoID]))
+					return null;
 
 		$solvedSum = $failedSum = $secondsSum = $ratingSum = 0;
 		foreach ($problems as $tsumegoID => $problem)

@@ -2696,11 +2696,11 @@ class SetsControllerTest extends IntegrationTestCase
 						'sets' => [['name' => 'Test Set', 'num' => 1]],
 						'statuses'
 						=> [
-							['name' => 'S', 'user' => 'testuser'], // tsumego from this test, progress should be deleted
+							['name' => 'S', 'user' => 'testuser'], // tsumego from this test, goes back to Review
 							['name' => 'S', 'user' => 'otheruser'] // tsumego from this test of other user, should be preserved
 						]
 					],
-					[ // second tsumego from this test, progress should be deleted
+					[ // second tsumego from this test, goes back to Review
 						'sets' => [['name' => 'Test Set', 'num' => 2]],
 						'status' => 'S'
 					],
@@ -2731,8 +2731,8 @@ class SetsControllerTest extends IntegrationTestCase
 			$browser->waitUntilStale($submit);
 			if ($resetInput == "reset")
 			{
-				$this->assertEmpty($TsumegoStatus->find()->where($statusCurrentUserThisSet1)->toArray());
-				$this->assertEmpty($TsumegoStatus->find()->where($statusCurrentUserThisSet2)->toArray());
+				$this->assertSame('W', $TsumegoStatus->find()->where($statusCurrentUserThisSet1)->firstOrFail()->status);
+				$this->assertSame('W', $TsumegoStatus->find()->where($statusCurrentUserThisSet2)->firstOrFail()->status);
 				$this->assertSame(1, $this->fetchTable('ProgressDeletion')->find()->count());
 			}
 			else
@@ -2744,9 +2744,9 @@ class SetsControllerTest extends IntegrationTestCase
 			}
 
 			// other set tsumego progress not touched
-			$this->assertNotEmpty($TsumegoStatus->find()->where($statusCurrentUserOtherSet)->toArray());
+			$this->assertSame('S', $TsumegoStatus->find()->where($statusCurrentUserOtherSet)->firstOrFail()->status);
 			// this set but other user tsumego status untouched
-			$this->assertNotEmpty($TsumegoStatus->find()->where($statusOtherUserThisSet)->toArray());
+			$this->assertSame('S', $TsumegoStatus->find()->where($statusOtherUserThisSet)->firstOrFail()->status);
 		}
 	}
 
@@ -2847,12 +2847,12 @@ class SetsControllerTest extends IntegrationTestCase
 			$submit = $browser->find('#reset-submit');
 			$submit->click();
 			$browser->waitUntilStale($submit);
-			$statuses = $this->fetchTable('TsumegoStatus')->find()->orderBy('id')->toArray();
+			$statuses = array_column(Util::query('SELECT tsumego_id, status FROM tsumego_status'), 'status', 'tsumego_id');
 
-			// 200 statuses left
-			$this->assertSame(200, count($statuses));
-			for ($i = 0; $i < 200; $i++)
-				$this->assertSame($context->tsumegos[$i + ($partition == 1 ? 200 : 0)]['id'], $statuses[$i]->tsumego_id);
+			// the problems of the part reset go back to Review, those of the other part stay solved
+			$this->assertSame(400, count($statuses));
+			for ($i = 0; $i < 400; $i++)
+				$this->assertSame(intdiv($i, 200) + 1 == $partition ? 'W' : 'S', $statuses[$context->tsumegos[$i]['id']], 'problem ' . ($i + 1));
 		}
 	}
 

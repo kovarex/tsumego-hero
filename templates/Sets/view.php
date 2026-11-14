@@ -21,6 +21,7 @@ use App\Utility\ViteManifest;
  * @var int $partition
  * @var int $pdCounter
  * @var int $problemSolvedPercent
+ * @var float $runSolvedPercent The share solved since the latest reset of the part: a problem the reset put back in Review counts once solved again
  * @var bool $scoring
  * @var \App\Model\Entity\Set $set
  * @var array|null $setAuthor
@@ -141,13 +142,13 @@ if ($tsumegoFilters->query != 'topics')
 					echo 'Reset is only possible when collection size is set to ' . ProgressDeletionTable::$PARTITION_SIZE;
 				elseif ($tsumegoFilters->hasProblemFilters())
 					echo 'Reset is only possible without rank and tag filters';
-				elseif ($problemSolvedPercent < 50)
+				elseif ($runSolvedPercent < 50)
 					echo '<br><span class="text-muted">You need to complete 50% to reset.</span>';
 				else
 				{
 					echo '<div id="msg1x"><a id="showx">Reset<img id="greyArrow1" src="/img/greyArrow1.png"></a></div>';
 					echo '<div id="msg2x" class="set-view__reset-form">';
-					echo 'Type "reset" to remove all your progress on this collection.<br><br>';
+					echo 'Type "reset" to start this part over: the problems you solved go back to Review, the others are cleared. Solving a Review problem again makes it Mastered.<br><br>';
 					echo '<form action="/sets/resetProgress/' . $set->id . '/' . ($partition + 1) . '" method="post">';
 					echo '<input type="text" name="reset-check" id="reset-textfield" placeholder="reset">';
 					echo '<input type="submit" class="btn btn--danger" value="Reset" id="reset-submit">';
