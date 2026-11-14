@@ -1,0 +1,67 @@
+<title>TITLE</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one reading column; each step is a go diagram with its explanation beside it (stacked on phones) */
+:root {
+  --paper: #f6f7f8; --ink: #1b2126; --muted: #5b6670; --rule: #d6dbe0; --surface: #ffffff; --accent: #1d5b78;
+  --wood: #ddb97f; --wood-line: #5e4728; --wrong: #a83a32; --wrong-bg: #f8e6e4; --ko: #1d5b78;
+  --body: "IBM Plex Sans", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --paper: #12171b; --ink: #e3e8ec; --muted: #9aa6b0; --rule: #2c353d; --surface: #1a2127; --accent: #7cc0de;
+  --wood: #b8935a; --wood-line: #3a2a14; --wrong: #ef8a80; --wrong-bg: #3a2220; --ko: #0e3a4f; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --paper: #12171b; --ink: #e3e8ec; --muted: #9aa6b0; --rule: #2c353d; --surface: #1a2127; --accent: #7cc0de;
+  --wood: #b8935a; --wood-line: #3a2a14; --wrong: #ef8a80; --wrong-bg: #3a2220; --ko: #0e3a4f; color-scheme: dark; }
+body { background: var(--paper); color: var(--ink); font: 15px/1.55 var(--body); }
+.page { max-width: 920px; margin: 0 auto; padding-block: 32px 64px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 18px; }
+h1 { font-size: 1.6rem; margin: 0; text-wrap: balance; }
+h2 { font-size: 1.25rem; margin: 0; text-wrap: balance; }
+h3 { font-size: 1rem; margin: 0; text-wrap: balance; }
+p { margin: 0; max-width: 72ch; }
+.intro { color: var(--ink); }
+.intro.muted, .note { color: var(--muted); }
+a { color: var(--accent); }
+.rules { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 10px; }
+.rule { background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 10px 12px; display: grid; gap: 2px; }
+.rule b { font: 600 1rem var(--mono); }
+.rule span { color: var(--muted); font-size: 0.9rem; }
+.leaf { background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 16px; display: grid; gap: 14px; }
+.claim { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 0.95rem; }
+.claim b { font-family: var(--mono); }
+.claim .link { margin-left: auto; }
+.step { display: grid; gap: 8px; border-top: 1px solid var(--rule); padding-top: 14px; }
+.step-body { display: grid; grid-template-columns: minmax(0, 330px) minmax(0, 1fr); gap: 16px; align-items: start; }
+@media (max-width: 640px) { .step-body { grid-template-columns: minmax(0, 1fr); } }
+.step-text { display: grid; gap: 8px; min-width: 0; }
+.check { font: 0.85rem/1.4 var(--mono); color: var(--muted); }
+figure { margin: 0; display: grid; gap: 4px; min-width: 0; }
+figcaption { font-size: 0.9rem; color: var(--ink); }
+.notes { font: 0.8rem/1.45 var(--mono); color: var(--muted); }
+.board { width: 100%; max-width: 330px; height: auto; }
+.board .wood { fill: var(--wood); }
+.board .grid { stroke: var(--wood-line); stroke-width: 1; }
+.board .grid.edge { stroke-width: 2; }
+.board .coord { font: 10px var(--mono); fill: var(--wood-line); text-anchor: middle; }
+.board .black { fill: #16191c; stroke: #16191c; }
+.board .white { fill: #f5f5f1; stroke: #3b3a35; stroke-width: 1; }
+.board .number { font: 600 11px var(--mono); text-anchor: middle; }
+.board .on-black { fill: #f5f5f1; } .board .on-white { fill: #16191c; }
+.board .ghost { opacity: 0.35; stroke-dasharray: 3 2; } .board .ghost-number { fill: var(--wood-line); }
+.board .ko { fill: none; stroke: var(--ko); stroke-width: 2; }
+.table-wrap { overflow-x: auto; }
+table.threats { border-collapse: collapse; font-variant-numeric: tabular-nums; min-width: 420px; }
+.threats th, .threats td { border: 1px solid var(--rule); padding: 6px 10px; text-align: left; vertical-align: top; }
+.threats th { font-weight: 500; color: var(--muted); font-size: 0.9rem; }
+.threats td { font-weight: 600; }
+.threats .pred { display: block; font: 400 0.8rem var(--mono); color: var(--muted); }
+.threats td.differs { background: var(--wrong-bg); color: var(--wrong); }
+.threats td.differs .pred { color: var(--wrong); }
+</style>
+<div class="page">
+  <h1>TITLE</h1>
+  INTRO
+  BODY
+</div>

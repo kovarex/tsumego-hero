@@ -1,0 +1,262 @@
+{
+ "problem": "9",
+ "title": "Problem 9 Ko Leaves",
+ "intro": [
+  "Two leaves of <a href=\"https://tsumego.com/9\">problem 9</a> (Black to live) have a ko label that the solver disputes. Below, each line is shown move by move, and the solver checks every step. Numbers on the stones give the order of the moves in that diagram, faded stones were captured in it, and a square frame marks the ko point that the side to play may not retake at once.",
+  "<div class=\"rules\"><div class=\"rule\"><b>KO+</b><span>Black took first. Black lives when s &ge; o.</span></div><div class=\"rule\"><b>KO+2</b><span>White has to win the ko twice. Black lives when s &ge; o &minus; 1.</span></div><div class=\"rule\"><b>KO&minus;</b><span>White took first. Black lives when s &ge; o + 1.</span></div><div class=\"rule\"><b>KO&minus;2</b><span>Black has to win it twice. Black lives when s &ge; o + 2.</span></div></div>",
+  "s counts Black's ko threats elsewhere on the board and o counts White's. These are besogo's definitions, and the site's tutorial says the same in words: KO+2 \"becomes a regular ko (KO+) if the opponent won it once\", and KO&minus;2 becomes a direct ko (KO&minus;) once the player has won it once. A local move that the other side has to answer works like an extra ko threat."
+ ],
+ "leaves": [
+  {
+   "heading": "Leaf 1 <span class=\"note\">B18 C19 B16 B15 A17 B19 D19 A15 A16 A18 A19</span>",
+   "line": "B18 C19 B16 B15 A17 B19 D19 A15 A16 A18 A19",
+   "tree": "KO+2",
+   "right": "KO+",
+   "text": [
+    "Black 11 has just taken the ko. S[KO+2] says White needs two threats more than Black. The solver says one more is enough (KO+).",
+    "The two labels differ when White has one threat and Black has none. KO+2 says Black lives then. In fact White kills, with the throw-in at A19 in step 3. KO+2 only holds if White fills E19 there instead (last step)."
+   ],
+   "steps": [
+    {
+     "title": "The tree's path to the leaf",
+     "start": "",
+     "moves": "B18 C19 B16 B15 A17 B19 D19 A15 A16 A18 A19",
+     "first": 1,
+     "caption": "Black 11 captures White 10 and takes the ko. White may not retake at A18 at once.",
+     "check": {
+      "status": "KO"
+     }
+    },
+    {
+     "title": "1. With no threat, White cannot retake",
+     "start": "B18 C19 B16 B15 A17 B19 D19 A15 A16 A18 A19",
+     "moves": "E19 C18",
+     "first": 1,
+     "notes": {
+      "1": "is any White move except the retake"
+     },
+     "caption": "Black 2 captures two stones and makes two eyes, at A18 and at B19&ndash;C19.",
+     "check": {
+      "status": "ALIVE"
+     }
+    },
+    {
+     "title": "2. White retakes with a threat, Black connects",
+     "start": "B18 C19 B16 B15 A17 B19 D19 A15 A16 A18 A19",
+     "moves": "A18! B17",
+     "first": 1,
+     "caption": "White plays a ko threat elsewhere, Black answers it, and White retakes at 1. Black connects at 2.",
+     "text": [
+      "Black may not retake at once. It can fight on with threats of its own: each exchange costs both sides one threat and brings back the leaf position. When Black runs out first, it has to connect at 2, because White B17 would capture A16, A17 and B16.",
+      "From here, White needs no further threat: even with no threats left on either side, White kills."
+     ],
+     "check": {
+      "s": 0,
+      "o": 0,
+      "black_lives": false
+     }
+    },
+    {
+     "title": "3. White throws in at A19",
+     "start": "B18 C19 B16 B15 A17 B19 D19 A15 A16 A18 A19 A18! B17",
+     "moves": "A19 C18",
+     "first": 3,
+     "caption": "White 3 puts its four stones in atari on purpose, and Black captures them at 4.",
+     "text": [
+      "If Black does not capture, White fills E19 and Black has to capture anyway, with one outside liberty fewer."
+     ],
+     "check": {
+      "s": 0,
+      "o": 0,
+      "black_lives": false
+     }
+    },
+    {
+     "title": "4. A new ko, and this time White takes first",
+     "start": "B18 C19 B16 B15 A17 B19 D19 A15 A16 A18 A19 A18! B17 A19 C18",
+     "moves": "B19 A19 A18",
+     "first": 5,
+     "caption": "White 5 is the vital point. Black's only try is 6, and White 7 captures it: a new ko that White has taken.",
+     "text": [
+      "Black's other answers to 5 lose without a ko: A18 or C19 leaves one eye after White A19. White's other moves at 5 (A18, A19, C19, E19 or elsewhere) let Black make two eyes with B19.",
+      "Now Black needs a threat to retake at A19."
+     ],
+     "check": {
+      "s": 0,
+      "o": 0,
+      "black_lives": false
+     }
+    },
+    {
+     "title": "5. White had one threat, Black none: Black dies",
+     "start": "B18 C19 B16 B15 A17 B19 D19 A15 A16 A18 A19 A18! B17 A19 C18 B19 A19 A18",
+     "moves": "pass A19 C19 A19",
+     "first": 8,
+     "notes": {
+      "8": "Black has no threat, so it cannot retake at A19 and plays elsewhere"
+     },
+     "caption": "White connects at 9. Black captures three stones at 10, and White 11 at the vital point leaves Black one eye.",
+     "text": [
+      "So one White threat against none kills. KO+2 would mean Black survives this case."
+     ],
+     "check": {
+      "status": "DEAD"
+     }
+    },
+    {
+     "title": "6. One threat each: Black lives",
+     "start": "B18 C19 B16 B15 A17 B19 D19 A15 A16 A18 A19 A18! B17 A19 C18 B19 A19 A18",
+     "moves": "A19! E19 C19",
+     "first": 8,
+     "notes": {
+      "9": "White's only threat was spent at 1, so it cannot retake at A18"
+     },
+     "caption": "Black uses its threat and retakes at 8. Black 10 captures 5 and has two eyes, at A18 and at B19.",
+     "text": [
+      "Equal threats: Black lives, which is what KO+ says."
+     ],
+     "check": {
+      "status": "ALIVE"
+     }
+    },
+    {
+     "title": "7. Where KO+2 comes from: White 3 at E19",
+     "start": "B18 C19 B16 B15 A17 B19 D19 A15 A16 A18 A19 A18! B17",
+     "moves": "E19 A19",
+     "first": 3,
+     "caption": "If White fills E19 instead of throwing in, Black retakes at 4 without needing a threat: the ban only forbids retaking at once.",
+     "text": [
+      "Now White needs a second threat, as KO+2 says, and with no threats left on either side Black lives. The throw-in in step 3 saves White that threat."
+     ],
+     "check": {
+      "s": 0,
+      "o": 0,
+      "black_lives": true
+     }
+    }
+   ]
+  },
+  {
+   "heading": "Leaf 2 <span class=\"note\">B18 C19 B16 B15 A17 B19 D19 A15 A19 A16 C18 B17</span>",
+   "line": "B18 C19 B16 B15 A17 B19 D19 A15 A19 A16 C18 B17",
+   "tree": "KO-",
+   "right": "KO-2",
+   "text": [
+    "White 12 has just taken the ko. S[KO&minus;] says Black needs one threat more than White. The solver says two more (KO&minus;2), because White has a free local threat: the atari at B19.",
+    "The two labels differ when Black has one threat and White has none. KO&minus; says Black lives then. In fact White kills (steps 2 to 5)."
+   ],
+   "steps": [
+    {
+     "title": "The tree's path to the leaf",
+     "start": "",
+     "moves": "B18 C19 B16 B15 A17 B19 D19 A15 A19 A16 C18 B17",
+     "first": 1,
+     "caption": "White 12 captures Black 3 at B16 and takes the ko. Black may not retake at B16 at once.",
+     "check": {
+      "status": "KO"
+     }
+    },
+    {
+     "title": "1. With no threat, Black cannot retake",
+     "start": "B18 C19 B16 B15 A17 B19 D19 A15 A19 A16 C18 B17",
+     "moves": "pass B16",
+     "first": 1,
+     "notes": {
+      "1": "Black has no threat, so it cannot retake at B16 and plays elsewhere"
+     },
+     "caption": "White connects at 2. A17 stays in atari, so A18 is not an eye, and Black has only the eye at B19&ndash;C19.",
+     "check": {
+      "status": "DEAD"
+     }
+    },
+    {
+     "title": "2. Black retakes with a threat, White ataris at B19",
+     "start": "B18 C19 B16 B15 A17 B19 D19 A15 A19 A16 C18 B17",
+     "moves": "B16! B19",
+     "first": 1,
+     "caption": "Black plays a threat elsewhere, White answers it, and Black retakes at 1. White 2 ataris A19.",
+     "text": [
+      "White 2 is a local threat: it costs White nothing from elsewhere, and Black has to answer it. Each answer gives White the ko back (steps 3 to 5).",
+      "Even with no threats left on either side, White kills from here."
+     ],
+     "check": {
+      "s": 0,
+      "o": 0,
+      "black_lives": false
+     }
+    },
+    {
+     "title": "3. Black captures at C19: White retakes for free",
+     "start": "B18 C19 B16 B15 A17 B19 D19 A15 A19 A16 C18 B17 B16! B19",
+     "moves": "C19 B17",
+     "first": 3,
+     "caption": "Black 3 captures, and White retakes at 4 without a threat: the ban only covered the move right after Black's retake.",
+     "text": [
+      "Black is back at the leaf position and needs a second threat."
+     ],
+     "check": {
+      "s": 0,
+      "o": 0,
+      "black_lives": false
+     }
+    },
+    {
+     "title": "4. Black connects at B17: a new ko that White takes first",
+     "start": "B18 C19 B16 B15 A17 B19 D19 A15 A19 A16 C18 B17 B16! B19",
+     "moves": "B17 A18",
+     "first": 3,
+     "caption": "Black 3 ends the first ko, but White 4 captures A19 and has taken a new ko.",
+     "text": [
+      "Again Black needs a second threat, here to retake at A19."
+     ],
+     "check": {
+      "s": 0,
+      "o": 0,
+      "black_lives": false
+     }
+    },
+    {
+     "title": "5. Without the second threat, Black dies",
+     "start": "B18 C19 B16 B15 A17 B19 D19 A15 A19 A16 C18 B17 B16! B19 B17 A18",
+     "moves": "pass A19 C19 A19",
+     "first": 5,
+     "notes": {
+      "5": "Black has no threat left, so it cannot retake at A19 and plays elsewhere"
+     },
+     "caption": "White connects at 6. Black captures three stones at 7, and White 8 at the vital point leaves Black one eye.",
+     "check": {
+      "status": "DEAD"
+     }
+    },
+    {
+     "title": "6. Black saves A19 at A18: White retakes for free",
+     "start": "B18 C19 B16 B15 A17 B19 D19 A15 A19 A16 C18 B17 B16! B19",
+     "moves": "A18 B17",
+     "first": 3,
+     "caption": "If Black protects A19 at 3, White retakes at 4 without a threat.",
+     "text": [
+      "Black needs a second threat here too. Without one, White connects at B16 and Black has one eye, at B19 after capturing there."
+     ],
+     "check": {
+      "s": 0,
+      "o": 0,
+      "black_lives": false
+     }
+    },
+    {
+     "title": "7. Two threats for Black: Black lives",
+     "start": "B18 C19 B16 B15 A17 B19 D19 A15 A19 A16 C18 B17 B16! B19 C19 B17",
+     "moves": "B16! E19 B17",
+     "first": 5,
+     "notes": {
+      "6": "White has no local threat left: B19 is now Black's eye"
+     },
+     "caption": "After steps 2 and 3, Black uses its second threat and retakes at 5. Black connects at 7 and has two eyes, at A18 and B19.",
+     "check": {
+      "status": "ALIVE"
+     }
+    }
+   ]
+  }
+ ]
+}
