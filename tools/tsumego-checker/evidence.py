@@ -176,7 +176,7 @@ def solver_line(s, board, to_move, result, plies=12):
             break
     return line
 
-if '--pv' in flags and status in ('DEAD', 'ALIVE', 'KO', 'BENT4'):
+if '--pv' in flags and status != '?':
     print('\nSolver line keeping %s (the side to play tries the engine\'s move first; the other side\'s moves are any that keep it):' % status)
     print('  ' + ' '.join(solver_line(solver, board, to_move, status)))
 
@@ -192,7 +192,7 @@ if '--moves' in flags:
         child_status = solver.status(child, opponent(to_move))[0]
         child_status = ko_taken_by(child, to_move, solver_color, child_status)
         results.setdefault(child_status, []).append(name(p))
-    for key in ('DEAD', 'BENT4', 'KO', 'ALIVE', '?'):
+    for key in ('DEAD', 'BENT4', 'DSKO', 'DDKO', 'KO', 'SEKI', 'SEKI+', 'ADKO', 'ASKO', 'ALIVE', '?'):
         if key in results:
             print('  %-5s after %s' % (key, ' '.join(results[key])))
 

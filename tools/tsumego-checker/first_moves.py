@@ -14,8 +14,10 @@ def rank(status, goal):
         return None
     if status == STATUS_KO:
         return 1
-    if status == STATUS_BENT4:
+    if status in (STATUS_BENT4, STATUS_DDKO, STATUS_DSKO):
         return 2 if goal == 'KILL' else 0 #almost dead
+    if status in (STATUS_SEKI, STATUS_SEKI_SENTE, STATUS_ADKO, STATUS_ASKO):
+        return 0 if goal == 'KILL' else 2 #the target lives
     return 2 if solver_wins(status, goal) else 0
 
 def detect_goal(engine, box, extra_points, board, solver_color, budget):

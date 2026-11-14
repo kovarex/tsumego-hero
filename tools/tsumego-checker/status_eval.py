@@ -8,9 +8,10 @@ from check_tree import *
 KO_SIGN = os.environ.get('KO_SIGN', '1') == '1'
 
 def authored_class(text, goal):
-    #DEAD / KO / ALIVE of the target, comparable with the solver's three outcomes
-    if text.strip() == 'BENT4':
-        return 'BENT4'
+    #DEAD / KO / ALIVE of the target, comparable with the solver's three outcomes; the statuses the solver tells apart
+    #(bent four, seki, double ko, superko) stay as they are
+    if text.strip() in SPECIAL_STATUSES:
+        return text.strip()
     r = status_rank(text, goal)
     if r is None:
         return None

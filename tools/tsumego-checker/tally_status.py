@@ -8,7 +8,7 @@ def tally(pattern):
             for lf in r['leaves']:
                 e = lf['engine']; x = lf['expected']; a = lf['authored'].strip()
                 key = (r['set_connection_id'], lf['line'])
-                if e not in ('ALIVE', 'DEAD', 'KO', 'BENT4') or x is None:
+                if e not in ('ALIVE', 'DEAD', 'KO', 'BENT4', 'SEKI', 'SEKI+', 'DDKO', 'ADKO', 'DSKO', 'ASKO') or x is None:
                     c['undecided/unclassified'] += 1; leaves[key] = 'undecided'; continue
                 if e != x:
                     c['status_disagree'] += 1; dis[(x, e)] += 1; bad = True; leaves[key] = 'status %s/%s' % (x, e); continue

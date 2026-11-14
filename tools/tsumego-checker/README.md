@@ -120,3 +120,11 @@ local threats, 10kKO, double ko, superko, BENT4, SEKI) from small engine searche
 `research/ko_labels/prototypes/` holds the prototype engines (diffs against `engine.cpp`) and scripts it was built
 from, `research/ko_labels/judge/` the runs that verified its outputs on the settled leaves. The engine part (the
 design's section 5) is in `engine.cpp`; its end playout stays off until the regression run of section 12.
+
+The core of the label is on `Solver` in `tsumego.py` (sections 3, 4 steps 1-5, 6 and 9): `count` (the counted game,
+with forced passes, barred points, the cycle rule and the end playout, escalated at 5x the budget and then by one ply),
+`threshold` (galloping, bisection, the shifted check), `first_take`, `profile` (approach count, held-ko check, the
+direct-ko value), `ko_label` (the record of section 7.1 in both areas) and the class step `classify` behind `status`
+(cycle rules for double ko and superko, the clean result, the fixed bent-four test, SEKI and SEKI+). The counted
+searches of the label use `END_PLAY` (default 2, the side to move keeps the move; 1 the attacker moves on).
+`besogo_string`, `parse_status`, `label_threshold` and `better` mirror `status.js`.
