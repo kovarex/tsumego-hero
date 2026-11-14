@@ -57,9 +57,9 @@ class TsumegoStatusTable extends AppTable
 		'V' => 'You have seen this problem but have not solved it.',
 		'S' => 'You got it right. It gives no more XP and becomes available for Review after one week.',
 		'F' => 'You can\'t play this problem today after misplaying with no hearts left. It resets to Visited tomorrow.',
-		'W' => 'A week has passed since you solved this. Solve it for half XP. Get it right and it becomes Mastered, fail and it becomes Forgotten.',
+		'W' => 'A week has passed since you solved this, or you reset its part. Solve it for half XP. Get it right and it becomes Mastered, misplay it with no hearts left and it becomes Forgotten.',
 		'C' => 'You passed the review. It gives no more XP.',
-		'X' => 'You failed a Review. You are locked out for today. It resets to Review tomorrow.',
+		'X' => 'You misplayed a Review with no hearts left. You can\'t play it today. It resets to Review tomorrow.',
 		'G' => 'You have one attempt at 8x XP. Created by activating the Refinement hero power.',
 	];
 

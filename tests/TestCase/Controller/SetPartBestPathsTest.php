@@ -190,6 +190,44 @@ class SetPartBestPathsTest extends IntegrationTestCase
 		$this->assertEquals(100, $this->viewVariable('bestAccuracy'));
 	}
 
+	private static function statusOf(ContextPreparator $context, int $index): ?string
+	{
+		return Util::query('SELECT status FROM tsumego_status WHERE user_id = ? AND tsumego_id = ?', [$context->user['id'], $context->tsumegos[$index]['id']])[0]['status'] ?? null;
+	}
+
+	//Path 5b: the reset puts the solved problems back in Review; solving one again masters it at once, for the half XP of a
+	//Review, and the run is finished by the last one solved again, scored by the attempts since the reset alone
+	public function testTheProblemsTheResetPutInReviewAreMasteredBySolvingThemAgain(): void
+	{
+		$context = self::collection(10);
+		$this->solveCleanly($context, 0, 7, 70);
+		$this->solveAfterAMiss($context, 8, 70);
+		$this->solveAfterAMiss($context, 9, 70);
+		$this->assertEquals(83.33, self::accuracy($context, 0));
+		$timeBefore = self::time($context, 0);
+		self::anHourPasses();
+		$this->reset($context, 1);
+		$this->assertSame('W', self::statusOf($context, 0), 'solved within the week, still back in Review');
+
+		$this->get('sets/' . self::setID($context));
+		$this->assertEquals(0, $this->viewVariable('accuracy'), 'the new run has nothing solved yet');
+		$this->assertEquals(0, $this->viewVariable('avgTime'));
+		$this->assertEquals($timeBefore, self::time($context, 0), 'the page keeps no best of the run just started (a minute for each problem)');
+
+		$xpBefore = (int) $context->reloadUser()['xp'];
+		$this->play($context, 0, PlayOutcome::SolvedClean, 10);
+		$this->assertSame('C', self::statusOf($context, 0));
+		$this->assertSame('C', json_decode((string) $this->_response->getBody(), true)['status']);
+		$this->assertGreaterThan($xpBefore, (int) $context->reloadUser()['xp'], 'a Review gives XP');
+
+		$this->solveCleanly($context, 1, 8, 10);
+		$this->assertEquals(83.33, self::accuracy($context, 0), 'not finished while a problem is still in Review');
+		$this->play($context, 9, PlayOutcome::SolvedClean, 10);
+		$this->assertEquals(100, self::accuracy($context, 0));
+		$this->assertEquals(10, self::time($context, 0));
+		$this->assertSame([true], $this->frames());
+	}
+
 	//Path 6: the reset of the second part leaves the first; a reset without a part (before the parts were recorded) is
 	//a reset of every part
 	public function testTheResetOfAPartLeavesTheOthers(): void

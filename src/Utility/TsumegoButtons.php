@@ -257,6 +257,16 @@ class TsumegoButtons extends ArrayObject
 		return Util::getPercentButAvoid100UntilComplete($solvedCount, count($this));
 	}
 
+	//The share of the problems solved in the run through their part (TsumegoButton::isSolvedInRun()), once loadAttempts() ran
+	public function getProblemsSolvedInRunPercent(): float
+	{
+		$solvedCount = 0;
+		foreach ($this as $tsumegoButton)
+			if ($tsumegoButton->isSolvedInRun())
+				$solvedCount++;
+		return Util::getPercentButAvoid100UntilComplete($solvedCount, count($this));
+	}
+
 	public function getProblemsRating(): float
 	{
 		if (count($this) == 0)
@@ -306,6 +316,7 @@ class TsumegoButtons extends ArrayObject
 			$tsumegoButton->solvedAttempts = 0;
 			$tsumegoButton->failedAttempts = 0;
 			$since = $runStart[$tsumegoButton->setConnectionID] ?? '';
+			$tsumegoButton->runStartedByReset = $since !== '';
 			foreach ($attemptsByTsumego[$tsumegoButton->tsumegoID] ?? [] as $attempt)
 			{
 				if ((string) $attempt['created'] < $since)
@@ -330,7 +341,7 @@ class TsumegoButtons extends ArrayObject
 		$secondsSum = 0;
 		$solvedCount = 0;
 		foreach ($this as $tsumegoButton)
-			if (TsumegoUtil::isSolvedStatus($tsumegoButton->status))
+			if ($tsumegoButton->isSolvedInRun())
 			{
 				$secondsSum += $tsumegoButton->seconds ?: 60;
 				$solvedCount++;
@@ -338,8 +349,8 @@ class TsumegoButtons extends ArrayObject
 		return $solvedCount == 0 ? 0 : round($secondsSum / $solvedCount, 2);
 	}
 
-	//The share of the attempts of the player that solved the problem, in percent, over the problems solved so far:
-	//a problem not solved yet doesn't count, so a run solved cleanly so far is 100%. A solved problem without a
+	//The share of the attempts of the player that solved the problem, in percent, over the problems solved so far in the run:
+	//a problem not solved yet (or put back in Review by the reset and not solved again) doesn't count, so a run solved cleanly so far is 100%. A solved problem without a
 	//loaded attempt counts as one fail.
 	public function getAccuracy(): float
 	{
@@ -347,7 +358,7 @@ class TsumegoButtons extends ArrayObject
 		$failedSum = 0;
 		foreach ($this as $tsumegoButton)
 		{
-			if (!TsumegoUtil::isSolvedStatus($tsumegoButton->status))
+			if (!$tsumegoButton->isSolvedInRun())
 				continue;
 			if ($tsumegoButton->solvedAttempts == 0 && $tsumegoButton->failedAttempts == 0)
 				$failedSum++;

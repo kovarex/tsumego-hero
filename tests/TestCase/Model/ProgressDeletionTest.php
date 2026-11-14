@@ -7,6 +7,7 @@ use App\Utility\CookieFlash;
 use App\Utility\PlayOutcome;
 use App\Utility\TsumegoUtil;
 use App\Utility\TsumegoXPAndRating;
+use App\Utility\Util;
 
 class ProgressDeletionTest extends IntegrationTestCase
 {
@@ -201,11 +202,57 @@ class ProgressDeletionTest extends IntegrationTestCase
 		$setID = $context->tsumegos[0]['sets'][0]['id'];
 		$this->resetPart($setID, 2);
 
-		$statuses = $this->fetchTable('TsumegoStatus')->find()->where(['user_id' => Auth::getUserID()])->toArray();
-		$this->assertCount(10, $statuses, 'Only #11 and #12 (the second part) are reset');
+		$statuses = array_column(Util::query('SELECT tsumego_id, status FROM tsumego_status WHERE user_id = ?', [Auth::getUserID()]), 'status', 'tsumego_id');
+		$this->assertSame(['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'W', 'W'],
+			array_map(fn($tsumego) => $statuses[$tsumego['id']], $context->tsumegos), 'Only #11 and #12 (the second part) are reset');
 		$progressDeletion = $this->fetchTable('ProgressDeletion')->find()->firstOrFail();
 		$this->assertSame($setID, $progressDeletion->set_id);
 		$this->assertSame(1, $progressDeletion->set_partition);
+	}
+
+	//The problems solved once go back to Review (Solved even within its week, Mastered, and Forgotten too), the rest is cleared
+	public function testResetPutsTheSolvedProblemsBackInReview(): void
+	{
+		$statuses = ['S', 'W', 'C', 'X', 'V', 'F', 'G', 'S', 'S', 'S'];
+		$problems = self::setProblems('big set', 10);
+		foreach ($statuses as $index => $status)
+			$problems[$index]['status'] = $status;
+		$context = new ContextPreparator(['user' => ['collection_size' => 10], 'tsumegos' => $problems]);
+		$solvedBefore = $context->reloadUser()['solved'];
+		$setID = $context->tsumegos[0]['sets'][0]['id'];
+
+		$this->resetPart($setID, 1);
+
+		$after = array_column(Util::query('SELECT tsumego_id, status FROM tsumego_status WHERE user_id = ?', [Auth::getUserID()]), 'status', 'tsumego_id');
+		$this->assertSame(['W', 'W', 'W', 'W', null, null, null, 'W', 'W', 'W'],
+			array_map(fn($tsumego) => $after[$tsumego['id']] ?? null, $context->tsumegos));
+		$this->assertSame($solvedBefore, $context->reloadUser()['solved'], 'the problems stay solved once');
+		$progressDeletion = $this->fetchTable('ProgressDeletion')->find()->firstOrFail();
+		$this->assertSame($setID, $progressDeletion->set_id);
+		$this->assertSame(0, $progressDeletion->set_partition);
+	}
+
+	//Right after a reset the problems it put back in Review don't count towards the half needed to reset again;
+	//solved again, they do
+	public function testAPartJustResetCantBeResetAgainUntilHalfIsSolvedAgain(): void
+	{
+		$context = new ContextPreparator(['user' => ['collection_size' => 10], 'tsumegos' => self::setProblems('big set', 10)]);
+		$setID = $context->tsumegos[0]['sets'][0]['id'];
+		$this->resetPart($setID, 1);
+		Util::execute('UPDATE progress_deletion SET created = created - INTERVAL 1 HOUR');
+
+		$this->get('/sets/view/' . $setID . '/1');
+		$this->assertStringContainsString('You need to complete 50% to reset', $this->view);
+		$this->assertEquals(100, $this->viewVariable('problemSolvedPercent'), 'the problems in Review are still solved');
+		$this->resetPart($setID, 1);
+		$this->assertSame(1, $this->fetchTable('ProgressDeletion')->find()->count(), 'no second reset');
+
+		for ($index = 0; $index < 5; $index++)
+			$this->solve($context->tsumegos[$index]['id'], $context->tsumegos[$index]['set-connections'][0]['id']);
+		$this->get('/sets/view/' . $setID . '/1');
+		$this->assertStringNotContainsString('You need to complete 50% to reset', $this->view);
+		$this->resetPart($setID, 1);
+		$this->assertSame(2, $this->fetchTable('ProgressDeletion')->find()->count());
 	}
 
 	public function testResetIsRefusedWithRankOrTagFilters(): void

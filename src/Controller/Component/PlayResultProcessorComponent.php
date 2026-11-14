@@ -125,8 +125,8 @@ class PlayResultProcessorComponent extends Component
 		$this->processXpChange($result, $previousStatusValue, $originalTsumegoRating, $progressDeletionCount);
 		$this->updateTsumegoAttempt($tsumego, $result, $previousStatusValue, $seconds, $lastTsumegoAttempt);
 		// the solve that finishes a part of a collection keeps the scores of the run through it as the player's best
-		// there, once its attempt is written (SetPartBestScores)
-		$finishedParts = TsumegoUtil::isSolvedStatus($newStatus) && !TsumegoUtil::isSolvedStatus($previousStatusValue)
+		// there, once its attempt is written (SetPartBestScores); mastering a problem in Review can finish the run after a reset
+		$finishedParts = TsumegoUtil::isSolvedStatus($newStatus) && $newStatus != $previousStatusValue
 			? SetPartBestScores::recordAfterSolve((int) Auth::getUserID(), $tsumegoID) : [];
 		ClassroomAssignmentTable::recordResult((int) Auth::getUserID(), $tsumegoID, $outcome);
 		// The pool is fed from every mode: a solved problem that goes wrong enters the
