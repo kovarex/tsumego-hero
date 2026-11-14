@@ -277,11 +277,11 @@
    ]
   },
   {
-   "heading": "What the fix changes at move 9",
+   "heading": "What the fixes change on the site",
    "text": [
-    "The site marks a move correct when no other move at that point has a better status (<code>treeProblemUpdater.js</code>). At move 9 the tree has three Black moves: A16 (leaf 1, S[KO+2]), A19 (best line A16 B17 A18, S[KO+]) and B17 (S[BENT4]). Today only A16 is correct.",
-    "With leaf 1 fixed to KO+, A16 and A19 are both KO+, so the site will accept A19 too. That is right: in the A19 line Black has a ko threat on the lower side that White cannot remove in time. The search area cannot see it and calls this line KO&minus;; the wider area reaches B14 and finds KO+, as the tree says.",
-    "Leaf 2's fix changes no grading: at move 11, C18 is worse than B17 under either label."
+    "No grading changes. The site marks a move correct only on a line that is still correct, and only if no other move at that point has a better status (<code>treeProblemUpdater.js</code>). At move 5, A16 leads to seki, which is better for Black than any ko, so the site already marks 5.A17 and every move after it wrong. Run through the site's own code, the tree marks exactly the same moves correct and wrong before and after both fixes; only the statuses shown on the ko lines change.",
+    "The tree's other ko line at move 9 is right as it stands: A19 (best line A16 B17 A18) has S[KO+]. The search area cannot see a Black ko threat on the lower side and calls this line KO&minus;; the wider area reaches B14 and finds KO+, as the tree says. So with leaf 1 fixed, A16 and A19 are both KO+ at move 9. The diagrams below show the A19 line.",
+    "Leaf 2's fix does not change the status of the A19 line either: at move 11, C18 stays worse than B17 under either label."
    ],
    "steps": [
     {

@@ -56,5 +56,9 @@ PROBLEMS=problems.jsonl python3 research/precompute.py cases.json evidence 0 1
 PROBLEMS=problems.jsonl python3 research/render_research.py results.json research.html
 ```
 
+`research/grading_impact.cjs` runs besogo's own grading (`webroot/besogo/tests.html` in a headless browser) on a tree
+before and after new S[] values, and lists the moves whose correct/wrong mark changes:
+`node research/grading_impact.cjs scenarios.json impact.json`, with scenarios `[{key, sgf, fixes: [{line, status}]}]`.
+
 `research/explain.py` draws a page that explains disputed ko leaves move by move from a spec (`research/explain/9.json`
 for problem 9). It checks every move for legality and every step against the solver, and stops on any mismatch.
