@@ -255,8 +255,8 @@ def check(path):
             errors.append('%s: headline of %d words; keep it under 35' % (where, len(card['headline'].split())))
         if not card.get('diagrams'):
             errors.append('%s: no diagram' % where)
-        errors.extend(text_problems(card.get('headline', ''), card, where + ' headline'))
         check_block(problem_of, card, where, errors, boards)
+        errors.extend(text_problems(card.get('headline', ''), card, where + ' headline'))
     for case in sorted(cases - seen):
         errors.append('no card for leaf %s' % case)
     for key in ('grading', 'tree_change', 'also_check'):
