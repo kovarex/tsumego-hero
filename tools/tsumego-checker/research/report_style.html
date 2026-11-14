@@ -1,0 +1,115 @@
+<title>Status Disagreement Research</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Serif:wght@500;600&display=swap">
+<style>
+/* Layout: one reading column; problems are panels, each leaf a card of go diagrams with its explanation below */
+:root {
+  --paper: #f5f6f4; --ink: #1d2320; --muted: #5d6762; --rule: #d5dad6; --surface: #ffffff; --accent: #2a5d6f;
+  --wood: #dcb97f; --wood-line: #5e4728; --fix: #8a3b23; --fix-bg: #f6e9e2; --ko: #2a5d6f;
+  --body: "IBM Plex Sans", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --display: "IBM Plex Serif", Georgia, "Times New Roman", serif;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --paper: #121615; --ink: #e2e7e4; --muted: #9aa5a0; --rule: #2b3330; --surface: #19201e; --accent: #82c3d6;
+  --wood: #b8935a; --wood-line: #3a2a14; --fix: #f0a184; --fix-bg: #3a2520; --ko: #0f3b48; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --paper: #121615; --ink: #e2e7e4; --muted: #9aa5a0; --rule: #2b3330; --surface: #19201e; --accent: #82c3d6;
+  --wood: #b8935a; --wood-line: #3a2a14; --fix: #f0a184; --fix-bg: #3a2520; --ko: #0f3b48; color-scheme: dark; }
+body { background: var(--paper); color: var(--ink); font: 15px/1.55 var(--body); }
+.page { max-width: 940px; margin: 0 auto; padding-block: 36px 72px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 28px; }
+h1, h2, h3 { font-family: var(--display); font-weight: 600; margin: 0; text-wrap: balance; }
+h1 { font-size: 2rem; line-height: 1.15; }
+h2 { font-size: 1.45rem; padding-top: 12px; border-top: 2px solid var(--ink); }
+h3 { font-size: 1.15rem; }
+h4 { font: 600 1.02rem/1.3 var(--body); margin: 0; }
+h5 { font: 600 0.8rem/1.3 var(--body); margin: 0; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+p { margin: 0; max-width: 68ch; }
+a { color: var(--accent); }
+code, .fix { font: 0.88em var(--mono); }
+.eyebrow { font: 500 0.78rem var(--mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.lede { font-size: 1.05rem; }
+.report-head { display: grid; gap: 12px; }
+.tally { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+.tally div { background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 10px 12px; display: grid; gap: 2px; }
+.tally b { font: 600 1.5rem var(--display); font-variant-numeric: tabular-nums; }
+.tally span { color: var(--muted); font-size: 0.88rem; }
+.toc { margin: 0; padding-left: 20px; display: grid; gap: 4px; }
+.toc .count, .count { font: 500 0.78rem var(--mono); color: var(--muted); margin-left: 6px; letter-spacing: 0; text-transform: none; }
+.reading { background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 12px 14px; display: grid; gap: 6px; font-size: 0.92rem; }
+section { display: grid; gap: 16px; }
+.section-lede { color: var(--muted); }
+.topic { display: grid; gap: 14px; padding-top: 8px; }
+.suggestion { background: var(--surface); border-left: 3px solid var(--accent); padding: 8px 12px; }
+.problem { background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; padding: 16px; display: grid; gap: 14px; min-width: 0; }
+.problem-head { display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: baseline; }
+.problem-head .task { color: var(--muted); font-size: 0.9rem; }
+.leaf { display: grid; gap: 10px; border-top: 1px solid var(--rule); padding-top: 12px; min-width: 0; }
+.leaf-head { display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: center; }
+.leaf-head label { display: flex; gap: 8px; align-items: center; font-weight: 600; font-size: 0.92rem; }
+.leaf-head input { width: 16px; height: 16px; accent-color: var(--accent); }
+.leaf-head input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.fix { background: var(--fix-bg); color: var(--fix); border-radius: 4px; padding: 2px 8px; }
+.headline { font-weight: 500; }
+.prose { display: grid; gap: 8px; }
+.block { display: grid; gap: 10px; border-top: 1px dashed var(--rule); padding-top: 12px; }
+.block.tree-change h5 { color: var(--fix); }
+.site-note { color: var(--muted); font-size: 0.9rem; }
+.figures { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 270px), 1fr)); gap: 14px; align-items: start; }
+figure { margin: 0; display: grid; gap: 5px; min-width: 0; }
+figcaption { font-size: 0.88rem; }
+.notes { font: 0.78rem/1.45 var(--mono); color: var(--muted); }
+.board { width: 100%; max-width: 330px; height: auto; }
+.board .wood { fill: var(--wood); }
+.board .grid { stroke: var(--wood-line); stroke-width: 1; }
+.board .grid.edge { stroke-width: 2; }
+.board .coord { font: 10px var(--mono); fill: var(--wood-line); text-anchor: middle; }
+.board .black { fill: #16191c; stroke: #16191c; }
+.board .white { fill: #f5f5f1; stroke: #3b3a35; stroke-width: 1; }
+.board .number, .board .label { font: 600 11px var(--mono); text-anchor: middle; }
+.board .on-black { fill: #f5f5f1; } .board .on-white { fill: #16191c; }
+.board .on-wood { fill: #16191c; font-style: italic; }
+.board .label-ground { fill: var(--wood); }
+.board .ghost { opacity: 0.35; stroke-dasharray: 3 2; } .board .ghost-number { fill: var(--wood-line); }
+.board .ko { fill: none; stroke: var(--ko); stroke-width: 2; }
+.method { display: grid; gap: 8px; }
+.method ol { margin: 0; padding-left: 20px; display: grid; gap: 6px; max-width: 68ch; }
+</style>
+<div class="page">
+  <header class="report-head">
+    <p class="eyebrow">tsumego.com · status problems · export of 10 November</p>
+    <h1>Status Disagreement Research</h1>
+    <p class="lede">Every leaf of the status problems where the solver and the tree's S[] disagree, checked one by one. {errors} leaves are clear errors on the site, {decide} depend on four decisions for you, and on {solver} the tree is right and the solver was wrong.</p>
+    <div class="tally">
+      <div><b>{total}</b><span>leaves checked</span></div>
+      <div><b>{errors}</b><span>clear errors on the site</span></div>
+      <div><b>{decide}</b><span>leaves for four decisions</span></div>
+      <div><b>{solver}</b><span>solver mistakes</span></div>
+    </div>
+    <p>Of the clear errors, {label_leaves} leaves in {label_problems} problems need only the new S[]. In {grading} problems the fix also changes which moves the site accepts, and a checker confirmed the new marks. In {tree} problems the tree needs more than the new S[], or the site would grade some moves wrongly.</p>
+  </header>
+  <nav aria-label="Contents"><ol class="toc">TOC</ol></nav>
+  <div class="reading">
+    <h5>Reading the diagrams</h5>
+    <p>Numbers continue the move count from the start of the problem, so the tree's own moves keep their numbers. Plain stones were already on the board. Faded stones were captured in the diagram. A square marks a ko point that may not be retaken at once. Letters mark points the text names. Labels are written as you type them in the SGF, for example S[KO-].</p>
+  </div>
+  BODY
+  <section id="method" class="method">
+    <h2>Appendix B. How the leaves were checked</h2>
+    <ol>
+      <li>The solver, an exact local search, checked every leaf of the status problems in the export of 10 November. On {total} leaves its status differs from the tree's S[]: a different class (alive, dead, ko, bent four) or a different ko sign.</li>
+      <li>For each problem, an analyst read the disagreeing leaves like a strong player, used the solver as a calculator, and decided whether the tree or the solver is wrong, or whether it is a question of definitions.</li>
+      <li>Every "the tree is wrong" verdict went to two reviewers who tried to refute it, one by reading the position and one against besogo's definitions. A leaf counts as a clear error only if both agreed. Every "the solver is wrong" verdict went to a reviewer who tried to show the tree wrong.</li>
+      <li>Where the reviewers split, two independent judges settled the leaf. Each definition question went to a fact checker, who played out the lines it rests on.</li>
+      <li>besogo's own grading code, the site's tree updater run in a headless browser, applied each fix to its tree and listed the moves that change between correct and wrong. For every problem where some do, a checker tried to show the new grading wrong and named any tree change it needs.</li>
+      <li>Statuses follow besogo's definitions, with s and o the outside ko threats of the first player and the opponent: KO+ means the first player wins when s ≥ o, KO+2 when s ≥ o − 1, KO− when s ≥ o + 1, KO−2 when s ≥ o + 2. A local move the other side must answer counts as a ko threat.</li>
+    </ol>
+  </section>
+</div>
+<script>
+document.querySelectorAll('input.done').forEach(function (box) {
+  var key = 'status-research-' + box.dataset.id;
+  try { box.checked = localStorage.getItem(key) === '1'; } catch (e) {}
+  box.addEventListener('change', function () { try { localStorage.setItem(key, box.checked ? '1' : '0'); } catch (e) {} });
+});
+</script>
