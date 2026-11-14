@@ -181,7 +181,7 @@ export function Comment({
 							</button>
 						)}
 						{canMakeIssue && (
-							<button className="btn btn--small" onClick={() => onMakeIssue(comment.id)}>
+							<button className="btn btn--small btn--primary" onClick={() => onMakeIssue(comment.id)}>
 								📋 Make Issue
 							</button>
 						)}
