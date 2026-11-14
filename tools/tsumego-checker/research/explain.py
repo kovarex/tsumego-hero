@@ -2,6 +2,8 @@
 #checks from the solver. usage: PROBLEMS=status_problems.jsonl explain.py <spec.json> <out.html>
 #spec: {problem, title, description, intro: [html], leaves: [{heading, line, tree, right, text: [html],
 #       steps: [{title, start, moves, first, caption, notes: {number: text}, check: {s, o, black_lives} or {status}}]}]}
+#a leaf without line, tree and right is a plain section (no claim, no threat table); a check with wide: true uses
+#the wider area, and check can be a list
 #moves: points like A18, 'A18!' for a retake after a ko threat elsewhere, 'pass' for a move elsewhere
 import html, json, os, re, sys
 here = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -130,19 +132,25 @@ def predicted(label, s, o):
     return s >= o - (n - 1) if match.group(1) == '+' else s >= o + n
 
 def check_text(step, board, to_move):
+    #check: {status} or {s, o, black_lives}, with wide: true to search the wider area (for moves on the lower side),
+    #or a list of such checks
     check = step.get('check')
     if not check:
         return ''
+    if isinstance(check, list):
+        return ''.join(check_text(dict(step, check=one), board, to_move) for one in check)
+    wide = check.get('wide', False)
+    who = 'Solver (wider area)' if wide else 'Solver (search area)'
     if 'status' in check:
-        status, _ = solver.status(board, to_move)
+        status, _ = (solver.wide if wide else solver).status(board, to_move)
         if status != check['status']:
             sys.exit('step "%s": the solver says %s, the spec %s' % (step['title'], status, check['status']))
-        return '<p class="check">Solver, %s to play: %s.</p>' % (names[to_move], {'DEAD': 'Black is dead', 'ALIVE': 'Black lives', 'KO': 'a ko', 'BENT4': 'bent four'}[status])
-    result = lives(board, to_move, check['s'], check['o'])
+        return '<p class="check">%s: %s to play, %s.</p>' % (who, names[to_move], {'DEAD': 'Black is dead', 'ALIVE': 'Black lives', 'KO': 'a ko', 'BENT4': 'bent four'}[status])
+    result = lives(board, to_move, check['s'], check['o'], wide)
     if result is None or result != check['black_lives']:
         sys.exit('step "%s": the solver says %s at s=%d o=%d, the spec %s' % (step['title'], result, check['s'], check['o'], check['black_lives']))
-    return '<p class="check">Solver, %s to play, Black %d threat%s and White %d: Black %s.</p>' % (
-        names[to_move], check['s'], '' if check['s'] == 1 else 's', check['o'], 'lives' if result else 'dies')
+    return '<p class="check">%s: %s to play, threats Black %d and White %d, Black %s.</p>' % (
+        who, names[to_move], check['s'], check['o'], 'lives' if result else 'dies')
 
 def table(leaf, board, to_move):
     rows = ['<tr><th scope="col">Black s \\ White o</th>%s</tr>' % ''.join('<th scope="col">o = %d</th>' % o for o in range(3))]
@@ -163,17 +171,22 @@ def paragraph(text, css=''):
 
 body = []
 for number, leaf in enumerate(spec['leaves'], 1):
-    leaf_board, leaf_to_move = play_all(leaf['line'], where='leaf %d' % number)
+    #a section without tree and right is plain text and steps, with no claim and no threat table
     body.append('<section class="leaf" id="leaf%d"><h2>%s</h2>' % (number, leaf['heading']))
-    body.append('<div class="claim"><span>Tree: <b>%s</b></span><span>Should be: <b>%s</b></span><span class="link"><a href="https://tsumego.com/%s">tsumego.com/%s</a></span></div>' % (
-        html.escape(leaf['tree']), html.escape(leaf['right']), spec['problem'], spec['problem']))
+    if 'tree' in leaf:
+        leaf_board, leaf_to_move = play_all(leaf['line'], where='leaf %d' % number)
+        body.append('<div class="claim"><span>Tree: <b>%s</b></span><span>Should be: <b>%s</b></span><span class="link"><a href="https://tsumego.com/%s">tsumego.com/%s</a></span></div>' % (
+            html.escape(leaf['tree']), html.escape(leaf['right']), spec['problem'], spec['problem']))
     body.extend(paragraph(t) for t in leaf['text'])
     for step in leaf['steps']:
         board, to_move = play_all(step['start'], where=step['title'])
         svg, end, end_to_move = figure(board, to_move, step['moves'], step.get('first', 1), step['caption'], step.get('notes', {}))
         body.append('<div class="step"><h3>%s</h3><div class="step-body">%s<div class="step-text">%s%s</div></div></div>' % (
             step['title'], svg, ''.join(paragraph(t) for t in step.get('text', [])), check_text(step, end, end_to_move)))
-    body.append('<h3>All threat counts</h3><p class="note">The solver\'s counted search from the leaf (%s to play) for each number of ko threats: s for Black, o for White. Each cell also shows what S[%s] predicts; the cells where the prediction is wrong are marked. S[%s] fits every cell.</p>' % (
+    if 'tree' not in leaf:
+        body.append('</section>')
+        continue
+    body.append('<h3>All threat counts</h3><p class="note">The solver\'s counted search in its search area, from the leaf (%s to play), for each number of ko threats: s for Black, o for White. Each cell also shows what S[%s] predicts; the cells where the prediction is wrong are marked. S[%s] fits every cell.</p>' % (
         names[leaf_to_move], html.escape(leaf['tree']), html.escape(leaf['right'])))
     for s in range(3):
         for o in range(3):

@@ -4,7 +4,9 @@
  "intro": [
   "Two leaves of <a href=\"https://tsumego.com/9\">problem 9</a> (Black to live) have a ko label that the solver disputes. Below, each line is shown move by move, and the solver checks every step. Numbers on the stones give the order of the moves in that diagram, faded stones were captured in it, and a square frame marks the ko point that the side to play may not retake at once.",
   "<div class=\"rules\"><div class=\"rule\"><b>KO+</b><span>Black took first. Black lives when s &ge; o.</span></div><div class=\"rule\"><b>KO+2</b><span>White has to win the ko twice. Black lives when s &ge; o &minus; 1.</span></div><div class=\"rule\"><b>KO&minus;</b><span>White took first. Black lives when s &ge; o + 1.</span></div><div class=\"rule\"><b>KO&minus;2</b><span>Black has to win it twice. Black lives when s &ge; o + 2.</span></div></div>",
-  "s counts Black's ko threats elsewhere on the board and o counts White's. These are besogo's definitions, and the site's tutorial says the same in words: KO+2 \"becomes a regular ko (KO+) if the opponent won it once\", and KO&minus;2 becomes a direct ko (KO&minus;) once the player has won it once. A local move that the other side has to answer works like an extra ko threat."
+  "s counts Black's ko threats elsewhere on the board and o counts White's. These are besogo's definitions, and the site's tutorial says the same in words: KO+2 \"becomes a regular ko (KO+) if the opponent won it once\", and KO&minus;2 becomes a direct ko (KO&minus;) once the player has won it once. A local move that the other side has to answer works like an extra ko threat.",
+  "The checks use the solver's search area: the corner and the points next to it, with everything outside counted as White's wall. The lower side (A14, B14, C15) is outside it, so steps with moves there use the solver's wider area, which adds two rings of empty points.",
+  "An independent recheck reached the same labels. For each leaf, three checkers who had not seen this page looked for White's best play, Black's best play and the right label, and a judge compared their answers. Both judges found KO+ for leaf 1 and KO&minus;2 for leaf 2, with the same threat tables as below."
  ],
  "leaves": [
   {
@@ -14,7 +16,7 @@
    "right": "KO+",
    "text": [
     "Black 11 has just taken the ko. S[KO+2] says White needs two threats more than Black. The solver says one more is enough (KO+).",
-    "The two labels differ when White has one threat and Black has none. KO+2 says Black lives then. In fact White kills, with the throw-in at A19 in step 3. KO+2 only holds if White fills E19 there instead (last step)."
+    "The two labels differ when White has one threat and Black has none. KO+2 says Black lives then. In fact White kills, with the throw-in at A19 in step 3. KO+2 only holds if White fills E19 there instead (step 7)."
    ],
    "steps": [
     {
@@ -132,6 +134,22 @@
       "s": 0,
       "o": 0,
       "black_lives": true
+     }
+    },
+    {
+     "title": "8. The lower side gives Black nothing here",
+     "start": "B18 C19 B16 B15 A17 B19 D19 A15 A16 A18 A19 A18! B17",
+     "moves": "A19 B14 C15 C18 B19 A19 A18",
+     "first": 3,
+     "caption": "Black 4 tries B14, aiming at A14 against A15&ndash;B15. White 5 answers at once, and after Black 6 captures, White 7, Black 8 and White 9 start the ko of step 4, White taking first.",
+     "text": [
+      "White can spare the move for C15 because nothing in the corner is pending: its four stones are dead in atari and no ko is on the board. Black gets no spare move earlier either, because White's retake at A18 also put A16&ndash;A17&ndash;B16 in atari, so Black had to connect at B17 at once.",
+      "After C15 the lower side is settled, so the search area applies again. The last section shows a line where B14 does work."
+     ],
+     "check": {
+      "s": 0,
+      "o": 0,
+      "black_lives": false
      }
     }
    ]
@@ -254,6 +272,71 @@
      "caption": "After steps 2 and 3, Black uses its second threat and retakes at 5. Black connects at 7 and has two eyes, at A18 and B19.",
      "check": {
       "status": "ALIVE"
+     }
+    }
+   ]
+  },
+  {
+   "heading": "What the fix changes at move 9",
+   "text": [
+    "The site marks a move correct when no other move at that point has a better status (<code>treeProblemUpdater.js</code>). At move 9 the tree has three Black moves: A16 (leaf 1, S[KO+2]), A19 (best line A16 B17 A18, S[KO+]) and B17 (S[BENT4]). Today only A16 is correct.",
+    "With leaf 1 fixed to KO+, A16 and A19 are both KO+, so the site will accept A19 too. That is right: in the A19 line Black has a ko threat on the lower side that White cannot remove in time. The search area cannot see it and calls this line KO&minus;; the wider area reaches B14 and finds KO+, as the tree says.",
+    "Leaf 2's fix changes no grading: at move 11, C18 is worse than B17 under either label."
+   ],
+   "steps": [
+    {
+     "title": "1. The tree's line after A19",
+     "start": "B18 C19 B16 B15 A17 B19 D19 A15",
+     "moves": "A19 A16 B17 A18",
+     "first": 9,
+     "caption": "Black 11 connects first, and White 12 takes the ko. Black may not retake at A19 at once.",
+     "text": [
+      "Unlike leaf 1, White's ko capture puts nothing in atari, so Black has a spare move. The search area says Black then needs one more threat than White; the wider area says equal threats are enough."
+     ],
+     "check": [
+      {
+       "s": 0,
+       "o": 0,
+       "black_lives": false
+      },
+      {
+       "s": 0,
+       "o": 0,
+       "black_lives": true,
+       "wide": true
+      }
+     ]
+    },
+    {
+     "title": "2. Black plays B14 instead of a ko threat",
+     "start": "B18 C19 B16 B15 A17 B19 D19 A15 A19 A16 B17 A18",
+     "moves": "B14 A19 C18 B19 A19 A18",
+     "first": 13,
+     "caption": "White 14 ends the first ko and gives up four stones. After Black 15 captures, White 16, Black 17 and White 18 start the bent-four ko, White taking first, as in leaf 1.",
+     "text": [
+      "If White answers B14 at C15 instead, Black retakes at A19 at once, and White has no threat to retake."
+     ],
+     "check": {
+      "s": 0,
+      "o": 0,
+      "black_lives": true,
+      "wide": true
+     }
+    },
+    {
+     "title": "3. Now A14 is a ko threat",
+     "start": "B18 C19 B16 B15 A17 B19 D19 A15 A19 A16 B17 A18 B14 A19 C18 B19 A19 A18",
+     "moves": "A14 C15 A19",
+     "first": 19,
+     "caption": "Black 19 ataris three stones, White 20 connects, and Black 21 retakes the ko. White has no threat left, so Black captures at C19 next and lives.",
+     "text": [
+      "So with equal threats Black lives: KO+, the same as A16. In leaf 1 Black never gets the spare move for B14 (step 8 there)."
+     ],
+     "check": {
+      "s": 0,
+      "o": 0,
+      "black_lives": true,
+      "wide": true
      }
     }
    ]
