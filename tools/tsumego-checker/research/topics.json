@@ -56,7 +56,8 @@
     "DEAD",
     "BENT4"
    ]
-  }
+  },
+  "error_note": "<b>The analysis and both reviewers call the tree wrong here;</b> whether it is depends on the decision above."
  },
  {
   "key": "target-15678",
@@ -104,5 +105,44 @@
     "DEAD"
    ]
   }
+ },
+ {
+  "key": "approach-label",
+  "title": "One approach move before the ko: approach-ko label or counted label?",
+  "text": [
+   "In these leaves the retake does not put the other side in atari, so it can be ignored once: the retaker must first fill a liberty before the ko is direct. The tree's label is wrong in every one (it leaves the extra move out). The analysis counts the extra move into the threats (KO+2, KO&minus;2, KO&minus;); a reviewer writes besogo's approach-ko label for the same thing (A+1KO+, A&minus;1KO&minus;, A&minus;1KO+). Both need exactly the same threats, so the checker accepts either.",
+   "besogo ranks them differently, though: it compares approach moves before threats, so the approach label sorts above every counted label of the same sign. The site already writes these shapes with approach labels (2521, 15418, 215, 10391, 7487).",
+   "Suggestion: the approach-ko labels, as besogo describes these shapes and as the site already writes them. If you choose them, I can check the other KO&plusmn;2 fixes on this page for the same shape; there the reviewers did not raise it."
+  ],
+  "cases": [
+   "c011",
+   "c019",
+   "c048",
+   "c073",
+   "c102"
+  ],
+  "options": {
+   "c011": [
+    "A+1KO+",
+    "KO+2"
+   ],
+   "c019": [
+    "A-1KO+",
+    "KO-"
+   ],
+   "c048": [
+    "A+1KO+",
+    "KO+2"
+   ],
+   "c073": [
+    "A+1KO+",
+    "KO+2"
+   ],
+   "c102": [
+    "A-1KO-",
+    "KO-2"
+   ]
+  },
+  "error_note": "<b>The tree's label is wrong either way;</b> only the new label depends on the decision above."
  }
 ]

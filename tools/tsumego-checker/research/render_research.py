@@ -2,7 +2,8 @@
 #with the site's grading change for each proposed fix when an impact file (grading_impact.cjs) is given.
 #usage: PROBLEMS=status_problems.jsonl render_research.py <results.json> <out.html> [<impact.json> [<cases.json> [<topics.json>]]]
 #(with the cases file, the leaves not in the results yet are listed as still under review; topics are decisions that
-#several leaves share, [{key, title, text: [paragraphs], cases: [...]}], shown first with their leaves)
+#several leaves share, [{key, title, text: [paragraphs], cases: [...], options: {case: [labels]}, error_note}], shown
+#first with their leaves; error_note is said on a leaf the reviewers confirmed as an error)
 import html, json, os, sys
 here = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, here)
@@ -145,7 +146,7 @@ def card(c, kind):
     topic = c['case'] in in_topic
     body = '<p class="why">%s</p>' % html.escape(a.get('summary', ''))
     if topic and c['final'] == 'site_error':
-        body += '<p class="dissent"><b>The analysis and both reviewers call the tree wrong here;</b> whether it is depends on the decision above.</p>'
+        body += '<p class="dissent">%s</p>' % in_topic[c['case']]['error_note']
     question = a.get('question') or next((j['question'] for j in c.get('judges') or [] if j.get('question')), '')
     if kind != 'error' and not topic and question:
         body += '<p class="question"><b>To decide:</b> %s</p>' % html.escape(question)

@@ -17,9 +17,9 @@ for path in sys.argv[2:]:
             c['final_before_judges'] = c['final']
             c['final'] = settled['final'] if settled['final'] in ('site_error', 'solver_error', 'definition') else 'unclear'
             labels = sorted({j['correct_status'].strip() for j in judges if j.get('correct_status', '').strip()})
+            if c['final'] == 'site_error' and len(labels) != 1:
+                c['final'] = 'unclear' #the tree is wrong, but the judges name different labels or none
             if c['final'] == 'site_error':
-                if len(labels) != 1:
-                    sys.exit('%s: judges agree the tree is wrong but name %s' % (c['case'], labels or 'no label'))
                 c['correct_status'] = labels[0]
             elif c['final'] == 'solver_error':
                 c['correct_status'] = c['authored']
