@@ -1,5 +1,6 @@
-#folds the settle runs into the research results: two judges per disputed case (their shared verdict, else unclear)
-#and a fact check per definition question (a definition stays one only if the checker confirms the facts).
+#folds the settle runs into the research results: two judges per disputed case (their shared verdict, else unclear),
+#a fact check per definition question (a definition stays one only if the checker confirms the facts), and a grading
+#check per problem whose fixes change which moves are correct (kept on each of its fixed leaves).
 #Each case gets correct_status, the label proposed in the end.
 #usage: merge_settled.py <results.json> <settled.json>... > merged.json
 import json, sys
@@ -10,6 +11,13 @@ for c in results:
     c['correct_status'] = ((c.get('analysis') or {}).get('correct_status') or '').strip()
 for path in sys.argv[2:]:
     for settled in json.load(open(path)):
+        if 'grading' in settled:
+            fixed = [c for c in results if c['id'] == settled['id'] and c['final'] == 'site_error']
+            if not fixed:
+                sys.exit('grading check for problem %s, which has no fixed leaf' % settled['id'])
+            for c in fixed:
+                c['grading_check'] = settled['grading']
+            continue
         c = by_case[settled['case']]
         if 'judges' in settled:
             judges = settled['judges']
@@ -33,5 +41,5 @@ for path in sys.argv[2:]:
             if not (facts['facts_hold'] and facts['verdict'] == 'definition'):
                 c['final'] = 'unclear'
         else:
-            sys.exit('%s: neither judges nor facts in %s' % (settled['case'], path))
+            sys.exit('%s: no judges, facts or grading in %s' % (settled['case'], path))
 json.dump(results, sys.stdout, indent=1)

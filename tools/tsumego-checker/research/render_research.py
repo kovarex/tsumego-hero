@@ -98,7 +98,18 @@ def grading(c, first, fixable):
     if not lines:
         return ''
     changes = any(not l.endswith('no grading change.') for l in lines)
-    return '<p class="grading%s"><b>On the site:</b> %s</p>' % (' changes' if changes else '', ' '.join(lines))
+    out = '<p class="grading%s"><b>On the site:</b> %s</p>' % (' changes' if changes else '', ' '.join(lines))
+    check = c.get('grading_check')
+    if check:
+        if check['tree_changes']:
+            out += '<p class="grading changes"><b>Change the tree too:</b> %s</p>' % html.escape(check['tree_changes'])
+        elif check['holds']:
+            out += '<p class="grading"><b>Grading checked:</b> the new marks are right.</p>'
+        else:
+            out += '<p class="grading changes"><b>The grading check disagrees:</b> %s</p>' % html.escape(check['explanation'])
+        if check['other_leaves']:
+            out += '<p class="grading changes"><b>Other leaves to fix in this tree:</b> %s</p>' % html.escape(check['other_leaves'])
+    return out
 
 def solver_text(c):
     return c.get('solver_sign') or c['solver']
@@ -169,6 +180,8 @@ def card(c, kind):
     facts = c.get('facts')
     if facts:
         more += '<p><b>Fact check:</b> %s</p>' % html.escape(' '.join(x for x in (facts.get('explanation'), facts.get('correction')) if x))
+    if c.get('grading_check'):
+        more += '<p><b>Grading check:</b> %s</p>' % html.escape(c['grading_check']['explanation'])
     if more:
         body += '<details class="more"><summary>Variations, solver checks and every check in full</summary>%s</details>' % more
     return head + body + '</section>'
