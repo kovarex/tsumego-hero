@@ -91,6 +91,7 @@ function evaluate(scenario) {
   const top = flipped.filter(f => !paths.has(f.path.split(' ').slice(0, -1).join(' ')));
   return {
     key: scenario.key,
+    fixes: scenario.fixes,
     root_before: before.status && !before.status.isNone() ? before.status.str() : '',
     root_after: after.status && !after.status.isNone() ? after.status.str() : '',
     flipped: top,

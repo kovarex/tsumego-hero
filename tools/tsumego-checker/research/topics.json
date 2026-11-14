@@ -1,0 +1,108 @@
+[
+ {
+  "key": "bent-four",
+  "title": "Bent four in the corner: S[BENT4] or S[DEAD]?",
+  "text": [
+   "These leaves end in the bent four in the corner: only the attacker can start the ko, whenever it likes, after removing the defender's ko threats; the defender can neither start it nor get rid of it. A fact checker played each position out and confirmed the shape. The problems have RU[Japanese], and the site's tutorial calls this dead, so S[DEAD] gives the right outcome. besogo also has an exact label, S[BENT4], ranked just above DEAD. The solver says BENT4 when its bent-four check finishes and a ko when the check runs out of budget.",
+   "The choice changes grading only where the attacker is the solver. With S[BENT4], a move that leads to bent four becomes wrong wherever a sibling move kills outright: in 13539 Black's 7th move (C19, E16), in 15208 and 15217 White's 3rd move A18, which the authors' comments accept (\"Bent four in the corner is dead\"). Where the defender is the solver, both labels are failures and nothing changes.",
+   "9820 is here too: its tree already labels this shape S[BENT4] in other lines, so the analysis and both reviewers call its two S[DEAD] leaves errors. With BENT4 everywhere, those two change; with DEAD everywhere, 9820's BENT4 leaves change instead.",
+   "Suggestion: keep S[DEAD], as the authors wrote it and the site's rules say, and have the checker count the solver's BENT4 as DEAD. Then no grading changes, and S[BENT4] stays available where you want a direct kill to be the only answer."
+  ],
+  "cases": [
+   "c031",
+   "c032",
+   "c042",
+   "c065",
+   "c067",
+   "c074",
+   "c077",
+   "c079",
+   "c114"
+  ],
+  "options": {
+   "c031": [
+    "DEAD",
+    "BENT4"
+   ],
+   "c032": [
+    "DEAD",
+    "BENT4"
+   ],
+   "c042": [
+    "DEAD",
+    "BENT4"
+   ],
+   "c065": [
+    "DEAD",
+    "BENT4"
+   ],
+   "c067": [
+    "DEAD",
+    "BENT4"
+   ],
+   "c074": [
+    "DEAD",
+    "BENT4"
+   ],
+   "c077": [
+    "DEAD",
+    "BENT4"
+   ],
+   "c079": [
+    "DEAD",
+    "BENT4"
+   ],
+   "c114": [
+    "DEAD",
+    "BENT4"
+   ]
+  }
+ },
+ {
+  "key": "target-15678",
+  "title": "Problem 15678: kill the whole White group, or only the top stones?",
+  "text": [
+   "The SGF names no target and has no description. Every DEAD leaf of the tree kills only the top stones (D19, D18 to G18) while White's left side lives with two eyes, and every ALIVE leaf is a line where the top stones get out. So the tree scores the top stones. The checker, like any solver given the problem, reads it as killing the whole group, and on the board as given no line of the tree kills the whole group: B13, B14 and C13 can always run out to the open lower side.",
+   "Top stones: the two DEAD leaves stay as they are (the goal is worth writing in the description), and the KO+ leaf becomes S[KO&minus;3]: White took first, Black must win the ko twice, and White's H19 atari is one more free threat. Whole group: all three leaves become ALIVE, and the main line needs rewriting, since none of its kills works.",
+   "Either way, the tree's S[KO+] is wrong: White has just taken that ko. Suggestion: top stones, with the goal stated in the description."
+  ],
+  "cases": [
+   "c119",
+   "c120",
+   "c121"
+  ],
+  "options": {
+   "c119": [
+    "DEAD",
+    "ALIVE"
+   ],
+   "c120": [
+    "DEAD",
+    "ALIVE"
+   ],
+   "c121": [
+    "KO-3",
+    "ALIVE"
+   ]
+  }
+ },
+ {
+  "key": "edge-11320",
+  "title": "Problem 11320: how much room does the open edge give?",
+  "text": [
+   "White has just retaken the ko, and Black must win it. The tree's S[KO&minus;2] counts one free White threat, the B14 exchange of the sibling line. White has better: the placement at A15 forces B14, then A14 forces B13, each letting White retake without spending a threat, and more pushes down the edge may follow. How many depends on how far the empty edge below row 13 runs, which the SGF leaves open. Two judges checked each frame with explicit stones.",
+   "Edge closed at row 11 or nearer: S[DEAD], and White's A15 also kills in the main line, so the problem would need a new answer. Edge closed at row 10, about the room the main line's ko needs: S[KO&minus;6]. Fully open edge: about S[KO&minus;4]. S[KO&minus;2] is wrong in every frame.",
+   "Suggestion (the judges'): add White stones on row 10 so the frame is fixed, and label the leaf S[KO&minus;6]."
+  ],
+  "cases": [
+   "c052"
+  ],
+  "options": {
+   "c052": [
+    "KO-6",
+    "KO-4",
+    "DEAD"
+   ]
+  }
+ }
+]

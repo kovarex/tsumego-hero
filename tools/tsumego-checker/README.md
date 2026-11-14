@@ -54,10 +54,13 @@ solver as a calculator, then by reviewers who try to refute each verdict (`resea
 python3 research/make_cases.py 'status.*.jsonl' problems.jsonl cases.json
 PROBLEMS=problems.jsonl python3 research/precompute.py cases.json evidence 0 1
 python3 research/merge_settled.py results.json judges.json facts.json > merged.json
-PROBLEMS=problems.jsonl python3 research/impact_scenarios.py merged.json scenarios.json
+PROBLEMS=problems.jsonl python3 research/impact_scenarios.py merged.json scenarios.json research/topics.json
 node research/grading_impact.cjs scenarios.json impact.json
-PROBLEMS=problems.jsonl python3 research/render_research.py merged.json research.html impact.json cases.json
+PROBLEMS=problems.jsonl python3 research/render_research.py merged.json research.html impact.json cases.json research/topics.json
 ```
+
+`research/topics.json` holds the decisions several leaves share (bent four, a problem's target, an open edge): each
+topic's text, its leaves and the labels to choose from, which the page shows first.
 
 Cases the reviewers split on go to two independent judges, and each definition question to a fact checker
 (`research/settle.js`, which reads each case's views from `settle/<case>.a.txt`, `.b.txt` or `.facts.txt`);

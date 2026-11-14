@@ -1,19 +1,21 @@
 #scenarios for grading_impact.cjs from the research results: each proposed S[] alone (the final label, else the analysis
 #label, and any other label a reviewer or judge names), and per problem all its clear errors fixed together.
-#usage: PROBLEMS=problems.jsonl impact_scenarios.py <results.json> <scenarios.json>
+#usage: PROBLEMS=problems.jsonl impact_scenarios.py <results.json> <scenarios.json> [<topics.json>]
+#(a topic's options add their labels for its leaves)
 import json, os, re, sys
 
 #besogo labels this tool can write (status.js loadStatusInternalFromString)
 LABEL = re.compile(r'^(DEAD|ALIVE|SEKI\+?|BENT4|10kKO|DDKO|DSKO|ADKO|ASKO|(A[+-][0-9]+)?KO([+-][0-9]*)?)$')
 
 results = json.load(open(sys.argv[1]))
+options = {case: labels for topic in (json.load(open(sys.argv[3])) if len(sys.argv) > 3 else []) for case, labels in topic.get('options', {}).items()}
 records = {json.loads(l)['set_connection_id']: json.loads(l) for l in open(os.environ.get('PROBLEMS', 'problems.jsonl'))}
 
 def labels(c):
     #the final label first (else the analysis label), then the other labels named for the case, each once
     a = c.get('analysis') or {}
     named = [c.get('correct_status'), a.get('correct_status')] + [k.get('correct_status') for k in c.get('checks') or []]
-    named += [j.get('correct_status') for j in c.get('judges') or []]
+    named += [j.get('correct_status') for j in c.get('judges') or []] + options.get(c['case'], [])
     out = []
     for text in named:
         text = (text or '').strip()
