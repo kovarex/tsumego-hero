@@ -421,6 +421,11 @@ def render(specs_dir, out_path):
     body.append('<h3 id="grading-changes">Fixes that change which moves are correct <span class="count">%d problems</span></h3><p class="section-lede">The new S[] changes which moves the site accepts. A checker played the alternatives out and confirmed the new marks.</p>' % len(grading_group))
     body += [problem_block(p, cs) for p, cs in grading_group]
     body.append('<h3 id="label-fixes">Change the S[] <span class="count">%d leaves in %d problems</span></h3><p class="section-lede">No move changes between correct and wrong; where the problem\'s overall result changes, the problem says so.</p>' % (leaves_of(label_group), len(label_group)))
+    rows = ''.join('<tr><td><a href="#p%s">%s</a></td><td>%s</td><td>%s</td></tr>' % (
+        p, p, html.escape(problem_of_id(p).record['title']),
+        '<br>'.join('<a href="#%s">%s</a> <code>%s</code>' % (c['case'], c['case'], html.escape(fix_label(c, None))) for c in sorted(cs, key=lambda c: c['case'])))
+        for p, cs in label_group)
+    body.append('<div class="table-wrap"><table class="index"><thead><tr><th>Problem</th><th>Title</th><th>Leaf and fix</th></tr></thead><tbody>%s</tbody></table></div>' % rows)
     body += [problem_block(p, cs) for p, cs in label_group]
     body.append('</section>')
     body.append('<section id="solver"><h2>Appendix A. The solver\'s mistakes <span class="count">%d leaves</span></h2><p class="section-lede">Here the tree is right and the solver was wrong; nothing to change on the site. These are for improving the checker.</p>' % len(solver_cases))

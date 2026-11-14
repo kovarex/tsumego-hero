@@ -34,7 +34,12 @@ code, .fix { font: 0.88em var(--mono); }
 .tally div { background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 10px 12px; display: grid; gap: 2px; }
 .tally b { font: 600 1.5rem var(--display); font-variant-numeric: tabular-nums; }
 .tally span { color: var(--muted); font-size: 0.88rem; }
-.toc { margin: 0; padding-left: 20px; display: grid; gap: 4px; }
+.toc { margin: 0; padding: 0; list-style: none; display: grid; gap: 4px; }
+.table-wrap { overflow-x: auto; }
+table.index { border-collapse: collapse; font-size: 0.88rem; min-width: 480px; width: 100%; }
+.index th, .index td { border-bottom: 1px solid var(--rule); padding: 5px 8px; text-align: left; vertical-align: top; }
+.index th { font-weight: 500; color: var(--muted); }
+.index td:first-child { font-variant-numeric: tabular-nums; }
 .toc .count, .count { font: 500 0.78rem var(--mono); color: var(--muted); margin-left: 6px; letter-spacing: 0; text-transform: none; }
 .reading { background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 12px 14px; display: grid; gap: 6px; font-size: 0.92rem; }
 section { display: grid; gap: 16px; }
@@ -88,7 +93,7 @@ figcaption { font-size: 0.88rem; }
     </div>
     <p>Of the clear errors, {label_leaves} leaves in {label_problems} problems need only the new S[]. In {grading} problems the fix also changes which moves the site accepts, and a checker confirmed the new marks. In {tree} problems the tree needs more than the new S[], or the site would grade some moves wrongly.</p>
   </header>
-  <nav aria-label="Contents"><ol class="toc">TOC</ol></nav>
+  <nav aria-label="Contents"><ul class="toc">TOC</ul></nav>
   <div class="reading">
     <h5>Reading the diagrams</h5>
     <p>Numbers continue the move count from the start of the problem, so the tree's own moves keep their numbers. Plain stones were already on the board. Faded stones were captured in the diagram. A square marks a ko point that may not be retaken at once. Letters mark points the text names. Labels are written as you type them in the SGF, for example S[KO-].</p>
