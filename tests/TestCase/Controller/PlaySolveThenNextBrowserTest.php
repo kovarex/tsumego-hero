@@ -33,7 +33,8 @@ class PlaySolveThenNextBrowserTest extends IntegrationTestCase
 		$submit = $browser->find('#reset-submit');
 		$submit->click();
 		$browser->waitUntilStale($submit);
-		$this->assertSame(0, (int) Util::query('SELECT COUNT(*) AS c FROM tsumego_status WHERE user_id = ?', [$context->user['id']])[0]['c'], 'the part is reset');
+		$this->assertSame(['W', 'W', 'W'], array_column(Util::query('SELECT status FROM tsumego_status WHERE user_id = ? ORDER BY tsumego_id', [$context->user['id']]), 'status'),
+			'the part is reset: the solved problems back in Review, the failed one cleared');
 
 		$browser->get('/' . $last['set-connections'][0]['id']);
 		$browser->waitForBoard();
