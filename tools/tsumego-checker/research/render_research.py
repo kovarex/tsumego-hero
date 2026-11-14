@@ -155,7 +155,7 @@ def card(c, kind):
        'Should be' if kind == 'error' else 'Options' if c['case'] in options else 'Analysis',
        ' or '.join(html.escape(o) + (' (as now)' if o == c['authored'] else '') for o in options[c['case']]) if c['case'] in options else html.escape(right))
     topic = c['case'] in in_topic
-    body = '<p class="why">%s</p>' % html.escape(a.get('summary', ''))
+    body = '<p class="why">%s%s</p>' % ('<b>The first analysis (the judges came later):</b> ' if c.get('judges') else '', html.escape(a.get('summary', '')))
     if topic and c['final'] == 'site_error':
         body += '<p class="dissent">%s</p>' % in_topic[c['case']]['error_note']
     question = a.get('question') or next((j['question'] for j in c.get('judges') or [] if j.get('question')), '')
