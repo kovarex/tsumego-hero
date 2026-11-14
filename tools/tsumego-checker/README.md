@@ -59,6 +59,9 @@ node research/grading_impact.cjs scenarios.json impact.json
 PROBLEMS=problems.jsonl python3 research/render_research.py merged.json research.html impact.json cases.json research/topics.json
 ```
 
+`research/results/` keeps the run of 14 November: `cases.json` (the 125 leaves), `results.json` (every verdict with
+the analyses, reviews, judges, fact checks and grading checks) and `impact.json` (the grading effect of each fix).
+
 `research/topics.json` holds the decisions several leaves share (bent four, a problem's target, an open edge): each
 topic's text, its leaves and the labels to choose from, which the page shows first.
 

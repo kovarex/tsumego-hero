@@ -4,7 +4,7 @@
 #(with the cases file, the leaves not in the results yet are listed as still under review; topics are decisions that
 #several leaves share, [{key, title, text: [paragraphs], cases: [...], options: {case: [labels]}, error_note}], shown
 #first with their leaves; error_note is said on a leaf the reviewers confirmed as an error)
-import html, json, os, sys
+import html, json, os, re, sys
 here = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, here)
 from check_tree import parse_sgf, build, opponent, all_nodes
@@ -101,14 +101,20 @@ def grading(c, first, fixable):
     out = '<p class="grading%s"><b>On the site:</b> %s</p>' % (' changes' if changes else '', ' '.join(lines))
     check = c.get('grading_check')
     if check:
-        if check['tree_changes']:
-            out += '<p class="grading changes"><b>Change the tree too:</b> %s</p>' % html.escape(check['tree_changes'])
+        tree = check['tree_changes'].strip()
+        if tree and not tree.lower().startswith('none'):
+            out += '<p class="grading changes"><b>Change the tree too:</b> %s</p>' % html.escape(tree)
         elif check['holds']:
-            out += '<p class="grading"><b>Grading checked:</b> the new marks are right.</p>'
+            #a checker may still note an optional change after saying none is needed
+            note = re.sub(r'^None[^.]*\.\s*', '', tree)
+            out += '<p class="grading"><b>Grading checked:</b> the new marks are right.%s</p>' % (' ' + html.escape(note) if note else '')
         else:
             out += '<p class="grading changes"><b>The grading check disagrees:</b> %s</p>' % html.escape(check['explanation'])
-        if check['other_leaves']:
-            out += '<p class="grading changes"><b>Other leaves to fix in this tree:</b> %s</p>' % html.escape(check['other_leaves'])
+        other = check['other_leaves'].strip()
+        if other.lower().startswith('none'):
+            out += '<p class="grading"><b>Other leaves:</b> %s</p>' % html.escape(other)
+        elif other:
+            out += '<p class="grading changes"><b>Other leaves to fix in this tree:</b> %s</p>' % html.escape(other)
     return out
 
 def solver_text(c):
@@ -207,6 +213,20 @@ for final, title, note in GROUPS:
         body += '\n'.join(card(c, final) for c in group)
 body += '<h2>2. Clear status errors on the site <span class="count">%d</span></h2>' % len(errors)
 body += '<p class="intro">The analysis and two independent reviewers agree the tree\'s S[] is wrong here (for a disputed case, two independent judges settled it). "On the site" says which moves the site would grade differently after the fix, from besogo\'s own grading code.</p>'
+def needs_tree(c):
+    check = c.get('grading_check')
+    tree = check['tree_changes'].strip() if check else ''
+    return bool(check) and ((tree and not tree.lower().startswith('none')) or not check['holds'])
+links = lambda ids: ', '.join('<a href="#%s">%s</a>' % (first_card[i], i) for i in sorted(ids, key=int))
+first_card = {}
+for c in sorted(errors, key=order):
+    first_card.setdefault(c['id'], c['case'])
+tree_ids = {c['id'] for c in errors if needs_tree(c)}
+checked_ids = {c['id'] for c in errors if c.get('grading_check')} - tree_ids
+plain = [c for c in errors if c['id'] not in tree_ids | checked_ids]
+if tree_ids or checked_ids:
+    body += '<p class="intro">%d leaves in %d problems: change the S[], and no move changes between correct and wrong. %d problems (%s): the fix changes which moves are correct, and a checker confirmed the new marks. %d problems (%s): the S[] fix alone would grade some moves wrongly; their cards say what else to change in the tree.</p>' % (
+        len(plain), len({c['id'] for c in plain}), len(checked_ids), links(checked_ids), len(tree_ids), links(tree_ids))
 body += '\n'.join(card(c, 'error') for c in sorted(errors, key=order))
 if pending:
     body += '<h2>Still under review <span class="count">%d</span></h2><p class="intro">Reviewers are still checking these; they will be added to the lists above.</p><ul class="rest">%s</ul>' % (len(pending), ''.join(
@@ -216,7 +236,7 @@ body += '<details><summary>Solver errors, the tree is right (%d)</summary><ul cl
 style = open(os.path.join(here, 'status_examples_style.html')).read()
 style = style.replace('<title>Status Leaf Review</title>', '<title>Status Disagreement Research</title>').replace('<h1>Status Leaf Review</h1>', '<h1>Status Disagreement Research</h1>')
 start = style.index('<p class="intro">Leaves of the status problems'); end = style.index('</p>', start) + 4
-intro = '<p class="intro">Every leaf of the status problems where the solver and the tree disagree (export of 10 November), checked one by one: an analyst read each position step by step with the solver as a calculator, and reviewers tried to refute every conclusion. %s: %d to decide, %d clear errors on the site, %d solver errors (the tree is right).</p>' % (
+intro = '<p class="intro">Every leaf of the status problems where the solver and the tree disagree (export of 10 November), checked one by one: an analyst read each position step by step with the solver as a calculator, and reviewers tried to refute every conclusion. Cases the reviewers split on went to two independent judges, each decision question to a fact checker, and each problem whose fixes change which moves are correct to a grading checker. %s: %d to decide, %d clear errors on the site, %d solver errors (the tree is right).</p>' % (
     '%d leaves' % len(results) if not pending else '%d of %d leaves checked so far' % (len(results), len(results) + len(pending)), len(decide), len(errors), len(solver))
 style = style[:start] + intro + style[end:]
 style = style.replace('</style>', '.grading { margin: 0; font-size: 0.9rem; color: var(--muted); } .grading.changes { color: var(--ink); } .grading code { font: 0.85em var(--mono); }\n.why { margin: 0; } .question { margin: 0; color: var(--ink); } .dissent { margin: 0; color: var(--muted); font-size: 0.9rem; }\ndetails summary { cursor: pointer; font-weight: 600; margin-top: 8px; }\nh3 { font-size: 1.05rem; margin: 10px 0 0; } .more { font-size: 0.9rem; color: var(--muted); } .more summary { font-weight: 500; margin: 0; } .more p { margin: 6px 0 0; }\n</style>', 1)

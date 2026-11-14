@@ -1,0 +1,2138 @@
+[
+ {
+  "key": "c000",
+  "fixes": [
+   {
+    "line": "B18 C19 B16 B15 A17 B19 D19 A15 A16 A18 A19",
+    "status": "KO+"
+   }
+  ],
+  "root_before": "SEKI",
+  "root_after": "SEKI",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "c001",
+  "fixes": [
+   {
+    "line": "B18 C19 B16 B15 A17 B19 D19 A15 A19 A16 C18 B17",
+    "status": "KO-2"
+   }
+  ],
+  "root_before": "SEKI",
+  "root_after": "SEKI",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "c003",
+  "fixes": [
+   {
+    "line": "B18 C19 D19 B19 A19 A18",
+    "status": "KO-"
+   }
+  ],
+  "root_before": "ALIVE",
+  "root_after": "ALIVE",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "c009",
+  "fixes": [
+   {
+    "line": "B18 A18 A17",
+    "status": "KO-2"
+   }
+  ],
+  "root_before": "KO-",
+  "root_after": "KO-2",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "c010",
+  "fixes": [
+   {
+    "line": "A18 B18",
+    "status": "KO+2"
+   }
+  ],
+  "root_before": "SEKI+",
+  "root_after": "SEKI+",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "c011",
+  "fixes": [
+   {
+    "line": "C18 B18",
+    "status": "KO+2"
+   }
+  ],
+  "root_before": "SEKI+",
+  "root_after": "SEKI+",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "c011@A+1KO+",
+  "fixes": [
+   {
+    "line": "C18 B18",
+    "status": "A+1KO+"
+   }
+  ],
+  "root_before": "SEKI+",
+  "root_after": "SEKI+",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "c021",
+  "fixes": [
+   {
+    "line": "C19 B18 B19 B16 A15 A16 A18 A19",
+    "status": "KO-"
+   }
+  ],
+  "root_before": "DEAD",
+  "root_after": "DEAD",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "c030",
+  "fixes": [
+   {
+    "line": "B17 A17 A18 A19 B19 C19 E18 D19 E19 G18 B19 C19 D19 A16 B19 A18",
+    "status": "DEAD"
+   }
+  ],
+  "root_before": "ALIVE",
+  "root_after": "ALIVE",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "c042",
+  "fixes": [
+   {
+    "line": "B18 E19 D19 F19 B17 B19 B16 B15 A16 A18",
+    "status": "BENT4"
+   }
+  ],
+  "root_before": "ALIVE",
+  "root_after": "ALIVE",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "c043",
+  "fixes": [
+   {
+    "line": "B18 D19 A17 B19 A19",
+    "status": "KO+2"
+   }
+  ],
+  "root_before": "10kKO",
+  "root_after": "10kKO",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "c044",
+  "fixes": [
+   {
+    "line": "B18 D19 C19 A17 A19 B19",
+    "status": "KO+"
+   }
+  ],
+  "root_before": "10kKO",
+  "root_after": "10kKO",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "c050",
+  "fixes": [
+   {
+    "line": "B18 A18 B17 A17 C18 B19 C19 D19 A19 A16 F19 B19",
+    "status": "KO-3"
+   }
+  ],
+  "root_before": "KO+",
+  "root_after": "KO+",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "c054",
+  "fixes": [
+   {
+    "line": "A18 C18 B19 A17 B17 A19",
+    "status": "KO+"
+   }
+  ],
+  "root_before": "DEAD",
+  "root_after": "DEAD",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "c068",
+  "fixes": [
+   {
+    "line": "B18 B17 A17 A16 C18 A18 D16 B19",
+    "status": "KO-2"
+   }
+  ],
+  "root_before": "KO+",
+  "root_after": "KO+",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "c074",
+  "fixes": [
+   {
+    "line": "A17 A16 A18 C19 A19",
+    "status": "BENT4"
+   }
+  ],
+  "root_before": "DEAD",
+  "root_after": "DEAD",
+  "flipped": [
+   {
+    "path": "A17 A16 A18",
+    "number": 3,
+    "solver": true,
+    "before": "correct",
+    "after": "wrong",
+    "status_before": "DEAD",
+    "status_after": "BENT4"
+   }
+  ],
+  "flipped_total": 5
+ },
+ {
+  "key": "c078",
+  "fixes": [
+   {
+    "line": "A16 A18 B18 A17 D18 D19 C19 E19 A19 B19",
+    "status": "KO-"
+   }
+  ],
+  "root_before": "ALIVE",
+  "root_after": "ALIVE",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "c079",
+  "fixes": [
+   {
+    "line": "A16 A18 B18 A17 D19 E19 C19 A19",
+    "status": "BENT4"
+   }
+  ],
+  "root_before": "ALIVE",
+  "root_after": "ALIVE",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "c082",
+  "fixes": [
+   {
+    "line": "D19 E19 B18 D18 C19 A17 A16 A18 A19 B19",
+    "status": "KO-"
+   }
+  ],
+  "root_before": "ALIVE",
+  "root_after": "ALIVE",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "c083",
+  "fixes": [
+   {
+    "line": "A18 A14 A13 B18 A17 B17 A15",
+    "status": "KO+3"
+   }
+  ],
+  "root_before": "KO+",
+  "root_after": "KO+3",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "c089",
+  "fixes": [
+   {
+    "line": "A18 A14 B18 B17 C19 B19",
+    "status": "KO+2"
+   }
+  ],
+  "root_before": "DEAD",
+  "root_after": "DEAD",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "c090",
+  "fixes": [
+   {
+    "line": "A17 A18 B18 B17 A19 A16 A14 A18",
+    "status": "KO-2"
+   }
+  ],
+  "root_before": "KO+",
+  "root_after": "KO+",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "c091",
+  "fixes": [
+   {
+    "line": "A17 A18 B18 B19 A19 C19 B17 A18",
+    "status": "KO+"
+   }
+  ],
+  "root_before": "KO+",
+  "root_after": "KO+",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "c092",
+  "fixes": [
+   {
+    "line": "A17 A18 B18 B19 A19 C19 D19 A18",
+    "status": "KO+"
+   }
+  ],
+  "root_before": "KO+",
+  "root_after": "KO+",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "c107",
+  "fixes": [
+   {
+    "line": "A16 A17 B18 A15 A14 B14 A16 D19",
+    "status": "KO-"
+   }
+  ],
+  "root_before": "KO+",
+  "root_after": "KO+",
+  "flipped": [
+   {
+    "path": "A16",
+    "number": 1,
+    "solver": true,
+    "before": "correct",
+    "after": "wrong",
+    "status_before": "KO+",
+    "status_after": "KO-"
+   }
+  ],
+  "flipped_total": 8
+ },
+ {
+  "key": "c108",
+  "fixes": [
+   {
+    "line": "B18 B19 A18 D19 E19 E18 C19 A15",
+    "status": "KO-"
+   }
+  ],
+  "root_before": "KO+",
+  "root_after": "KO+",
+  "flipped": [
+   {
+    "path": "B18",
+    "number": 1,
+    "solver": true,
+    "before": "correct",
+    "after": "wrong",
+    "status_before": "KO+",
+    "status_after": "KO-"
+   }
+  ],
+  "flipped_total": 8
+ },
+ {
+  "key": "c111",
+  "fixes": [
+   {
+    "line": "A18 B19 A16 C18 D17 D19 C19",
+    "status": "KO+2"
+   }
+  ],
+  "root_before": "KO+",
+  "root_after": "KO+2",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "c118",
+  "fixes": [
+   {
+    "line": "E19 D19 D17 D18 B19 B18 A16 A17 C19 A19 A18 A15 E16 B14 C15 B13",
+    "status": "DEAD"
+   }
+  ],
+  "root_before": "KO+",
+  "root_after": "KO+",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "c012",
+  "fixes": [
+   {
+    "line": "D19 G19 E18 F18",
+    "status": "KO-2"
+   }
+  ],
+  "root_before": "ALIVE",
+  "root_after": "ALIVE",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "c013",
+  "fixes": [
+   {
+    "line": "B17 B19 A17 C19 A19 A18",
+    "status": "KO+"
+   }
+  ],
+  "root_before": "KO+",
+  "root_after": "KO+",
+  "flipped": [
+   {
+    "path": "B17 B19 A17",
+    "number": 3,
+    "solver": true,
+    "before": "wrong",
+    "after": "correct",
+    "status_before": "KO-",
+    "status_after": "KO+"
+   }
+  ],
+  "flipped_total": 4
+ },
+ {
+  "key": "c013@KO-2",
+  "fixes": [
+   {
+    "line": "B17 B19 A17 C19 A19 A18",
+    "status": "KO-2"
+   }
+  ],
+  "root_before": "KO+",
+  "root_after": "KO+",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "c014",
+  "fixes": [
+   {
+    "line": "B17 B19 E18 A18",
+    "status": "KO-"
+   }
+  ],
+  "root_before": "KO+",
+  "root_after": "KO+",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "c018",
+  "fixes": [
+   {
+    "line": "C19 A18 B18 A17 A19 B19",
+    "status": "KO-2"
+   }
+  ],
+  "root_before": "ALIVE",
+  "root_after": "ALIVE",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "c024",
+  "fixes": [
+   {
+    "line": "H18 N18 N19 M19 O19 K19 M18",
+    "status": "KO+2"
+   }
+  ],
+  "root_before": "DEAD",
+  "root_after": "DEAD",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "c025",
+  "fixes": [
+   {
+    "line": "J16 K17 G18 N18 N19 M19 O19 K19",
+    "status": "KO-"
+   }
+  ],
+  "root_before": "DEAD",
+  "root_after": "DEAD",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "c026",
+  "fixes": [
+   {
+    "line": "J16 K17 H18 N18 N19 M19 M18",
+    "status": "KO+2"
+   }
+  ],
+  "root_before": "DEAD",
+  "root_after": "DEAD",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "c036",
+  "fixes": [
+   {
+    "line": "B18 F19 D19 A18 C18 B19 A17 B17 A19",
+    "status": "KO-"
+   }
+  ],
+  "root_before": "KO+",
+  "root_after": "KO-",
+  "flipped": [
+   {
+    "path": "D19",
+    "number": 1,
+    "solver": true,
+    "before": "wrong",
+    "after": "correct",
+    "status_before": "KO-",
+    "status_after": "KO-"
+   }
+  ],
+  "flipped_total": 10
+ },
+ {
+  "key": "c045",
+  "fixes": [
+   {
+    "line": "F19 E19 G18",
+    "status": "KO-"
+   }
+  ],
+  "root_before": "SEKI",
+  "root_after": "SEKI",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "c046",
+  "fixes": [
+   {
+    "line": "B18 C18 C19 D19 A19",
+    "status": "KO-2"
+   }
+  ],
+  "root_before": "KO+",
+  "root_after": "KO+",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "c047",
+  "fixes": [
+   {
+    "line": "C19 B19 B18 C18 A19 D19 F19",
+    "status": "KO-"
+   }
+  ],
+  "root_before": "KO+",
+  "root_after": "KO-",
+  "flipped": [
+   {
+    "path": "B18",
+    "number": 1,
+    "solver": true,
+    "before": "wrong",
+    "after": "correct",
+    "status_before": "KO-",
+    "status_after": "KO-"
+   }
+  ],
+  "flipped_total": 5
+ },
+ {
+  "key": "c051",
+  "fixes": [
+   {
+    "line": "A16 A18 D19 C18 B17 A17 C19 B19",
+    "status": "ALIVE"
+   }
+  ],
+  "root_before": "DEAD",
+  "root_after": "DEAD",
+  "flipped": [
+   {
+    "path": "A16 A18 D19 C18 B17 A17 C19",
+    "number": 7,
+    "solver": true,
+    "before": "correct",
+    "after": "wrong",
+    "status_before": "DEAD",
+    "status_after": "ALIVE"
+   },
+   {
+    "path": "A16 A18 D19 C18 C19",
+    "number": 5,
+    "solver": true,
+    "before": "correct",
+    "after": "wrong",
+    "status_before": "DEAD",
+    "status_after": "ALIVE"
+   }
+  ],
+  "flipped_total": 7
+ },
+ {
+  "key": "c060",
+  "fixes": [
+   {
+    "line": "E19 D18 B19 B18 C19 D19 A16 A17 D17 F19 G18 A19",
+    "status": "ALIVE"
+   }
+  ],
+  "root_before": "DEAD",
+  "root_after": "DEAD",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "c061",
+  "fixes": [
+   {
+    "line": "E19 D18 B19 B18 C19 D19 A16 A17 D17 F19 H17 A19",
+    "status": "ALIVE"
+   }
+  ],
+  "root_before": "DEAD",
+  "root_after": "DEAD",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "c062",
+  "fixes": [
+   {
+    "line": "E19 D18 B19 B18 C19 D19 A16 A17 D17 F19 H18 A19",
+    "status": "ALIVE"
+   }
+  ],
+  "root_before": "DEAD",
+  "root_after": "DEAD",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "c063",
+  "fixes": [
+   {
+    "line": "E19 D18 B19 B18 C19 D19 A16 A17 D17 F19 J18 A19",
+    "status": "ALIVE"
+   }
+  ],
+  "root_before": "DEAD",
+  "root_after": "DEAD",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "c069",
+  "fixes": [
+   {
+    "line": "C17 C16 A16 B17 B19 C19 A18 A19",
+    "status": "KO-4"
+   }
+  ],
+  "root_before": "DEAD",
+  "root_after": "DEAD",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "c075",
+  "fixes": [
+   {
+    "line": "A16 A18 A19 D18 C19 B19",
+    "status": "KO-"
+   }
+  ],
+  "root_before": "SEKI+",
+  "root_after": "SEKI+",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "c093",
+  "fixes": [
+   {
+    "line": "A17 A18 B18 B17 A19 C19 E19 A16 A14 A18",
+    "status": "KO-"
+   }
+  ],
+  "root_before": "KO+",
+  "root_after": "KO-",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "c094",
+  "fixes": [
+   {
+    "line": "B17 B16 C18 B18 B19 A18 A14 A17 A15 D18",
+    "status": "KO-2"
+   }
+  ],
+  "root_before": "DEAD",
+  "root_after": "DEAD",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "c095",
+  "fixes": [
+   {
+    "line": "B17 B16 C18 B18 B19 A18 A17 A16 A14 D18",
+    "status": "KO-2"
+   }
+  ],
+  "root_before": "DEAD",
+  "root_after": "DEAD",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "c096",
+  "fixes": [
+   {
+    "line": "A15 A16 C15 A14 C19 B19 A18 B18 A17 B17 A13 A19",
+    "status": "KO+2"
+   }
+  ],
+  "root_before": "DEAD",
+  "root_after": "DEAD",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "c097",
+  "fixes": [
+   {
+    "line": "A18 C19 A15 A16 A14 C15 A17 B17",
+    "status": "KO+2"
+   }
+  ],
+  "root_before": "DEAD",
+  "root_after": "DEAD",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "c098",
+  "fixes": [
+   {
+    "line": "A18 C19 A15 A16 A14 C15 B17 B18",
+    "status": "KO-"
+   }
+  ],
+  "root_before": "DEAD",
+  "root_after": "DEAD",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "c112",
+  "fixes": [
+   {
+    "line": "D18 D17 D19 A17 B19 A19 A18",
+    "status": "KO+2"
+   }
+  ],
+  "root_before": "KO+",
+  "root_after": "KO+2",
+  "flipped": [
+   {
+    "path": "D18 D17 D19 A17 B19 A19 C19",
+    "number": 7,
+    "solver": true,
+    "before": "correct",
+    "after": "wrong",
+    "status_before": "KO+",
+    "status_after": "KO+"
+   }
+  ],
+  "flipped_total": 3
+ },
+ {
+  "key": "c122",
+  "fixes": [
+   {
+    "line": "B16 B17 F19 D19 B19 E17 A18 A17 E19 E18 G19 C18 C19 B18 D18 A19",
+    "status": "DEAD"
+   }
+  ],
+  "root_before": "KO+",
+  "root_after": "DEAD",
+  "flipped": [
+   {
+    "path": "B16 B17 F19 D19 B19 E17 E19",
+    "number": 7,
+    "solver": true,
+    "before": "correct",
+    "after": "wrong",
+    "status_before": "KO+",
+    "status_after": "KO+"
+   },
+   {
+    "path": "B16 B17 F19 D19 B19 E17 A17",
+    "number": 7,
+    "solver": true,
+    "before": "correct",
+    "after": "wrong",
+    "status_before": "KO+",
+    "status_after": "KO+"
+   },
+   {
+    "path": "B16 B17 F19 D19 B19 E17 A18",
+    "number": 7,
+    "solver": true,
+    "before": "wrong",
+    "after": "correct",
+    "status_before": "KO-",
+    "status_after": "DEAD"
+   }
+  ],
+  "flipped_total": 26
+ },
+ {
+  "key": "c123",
+  "fixes": [
+   {
+    "line": "C18 D18 A16 C19 A18 E18 F18 E19 A17 B17 B19",
+    "status": "KO-"
+   }
+  ],
+  "root_before": "KO+",
+  "root_after": "KO+",
+  "flipped": [
+   {
+    "path": "C18 D18 A16 C19 A18 E18 F18 E19 A17",
+    "number": 9,
+    "solver": true,
+    "before": "correct",
+    "after": "wrong",
+    "status_before": "KO+",
+    "status_after": "KO-"
+   }
+  ],
+  "flipped_total": 3
+ },
+ {
+  "key": "c124",
+  "fixes": [
+   {
+    "line": "C18 D18 A16 C19 A18 E18 F18 E19 B17",
+    "status": "KO-"
+   }
+  ],
+  "root_before": "KO+",
+  "root_after": "KO+",
+  "flipped": [
+   {
+    "path": "C18 D18 A16 C19 A18 E18 F18 E19 B17",
+    "number": 9,
+    "solver": true,
+    "before": "correct",
+    "after": "wrong",
+    "status_before": "KO+",
+    "status_after": "KO-"
+   }
+  ],
+  "flipped_total": 1
+ },
+ {
+  "key": "c002",
+  "fixes": [
+   {
+    "line": "A18 C16 C19 B19",
+    "status": "KO+"
+   }
+  ],
+  "root_before": "ALIVE",
+  "root_after": "ALIVE",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "c005",
+  "fixes": [
+   {
+    "line": "F19 B17 D18 C18 E19 A17",
+    "status": "KO+2"
+   }
+  ],
+  "root_before": "DEAD",
+  "root_after": "DEAD",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "c019",
+  "fixes": [
+   {
+    "line": "B18 A17 C18 A18 C19 B19",
+    "status": "KO-"
+   }
+  ],
+  "root_before": "DEAD",
+  "root_after": "DEAD",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "c019@A-1KO+",
+  "fixes": [
+   {
+    "line": "B18 A17 C18 A18 C19 B19",
+    "status": "A-1KO+"
+   }
+  ],
+  "root_before": "DEAD",
+  "root_after": "DEAD",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "c023",
+  "fixes": [
+   {
+    "line": "B18 C17 A16 A17 A15 B17 C18 G18 F19 D18 D19 A18 C19 G19",
+    "status": "A-2KO-"
+   }
+  ],
+  "root_before": "DEAD",
+  "root_after": "DEAD",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "c028",
+  "fixes": [
+   {
+    "line": "E17 B19 A18 A17 D18",
+    "status": "KO+2"
+   }
+  ],
+  "root_before": "DDKO",
+  "root_after": "DDKO",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "c031",
+  "fixes": [
+   {
+    "line": "C18 B19 B16 B15 A16 E18",
+    "status": "BENT4"
+   }
+  ],
+  "root_before": "ALIVE",
+  "root_after": "ALIVE",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "c032",
+  "fixes": [
+   {
+    "line": "C18 B19 E18 F18 B16 B15 A16 E19",
+    "status": "BENT4"
+   }
+  ],
+  "root_before": "ALIVE",
+  "root_after": "ALIVE",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "c033",
+  "fixes": [
+   {
+    "line": "E18 F18 B19 B18 A18 A19 C18 A17 B16 B15 A16 A15",
+    "status": "KO+2"
+   }
+  ],
+  "root_before": "ALIVE",
+  "root_after": "ALIVE",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "c037",
+  "fixes": [
+   {
+    "line": "B18 A18 B19 C17 D17 D18 G19 F19 E18 E19 F17 C19 E18",
+    "status": "KO+2"
+   }
+  ],
+  "root_before": "DEAD",
+  "root_after": "DEAD",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "c048",
+  "fixes": [
+   {
+    "line": "B18 B19 D19 A18 A19",
+    "status": "KO+2"
+   }
+  ],
+  "root_before": "SEKI",
+  "root_after": "SEKI",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "c048@A+1KO+",
+  "fixes": [
+   {
+    "line": "B18 B19 D19 A18 A19",
+    "status": "A+1KO+"
+   }
+  ],
+  "root_before": "SEKI",
+  "root_after": "SEKI",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "c052",
+  "fixes": [
+   {
+    "line": "B18 A18 A17 B19 A19 C19 B15 A18",
+    "status": "KO-6"
+   }
+  ],
+  "root_before": "KO-",
+  "root_after": "KO-",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "c052@KO-4",
+  "fixes": [
+   {
+    "line": "B18 A18 A17 B19 A19 C19 B15 A18",
+    "status": "KO-4"
+   }
+  ],
+  "root_before": "KO-",
+  "root_after": "KO-",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "c052@DEAD",
+  "fixes": [
+   {
+    "line": "B18 A18 A17 B19 A19 C19 B15 A18",
+    "status": "DEAD"
+   }
+  ],
+  "root_before": "KO-",
+  "root_after": "KO-",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "c055",
+  "fixes": [
+   {
+    "line": "A10 B9 A12 A11",
+    "status": "KO+"
+   }
+  ],
+  "root_before": "KO+",
+  "root_after": "KO+",
+  "flipped": [
+   {
+    "path": "A10",
+    "number": 1,
+    "solver": true,
+    "before": "wrong",
+    "after": "correct",
+    "status_before": "KO-",
+    "status_after": "KO+"
+   }
+  ],
+  "flipped_total": 4
+ },
+ {
+  "key": "c056",
+  "fixes": [
+   {
+    "line": "A12 A11 A10 B9 A12",
+    "status": "KO+2"
+   }
+  ],
+  "root_before": "KO+",
+  "root_after": "KO+2",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "c064",
+  "fixes": [
+   {
+    "line": "B19 D17 D19 E19 A16 C18 A18 A17 C19 B18 E16 A19",
+    "status": "KO-2"
+   }
+  ],
+  "root_before": "DEAD",
+  "root_after": "DEAD",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "c065",
+  "fixes": [
+   {
+    "line": "E19 D19 D17 D18 B19 B18 C19 A19 A17 A16 A18 A19 A18",
+    "status": "BENT4"
+   }
+  ],
+  "root_before": "DEAD",
+  "root_after": "DEAD",
+  "flipped": [
+   {
+    "path": "E19 D19 D17 D18 B19 B18 C19",
+    "number": 7,
+    "solver": true,
+    "before": "correct",
+    "after": "wrong",
+    "status_before": "DEAD",
+    "status_after": "BENT4"
+   }
+  ],
+  "flipped_total": 7
+ },
+ {
+  "key": "c066",
+  "fixes": [
+   {
+    "line": "E19 D19 D17 D18 B19 B18 E16 F19 A16 A17 C19 A19",
+    "status": "KO+"
+   }
+  ],
+  "root_before": "DEAD",
+  "root_after": "DEAD",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "c067",
+  "fixes": [
+   {
+    "line": "E19 D19 D17 D18 B19 B18 E16 F19 C19 A19 A17 A16 A18 A19 A18",
+    "status": "BENT4"
+   }
+  ],
+  "root_before": "DEAD",
+  "root_after": "DEAD",
+  "flipped": [
+   {
+    "path": "E19 D19 D17 D18 B19 B18 E16",
+    "number": 7,
+    "solver": true,
+    "before": "correct",
+    "after": "wrong",
+    "status_before": "DEAD",
+    "status_after": "BENT4"
+   }
+  ],
+  "flipped_total": 9
+ },
+ {
+  "key": "c072",
+  "fixes": [
+   {
+    "line": "B18 B17 C18 A18 F18 D19 B19 A16 A19 C17 A17 D18",
+    "status": "ALIVE"
+   }
+  ],
+  "root_before": "KO+",
+  "root_after": "KO+",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "c076",
+  "fixes": [
+   {
+    "line": "C19 B15 A16 A18 A19 B19",
+    "status": "KO-"
+   }
+  ],
+  "root_before": "ALIVE",
+  "root_after": "ALIVE",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "c099",
+  "fixes": [
+   {
+    "line": "A16 A15 B19 A17 C18 B16 A18 A19",
+    "status": "KO-"
+   }
+  ],
+  "root_before": "DEAD",
+  "root_after": "DEAD",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "c101",
+  "fixes": [
+   {
+    "line": "C15 A15 A18 A17 B17 B16 A16",
+    "status": "KO+2"
+   }
+  ],
+  "root_before": "DEAD",
+  "root_after": "DEAD",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "c114",
+  "fixes": [
+   {
+    "line": "B18 A17 D18 E18 D19 A18 A16 B19 B17 E19",
+    "status": "BENT4"
+   }
+  ],
+  "root_before": "SEKI",
+  "root_after": "SEKI",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "c115",
+  "fixes": [
+   {
+    "line": "B18 C18 D18 A16 C19 A18 E18 F18 A17 B17",
+    "status": "KO-"
+   }
+  ],
+  "root_before": "SEKI",
+  "root_after": "SEKI",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "c116",
+  "fixes": [
+   {
+    "line": "A18 B18 B19 A19",
+    "status": "KO-"
+   }
+  ],
+  "root_before": "ALIVE",
+  "root_after": "ALIVE",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "c008",
+  "fixes": [
+   {
+    "line": "D19 E19 B19 A17 A18 C18 C19",
+    "status": "KO-2"
+   }
+  ],
+  "root_before": "KO+",
+  "root_after": "KO+",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "c016",
+  "fixes": [
+   {
+    "line": "D17 D19 E19 B19 A17 C18 B18",
+    "status": "ALIVE"
+   }
+  ],
+  "root_before": "10kKO",
+  "root_after": "ALIVE",
+  "flipped": [
+   {
+    "path": "D17 D19 E19 B19 B18",
+    "number": 5,
+    "solver": true,
+    "before": "correct",
+    "after": "wrong",
+    "status_before": "10kKO",
+    "status_after": "10kKO"
+   }
+  ],
+  "flipped_total": 10
+ },
+ {
+  "key": "c020",
+  "fixes": [
+   {
+    "line": "A18 B18 B19 A19",
+    "status": "KO-"
+   }
+  ],
+  "root_before": "ADKO",
+  "root_after": "ADKO",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "c039",
+  "fixes": [
+   {
+    "line": "A18 D19 E18 D18 B19 C17 A17 C19 B17 A19",
+    "status": "KO+"
+   }
+  ],
+  "root_before": "DEAD",
+  "root_after": "DEAD",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "c040",
+  "fixes": [
+   {
+    "line": "A18 D19 E18 D18 B19 C17 C19 A17 B17 A19",
+    "status": "KO+"
+   }
+  ],
+  "root_before": "DEAD",
+  "root_after": "DEAD",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "c041",
+  "fixes": [
+   {
+    "line": "B18 C17 A18 A17 C18 C19 B19 D18 F19 E19 G19",
+    "status": "KO+"
+   }
+  ],
+  "root_before": "A+1KO-",
+  "root_after": "A+1KO-",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "c053",
+  "fixes": [
+   {
+    "line": "A16 B18 D19 B19",
+    "status": "KO-"
+   }
+  ],
+  "root_before": "ADKO",
+  "root_after": "ADKO",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "c073",
+  "fixes": [
+   {
+    "line": "B18 A18",
+    "status": "KO+2"
+   }
+  ],
+  "root_before": "SEKI",
+  "root_after": "SEKI",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "c073@A+1KO+",
+  "fixes": [
+   {
+    "line": "B18 A18",
+    "status": "A+1KO+"
+   }
+  ],
+  "root_before": "SEKI",
+  "root_after": "SEKI",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "c077",
+  "fixes": [
+   {
+    "line": "A17 A16 A18 C19 A19",
+    "status": "BENT4"
+   }
+  ],
+  "root_before": "DEAD",
+  "root_after": "DEAD",
+  "flipped": [
+   {
+    "path": "A17 A16 A18",
+    "number": 3,
+    "solver": true,
+    "before": "correct",
+    "after": "wrong",
+    "status_before": "DEAD",
+    "status_after": "BENT4"
+   }
+  ],
+  "flipped_total": 3
+ },
+ {
+  "key": "c085",
+  "fixes": [
+   {
+    "line": "C19 B19 A18 A14 B12 B18 A17 B17 A13 A19 A15",
+    "status": "KO+2"
+   }
+  ],
+  "root_before": "KO+",
+  "root_after": "KO+2",
+  "flipped": [
+   {
+    "path": "C19 B19 A18 A14 B12 B18 A13",
+    "number": 7,
+    "solver": true,
+    "before": "correct",
+    "after": "wrong",
+    "status_before": "KO+",
+    "status_after": "KO+"
+   },
+   {
+    "path": "C19 B19 A18 A14 A13",
+    "number": 5,
+    "solver": true,
+    "before": "correct",
+    "after": "wrong",
+    "status_before": "KO+",
+    "status_after": "KO+"
+   },
+   {
+    "path": "C19 B19 A18 A14 B13",
+    "number": 5,
+    "solver": true,
+    "before": "correct",
+    "after": "wrong",
+    "status_before": "KO+",
+    "status_after": "KO+"
+   },
+   {
+    "path": "A18 B18 C19 A14 A13",
+    "number": 5,
+    "solver": true,
+    "before": "correct",
+    "after": "wrong",
+    "status_before": "KO+",
+    "status_after": "KO+"
+   },
+   {
+    "path": "A18 B18 C19 A14 B13",
+    "number": 5,
+    "solver": true,
+    "before": "correct",
+    "after": "wrong",
+    "status_before": "KO+",
+    "status_after": "KO+"
+   }
+  ],
+  "flipped_total": 22
+ },
+ {
+  "key": "c086",
+  "fixes": [
+   {
+    "line": "C19 B19 A18 A14 B13 B18 A17 B17 A13 A19 A15",
+    "status": "KO+2"
+   }
+  ],
+  "root_before": "KO+",
+  "root_after": "KO+2",
+  "flipped": [
+   {
+    "path": "C19 B19 A18 A14 B12",
+    "number": 5,
+    "solver": true,
+    "before": "correct",
+    "after": "wrong",
+    "status_before": "KO+",
+    "status_after": "KO+"
+   },
+   {
+    "path": "C19 B19 A18 A14 A13",
+    "number": 5,
+    "solver": true,
+    "before": "correct",
+    "after": "wrong",
+    "status_before": "KO+",
+    "status_after": "KO+"
+   },
+   {
+    "path": "C19 B19 A18 A14 B13 B18 A13",
+    "number": 7,
+    "solver": true,
+    "before": "correct",
+    "after": "wrong",
+    "status_before": "KO+",
+    "status_after": "KO+"
+   },
+   {
+    "path": "A18 B18 C19 A14 B12",
+    "number": 5,
+    "solver": true,
+    "before": "correct",
+    "after": "wrong",
+    "status_before": "KO+",
+    "status_after": "KO+"
+   },
+   {
+    "path": "A18 B18 C19 A14 A13",
+    "number": 5,
+    "solver": true,
+    "before": "correct",
+    "after": "wrong",
+    "status_before": "KO+",
+    "status_after": "KO+"
+   }
+  ],
+  "flipped_total": 22
+ },
+ {
+  "key": "c102",
+  "fixes": [
+   {
+    "line": "B19 A15 A14 A16 B14 C19 D19 B18 A18 A19",
+    "status": "KO-2"
+   }
+  ],
+  "root_before": "DEAD",
+  "root_after": "DEAD",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "c102@A-1KO-",
+  "fixes": [
+   {
+    "line": "B19 A15 A14 A16 B14 C19 D19 B18 A18 A19",
+    "status": "A-1KO-"
+   }
+  ],
+  "root_before": "DEAD",
+  "root_after": "DEAD",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "c104",
+  "fixes": [
+   {
+    "line": "B18 A17 A15 B15 A19 A14 A16 B19",
+    "status": "KO-"
+   }
+  ],
+  "root_before": "ALIVE",
+  "root_after": "ALIVE",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "c105",
+  "fixes": [
+   {
+    "line": "B18 A17 A15 B15 A19 A14 B17 B19",
+    "status": "KO-"
+   }
+  ],
+  "root_before": "ALIVE",
+  "root_after": "ALIVE",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "c110",
+  "fixes": [
+   {
+    "line": "C19 D19 B18 A17 A16 A18 A19 B19",
+    "status": "KO-"
+   }
+  ],
+  "root_before": "ALIVE",
+  "root_after": "ALIVE",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "c117",
+  "fixes": [
+   {
+    "line": "G19 B19 D18 D17 C17 A18",
+    "status": "DEAD"
+   }
+  ],
+  "root_before": "KO+",
+  "root_after": "KO+",
+  "flipped": [
+   {
+    "path": "G19",
+    "number": 1,
+    "solver": true,
+    "before": "wrong",
+    "after": "correct",
+    "status_before": "ALIVE",
+    "status_after": "KO+"
+   }
+  ],
+  "flipped_total": 6
+ },
+ {
+  "key": "c119",
+  "fixes": [
+   {
+    "line": "B15 B16 A18 D19 C19 A17 G19 A15 E17 B17 F19",
+    "status": "ALIVE"
+   }
+  ],
+  "root_before": "DEAD",
+  "root_after": "DEAD",
+  "flipped": [
+   {
+    "path": "B15 B16 A18 D19 C19 A17 G19",
+    "number": 7,
+    "solver": true,
+    "before": "correct",
+    "after": "wrong",
+    "status_before": "DEAD",
+    "status_after": "ALIVE"
+   },
+   {
+    "path": "B15 B16 A18 D19 C19 A17 E17",
+    "number": 7,
+    "solver": true,
+    "before": "correct",
+    "after": "wrong",
+    "status_before": "DEAD",
+    "status_after": "ALIVE"
+   },
+   {
+    "path": "B15 B16 A18 D19 C19 A17 F19",
+    "number": 7,
+    "solver": true,
+    "before": "correct",
+    "after": "wrong",
+    "status_before": "DEAD",
+    "status_after": "ALIVE"
+   }
+  ],
+  "flipped_total": 13
+ },
+ {
+  "key": "c120",
+  "fixes": [
+   {
+    "line": "B15 B16 A18 D19 E17 C19 G19 B19 F19 A17 H19 A15 E19",
+    "status": "ALIVE"
+   }
+  ],
+  "root_before": "DEAD",
+  "root_after": "DEAD",
+  "flipped": [
+   {
+    "path": "B15 B16 A18 D19 E17 C19 G19 B19 F19 A17 H19",
+    "number": 11,
+    "solver": true,
+    "before": "correct",
+    "after": "wrong",
+    "status_before": "DEAD",
+    "status_after": "ALIVE"
+   },
+   {
+    "path": "B15 B16 A18 D19 G19 C19 F19 B19 H19",
+    "number": 9,
+    "solver": true,
+    "before": "correct",
+    "after": "wrong",
+    "status_before": "DEAD",
+    "status_after": "ALIVE"
+   }
+  ],
+  "flipped_total": 5
+ },
+ {
+  "key": "c121",
+  "fixes": [
+   {
+    "line": "C19 B17 G19 D19 A17 A16 A19 A18",
+    "status": "ALIVE"
+   }
+  ],
+  "root_before": "DEAD",
+  "root_after": "DEAD",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "c121@KO-2",
+  "fixes": [
+   {
+    "line": "C19 B17 G19 D19 A17 A16 A19 A18",
+    "status": "KO-2"
+   }
+  ],
+  "root_before": "DEAD",
+  "root_after": "DEAD",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "c121@KO-3",
+  "fixes": [
+   {
+    "line": "C19 B17 G19 D19 A17 A16 A19 A18",
+    "status": "KO-3"
+   }
+  ],
+  "root_before": "DEAD",
+  "root_after": "DEAD",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "all:9",
+  "fixes": [
+   {
+    "line": "B18 C19 B16 B15 A17 B19 D19 A15 A16 A18 A19",
+    "status": "KO+"
+   },
+   {
+    "line": "B18 C19 B16 B15 A17 B19 D19 A15 A19 A16 C18 B17",
+    "status": "KO-2"
+   }
+  ],
+  "root_before": "SEKI",
+  "root_after": "SEKI",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "all:1807",
+  "fixes": [
+   {
+    "line": "A18 B18",
+    "status": "KO+2"
+   },
+   {
+    "line": "C18 B18",
+    "status": "KO+2"
+   }
+  ],
+  "root_before": "SEKI+",
+  "root_after": "SEKI+",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "all:10393",
+  "fixes": [
+   {
+    "line": "B18 D19 A17 B19 A19",
+    "status": "KO+2"
+   },
+   {
+    "line": "B18 D19 C19 A17 A19 B19",
+    "status": "KO+"
+   }
+  ],
+  "root_before": "10kKO",
+  "root_after": "10kKO",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "all:15220",
+  "fixes": [
+   {
+    "line": "A16 A18 B18 A17 D18 D19 C19 E19 A19 B19",
+    "status": "KO-"
+   },
+   {
+    "line": "D19 E19 B18 D18 C19 A17 A16 A18 A19 B19",
+    "status": "KO-"
+   }
+  ],
+  "root_before": "ALIVE",
+  "root_after": "ALIVE",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "all:15298",
+  "fixes": [
+   {
+    "line": "A17 A18 B18 B17 A19 A16 A14 A18",
+    "status": "KO-2"
+   },
+   {
+    "line": "A17 A18 B18 B19 A19 C19 B17 A18",
+    "status": "KO+"
+   },
+   {
+    "line": "A17 A18 B18 B19 A19 C19 D19 A18",
+    "status": "KO+"
+   }
+  ],
+  "root_before": "KO+",
+  "root_after": "KO+",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "all:15399",
+  "fixes": [
+   {
+    "line": "A16 A17 B18 A15 A14 B14 A16 D19",
+    "status": "KO-"
+   },
+   {
+    "line": "B18 B19 A18 D19 E19 E18 C19 A15",
+    "status": "KO-"
+   }
+  ],
+  "root_before": "KO+",
+  "root_after": "KO+",
+  "flipped": [
+   {
+    "path": "B18",
+    "number": 1,
+    "solver": true,
+    "before": "correct",
+    "after": "wrong",
+    "status_before": "KO+",
+    "status_after": "KO-"
+   },
+   {
+    "path": "A16",
+    "number": 1,
+    "solver": true,
+    "before": "correct",
+    "after": "wrong",
+    "status_before": "KO+",
+    "status_after": "KO-"
+   }
+  ],
+  "flipped_total": 16
+ },
+ {
+  "key": "all:8736",
+  "fixes": [
+   {
+    "line": "H18 N18 N19 M19 O19 K19 M18",
+    "status": "KO+2"
+   },
+   {
+    "line": "J16 K17 G18 N18 N19 M19 O19 K19",
+    "status": "KO-"
+   },
+   {
+    "line": "J16 K17 H18 N18 N19 M19 M18",
+    "status": "KO+2"
+   }
+  ],
+  "root_before": "DEAD",
+  "root_after": "DEAD",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "all:10930",
+  "fixes": [
+   {
+    "line": "B18 C18 C19 D19 A19",
+    "status": "KO-2"
+   },
+   {
+    "line": "C19 B19 B18 C18 A19 D19 F19",
+    "status": "KO-"
+   }
+  ],
+  "root_before": "KO+",
+  "root_after": "KO-",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "all:13489",
+  "fixes": [
+   {
+    "line": "E19 D18 B19 B18 C19 D19 A16 A17 D17 F19 G18 A19",
+    "status": "ALIVE"
+   },
+   {
+    "line": "E19 D18 B19 B18 C19 D19 A16 A17 D17 F19 H17 A19",
+    "status": "ALIVE"
+   },
+   {
+    "line": "E19 D18 B19 B18 C19 D19 A16 A17 D17 F19 H18 A19",
+    "status": "ALIVE"
+   },
+   {
+    "line": "E19 D18 B19 B18 C19 D19 A16 A17 D17 F19 J18 A19",
+    "status": "ALIVE"
+   }
+  ],
+  "root_before": "DEAD",
+  "root_after": "DEAD",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "all:15305",
+  "fixes": [
+   {
+    "line": "B17 B16 C18 B18 B19 A18 A14 A17 A15 D18",
+    "status": "KO-2"
+   },
+   {
+    "line": "B17 B16 C18 B18 B19 A18 A17 A16 A14 D18",
+    "status": "KO-2"
+   }
+  ],
+  "root_before": "DEAD",
+  "root_after": "DEAD",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "all:15340",
+  "fixes": [
+   {
+    "line": "A15 A16 C15 A14 C19 B19 A18 B18 A17 B17 A13 A19",
+    "status": "KO+2"
+   },
+   {
+    "line": "A18 C19 A15 A16 A14 C15 A17 B17",
+    "status": "KO+2"
+   },
+   {
+    "line": "A18 C19 A15 A16 A14 C15 B17 B18",
+    "status": "KO-"
+   }
+  ],
+  "root_before": "DEAD",
+  "root_after": "DEAD",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "all:16601",
+  "fixes": [
+   {
+    "line": "C18 D18 A16 C19 A18 E18 F18 E19 A17 B17 B19",
+    "status": "KO-"
+   },
+   {
+    "line": "C18 D18 A16 C19 A18 E18 F18 E19 B17",
+    "status": "KO-"
+   }
+  ],
+  "root_before": "KO+",
+  "root_after": "KO+",
+  "flipped": [
+   {
+    "path": "C18 D18 A16 C19 A18 E18 F18",
+    "number": 7,
+    "solver": true,
+    "before": "correct",
+    "after": "wrong",
+    "status_before": "KO+",
+    "status_after": "KO-"
+   }
+  ],
+  "flipped_total": 6
+ },
+ {
+  "key": "all:9820",
+  "fixes": [
+   {
+    "line": "C18 B19 B16 B15 A16 E18",
+    "status": "BENT4"
+   },
+   {
+    "line": "C18 B19 E18 F18 B16 B15 A16 E19",
+    "status": "BENT4"
+   },
+   {
+    "line": "E18 F18 B19 B18 A18 A19 C18 A17 B16 B15 A16 A15",
+    "status": "KO+2"
+   }
+  ],
+  "root_before": "ALIVE",
+  "root_after": "ALIVE",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "all:12495",
+  "fixes": [
+   {
+    "line": "A10 B9 A12 A11",
+    "status": "KO+"
+   },
+   {
+    "line": "A12 A11 A10 B9 A12",
+    "status": "KO+2"
+   }
+  ],
+  "root_before": "KO+",
+  "root_after": "KO+2",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "all:13539",
+  "fixes": [
+   {
+    "line": "B19 D17 D19 E19 A16 C18 A18 A17 C19 B18 E16 A19",
+    "status": "KO-2"
+   },
+   {
+    "line": "E19 D19 D17 D18 B19 B18 E16 F19 A16 A17 C19 A19",
+    "status": "KO+"
+   }
+  ],
+  "root_before": "DEAD",
+  "root_after": "DEAD",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "all:10005",
+  "fixes": [
+   {
+    "line": "A18 D19 E18 D18 B19 C17 A17 C19 B17 A19",
+    "status": "KO+"
+   },
+   {
+    "line": "A18 D19 E18 D18 B19 C17 C19 A17 B17 A19",
+    "status": "KO+"
+   }
+  ],
+  "root_before": "DEAD",
+  "root_after": "DEAD",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "all:15296",
+  "fixes": [
+   {
+    "line": "C19 B19 A18 A14 B12 B18 A17 B17 A13 A19 A15",
+    "status": "KO+2"
+   },
+   {
+    "line": "C19 B19 A18 A14 B13 B18 A17 B17 A13 A19 A15",
+    "status": "KO+2"
+   }
+  ],
+  "root_before": "KO+",
+  "root_after": "KO+2",
+  "flipped": [
+   {
+    "path": "C19 B19 A18 A14 B12 B18 A13",
+    "number": 7,
+    "solver": true,
+    "before": "correct",
+    "after": "wrong",
+    "status_before": "KO+",
+    "status_after": "KO+"
+   },
+   {
+    "path": "C19 B19 A18 A14 A13",
+    "number": 5,
+    "solver": true,
+    "before": "correct",
+    "after": "wrong",
+    "status_before": "KO+",
+    "status_after": "KO+"
+   },
+   {
+    "path": "C19 B19 A18 A14 B13 B18 A13",
+    "number": 7,
+    "solver": true,
+    "before": "correct",
+    "after": "wrong",
+    "status_before": "KO+",
+    "status_after": "KO+"
+   },
+   {
+    "path": "A18 B18 C19 A14 A13",
+    "number": 5,
+    "solver": true,
+    "before": "correct",
+    "after": "wrong",
+    "status_before": "KO+",
+    "status_after": "KO+"
+   }
+  ],
+  "flipped_total": 14
+ },
+ {
+  "key": "all:15369",
+  "fixes": [
+   {
+    "line": "B18 A17 A15 B15 A19 A14 A16 B19",
+    "status": "KO-"
+   },
+   {
+    "line": "B18 A17 A15 B15 A19 A14 B17 B19",
+    "status": "KO-"
+   }
+  ],
+  "root_before": "ALIVE",
+  "root_after": "ALIVE",
+  "flipped": [],
+  "flipped_total": 0
+ }
+]
