@@ -1,0 +1,17 @@
+{
+ "problem": "13198",
+ "cards": [
+  {
+   "case": "c058",
+   "headline": "White lives: it captures Black's atari stone, and Black cannot recapture. The solver's narrow area counts A14 as Black's wall, which turns that capture into a ko.",
+   "diagrams": [
+    {"start": "", "moves": "E19 C18 A18 B16", "caption": "The tree's line: Black 1 is a wrong first move, and White 2 takes the vital point. After White 4 the tree marks the leaf S[ALIVE]; the solver said KO."},
+    {"start": "E19 C18 A18 B16", "moves": "A16 A15 A14 A16 B18 D19", "caption": "Black 5 ataris the White stone above it, but White 6 captures Black 5 and still has a liberty at A14, so Black cannot recapture. Black 7 takes that liberty, and White 8 connects. After White 10, C19 is an eye, and capturing Black's corner stones gives the second."}
+   ],
+   "text": [
+    "The tree is right. Every Black move at the leaf other than Black 5 leaves White alive, as the solver proves, and Black 5 fails as Diagram 2 shows.",
+    "The solver said KO because its narrow search area counts A14 as Black's wall, as if Black 7 were already there: then White 6 has one liberty, and the capture becomes a ko. The wider area, with A14 open, did not overturn this: with unlimited Black ko threats its search stays undecided after Black 5, though it proves White alive after White 6 at once. At the leaf, that search is at the edge of its budget."
+   ]
+  }
+ ]
+}

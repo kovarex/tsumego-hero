@@ -1,0 +1,21 @@
+{
+ "problem": "15297",
+ "cards": [
+  {
+   "case": "c089",
+   "headline": "White's atari at A13 still forces a ko at A15 that White takes first, and White keeps a spare local threat: KO+2, not ALIVE.",
+   "diagrams": [
+    {"start": "", "moves": "A18 A14 B18 B17 C19 B19", "caption": "The tree's line, marked S[ALIVE]; the solver said KO+2. White to play, with White 5 and Black 6 both in atari."},
+    {"start": "A18 A14 B18 B17 C19 B19", "moves": "A13 D19 A15", "caption": "White 7 ataris the stone at A14, and Black 8 captures the stone at C19. White 9 takes the ko first, which also puts the stone at B15 in atari."},
+    {"start": "A18 A14 B18 B17 C19 B19 A13 D19 A15", "moves": "A14! E19 C19 A15", "caption": "From Diagram 2. Black 10 retakes after a threat elsewhere. White 11 ataris the stone at D19, a local threat; Black 12 connects, and White 13 retakes without spending a threat elsewhere. Black must find another threat."},
+    {"start": "A18 A14 B18 B17 C19 B19 A13 D19 A15", "moves": "A14! E19 A15 C19", "caption": "From Diagram 2 again. If Black 12 connects the ko instead, White 13 captures the stone at D19 and starts a second ko, which White has taken first: Black must win that one too."}
+   ],
+   "text": [
+    "The tree marks the leaf S[ALIVE], but White can still force a ko. White 7 in Diagram 2 is an atari, and connecting at A15 instead of Black 8 does no better. After White 9 takes the ko first, Black lives only by winning it: if Black plays locally instead of retaking, White connects at A14 and Black dies.",
+    "White also keeps a spare local threat, White 11 in Diagrams 3 and 4. If Black answers it (Diagram 3), White 13 retakes without a threat elsewhere; if Black connects the ko instead (Diagram 4), White 13 starts a second ko that White has taken first. Either way Black needs two more threats than White: S[KO+2]. The solver's table has White winning with equal threats and losing with two threats fewer than Black; with one fewer it stayed undecided, but a reviewer's follow-up searches show White wins that too.",
+    "White 7 is the attack that works. The analysis began with White's D19 instead, but both reviewers found that Black then escapes along the edge to the stone at B10 and lives; the solver missed this because its search area shut the edge. After White 7 the edge does not save Black.",
+    "KO+2 counts White's spare threat, as the site's tutorial counts local threats; without it the ko is a plain KO+, the label the tree already gives the sibling line where White plays A13 at move 3. The analyst and one reviewer give KO+2; the other reviewer left KO+ or KO+2 to the owner, since points outside the search area, such as Black's ataris on White 7, might shift the count."
+   ]
+  }
+ ]
+}

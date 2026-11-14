@@ -1,0 +1,20 @@
+{
+ "problem": "5977",
+ "cards": [
+  {
+   "case": "c021",
+   "headline": "White has taken the ko first and neither side has a local threat, so Black needs one threat more than White: KO−, not KO+.",
+   "diagrams": [
+    {"start": "", "moves": "C19 B18 B19 B16 A15 A16 A18 A19", "caption": "The tree's line. Black 7 throws in and White 8 captures it: White takes the ko first. The tree marks the leaf S[KO+]."},
+    {"start": "C19 B18 B19 B16 A15 A16 A18 A19", "moves": "pass A18", "caption": "Black has no ko threat. Black 9 plays elsewhere and White 10 connects. Black can play neither at B17 nor at D19, both suicide, so White lives. White 10 at D19 instead, capturing two stones, also lives."},
+    {"start": "C19 B18 B19 B16 A15 A16 A18 A19", "moves": "A18! pass B17", "caption": "Black 9 retakes after a ko threat elsewhere. If White 10 plays elsewhere, Black 11 captures three stones and White's big group is left in atari at D19 with no way out: dead. White 10 at B17 or D19 dies as well."},
+    {"start": "C19 B18 B19 B16 A15 A16 A18 A19", "moves": "A18! C15 B17", "caption": "White 10 ataris the stone at C16, but it is no ko threat, nor is an atari at D16: Black 11 captures three stones, which gives C16 a liberty at B16, and White's big group stays in atari at D19."}
+   ],
+   "text": [
+    "White 8 captures Black 7, so White has taken the ko first and Black cannot retake at once. Black has no other local move, so no local threat: B17 and D19 are both suicide. With no threat, Black can only play elsewhere, and White connects and lives (Diagram 2).",
+    "After a threat elsewhere, Black retakes. Then White must retake at A19 with a threat of its own, since anything else dies (Diagram 3), and White has no local threat either (Diagram 4). So Black wins only with one threat more than White: S[KO-], besogo's 'White takes first'. S[KO+] would mean that White has to find the first threat. The site's tutorial shows the same kind of corner ko under KO−.",
+    "The analyst (high confidence), both reviewers and the solver all say KO−. Black 7 is the only move there that does not lose, and White 8 is forced, so only the sign is wrong. In the research's run on ko signs, leaves where the opponent took the ko first were marked KO− 51 times and KO+ 18 times, so no site convention backs KO+. Besogo's editor saves KO+ by default when an author marks a ko without choosing the sign, which likely explains the label."
+   ]
+  }
+ ]
+}

@@ -1,0 +1,63 @@
+{
+ "problem": "13539",
+ "cards": [
+  {
+   "case": "c064",
+   "headline": "After Black retakes the ko, White still has an outside liberty, so Black must fill it and win the ko a second time: S[KO-2], not S[KO-].",
+   "diagrams": [
+    {"start": "", "moves": "B19 D17 D19 E19 A16 C18 A18 A17 C19 B18 E16 A19", "caption": "The tree's line, marked S[KO-] after White 12; the solver said KO-2. White 12 has just taken the ko, and Black 1, Black 3 and Black 9 are in atari."},
+    {"start": "B19 D17 D19 E19 A16 C18 A18 A17 C19 B18 E16 A19", "moves": "A18! pass F19 A19 A18! pass D18", "caption": "Black 13 retakes after a ko threat. White still has two liberties and plays elsewhere with White 14. Black 15 fills the outside one, and White 16 takes the ko back without a threat. With a second threat, Black 17 retakes again, and Black 19 captures the whole group."},
+    {"start": "B19 D17 D19 E19 A16 C18 A18 A17 C19 B18 E16 A19", "moves": "A18! pass F19 A19 pass D18", "caption": "With only one threat more than White, Black cannot retake after White 16, and White 18 captures three stones and lives."},
+    {"start": "B19 D17 D19 E19 A16 C18 A18 A17 C19 B18 E16 A19", "moves": "A18! F19 G19 A19", "caption": "White 14 extends instead of playing elsewhere. Black 15 blocks, White 16 retakes for free, and Black must win the ko again: the same count as Diagram 2."}
+   ],
+   "text": [
+    "Black must retake at once, as anything else lets White capture at D18. After the retake White still has two liberties, at D18 and F19, and Black cannot fill D18, which is self-atari. So Black 15 fills F19, and White 16 retakes for free (Diagram 2). Black has to win the ko twice and needs two more threats than White; with only one more, White lives (Diagram 3). Neither side has a local threat, and White gains nothing by extending (Diagram 4).",
+    "That is the site tutorial's KO−2: White took the ko first, Black must win it twice, and once Black has won it once, the solver gives a plain KO−. The analysis, with high confidence, and both reviewers agree. The tree probably missed the outside liberty at F19 that White 4 gave the group.",
+    "In threat counts this equals a one-move approach ko, so S[A-1KO-] would also fit; besogo ranks it below KO-2, and problems 455 and 456 of this collection use such labels. Either way the direct S[KO-] is wrong. Black 1 stays a wrong first move with any of these labels, so the site's grading does not change."
+   ]
+  },
+  {
+   "case": "c065",
+   "headline": "White cannot live; Black can turn the corner into the bent four whenever it likes. Dead under the site's rules, S[BENT4] in besogo's labels.",
+   "diagrams": [
+    {"start": "", "moves": "E19 D19 D17 D18 B19 B18 C19 A19 A17 A16 A18 A19 A18", "caption": "The tree's line, marked S[DEAD] after Black 13; the solver said KO+. White to play: both White groups have two liberties, and Black 1 is in atari."},
+    {"start": "E19 D19 D17 D18 B19 B18 C19 A19 A17 A16 A18 A19 A18", "moves": "F19 E16 C18 G19 A19 B19 pass E19 pass F19", "caption": "White 14, White's best, captures Black 1; after Black 15 this is the position of leaf c067. White 16 connects, Black 17 takes a liberty from White 14, White 18 takes two stones and Black 19 takes one back. Black 21 captures White 14 and Black 23 connects. White's group now shares its last two liberties with Black's two corner stones."},
+    {"start": "E19 D19 D17 D18 B19 B18 C19 A19 A17 A16 A18 A19 A18 F19 E16 C18 G19 A19 B19 pass E19 pass F19", "moves": "pass A19 pass A17 C19 A18 A19 B19", "caption": "From Diagram 2, whenever Black chooses. White has no move in the corner: both shared liberties are self-atari, and A19 is illegal. Black 25 and Black 27 sacrifice four stones, White 28 captures them, Black 29 takes the 1-2 point, and after White 30, Black 31 takes the ko first. White is in atari at A17 and needs a ko threat."}
+   ],
+   "text": [
+    "White cannot live. Filling its own liberty at A17 loses six stones, and White's other defences end in the corner of Diagram 2. After a White pass or an immediate connection at C18, Black simply saves Black 1 and gets the same corner. If White never connects at C18, the ko Black can start is the one at E19, which is dead too and worse for White. White can never start a ko.",
+    "Only Black can start the ko of Diagram 3, whenever it likes. Under the site's Japanese rules Black first removes White's ko threats, so the leaf is dead, as the tree says; besogo's exact label is S[BENT4], and both count as success for G[KILL]. The solver's KO+ is this ko with threats counted as never removable. Its bent-four test was undecided at the leaf at 200k nodes; deeper positions come out BENT4, apart from a few lines it cannot settle.",
+    "The analysis gives medium confidence; a fact checker confirmed the play, which is the same under either label. With S[BENT4] on this leaf alone, the site would mark Black 7 in Diagram 1 wrong, its result going from DEAD to BENT4, because Black's other 7th move, E16, still ends in S[DEAD] in leaf c067. With S[DEAD], nothing changes on the site."
+   ]
+  },
+  {
+   "case": "c066",
+   "headline": "White's last move captures nothing, so Black takes the ko first and wins it with as many threats as White: S[KO+], not S[KO-].",
+   "diagrams": [
+    {"start": "", "moves": "E19 D19 D17 D18 B19 B18 E16 F19 A16 A17 C19 A19", "caption": "The tree's line, marked S[KO-] after White 12; the solver said KO+. Black to play."},
+    {"start": "E19 D19 D17 D18 B19 B18 E16 F19 A16 A17 C19 A19", "moves": "A18 pass C18", "caption": "Black 13 captures White 12 as a ko and puts five White stones in atari. With no ko threat, White plays elsewhere with White 14; Black 15 captures the five, and the rest has one liberty left. If White connects at C18 instead, the joined group has only one liberty and dies."},
+    {"start": "E19 D19 D17 D18 B19 B18 E16 F19 A16 A17 C19 A19", "moves": "A18 A19! pass C18", "caption": "With one threat more than Black, White 14 retakes. Black has no threat left, and White 16 captures two stones and lives."},
+    {"start": "", "moves": "E19 D19 D17 D18 B19 B18 E16 F19 C19 A19 A18 A17 A16 A19", "caption": "The sibling leaf, marked S[KO-]: the same stones as Diagram 1, but White 14 has just captured a stone at A18, so Black cannot retake at once. There White took the ko first, KO- is right, and the solver agrees."}
+   ],
+   "text": [
+    "White 12 in Diagram 1 captures nothing: it puts Black 5 and Black 11 in atari but is itself in atari. Black must take it at once, as any other move lets White capture at C18 and live. Black 13 in Diagram 2 is a ko capture, so Black takes the ko first.",
+    "If White has no threat, White dies (Diagram 2); with one threat more, White lives (Diagram 3). So Black wins exactly when it has as many threats as White: S[KO+]. Neither side has a local threat, and the solver agrees: Black wins at equal threats and loses with one fewer. The analysis, with high confidence, and both reviewers agree.",
+    "The S[KO-] looks copied from the sibling leaf in Diagram 4, where White's last move really did capture. Elsewhere in this tree the author marks the same kind of non-capturing atari S[KO+]."
+   ]
+  },
+  {
+   "case": "c067",
+   "headline": "Leaf c065 two moves on: Black can make the bent four in the corner whenever it likes. Dead under the site's rules, S[BENT4] in besogo's labels.",
+   "diagrams": [
+    {"start": "", "moves": "E19 D19 D17 D18 B19 B18 E16 F19 C19 A19 A17 A16 A18 A19 A18", "caption": "The tree's line, marked S[DEAD] after Black 15; the solver said KO+. White to play: White's two groups have two liberties each, and White 8 has two."},
+    {"start": "E19 D19 D17 D18 B19 B18 E16 F19 C19 A19 A17 A16 A18 A19 A18", "moves": "C18 G19 A19 B19 pass E19 pass F19", "caption": "White 16 connects, White's best. Black 17 takes a liberty from White 8; a sacrifice at A19 instead would give White a real ko. White 18 takes two stones and Black 19 takes one back. Black 21 captures White 8 and Black 23 connects. Connecting at E19 in place of White 20 only fills White's own liberty: the same corner."},
+    {"start": "E19 D19 D17 D18 B19 B18 E16 F19 C19 A19 A17 A16 A18 A19 A18 C18 G19 A19 B19 pass E19 pass F19", "moves": "pass A19 pass A17 C19 A18 A19 B19", "caption": "From Diagram 2, whenever Black chooses. White has no move in the corner: both shared liberties are self-atari, and A19 is illegal. Black 25 and Black 27 sacrifice four stones, White 28 captures them, Black 29 takes the 1-2 point, and after White 30, Black 31 takes the ko first. White is in atari at A17 and needs a ko threat."}
+   ],
+   "text": [
+    "White cannot live. Filling its own liberty at A17 or E19 at once just dies. After White 16, Black reaches the corner of Diagram 2, where White's group shares its last two liberties with Black's two corner stones and can never start a ko. A White pass or an extension at G19 gives the same corner or worse. The capture at E19 is a real ko only if White never connects at C18; then only Black can start it, which is dead too and worse for White.",
+    "Only Black can start the ko of Diagram 3, whenever it likes. Under the site's Japanese rules Black first removes White's ko threats, so the leaf is dead, as the tree says; besogo's exact label is S[BENT4], and both count as success for G[KILL]. The solver's KO+ is this ko counted with threats: its bent-four test stayed undecided at the leaf even at 10M nodes, and also right after a White pass. It proves BENT4 after White 16 and for the corner of Diagram 2.",
+    "The analysis gives medium confidence; a fact checker confirmed the play, which is the same under either label. With S[BENT4] on this leaf alone, the site would mark Black 7 in Diagram 1 wrong, its result going from DEAD to BENT4, because Black's other 7th move, C19, still ends in S[DEAD] in leaf c065. With S[DEAD], nothing changes on the site, though check_tree.py keeps flagging the leaf against the solver's ko; it would accept S[BENT4]."
+   ]
+  }
+ ]
+}

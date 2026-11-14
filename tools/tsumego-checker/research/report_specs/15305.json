@@ -1,0 +1,37 @@
+{
+ "problem": "15305",
+ "cards": [
+  {
+   "case": "c094",
+   "headline": "White's hane at D19 starts a ko that Black takes first, and Black has a free forcing move, so White needs two threats more than Black: KO−2, not ALIVE.",
+   "diagrams": [
+    {"start": "", "moves": "B17 B16 C18 B18 B19 A18 A14 A17 A15 D18", "caption": "The tree's line. Black 8 captures White 1, Black 10 puts White 3 in atari, and the tree marks the leaf S[ALIVE]; the solver said DEAD."},
+    {"start": "B17 B16 C18 B18 B19 A18 A14 A17 A15 D18", "moves": "C19 D19", "caption": "White 11 connects. After Black 12, White's three corner stones have one liberty and Black 12 has two, so Black captures them at A19 and lives."},
+    {"start": "B17 B16 C18 B18 B19 A18 A14 A17 A15 D18", "moves": "D19 C19", "caption": "White 11 puts D18 in atari, and Black 12 takes White 3 in a ko. Black has taken first."},
+    {"start": "B17 B16 C18 B18 B19 A18 A14 A17 A15 D18 D19 C19", "moves": "C18! E18 E17 C19", "caption": "White 13 retakes after a threat elsewhere. Black 14 forces: White cannot connect at C19, as Black would win the capturing race, so White 15 must atari. Black 16 retakes without a threat, and White needs a second one."}
+   ],
+   "text": [
+    "The solver said DEAD because D19 and E18 lie outside its search area, so to it White's connection at C19 joins the wall. On the real board that connection fails (Diagram 2).",
+    "The tree's ALIVE is wrong too. White 11 in Diagram 3 is White's only move that does not let Black live, and Black must answer with Black 12, taking the ko; any other answer is dead or a worse ko. If Black wins the ko and connects at C18, Black captures White 5 and has eyes at B19 and B17. If White wins it, D18 falls and the inside has one eye.",
+    "Black took first, so the base is KO−, and Black also has a free forcing move, Black 14 in Diagram 4. White has no local threat. Black's inside moves at A16 and A13 are not real threats: White can ignore them, as Black then gets at best an inside ko that only White can settle. So White wins only with two threats more than Black: S[KO-2].",
+    "Both reviewers agree on KO−2. Some of the first reviewer's counted searches stayed undecided because of the ko cycles and rest on reading; the second reviewer's spot checks fit KO−2. The analysis has medium confidence. B17 is still a failed first move; only this leaf's label changes."
+   ]
+  },
+  {
+   "case": "c095",
+   "headline": "As in leaf c094, with a different inside: White's hane at D19 starts a ko Black takes first, and White needs two threats more than Black: KO−2, not ALIVE.",
+   "diagrams": [
+    {"start": "", "moves": "B17 B16 C18 B18 B19 A18 A17 A16 A14 D18", "caption": "The tree's line. Black 8 captures White 1 and White 7, Black 10 puts White 3 in atari, and the tree marks the leaf S[ALIVE]; the solver said DEAD."},
+    {"start": "B17 B16 C18 B18 B19 A18 A17 A16 A14 D18", "moves": "C19 D19", "caption": "White 11 connects. After Black 12, White's three corner stones have one liberty and Black 12 has two, so Black captures them at A19 and lives."},
+    {"start": "B17 B16 C18 B18 B19 A18 A17 A16 A14 D18", "moves": "D19 C19", "caption": "White 11 puts D18 in atari, and Black 12 takes White 3 in a ko. Black has taken first."},
+    {"start": "B17 B16 C18 B18 B19 A18 A17 A16 A14 D18 D19 C19", "moves": "C18! E18 E17 C19", "caption": "White 13 retakes after a threat elsewhere. Black 14 forces: White cannot connect at C19, as Black would win the capturing race, so White 15 must atari. Black 16 retakes without a threat, and White needs a second one."}
+   ],
+   "text": [
+    "As in leaf c094, the solver said DEAD because D19 and E18 lie outside its search area; on the real board White's connection at C19 fails (Diagram 2).",
+    "The tree's ALIVE is wrong too. White 11 in Diagram 3 is White's only move that does not let Black live, and Black must answer with Black 12, taking the ko; any other answer is dead or a worse ko. If Black wins the ko and connects at C18, Black lives. If White wins it, D18 falls and the inside has one eye.",
+    "Black took first, and Black 14 in Diagram 4 is a free forcing move, so White needs two threats more than Black: S[KO-2]. White has no local threat. Black's inside moves at A13 and A15 are not real threats: they give at most a ko at A14 that Black can never settle.",
+    "Both reviewers agree on KO−2. One counted search at the leaf stayed undecided, and with the open bottom the engine cycles, so parts of the count rest on reading. The analysis has medium confidence. B17 is still a failed first move; only this leaf's label changes."
+   ]
+  }
+ ]
+}

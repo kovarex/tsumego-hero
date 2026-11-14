@@ -1,0 +1,33 @@
+{
+ "problem": "1807",
+ "cards": [
+  {
+   "case": "c010",
+   "headline": "Black lives even one threat behind White: after White wins the first ko, Black's atari at C18 forces a second, which Black takes for free. S[KO+2], not S[KO+].",
+   "diagrams": [
+    {"start": "", "moves": "A18 B18", "caption": "The tree's line, Black to play. White 2 puts Black 1 in atari, and the tree marks the leaf S[KO+]. White 2 is White's only reply to Black 1 that does not let Black live outright."},
+    {"start": "A18 B18", "moves": "B19 A19! C18 A17 B19 C19! pass A16", "caption": "Black 3 takes the ko and White 4 retakes after a threat. Black 5 puts three White stones in atari, so White 6 must capture Black 1. Black 7 takes a new ko without a threat, and only a second threat lets White 8 retake. Black has no threat (Black 9 is elsewhere), and White 10 captures."},
+    {"start": "A18 B18", "moves": "B19 A19! C18 A17 B19 pass A18", "caption": "White has only one threat, so White 8 is elsewhere. Black 9 captures two stones and lives with three eyes."}
+   ],
+   "text": [
+    "Black 3 in Diagram 2 puts two White stones in atari at C18, where White cannot connect: it is suicide. Every local White answer lets Black capture there and live, so White 4 has to retake with a ko threat. Neither side has a local ko threat at any stage.",
+    "Winning that ko once does not kill. Black 5 ataris three stones, White 6 is forced, and Black 7 takes a new ko without needing a threat. White needs a second threat for White 8; with only one, Black lives (Diagram 3). There is no approach move here, unlike in leaf c011: White 4 and White 8 are both ko captures, and White 6 answers an atari.",
+    "So Black lives with one threat fewer than White and dies with two fewer: S[KO+2], a two-step ko that becomes KO+ once White has won it once. KO+ is only what Black gets by playing C18 first at the leaf. Both reviewers agree, with matching solver runs. The problem's best answer, the SEKI+ line, stays best, and the site's grading does not change."
+   ]
+  },
+  {
+   "case": "c011",
+   "headline": "Black lives even one threat behind White: White's retake is no atari, so White must also fill a liberty. S[KO+] is one threat too low; S[A+1KO+] or S[KO+2].",
+   "diagrams": [
+    {"start": "", "moves": "C18 B18", "caption": "The tree's line, Black to play. The White stone at C19 is in atari. The tree marks the leaf S[KO+]; the solver said KO+2."},
+    {"start": "C18 B18", "moves": "B19 C19! pass A17 B19 C19! pass A16", "caption": "Black 3 takes the ko and White 4 retakes after a threat. Black still has two liberties, so Black 5 can play elsewhere. White 6 fills a liberty, Black 7 retakes without a threat, and only a second threat lets White 8 retake. Black has no threat (Black 9 is elsewhere), and White 10 captures."},
+    {"start": "C18 B18", "moves": "B19 C19! pass A17 B19 pass A18", "caption": "White has only one threat, so White 8 is elsewhere. Black 9 captures two stones and lives."}
+   ],
+   "text": [
+    "Black 3 in Diagram 2 puts two White stones in atari at A18, and every local White answer lets Black capture and live, so White 4 needs a ko threat. But White 4 is no atari: Black still has two liberties and can ignore it. White 6 must fill one, and Black 7 retakes without a threat, reaching the same position as after Black 7 in leaf c010. Only a second threat lets White 8 retake. Neither side has a local threat.",
+    "So Black lives one threat behind White (Diagram 3) and dies two behind (Diagram 2); the tree's KO+ is one threat too low. Both labels need the same threats. S[KO+2] reads a two-step ko: White must win the ko twice, with White 4 and White 8, and after the first win it is a plain KO+. S[A+1KO+] reads White 6 as one approach move that makes the ko direct, Black having taken first with Black 3.",
+    "The analysis and the first reviewer write KO+2, though that reviewer grants that the shape is a one-move approach ko; the second reviewer writes A+1KO+, since it is one ko retaken, not two kos. Neither label changes the site's grading."
+   ]
+  }
+ ]
+}

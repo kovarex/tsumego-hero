@@ -1,0 +1,36 @@
+{
+ "problem": "13605",
+ "cards": [
+  {
+   "case": "c069",
+   "headline": "White has just taken the ko and has three local threats that Black must answer, so Black needs four threats more than White: KO−4, not KO−.",
+   "diagrams": [
+    {
+     "start": "",
+     "moves": "C17 C16 A16 B17 B19 C19 A18 A19",
+     "caption": "The tree's line. White 8 takes the ko at A19, and the tree marks the leaf S[KO-]."
+    },
+    {
+     "start": "C17 C16 A16 B17 B19 C19 A18 A19",
+     "moves": "B19! A15 A14 A19",
+     "caption": "Black 9 retakes with a threat elsewhere. White 10 is a local threat: Black 11 must capture, because connecting at A17 lets White capture four stones at A19. White 12 retakes without a threat elsewhere."
+    },
+    {
+     "start": "C17 C16 A16 B17 B19 C19 A18 A19 B19! A15 A14 A19",
+     "moves": "B19! E18 E19 A19 B19! F19 E18 A19",
+     "caption": "Black 13 and Black 17 retake with threats elsewhere. White 14 and White 18 atari Black's stones at D18 and D19, and Black must answer each: Black 15 captures, Black 19 connects. White 16 and White 20 retake. With no fourth threat, Black loses here: White connects at B19 and lives."
+    },
+    {
+     "start": "C17 C16 A16 B17 B19 C19 A18 A19 B19! A15 A14 A19 B19! E18 E19 A19 B19! F19 E18 A19",
+     "moves": "B19! pass A17 A19 A15",
+     "caption": "Black 21 retakes with a fourth threat elsewhere. White has no threat left, so White 22 plays elsewhere. Black 23 puts White in atari, White 24 must capture Black 21, and Black 25 connects. White can never connect at B19 (self-atari), so White is dead even with threats elsewhere."
+    }
+   ],
+   "text": [
+    "White 8 has just taken the ko, and Black has no local threat, so Black must retake with a threat elsewhere. That alone would be KO−. But White has three local threats that Black must answer: White 10 ataris Black 3 (Diagram 2), and White 14 and White 18 atari Black's stones at D18 and D19, which White 6 left with two liberties (Diagram 3). After each answer White retakes, so Black needs a fourth threat for Black 21 (Diagram 4).",
+    "So Black kills only with four threats more than White: KO−4. The tree's KO− says one more is enough, but with one threat Black fails. The solver said KO−3 because F19 lies outside its search area, so it missed White 18. With the area widened to include F19, the same engine finds that Black needs exactly four more.",
+    "Confidence is medium, and both reviewers agree on KO−4. Extended solver runs by the analyst and one reviewer show three threats fail and four win; in the other reviewer's widest area the four-threat search stayed undecided. One question stays open: whether White's local threats should count. The site's tutorial counts them. Counting only White 10 would give KO−2, and only a convention that ignores all three would keep KO−."
+   ]
+  }
+ ]
+}

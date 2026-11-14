@@ -1,0 +1,36 @@
+{
+ "topic": "bent-four",
+ "text": [
+  "Nine leaves in seven problems end in the bent four in the corner; Diagrams 1 and 2 show it in 15217. Only the attacker can start the ko, whenever it likes, after removing the defender's ko threats; the defender can neither start it nor get rid of it. A fact checker or two reviewers played each position out and confirmed the shape; the analysis gives only medium confidence for c032, c065 and c067. The solver said BENT4 for two leaves and a ko for seven, where its bent-four check ran out of budget or did not fire.",
+  "The site plays by Japanese rules (six of the seven SGFs say RU[Japanese]), and its tutorial calls this shape dead, so the authors' S[DEAD] gives the right outcome. besogo also has an exact label, S[BENT4], ranked just above DEAD for the defender. In the four problems where Black is to live, both labels are failures and nothing changes. In the three kill problems, S[DEAD] ranks above S[BENT4], and that can change which moves are correct.",
+  "With S[BENT4], a move that leads to bent four becomes wrong wherever a sibling move ends in S[DEAD]. In 15217, White 3 in Diagram 1 is the shape move and White 3 in Diagram 3 the hane, which kills outright; with S[BENT4] on Diagram 1's leaf, the site accepts only the hane. 15208 has the same choice. In 13539, two different 7th moves for Black both end in bent four; relabelling either leaf alone makes its 7th move wrong, because the other leaf still says S[DEAD].",
+  "The authors of 15208 and 15217 chose S[DEAD] knowingly. They accept the shape move and recommend the direct kill; 15217's comment says \"Bent four in the corner is dead, but as you improve try to go for a direct kill.\" S[BENT4] would turn that advice into a wrong mark on the shape move. 9820 is different: its tree already labels the same corner S[BENT4] in other lines (Diagram 4), so the analysis and both reviewers call its two S[DEAD] leaves, c031 and c032, errors. With BENT4 everywhere, those two change; with DEAD everywhere, 9820's BENT4 leaves change instead."
+ ],
+ "diagrams": [
+  {
+   "problem": "15217",
+   "start": "",
+   "moves": "A17 A16 A18 C19 A19",
+   "caption": "15217, White to kill: the tree's line with the shape move, White 3. After White 5, Black cannot take the three stones without being left with a dead straight three, and White cannot kill at once. The tree says S[DEAD]; this is leaf c077."
+  },
+  {
+   "problem": "15217",
+   "start": "A17 A16 A18 C19 A19",
+   "moves": "pass D17 pass C15 pass A14 pass B19 B17 A18 A19 B19",
+   "caption": "15217, from Diagram 1, whenever White chooses: White 7, 9 and 11 fill all but one of Black's outside liberties, White 13 throws in, and Black 14 captures four stones. After White 15 and Black 16, White 17 takes the ko first. Black can never start this ko."
+  },
+  {
+   "problem": "15217",
+   "start": "",
+   "moves": "A17 A16 C19 B19 A18",
+   "caption": "15217, the tree's other line: White 3 is the hane. Black 4 captures it, but after White 5 every Black move dies, a direct kill; C19 is only a false eye. This leaf says S[DEAD] too."
+  },
+  {
+   "problem": "9820",
+   "start": "",
+   "moves": "D19 B19 B16 B15 A16 A18",
+   "caption": "9820, Black to live: a line the tree itself ends S[BENT4], after White 6. Leaves c031 and c032, both S[DEAD], lead to the same bent-four corner."
+  }
+ ],
+ "suggestion": "Keep S[DEAD], as the authors wrote it and the site's rules say, and have the checker count the solver's BENT4 as DEAD. Then no grading changes, and S[BENT4] stays available where you want a direct kill to be the only answer."
+}

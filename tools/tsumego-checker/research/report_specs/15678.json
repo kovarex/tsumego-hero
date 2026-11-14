@@ -1,0 +1,101 @@
+{
+ "problem": "15678",
+ "cards": [
+  {
+   "case": "c119",
+   "headline": "The five top stones die, but White's left side lives with eyes at A16 and B15: DEAD for the top stones, ALIVE for the whole group.",
+   "diagrams": [
+    {
+     "start": "",
+     "moves": "B15 B16 A18 D19 C19 A17 G19 A15 E17 B17 F19",
+     "caption": "The tree's line, marked S[DEAD]. White 8 captures Black 1, and with White 10 the left side has two real eyes, at A16 and B15. After Black 11 the five top stones have one liberty, at E19, where White's own move is suicide."
+    },
+    {
+     "start": "B15 B16 A18 D19 C19 A17 G19 A15 E17 B17 F19",
+     "moves": "pass E19 pass A14 A13",
+     "caption": "White 12 and White 14 play elsewhere. Black 13 captures the five top stones: DEAD for those. White 16 captures Black 15's throw-in, and the left side keeps two real eyes, at A16 and B15: ALIVE for the whole group."
+    },
+    {
+     "start": "B15 B16 A18 D19 C19 A17",
+     "moves": "",
+     "labels": {
+      "G19": "a",
+      "E17": "b",
+      "F19": "c",
+      "A15": "d"
+     },
+     "caption": "Black to play move 7. a to d are the tree's four Black moves here; a is this leaf's Black 7. With S[ALIVE] on this leaf the site marks a, b and c wrong, which it accepts today. d leads to a leaf marked S[DEAD]."
+    }
+   ],
+   "text": [
+    "At the leaf the five top stones are lost, so S[DEAD] is right if the goal is those stones; the solver agrees once its target is set to them. But White's eyes at A16 and B15 are real: Black can never play either point, since both are suicide, and A13 and A14 are miai for keeping the bottom stones joined, even if White passes twice (Diagram 2). For the whole group the leaf is ALIVE, as the solver found.",
+    "For the whole group, the analyst took Black 7 for the mistake; S[ALIVE] here makes the site mark a, b and c wrong (Diagram 3). The fact checker found that the main line ends the same way (leaf c120), and that d kills the whole group only if the lower side is closed, as in the solver's search area; even there the kill is unproven. So this option means rewriting the main line and closing the lower side."
+   ]
+  },
+  {
+   "case": "c120",
+   "headline": "Main line: the seven top stones die, but the left side lives with eyes at A16 and B15. DEAD for the top stones, ALIVE for the whole group.",
+   "diagrams": [
+    {
+     "start": "",
+     "moves": "B15 B16 A18 D19 E17 C19 G19 B19 F19 A17 H19 A15 E19",
+     "caption": "The tree's main line, marked S[DEAD]. White 12 captures Black 1, and Black 13 leaves the seven top stones one liberty, at A19. White cannot fill it: A19 is suicide for White while Black's corner still has B17."
+    },
+    {
+     "start": "B15 B16 A18 D19 E17 C19 G19 B19 F19 A17 H19 A15 E19",
+     "moves": "B17 A19 pass A14 A13",
+     "caption": "White 14 puts Black's three corner stones in atari, so Black 15 must capture the seven top stones: DEAD for those. White 16 can even play elsewhere, since White 18 captures Black 17's throw-in. The left side lives with two real eyes, at A16 and B15: ALIVE for the whole group."
+    },
+    {
+     "start": "B15 B16 A18 D19 E17 C19 G19 B19 F19 A17",
+     "moves": "",
+     "labels": {
+      "H19": "a",
+      "A15": "b"
+     },
+     "caption": "Black to play move 11. a is the main line's Black 11, which the site marks wrong with S[ALIVE] on this leaf. b is the tree's other move here; its leaf is marked S[DEAD]."
+    },
+    {
+     "start": "",
+     "moves": "B15 B16 A18 D19 G19 C19 F19 B19 H19 A17",
+     "caption": "A side line of the tree, which ends with White 10 and no S[]. With S[ALIVE] on this leaf, the site marks Black 9 here wrong as well."
+    }
+   ],
+   "text": [
+    "At the leaf the seven top stones are lost. White 14 is sente, and the left side keeps two real eyes that Black can never fill; White need only answer a throw-in, since A13 and A14 are miai (Diagram 2). The solver confirms both readings: DEAD with its target set to the top stones, ALIVE for the whole group. The S[] depends only on which stones count.",
+    "With S[ALIVE], the site marks wrong the main line's Black 11 (a in Diagram 3) and Black 9 of the side line in Diagram 4. The analyst would then move the main line to b. But the fact checker found that b kills the whole group only if the lower side is closed, as in the solver's search area, and that even there the solver could not prove it at a million nodes. So for the whole group the problem would have no correct answer on the board as given."
+   ]
+  },
+  {
+   "case": "c121",
+   "headline": "White has just taken the ko, so KO+ is wrong either way. Whole group: ALIVE, as White connects at B15. Top stones: KO−3.",
+   "diagrams": [
+    {
+     "start": "",
+     "moves": "C19 B17 G19 D19 A17 A16 A19 A18",
+     "caption": "The tree's line, marked S[KO+], which says Black takes the ko first. But White 8 has just taken it, and Black's four corner stones are in atari at B19, where Black's own move is suicide."
+    },
+    {
+     "start": "C19 B17 G19 D19 A17 A16 A19 A18",
+     "moves": "A17! B15 pass A14",
+     "caption": "Whole group, S[ALIVE]. Black 9 retakes after a threat elsewhere, and White 10 joins the wall to the bottom stones instead of fighting the ko. The solver finds that every Black move then leaves White alive; with Black 11 elsewhere, White 12 makes two eyes, at A15 and B16."
+    },
+    {
+     "start": "C19 B17 G19 D19 A17 A16 A19 A18",
+     "moves": "A17! H19 J19 A18 A17! B15 E17 A18 A17! pass F19 A18 E19",
+     "caption": "Top stones, S[KO-3]. White has no threats and Black needs three: Black 9, 13 and 17 each retake after a threat elsewhere, while White's retakes need none. White 10 ataris the Black stone at G19, and Black 11 captures it before White 12 retakes. White 14 joins the wall to the bottom stones. Black 15 fills a liberty and White 16 retakes. White 18 plays elsewhere, Black 19 fills another liberty, and after White 20 retakes, Black 21 captures the five top stones."
+    },
+    {
+     "start": "C19 B17 G19 D19 A17 A16 A19 A18",
+     "moves": "A17! H19 B15 A18 A17! E17 E16 A18",
+     "caption": "Black 11 counters at B15 instead of capturing White 10, making the ko a fight for the wall too. White 12 retakes, and Black 13's retake puts the wall in atari. White 14 then threatens to run out through E16, Black 15 must block, and White 16 retakes for free."
+    }
+   ],
+   "text": [
+    "S[KO+] is wrong under either option: White 8 was the ko capture, so White took first. Black has no local threat, because any Black move except the retake lets White capture the four corner stones at B19 and join everything. Black can never connect either: A18 and B19 are both self-atari for Black.",
+    "Whole group: White ignores the ko (Diagram 2), and the solver finds no kill even when Black may ignore the ko ban. Top stones: Black must win the ko twice, filling liberties in between, and White's atari at H19 is one more free threat, so Black needs three threats more than White (Diagram 3). Black's counter at B15 does not save a threat, because White's push at E17 is another free threat (Diagram 4).",
+    "Reviewer 2 and both judges count KO−3. The solver left the full count undecided; Judge A checked it with an engine on a hand-built model of the open board. Reviewer 1's KO−2 missed the push at E17, which the solver cannot see: its area counts the empty E16 as a Black wall. Neither option changes the site's grading."
+   ]
+  }
+ ]
+}

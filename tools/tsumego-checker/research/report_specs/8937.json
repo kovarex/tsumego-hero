@@ -1,0 +1,32 @@
+{
+ "problem": "8937",
+ "cards": [
+  {
+   "case": "c027",
+   "headline": "S[DDKO] is right: White needs both kos, and each time White retakes one with a threat, Black takes the other without one.",
+   "diagrams": [
+    {"start": "", "moves": "B19 E17 A18 A17 C19 A15 D18", "caption": "The tree's line, marked S[DDKO]. White 6 has taken the ko on the left, and Black 7 has just taken the ko at the top."},
+    {"start": "B19 E17 A18 A17 C19 A15 D18", "moves": "D19! A16 A15! D18", "caption": "White 8 retakes at the top after a threat elsewhere. Black 9, the only killing answer, takes the ko on the left without a threat. White 10 retakes on the left with a second threat, and Black 11 retakes at the top, again without one: back to Diagram 1, with White two threats poorer."}
+   ],
+   "text": [
+    "White has no way out of the cycle in Diagram 2. In Diagram 1, White at A16 or B18 fills its own liberty and Black captures; if White stops retaking, Black connects at D19 and White is left with a ko on the left that it can never finish. So White runs out of threats and dies: S[DDKO]. White's local threats against B15 only delay this.",
+    "The solver's ko tables confirm that no KO label fits: Black wins at every threat balance from −3 to +3. The solver has no double-ko status and calls any kill that needs a ko capture but no threats BENT4. But there is no bent-four shape here, and Black never has to remove White's threats first, so White is dead under any rules."
+   ]
+  },
+  {
+   "case": "c028",
+   "headline": "After White retakes, Black has a free local threat, so White needs two threats more than Black, not one: S[KO+2], not S[KO+].",
+   "diagrams": [
+    {"start": "", "moves": "E17 B19 A18 A17 D18", "caption": "The tree's line. Black 5 captures and takes the ko first, and the tree marks the leaf S[KO+]."},
+    {"start": "E17 B19 A18 A17 D18", "moves": "E18! B18 A19 D18", "caption": "White 6 retakes after a threat elsewhere. Black 7 is a local threat; White 8 answers by capturing two stones, and Black 9 retakes without a threat elsewhere. It is a plain KO+ again, and White has spent one threat."},
+    {"start": "E17 B19 A18 A17 D18", "moves": "E18! B18 D18 C19", "caption": "Why White must answer Black 7: if White 8 connects, White has one liberty left and Black 9 captures."},
+    {"start": "E17 B19 A18 A17 D18 E18! B18 A19 D18", "moves": "E18! pass D18", "caption": "From Diagram 2. White 10 retakes with a second threat; Black has none, so Black 11 plays elsewhere and White 12 connects and lives."}
+   ],
+   "text": [
+    "Black 5 took the ko first, which is why the tree says KO+. But after White 6 retakes, Black 7 in Diagram 2 gives up two stones as a free local threat: White can no longer connect at D18, because that leaves White one liberty and Black captures (Diagram 3). White 8 has to answer, and Black 9 retakes without a threat elsewhere. White's other answer, at A15, comes to the same: it gives White a threat against B15, but also gives Black one at A16.",
+    "So White has to win the ko twice. White lives with two threats more than Black (Diagram 4); with only one more, White has none left after Black 9 and Black connects at E18. White has no local threat of its own: at the leaf, Black answers any local White move by connecting at E18. That is S[KO+2]. The same reading confirms the tree's other KO+ leaf; the difference here is Black 7.",
+    "The solver's ko tables agree: Black wins with one threat fewer than White and loses with two fewer. One caveat: once the search area includes White's threats against B15, the direct search at the leaf with White one threat ahead stayed undecided even at 10M nodes. Searching from the position after Black 7 still gives KO+2, and reading found no extra White resource."
+   ]
+  }
+ ]
+}

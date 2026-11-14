@@ -1,0 +1,54 @@
+{
+ "problem": "7487",
+ "cards": [
+  {
+   "case": "c023",
+   "headline": "Not seki: after Black's throw-in at A19, White takes the ko first and Black needs three more threats than White. S[A-2KO-], with the throw-in added below the leaf.",
+   "diagrams": [
+    {
+     "start": "",
+     "moves": "B18 C17 A16 A17 A15 B17 C18 G18 F19 D18 D19 A18 C19 G19",
+     "labels": {
+      "A19": "a",
+      "H19": "b",
+      "E18": "c",
+      "F18": "d"
+     },
+     "caption": "The tree's line to the leaf, which it marks S[SEKI]; Black to play. White's group has four liberties, a to d; Black's corner, Black 1, 7, 11 and 13, has two."
+    },
+    {
+     "start": "B18 C17 A16 A17 A15 B17 C18 G18 F19 D18 D19 A18 C19 G19",
+     "moves": "A19 B19",
+     "caption": "Black 15 throws in at White's vital point, and White 16 captures: White takes the ko first, and Black's four corner stones are in atari."
+    },
+    {
+     "start": "B18 C17 A16 A17 A15 B17 C18 G18 F19 D18 D19 A18 C19 G19 A19 B19",
+     "moves": "A19! pass H19 B19 A19! pass E18 B19 A19! pass F18",
+     "caption": "Black has three ko threats, White none. Black 17, 21 and 25 each retake after a threat elsewhere; White, with no threat, plays elsewhere each time. White 20 and White 24 retake for free after the approach moves Black 19 and Black 23. After Black 25 White is in atari, and Black 27 captures."
+    },
+    {
+     "start": "B18 C17 A16 A17 A15 B17 C18 G18 F19 D18 D19 A18 C19 G19",
+     "moves": "E19 A19",
+     "caption": "Without the throw-in: Black 15 connects, and White 16 takes the throw-in point away. This is seki, the author's own S[SEKI] leaf reached in another order."
+    }
+   ],
+   "text": [
+    "The leaf is not seki. Black 15 in Diagram 2 throws in, and White 16 takes the ko first. When Black retakes, White still has three liberties: Black needs two approach moves, Black 19 and Black 23 in Diagram 3, and White retakes for free after each. So Black kills only with three ko threats more than White. In this tree's notation that is S[A-2KO-], two approach moves with White taking first; the solver's KO−3 is the same count.",
+    "Every White answer to the throw-in still leaves a ko, and neither side has a useful local threat. The solver confirms each stage, though its wider-area search at the leaf itself stays undecided. White 14 is still White's best, so nothing above the leaf changes.",
+    "Black need not start the ko: without enough threats, Black can choose the seki of Diagram 4 instead. Once Black has thrown in, though, losing the ko costs Black the corner. For the attacker, besogo ranks any ko above seki, and elsewhere in this tree the author labels losing kos as kos, with the comment 'Wrong; disadvantageous ko.' So S[SEKI] is an oversight."
+   ]
+  }
+ ],
+ "tree_change": {
+  "text": [
+   "The new S[] alone will not show on the site. Without the throw-in, Black's connection at E19 transposes into the author's seki line (the card's last diagram), so besogo sets the leaf's own S[] aside and takes SEKI from that line. Add the throw-in and White's capture below the leaf, Black 15 and White 16 in Diagram 1, with S[A-2KO-] at the end; besogo then picks the ko over the seki. Both were checked with besogo's own code, and the site's grading does not change either way."
+  ],
+  "diagrams": [
+   {
+    "start": "B18 C17 A16 A17 A15 B17 C18 G18 F19 D18 D19 A18 C19 G19",
+    "moves": "A19 B19",
+    "caption": "Add these two moves below the leaf and put S[A-2KO-] on White 16."
+   }
+  ]
+ }
+}

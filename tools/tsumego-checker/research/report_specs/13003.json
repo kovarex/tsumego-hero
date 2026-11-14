@@ -1,0 +1,31 @@
+{
+ "problem": "13003",
+ "cards": [
+  {
+   "case": "c057",
+   "headline": "S[DEAD] holds: the main group gets one eye and loses the race by one move. The solver's ALIVE is only its target stone B17 living in the corner.",
+   "diagrams": [
+    {
+     "start": "",
+     "moves": "A18 B16 A16 B15 C18 D18 B19 B14",
+     "labels": {"A17": "a"},
+     "caption": "The tree's line. After White 8 the tree marks the leaf S[DEAD]; the solver said ALIVE. Black a, the solver's move, lets B17 live in the corner with eyes at A19 and at B18, where Black 7 captured, but the main group still dies."
+    },
+    {
+     "start": "A18 B16 A16 B15 C18 D18 B19 B14",
+     "moves": "E16 E17 D19 F14 E18 C15 G18 E15",
+     "caption": "Black 9 makes the eye at E15, and White 10 joins the top chains. It is a race: Black's three liberties, the eye included, against White's four, Black to move. Black 15 puts White in atari, but White 16 captures seven stones first."
+    },
+    {
+     "start": "A18 B16 A16 B15 C18 D18 B19 B14",
+     "moves": "B13 C13 C15 E16",
+     "caption": "Black 9 attacks White's chain at B14–B16, but C14 is short of liberties: White 10 puts it in atari, and after Black 11 connects, White 12 leaves Black's five stones in atari while White's chain still has two liberties."
+    }
+   ],
+   "text": [
+    "The tree is right. Black's main group has room for only one eye and loses the race with White's top chain by one move (Diagram 2). It cannot join the corner either: attacking White's chain at B14–B16 is too slow (Diagram 3). Black's other tries fail too, those at the top in the same race, and none gives a ko or seki.",
+    "The solver said ALIVE only because its target also holds B17 and G17, and it counts a kill only when all are captured: after Black a in Diagram 1, B17 lives in the corner while the main group dies. With the main group alone as its target, the solver stays undecided at the leaf and settles some tries, such as Black 9 in Diagram 3, only in part; every line it settled is DEAD, and the rest read as dead too."
+   ]
+  }
+ ]
+}

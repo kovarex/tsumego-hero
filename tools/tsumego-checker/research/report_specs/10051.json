@@ -1,0 +1,37 @@
+{
+ "problem": "10051",
+ "cards": [
+  {
+   "case": "c041",
+   "headline": "White to play has nothing to capture, and its best atari forces Black to take the ko first. White needs the first threat: KO+, not KO−.",
+   "diagrams": [
+    {
+     "start": "",
+     "moves": "B18 C17 A18 A17 C18 C19 B19 D18 F19 E19 G19",
+     "caption": "The tree's line. After Black 11 the tree marks the leaf S[KO-]; the solver said KO+. White is to play, and the only stone in atari is White 6."
+    },
+    {
+     "start": "B18 C17 A18 A17 C18 C19 B19 D18 F19 E19 G19",
+     "moves": "B17 D19 C19! D19! pass A16",
+     "caption": "White 12 ataris the four corner stones, and Black 13 must capture White 6: Black takes the ko first, and the whole White group is in atari. White 14 and Black 15 retake after threats elsewhere; each retake is an atari. With equal threats White runs out first and plays elsewhere, and Black 17 captures the group."
+    },
+    {
+     "start": "B18 C17 A18 A17 C18 C19 B19 D18 F19 E19 G19",
+     "moves": "B17 D19 C19! pass A19",
+     "caption": "If White has one threat more, White 14 retakes, Black has no threat left and plays elsewhere, and White 16 captures the four corner stones. White lives."
+    },
+    {
+     "start": "B18 C17 A18 A17 C18 C19 B19 D18 F19 E19 G19",
+     "moves": "D19 A15",
+     "labels": {"A16": "a", "B17": "b"},
+     "caption": "If White 12 connects, Black 13 kills. White's group has two liberties left, a and b: whichever White plays, Black plays the other and captures the group."
+    }
+   ],
+   "text": [
+    "The only stone in atari at the leaf is White 6, so White has nothing to capture. Connecting dies (Diagram 4) and other moves are no better, so White's best is White 12 in Diagram 2. Black 13 must capture, and that takes the ko. Each retake is an atari and neither side has a local threat, so White needs the first threat. Black kills with equal threats and fails only when White has more threats (Diagram 3). That is KO+; KO− would mean Black needs an extra threat.",
+    "In the tree's branch where Black plays E19 instead of Black 7, the same exchange as White 12 and Black 13 in Diagram 2 ends in a leaf marked S[KO+]. In that branch's S[A+1KO-] leaf, Black's stone at D19 is the one in atari, so White takes the ko first. The author probably mixed up the two similar shapes.",
+    "The solver's wider area stays undecided at the leaf, though it gives KO+ after Black 13 in Diagram 2. A reviewer traced the undecided result to a White move at H19 or H18, which prepares an atari on Black 9 and Black 11. That move threatens nothing yet: Black can answer at G17 or capture White 6 at once, and the count stays KO+."
+   ]
+  }
+ ]
+}

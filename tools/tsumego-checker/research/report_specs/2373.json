@@ -1,0 +1,19 @@
+{
+ "problem": "2373",
+ "cards": [
+  {
+   "case": "c015",
+   "headline": "A direct ko that White takes first, so KO− is right. The solver's DEAD comes from a narrow search area without the corner points Black's eyes depend on.",
+   "diagrams": [
+    {"start": "", "moves": "B18 A16 A17", "caption": "The tree's line. After Black 3 the tree marks the leaf S[KO-]; the solver said DEAD."},
+    {"start": "B18 A16 A17", "moves": "B17 B16! A15 B17 C19 D19 B19 A19", "caption": "White 4 takes the ko and puts Black 3 in atari, and Black 5 retakes after a threat elsewhere. White 6 connects, as in the solver's main line, and Black 7 connects too. Black 9 blocks White 8's placement, and Black 11, the tesuji at A19, makes two eyes."},
+    {"start": "B18 A16 A17", "moves": "B17 A18 C19 B16 A15", "caption": "Black 5 answers the atari locally instead of retaking, and White 6's placement kills. Black 7 can then retake without a threat, but White 8 connects and Black is dead."},
+    {"start": "B18 A16 A17", "moves": "B17 B16! D19 A15", "caption": "White 6 is the doubt on the count: if Black answers it at C19, White gains a local ko threat. The reviewer's answer is Black 7, which captures White 2 and ends the ko; Black lives."}
+   ],
+   "text": [
+    "The tree is right. White's best at the leaf is to take the ko at once with White 4. Black must then retake with a threat elsewhere, as Black 5 does in Diagram 2, and lives; a local answer dies (Diagram 3). So it is a direct ko that White takes first: KO−. The solver's DEAD comes from its narrow search area, which leaves out A19 and its neighbours A18 and B19, the points Black's eyes depend on; its wider area stayed undecided.",
+    "Confidence is medium, mainly on the count. If White 6 in Diagram 4 were one more local threat, the leaf would be KO−2. A reviewer found it is none, but only with no White threats outside. A wider check of Diagram 3 was only partly decided."
+   ]
+  }
+ ]
+}

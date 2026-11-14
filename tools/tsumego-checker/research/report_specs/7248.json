@@ -1,0 +1,18 @@
+{
+ "problem": "7248",
+ "cards": [
+  {
+   "case": "c022",
+   "headline": "The corner looks like seki but is the bent four in the corner: a ko only White can start, whenever it likes. S[BENT4] is right.",
+   "diagrams": [
+    {"start": "", "moves": "B18 A17 D18 E18 C19 E19 A16 A18 C18 A19", "caption": "The tree's line. Black 9 is a mistake. After White 10, White's three stones on the edge have two liberties, both inside Black's shape; Black also has three outside liberties. The tree marks the leaf S[BENT4]; the solver said KO−."},
+    {"start": "B18 A17 D18 E18 C19 E19 A16 A18 C18 A19", "moves": "pass D19 pass D16 pass B19 B17 A18 A19 B19", "caption": "From the leaf, when White chooses. Black has no useful local move and plays elsewhere, while White 12 and 14 first fill two of Black's outside liberties at no cost. White 16 throws in, Black 17 captures four stones, White 18 plays inside, and White 20 captures Black 19, taking the ko first. Black needs one ko threat more than White."},
+    {"start": "B18 A17 D18 E18 C19 E19 A16 A18 C18 A19", "moves": "pass D19 pass B19 B17 A18 A19 B19 A17", "caption": "Too early: White 14 throws in while Black still has two outside liberties. After White 18 takes the ko, Black 19 is safe and leaves White 16 and White 18 in atari at A19, where White cannot play. Black captures them next and lives."}
+   ],
+   "text": [
+    "The tree is right. Taking White's three stones leaves Black a dead straight three, and Black cannot start a ko. White fills outside liberties at no cost and starts the ko when it likes, after removing Black's threats (Diagram 2); started while Black still has two outside liberties, it fails and Black lives (Diagram 3). Under the problem's Japanese rules that is the bent four in the corner.",
+    "The solver's bent-four check ran out of budget at the leaf, even at 2M nodes, so it fell back to the plain ko count, KO−; its wider-area search stayed undecided too. After a Black pass the same check gives BENT4, and every Black move at the leaf ends in BENT4 or DEAD."
+   ]
+  }
+ ]
+}

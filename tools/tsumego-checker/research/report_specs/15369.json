@@ -1,0 +1,34 @@
+{
+ "problem": "15369",
+ "cards": [
+  {
+   "case": "c104",
+   "headline": "White has just taken the ko; with no threats it wins this ko and then the bent-four ko. Black needs the first threat: KO−, not KO+.",
+   "diagrams": [
+    {"start": "", "moves": "B18 A17 A15 B15 A19 A14 A16 B19", "caption": "The tree's line. White 8 takes the ko by capturing Black 5, and the tree marks the leaf S[KO+]; the solver said KO−."},
+    {"start": "B18 A17 A15 B15 A19 A14 A16 B19", "moves": "pass A19 B17 A18 A19 B19", "labels": {"A17": "a"}, "caption": "Black 9 has no threat. White 10, White's only kill, connects at the ko and gives up four stones, and Black 11 captures them. White 12 takes the vital point, Black 13 is forced, and White 14 takes the bent-four ko first. Black at a is self-atari: White captures at D19."},
+    {"start": "B18 A17 A15 B15 A19 A14 A16 B19 pass A19 B17 A18 A19 B19", "moves": "pass A19 A17 A19", "caption": "Black 15 still has no threat. White 16 connects at the ko and gives up three stones; after Black 17 captures them, White 18 takes the vital point of the bent three, and Black has one eye."},
+    {"start": "B18 A17 A15 B15 A19 A14 A16 B19", "moves": "A19! pass B17", "caption": "With one threat more than White, Black 9 retakes after a threat elsewhere. White's two corner stones are in atari and White has no safe move, so Black 11 captures them and lives."}
+   ],
+   "text": [
+    "White 8 has just captured, so Black may not retake at A19, and neither side has a local threat. White cannot connect the ko safely, but need not: White 10 in Diagram 2 connects anyway, giving up four stones, and White 14 then takes the bent-four ko first. With equal threats Black dies (Diagrams 2 and 3); with one threat more than White, Black retakes and lives (Diagram 4). So the status is KO−.",
+    "White must win two kos, but it takes first in both, so the second ko gives Black no extra threat: this is not a step ko like S[KO+2]. In the tree's main line Black lives with the move at a in Diagram 2, because the group there still has two liberties below it as well as D19. Here White 4 and White 6 have sealed them, so a is self-atari.",
+    "The solver and both reviewers agree. In the solver's wider area equal threats stayed undecided; a reviewer's exact search without the engine finds Black dead there too and alive with one threat more, and the other undecided entries look like the solver running out of budget. Extending at D19 for liberties is too slow, because White blocks."
+   ]
+  },
+  {
+   "case": "c105",
+   "headline": "White has just taken the ko; with no threats it captures Black's stone at A15 and kills. Black needs the first threat: KO−, not KO+.",
+   "diagrams": [
+    {"start": "", "moves": "B18 A17 A15 B15 A19 A14 B17 B19", "caption": "The tree's line. White 8 takes the ko by capturing Black 5, and the tree marks the leaf S[KO+]; the solver said KO−."},
+    {"start": "B18 A17 A15 B15 A19 A14 B17 B19", "moves": "pass A16 A19 A15", "caption": "Black 9 has no threat. White 10 captures Black's stone at A15 and puts the whole group in atari. Black 11 must retake, White 12 connects, and Black has only the eye at B19. Once White 10 is played, even three threats do not save Black."},
+    {"start": "B18 A17 A15 B15 A19 A14 B17 B19", "moves": "A19! pass A16", "caption": "With one threat more than White, Black 9 retakes after a threat elsewhere, and White's two corner stones are in atari. Black 11 captures them: two eyes."},
+    {"start": "B18 A17 A15 B15 A19 A14 B17 B19", "moves": "A19! A16 A15", "caption": "If White 10 captures Black's stone at A15 instead, Black 11 captures three stones and lives."}
+   ],
+   "text": [
+    "White 8 has just captured, so Black may not retake at A19, and Black has no local threat: Black at A16 is self-atari, and running out at D19 fails because White blocks. With equal threats, White 10 in Diagram 2 captures Black 3, and Black dies. With one threat more, Black lives (Diagrams 3 and 4). So the status is KO−. The solver and both reviewers agree; where the solver's wider area left equal threats undecided, a reviewer expanded every Black move, and each loses.",
+    "The tree's KO+ seems to count Black's next retake as taking first. The site's tutorial and besogo both call this KO−: White has taken first, and Black has to find the first threat. Leaf c104 has the same error. The tree's other KO+ leaf, where White's last move does not capture, is right: there Black can retake at once."
+   ]
+  }
+ ]
+}

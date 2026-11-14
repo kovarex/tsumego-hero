@@ -1,0 +1,21 @@
+{
+ "problem": "5832",
+ "cards": [
+  {
+   "case": "c020",
+   "headline": "White has just taken the ko and neither side has a local threat, so Black needs one threat more than White: KO−, not KO+.",
+   "diagrams": [
+    {"start": "", "moves": "A18 B18 B19 A19", "caption": "The tree's line. White 4 captures Black 1 and so takes the ko; the tree marks the leaf S[KO+]."},
+    {"start": "A18 B18 B19 A19", "moves": "A18! A19! pass C19", "caption": "One threat each. Black 5 retakes after a threat, and White 6 retakes after one of its own. Black has none left (Black 7 is elsewhere), and White 8 captures Black 3 at B19. Black's upper stones are left in atari at C17: dead."},
+    {"start": "A18 B18 B19 A19", "moves": "A18! pass B17", "caption": "Black 5 retakes after a ko threat elsewhere. White has no threat left (White 6 is elsewhere), and Black 7 captures three stones and lives."},
+    {"start": "A18 B18 B19 A19", "moves": "E19 C19 B19 C19 D19 B19", "caption": "Black's only local try. Black 5 ataris the stone at D19, but White 6 ignores it and captures Black 3 at B19. Black 7 takes two stones, and White 8 captures Black 7. After White 10 the white corner keeps two liberties, at A18 and B17, that Black cannot fill, and Black has no eye: dead."}
+   ],
+   "text": [
+    "White 4 has just captured Black 1, so Black cannot retake at once. Without a threat Black dies: White captures at C19 straight away, as White 8 does in Diagram 2. With one threat each, White retakes last and Black still dies (Diagram 2); S[KO+] would mean Black lives here. Only with one threat more than White does Black live (Diagram 3). That is KO−, which besogo calls 'White takes first' and the site tutorial describes as 'the player has to find the first ko threat'.",
+    "KO+ would need a local threat that only Black has, and Black has none. Black's only try, the atari on White's stone at D19, fails (Diagram 4). The solver finds it dead in its search area; one run in a wider area stays undecided, a budget limit, but by hand a first-line crawl only ever has one liberty, which White blocks. After Black retakes, every White move except the retake at A19 lets Black live, so White has no local threat either and the ko is not KO−2.",
+    "The analyst (high confidence), both reviewers and the solver all say KO−. In Diagram 1, White 2 is the only White move that resists, and Black 3 and White 4 are each the only move that keeps the ko, so the line is right and only its S[] is wrong: it should be plain S[KO-], with no number and no approach prefix.",
+    "Nor is KO+ a house convention. The site tutorial's own KO− example is the same kind of ko, and across the site, leaves where the opponent captured last are KO− 183 times and KO+ 33 times. In the Tsumego Dictionary trees it is 4 against 3, and all three KO+ leaves, this one and those of problems 4898 and 5977, are corrected in this report."
+   ]
+  }
+ ]
+}

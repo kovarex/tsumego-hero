@@ -1,0 +1,72 @@
+{
+ "problem": "16601",
+ "cards": [
+  {
+   "case": "c123",
+   "headline": "White's throw-in at B19 captures nothing, so Black takes the ko first, and neither side has a local threat: White needs one threat more. S[KO-], not S[KO+].",
+   "diagrams": [
+    {"start": "", "moves": "C18 D18 A16 C19 A18 E18 F18 E19 A17 B17 B19", "caption": "The tree's line. White 11 throws in and captures nothing, and the tree marks the leaf S[KO+]; the solver said KO−."},
+    {"start": "C18 D18 A16 C19 A18 E18 F18 E19 A17 B17 B19", "moves": "A19 A15 B19", "caption": "Black 12 captures White 11, taking the ko first, and puts White 3, White 5 and White 9 in atari. With no threat, White 13 saves them, and Black 14 connects: eyes at C18 and D19, alive."},
+    {"start": "C18 D18 A16 C19 A18 E18 F18 E19 A17 B17 B19", "moves": "A19 B19! pass C18", "caption": "With one threat more, White 13 retakes after a threat elsewhere. Black has no threat left, so Black 14 is elsewhere, and White 15 captures five stones."},
+    {"start": "C18 D18 A16 C19 A18 E18 F18 E19 A17 B17 B19", "moves": "A19 B19! A15 C18", "caption": "Black 14's atari is no threat: White 15 still captures five stones."}
+   ],
+   "text": [
+    "White 11 captures nothing. It puts Black's five stones in atari at C18 and is itself in atari, so Black 12 in Diagram 2 is forced: every other Black move dies. Black 12 is the first ko capture, so White must find the first ko threat.",
+    "Neither side has a local threat. White cannot play at C18 or D19, both suicide, and after its other moves Black connects and lives (Diagram 2). Once White retakes with a threat (Diagram 3), every Black move dies, the atari of Diagram 4 included. So White needs one threat more than Black. That is KO−: in the site's tutorial, 'the player has to find the first ko threat'. The solver's ko tables say the same in both areas, and both reviewers agree.",
+    "The author put S[KO+] on all five ko leaves of this tree, though Black takes the ko first in each. It looks like a plain 'ko' label. Two things in the editor may have led to it: its ko option defaults to KO+, and for a White-first problem its status label calls KO+ 'Black takes first', without swapping colours. The site's colour swap does not make KO+ right either: the sign is always read from the side that plays first."
+   ]
+  },
+  {
+   "case": "c124",
+   "headline": "White's throw-in at B17 captures nothing, so Black takes the ko first, and neither side has a local threat: White needs one threat more. S[KO-], not S[KO+].",
+   "diagrams": [
+    {"start": "", "moves": "C18 D18 A16 C19 A18 E18 F18 E19 B17", "caption": "The tree's line. White 9 throws in and captures nothing, and the tree marks the leaf S[KO+]; the solver said KO−."},
+    {"start": "C18 D18 A16 C19 A18 E18 F18 E19 B17", "moves": "A17 A15 B17", "caption": "Black 10 captures White 9, taking the ko first, and leaves White 3 and White 5 in atari. With no threat, White 11 saves White 3, and Black 12 connects: eyes at C18 and D19, alive."},
+    {"start": "C18 D18 A16 C19 A18 E18 F18 E19 B17", "moves": "A17 B17! C18 A17", "caption": "With one threat more, White 11 retakes after a threat elsewhere. Black 12 has to connect, and White 13 connects too: Black has one eye, at D19."},
+    {"start": "C18 D18 A16 C19 A18 E18 F18 E19 B17", "moves": "A17 B17! A15 C18", "caption": "Black 12's atari is no threat: White 13 captures three stones."}
+   ],
+   "text": [
+    "White 9 captures nothing. It puts three Black stones in atari at C18 and is itself in atari, so Black 10 in Diagram 2 is Black's only move: every other move dies. Black 10 is the first ko capture, so White must find the first ko threat.",
+    "White has no local threat: C18 and D19 are suicide for White, and after any other White move Black still lives, as in Diagram 2. Once White retakes, Black has no local threat either (Diagram 4), so Black must connect and is left with one eye (Diagram 3): the two corner points never become an eye while White can connect out at A15. So White needs one threat more: KO−.",
+    "Both reviewers agree. The solver gives KO− in the search area; the wider area finds White failing with equal threats but could not decide one threat more. The reviewers trace that to search size: the one-eye end of Diagram 3 is proven dead in each of two smaller widened areas, and undecided only in the largest. In the position before White 9, shared with leaf c123, the solver gives White nothing better than KO−."
+   ]
+  }
+ ],
+ "tree_change": {
+  "text": [
+   "Change three more leaves along with the two cards. Set S[KO-] on the leaf of Diagram 1: White 7 is the throw-in of leaf c124 without the exchange at F18 and E19. Give Diagrams 2 and 3 one shared new label: the solver's tables read KO−2 or worse, but the exact label still needs its own check (Other leaves, below).",
+   "Change them all at once. A partial fix puts a corrected KO− beside a sibling still marked S[KO+], and the site marks the corrected move wrong: with the two cards alone, the tree's F18 at move 7 (On the site, below). Adding Diagram 1 fixes that but turns White 1 in Diagram 2 wrong: it drops to KO− through Black's answer at D18, while White 1 in Diagram 3 keeps KO+. With all five fixed, Diagrams 2 and 3 both at S[KO-2] or both at S[KO-], besogo keeps every current mark; the checker ran each version.",
+   "Reading the board as open, no move needs adding or removing. Only if you treat the outside as closed, add White 7 of Diagram 4 with S[DEAD] (see On the site, below). Then both of White's ko moves at move 7 become wrong, Black 6 in Diagram 1 becomes a losing move too (solver: DEAD), and the tree would need Black's better 6th move as well."
+  ],
+  "diagrams": [
+   {"start": "", "moves": "C18 D18 A16 C19 A18 E18 B17", "caption": "Leaf marked S[KO+]: set S[KO-]. White 7 captures nothing, and Black takes the ko first at A17."},
+   {"start": "", "moves": "C18 A17 B19 D18 D19", "caption": "Leaf marked S[KO+]: not KO+. The solver's tables read KO−2 or worse; the exact label needs its own check."},
+   {"start": "", "moves": "A16 A17 C18 A15 B19 D18 D19", "caption": "Leaf marked S[KO+]: the stones of Diagram 2 plus a Black stone at A15. Give it Diagram 2's label."},
+   {"start": "C18 D18 A16 C19 A18 E18", "moves": "A17", "caption": "Only if you treat the outside as closed: add White 7 beside the tree's two 7th moves, with S[DEAD] on it."}
+  ]
+ },
+ "grading": {
+  "text": [
+   "With S[KO-] on both card leaves, the site marks a in Diagram 1 wrong; today it is correct. Its status goes from KO+ to KO−. Either fix alone would instead make White's 9th move on that leaf's line wrong, since the other leaf would still say KO+.",
+   "The grading check found this new mark unjustified. The new status of a, KO−, is right (Diagram 2). But b is no better than a: its leaf is the throw-in ko of leaf c124 without the exchange at F18 and E19, so it is KO− as well (Other leaves, below). The site ranks a below b only because b's leaf keeps the author's S[KO+]. The checker ran besogo with that leaf at S[KO-] too, and a is correct again.",
+   "One caveat. White 7 in Diagram 3, a move the tree lacks, kills outright in the solver's closed-in area, which would make both a and b wrong. On the real board it fails, so it matters only if you treat the outside as closed; the tree change above says what to add then."
+  ],
+  "diagrams": [
+   {"start": "", "moves": "C18 D18 A16 C19 A18 E18", "labels": {"F18": "a", "B17": "b"}, "caption": "White to play the 7th move. Today a and b are both correct, each worth S[KO+]. With the two card fixes the site marks a wrong and keeps b."},
+   {"start": "", "moves": "C18 D18 A16 C19 A18 E18 F18", "labels": {"E19": "x", "B17": "x", "A19": "y", "A17": "y"}, "caption": "After White 7 at a, Black to play. Both answers at x, the tree's among them, give KO−; the moves at y only give White a better ko."},
+   {"start": "C18 D18 A16 C19 A18 E18", "moves": "A17 B17 E19 F18", "caption": "White 7 kills in the solver's closed-in area. On the real board the way out at F17 is open: Black 8 answers, and after White 9, Black 10 threatens both to run out at F17 and to catch White 9 at F19 for a second eye. White can stop only one."}
+  ]
+ },
+ "also_check": {
+  "text": [
+   "Leaf 1 (Diagrams 1 and 2), now S[KO+]: the checker suggests S[KO-], with high confidence. After Black takes the ko at a, every White move in the area leaves Black alive, and the solver says White fails with equal threats in both areas; it could not decide one threat more. By reading, Black dies once White wins the ko (Diagram 2).",
+   "Leaves 2 and 3 (Diagrams 3 and 4), now S[KO+]: not KO+, but the exact label is open. White's last stone captures nothing, and Black takes the ko first at a. The solver says White fails with equal threats and with one threat more in both areas, and could not decide two more: KO−2 or worse. Leaf 3 has the stones of Leaf 2 plus a Black stone at A15 and the same solver tables, so the two get the same label."
+  ],
+  "diagrams": [
+   {"start": "", "moves": "C18 D18 A16 C19 A18 E18 B17", "labels": {"A17": "a"}, "caption": "Leaf 1, marked S[KO+]. White 7 captures nothing, and Black takes the ko first at a. The checker suggests S[KO-] (high confidence)."},
+   {"start": "C18 D18 A16 C19 A18 E18 B17", "moves": "A17 B17! C18 A17", "caption": "If White wins the ko: White 9 retakes after a threat elsewhere, Black 10 connects and White 11 connects too. Black has one eye and is dead."},
+   {"start": "", "moves": "C18 A17 B19 D18 D19", "labels": {"C19": "a"}, "caption": "Leaf 2, marked S[KO+]. White 5 captures nothing. Black takes the ko first at a, capturing White 1 and putting White 3 and White 5 in atari. The solver's tables read KO−2 or worse; the exact label needs its own check."},
+   {"start": "", "moves": "A16 A17 C18 A15 B19 D18 D19", "labels": {"C19": "a"}, "caption": "Leaf 3, marked S[KO+]: the stones of Leaf 2 plus Black 4 at A15, with the same solver tables. Give it Leaf 2's label."}
+  ]
+ }
+}

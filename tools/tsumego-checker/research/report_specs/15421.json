@@ -1,0 +1,40 @@
+{
+ "problem": "15421",
+ "cards": [
+  {
+   "case": "c112",
+   "headline": "Black takes the ko at once and keeps a local ko threat in reserve, so White must win the ko twice: S[KO+2], not S[KO+].",
+   "diagrams": [
+    {"start": "", "moves": "D18 D17 D19 A17 B19 A19 A18", "caption": "The tree's line. Black 7 takes the ko at once, and the tree marks the leaf S[KO+]; the solver said KO+2."},
+    {"start": "D18 D17 D19 A17 B19 A19 A18", "moves": "A19! C19 E19 A18", "caption": "White 8 retakes after a threat elsewhere. Black 9 connects out of atari and threatens to kill, White 10 must answer, and Black 11 retakes without a threat. This is exactly the tree's sibling leaf, marked S[KO+]."},
+    {"start": "D18 D17 D19 A17 B19 A19 A18", "moves": "A19! C19 pass F19", "caption": "Why White must answer Black 9: if White 10 plays elsewhere, Black 11 kills outright. White's two stones at E18 and F18 cannot play at E19 or F17 without self-atari."},
+    {"start": "D18 D17 D19 A17 B19 A19 A18 A19! C19 E19 A18", "moves": "A19! pass C18", "caption": "From the end of Diagram 2, White 12 retakes after a second threat elsewhere. Black has no local threat left, so when Black 13 plays elsewhere without a threat, White 14 captures four stones and lives."}
+   ],
+   "text": [
+    "After Black 7 in Diagram 1, White's group is in atari at C18, and every White move except the banned retake lets Black kill. So in Diagram 2 White 8 retakes after a threat elsewhere. Black 9 connects out of atari and threatens to kill outright, as Diagram 3 shows, so White 10 is forced. Then the ban has lapsed, and Black 11 retakes at no cost.",
+    "Diagram 2 ends in exactly the position of the tree's sibling leaf, where Black connects before taking the ko. The tree marks that leaf S[KO+] and the solver agrees: neither side has a local threat there, so White needs another threat elsewhere (Diagram 4). White must therefore win the ko twice. By the site's own definition, 'KO+2 becomes a regular KO+ once the opponent has won it once', this leaf is S[KO+2]: 'White needs 1 threat to start the ko'.",
+    "The solver's ko tables give KO+2 in both search areas, also at 1M nodes, and both reviewers confirmed it. The site's tutorial counts local threats toward the label. Taking the ko at once keeps Black's local threat and connecting first spends it, so this leaf and its sibling should not share a status.",
+    "White has no local threat. The solver treats E16 as a wall; on the real board, where E16 is empty, White F17 would atari E17, but it never helps White: whenever White needs a threat, its group is already in atari at C18, and as an answer to Black 9 in Diagram 2 it fails too."
+   ]
+  }
+ ],
+ "grading": {
+  "text": [
+   "With S[KO+2] on leaf c112, the site marks b in Diagram 1 wrong and keeps a as the only correct 7th move; the problem's overall status goes from KO+ to KO+2. The grading check found this right. After b, White answers at once (Diagram 2), so Black has spent its local threat before the ko starts: KO+, one threat worse than a. Neither line misses a better White reply.",
+   "The new overall status, KO+2, assumes White 2 and White 4 in Diagram 2 are White's best. The solver refutes some alternatives to White 4 and leaves others undecided; most alternatives to White 2 are undecided. That does not affect the mark on b, which only compares it with a."
+  ],
+  "diagrams": [
+   {"start": "", "moves": "D18 D17 D19 A17 B19 A19", "labels": {"A18": "a", "C19": "b"}, "caption": "Black to play the 7th move. Today a and b are both correct, each worth S[KO+]. After the fix only a is correct."},
+   {"start": "", "moves": "D18 D17 D19 A17 B19 A19 C19 E19 A18", "caption": "The tree's line for b, its leaf marked S[KO+]. White 8 answers Black 7 at once, and Black 9 takes the ko with no local threat left. Leaf c112 reaches this position only after White has spent a threat."}
+  ]
+ },
+ "also_check": {
+  "text": [
+   "The grading checker found one more leaf to check: the line in Diagram 1 ends without an S[], and the right one is S[ALIVE]. This rests on a decided solver result: after White 4 in Diagram 2 White is alive, and in the wider area Black cannot kill even when Black may ignore the ko ban. Without an S[], besogo gives Black 1 no status, so the site marks it neither correct nor wrong; with S[ALIVE] it would be wrong."
+  ],
+  "diagrams": [
+   {"start": "", "moves": "A17 A18 D18", "caption": "The tree's line ends after Black 3 with no S[]. Suggested: S[ALIVE]."},
+   {"start": "A17 A18 D18", "moves": "D17", "caption": "White 4 lives: the solver's ALIVE here is a decided result."}
+  ]
+ }
+}

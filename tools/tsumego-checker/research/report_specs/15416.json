@@ -1,0 +1,20 @@
+{
+ "problem": "15416",
+ "cards": [
+  {
+   "case": "c111",
+   "headline": "A two-step ko: White's first retake settles nothing, since Black takes back without a threat. White must win it twice, so the leaf is KO+2, not KO+.",
+   "diagrams": [
+    {"start": "", "moves": "A18 B19 A16 C18 D17 D19 C19", "caption": "The tree's line. Black 7 takes the ko and threatens to capture three stones at A19. The tree marks the leaf S[KO+]; the solver said KO+2."},
+    {"start": "A18 B19 A16 C18 D17 D19 C19", "moves": "D19! F19 A15 C19", "caption": "White 8 retakes after a threat elsewhere and ataris E19. Black 9 is forced but costs nothing: White 8 is still in atari. White 10 ataris Black's six stones, and Black 11 takes back without a threat. White needs a second threat."},
+    {"start": "A18 B19 A16 C18 D17 D19 C19", "moves": "D19! F19 A15 C19 D19!", "caption": "The key line. With a second threat elsewhere, White 12 retakes, and Black's six stones are in atari at A17. Now Black must retake after a threat of its own, or die."},
+    {"start": "A18 B19 A16 C18 D17 D19 C19", "moves": "D19! F19 C19 A19", "caption": "White 8 cannot connect: White 10 is self-atari, and Black 11 captures five stones and lives. White A19 instead of White 10 fails the same way."}
+   ],
+   "text": [
+    "Black 7 has taken the ko and threatens to capture three stones and live. White's only answer is to retake after a threat elsewhere, White 8 in Diagram 2. That ataris E19, so Black 9 is forced, but it costs nothing: White 8 is still in atari and cannot connect (Diagram 4). White 10 ataris Black's six stones, and Black 11 answers by taking back without a threat. White's ataris against Black 9 instead of White 10 end the same way.",
+    "Only then is it a plain ko that Black took first, and White needs a second threat (Diagram 3). So White must win the ko twice. The threat counts agree: with no threats, Black lives against one White threat and dies against two; with one, Black lives against two. Neither side has a local threat. Black wins with at most one threat fewer than White: KO+2, which the site's tutorial describes as a ko that becomes KO+ once the opponent has won it once.",
+    "With one White threat and none for Black, the combined wider-area search was undecided, but Black won after every White move following Black 9, each checked on its own. It is not an approach ko (A+1KO+): Black never gets a free move, since Black 9 and Black 11 in Diagram 2 both answer ataris. Black 5 in Diagram 1 stays the right move. The tree's S[KO-] leaf, where White takes the ko first, is right: White's capture there ataris both D18 and E19, so Black gets no free move like Black 9."
+   ]
+  }
+ ]
+}

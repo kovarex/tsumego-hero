@@ -1,0 +1,18 @@
+{
+ "problem": "15364",
+ "cards": [
+  {
+   "case": "c103",
+   "headline": "S[KO+] is right: White takes the ko first, so Black needs the first threat. The solver's DEAD comes from a search area too narrow for the outside stones.",
+   "diagrams": [
+    {"start": "", "moves": "B18 B19 A18 D19 E19 E18", "labels": {"A16": "a"}, "caption": "The tree's line. After Black 6, Black 4 and White 5 are both in atari, with White to play. The tree marks the leaf S[KO+]; the solver said DEAD, choosing White a."},
+    {"start": "B18 B19 A18 D19 E19 E18", "moves": "C19 D19! C19! pass D19", "caption": "White 7 captures Black 4, taking the ko first. Black 8 retakes after a threat elsewhere, and White 9 after one of its own. With equal threats Black runs out first: Black 10 is elsewhere, and White 11 connects. Black's stone at B19 is in atari, and the corner cannot make two eyes. Had White no threat left for White 9, Black would connect at C19 and live."},
+    {"start": "B18 B19 A18 D19 E19 E18", "moves": "A16 C19 B17 F19", "caption": "The solver's choice, White 7 at a in Diagram 1. Black 8 joins Black 4 to the corner, and Black 10 captures White 5. White cannot play at E19, which would be suicide, so Black can connect there whenever needed and join the outside stones: alive."}
+   ],
+   "text": [
+    "The tree is right. White 7 in Diagram 2 is White's only move: any other, White a in Diagram 1 included, lets Black connect at C19 or capture White 5, and the corner joins Black 6 and the outside stones, which cannot be killed (Diagram 3). So it is a direct ko that White takes first, and neither side has a local threat: KO+.",
+    "The solver said DEAD because its search area gave the outside stones only three liberties, which White was allowed to fill, so in Diagram 3 it lets White kill even after Black connects at E19. With the outside stones made safe, the solver also finds KO+. Two runs stayed undecided: White one threat ahead, and, in a model with G19 left empty, Black free to retake after White 7 in Diagram 2."
+   ]
+  }
+ ]
+}

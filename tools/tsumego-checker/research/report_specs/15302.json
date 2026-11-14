@@ -1,0 +1,21 @@
+{
+ "problem": "15302",
+ "cards": [
+  {
+   "case": "c093",
+   "headline": "Black has just taken the ko and White has no local threat, so White must find the first threat elsewhere: KO−, not KO+.",
+   "diagrams": [
+    {"start": "", "moves": "A17 A18 B18 B17 A19 C19 E19 A16 A14 A18", "caption": "The tree's line. Black 10 takes the ko by capturing White 1, and the tree marks the leaf S[KO+]; the solver said KO−."},
+    {"start": "A17 A18 B18 B17 A19 C19 E19 A16 A14 A18", "moves": "pass B19", "caption": "White cannot retake at once. If White has no threat and plays elsewhere with White 11, Black 12 captures two stones and lives."},
+    {"start": "A17 A18 B18 B17 A19 C19 E19 A16 A14 A18", "moves": "A17! B16 B19", "caption": "White 11 retakes after a threat elsewhere. Now Black must find a threat to retake: if Black 12 connects instead, White 13 captures the whole group. Black at B19, or a move elsewhere, dies too."},
+    {"start": "A17 A18 B18 B17 A19 C19 E19 A16 A14 A18", "moves": "A17! E18 B16 F19 E17", "caption": "Black's one local try in the corner: Black 12 ataris White's stone at E19. White 13 ignores it and captures three stones, and after Black 14 captures, White 15 still kills: E19 is a false eye."}
+   ],
+   "text": [
+    "At the leaf Black 10 has just taken the ko, so White, the player, cannot retake at once. White has no local threat: White at B16 or B19 would be suicide, and no other move touches Black's group. If White plays elsewhere, Black lives (Diagram 2). If White retakes after a threat, Black needs a threat in turn, or White kills (Diagram 3). So White kills only with one threat more than Black: a direct ko the opponent took first, which is KO−. The solver and both reviewers agree.",
+    "Black's one possible threat in the corner is against White's stone at E19, and White can ignore it (Diagram 4). The solver confirms this in its search area; its wider area stayed undecided, so this rests on the reviewers' reading. One reviewer sets aside Black's cut against White's stone at C15 as an artifact of the setup. Any Black threat could only make the ko harder for White, never turn it into KO+.",
+    "On the site the sign counts from the player's side. Besogo ranks KO+ above KO− for the player, the message players see here reads KO+ as 'White takes first', and the site's tutorial pictures KO− as the opponent having just captured. The author's sibling problem 15298 marks the same kind of leaf S[KO-], with the comment 'your opponent takes first'. Across the site's White-first problems a reviewer counted 24 leaves marked KO+ where White took the ko last, and 5 marked KO− where Black did.",
+    "The likely cause is besogo's editor. Its status label, the only colour-based text in besogo, does not swap colours in a White-first problem, so here it shows KO+ as 'Black takes first', which literally describes this leaf."
+   ]
+  }
+ ]
+}

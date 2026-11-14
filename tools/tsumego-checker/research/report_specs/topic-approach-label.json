@@ -1,0 +1,30 @@
+{
+ "topic": "approach-label",
+ "text": [
+  "In these five leaves one side's ko capture is not atari, so the other side can ignore it once: the capturer must first fill a liberty, and only then is the ko direct. That fill is the approach move: White 8 in Diagram 1, Black 9 in Diagram 2 and White 13 in Diagram 3. The leaves in 1807 and 14153 work like Diagram 1. All five trees say S[KO+], which leaves the approach move out. The analysis and both reviewers found that wrong in every leaf; the question is only how to write the right label.",
+  "The analysis and one reviewer of each leaf write the counted label, which counts the approach move as one more threat. In Diagram 1 White must win the ko twice, with White 6 and White 10: S[KO+2]. In Diagram 2 White 10 retakes for free, so Black, the player, must find the first threat: S[KO-]. In Diagram 3 White, the player, must win the ko twice, with White 11 and White 15: S[KO-2]. The site's tutorial calls S[KO+2] and S[KO-2] a two-step ko.",
+  "The other reviewer writes besogo's approach-ko label, which keeps the approach move out of the threats and says who took the ko first. In Diagram 1 the opponent needs one approach move, White 8, and the player took first with Black 5: S[A+1KO+]. In Diagram 2 the player needs it, Black 9, and took first with Black 7: S[A-1KO+]. In Diagram 3 the player needs it, White 13, and the opponent took first with Black 10: S[A-1KO-].",
+  "Both labels need exactly the same threats, so the checker accepts either. besogo ranks them differently, because it compares approach moves before threats: for the player, S[A+1KO+] is better than every ko label without approach moves, and S[A-1KO+] and S[A-1KO-] are worse than all of them. In these five problems that changes nothing: neither label changes which moves the site marks correct, nor any problem's result. The site already writes these shapes with approach-ko labels, in 2521, 15418, 215, 10391 and 7487."
+ ],
+ "diagrams": [
+  {
+   "problem": "10974",
+   "start": "B18 B19 D19 A18",
+   "moves": "A19 A18! pass C19 A19 A18!",
+   "caption": "10974, Black to live. The tree's line ends with Black 5 taking the ko, marked S[KO+]; a leaf of problem 2521 with the same position is marked S[A+1KO+]. White 6 retakes after a threat, but Black still has two liberties and plays elsewhere with Black 7. White 8 fills one, and Black 9 retakes without a threat. Only a second threat lets White 10 retake; with no threat left, Black dies."
+  },
+  {
+   "problem": "5628",
+   "start": "B18 A17 C18 A18 C19",
+   "moves": "B19 A19 pass E16 B19",
+   "caption": "5628, Black to kill. The tree's line ends with White 6, marked S[KO+]. Black 7 takes the ko first, but White still has a liberty at E16, so the capture is no atari and White plays elsewhere with White 8. Black 9 has to fill E16, and White 10 retakes without a threat. Now Black, with four stones in atari, must find the first threat."
+  },
+  {
+   "problem": "15363",
+   "start": "B19 A15 A14 A16 B14 C19 D19 B18 A18",
+   "moves": "A19 B19! pass B17 A19 B19!",
+   "caption": "15363, White to kill. The tree's line ends with Black 10 taking the ko, marked S[KO+]. White 11 retakes after a threat, but Black still has two liberties and plays elsewhere with Black 12. White 13 fills one, and Black 14 retakes without a threat. Only a second threat lets White 15 retake; with no threat left, Black dies."
+  }
+ ],
+ "suggestion": "The approach-ko labels, as besogo describes these shapes and as the site already writes them. If you choose them, I can check the other KO+2 and KO−2 fixes in this report for the same shape; their reviewers did not raise it."
+}

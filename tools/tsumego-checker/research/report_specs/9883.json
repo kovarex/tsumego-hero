@@ -1,0 +1,29 @@
+{
+ "problem": "9883",
+ "cards": [
+  {
+   "case": "c034",
+   "headline": "White lives: it captures Black's atari stone to make an eye at G19, backed by top stones on the open edge that the solver's search area shuts in.",
+   "diagrams": [
+    {"start": "", "moves": "A16 B17 B19 F19 D19 G18 F17 E19 C19 D18 A18 A17 A15 H18", "caption": "The tree's line. After White 14 the tree marks the leaf S[ALIVE]; the solver said DEAD. Black to play."},
+    {"start": "A16 B17 B19 F19 D19 G18 F17 E19 C19 D18 A18 A17 A15 H18", "moves": "G19 H19 H17 J18", "labels": {"J19": "a", "K18": "b", "J17": "c"}, "caption": "Black 15 ataris White's corner group, and White 16 captures that stone: G19 becomes White's eye, where Black cannot play again. After White 18 the top stones still have three outside liberties, a, b and c, on an empty board, so Black cannot shut them in."}
+   ],
+   "text": [
+    "The tree is right. White's corner group has two liberties: B18, which Black cannot fill without putting its own corner stones in atari, and G19. If Black is slow, White connects at G19 and takes Black's corner, so Black must atari at once, Black 15 in Diagram 2. White 16 captures, and the eye at G19 is backed by top stones that cannot be shut in.",
+    "White lives at least in seki. The analyst calls S[SEKI] more exact, as on sibling leaves; the reviewer notes White can later connect at G19 and take Black's corner, so S[ALIVE] is exact. Same class either way, so no fix is needed. The solver's search area stops at White 16, Black 17 and White 18 in Diagram 2 and treats a, b and c as wall, so it counts White's top stones as shut in and dead; with a wider area it is undecided."
+   ]
+  },
+  {
+   "case": "c035",
+   "headline": "White lives: after Black connects against the atari, White threatens both a second eye and an escape into the open left side, which the solver walls off.",
+   "diagrams": [
+    {"start": "", "moves": "A16 B17 B19 F19 D19 G18 F17 E19 C19 D18 A18 A17 H18 A15 G19 B14", "caption": "The tree's line; White 14 captures Black 1 and Black 15 captures White 6. After White 16 the tree marks the leaf S[ALIVE]; the solver said DEAD. Black to play."},
+    {"start": "A16 B17 B19 F19 D19 G18 F17 E19 C19 D18 A18 A17 H18 A15 G19 B14", "moves": "C15 B13 A14 A13 B12 C13", "caption": "Black 17 connects. White 20 captures Black 19, giving White eyes at A16 and A14. After Black 21, White 22 extends, and the lower stones keep three outside liberties on the open left side."}
+   ],
+   "text": [
+    "The tree is right. White 16 ataris Black's stone at B15, so Black 17 in Diagram 2 must connect; otherwise White captures it and A16 becomes a real eye. White 18 then threatens both a second eye at A14 and an escape into the open left side, and Black cannot stop both.",
+    "White lives at least in seki with Black's corner; the analyst calls S[SEKI] more exact, while the reviewer notes White can later take the corner. Same class either way, so no fix is needed. The solver's search area ends at row 13 and treats A12 to C12 as Black wall, so it still says DEAD at the end of Diagram 2, where White has two eyes; with a wider area it is undecided."
+   ]
+  }
+ ]
+}

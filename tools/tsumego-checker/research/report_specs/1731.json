@@ -1,0 +1,19 @@
+{
+ "problem": "1731",
+ "cards": [
+  {
+   "case": "c009",
+   "headline": "White takes the ko first and still has a local threat at C18, so Black needs two threats more than White: S[KO-2], not S[KO-].",
+   "diagrams": [
+    {"start": "", "moves": "B18 A18 A17", "caption": "The tree's line; the leaf is marked S[KO-]. White to play takes the ko first at B17, capturing Black 3."},
+    {"start": "B18 A18 A17", "moves": "B17 A17! C18 C19 B17", "labels": {"A19": "a", "D18": "b"}, "caption": "White 4 takes the ko, and Black 5 retakes after a threat elsewhere. White 6 puts every black stone in atari at B17, so Black 7 must capture three stones, and White 8 retakes. Black needs another threat: a or b only leads to another ko that White takes first, and other moves die."},
+    {"start": "B18 A18 A17 B17 A17! C18 C19 B17", "moves": "A17!", "labels": {"C18": "a", "D18": "b", "D19": "c"}, "caption": "With a second threat Black 9 retakes. White has no local threat left: a, b, c or a pass all leave Black alive."}
+   ],
+   "text": [
+    "At the leaf White takes the ko first, with White 4 in Diagram 2. That leaves the black group and the stone at B18 in atari at C18. A19 is illegal for Black and every other move dies, so Black must retake with Black 5 after a threat elsewhere. If White had nothing local, that one threat would be enough: the plain KO− the author saw.",
+    "But White 6 is a free local threat that puts everything in atari at B17. Black 7 is forced, since A19 instead loses the seven stones, and White 8 can then retake. Black needs a second threat to retake with Black 9 in Diagram 3. After that every White move leaves Black alive, so White has no more local threats. White does better to take the ko first and keep C18 as a threat: played at once, it only gives KO−.",
+    "So Black lives exactly when it has two threats more than White: S[KO-2]. The solver agrees, counting threats for both sides at the leaf, and so do both reviewers. The site's tutorial counts local ko threats in the label, and its step-ko rule fits: what is left at the end of Diagram 2 is a plain KO−. The tree's line is right; only the S[] needs to change."
+   ]
+  }
+ ]
+}

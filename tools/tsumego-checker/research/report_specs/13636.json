@@ -1,0 +1,29 @@
+{
+ "problem": "13636",
+ "cards": [
+  {
+   "case": "c070",
+   "headline": "White lives: against Black's atari, White captures at A15, and that stone has two liberties, so there is no ko. The solver counted A14 as a Black wall.",
+   "diagrams": [
+    {"start": "", "moves": "C17 C16 B17 B16 C18 A17 A18 A19 C19 D18", "caption": "The tree's line. White 8 captures Black 7, and after White 10 the tree marks the leaf S[ALIVE]; the solver said KO−."},
+    {"start": "C17 C16 B17 B16 C18 A17 A18 A19 C19 D18", "moves": "A16 A15 A14 A16 pass D19 pass B19", "caption": "Black 11 ataris White 6 but is in atari itself. White 12 captures it and has two liberties, so there is no ko. Black 13 ataris White 12 and White 14 connects; with five liberties against two, White 18 captures the four inside stones."}
+   ],
+   "text": [
+    "The tree is right. Black's only real try is Black 11 in Diagram 2, and it fails: White 12 has two liberties, A14 and A16, so Black cannot retake at A16 and there is no ko. Every other Black move fails too.",
+    "The solver said KO− because A14 lies outside its search area and counts as a Black wall, so White 12 looked like a ko capture. With A14 and A15 added to the area, it finds no kill, even when Black may ignore the ko ban; one run on a larger area stayed undecided."
+   ]
+  },
+  {
+   "case": "c071",
+   "headline": "White lives: against Black's atari, White must capture at A15, and that stone has two liberties, so there is no ko. The solver counted A14 as a Black wall.",
+   "diagrams": [
+    {"start": "", "moves": "C17 C16 B17 B16 C18 A17 B19 A18 C19 D18", "caption": "The tree's line. After White 10 the tree marks the leaf S[ALIVE]; the solver said KO−."},
+    {"start": "C17 C16 B17 B16 C18 A17 B19 A18 C19 D18", "moves": "A16 A15 A14 A16 pass D19 pass A19", "caption": "Black 11 ataris White's three corner stones but is in atari itself. White 12 captures it and has two liberties, so there is no ko. Black 13 ataris White 12 and White 14 connects; with five liberties against two, White 18 captures the five inside stones and lives in a bent five-point eye space."}
+   ],
+   "text": [
+    "The tree is right. Black's only try is Black 11 in Diagram 2. White 12 is forced: otherwise Black captures the three corner stones by playing A19, and White dies. It works: White 12 has two liberties, A14 and A16, so Black's retake at A16 is suicide.",
+    "The solver said KO− because its search area counts A14 as a Black wall, giving White 12 one liberty. With A14 and four nearby points added to the area, it proves White alive after White 12 and after Black's other tries, even when Black may ignore the ko ban. Only the leaf and the position after Black 11 stay undecided, a search weakness: the position after White 12 is proven in 0.1 s."
+   ]
+  }
+ ]
+}

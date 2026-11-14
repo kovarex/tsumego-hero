@@ -1,0 +1,30 @@
+{
+ "problem": "556",
+ "cards": [
+  {
+   "case": "c004",
+   "headline": "Black lives without ko. The stone that captures White's atari stone keeps a second liberty at A14, a point outside the solver's search area.",
+   "diagrams": [
+    {
+     "start": "",
+     "moves": "B18 C19 B16 B15 A17 D19 B19",
+     "caption": "The tree's line. After Black 7 the tree marks the leaf S[ALIVE]; the solver said KO. White to play."
+    },
+    {
+     "start": "B18 C19 B16 B15 A17 D19 B19",
+     "moves": "E19 C18 A16 A15 A14 A16 A18 A19",
+     "caption": "White 8 threatens to cut at C18, and Black 9 connects there. White 10 ataris Black 3 at B16, and Black 11 captures. White 12 approaches to set up a ko, but Black 13 connects. After Black 15 captures White 14, Black has two eyes, at A18 and B17."
+    },
+    {
+     "start": "B18 C19 B16 B15 A17 D19 B19",
+     "moves": "E19 C18 A16 A15 A18 A19",
+     "caption": "The solver's ko line. Its search area ends at A15 and counts A14 as a White stone, so it thinks White can now retake at A16. On the real board A14 is empty, Black 11 keeps that liberty, and a White stone at A16 would be suicide."
+    }
+   ],
+   "text": [
+    "The tree is right: Black lives without ko (Diagram 2). After Black 11 captures White 10, it still has a liberty at A14, so White cannot retake at A16. The solver saw a ko (Diagram 3) only because its search area counts A14 as a White stone.",
+    "Over a wider area that includes A14, the solver finds life after every White try. One search there stayed undecided, but rerun with Black barred from ko captures, which only takes options away from Black, it says alive."
+   ]
+  }
+ ]
+}

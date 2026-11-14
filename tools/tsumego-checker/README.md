@@ -62,6 +62,17 @@ PROBLEMS=problems.jsonl python3 research/render_research.py merged.json research
 `research/results/` keeps the run of 14 November: `cases.json` (the 125 leaves), `results.json` (every verdict with
 the analyses, reviews, judges, fact checks and grading checks) and `impact.json` (the grading effect of each fix).
 
+The report shows every line as a numbered diagram. Writers turn a per-problem dossier into a spec of diagrams and
+short text (`research/report_workflow.js`), checked by `report.py check`, which replays every diagram, rejects move
+lists in the text and checks that every stone the text names ("Black 7") is in the diagrams; `report.py render`
+builds the page from the specs in `research/report_specs/`:
+
+```sh
+PROBLEMS=problems.jsonl python3 research/report_dossier.py research/results/impact.json dossiers
+PROBLEMS=problems.jsonl python3 research/report.py check research/report_specs/*.json
+PROBLEMS=problems.jsonl python3 research/report.py render research/report_specs report.html
+```
+
 `research/topics.json` holds the decisions several leaves share (bent four, a problem's target, an open edge): each
 topic's text, its leaves and the labels to choose from, which the page shows first.
 

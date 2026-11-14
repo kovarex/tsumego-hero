@@ -1,0 +1,20 @@
+{
+ "problem": "10559",
+ "cards": [
+  {
+   "case": "c045",
+   "headline": "Black's last move captured nothing, so White takes the ko first; with no local threats, Black needs one threat more than White. KO−, not KO+.",
+   "diagrams": [
+    {"start": "", "moves": "F19 E19 G18", "caption": "The tree's line. Black 3 captures nothing, and it is White's move with Black 1 in atari. The tree marks the leaf S[KO+]; the solver said KO−."},
+    {"start": "F19 E19 G18", "moves": "pass E18", "caption": "White must take the ko at once. If White 4 plays elsewhere, Black 5 captures White's stone at F18: eyes at F18 and G19."},
+    {"start": "F19 E19 G18", "moves": "G19 pass F19 C19 E18 D19 F19", "caption": "Without ko threats, Black dies. White 4 takes the ko, Black 5 has no threat and plays elsewhere, and White 6 connects. Black 7 aims for seki, but White 8 gives up five stones: Black 9 captures them, and White 10 kills the bulky five at its vital point."},
+    {"start": "F19 E19 G18", "moves": "G19 F19! pass E18", "caption": "With one threat more than White, Black lives. Black 5 retakes after a ko threat elsewhere. White has no threat and plays elsewhere with White 6, and Black 7 captures: eyes at F18 and G19."}
+   ],
+   "text": [
+    "Black 3 only puts White's stone at F18 in atari, so no ko ban stops White from taking Black 1. White must take at once: after any other White move, local or elsewhere, Black captures and lives, as Black 5 does in Diagram 2. The board is the same as after Black 5 retakes in Diagram 4, where KO+ would be right because White would then need a threat. At the leaf, White is free to take.",
+    "Neither side has a local ko threat. After White 4 takes, the solver rates every local Black move dead, because White just connects: in Diagram 3, Black 7 aims for seki and White 8 sacrifices five stones as a bulky five. White's surrounding groups all keep at least three liberties, so Black has no threat against them either. After Black retakes, every local White move lets Black capture and live. So Black lives only with one threat more than White (Diagram 4): S[KO-], White takes first.",
+    "The solver agrees, though its search over a wider area stays undecided without an extra Black threat. That is a node-budget limit: there it cannot settle even the plain kill after White 6 in Diagram 3. KO+ is also what the editor shows when 'ko' is picked without setting the threat count. The fix leaves the answer unchanged: the tree's seki line, which starts at C19, still ranks above any ko."
+   ]
+  }
+ ]
+}

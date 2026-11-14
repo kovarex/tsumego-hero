@@ -1,0 +1,21 @@
+{
+ "problem": "4898",
+ "cards": [
+  {
+   "case": "c018",
+   "headline": "White has just taken the ko, and after Black retakes, a forced exchange gives White a free retake: Black needs two threats more than White, KO−2, not KO+.",
+   "diagrams": [
+    {"start": "", "moves": "C19 A18 B18 A17 A19 B19", "caption": "The tree's line, marked S[KO+] after White 6; the solver said KO-2. White 6 captures Black 5 and takes the ko."},
+    {"start": "C19 A18 B18 A17 A19 B19", "moves": "C18 E19 A19 A16", "caption": "Connecting fails. Black 7 fills Black's own eye, and White 8 leaves Black no eye on top. Black 9 can now take the ko back, but after White 10, B19 is only a false eye: dead."},
+    {"start": "C19 A18 B18 A17 A19 B19", "moves": "A19! A16 E19 B19", "caption": "Black 7 retakes after a ko threat elsewhere. White 8 and Black 9 are both forced, and White 10 then retakes for free: a plain ko again, taken by White."},
+    {"start": "C19 A18 B18 A17 A19 B19 A19! A16 E19 B19", "moves": "A19! pass B19", "caption": "Black 11 retakes with a second threat. With no threat left, White plays White 12 elsewhere, and Black 13 connects: two eyes, at C18 and D19."}
+   ],
+   "text": [
+    "White 6 in Diagram 1 has just captured Black 5, so Black cannot retake at once, and the four stones from Black 3 down to C16 are in atari at C18. Connecting there fills Black's own eye, and Black dies whatever White replies, even a pass (Diagram 2). Any other move lets White capture the four stones; in a wider area the solver leaves some of those lines undecided, but both reviewers read them as dead. So without ko threats Black dies, and S[KO+], which says Black takes the ko first, cannot be right.",
+    "Black's only way is to retake after a ko threat, Black 7 in Diagram 3. It puts White 2 and White 4 in atari, so White 8 is forced: otherwise Black captures them at A16 and lives. Black 9 is forced too: other moves die or, in a wider area, only give White an extra local threat. White 10 then retakes for free, and what is left is a plain ko that White has taken. Black needs a second threat to retake with Black 11 in Diagram 4, and then lives.",
+    "So Black needs two threats more than White: S[KO-2], a two-step ko that becomes KO− once Black has won it once. The solver gives KO-2 at the leaf, and KO− after Black 7 and after White 10, decided in both its search areas. The analysis, with high confidence, and both reviewers agree. A reviewer notes there is no approach move in besogo's sense, since Black 9 in Diagram 3 cannot be played as a free tempo.",
+    "The KO+ looks copied from the sibling leaf where Black 5 is at E19 instead: there Black takes the ko first, and tree and solver agree on KO+. Relabelling this leaf S[KO-2] changes no grading on the site."
+   ]
+  }
+ ]
+}

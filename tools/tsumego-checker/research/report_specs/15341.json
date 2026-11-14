@@ -1,0 +1,20 @@
+{
+ "problem": "15341",
+ "cards": [
+  {
+   "case": "c099",
+   "headline": "Black has just taken the ko and White has no local threat, so White needs the first threat elsewhere: KO−, not KO+.",
+   "diagrams": [
+    {"start": "", "moves": "A16 A15 B19 A17 C18 B16 A18 A19", "caption": "The tree's line. White 7 is White's only move that does not leave Black alive; Black 8 captures it and takes the ko first. The tree marks this leaf S[KO+]."},
+    {"start": "A16 A15 B19 A17 C18 B16 A18 A19", "moves": "C19 A18", "caption": "White cannot retake yet and has no local threat: after White 9, or any other move that is not a ko threat, Black 10 connects. Two eyes, at B17 and A16: alive."},
+    {"start": "A16 A15 B19 A17 C18 B16 A18 A19", "moves": "A18! pass B17 pass B18", "caption": "With a threat elsewhere, White 9 retakes. Black has no threat, so White 11 captures the stone at B18, starting a second ko there. Black has no threat for that either, and White 13 connects. One eye, at A16: dead."},
+    {"start": "A16 A15 B19 A17 C18 B16 A18 A19", "moves": "A18! C19 B17", "caption": "As in Diagram 3, White 9 retakes. Black 10 threatens to capture two stones at A19, but White 11 answers by capturing the stone at B18, and Black again needs a threat to retake. Black 10 did no more than a pass."}
+   ],
+   "text": [
+    "Black 8 captured White 7, so White is the side under the ko ban. White has no local threat (Diagram 2) and must find the first threat elsewhere. With one threat more than Black it retakes and kills (Diagram 3); with equal threats Black lives, as the solver proves in its search area and its wider area. That is KO− for White, not KO+.",
+    "After White's retake Black has no local threat either: the try in Diagram 4 gains nothing, and Black connecting at B17 fills its own eye point and dies. White 11 in Diagram 3 only moves the ko to B18: Black needs a threat to retake there instead of at A19, the same count, so this is a plain KO−, not S[KO-2]. In the solver's wider area White's win with an extra threat stayed undecided at the node limit; a reviewer judged that a search limit, not a Black resource.",
+    "On the site the sign counts from the player's side, so in this White-first problem S[KO+] says White takes the ko first, the reverse of this leaf. The author's other S[KO+] leaves are in the branch that starts with White at A15; in two of them White does take the ko first, by capturing at B16, and the solver could not settle the sign of the third."
+   ]
+  }
+ ]
+}

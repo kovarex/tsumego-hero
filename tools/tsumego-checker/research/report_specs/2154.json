@@ -1,0 +1,20 @@
+{
+ "problem": "2154",
+ "cards": [
+  {
+   "case": "c012",
+   "headline": "White took the ko first and also has a free local threat, while Black has none, so Black needs two more threats elsewhere than White: S[KO-2], not S[KO-].",
+   "diagrams": [
+    {"start": "", "moves": "D19 G19 E18 F18", "caption": "The tree's line. White 4 captures the stone at G18 and takes the ko. The tree marks the leaf S[KO-]; the solver said KO−2."},
+    {"start": "D19 G19 E18 F18", "moves": "G18! C19 D18 F18 G18! pass F18", "caption": "Black 5 retakes after a threat elsewhere. White 6 is a local threat: Black 7 must capture two stones, and White 8 retakes without a threat elsewhere. Black 9 retakes after a second threat elsewhere. White has no local threat left; White 10 plays elsewhere and Black 11 connects: eyes at E19 and on the left, alive."},
+    {"start": "D19 G19 E18 F18", "moves": "G18! C19 F18 A19", "caption": "If Black 7 connects the ko instead of capturing, White 8 captures two stones and Black has only the eye at E19: dead."},
+    {"start": "D19 G19 E18 F18", "moves": "A17 G18", "caption": "Black has no local threat. Black 5 threatens to capture the white stone at A18, but the eye there would be false because B17 is White, so White 6 simply connects the ko: dead."}
+   ],
+   "text": [
+    "The tree's S[KO-] records only that White 4 took the ko first. But White also has a free local threat. When Black 5 retakes in Diagram 2, White 6 puts the black stones at B18 and B19 in atari, and Black 7 must capture; connecting the ko instead loses those stones and Black dies (Diagram 3). So White 8 retakes without spending a threat elsewhere. White can make the same threat at A19 or D18 instead, but each settles the left side, so White gets only one.",
+    "Black has no local threat to match it, at the leaf (Diagram 4) or after White 8 in Diagram 2. So Black needs a second threat elsewhere for Black 9: in all, two more threats elsewhere than White. That is S[KO-2], not S[KO-]. The site's tutorial says local ko threats are usually counted in the S[] label.",
+    "Both reviewers agree. Two caveats. Two cases in the solver's ko tables stayed undecided; the decided ones agree, but the verdict rests on move-by-move checks. And the tutorial describes KO−2 as a step ko, while this ko is direct, and its only local-threat example is one that helps the player; counting threats both ways, as besogo does, still gives KO−2."
+   ]
+  }
+ ]
+}

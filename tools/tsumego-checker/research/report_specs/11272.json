@@ -1,0 +1,19 @@
+{
+ "problem": "11272",
+ "cards": [
+  {
+   "case": "c049",
+   "headline": "Bent four in the corner: a ko only Black can start, whenever it likes. S[BENT4] is right; the solver's bent-four check ran out of budget.",
+   "diagrams": [
+    {"start": "", "moves": "E19 D19 B19 F19 D17 D18 G18 B18 C19 A17 A19 D16 D15 D17", "caption": "The tree's line. After White 14 the tree marks the leaf S[BENT4]; the solver said KO+. Black 3, 9 and 11 sit on the first line beside White 8 at the 2-2 point. White's group has two liberties inside, at A18 and C18, and two outside, at A16 and E19. Black is to play."},
+    {"start": "E19 D19 B19 F19 D17 D18 G18 B18 C19 A17 A19 D16 D15 D17", "moves": "A16 pass G19 E19 A18 C18 B19 A19 A18", "caption": "From the leaf, at a moment Black chooses. Black 15 fills A16, White 16 is elsewhere since nothing local helps, and White 18 connects after Black 17's atari: White has only its two inside liberties left. Black 19 throws in, White 20 captures four stones, and Black 23 takes the ko. White, in atari at C19, needs a threat to retake."},
+    {"start": "E19 D19 B19 F19 D17 D18 G18 B18 C19 A17 A19 D16 D15 D17", "moves": "A18 C18 B19 A19 A18 C19 pass A19", "caption": "Black 15 throws in at once. Black 19 takes the ko, but White still has liberties at A16 and E19, so it is not in atari. White 20 leaves Black 17 and Black 19 one liberty, at A19, where Black cannot play, and White 22 captures both and has two eyes, at A18 and B19. Throwing in at C18 lets White live too."}
+   ],
+   "text": [
+    "The tree is right: this is the bent four in the corner, the shape of the site's tutorial picture. White cannot start the ko, and taking Black 3, 9 and 11 leaves a straight three that dies to B19. So Black starts the ko when it likes, after removing White's ko threats, and no Black move kills without the ko. Under the site's Japanese rules that is S[BENT4], not S[DEAD]; the solver's KO+ is the same ko counted with threats.",
+    "Black must first remove White's outside liberties, with Black 15 and Black 17 in Diagram 2: throwing in at once lets White live (Diagram 3), and throwing in between them gives a real ko White can fight. White's stone at F19 does not help: if White 18 in Diagram 2 does not connect, Black captures that stone in a ko White can never win and settles it before throwing in, so there is no double ko.",
+    "The solver's bent-four check stayed undecided at the leaf, even with a 3M budget, so it fell back to KO+; after Black 15 in Diagram 2 it gives BENT4. A reviewer's wider-area searches after Black 15 were also undecided at 2M, which is no sign of a White resource."
+   ]
+  }
+ ]
+}

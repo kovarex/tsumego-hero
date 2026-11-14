@@ -1,0 +1,19 @@
+{
+ "problem": "15363",
+ "cards": [
+  {
+   "case": "c102",
+   "headline": "Black has taken the ko, and White's retake is no atari, so White kills only with two threats more than Black. S[KO+] is wrong; S[A-1KO-] or S[KO-2].",
+   "diagrams": [
+    {"start": "", "moves": "B19 A15 A14 A16 B14 C19 D19 B18 A18 A19", "caption": "The tree's line from a wrong first move, White 1. White 9 is White's only move here that keeps a ko, and Black 10 captures White 1 to take it. The tree marks the leaf S[KO+]; the solver said S[KO-2]. White to play."},
+    {"start": "B19 A15 A14 A16 B14 C19 D19 B18 A18 A19", "moves": "B19! pass B17 A19 B19! pass A17", "caption": "White 11 retakes after a threat elsewhere. It is no atari, and Black has no threat, so Black 12 is elsewhere. White 13 fills a liberty (A17 would do the same), and Black 14 retakes without a threat. Only a second threat lets White 15 retake; Black 16 is elsewhere, and White 17 captures the group."},
+    {"start": "B19 A15 A14 A16 B14 C19 D19 B18 A18 A19", "moves": "B19! pass B17 A19 pass A17", "caption": "White has only one threat, so White 15 is elsewhere. Black 16 captures two stones and lives."}
+   ],
+   "text": [
+    "At the leaf White 9 is in atari: if White does not retake, Black captures it and lives. So White 11 in Diagram 2 needs a threat. It is no atari, though: Black keeps two liberties and can ignore it. White must still fill one with White 13, and Black 14 retakes without a threat, again threatening to capture at A17. White needs a second threat for White 15; with only one, Black lives (Diagram 3).",
+    "So White kills with two threats against none or three against one, and fails with one against none or two against one; S[KO+] says White kills when the threats are even. Neither side has a local threat: White's wall has eight liberties, and no outside stone is short of liberties. Both reviewers agree that S[KO+] is wrong; it is probably the editor's default, and the L Group collection tags every ko KO+. The solver's wider search area left one case undecided, White one threat ahead, which both reviewers put down to the search budget.",
+    "Both labels need the same threats. S[KO-2] calls this a two-step ko: White must win the ko twice, with White 11 and White 15; after the first win it is a plain KO−. S[A-1KO-] counts White 13 as one approach move, Black having taken the ko first. The analysis and the first reviewer write KO−2; the second reviewer writes A−1KO−, which problem 10391 uses for the same shape with colours reversed. Each grants the other label's threat count. White 1 stays wrong either way, since a first move at B18 kills outright; the site's grading does not change."
+   ]
+  }
+ ]
+}

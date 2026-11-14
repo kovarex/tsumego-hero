@@ -1,0 +1,20 @@
+{
+ "problem": "15217",
+ "cards": [
+  {
+   "case": "c077",
+   "headline": "Bent four in the corner: only White can start the ko, whenever it likes. S[DEAD] keeps White's third move, A18, correct; S[BENT4] makes it wrong.",
+   "diagrams": [
+    {"start": "", "moves": "A17 A16 A18 C19 A19", "caption": "The tree's line with the shape move, White 3 at A18. The tree marks the leaf S[DEAD] after White 5; the solver said KO+. Black to play, with four outside liberties; D18 is still undefended."},
+    {"start": "A17 A16 A18 C19 A19", "moves": "pass D17 pass C15 pass A14 pass B19 B17 A18 A19 B19", "caption": "White starts the ko whenever it chooses; Black 6, 8, 10 and 12 are elsewhere. White 7 defends D18, removing Black's only local threat, and with White 9 and 11 leaves Black one outside liberty. White 13 throws in, Black 14 captures four stones, and White 17 takes the ko first. Black at A17 would be self-atari, so Black needs a ko threat."},
+    {"start": "A17 A16 A18 C19 A19", "moves": "pass B19 B17 A18 A19 B19 A17", "caption": "Too early, while Black has two or more outside liberties: Black 6 is elsewhere and White 7 throws in at once. After White 11 takes the ko, Black 12 puts both White stones in atari. White cannot connect at A19, which would be suicide, so Black captures two stones there and lives."},
+    {"start": "", "moves": "A17 A16 C19 B19 A18", "caption": "The tree's other line, also S[DEAD]: a direct kill. Black 4 captures White 3, but after White 5 every Black move dies, since C19 is now only a false eye."}
+   ],
+   "text": [
+    "At the leaf Black cannot take the three White stones on the edge: that leaves a straight three, which White kills at A18. White cannot kill at once either (Diagram 3). But White's fills in Diagram 2 are dame, so White can start the ko whenever it likes, after leaving Black exactly one outside liberty; defending at E18 instead of White 7 in Diagram 2 needs one more fill. Black can neither start this ko nor get rid of it.",
+    "Under the problem's RU[Japanese] rules this is dead, and the tree's S[DEAD] is the shorthand for it; besogo's exact label is S[BENT4]. The solver's KO+ is the bare ko: it leaves out that White chooses when the ko happens. Its bent-four test returns BENT4 only a move later, once White defends at E18 or Black plays E19, not at the leaf, where D18 is still undefended. Had it fired here, S[DEAD] would have drawn only a near-match note, not a mismatch.",
+    "With S[DEAD], the site accepts both third moves, White 3 in Diagrams 1 and 4, and the checker's mismatch stays, recorded as a known bent-four convention. With S[BENT4], the checker accepts the solver's KO, but the site marks White 3 in Diagram 1 wrong: the direct kill in Diagram 4 ends S[DEAD], which ranks above S[BENT4] for a kill. The leaf's comment says \"Bent four in the corner is dead, but as you improve try to go for a direct kill\"; S[BENT4] turns that advice into a wrong mark."
+   ]
+  }
+ ]
+}

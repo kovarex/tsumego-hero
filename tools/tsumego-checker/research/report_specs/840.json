@@ -1,0 +1,50 @@
+{
+ "problem": "840",
+ "cards": [
+  {
+   "case": "c006",
+   "headline": "Double ko: whenever Black retakes one ko, White retakes the other for free, so White lives. The solver's search area cut White off from B10.",
+   "diagrams": [
+    {
+     "start": "",
+     "moves": "B18 B19 A17 A15 D19 A13 A12 B12 A14 A18 A19 A13",
+     "caption": "The tree's line. Black 9 and Black 11 each take a ko, and White 12 retakes the bottom one, putting Black 7 in atari. The tree marks the leaf S[ADKO]; the solver said dead."
+    },
+    {
+     "start": "B18 B19 A17 A15 D19 A13 A12 B12 A14 A18 A19 A13",
+     "moves": "A11 B11 A14 A18 A19! A13 C19 A10",
+     "caption": "Black 13 is the only try; otherwise White captures Black 7 at A11 and connects out. White 14 ataris, and Black 15 must retake the bottom ko. White 16 takes the top ko, Black 17 retakes it after a threat, and White 18 retakes the bottom one for free. Black 19 settles the top, and White 20 captures two stones and connects to B10."
+    }
+   ],
+   "text": [
+    "The tree is right: there are two kos, and White needs only one. Whenever Black retakes one with a threat, as Black 17 does in Diagram 2, White retakes the other for free, as White 18 does, so no number of threats wins both; settling one, as Black 19 does, loses the other. A search counting threats has Black failing with one and is undecided with two; the cycle settles it.",
+    "White cannot do better either: after Black 13, no White reply gives clean life, so S[ADKO], alive by double ko, is the right label. The tree's S[KO+] branch, with Black 7 at B12 instead, avoids the double ko. The solver said dead only because its search area stops just below A12: it counts A10 and B11 as Black wall, so White never reaches B10."
+   ]
+  },
+  {
+   "case": "c007",
+   "headline": "White lives: after Black captures at the top, White makes eyes at A16 and A14 or runs to B10. The solver's search area cut off that route.",
+   "diagrams": [
+    {
+     "start": "",
+     "moves": "B18 B19 A18 A17 D19 A15 C19 A13",
+     "caption": "The tree's line. Black 7 puts White 2 in atari, and White 8 makes the eye at A14. The tree marks the leaf S[ALIVE]; the solver said dead."
+    },
+    {
+     "start": "B18 B19 A18 A17 D19 A15 C19 A13",
+     "moves": "A19 A12 B17 A14 A16 B12",
+     "caption": "Black 9, the solver's only kill, captures White 2, and White 10 extends. Black 11 and Black 13 capture White 4 and destroy the eye at A16. White 12 connects, and White 14 heads for B10, which it reaches at A11 or B11."
+    },
+    {
+     "start": "B18 B19 A18 A17 D19 A15 C19 A13",
+     "moves": "A19 A12 B12 B17 B19 A11",
+     "caption": "Black 11 blocks the way out instead. White 12 ataris three stones, and Black 13 must connect. White 14 can still reach B10 at A10 or B11, so White has eyes at A16 and A14."
+    }
+   ],
+   "text": [
+    "The tree is right: White lives. Black must capture at once with Black 9; otherwise White B17 wins the top. After White 10, if Black destroys the eye at A16, White runs along the edge to B10, which stands on an otherwise empty board (Diagram 2); if Black blocks the way out, White keeps eyes at A16 and A14 (Diagram 3).",
+    "The solver's kill works only because A10 and B11, which connect White to B10, lie outside its search area, so it treats White's lower stones as shut in. Modelling the open board with a living White group below B10, the solver finds White alive after every Black reply to White 10, though a reviewer's own probes of a similar line stayed undecided."
+   ]
+  }
+ ]
+}

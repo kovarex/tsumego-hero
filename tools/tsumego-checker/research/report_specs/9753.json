@@ -1,0 +1,41 @@
+{
+ "problem": "9753",
+ "cards": [
+  {
+   "case": "c030",
+   "headline": "Black has one eye, at D18. The stone at B19 can never be saved, so C19 is no eye and White needs no ko threat: S[DEAD], not S[ALIVE].",
+   "diagrams": [
+    {
+     "start": "",
+     "moves": "B17 A17 A18 A19 B19 C19 E18 D19 E19 G18 B19 C19 D19 A16 B19 A18",
+     "caption": "The tree's line. Black 15 retakes at B19, and White 16 simply connects, joining the corner stones to White 14 and B16. The tree marks the leaf S[ALIVE]; the solver said DEAD."
+    },
+    {
+     "start": "B17 A17 A18 A19 B19 C19 E18 D19 E19 G18 B19 C19 D19 A16 B19 A18",
+     "moves": "C19 C16 G19 H19 F19 D16",
+     "caption": "Black 17 connects the stone at B19 and so fills C19. Black 19 tries for an eye at F19, but White 20 puts it in atari, and Black 21 fills F19 to save it. After White 22 the group has one liberty, its eye at D18, and White captures there next."
+    },
+    {
+     "start": "B17 A17 A18 A19 B19 C19 E18 D19 E19 G18 B19 C19 D19 A16 B19 A18",
+     "moves": "pass C16 pass D16 pass G19 pass F19 pass C19",
+     "caption": "If Black leaves the stone at B19 and plays elsewhere, White 18 to White 24 leave the group only D18 and C19, and White 26 captures the stone. The group is now in atari and the ko ban stops Black retaking at once, so White captures at D18 next."
+    },
+    {
+     "start": "B17 A17 A18 A19 B19 C19 E18 D19 E19 G18 B19 C19 D19 A16 B19 A18",
+     "moves": "G19 H18",
+     "labels": {
+      "H19": "a",
+      "J19": "b"
+     },
+     "caption": "Black 17 aims for a second eye at F19. After White 18, if Black plays a, White b leaves both black stones in atari at F19; if Black plays b, White a puts Black 17 in atari. So F19 is at best another ko eye like C19; the solver finds this position dead."
+    }
+   ],
+   "text": [
+    "Black has one real eye, at D18. The stone at B19, in atari at C19, can never be saved: White 14 and White 16 gave the corner three liberties, with B15 and C16 miai for connecting to C15. Saving the stone fills C19 (Diagram 2). Left alone, it is taken with the group in atari, and the ko ban stops Black retaking (Diagram 3). If Black retakes after a threat, White waits a move and takes again, since Black can never connect without filling the eye. White never needs a threat: moonshine life, not a ko.",
+    "F19 is a false eye because of White 10, and Black 17 in Diagram 4 makes it at best a second ko eye, again with a black stone that White can capture at any time. White takes and connects each such ko in turn, so two of them give no double ko. In the sibling leaves marked S[KO+], White 14 is not on the board, so a White connection at A18 would leave the corner one liberty and White must fight the ko. Here White 16 connects safely.",
+    "The author probably counted C19 as an eye, as in the tree's first line, where Black also gets an eye at E19. Both reviewers agree the leaf is dead. The solver says dead in its search area and after every Black move; wider areas stay undecided, which the analysis and a reviewer put down to the endless retaking at C19, not a Black resource. A threat-counting search gives Black life with five threats to none, but only because it scores two passes as life while Black has threats; in a game White waits elsewhere.",
+    "One move earlier, after White 14, Black 15 is Black's only try, and the solver rates that position dead as well. With the fix, White 8 refutes Black 7 instead of being a White mistake, and the B17 branch still scores S[KO+] through Black D19 in place of Black 7."
+   ]
+  }
+ ]
+}

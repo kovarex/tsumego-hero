@@ -1,0 +1,37 @@
+{
+ "problem": "15216",
+ "cards": [
+  {
+   "case": "c076",
+   "headline": "White has just taken the ko and neither side has a local threat, so Black needs one threat more than White: KO−, not KO+.",
+   "diagrams": [
+    {
+     "start": "",
+     "moves": "C19 B15 A16 A18 A19 B19",
+     "caption": "The tree's line. White 6 captures Black 5 and so takes the ko first; the tree marks the leaf S[KO+], and the solver said KO−."
+    },
+    {
+     "start": "C19 B15 A16 A18 A19 B19",
+     "moves": "A19! pass B17",
+     "caption": "With one threat more than White, Black 7 retakes after a threat elsewhere. White has no threat left, so White 8 is elsewhere, and Black 9 captures the two stones at A17 and A18: two eyes, alive."
+    },
+    {
+     "start": "C19 B15 A16 A18 A19 B19",
+     "moves": "pass A19 B17 A18 A19 B19",
+     "caption": "With equal threats Black runs out first, and Black 7 is elsewhere. White 8 connects, giving up four stones, and Black 9 captures them. White 10 is White's only move and Black 11 is Black's only answer; White 12 captures it, a second ko that White again takes first."
+    },
+    {
+     "start": "C19 B15 A16 A18 A19 B19 pass A19 B17 A18 A19 B19",
+     "moves": "pass A19 A17 A19",
+     "caption": "Black has no threat for the second ko either, and Black 13 is elsewhere. White 14 connects, giving up three stones, and Black 15 captures them, but White 16 takes the vital point of the bent three: dead."
+    }
+   ],
+   "text": [
+    "White 6 captures Black 5, so White took the ko first and Black must find the first threat. Black's group has only two liberties, B17 and D19, and neither side has a local threat. Black B17 is self-atari, and Black D19 does no more than a pass. White D19 only lets Black retake the ko, and White B17 lets Black capture four stones.",
+    "So Black lives exactly when it has at least one threat more than White (Diagram 2). With equal threats White wins (Diagrams 3 and 4): White 8 gives up four stones, but White 10 and White 12 start a second ko that White again takes first, and White 16 kills the bent three. That is plain KO−. It is not a step ko like S[KO+2]: the second ko also starts with White's capture, so it gives Black no extra threat.",
+    "Both reviewers and the solver agree. The site's tutorial and besogo both define KO− as the ko where the opponent takes first and the player must find the first threat. One solver result stayed undecided for lack of node budget: one threat more for Black, in the wider area. After Black's retake the solver finds Black winning there with equal threats, so that case is a win too.",
+    "The author marks all 51 kos in the L Group series KO+ and never uses KO−, which looks like habit rather than reading. Leaves in problems 15215, 15220, 15367, 15369, 15401 and 15454 also end with White's ko capture; those are worth checking too."
+   ]
+  }
+ ]
+}

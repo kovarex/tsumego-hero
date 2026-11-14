@@ -1,0 +1,40 @@
+{
+ "problem": "15730",
+ "cards": [
+  {
+   "case": "c122",
+   "headline": "White's last move takes a corner ko but not the ko at D19. Black connects there, White has one eye and dies: S[DEAD], not S[KO-].",
+   "diagrams": [
+    {"start": "", "moves": "B16 B17 F19 D19 B19 E17 A18 A17 E19 E18 G19 C18 C19 B18 D18 A19", "caption": "The tree's line, marked S[KO-]. Black 15 takes the ko at D19; White 16 captures Black 7 instead of retaking."},
+    {"start": "B16 B17 F19 D19 B19 E17 A18 A17 E19 E18 G19 C18 C19 B18 D18 A19", "moves": "D19 A16 B15 G17 H17 A18 A15", "caption": "Black 17 connects and ends the ko at D19. White 18 and White 20 find no second eye and no way out, and Black 23 captures the whole group."},
+    {"start": "B16 B17 F19 D19 B19 E17 A18 A17 E19 E18 G19 C18 C19 B18 D18 A19", "moves": "pass D19", "caption": "If Black 17 plays elsewhere, White 18 captures three stones, which is not a ko, and White lives."}
+   ],
+   "text": [
+    "Black 15 takes the ko that decides the fight, at D19. White 16 does not retake it. It takes a different ko by capturing Black 7, and that ko does not decide life: whoever wins it, White has at most one eye, at A18. Black 17 simply connects (Diagram 2). White has no room for a second eye and no seki, so the group dies without a ko.",
+    "Black 17 is not a ko retake, so Black may play it at once, and it cannot wait: in Diagram 3, White 18 captures three stones and lives. The solver, the analyst and both reviewers say DEAD. The solver finds every White reply after Black 17 dead; its wider area is undecided, which the reviewers put down to search size.",
+    "Do not set S[DEAD] here alone. White 16 is the tree's only reply to Black 15, so the whole problem would become a clean kill and move 7 would be graded wrongly. Fix it together with the tree changes below."
+   ]
+  }
+ ],
+ "tree_change": {
+  "text": [
+   "Change 1 (Diagram 1) adds White 12, a better move than the tree's C18, in the line where Black plays A18 at move 7. After White 14, Black 15 can only fill an outside liberty, and White 16 takes the corner ko first: KO− by the solver's ko tables, though its wider area confirms Black's win only with two or more extra threats. This line is what keeps A18 wrong on the site.",
+   "Change 2 (Diagram 2) deletes White's blunder at a. After Black 15 in Diagram 2, White should make a ko threat elsewhere and retake at D19, so the solver rates Black 15 KO+, like Black's D18 in the two sibling lines. Besogo ignores an S[] on a node with children, so this S[KO+] counts only once a is gone. One reviewer notes that White's G17, threatening to break out, may be a local ko threat the solver cannot see, making Black 15 KO−; the sibling lines share that resource.",
+   "Change 1 is the one the grading needs: with it, marking a S[DEAD] instead of deleting it also grades right. Change 2 alone does not: A18 would become correct at KO+."
+  ],
+  "diagrams": [
+   {"start": "B16 B17 F19 D19 B19 E17 A18 A17 E19 E18 G19", "moves": "B18 C19 D18 G17 A19", "caption": "Change 1. Add White 12 as a second reply beside the tree's C18, with Black 13 and White 14, and put S[KO-] on White 14. Or go on to White 16 and put S[KO-] there."},
+   {"start": "B16 B17 F19 D19 B19 E17 A18 A17 E19 E18 G19 C18 C19 B18", "moves": "D18", "labels": {"A19": "a"}, "caption": "Change 2. Delete White's reply at a, the current leaf, and put S[KO+] on Black 15."}
+  ]
+ },
+ "grading": {
+  "text": [
+   "With S[DEAD] on the leaf alone, the problem's result goes from KO+ to DEAD, and at move 7 the site would accept a and reject b and c (Diagram 1). A checker found all three new marks wrong: today's marks are right.",
+   "Move a is worth only KO−: Black's own stone there is what gives White a corner ko. Its DEAD comes from White's blunder at the leaf; White's better move 12, the line added above, takes that ko first, and Black has no clean kill at move 9 either. Moves b and c stay KO+: in their lines the same White answer fails, and the solver finds White dead. They would drop only because a is rated too high.",
+   "With both tree changes, besogo keeps today's marks: b and c correct at KO+, a wrong at KO−, and the problem KO+."
+  ],
+  "diagrams": [
+   {"start": "", "moves": "B16 B17 F19 D19 B19 E17", "labels": {"A18": "a", "E19": "b", "A17": "c"}, "caption": "Black to play move 7. Today the site accepts b and c and rejects a; with S[DEAD] on the leaf alone it would do the opposite."}
+  ]
+ }
+}

@@ -1,0 +1,21 @@
+{
+ "problem": "15208",
+ "cards": [
+  {
+   "case": "c074",
+   "headline": "This leaf leads to a bent four in the corner, a ko only White can start. S[DEAD] keeps White's third move, A18, correct; S[BENT4] makes it wrong.",
+   "diagrams": [
+    {"start": "", "moves": "A17 A16 A18 C19 A19", "caption": "The leaf, at the end of the tree's main line. White 5 is White's only move here that keeps the kill. The tree marks the leaf S[DEAD]; the solver said KO+. Black to play, with three outside liberties."},
+    {"start": "A17 A16 A18 C19 A19", "moves": "pass A15 pass D16 pass D19 pass B19 B17 A18 A19 B19", "caption": "White starts the ko when it chooses. Black 6, 8, 10 and 12 are elsewhere; White 7, 9 and 11 fill Black's outside liberties. White 13 throws in and Black 14 must capture four stones. Black 16 is the only answer to White 15, and White 17 takes the ko with Black's whole group in atari at A17."},
+    {"start": "A17 A16 A18 C19 A19", "moves": "pass B19 B17 A18 A19 B19 A17", "caption": "Too early: White 7 throws in while Black still has his outside liberties (Black 6 is elsewhere). After White 11 takes the ko, Black 12 puts White 9 and White 11 in atari; Black captures them at A19 and lives."},
+    {"start": "", "moves": "A17 A16 C19 B19 A18", "caption": "The tree's other third move: White 3 is the hane, and the solver gives DEAD after every Black reply. Black 4 and White 5 transpose to the end of the tree's line that starts with the hane, marked S[DEAD]: a direct kill."}
+   ],
+   "text": [
+    "At the leaf (Diagram 1), White 1, White 3 and White 5 share their only two liberties with Black. If Black captures them, he is left with a straight three, which White kills with a placement in the middle. White cannot start the ko at once either: throwing in early lets Black live (Diagram 3). But White's fills in Diagram 2 cost nothing, so White starts the ko whenever it likes, after removing Black's ko threats. Black can never start it.",
+    "The site's tutorial calls bent four in the corner dead under its Japanese rules; besogo's exact label is S[BENT4]. The two labels describe the same play but grade differently. With S[DEAD], the site accepts both third moves, White 3 in Diagram 1 and the hane in Diagram 4. With S[BENT4], White 3 in Diagram 1 and everything under it become wrong, because for a kill besogo ranks DEAD above BENT4; the hane becomes the only correct third move, unless the tree is restructured.",
+    "The author chose S[DEAD] knowingly. The leaf's comment calls the result a bent four in the corner and warns that the group is not strictly dead until the end of the game; the comment on the hane line calls the hane the stronger way to kill.",
+    "Either way the solver's KO+ is wrong. White does take the ko first, but KO+ leaves out that only White can start it, at a moment it chooses. It came from a bent-four check that ran out of budget; the current solver gives BENT4 at this leaf, though its search over the wider area stays undecided. If S[DEAD] stays, the checker should count the solver's BENT4 as DEAD in kill problems."
+   ]
+  }
+ ]
+}

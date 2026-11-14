@@ -1,0 +1,33 @@
+{
+ "problem": "12495",
+ "cards": [
+  {
+   "case": "c055",
+   "headline": "White took the ko last, but Black has a local threat at D13 and White has none, so Black retakes for free: KO+, not KO−.",
+   "diagrams": [
+    {"start": "", "moves": "A10 B9 A12 A11", "caption": "The tree's line. White 4 takes the ko, capturing Black 3, and the tree marks the leaf S[KO-]."},
+    {"start": "A10 B9 A12 A11", "moves": "D13 E13 A12 pass B13", "caption": "No outside threats on either side. Black 5 ataris the white stone at C13, White 6 must capture, and Black 7 retakes without a threat elsewhere. White has no threat to retake with, so White 8 is played elsewhere, and Black 9 captures two stones and lives."},
+    {"start": "A10 B9 A12 A11", "moves": "D13 B13 A12", "caption": "If White 6 connects instead, it is self-atari: Black 7 captures five stones and lives. Connecting at A12 fails the same way."},
+    {"start": "", "moves": "pass E13 A10 B9 A12 A11", "caption": "The solver's control adds a white stone on E13 (Black 1 elsewhere, White 2). Now Black has no threat at D13, and after White 6 takes the ko the solver gives the tree's KO−."}
+   ],
+   "text": [
+    "White 4 took the ko last, and the tree's KO− counts only that. But Black has a local ko threat and White has none. Black 5 in Diagram 2 ataris the lone white stone at C13, which has only two liberties on this 13×13 board. White 6 must capture: connecting is self-atari (Diagram 3), and ignoring Black 5 does not help White. Black 7 then retakes without spending a threat. After that, every local White move lets Black live, so White needs the first outside threat.",
+    "That is KO+: the solver finds that Black wins with as many threats as White and fails with one fewer. The site's tutorial gives this exact case as KO+: the opponent took first, but the player has a local threat and the opponent has none.",
+    "With a white stone on E13, Black has no threat, and the solver gives the tree's KO− (Diagram 4). If Kano's diagram has that stone, or a white wall along the top edge, the other fix is to add it and keep KO−. Otherwise fix this leaf together with leaf c056: on its own, this fix makes Black's first move at A10 correct too, tied at KO+ with the first move at A12."
+   ]
+  },
+  {
+   "case": "c056",
+   "headline": "Black has just taken the ko and still holds the local threat at D13, so White must win the ko twice: KO+2, not KO+.",
+   "diagrams": [
+    {"start": "", "moves": "A12 A11 A10 B9 A12", "caption": "The tree's line. Black 5 takes the ko, capturing White 2, and the tree marks the leaf S[KO+]."},
+    {"start": "A12 A11 A10 B9 A12", "moves": "A11! D13 E13 A12 pass B13", "caption": "White with one outside threat, Black with none. White 6 retakes after a threat elsewhere. Black 7 ataris C13, White 8 must capture, and Black 9 retakes without a threat. White has no threat left, so White 10 is played elsewhere, and Black 11 captures two stones and lives."}
+   ],
+   "text": [
+    "Black 5 has just taken the ko, and Black keeps the threat at D13. White 6 in Diagram 2 retakes with an outside threat, and the position is leaf c055, which is KO+. Then Black 7 ataris C13 and, as in leaf c055, White 8 must capture; Black 9 retakes for free. With only one threat more than Black, White has none left, and Black 11 captures two stones and lives.",
+    "So White must win the ko twice and needs two threats more than Black: KO+2, one step above leaf c055, as the tutorial's step-ko rule has it. The solver's counted searches agree: Black wins with one threat fewer than White and fails with two fewer. White has no local threat of its own: every local White move at the leaf lets Black live.",
+    "Fix both leaves together. With KO+2 here and KO+ on leaf c055, Black's first move at A12 stays the only correct answer, as the problem teaches; with KO+ on both, the first moves at A12 and A10 would tie. As with leaf c055, a white stone on E13 would make the tree's KO+ right, so if Kano's diagram has that stone, the other fix is to add it."
+   ]
+  }
+ ]
+}

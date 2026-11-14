@@ -1,0 +1,39 @@
+{
+ "problem": "11320",
+ "cards": [
+  {
+   "case": "c052",
+   "headline": "KO−2 is wrong in every frame. The label depends on the empty edge below C13: open, about KO−4; closed at row 10, KO−6; at row 11 or nearer, DEAD.",
+   "diagrams": [
+    {
+     "start": "",
+     "moves": "B18 A18 A17 B19 A19 C19 B15 A18",
+     "caption": "The tree's line, marked S[KO-2]. White 8 retakes the ko, and Black 1 with the two stones it joins is in atari at B17. The SGF has no stones on the edge below C13."
+    },
+    {
+     "start": "B18 A18 A17 B19 A19 C19 B15 A18",
+     "moves": "A19! A15 B14 A18 A19! A14 B13 A18 A19! B12 A13 A18 A19! pass A18",
+     "caption": "Edge open, as in the SGF, with White's wall taken as safe: about S[KO-4]. Black 9 retakes after a threat elsewhere. White 10 forces Black 11 (if Black connects the ko instead, White's B14 kills), and White 12 retakes without a threat elsewhere. White 14 and White 18 force answers the same way. After Black 21 White has no local threat left (White 22 is elsewhere), and Black 23 connects and lives."
+    },
+    {
+     "start": "pass A10 pass B10 pass C10 pass C11 pass C12 B18 A18 A17 B19 A19 C19 B15 A18 A19! A15 B14 A18 A19! A14 B13 A18",
+     "first": 17,
+     "moves": "A19! A13 A12 A18 A19! B12 A16 A18 A19! A14 A13 A18 A19! pass A18",
+     "caption": "Edge closed at row 10 by five added White stones: S[KO-6]. The moves up to White 16 are as in Diagram 2; then White 18, White 22 and White 26 are free threats too. Black 23 must capture three stones, and Black 27 must answer at A13 (at A15 White keeps one more threat). After Black 29 White has none left (White 30 is elsewhere), and Black 31 connects."
+    },
+    {
+     "start": "pass A13 pass B13 B18 A18 A17 B19 A19 C19 B15 A18",
+     "first": 9,
+     "moves": "A19! A15 B14 A14",
+     "caption": "Edge closed at row 13 by two added White stones: S[DEAD]. After Black 9 retakes, White 10 and White 12 kill outright, even if Black has unlimited ko threats. White 10 kills as well with the edge closed at row 11 or 12. The solver's search area closes the edge in this range, so it said DEAD."
+    }
+   ],
+   "text": [
+    "In Diagram 1 White 8 has just retaken the ko, and Black must win it: saving the three stones at B17 lets White connect the ko, and Black has no second eye. The tree's S[KO-2] counts one free White threat, the B14 exchange in the tree's main line. White has better: White 10 and White 14 in Diagram 2 each force an answer and let White retake without a threat elsewhere, in every frame where this is a ko. So Black needs at least three threats more than White.",
+    "The rest depends on how much room the empty edge below C13 gives Black, and the SGF does not say. Open (Diagram 2), White has one more threat, White 18, and then none: about S[KO-4]. The solver could not finish this frame; both reviewers and a judge read it by hand. With a lot of room Black might even live along the side by giving up the corner stones; the solver could not settle that either.",
+    "Closed at row 10 (Diagram 3): S[KO-6], as in the solver's wider area. Closed at row 9, Black can answer White 18 of Diagram 3 at B12, and the count drops to about KO−5. Closed at row 11 or nearer (Diagram 4): S[DEAD], the solver's answer. But the tree's main line reaches the position after Black 9 of Diagram 4 as well, so White 10 kills there too, and the problem would need a new answer.",
+    "Both judges suggest adding White stones that close the edge at the chosen row, so that one label holds; row 10 keeps the problem as it is. None of the three options changes the site's grading."
+   ]
+  }
+ ]
+}

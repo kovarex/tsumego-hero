@@ -1,0 +1,19 @@
+{
+ "problem": "14153",
+ "cards": [
+  {
+   "case": "c073",
+   "headline": "Black lives even one threat behind White: White's retake is no atari, so White must also fill a liberty. S[KO+] is one threat too low; S[A+1KO+] or S[KO+2].",
+   "diagrams": [
+    {"start": "", "moves": "B18 A18", "caption": "The tree's line, a wrong-answer branch. White 2 is White's only reply that keeps a ko; every other move lets Black live. White's stone at B19 is in atari, and capturing it starts a ko. The tree marks the leaf S[KO+]; the solver said KO+2. Black is to play."},
+    {"start": "B18 A18", "moves": "A19 B19! pass A17 A19 B19! pass C17", "caption": "Black 3 takes the ko and White 4 retakes after a threat. Black still has two liberties, so Black 5 can play elsewhere. White 6 fills one and puts Black in atari, but Black 7 retakes without a threat and puts three White stones in atari. Only a second threat lets White 8 retake. Black has no threat (Black 9 is elsewhere), and White 10 captures the group."},
+    {"start": "B18 A18", "moves": "A19 B19! pass A17 A19 pass C17", "caption": "As in Diagram 2 up to Black 7, but White has only one threat, so White 8 is elsewhere. Black 9 captures three stones and lives."}
+   ],
+   "text": [
+    "Black 3 in Diagram 2 takes the ko and puts White 2 in atari. Any White move but the retake lets Black live; filling a liberty now is self-atari. So White 4 needs a threat. But White 4 is no atari: Black keeps two liberties and can ignore it. White 6 has to fill one, and Black 7 retakes without a threat: a direct ko that Black has taken first. Only a second threat lets White 8 retake. Neither side has a local threat.",
+    "So Black lives one threat behind White (Diagram 3) and dies two behind (Diagram 2); in a plain KO+ Black would die one behind. The solver finds KO+2 at the leaf and a plain KO+ after White 4. The group is fully enclosed, so the solver's model fits, and both reviewers agree that S[KO+] is wrong. Black has nothing better at the leaf: a move elsewhere gives only a plain KO+, and Black's other local moves are self-ataris.",
+    "The two options need the same threats and name White's extra cost differently. S[KO+2] reads it as the tutorial's two-step ko: White must win the ko twice, with White 4 and White 8. S[A+1KO+] reads White 6 as one approach move that makes the ko direct, Black having taken first. The analysis and one reviewer write KO+2, the other reviewer A+1KO+, and all three accept either. Either label leaves Black 1 a wrong answer, since the correct answer at A18 gives seki; the site's grading does not change."
+   ]
+  }
+ ]
+}

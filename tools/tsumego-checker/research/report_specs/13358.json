@@ -1,0 +1,19 @@
+{
+ "problem": "13358",
+ "cards": [
+  {
+   "case": "c059",
+   "headline": "S[DEAD] holds: White's cut stands, and the six cut-off stones die. The solver said ALIVE because two corner stones in its target live.",
+   "diagrams": [
+    {"start": "", "moves": "G18 J19 E18 F18 E19 G19 C19 D17 D18 C16", "labels": {"D16": "a", "E16": "a", "F16": "a", "G16": "a", "H16": "a", "H17": "a"}, "caption": "The tree's line. White 10 cuts off the six stones marked a, as the author's comment says, and the tree marks the leaf S[DEAD]; the solver said ALIVE."},
+    {"start": "G18 J19 E18 F18 E19 G19 C19 D17 D18 C16", "moves": "F19 G18 B18 D15 B19 E15 pass F15 pass G15", "caption": "Black 11 ataris the five cutting stones; if White ignores it, Black captures them at G18 and lives. White 12 joins them to G19 and H18, with two eyes at H19 and J18 that Black cannot fill even after K19. Black 13 and Black 15 make the corner live with eyes at C18 and D19, but White fills the six stones' four liberties, and White 20 captures them."},
+    {"start": "G18 J19 E18 F18 E19 G19 C19 D17 D18 C16", "moves": "F19 G18 C14 D15 D14 E15", "caption": "Black 13 cuts C15 from C13. White 14 can then join E14 at D14 or E15; Black 15 blocks one, White 16 takes the other, and the six stones die. With only the six stones as its target, the solver found this DEAD in both its narrow and its wider area."}
+   ],
+   "text": [
+    "The tree is right. After White 12 in Diagram 2, White's cutting stones live, and the six stones marked a in Diagram 1 have four liberties, no room for eyes and no way out at the bottom.",
+    "The solver said ALIVE only because its target also holds B17 and C17, which live in the corner as in Diagram 2; it counts the target alive when any one of its stones lives. Its own move, at B18, secures the corner but does nothing for the six stones.",
+    "One try lies outside the solver's narrow area: Black's cut at C14. A reviewer refutes it by reading, as in Diagram 3; some wider-area searches of C14 stayed undecided, which the reviewer puts down to the search budget."
+   ]
+  }
+ ]
+}

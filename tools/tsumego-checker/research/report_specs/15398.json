@@ -1,0 +1,18 @@
+{
+ "problem": "15398",
+ "cards": [
+  {
+   "case": "c106",
+   "headline": "Black lives: White cannot stop the corner joining Black's stones at B13 and C13 on the open left side. The solver's search area walls that side off.",
+   "diagrams": [
+    {"start": "", "moves": "D19 A18 A17 A16 A19 A15", "caption": "The tree's line. White 5 captures Black 2, and after Black 6 the tree marks the leaf S[ALIVE]; the solver said DEAD. White to play: Black's group has three liberties, and White's three stones inside share A18 as their only eye."},
+    {"start": "D19 A18 A17 A16 A19 A15", "moves": "A14 B14 B19 A13 B17 A18", "caption": "The analysis's key line. White 7 blocks, and Black 8 puts it in atari. White 9 puts Black's corner in atari, but Black 10 captures White 7, and that point becomes a link White can never fill: playing there is suicide. White 11 fills the last outside liberty of White's stones inside, and Black 12 captures all five."},
+    {"start": "D19 A18 A17 A16 A19 A15", "moves": "B19 A14 A13 B14 A18 B17 A18", "labels": {"A12": "a", "C12": "a", "D13": "a"}, "caption": "Moves 7 to 9 are the solver's line; on the board White 9 is self-atari, and Black 10 joins the stones below. White's best try follows: White 11 gives up five stones to Black 12, and White 13 takes the vital point of the bulky five, so the corner has one eye. Black, to move, makes a second eye below, for example by capturing White 9. The solver's area counts the points marked a as White wall; with them open, it finds this position ALIVE."}
+   ],
+   "text": [
+    "The tree is right. White cannot cut Black off from B13 and C13: a block at A14 is captured (Diagram 2), and one at A13 or B14 leaves Black the other way through. Joined, Black wins the race against White's stones inside. Even White's best try, Diagram 3, leaves room for a second eye below. No ko arises in any line.",
+    "The solver said DEAD because its search area counts the points marked a in Diagram 3 as White wall, so White 9 there cannot be captured and B13 and C13 have almost no liberties. With those points in its area, the solver leaves the leaf undecided; with Black's lower stones made safe, it finds the leaf ALIVE against every White move."
+   ]
+  }
+ ]
+}

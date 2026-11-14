@@ -1,0 +1,38 @@
+{
+ "topic": "open-board",
+ "text": [
+  "Both SGFs leave the board around the corner empty. The site shows part of it as empty points, while the solver counts everything outside its search area as the attacker's wall. In these two problems, how much of the empty board counts decides the status, so two judges checked each option with the wall placed as explicit stones. The trees' labels, S[KO-] in 2359 and S[KO-2] in 11320, are wrong under every option.",
+  "In 2359, White 6 in Diagram 1 has just taken the ko. On the board as given, Black should not retake at once: Black 7 forces White 8, Black 9 takes the ko without a threat, and White needs the first threat: S[KO+]. White's other answers to Black 7, at D19 (Diagram 2) or E19, lose a race along the top edge, but only because point a is empty. If the right side were White's wall, they would kill, and Black would have to retake at once and win the ko twice: S[KO-2].",
+  "The KO+ rests on solver checks of each White answer to Black 7; searches from the leaf itself stayed undecided. On the site, S[KO+] would make Black 3 in Diagram 1 grade as correct, like the main line, unless the tree's White 6 moves to E18 (Diagram 3), which a judge found leaves Black a plain KO−. S[KO-2] changes no grading.",
+  "In 11320 (Diagram 4), the tree's S[KO-2] counts one free White threat. White has more: White 10 and White 14 each force an answer and let White retake without a threat, and more may follow down the empty left edge below C13. The rest depends on how much room that edge gives Black, and the SGF does not say.",
+  "Closed at row 11 or nearer, White 10 kills outright: S[DEAD]. The tree's main line reaches the position after Black 9 as well, so it dies too, and the problem would need a new answer. Closed at row 10: S[KO-6]. Fully open: about S[KO-4], read by hand; the solver could not finish it. None of the three labels changes the site's grading."
+ ],
+ "diagrams": [
+  {
+   "problem": "2359",
+   "start": "",
+   "moves": "B17 B19 A17 C19 A19 A18 C18 E18 A19",
+   "caption": "2359, Black to live: the tree's line to leaf c013, marked S[KO-], where White 6 takes the ko. On the board as given, Black 7 forces White 8, and Black 9 takes the ko back without a threat. White 2 and White 4 are now in atari, so White needs the first threat: S[KO+]."
+  },
+  {
+   "problem": "2359",
+   "start": "B17 B19 A17 C19 A19 A18",
+   "moves": "C18 D19 E18 E19 F18 F19 G19 G18 A19",
+   "labels": {"H19": "a"},
+   "caption": "2359, after White 6 in Diagram 1: if White 8 answers Black 7 here, the two sides race along the top edge. After Black 13, White's six stones on the first line share one liberty, and Black 15 captures them. Black 13 needs the empty point a; if a counted as White's, White 8 would kill."
+  },
+  {
+   "problem": "2359",
+   "start": "B17 B19 A17 C19 A19",
+   "moves": "E18 C18 A18",
+   "caption": "2359, the tree change that goes with S[KO+] on leaf c013: White 6 here instead of taking the ko. After Black 7, White 8 takes the ko and Black's group is in atari at D19, so Black needs one threat more than White: a plain KO−, as a judge found."
+  },
+  {
+   "problem": "11320",
+   "start": "B18 A18 A17 B19 A19 C19 B15 A18",
+   "moves": "A19! A15 B14 A18 A19! A14 B13 A18",
+   "caption": "11320, Black to live, from the tree's leaf c052, marked S[KO-2]: White has just retaken the ko at A18, and three Black stones are in atari at B17. Black 9 retakes after a threat elsewhere. White 10 forces Black 11, and White 12 retakes without a threat. Black 13 needs another threat, and White 14 and Black 15 repeat the exchange before White 16 retakes. If Black connects the ko instead of answering, White kills."
+  }
+ ],
+ "suggestion": "Count the board as the player sees it, and where a problem needs a closed edge, put the stones in the SGF. In 2359 that makes leaf c013 S[KO+], and White 6 at A18 a mistake: move it to E18 as in Diagram 3, or Black 3 grades as well as the main line. In 11320, either S[KO-4] on the open edge or, as the judges suggest, White stones closing the edge at row 10 and S[KO-6], which keeps the main line as it is."
+}

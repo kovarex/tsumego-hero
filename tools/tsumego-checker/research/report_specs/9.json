@@ -1,0 +1,35 @@
+{
+ "problem": "9",
+ "cards": [
+  {
+   "case": "c000",
+   "headline": "Black has just taken the ko, yet White, with one threat against none, kills: it retakes, sacrifices four stones and takes a new ko first. KO+, not KO+2.",
+   "diagrams": [
+    {"start": "", "moves": "B18 C19 B16 B15 A17 B19 D19 A15 A16 A18 A19", "caption": "The tree's line. Black 11 takes the ko, and the tree marks the leaf S[KO+2]."},
+    {"start": "B18 C19 B16 B15 A17 B19 D19 A15 A16 A18 A19", "moves": "A18! B17 A19 C18 B19 A19 A18", "caption": "White 12 retakes after a ko threat elsewhere, and Black 13 must connect. White 14 throws in, and Black 15 captures four stones. White 16 is the only move that keeps a ko, and Black 17 the only answer that does. White 18 has taken the new ko first, and Black, with no threat, dies."},
+    {"start": "B18 C19 B16 B15 A17 B19 D19 A15 A16 A18 A19", "moves": "A18! B17 E19 A19", "caption": "The line behind the tree's KO+2. White 14 is slack: Black 15 retakes without a threat, and White would need a second one."},
+    {"start": "B18 C19 B16 B15 A17 B19 D19 A15 A16 A18 A19 A18! B17 A19 C18 B19 A19 A18", "moves": "A19! pass C19", "caption": "With one threat each, from the end of Diagram 2. Black 19 retakes with its threat, White has none left and plays elsewhere with White 20, and Black 21 captures White 16 and lives."}
+   ],
+   "text": [
+    "Black 11 has just taken the ko, so White needs a threat to retake; without one, Black captures two stones at C18 and lives. With one threat, White retakes with White 12 in Diagram 2. Black 13 is forced, or White captures three stones at B17. White then throws in with White 14 and gives up four stones, and after White 16 the corner is a new ko that White 18 takes first. Black has no threat and dies.",
+    "With one threat each, Black lives (Diagram 4). So Black lives exactly when it has at least as many threats as White: S[KO+]. The tree's KO+2 would let Black live with one threat fewer, and that holds only if White plays the slack White 14 of Diagram 3.",
+    "The solver also says KO+, though its search over a wider area stays undecided. Both reviewers checked that area: Black's attack on White 4 and White 8 at the bottom needs a preparatory move that is not a threat, and Black never has time for it."
+   ]
+  },
+  {
+   "case": "c001",
+   "headline": "White has just taken the ko, but after Black retakes, White has a free local threat, so Black needs two threats more than White: KO−2, not KO−.",
+   "diagrams": [
+    {"start": "", "moves": "B18 C19 B16 B15 A17 B19 D19 A15 A19 A16 C18 B17", "caption": "The tree's line. White 12 captures Black 3 and takes the ko; the tree marks the leaf S[KO-]. Black must find a threat and retake at once: any other move lets White connect at B16, and Black dies."},
+    {"start": "B18 C19 B16 B15 A17 B19 D19 A15 A19 A16 C18 B17", "moves": "B16! B19 C19 B17", "caption": "Black 13 retakes after a ko threat elsewhere. White 14 ataris Black 9, a free local threat. Black 15 captures it, and White 16 retakes without a threat, since the ko ban has lapsed: Black needs a second threat."},
+    {"start": "B18 C19 B16 B15 A17 B19 D19 A15 A19 A16 C18 B17", "moves": "B16! B19 B17 A18", "caption": "If Black 15 connects instead, White 16 captures Black 9, and the corner is a new ko that White has taken. Without a second threat Black dies."},
+    {"start": "B18 C19 B16 B15 A17 B19 D19 A15 A19 A16 C18 B17", "moves": "B16! B19 C19 B17 B16! pass B17", "caption": "With two threats against none. Black 17 retakes with the second threat. White has no local threat left and plays elsewhere with White 18, and Black 19 connects: eyes at A18 and B19."}
+   ],
+   "text": [
+    "White 12 has just taken the ko, so S[KO-] says Black needs one threat more than White. But after Black retakes with Black 13, White 14 is a free local threat, an atari on Black 9. If Black captures it (Diagram 2), White 16 retakes without a threat. If Black connects instead (Diagram 3), White 16 takes a new ko in the corner. Either way Black needs a second threat before White needs any. Any other answer to White 14 loses even with a second threat.",
+    "With two threats against none, Black lives (Diagram 4). Black lives exactly when it has at least two threats more than White, so the right label is S[KO-2]. The solver says the same, though its search over a wider area stays undecided at one threat against none. Both reviewers checked that area: Black's attack on White 4, White 8 and White 10 at the bottom needs a preparatory move, and White uses that tempo to end the fight.",
+    "One reviewer thinks the author missed White 14, or took the corner ko of Diagram 3 for the one in the tree's S[KO+] leaf: there the sacrifice leaves a bent four, here a bent three."
+   ]
+  }
+ ]
+}

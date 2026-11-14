@@ -1,0 +1,35 @@
+{
+ "problem": "9995",
+ "cards": [
+  {
+   "case": "c037",
+   "headline": "Black has just taken the ko and still has a free local threat at A17, so White needs two threats more than Black: S[KO+2], not S[KO+].",
+   "diagrams": [
+    {
+     "start": "",
+     "moves": "B18 A18 B19 C17 D17 D18 G19 F19 E18 E19 F17 C19 E18",
+     "caption": "The tree's line, White to play. Black 13 takes the ko by capturing the stone at E17, and White 10's group is in atari at D19. The tree marks the leaf S[KO+]; the solver said KO+2."
+    },
+    {
+     "start": "B18 A18 B19 C17 D17 D18 G19 F19 E18 E19 F17 C19 E18",
+     "moves": "E17! A17 H19 E18 A19 E17",
+     "caption": "White one threat ahead. White 14 retakes after a threat elsewhere. After Black 15, connecting at E18 would leave the whole White group one liberty, at D19, so White 16 captures at H19 and Black 17 retakes without a threat. White has no threat left: White 18 must capture two stones to save D18, and Black 19 connects. White is dead."
+    },
+    {
+     "start": "B18 A18 B19 C17 D17 D18 G19 F19 E18 E19 F17 C19 E18",
+     "moves": "E17! A17 H19 E18 E17! pass E18",
+     "caption": "White two threats ahead. White 18 retakes after a second threat. Black has no local threat left, so Black 19 is elsewhere and White 20 connects: eyes at D19 and in the corner, alive. White 16 is the right answer to Black 15: capturing at A19 instead would give Black a second local threat, a throw-in in the corner."
+    },
+    {
+     "start": "B18 A18 B19 C17 D17 D18 G19 F19 E18 E19 F17 C19 E18",
+     "moves": "H19 E17",
+     "caption": "If White 14 captures at H19 instead of retaking, Black 15 connects the ko. G19 is only a ko eye White can never make safe, and the corner gives one eye: dead, even if White may ignore the ko ban. The solver's counted search lets White live here with two threats; both reviewers call that an artifact of the G19 ko."
+    }
+   ],
+   "text": [
+    "White must retake at once: every other move loses whatever the threat count, even capturing at H19 to get White 10's group out of atari (Diagram 4). White has no local threat, but Black has a free one, Black 15 in Diagram 2: it takes White's liberty at A17, so White cannot connect the ko yet and must spend White 16, and Black 17 retakes without a threat. The board is now the tree's sibling leaf where Black plays A17 before the ko. That leaf's S[KO+] is right, and the solver agrees.",
+    "So White spends one threat just to reach a plain KO+. With one threat more than Black, White still dies (Diagram 2); with two more, it lives (Diagram 3). That is S[KO+2]: the site's tutorial counts local ko threats, and the ko is direct, with no approach prefix. The tree gives this leaf and its sibling the same KO+, although they differ by exactly Black's free threat at A17. The fix only makes the S[] more precise: either label is a ko, worse for Black than the DEAD main line."
+   ]
+  }
+ ]
+}

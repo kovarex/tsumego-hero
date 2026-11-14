@@ -1,0 +1,52 @@
+{
+ "problem": "2406",
+ "cards": [
+  {
+   "case": "c016",
+   "headline": "White's C18 is a mistake: Black then lives outright, with no ko. S[ALIVE], not S[10kKO]; the 10kKO almost certainly belongs to White C19 in its place.",
+   "diagrams": [
+    {"start": "", "moves": "D17 D19 E19 B19 A17 C18 B18", "caption": "The tree's line. White 6 is the mistake, and after Black 7 the tree marks the leaf S[10kKO]."},
+    {"start": "D17 D19 E19 B19 A17 C18 B18", "moves": "A18 D18 F19 C19 A15 A19", "caption": "White 8 throws in. Black 9 ignores it and puts White 2 and White 6 in atari. White 10 puts Black's whole group in atari, but Black 11 captures both stones. After White 12, Black 13 captures two more, and Black has four separate eyes where White 2, White 4, White 6 and White 8 stood."},
+    {"start": "D17 D19 E19 B19 A17 C18 B18", "moves": "C19 D18 A19 A18", "caption": "If White 8 connects first, Black 9 leaves the four stones a single liberty. White 10 extends, and Black 11 captures five stones."}
+   ],
+   "text": [
+    "At the leaf, Black's group has four liberties and no cutting points. Each of White's three stones inside has only two, and White 2 and White 6 share theirs, so one Black move ataris both. White's best try is the throw-in, White 8 in Diagram 2. Black 9 leaves it and plays that double atari; Black ends with four separate eyes, unconditional life, not seki. Taking White 8 at A19 instead, or playing elsewhere, would give White a ko (solver: KO). Connecting first does not help White (Diagram 3).",
+    "The solver agrees: the leaf is ALIVE after every White move, in the search area and in the wider one, even when White may ignore the ko ban, so ko threats cannot change it. The search area only takes liberties away from Black, so this result is safe. Elsewhere in this tree the author marks a White mistake with its real result, S[ALIVE].",
+    "The 10kKO almost certainly belongs to White C19 in place of White 6: Black 7 then reaches the position of the sibling leaf marked S[10kKO], “10000 years ko.” The tree change below adds that line and keeps this leaf, now S[ALIVE], as the refutation of White's mistake."
+   ]
+  }
+ ],
+ "tree_change": {
+  "text": [
+   "S[ALIVE] alone is not enough. White's C18 is the tree's only reply to Black's A17, so the site would conclude that A17 lives outright (see On the site, below). Add the stronger White reply of Diagram 1, with S[10kKO] at its end. Keep the c016 line, now S[ALIVE], as the refutation of White's mistake.",
+   "Diagram 1 ends in the same position as the tree's 10kKO leaf in Diagram 2: same stones, White to play, no ko. Besogo prunes the copy and links the new line to that leaf as a transposition. Then A17 and B18 are both worth 10kKO, both stay correct, and the problem stays 10kKO, as before the fix. Changing White's C18 to C19 in the c016 line instead gives the same grading but drops the refutation.",
+   "Recommended, your call: White 6 in Diagram 3 is another reply the tree lacks (solver: KO). If you add it, put S[10kKO] on White 8. The position after White 8 is the leaf of Diagram 2 plus White's A18, which the solver finds makes the ko in that leaf. A plain KO label ranks below 10kKO in besogo: it would make A17 wrong and leave B18 the only correct move."
+  ],
+  "diagrams": [
+   {"start": "D17 D19 E19 B19 A17", "moves": "C19 B18", "caption": "Needed. After Black's A17, add White 6 as a second reply and Black 7 after it, and put S[10kKO] on Black 7."},
+   {"start": "", "moves": "D17 D19 E19 B19 B18 C19 A17", "caption": "The tree's existing leaf S[10kKO], “10000 years ko.” It has the stones of the end of Diagram 1, with White to play."},
+   {"start": "D17 D19 E19 B19 A17", "moves": "A18 B18 C19", "caption": "Recommended, your call. Add White 6 as a third reply, then Black 7 and White 8, and put S[10kKO] on White 8, with Black to play."}
+  ]
+ },
+ "grading": {
+  "text": [
+   "With S[ALIVE] on the c016 leaf alone, the site would mark a in Diagram 1 wrong, keep b as the only correct move, and change the problem's own status from 10kKO to ALIVE. The grading check found both changes wrong. White's C18 is the tree's only reply to b, so besogo concludes that b lives outright. But White has two stronger replies there that the tree leaves out (Diagrams 2 and 3).",
+   "Black's natural answer to White 6 in Diagram 2 is B18, which reaches the tree's 10kKO leaf, as the tree change above shows; that transposition needs no solver. Black's best-looking other try, at A18, dies by the grading check's reading. Against White 6 in Diagram 3 the solver says KO: White kills only when it may ignore the ko ban. That KO is decided only in the search area; the wider area stayed undecided at 1M nodes. So b leads to the same ten-thousand-year ko as a, not to life.",
+   "And a is not worse than b; if anything it is safer. Against a, White's only serious reply is the tree's 10kKO line; White 6 of Diagram 3 fails there to a double atari (Diagram 4). In the solver every other White reply leaves Black alive, except A17, left undecided; the tree refutes A17 with a leaf marked S[ALIVE], which the solver confirms. These results come from the search area, which only takes liberties away from Black, so they are safe. With the tree change above, a and b both stay correct and the problem stays 10kKO."
+  ],
+  "diagrams": [
+   {"start": "", "moves": "D17 D19 E19 B19", "labels": {"B18": "a", "A17": "b"}, "caption": "Black to play. Today a and b are both correct, each worth S[10kKO]. With only the new S[ALIVE], the site would mark a wrong and call the problem ALIVE."},
+   {"start": "", "moves": "D17 D19 E19 B19 A17 C19", "caption": "Black 5 at b, then White 6, a reply the tree lacks. The solver finds no Black move here that lives: three give KO, the rest stay undecided."},
+   {"start": "", "moves": "D17 D19 E19 B19 A17 A18", "caption": "Black 5 at b, then White 6, the other reply the tree lacks (solver: KO, at 200k and at 1M nodes)."},
+   {"start": "", "moves": "D17 D19 E19 B19 B18 A18 C19", "caption": "Black 5 at a. The same White 6 fails here: Black 7 puts White 2 and White 4 in atari at once (solver: ALIVE)."}
+  ]
+ },
+ "also_check": {
+  "text": [
+   "Unrelated to the c016 fix: the line in Diagram 1 has no S[], so besogo leaves Black 1 ungraded. It is probably S[DEAD], but not confirmed: at 200k nodes the solver finds Black dead after a, b or c and leaves every other Black move undecided, and even at 1M nodes it did not settle the position."
+  ],
+  "diagrams": [
+   {"start": "", "moves": "D18 E19 B19 A18", "labels": {"D17": "a", "B18": "b", "A19": "c"}, "caption": "The tree's line for Black 1 at D18 ends here, Black to play, with no S[]."}
+  ]
+ }
+}

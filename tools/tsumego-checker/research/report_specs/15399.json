@@ -1,0 +1,57 @@
+{
+ "problem": "15399",
+ "cards": [
+  {
+   "case": "c107",
+   "headline": "White has taken the ko, but Black's D19 threatens to connect out along the top. White must answer, then needs one threat more than Black: KO−, not KO+.",
+   "diagrams": [
+    {"start": "", "moves": "A16 A17 B18 A15 A14 B14 A16 D19", "caption": "The tree's line. White 7 takes the ko by capturing Black 4, and Black 8 is the stone the author marked X. The tree marks the leaf S[KO+]; the solver said DEAD."},
+    {"start": "A16 A17 B18 A15 A14 B14 A16 D19", "moves": "A15 E19 B17 C19", "caption": "If White 9 connects the ko, Black 10 joins Black 8 to F18-F17, with E18 and F19 miai. Black 12 then connects the L group out."},
+    {"start": "A16 A17 B18 A15 A14 B14 A16 D19", "moves": "B17 A15 A16! C19 E19", "caption": "White's best answer is White 9, an atari. Black 10 retakes, which also gets the group out of atari. With a threat elsewhere, White 11 retakes. Black has no local threat left: after White 13 the group is dead, with one liberty at B19."},
+    {"start": "A16 A17 B18 A15 A14 B14 A16 D19", "moves": "B17 A15 pass A13", "caption": "Without a threat, White 11 plays elsewhere. Black 12 captures White 5 and connects to B14-B13: Black lives."}
+   ],
+   "text": [
+    "The tree is right that this is a ko, but not about the sign. White 7 has taken the ko, and Black 8 is a real local threat: if White connects the ko, Black escapes (Diagram 2). So White must answer, best with White 9 in Diagram 3, and Black 10 retakes. Now White has to find the first threat: with one more than Black, White kills (Diagram 3); otherwise Black lives (Diagram 4). That is KO−.",
+    "The author's comment, 'your opponent can be annoying with X and keep the ko in motion', describes exactly this. With S[KO+], the site rates White's first move at A16 as good as A18, which goes against the comments. The solver's DEAD is wrong: its search area treats F18-F17 and B13-C13 as shut in, so its lines capture the escaped group by filling liberties at the edge of the area."
+   ]
+  },
+  {
+   "case": "c108",
+   "headline": "White has taken the ko, but Black's A15 threatens to connect out down the side. White must answer, then needs one threat more than Black: KO−, not KO+.",
+   "diagrams": [
+    {"start": "", "moves": "B18 B19 A18 D19 E19 E18 C19 A15", "caption": "The tree's line. White 7 takes the ko by capturing Black 4, and Black 8 is the stone the author marked X. The tree marks the leaf S[KO+]; the solver said DEAD."},
+    {"start": "B18 B19 A18 D19 E19 E18 C19 A15", "moves": "D19 A16 A14 B14 B17 A13 A17 A14", "caption": "If White 9 connects the ko, Black 10 joins Black 8 to the L group. Black 14 captures White 11, and Black 16 connects to B14-B13: Black is out."},
+    {"start": "B18 B19 A18 D19 E19 E18 C19 A15", "moves": "B17 D19 A16 A17 A16! C19 A19", "caption": "White's best answer is White 9, an atari. Black 10 retakes and gives the group a liberty at C19. White 11 starts a second ko, and Black 12 must take it, putting three White stones in atari. With a threat elsewhere, White 13 retakes; Black has no local threat, and White 15 captures."},
+    {"start": "B18 B19 A18 D19 E19 E18 C19 A15", "moves": "B17 D19 A16 A17 C19 A19", "caption": "If White 13 retakes the other ko at C19 instead, Black 14 captures three stones and lives."}
+   ],
+   "text": [
+    "The tree is right that this is a ko, but not about the sign. White 7 has taken the ko, and Black 8 is a real local threat: if White connects the ko, Black escapes to B13-C13 (Diagram 2). So White must answer, best with White 9 in Diagram 3, and Black 10 retakes. White's only try then is White 11; Black 12 takes that ko, and White needs a threat to retake. Retaking at C19 instead fails (Diagram 4). White wins only with one threat more than Black: KO−.",
+    "The author marked Black 8 with an X and wrote 'your opponent can be annoying with X and keep the ko in motion', which describes KO−; the author seems to use S[KO+] for any ko and give the difference in comments. The solver's DEAD comes from its search area, which treats B13-C13 as shut in and fills liberties at its edge. One caveat: the result assumes B13-C13 and F18-F17 are strong, as the author's comment does."
+   ]
+  }
+ ],
+ "grading": {
+  "text": [
+   "With the two fixes, the site marks b and c in Diagram 1 wrong; today it accepts them. Both become KO−, worse than a, which stays KO+. A checker tried to show the new marks wrong and found them right. After b or c, White's next moves are forced, and White takes the ko on one side while the other side is still open, so Black has a local threat there (the cards above). A few White replies stayed undecided in the checker's solver run and rest on reading.",
+   "After a, White closes one side with tempo (White 5 in Diagram 2), and once White 9 takes the ko, Black 2 has one liberty and Black has no spare threat. The tree leaves out a few Black defences after a, such as Black 2 in Diagram 3. By reading, White still gets at least KO+ against them, but the solver could not settle those lines. Adding them to the tree is not needed for the new marks.",
+   "Move d stays correct only because its own leaf says S[KO+]. Fixing that leaf, the first of the other leaves below, makes d wrong too, as the author's comment intends."
+  ],
+  "diagrams": [
+   {"start": "", "moves": "", "labels": {"A18": "a", "B18": "b", "A16": "c", "C19": "d"}, "caption": "White to play. Today the site accepts all four moves. With the two fixes it marks b and c wrong (KO−); a (KO+) and d stay correct."},
+   {"start": "", "moves": "A18 A17 B18 B19 D19 A15 A14 B14 A16", "caption": "The tree's line for a, marked S[KO+]. White 5 closes the top. After White 9 takes the ko, Black 2 has one liberty, so Black has no spare threat."},
+   {"start": "", "moves": "A18 A16 A15 B18 D19 C19", "caption": "Black 2 is a defence the tree lacks. Black 6 is the only playable answer to White 5, and the position is then the same as in the tree's line where Black answers White 1 at C19 (S[KO+]). This rests on reading."}
+  ]
+ },
+ "also_check": {
+  "text": [
+   "The grading checker found three more leaves to check. In Diagram 1, Black 10 has just retaken the ko and White 5 is in atari, so White must retake at once with a ko threat, and neither side has a local threat: S[KO-], as the comment 'your opponent find a way to take first' says. The solver was undecided here, so this rests on reading and the comment. With S[KO-] the site marks the first move at C19 wrong, as the comment intends; today it accepts it next to A18.",
+   "Diagram 2 looks dead, not a ko: Black 2 has one liberty, so if Black retakes, White 9 in Diagram 4 stops Black from connecting. The checker's solver run, which counts a connection to the outside stones as an escape, gives DEAD even with three Black threats. The line ends with White's ko capture, so you may keep S[KO+] under the 'last move took a ko' convention. In the same run Diagram 3 comes out KO+2, for the same one-liberty reason, with lower confidence. Neither leaf affects how White's first move is graded."
+  ],
+  "diagrams": [
+   {"start": "", "moves": "C19 B19 A18 D19 E19 E18 C19 A17 B18 D19", "caption": "The tree's line for White 1 at C19, marked S[KO+]. Black 10 retakes the ko and ataris White 5. Suggested: S[KO-]; the solver was undecided."},
+   {"start": "", "moves": "A18 A17 B18 A15 A14 B14 A16", "caption": "A line for White 1 at A18, marked S[KO+]. After White 7 takes the ko, Black 2 has one liberty. Suggested: S[DEAD]."},
+   {"start": "", "moves": "A18 A17 B18 C19 D19 A15 A14 B14 A16", "caption": "Another line for White 1 at A18, marked S[KO+]. Suggested: S[KO+2], with lower confidence: White still wins when Black has one extra threat."},
+   {"start": "A18 A17 B18 A15 A14 B14 A16", "moves": "A15! B17", "caption": "From the leaf of Diagram 2: if Black 8 retakes after a threat elsewhere, White 9 ataris Black 2 and Black cannot connect. Black at A16 is self-atari, and the other tries lose."}
+  ]
+ }
+}

@@ -1,0 +1,92 @@
+{
+ "problem": "8736",
+ "cards": [
+  {
+   "case": "c024",
+   "headline": "Black takes the ko first and also has a free local threat at J16, while White has none: White needs two threats more than Black. S[KO+2], not S[KO+].",
+   "diagrams": [
+    {
+     "start": "",
+     "moves": "H18 N18 N19 M19 O19 K19 M18",
+     "caption": "The tree's line. Black 7 takes the ko, and the tree marks the leaf S[KO+]."
+    },
+    {
+     "start": "H18 N18 N19 M19 O19 K19 M18",
+     "moves": "N18! J16 K17 M18 pass N18",
+     "caption": "White 8 retakes after a threat elsewhere. Black 9 puts White's J17 stone in atari, White 10 must connect, and Black 11 retakes without a threat. White has no second threat, so White 12 is elsewhere. Black 13 connects; L19 is a false eye, and White dies."
+    },
+    {
+     "start": "H18 N18 N19 M19 O19 K19 M18",
+     "moves": "N18! J16 M18 K17",
+     "caption": "If White 10 connects the ko instead, Black 11 captures and White's inner eye is gone. Only the eye at L19 is left: dead."
+    },
+    {
+     "start": "H18 N18 N19 M19 O19 K19 M18",
+     "moves": "N18! J16 K17 M18 N18! pass M18",
+     "caption": "With two threats against none, White 12 retakes again. Black has no threat, so Black 13 is elsewhere, and White 14 connects: eyes at L19 and L17."
+    }
+   ],
+   "text": [
+    "Black 7 has taken the ko, which alone would give KO+. But after White 8 in Diagram 2 retakes, Black 9 is a free local threat: White 10 must answer it, because connecting the ko loses the inner eye (Diagram 3). So Black 11 retakes without a threat. The position after Black 11 is another leaf of the tree, marked S[KO+], and the solver agrees with that label. Black has only this one threat; an atari at K17 instead of Black 9 is the same threat.",
+    "Unlike in the tree's G18 lines, White has no local threat here: Black 1, Black 3 and Black 5 in Diagram 1, and the stone at J18, are joined to the wall, so every local White move at the leaf lets Black connect the ko. White dies with one threat against none (Diagram 2) and lives with two (Diagram 4): S[KO+2]. Both reviewers agree, and so does the solver's search area; its wider area stayed undecided even with a larger budget, which both reviewers take as a solver limit."
+   ]
+  },
+  {
+   "case": "c025",
+   "headline": "Black can take the ko first, but White then has a free local threat at H18 and Black has none, so Black needs one threat more: S[KO-], not S[KO+].",
+   "diagrams": [
+    {
+     "start": "",
+     "moves": "J16 K17 G18 N18 N19 M19 O19 K19",
+     "caption": "The tree's line. After White 8 the tree marks the leaf S[KO+]. Black is to play and can take the ko at M18 first."
+    },
+    {
+     "start": "J16 K17 G18 N18 N19 M19 O19 K19",
+     "moves": "M18 H18 H19 N18 pass M18",
+     "caption": "Black 9 takes the ko. White 10 puts Black's J18 stone in atari, Black 11 must capture, and White 12 retakes without a threat elsewhere. Black has no threat to retake with, so Black 13 is elsewhere, and White 14 connects: eyes at L19 and L17."
+    },
+    {
+     "start": "J16 K17 G18 N18 N19 M19 O19 K19",
+     "moves": "M18 H18 N18 J19",
+     "caption": "If Black 11 connects the ko instead, White 12 captures and lives with eyes at J18 and L17."
+    },
+    {
+     "start": "J16 K17 G18 N18 N19 M19 O19 K19",
+     "moves": "M18 H18 H19 N18 M18! J19 N18 H18 G19",
+     "caption": "With one threat more than White, Black 13 retakes. White 14 is no real threat: Black 15 connects, White 16 captures but stays in atari, and after Black 17 White can never make J18 a real eye: dead."
+    }
+   ],
+   "text": [
+    "At the leaf Black must take the ko at once; any other move lets White connect at M18 and live. After Black 9 in Diagram 2, White 10 is a local threat: if Black ignores it and connects the ko, White captures and lives (Diagram 3). So Black 11 answers, and White 12 retakes without spending a threat elsewhere. An atari at J19 instead of White 10 is the same threat. Black has no local threat, so Black needs the first threat elsewhere.",
+    "White has no second threat: once Black has captured with Black 11, White 14 in Diagram 4 leads only to a ko eye at J18 that White can never secure. So Black kills with one threat more than White (Diagram 4), not with equal threats (Diagram 2): S[KO-]. Both reviewers and the solver's search area agree; its wider area proves only that equal threats fail and runs out of budget on the rest.",
+    "In the tree's other leaf, Black takes the ko right after White 6, before the exchange of Black 7 for White 8; that open exchange balances White's threat, and the solver agrees with KO+ there. With Black 3 at H18 instead, White has no such threat. KO+ would hold here only if the site labelled a ko purely by who captures first; its tutorial says local threats are usually counted."
+   ]
+  },
+  {
+   "case": "c026",
+   "headline": "Black takes the ko first, and after White's retake White must still spend a move on its eye at L19, so Black retakes for free: S[KO+2], not S[KO+].",
+   "diagrams": [
+    {
+     "start": "",
+     "moves": "J16 K17 H18 N18 N19 M19 M18",
+     "caption": "The tree's line. Black 7 takes the ko, and the tree marks the leaf S[KO+]."
+    },
+    {
+     "start": "J16 K17 H18 N18 N19 M19 M18",
+     "moves": "N18! O19 K19 M18 pass N18",
+     "caption": "White 8 retakes after a threat elsewhere and puts N19 in atari, so Black 9 connects. White 10 is needed for the eye at L19, and Black 11 retakes without a threat. White has no second threat, so White 12 is elsewhere, and Black 13 connects: dead."
+    },
+    {
+     "start": "J16 K17 H18 N18 N19 M19 M18",
+     "moves": "N18! O19 M18 K19",
+     "caption": "If White 10 connects the ko first, Black 11 spoils the eye at L19. Only the eye at L17 is left: dead."
+    }
+   ],
+   "text": [
+    "Black 7 has taken the ko. White 8 in Diagram 2 retakes after a threat elsewhere, and it is also an atari, so Black 9 must connect; otherwise White captures N19 and lives. White cannot connect the ko yet (Diagram 3), so White must first play White 10 for the eye at L19, and Black 11 retakes without a threat. The position after Black 11 is another leaf of the tree, marked S[KO+], and the solver agrees with that label.",
+    "So White must win the ko twice: it dies with one threat against none (Diagram 2) and needs two threats more than Black. That is S[KO+2], the site tutorial's two-step ko, which becomes KO+ once White has won it once. It is no approach ko: every White move at the leaf other than the retake lets Black connect. Neither side has a local threat.",
+    "Both reviewers agree. The solver's search area gives KO+2; its wider area stayed undecided, but its extra points give neither side a local threat. Like the tree, the reading treats Black's outer wall as solid, although on an otherwise empty board it has cutting points at O17 and N15; those cuts would change the other leaf's label too."
+   ]
+  }
+ ]
+}

@@ -1,0 +1,82 @@
+{
+ "problem": "15296",
+ "cards": [
+  {
+   "case": "c085",
+   "headline": "White has just taken the ko and keeps a free local threat at A17; Black has none. So Black needs two threats more than White: S[KO+2], not S[KO+].",
+   "diagrams": [
+    {"start": "", "moves": "C19 B19 A18 A14 B12 B18 A17 B17 A13 A19 A15", "caption": "The tree's line. White 11 takes the ko, and the tree marks the leaf S[KO+]."},
+    {"start": "C19 B19 A18 A14 B12 B18 A17 B17 A13 A19 A15", "moves": "A14! A17 A18 A15", "caption": "Black 12 retakes after a threat elsewhere. White 13 throws in, Black 14 must capture, and White 15 retakes without a threat elsewhere. From here it is a plain KO+: Black needs another threat."},
+    {"start": "C19 B19 A18 A14 B12 B18 A17 B17 A13 A19 A15", "moves": "A14! A17 A15 B16", "caption": "If Black 14 connects the ko instead, White 15 captures four stones, and the corner is dead."},
+    {"start": "C19 B19 A18 A14 B12 B18 A17 B17 A13 A19 A15", "moves": "B13 A14", "caption": "Black 12 cuts, but it threatens nothing yet: White 13 connects the ko, and the corner is dead."}
+   ],
+   "text": [
+    "White 11 has just taken the ko, which alone would give KO+. But White also keeps a free local threat. After Black 12 in Diagram 2, White 13 throws in again, and Black 14 has to capture, because connecting the ko loses four stones (Diagram 3). White 15 then retakes without spending a threat elsewhere, and White has no second throw-in.",
+    "Black has no local threat. The cut of Black 12 in Diagram 4 would need a second move before a retake captured two stones, so White just connects; capturing White 1 does not stop White from connecting either, as C19 never becomes a real eye. So Black needs two threats more than White: S[KO+2]. The analyst and both reviewers agree, with medium confidence. The solver's search area gives KO+2, though one step was proved only after an earlier search in the same run; wider searches stayed undecided for lack of budget.",
+    "The tree's sibling leaf, with White's A13 at move 7, has no throw-in left and is a correct KO+; the solver agrees. The author labelled both by who took the ko first. One reviewer's caveat: KO+2 assumes you count a free local threat for the side that took first; the site's tutorial does count local threats. A reviewer of leaf c086 thought the cut in Diagram 4 a local threat that keeps this leaf at KO+; this leaf's analyst, both reviewers and the solver found no threat there."
+   ]
+  },
+  {
+   "case": "c086",
+   "headline": "As in leaf c085, with White's B13 in place of B12: White has taken the ko and keeps a free local threat; Black has none. S[KO+2], not S[KO+].",
+   "diagrams": [
+    {"start": "", "moves": "C19 B19 A18 A14 B13 B18 A17 B17 A13 A19 A15", "caption": "The tree's line. Unlike in leaf c085, White 5 and White 9 are joined. White 11 takes the ko, and the tree marks the leaf S[KO+]."},
+    {"start": "C19 B19 A18 A14 B13 B18 A17 B17 A13 A19 A15", "moves": "A14! A17 A18 A15", "caption": "Black 12 retakes after a threat elsewhere. White 13 throws in, Black 14 must capture, and White 15 retakes without a threat elsewhere: a plain KO+ from here."},
+    {"start": "C19 B19 A18 A14 B13 B18 A17 B17 A13 A19 A15", "moves": "A14! A17 A15 B16", "caption": "If Black 14 connects the ko instead, White 15 captures four stones, and the corner is dead."},
+    {"start": "C19 B19 A18 A14 B13 B18 A17 B17 A13 A19 A15", "moves": "D19 A14 E19 B16 A17 B15", "caption": "Black 12 captures, but it is no threat: White 13 connects the ko. After Black 14, White 15 captures a stone and White 17 connects, taking the eye at B16, and C19 never becomes a real eye, since Black 12 and Black 14 can still be attacked along the edge. One eye: dead."}
+   ],
+   "text": [
+    "As in leaf c085, White 11 has just taken the ko and keeps the throw-in of White 13 in Diagram 2 as a free local threat: Black 14 must capture, since connecting loses four stones (Diagram 3), and White 15 retakes without a threat. After that it is a plain KO+.",
+    "Black has no local threat: every local Black move at the leaf leaves Black dead, including the capture in Diagram 4. So Black needs two threats more than White: S[KO+2]. The analyst and both reviewers agree, with medium confidence; the solver's search area gives that count directly, and a wider area only indirectly, from decided sub-results. The site's checker compares only class and sign, so it would not flag this leaf, but besogo ranks KO+2 above KO+."
+   ]
+  },
+  {
+   "case": "c087",
+   "headline": "Black lives by escaping: Black's B13 joins the corner group to the open lower side. The solver's DEAD comes from the edge of its search area.",
+   "diagrams": [
+    {"start": "", "moves": "C19 B19 A18 A14 B18 B13", "labels": {"A12": "x", "B11": "x", "C12": "x", "C13": "x"}, "caption": "The tree's line. White 5 does not start the killing ko, Black 6 joins Black 4 to the open side, and the tree marks the leaf S[ALIVE]. x marks the edge of the solver's search area."},
+    {"start": "C19 B19 A18 A14 B18 B13", "moves": "B17 B16 C12 B12", "caption": "White's strongest try, found by a reviewer. White 7 forces Black 8, and White 9 nets. Black 10 is the only answer. If White then blocks, Black crawls down the side for a long eye space; if White hanes, Black cuts and captures the hane stone."}
+   ],
+   "text": [
+    "The tree is right. White cannot cut Black 6 off: a White stone at A13 is a self-atari, and A15 is illegal for White. So Black lives by escaping, and by a reviewer's reading even the net of Diagram 2 fails, though one deep branch stayed unread. The solver says DEAD only because its search area ends at the points marked x and treats everything beyond as White's wall; its kill fills those points, which are open on the real board. In areas three or four lines wider it stayed undecided."
+   ]
+  },
+  {
+   "case": "c088",
+   "headline": "Black has both an escape and a corner eye, as the author's comment says, and White cannot stop both. The solver's DEAD comes from its search-area edge.",
+   "diagrams": [
+    {"start": "", "moves": "C19 B19 A18 A14 B18 B17 D19 B13", "caption": "The tree's line. After Black 8 the tree marks the leaf S[ALIVE], with the comment “You cannot prevent the Eye in the corner AND the escape simultaneously.”"},
+    {"start": "C19 B19 A18 A14 B18 B17 D19 B13", "moves": "A19 A17 B19 A13", "caption": "If White 9 takes a stone, Black 10 ataris three stones and White 11 connects. Black 12 then joins the lower stones, which reach the open side, so Black has two eyes, at B16 and A15."}
+   ],
+   "text": [
+    "The tree is right. In Diagram 2 the lower stones keep three outside liberties, so White cannot fill A15; Black's answer to the hardest try, a net at C12, rests on a reviewer's reading, as the solver stayed undecided in bigger areas. If White blocks lower down instead, Black's A17 ataris White 3 and White 5, which cannot be saved, and the corner eye and B16 give two eyes. The solver's kill fills points that are open on the real board, and its ko after White's B12 arises only because A11 lies outside its area."
+   ]
+  }
+ ],
+ "tree_change": {
+  "text": [
+   "With the new S[] alone, the site would reject White's A13 at move 5, which is as good as B12 and B13 (see On the site, below). The tree answers B12 and B13 only with Black's B18. Add Black's better answer, as in Diagrams 1 and 2: each reaches a position already in the tree, on a line marked S[KO+] (Diagram 3 for B12). Then B12 and B13 drop to KO+, A13 at move 5 is correct again, and A13 at move 7 stays wrong, as it should.",
+   "Check one thing first. After these additions the C19-first branch is worth KO+, but the A18-first branch stays KO+2: there Black's B18 is already on the board, so Black's early A17 fails (see On the site, below). Besogo would then reject White's first move at C19. That rests on the tree's only answer to White's A18, Black's B18. Black 2 in Diagram 4 is another answer, which leads into the C19-first line, so check Black's best answer to A18 first, for example by adding Diagram 4. The grading check did not verify this."
+  ],
+  "diagrams": [
+   {"start": "C19 B19 A18 A14 B12", "moves": "A17 A13 B18", "caption": "Needed. After White's B12 at move 5, add Black 6, White 7 and Black 8. Black 8 reaches the position of Diagram 3 after its Black 8, so besogo links the two and no S[] is needed. A leaf after Black 6 with S[KO+] does the same."},
+   {"start": "C19 B19 A18 A14 B13", "moves": "A17 A13 B18", "caption": "Needed. The same after White's B13: add Black 6, White 7 and Black 8. This reaches the tree's line with White's A13 at move 7 after B13, which ends in S[KO+]."},
+   {"start": "", "moves": "C19 B19 A18 A14 B12 B18 A13 A17 B16 B17 A15", "caption": "The tree's existing line, marked S[KO+]. After Black 8 it has the stones of the end of Diagram 1, with White to play."},
+   {"start": "", "moves": "A18 B19 C19", "caption": "Check first. The tree answers White 1 only with Black's B18. Black 2 is another answer: after White 3 the position is the C19-first line, which the additions make KO+. Not verified."}
+  ]
+ },
+ "grading": {
+  "text": [
+   "With S[KO+2] on leaves c085 and c086, the problem's result goes from S[KO+] to S[KO+2], and the site marks four White moves at A13 wrong that it accepts today (a in Diagrams 1, 2 and 4; Diagram 1 stands for two positions). The grading check found two of them right, one probably right and one wrong.",
+   "The change in Diagram 1 is right. Once Black has played B18, the throw-in b gives a ko one threat better than a: Black's best answer leads to the fixed leaf c085, and his other answers are no better. Move a gives Black time to take the throw-in point himself, which leaves White only the plain KO+.",
+   "The change in Diagram 2 is wrong. The tree answers b and c only with Black's B18, which is why they look like KO+2. Black should answer at once with Black 6 of Diagram 3, and White's other reply, at A13, leads back to the tree's KO+ line (see the tree change above). The solver confirms that b and c are worth KO+ at most. Move a is KO+ too, as neither side has a local threat, so it should stay correct; the author's comment on it is about size, not status.",
+   "The change in Diagram 4 is probably right. With Black's B18 already on the board, Black 6 fails: after White 7 every Black follow-up was dead in an area with A11 and E19 added. So here White 5 and B13 keep the KO+2 of the throw-in, a ko better than a. The models favour White and the full position stayed undecided, so confidence is moderate."
+  ],
+  "diagrams": [
+   {"start": "C19 B19 A18 A14 B12 B18", "moves": "", "labels": {"A13": "a", "A17": "b"}, "caption": "White to play move 7. Today a and b are both correct; after the fix only b is, since b leads to the KO+2 of leaf c085. Right. The same holds with White's B13 in place of B12 (leaf c086)."},
+   {"start": "C19 B19 A18 A14", "moves": "", "labels": {"A13": "a", "B12": "b", "B13": "c"}, "caption": "White to play move 5. Today a, b and c are all correct; after the fix the site marks a wrong. Not right: all three are worth KO+."},
+   {"start": "C19 B19 A18 A14 B12", "moves": "A17 B18 B17 A19 B19", "caption": "After b in Diagram 2, Black 6 takes the throw-in point at once, a reply the tree lacks. White 7 then fails: White 9 takes a stone, but Black 10 captures three. The same reply answers c."},
+   {"start": "A18 B18 C19 A14", "moves": "B12 A17 B19", "labels": {"A13": "a"}, "caption": "The A18-first branch. The tree also has a and B13 for White 5; after the fix the site marks a wrong and still accepts White 5 and B13. Probably right: with Black's B18 already played, Black 6 fails to White 7, which takes the top."}
+  ]
+ }
+}

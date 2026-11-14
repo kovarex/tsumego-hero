@@ -1,0 +1,35 @@
+{
+ "problem": "2359",
+ "cards": [
+  {
+   "case": "c013",
+   "headline": "KO− is wrong either way. If the empty points right of G17 are open, Black's forcing move at C18 gives KO+; if they are White's wall, KO−2.",
+   "diagrams": [
+    {"start": "", "moves": "B17 B19 A17 C19 A19 A18", "caption": "The tree's line, marked S[KO-]. White 6 has just taken the ko, and Black's group of five stones is in atari at C18."},
+    {"start": "B17 B19 A17 C19 A19 A18", "moves": "C18 E18 A19", "caption": "Open board, S[KO+]: Black 7 threatens to capture at A19, and White 8 is White's best answer. The exchange lifts the ko ban, so Black 9 takes the ko without a threat, and White needs the first threat."},
+    {"start": "B17 B19 A17 C19 A19 A18", "moves": "C18 D19 E18 E19 F18 F19 G19 G18 A19", "labels": {"H19": "a"}, "caption": "Where the readings differ. If White 8 answers here, Black wins the race on the edge: Black 15 captures six stones. Black 13 needs the empty point a; if a is White's, White 8 kills."},
+    {"start": "B17 B19 A17 C19 A19 A18", "moves": "A19! E18 C18 A18 A19!", "caption": "Right side as White's wall, S[KO-2]: Black 7 retakes at once after a threat elsewhere. White 8 forces Black 9, White 10 retakes without a threat, and Black's whole group is in atari at D19. Black needs a second threat for Black 11."}
+   ],
+   "text": [
+    "Both readings find the tree's S[KO-] wrong. They turn on one point, H19 (a in Diagram 3): empty on the board as given, but White's in the solver's search area, which counts the right side as White's wall.",
+    "Open board (S[KO+]): the forcing move, Black 7 in Diagram 2, lets Black take the ko without a threat. White's other answers do worse: at D19 or E19, White loses a race on the edge (Diagram 3). This rests on solver checks of each White reply to the forcing move with H19 open; searches from the leaf itself stayed undecided within the budget. With S[KO+], Black 3 grades as correct like the main line, unless the tree's White 6 becomes E18, which a judge found leaves Black a plain KO−.",
+    "Right side as White's wall (S[KO-2]): White's answer at D19 or E19 kills after the forcing move, so Black must retake at once (Diagram 4). There White 8 forces Black 9, White 10 retakes without a threat, and Black must win the ko twice. This is the solver's result, and it changes no grading."
+   ]
+  },
+  {
+   "case": "c014",
+   "headline": "KO−, not DEAD: Black takes the ko first but must then make an eye, so White retakes without a threat and Black needs one threat more than White.",
+   "diagrams": [
+    {"start": "", "moves": "B17 B19 E18 A18", "caption": "The tree's line. After White 4 the tree marks the leaf S[DEAD]."},
+    {"start": "B17 B19 E18 A18", "moves": "C19 A17 A19 A15 E19 B19", "caption": "Black 5 ataris the White stone at B19, and White 6 puts four Black stones in atari. Black 7 takes the ko, White 8 must connect, Black 9 makes an eye at D19, and White 10 retakes without a threat."},
+    {"start": "B17 B19 E18 A18 C19 A17 A19 A15 E19 B19", "moves": "A19! pass B19", "caption": "With one threat more than White, Black 11 retakes. White has no threat left and plays elsewhere with White 12, and Black 13 connects: two eyes, at C18 and D19."},
+    {"start": "B17 B19 E18 A18", "moves": "C19 A17 A19 A15 B19 E19", "caption": "If Black 9 connects at once, White 10 takes away the eye at D19, and Black has only the eye at C18: dead with the outside counted as White's. With the top edge open through J19, Black could still live on the edge."}
+   ],
+   "text": [
+    "The leaf is a ko, not dead (Diagram 2). White 6 is White's best answer: if White connects at A19 instead, Black captures three stones and lives. White 8 is forced too, since Black 7 has put three White stones in atari.",
+    "Black cannot connect at once, because White then takes away the eye at D19 (Diagram 4). So Black 9 in Diagram 2 makes the eye first, and White 10 retakes without a threat. Black needs the first threat to retake and connect (Diagram 3); without one, White captures at C18. That is one threat more than White, S[KO-], as the solver found. Neither side has a local threat.",
+    "DEAD is wrong in every frame, but the sign depends on the frame; the analysis's confidence is medium, and some solver searches stayed undecided within the budget. KO− counts the outside as White's, as the solver's areas do. If the top edge right of G17 is open through J19 (the site shows the board to column K), Black could connect at once and live on the edge, White could not afford White 8, and the leaf would be KO+: the same question as leaf c013."
+   ]
+  }
+ ]
+}

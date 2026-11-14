@@ -1,0 +1,20 @@
+{
+ "problem": "11352",
+ "cards": [
+  {
+   "case": "c054",
+   "headline": "White took the ko first, but Black has a local threat at G19 and White has none, so White needs the first outside threat: KO+, not KO−.",
+   "diagrams": [
+    {"start": "", "moves": "A18 C18 B19 A17 B17 A19", "caption": "The tree's line. White 6 captures Black 1 and takes the ko. The tree marks the leaf S[KO-]; the solver said KO+."},
+    {"start": "A18 C18 B19 A17 B17 A19", "moves": "G19 E19 A18 pass A16", "caption": "Black 7 threatens to kill at E19, so White 8 must answer, and Black 9 retakes without a threat elsewhere. White has no threat and plays elsewhere with White 10. Black 11 captures White 4, and White, with only C19 and D18 inside, is dead."},
+    {"start": "A18 C18 B19 A17 B17 A19", "moves": "G19 A18 E19 D18 A16 C19 B19", "caption": "If White 8 connects the ko instead, Black 9 kills. White 12 captures one stone, but Black 13 captures the whole group."},
+    {"start": "A18 C18 B19 A17 B17 A19", "moves": "G19 E19 A18 A19! A16 A18", "caption": "As in Diagram 2 up to Black 9. With one threat more than Black, White 10 retakes. Black 11 is no ko threat, since White 12 connects and ends the ko. White can capture the stone at B19 at any time and lives with eyes there and at D18."}
+   ],
+   "text": [
+    "White 6 took the ko first, which is why the tree says KO−. But Black 7 in Diagram 2 is a local threat: if White connects the ko instead, Black kills (Diagram 3), and White's other replies lose too. So White 8 must answer, and Black 9 retakes without spending a threat elsewhere. That exchange also removes White's only possible local threat, an atari on F19. White could not use it before taking the ko: with White 4 in atari, any move but White 6 dies.",
+    "After Black 9, White needs the first threat elsewhere. White has no local one: a move at C19 or D18 puts White in atari, and one at A16 is captured, which settles the ko for Black. Without an outside threat White dies (Diagram 2). With one more than Black, White retakes and lives (Diagram 4), since Black has no second local threat. So Black wins with as many outside threats as White: KO+, not KO− and not KO+2.",
+    "The analysis (high confidence), both reviewers and the solver agree on KO+, and the site's tutorial gives KO+ for exactly this case. The solver's wider area stayed undecided even in plainly dead positions, such as the end of Diagram 2: a search limit, not a White resource. The analysis and both reviewers checked the wider area's extra points; none gives White a threat. The fix changes no grading: this branch fails for Black either way, since G19 as Black's first move kills outright."
+   ]
+  }
+ ]
+}

@@ -1,0 +1,20 @@
+{
+ "problem": "844",
+ "cards": [
+  {
+   "case": "c008",
+   "headline": "White takes the ko first and can ignore Black's first retake, so Black needs two more ko threats than White: S[KO-2], not S[KO-].",
+   "diagrams": [
+    {"start": "", "moves": "D19 E19 B19 A17 A18 C18 C19", "caption": "The tree's line. After Black 7 it is White's move, and the tree marks the leaf S[KO-]."},
+    {"start": "D19 E19 B19 A17 A18 C18 C19", "moves": "B18 F19 A19 A18! pass A16 A19", "caption": "White 8 ataris the Black stone at A18, and Black 9 must fill an outside liberty at once. White 10 takes the ko. Black 11 retakes after a threat, but White 12 ignores it: Black 13 has to fill White's last outside liberty, and White 14 retakes for free."},
+    {"start": "D19 E19 B19 A17 A18 C18 C19", "moves": "B18 pass A19 A18! D18", "caption": "If Black 9 plays elsewhere, White 10 takes the ko. White still has both outside liberties, so when Black 11 retakes, White 12 fills the shared liberty and wins the race: ALIVE."},
+    {"start": "D19 E19 B19 A17 A18 C18 C19", "moves": "pass A16 B18 F19 A19", "caption": "The tree's KO− needs White to waste the move at the leaf (White 8 plays elsewhere). Then Black 9 and Black 11 fill both outside liberties, and White 12 takes the ko first: a direct ko, KO−."}
+   ],
+   "text": [
+    "At the leaf (Diagram 1), Black 1, Black 3 and Black 7 are in a capturing race with White's group, and the ko is in the corner. White 8 in Diagram 2 is White's best move; every other White move gives only KO− or DEAD. Black 9 must then fill one of White's two outside liberties; either one will do. If Black plays elsewhere, White wins the race (Diagram 3); Black's other local replies are self-atari.",
+    "In Diagram 2, White 10 takes the ko first. White still has a spare liberty, so White 12 ignores Black 11; Black 13 has to fill that liberty, and White 14 retakes for free. Black has spent one threat and now faces a direct ko that White took first, so Black needs two more threats than White: S[KO-2]. This fits the site tutorial's KO−2: after Black wins it once, it becomes KO−. In approach-ko notation it is S[A-1KO-], the same threat count.",
+    "The tree's KO− is right only if White wastes the move at the leaf (Diagram 4). The solver confirms KO−2. In the wider search area, one extra threat for Black stayed undecided even at a million nodes; a reviewer reads it as failing, since neither side has a local ko threat."
+   ]
+  }
+ ]
+}

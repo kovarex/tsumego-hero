@@ -1,0 +1,111 @@
+{
+ "problem": "13489",
+ "cards": [
+  {
+   "case": "c060",
+   "headline": "No ko: White answers Black's capture by taking the stone at A16 instead of retaking, then captures three stones for two eyes. ALIVE, not KO−.",
+   "diagrams": [
+    {
+     "start": "",
+     "moves": "E19 D18 B19 B18 C19 D19 A16 A17 D17 F19 G18 A19",
+     "caption": "The tree's line. White 12 ataris Black 3 and Black 5 but is in atari itself, as is Black 7. The tree marks the leaf S[KO-]; the solver said ALIVE."
+    },
+    {
+     "start": "E19 D18 B19 B18 C19 D19 A16 A17 D17 F19 G18 A19",
+     "moves": "A18 A15 pass C18 pass A19",
+     "caption": "Black 13 captures the stone at A19 and puts White's left group in atari. White 14 captures the stone at A16 instead of retaking and keeps a liberty at A14, so Black cannot recapture. Black 15 and Black 17 are played elsewhere: White 16 ataris Black 13 and the stones at B19 and C19 on their shared liberty A19, where Black cannot play, and White 18 captures three for two eyes."
+    },
+    {
+     "start": "E19 D18 B19 B18 C19 D19 A16 A17 D17 F19 G18 A19",
+     "moves": "A18 A15 A19 C18 B19 A19 A18 C19",
+     "caption": "The bent-four try. Black 15 connects at A19, White 16 captures four stones, Black 17 takes the bent-four point, and Black 19 captures White 18, a ko. White 20 does not need the ko: Black 17 and Black 19 now both hang on A19, and Black cannot connect there while White keeps outside liberties at A16 and E19. White captures two there next and has two eyes."
+    },
+    {
+     "start": "E19 D18 B19 B18 C19 D19 A16 A17 D17 F19 G18 A19",
+     "moves": "A18 A15 A14 C18 A16 A19",
+     "caption": "Taking an outside liberty costs Black two moves. Black 15 and Black 17 capture White 14, and Black 17 ataris White's whole group, but White 16 has already put three stones in atari, and White 18 captures them first: two eyes."
+    }
+   ],
+   "text": [
+    "There is no ko here. White 12 captured nothing, and Black must capture it with Black 13 in Diagram 2: any other move lets White capture the stones at B19 and C19 by playing C18, and live. White 14 is forced too: connecting at C18 instead would put White's whole group in atari at E19, and Black would capture it all. But it is enough: Black cannot stop White 16 and White 18.",
+    "The bent-four try in Diagram 3 fails because White still has outside liberties at A16 and E19, so White never has to fight the ko. Each liberty costs Black two moves to fill, as in Diagram 4, while White needs one move to settle the corner.",
+    "Even if Black 13 started a ko, Black would have taken first: KO+, never KO−. The solver says ALIVE even when Black may ignore the ko ban, and even though its narrow area favours Black: it counts A14 as Black's wall, which turns White 14's capture into a ko. Both areas give ALIVE after White 16 in Diagram 3 and after White 18 in Diagram 4. The wider area ran out of budget after White 16 in Diagram 2, where White simply captures three."
+   ]
+  },
+  {
+   "case": "c061",
+   "headline": "Same fight as leaf c060: the blocking stone at H17 changes nothing. White answers Black's capture by taking the stone at A16 and lives without a ko.",
+   "diagrams": [
+    {
+     "start": "",
+     "moves": "E19 D18 B19 B18 C19 D19 A16 A17 D17 F19 H17 A19",
+     "caption": "The tree's line, with Black 11 at H17. White 12 ataris Black 3 and Black 5 but is in atari itself, as is Black 7. The tree marks the leaf S[KO-]; the solver said ALIVE."
+    },
+    {
+     "start": "E19 D18 B19 B18 C19 D19 A16 A17 D17 F19 H17 A19",
+     "moves": "A18 A15 pass C18 pass A19",
+     "caption": "As in leaf c060: Black 13 captures the stone at A19, White 14 captures the stone at A16 instead of retaking, and Black cannot recapture. With Black 15 and Black 17 played elsewhere, White 16 ataris Black 13 and the stones at B19 and C19 together, and White 18 captures three: two eyes."
+    },
+    {
+     "start": "E19 D18 B19 B18 C19 D19 A16 A17 D17 F19 H17 A19",
+     "moves": "A18 A15 A19 C18 B19 A19 A18 C19",
+     "caption": "The bent-four try fails as in leaf c060. Black 15 connects at A19 and White 16 captures four stones. After Black 19 captures White 18, White 20 does not need the ko: Black cannot connect at A19 while White keeps outside liberties at A16 and E19, so White captures two there next."
+    }
+   ],
+   "text": [
+    "The fight is decided in the corner, as in leaf c060, so Black 11 at H17 instead of G18 makes no difference. Black must capture with Black 13; White 14 captures instead of retaking, and nothing stops White 16 and White 18 (Diagram 2). The bent four fails because White keeps outside liberties at A16 and E19 (Diagram 3); each costs Black two moves to fill, and White needs one.",
+    "There is no ko to label: White 12 captured nothing, and if Black 13 started one, Black would have taken first: KO+, never KO−. The solver gives ALIVE after White 14 and after every Black move there, even when Black may ignore the ko ban, in a narrow area that favours Black. Both areas give ALIVE after White 16 in Diagram 3. The wider area stayed undecided even at two million nodes, apparently for lack of budget."
+   ]
+  },
+  {
+   "case": "c062",
+   "headline": "Same fight as leaf c060: the blocking stone at H18 changes nothing. White answers Black's capture by taking the stone at A16 and lives without a ko.",
+   "diagrams": [
+    {
+     "start": "",
+     "moves": "E19 D18 B19 B18 C19 D19 A16 A17 D17 F19 H18 A19",
+     "caption": "The tree's line, with Black 11 at H18. White 12 ataris Black 3 and Black 5 but is in atari itself, as is Black 7. The tree marks the leaf S[KO-]; the solver said ALIVE."
+    },
+    {
+     "start": "E19 D18 B19 B18 C19 D19 A16 A17 D17 F19 H18 A19",
+     "moves": "A18 A15 pass C18 pass A19",
+     "caption": "As in leaf c060: Black 13 captures the stone at A19, White 14 captures the stone at A16 instead of retaking, and Black cannot recapture. With Black 15 and Black 17 played elsewhere, White 16 ataris Black 13 and the stones at B19 and C19 together, and White 18 captures three: two eyes."
+    },
+    {
+     "start": "E19 D18 B19 B18 C19 D19 A16 A17 D17 F19 H18 A19",
+     "moves": "A18 A15 A19 C18 B19 A19 A18 C19",
+     "caption": "The bent-four try fails as in leaf c060. Black 15 connects at A19 and White 16 captures four stones. After Black 19 captures White 18, White 20 does not need the ko: Black cannot connect at A19 while White keeps outside liberties at A16 and E19, so White captures two there next."
+    }
+   ],
+   "text": [
+    "The fight is decided in the corner, as in leaf c060, so Black 11 at H18 instead of G18 makes no difference. Black must capture with Black 13; White 14 captures instead of retaking, and nothing stops White 16 and White 18 (Diagram 2). The bent four fails because White keeps outside liberties at A16 and E19 (Diagram 3); each costs Black two moves to fill, and White needs one.",
+    "There is no ko to label: White 12 captured nothing, and if Black 13 started one, Black would have taken first: KO+, never KO−. One reviewer finds Black cannot kill at the leaf in the narrow area, even when Black may ignore the ko ban. The other rests the verdict on reading: the wider area could not decide the leaf, and the narrow area counts A14 as Black's wall, which turns White 14's capture into a ko. Both areas give ALIVE after White 16 in Diagram 3, against every Black move."
+   ]
+  },
+  {
+   "case": "c063",
+   "headline": "Same fight as leaf c060: the blocking stone at J18 changes nothing. White answers Black's capture by taking the stone at A16 and lives without a ko.",
+   "diagrams": [
+    {
+     "start": "",
+     "moves": "E19 D18 B19 B18 C19 D19 A16 A17 D17 F19 J18 A19",
+     "caption": "The tree's line, with Black 11 at J18. White 12 ataris Black 3 and Black 5 but is in atari itself, as is Black 7. The tree marks the leaf S[KO-]; the solver said ALIVE."
+    },
+    {
+     "start": "E19 D18 B19 B18 C19 D19 A16 A17 D17 F19 J18 A19",
+     "moves": "A18 A15 pass C18 pass A19",
+     "caption": "As in leaf c060: Black 13 captures the stone at A19, White 14 captures the stone at A16 instead of retaking, and Black cannot recapture. With Black 15 and Black 17 played elsewhere, White 16 ataris Black 13 and the stones at B19 and C19 together, and White 18 captures three: two eyes."
+    },
+    {
+     "start": "E19 D18 B19 B18 C19 D19 A16 A17 D17 F19 J18 A19",
+     "moves": "A18 A15 A19 C18 B19 A19 A18 C19",
+     "caption": "The bent-four try fails as in leaf c060. Black 15 connects at A19 and White 16 captures four stones. After Black 19 captures White 18, White 20 does not need the ko: Black cannot connect at A19 while White keeps outside liberties at A16 and E19, so White captures two there next."
+    }
+   ],
+   "text": [
+    "The fight is decided in the corner, as in leaf c060, so Black 11 at J18 instead of G18 makes no difference. Black must capture with Black 13; White 14 captures instead of retaking, and nothing stops White 16 and White 18 (Diagram 2). The bent four fails because White keeps outside liberties at A16 and E19 (Diagram 3); each costs Black two moves to fill, and White needs one.",
+    "There is no ko to label: White 12 captured nothing, and if Black 13 started one, Black would have taken first: KO+, never KO−. The solver gives ALIVE at the leaf even when Black may ignore the ko ban, in a narrow area that favours Black: it counts A14 and every outside point as Black's. Both areas give ALIVE after White 16 in Diagram 3. After White 14 the wider area stayed undecided even at two million nodes, apparently because the open right side is too big for its budget."
+   ]
+  }
+ ]
+}

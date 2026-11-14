@@ -1,0 +1,70 @@
+{
+ "problem": "15220",
+ "cards": [
+  {
+   "case": "c078",
+   "headline": "White has taken the ko first and Black has no local threat, so Black needs one ko threat more than White: S[KO-], not S[KO+].",
+   "diagrams": [
+    {"start": "", "moves": "A16 A18 B18 A17 D18 D19 C19 E19 A19 B19", "caption": "The tree's line, marked S[KO+]; the solver said KO−. Black 9 puts White 2 and White 4 in atari, and White 10 captures it: White takes the ko first. Black's whole group is in atari at B17."},
+    {"start": "A16 A18 B18 A17 D18 D19 C19 E19 A19 B19", "moves": "A19! pass B17", "caption": "With one threat more than White: Black 11 retakes after a threat elsewhere, White has no threat left, so White 12 is elsewhere, and Black 13 captures two stones. Two eyes: alive."},
+    {"start": "A16 A18 B18 A17 D18 D19 C19 E19 A19 B19", "moves": "A19! B19! pass B17", "caption": "With equal threats: Black 11 and White 12 each retake after a threat elsewhere. Black has no threat left, so Black 13 is elsewhere, and White 14 captures the whole group."}
+   ],
+   "text": [
+    "White 10 in Diagram 1 made the first capture, so Black cannot retake at once, and Black at B17 is suicide while White 2 and White 4 keep a liberty. White 6 and White 8 are joined to the wall, which has about eight liberties, so Black has no local threat and must find the first threat elsewhere.",
+    "Black lives with one threat more than White (Diagram 2) and dies with equal threats (Diagram 3). That is KO−, besogo's \"White takes first\"; the site's tutorial would allow KO+ only if Black had a local threat. Both reviewers and the solver's ko tables in both of its areas say KO−. The description's call to fight for points changes nothing: the group's life is at stake in a direct ko. The author marked all five ko leaves in this tree S[KO+], whoever took first; the sign is probably besogo's default, left unchanged."
+   ]
+  },
+  {
+   "case": "c079",
+   "headline": "The classic bent four in the corner: only White can start the ko, whenever it likes. The tree says S[DEAD]; besogo's own label is S[BENT4].",
+   "diagrams": [
+    {"start": "", "moves": "A16 A18 B18 A17 D19 E19 C19 A19", "labels": {"D18": "a"}, "caption": "The tree's line, marked S[DEAD]; the solver said BENT4. Black to play. White's three corner stones have two liberties, at B17 and B19; Black's group has those and a."},
+    {"start": "A16 A18 B18 A17 D19 E19 C19 A19", "moves": "B19 D18 B17 A18", "caption": "Black 9 is atari, but White 10 fills Black's outside liberty. Black 11 must take three stones and is left with a straight three, which White 12 kills. Black 9 at B17 comes to the same."},
+    {"start": "A16 A18 B18 A17 D19 E19 C19 A19", "moves": "pass D18 pass B19 B17 A18 A19 B19", "caption": "If Black waits, White 10 fills Black's outside liberty, and whenever White chooses, White 12 throws in. Black 13 captures four stones, White 14 takes the 1-2 point, Black 15 is forced, and White 16 takes the ko first. Black's whole group is in atari at A17."}
+   ],
+   "text": [
+    "Black cannot settle the corner: Black's ataris inside die at once (Diagram 2), and any other Black move leaves the same shape. Only White can start the ko (Diagram 3), whenever it chooses, after removing Black's ko threats; Black can neither start it nor get rid of it. White 12 is the only throw-in that works: at B17, Black takes four stones and lives. White 16 puts the whole group in atari, so the ko decides the group. White's outer wall has plenty of liberties, so there is no capturing race outside.",
+    "The choice is only which label this leaf carries: S[DEAD], the result under the Japanese rules the SGF names, as the site's tutorial says for this shape, or S[BENT4], besogo's exact label, ranked just above DEAD. Neither the tree nor the solver misreads the position. Black must live, so either label marks Black 7 as a failure; Black's other choice for that move, a in Diagram 1, leads to the tree's seki, S[ALIVE]. Nothing else in the tree changes, and the site's grading does not change either."
+   ]
+  },
+  {
+   "case": "c080",
+   "headline": "White took the ko last, but Black has a local ko threat at E19, so Black retakes without using a threat elsewhere: S[KO+] is right.",
+   "diagrams": [
+    {"start": "", "moves": "C19 D19 A16 A18 B18 A17 A19 B19", "caption": "The tree's line, marked S[KO+]; the solver said KO−. White 8 has just captured Black 7 and taken the ko, but White 2 has only two liberties."},
+    {"start": "C19 D19 A16 A18 B18 A17 A19 B19", "moves": "E19 D18 A19 pass B17", "caption": "With no threats on either side. Black 9 is atari on White 2, a local ko threat. White 10 answers, and Black 11 retakes without a threat elsewhere. White now needs the first threat; having none, White 12 is elsewhere, and Black 13 captures two stones: alive."},
+    {"start": "C19 D19 A16 A18 B18 A17 A19 B19", "moves": "E19 A19 B17 A18 D18 F19 A17 D19 A19", "caption": "White's sharpest answer: White 10 connects, giving up four stones to aim at a bent four. Black 11 takes them, and after White 12 Black 13 captures White 2, keeping an outside liberty. Then, for example, White 16 takes Black 9, and Black 17 captures White 12: two eyes, alive."}
+   ],
+   "text": [
+    "The tree is right, with medium confidence. Black 9 in Diagram 2 is a local threat: unless White connects the ko, Black retakes without spending a threat elsewhere, so Black wins whenever it has as many threats as White: KO+. Connecting, White's sharpest answer, gives up four stones (Diagram 3), and Black still lives.",
+    "The solver's KO− comes from its search areas, which cut Black's resources short in Diagram 3: the narrow one treats F19 as a wall, and the wider one gives White a false ko on the right. In a reviewer's model with the right side made solid, the solver agrees with KO+."
+   ]
+  },
+  {
+   "case": "c081",
+   "headline": "Black should ignore White's atari and the capture: White can then only make seki or fill a shared liberty, letting Black take the ko first. S[KO+] is right.",
+   "diagrams": [
+    {"start": "", "moves": "D19 E19 A16 B18 B19 A18 D18", "caption": "The tree's line, marked S[KO+] with the comment \"Your opponent can choose to settle for a seki or fight a ko later\"; the solver said KO−. White to play."},
+    {"start": "D19 E19 A16 B18 B19 A18 D18", "moves": "A19 pass C19 pass A17 B19", "caption": "White 8 is White's only try. Black 9 ignores it, and Black 11 ignores White 10's capture too. To attack, White 12 must fill a liberty Black shares with White's corner, and Black 13 retakes with no threat needed: White's four stones are in atari, and White needs the first threat. White 12 at B19 instead connects: seki."},
+    {"start": "D19 E19 A16 B18 B19 A18 D18", "moves": "A19 A17 C19", "caption": "The analysis's line: Black 9 answers, and White 10 captures Black 5, taking the ko first. Black's group is in atari at B17, so Black needs the first threat: KO−. Black 9 at B17 is the same; at C19 it dies to a four-stone sacrifice."}
+   ],
+   "text": [
+    "Black should ignore White 8 (Diagram 2): then Black wins whenever it has as many threats as White, KO+, as the comment says. Answering it, as the analysis did, lets White take the ko first (Diagram 3): KO−. S[10kKO] would also describe the shape, but KO+ matches the threat counts, so the tree needs no change.",
+    "The solver's KO− comes from its search without threats: when both sides pass after White 8, its end rule counts Black 5, left in atari, as a kill. The analysis and one reviewer said KO−; the other reviewer and both judges found KO+, checking with the solver in a corner-only area. In the official areas its search with one threat each stays undecided."
+   ]
+  },
+  {
+   "case": "c082",
+   "headline": "White has taken the ko first, and its stones at D18 and E19 are joined to the wall, so Black has no local threat: S[KO-], not S[KO+].",
+   "diagrams": [
+    {"start": "", "moves": "D19 E19 B18 D18 C19 A17 A16 A18 A19 B19", "caption": "The tree's line, marked S[KO+]; the solver said KO−. Black 9 puts White 6 and White 8 in atari without capturing, and White 10 captures it: White takes the ko first. Black's whole group, Black 1 included, is in atari at B17."},
+    {"start": "D19 E19 B18 D18 C19 A17 A16 A18 A19 B19", "moves": "A19! pass B17", "caption": "With one threat more than White: Black 11 retakes after a threat elsewhere, White has no threat left, so White 12 is elsewhere, and Black 13 captures two stones. Two eyes: alive."},
+    {"start": "D19 E19 B18 D18 C19 A17 A16 A18 A19 B19", "moves": "A19! B19! pass B17", "caption": "With equal threats: Black 11 and White 12 each retake after a threat elsewhere. Black has no threat left, so Black 13 is elsewhere, and White 14 captures the whole group."}
+   ],
+   "text": [
+    "After White 10 in Diagram 1, Black cannot retake at once, and Black at B17 is suicide while White 6 and White 8 keep a liberty. White 2 and White 4 are joined to the wall, so no Black move nearby threatens anything: Black must find the first threat elsewhere. Black lives with one threat more than White (Diagram 2) and dies with equal threats (Diagram 3).",
+    "That is KO−, besogo's \"White takes first\". Both reviewers agree, and so do the solver's ko tables in both of its areas. It is a direct ko, like leaf c078: no approach move, no double ko, no ten-thousand-year ko, and the description's call to fight for points changes nothing. As there, the S[KO+] is probably besogo's default sign."
+   ]
+  }
+ ]
+}

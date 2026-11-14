@@ -1,0 +1,19 @@
+{
+ "problem": "9704",
+ "cards": [
+  {
+   "case": "c029",
+   "headline": "White takes the ko first and each side has one local threat, so Black needs one ko threat more: KO−. The solver's search area missed White's threat.",
+   "diagrams": [
+    {"start": "", "moves": "D19 C17 E18 C19 D17", "caption": "The tree's line. After Black 5 the tree marks the leaf S[KO-]; the solver said KO+. White is to play."},
+    {"start": "D19 C17 E18 C19 D17", "moves": "E19 A18 A17 D19 C16 B15 E19", "caption": "White 6 must take the ko. Black 7 is Black's only local threat and White 8 the only answer; Black 9 retakes. White 10 cuts, White's only local threat; Black 11 answers and White 12 retakes. Black now needs a threat elsewhere and wins the ko only with one more than White."},
+    {"start": "D19 C17 E18 C19 D17 E19 A18 A17 D19", "moves": "C16 E19 B15", "labels": {"A14": "x", "C14": "x", "B13": "x"}, "caption": "White 10 is a real threat. If Black 11 connects the ko instead of answering, White 12 ataris B16; White captures it and lives with eyes at B16 and A18. White dies only in the solver's search area, where the points marked x are Black wall, so a Black stone at A15 cannot be captured."}
+   ],
+   "text": [
+    "The two local threats cancel, so the tree's S[KO-] is right. Black gains nothing by holding Black 7 back: White can use its threats elsewhere first and save the cut for last. A reviewer's check on the wider area, with everything outside it as Black wall, agrees and finds no second White threat. That setting can only favour Black; a larger region was too big to solve.",
+    "In the solver's search area a Black stone at A15 or C15 cannot be captured, so there the cut never works (Diagram 3) and the solver counts only Black 7: KO+. The wider area sees the cut but ran out of budget, so the solver fell back to the search area's sign.",
+    "The one doubt points the other way: on an open board, White's pushes such as C15 could become escape threats, worse than KO− for Black. That is a convention question (the outside counts as Black's) and gives no support to KO+."
+   ]
+  }
+ ]
+}

@@ -1,0 +1,19 @@
+{
+ "problem": "15400",
+ "cards": [
+  {
+   "case": "c109",
+   "headline": "The corner alone has one eye, but A15 lets Black run along the edge to its stones at B12 and C12. The solver's search area walled that path off.",
+   "diagrams": [
+    {"start": "", "moves": "D19 A18 B19 A16 C19 A15", "caption": "The tree's line. After Black 6 the tree marks the leaf S[ALIVE]; the solver said DEAD. White is to play."},
+    {"start": "D19 A18 B19 A16 C19 A15", "moves": "B18 A13 B14 A14", "labels": {"A12": "a", "B13": "b"}, "caption": "The main line from the leaf. Black 8 jumps down the edge and Black 10 joins it to the corner. a and b are miai: whichever White takes, Black takes the other and connects to B12."},
+    {"start": "D19 A18 B19 A16 C19 A15", "moves": "B13 A13", "caption": "If White 7 starts at B13, Black must answer with Black 8: then a White cut at A14 or A12 is self-atari. Black at A14 instead lets White start to seal the edge, a line the solver did not settle."},
+    {"start": "D19 A18 B19 A16 C19", "moves": "B18 A15", "caption": "If Black 6 connects at B18 instead of taking A15, White 7 blocks the edge and the corner alone has one eye: dead."}
+   ],
+   "text": [
+    "The tree is right. After White 5 the corner alone has one eye, which the solver gets right, but Black 6 in Diagram 1 opens the first line: Black runs along the edge to its stones at B12 and C12, which stand on an empty lower left. Any White stone put in the way is captured or cut off, and a and b in Diagram 2 are miai. Against White at b first, Black must answer as in Diagram 3.",
+    "The solver said DEAD only because its search area counts a, b and everything below them as White's wall. A reviewer's model with that corridor open refutes every White move at the leaf, and as a check still finds Black dead when White gets A15 (Diagram 4)."
+   ]
+  }
+ ]
+}

@@ -1,0 +1,36 @@
+{
+ "problem": "15401",
+ "cards": [
+  {
+   "case": "c110",
+   "headline": "White has taken the ko first and neither side has a local threat, so Black lives only with one threat more than White: KO−, not KO+.",
+   "diagrams": [
+    {
+     "start": "",
+     "moves": "C19 D19 B18 A17 A16 A18 A19 B19",
+     "caption": "The tree's line. White 8 captures Black 7 and so takes the ko first; Black is to play. The tree marks this leaf S[KO+]; the solver said KO−."
+    },
+    {
+     "start": "C19 D19 B18 A17 A16 A18 A19 B19",
+     "moves": "A19! pass B17",
+     "caption": "With one threat more than White, Black 9 retakes after a threat elsewhere. White has no threat left and plays elsewhere with 10, and Black 11 captures two stones: two eyes, alive."
+    },
+    {
+     "start": "C19 D19 B18 A17 A16 A18 A19 B19",
+     "moves": "pass A19 B17 A18 A19 B19",
+     "caption": "Black has no threat left, so Black 9 is played elsewhere. White 10 connects, giving up four stones, and Black 11 captures them: an empty bent four in the corner. White 12 must take the vital point at once, Black 13 is forced, and White 14 captures: a second ko, which White has again taken first."
+    },
+    {
+     "start": "C19 D19 B18 A17 A16 A18 A19 B19 pass A19 B17 A18 A19 B19",
+     "moves": "pass A19 A17 A19",
+     "caption": "Black has no threat for the second ko either, so Black 15 is played elsewhere. White 16 connects, giving up three stones, Black 17 captures them, and White 18 takes the vital point of the bent three: dead."
+    }
+   ],
+   "text": [
+    "White 8 has taken the ko first, so Black must find the first threat, and neither side has a local one: Black B17 at the leaf is self-atari, and nothing else nearby threatens. Once Black retakes, White cannot save its two stones: White B17 would be suicide, and White A15 lets Black capture anyway. So Black lives with one threat more than White (Diagram 2) and dies with equal threats (Diagrams 3 and 4).",
+    "White 10 in Diagram 3 is White's only good move: an atari at A15 would let Black retake without a threat. After Black 11 captures four, any White move but White 12 lets Black live, and Black 13 is forced. White 14 takes the second ko first too, so saving threats for it does not help: in either ko Black needs one threat more than White, which is KO−. Not S[KO+2], which would need Black to take the second ko first, and not S[BENT4], since White cannot delay White 12.",
+    "Both reviewers say KO−, as do the solver's ko tables: at the leaf and in the second ko, Black fails with equal threats and lives with one more. A wider search area left the equal case undecided, but it cannot even prove the dead bent three in Diagram 4, so that is a budget limit, and its extra points give Black nothing. All 46 ko leaves in the L Group series are KO+, besogo's default, 16 of them, like this one, ending with White's capture: the label was probably never chosen."
+   ]
+  }
+ ]
+}

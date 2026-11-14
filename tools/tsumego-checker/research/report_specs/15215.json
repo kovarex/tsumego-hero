@@ -1,0 +1,36 @@
+{
+ "problem": "15215",
+ "cards": [
+  {
+   "case": "c075",
+   "headline": "White took the ko first at B19 and neither side has a local threat, so Black lives only with one threat more than White: KO−, not KO+.",
+   "diagrams": [
+    {
+     "start": "",
+     "moves": "A16 A18 A19 D18 C19 B19",
+     "caption": "The tree's line. White 6 captures Black 3 and so takes the ko first; the tree marks the leaf S[KO+]."
+    },
+    {
+     "start": "A16 A18 A19 D18 C19 B19",
+     "moves": "A19! pass B17",
+     "caption": "With one threat more than White, Black 7 retakes after a threat elsewhere. White has no threat left and cannot save its two stones at A17 and A18, since White B17 would be suicide. White 8 is elsewhere and Black 9 captures them: two eyes, alive."
+    },
+    {
+     "start": "A16 A18 A19 D18 C19 B19",
+     "moves": "pass A19 B17 A18 A19 B19",
+     "caption": "With equal threats Black runs out first, and Black 7 is elsewhere. White 8 fills the ko, giving up four stones, and Black 9 captures them: a bent four. White 10 must place at once or Black lives, Black 11 is the only move that keeps the ko, and White 12 takes this second ko first too."
+    },
+    {
+     "start": "A16 A18 A19 D18 C19 B19 pass A19 B17 A18 A19 B19",
+     "moves": "pass A19 A17 A19",
+     "caption": "Black has no threat for the second ko either, and Black 13 is elsewhere. White 14 fills, giving up three stones, Black 15 captures them, and White 16 takes the vital point of the bent three: dead."
+    }
+   ],
+   "text": [
+    "White 6 captures Black 3, so Black needs the first threat. Black has no local one: its group has two liberties, B17 and A15, Black B17 is self-atari, and White's wall has nine liberties. White has no local threat either. So Black lives only with at least one threat more than White (Diagram 2). With equal threats White wins (Diagrams 3 and 4): White 10 and White 12 start a second ko, but White takes that one first too, so it gives Black nothing extra. That is plain KO−.",
+    "Black's waiting moves on the outside, instead of Black 7 in Diagram 3, do not help. With two outside liberties when Black 9 captures, the bent four would live, but White fills at A19 at once and can always hold Black to one; the solver gives KO− after each such move. The tree's KO+ would fit only the position after Black 7 in Diagram 2, or White approaching at A15 instead of White 8 in Diagram 3, a White mistake that lets Black retake for free.",
+    "Both reviewers and the solver agree. One solver result, the leaf at equal threats in the wider area, stayed undecided for lack of budget, but each Black alternative to retaking fails at equal threats there. The sign was probably never chosen: besogo's plain Ko button saves KO+, and the L Group series never uses KO−; problem 15216 has the same slip. The tree's comment on the seki line calls this ko too dangerous, which fits KO−."
+   ]
+  }
+ ]
+}

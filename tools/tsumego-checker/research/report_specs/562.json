@@ -1,0 +1,20 @@
+{
+ "problem": "562",
+ "cards": [
+  {
+   "case": "c005",
+   "headline": "Black takes the ko first and keeps a local ko threat at A19 in reserve, so White needs two more threats than Black: S[KO+2], not S[KO+].",
+   "diagrams": [
+    {"start": "", "moves": "F19 B17 D18 C18 E19 A17", "caption": "The tree's line. After White 6 the tree marks the leaf S[KO+]. Black is to play and can take the ko at D18 first; White 4's capture was not a ko capture."},
+    {"start": "F19 B17 D18 C18 E19 A17", "moves": "D18 E18! A19 B19 D18 pass E18", "caption": "Black 7 takes the ko, and White 8 retakes after a threat elsewhere. Black 9 is a local threat; White 10 answers it, and Black 11 retakes with no threat elsewhere. White has no second threat and plays elsewhere with White 12; Black 13 connects and White is dead."},
+    {"start": "F19 B17 D18 C18 E19 A17", "moves": "D18 E18! A19 D18 B19", "caption": "If White 10 connects the ko instead of answering Black 9, Black 11 kills; White's outside liberty at A16 does not help."},
+    {"start": "F19 B17 D18 C18 E19 A17", "moves": "A19 B19 D18", "caption": "Played before the ko is taken, the exchange of Black 7 for White 8 spends Black's threat. After Black 9 takes the ko, it is a plain KO+."}
+   ],
+   "text": [
+    "Black 7 in Diagram 2 takes the ko first, which alone would give KO+. Every local White answer dies, so White must retake after a threat elsewhere. But then Black 9 is a local ko threat: if White ignores it and connects the ko, Black 11 in Diagram 3 kills. So White 10 in Diagram 2 must answer, and Black 11 retakes without spending an outside threat. White dies there although it had one threat more than Black.",
+    "White has no local threat to cancel Black's threat at A19; both reviewers looked and found none. So White needs two more ko threats than Black to live: S[KO+2]. The threat must be at A19: White's outside liberty at A16 means a threat at B19 does not work. Black must also keep it in reserve: played before the ko is taken, it leaves a plain KO+ (Diagram 4).",
+    "The solver confirms each step, both reviewers agree, and the site's tutorial counts local threats in the label. Some searches in a wider area stayed undecided, but those positions die in the solver's search area and by the reviewers' reading."
+   ]
+  }
+ ]
+}

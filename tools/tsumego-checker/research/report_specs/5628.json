@@ -1,0 +1,19 @@
+{
+ "problem": "5628",
+ "cards": [
+  {
+   "case": "c019",
+   "headline": "With E16 open, Black's ko capture is no atari: White ignores it and retakes for free, so Black must find the first threat. S[KO+] is wrong; S[A-1KO+] or S[KO-].",
+   "diagrams": [
+    {"start": "", "moves": "B18 A17 C18 A18 C19 B19", "caption": "The tree's line. White 6 puts Black's four stones in atari at D18 and is itself in atari at A19. The tree marks the leaf S[KO+]; the solver said KO−. Black to play."},
+    {"start": "B18 A17 C18 A18 C19 B19", "moves": "A19 pass E16 B19 A19! pass D18", "caption": "Black 7 takes the ko, but White's group still has the liberty at E16, so White plays elsewhere with White 8. Black 9 fills E16, and White 10 retakes without a threat. With one threat more than White, Black 11 retakes, and White has no threat left. White's group is in atari, and after White 12 elsewhere, Black 13 captures it."},
+    {"start": "B18 A17 C18 A18 C19 B19", "moves": "A19 pass E16 B19 pass D18", "caption": "Without a threat, Black cannot retake and plays elsewhere with Black 11. White 12 captures Black's four stones and lives."}
+   ],
+   "text": [
+    "White 6 is not a capture, so nobody has taken the ko yet. Black 7 in Diagram 2 is Black's only move: anything else lets White capture the four stones at D18, and Black's own move there is suicide. But while E16 is open, Black 7 is no atari. White plays elsewhere with White 8, Black 9 has to fill E16, and White 10 retakes without a threat. White has nothing better: a move at D18 is self-atari, and a push at E16 only forces a block that plays Black's approach move for him.",
+    "After White 10, Black is under the ko ban with four stones in atari and must find the first threat; neither side has a local one. So Black kills only with one threat more than White (Diagram 2); with no threats on either side, White lives (Diagram 3). S[KO+] says White must find the first threat, which would be true only with E16 already filled: the solver finds a real KO+ there, and KO− at the leaf in both search areas. The analysis and both reviewers agree that S[KO+] is wrong.",
+    "Both options need the same threats; they count Black 9 differently. S[A-1KO+] reads it as one approach move, Black having taken the ko first with Black 7; besogo's text for that label fits this leaf exactly. S[KO-] counts it into the threats: White 10 retakes for free, so Black must find the first threat. The analysis and the first reviewer write KO−; the second reviewer writes A−1KO+ but accepts KO− as a fallback, since the Tsumego Dictionary trees use only plain KO+ and KO−. The site's grading does not change under either."
+   ]
+  }
+ ]
+}

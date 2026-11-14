@@ -1,0 +1,36 @@
+{
+ "problem": "11278",
+ "cards": [
+  {
+   "case": "c050",
+   "headline": "White keeps two liberties after Black's retake, so Black must approach, and White has a local threat: Black needs three threats more than White. S[KO-3], not S[KO-].",
+   "diagrams": [
+    {
+     "start": "",
+     "moves": "B18 A18 B17 A17 C18 B19 C19 D19 A19 A16 F19 B19",
+     "caption": "The tree's line, which ends with S[KO-]. Black 9 took the ko, and White 12 retakes it, leaving Black 1, 3, 5 and 7 in atari. Black to play."
+    },
+    {
+     "start": "B18 A18 B17 A17 C18 B19 C19 D19 A19 A16 F19 B19",
+     "moves": "A19! pass A15 B19 pass C17",
+     "caption": "One threat more than White, which is what S[KO-] means. Black 13 retakes with Black's one threat, and White 14 is elsewhere, but White still has two liberties. Black 15 approaches, White 16 retakes without needing a threat, Black has no threat left (Black 17 is elsewhere), and White 18 captures four stones and lives."
+    },
+    {
+     "start": "B18 A18 B17 A17 C18 B19 C19 D19 A19 A16 F19 B19",
+     "moves": "A19! F18 G19 B19 A19! pass A15 B19 pass C17",
+     "caption": "Two threats. Black 13 retakes with the first. White 14 puts Black 11 in atari, a local threat that Black 15 must answer, and White 16 retakes. Black 17 retakes with the second threat (White 18 is elsewhere) and Black 19 approaches. White 20 retakes, Black has no threat left (Black 21 is elsewhere), and White 22 captures four stones and lives."
+    },
+    {
+     "start": "B18 A18 B17 A17 C18 B19 C19 D19 A19 A16 F19 B19",
+     "moves": "A19! F18 G19 B19 A19! pass A15 B19 A19! pass C17",
+     "caption": "Three threats. As in Diagram 3 up to White 20; then Black 21 retakes with the third threat, White has none (White 22 is elsewhere), and Black 23 captures White's group: dead."
+    }
+   ],
+   "text": [
+    "After White 12, Black 1, 3, 5 and 7 are in atari, so Black must retake at A19 with a threat. Even then White keeps two liberties, A15 and C17, and neither side can play at C17. So Black must approach first, and White retakes for free (Diagram 2). S[KO-] says one threat more than White is enough; it is not. The author seems to label each ko by who captured last, but besogo has approach-ko labels and the site's tutorial counts local threats, so this is a mislabel, not a convention.",
+    "Black 11 also gives White a local threat. White 14 in Diagram 3 puts it in atari, threatening to capture it and free White's group. Black 15 is the best answer: ignoring the threat is worse, and capturing White 14 at F17 leaves White a second local threat. White can use the threat only while its group has two liberties, and Black's first retake always gives that chance. No local threat for Black, and no second one for White, was found. So two threats fail (Diagram 3) and three kill (Diagram 4): KO−3.",
+    "The analysis (high confidence) and both reviewers say KO−3. The solver did too, but from a search-area table that is wrong here, so its agreement is a coincidence. The count rests on solver checks along these lines and on reading; the wider area's searches at the leaf and after Black's first retake stay undecided. It assumes Black's outside stones are safe. In approach-ko notation the same count is S[A-1KO-2]; S[KO-] is wrong either way. With S[KO-3] on this leaf alone, the site's grading does not change."
+   ]
+  }
+ ]
+}

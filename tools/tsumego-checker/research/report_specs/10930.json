@@ -1,0 +1,34 @@
+{
+ "problem": "10930",
+ "cards": [
+  {
+   "case": "c046",
+   "headline": "White takes the ko first and can ignore Black's first retake, because of the liberty at F19. Black needs two threats more than White: KO−2, not KO−.",
+   "diagrams": [
+    {"start": "", "moves": "B18 C18 C19 D19 A19", "labels": {"F19": "X"}, "caption": "The tree's line, which ends with S[KO-]; White to play. X is the author's mark: the outside liberty of White 4 and the two stones it joins."},
+    {"start": "B18 C18 C19 D19 A19", "moves": "B19 C19! pass F19 B19", "caption": "White 6 takes the ko first. Black 7 retakes after a threat, but White's three stones still have two liberties, so White 8 plays elsewhere. Black 9 fills the outside liberty, and White 10 retakes without a threat."},
+    {"start": "B18 C18 C19 D19 A19 B19 C19! pass F19 B19", "moves": "C19! pass D18", "caption": "From the end of Diagram 2. With a second threat Black 11 retakes, White has no threat left, and Black 13 captures three stones: dead."},
+    {"start": "B18 C18 C19 D19 A19 B19 C19! pass F19 B19", "moves": "pass C19", "caption": "From the end of Diagram 2. With only one threat, Black has nothing left, and White 12 connects and lives."}
+   ],
+   "text": [
+    "Black 5 in Diagram 1 captures nothing, so White takes the ko first with White 6 in Diagram 2. Black 7 retakes after a threat, but White's stones still have the liberty at X, so White can play elsewhere. Black 9 fills it and White 10 retakes without a threat. This is now the main line's ko (leaf c047), and Black has already spent one threat.",
+    "So Black needs two threats more than White: with the second, Black 13 kills (Diagram 3); with only one, White 12 connects and lives (Diagram 4). One threat more, which is what KO− means, is not enough. This is the site's KO−2, which the tutorial says becomes a direct ko (KO−) after the player has won it once. The solver agrees: at the leaf one threat more fails in both search areas and two win in the narrower one; the wider one ran out of budget there, but after White 6 both give KO−2.",
+    "The approach-ko label S[A-1KO-] would also describe this leaf; plain S[KO-] is wrong either way. Separately, White 4 is a mistake: the analysis and the solver find that White lives outright with A18 instead, which does not change this leaf's label."
+   ]
+  },
+  {
+   "case": "c047",
+   "headline": "Black's F19 is an atari, not a capture. White takes the ko first, so Black must find the first threat: KO−, not KO+.",
+   "diagrams": [
+    {"start": "", "moves": "C19 B19 B18 C18 A19 D19 F19", "caption": "The tree's line, which ends with S[KO+]. Black 5 captures White 2, and Black 7 puts White 6 and the two stones it joins in atari. White to play."},
+    {"start": "C19 B19 B18 C18 A19 D19 F19", "moves": "B19 C19! pass D18", "caption": "White 8 must take the ko at once. With one threat more than White, Black 9 retakes, White has no threat left, and Black 11 captures three stones: dead."},
+    {"start": "C19 B19 B18 C18 A19 D19 F19", "moves": "B19 pass C19", "caption": "With equal threats Black has nothing after White 8, and White 10 connects and lives. KO+ would mean Black wins here."}
+   ],
+   "text": [
+    "After Black 7 in Diagram 1, White's three stones are in atari, and so is Black 1. White must capture with White 8 in Diagram 2 at once; any other move lets Black capture and kill. So White takes the ko first. Neither side has a local threat: after White 8, Black's A18 and D18 are suicide, and after Black's retake every local White move dies.",
+    "With one threat more Black kills (Diagram 2); with equal threats White lives (Diagram 3). That is a plain direct ko where White takes first: KO− by the site's tutorial. KO+ would need Black to have just taken the ko. The solver gives KO− here in both search areas. After Black's first move at C19 it gives KO− too (the wider area was undecided), so this is the problem's real result.",
+    "Change this leaf only together with leaf c046. The author's comment on that line, 'Because of the liberty at X this line is inferior', ranks the two kos correctly, but both labels are one step too high. With KO− here alone, that line's KO− would tie, and the site would accept Black's first move at B18 as well."
+   ]
+  }
+ ]
+}

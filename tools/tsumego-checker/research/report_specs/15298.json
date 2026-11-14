@@ -1,0 +1,50 @@
+{
+ "problem": "15298",
+ "cards": [
+  {
+   "case": "c090",
+   "headline": "Once White retakes, Black has a local threat and then retakes for free, so White needs two threats more than Black: KO−2, not KO−.",
+   "diagrams": [
+    {"start": "", "moves": "A17 A18 B18 B17 A19 A16 A14 A18", "caption": "The tree's line, marked S[KO-]; the solver said KO-2. Black 8 takes the ko by capturing White 1, and White 3 and White 5 are both in atari."},
+    {"start": "A17 A18 B18 B17 A19 A16 A14 A18", "moves": "A17! B19 C19 A18", "caption": "White 9 retakes after a threat elsewhere. Black 10 threatens to capture three stones at A18, and White 11 must capture Black 10. Black 12 then retakes without a threat elsewhere."},
+    {"start": "A17 A18 B18 B17 A19 A16 A14 A18 A17! B19 C19 A18", "moves": "A17! pass B16", "caption": "From Diagram 2. White 13 retakes after a second threat elsewhere. Black has no threat left, local or elsewhere, and White 15 captures seven stones."},
+    {"start": "A17 A18 B18 B17 A19 A16 A14 A18 A17! B19 C19 A18", "moves": "pass B19", "caption": "From Diagram 2, with White out of threats: White 13 plays elsewhere, and Black 14 captures two stones and lives."}
+   ],
+   "text": [
+    "At the leaf Black 8 has just taken the ko, and White 3 and White 5 are both in atari. White has no local move, so White 9 in Diagram 2 retakes after a threat elsewhere. Then Black 10 threatens three stones, and White 11 is the only answer: after any other move Black captures at A18 and lives. Black 12 retakes without spending a threat elsewhere.",
+    "So White needs a second threat to retake (Diagram 3); with only one threat more than Black, White fails (Diagram 4). That is S[KO-2] in besogo's counting, not KO−. It is not KO−3 either, as Black has no second local threat. Both reviewers agree, and the solver finds one extra threat not enough in both of its areas.",
+    "The tree's sibling leaf, with White C19 instead of White 7, is a correct S[KO-]: there, once White retakes, B19 is suicide for Black. The tree marks both leaves the same, but White 7 is one threat worse."
+   ]
+  },
+  {
+   "case": "c091",
+   "headline": "Black has just taken the ko, but White's D19 forces a local answer and White retakes for free, so Black needs the first threat: KO+, not KO−.",
+   "diagrams": [
+    {"start": "", "moves": "A17 A18 B18 B19 A19 C19 B17 A18", "labels": {"D19": "a", "B16": "b"}, "caption": "The tree's line, marked S[KO-]; the solver said KO+. Black 8 takes the ko by capturing White 5. The author marks a and b and calls this ko less direct."},
+    {"start": "A17 A18 B18 B19 A19 C19 B17 A18", "moves": "D19 B16 A19", "caption": "Instead of a threat elsewhere, White 9 takes a liberty from Black's group. Black 10 answers by putting three White stones in atari, and White 11 retakes without a threat elsewhere. Now Black needs the first threat."},
+    {"start": "A17 A18 B18 B19 A19 C19 B17 A18 D19 B16 A19", "moves": "pass A18 A16 A18", "caption": "From Diagram 2, with Black out of threats: White 13 gives up five stones, and after Black 14 captures, White 15 on the vital point of the bulky five kills."},
+    {"start": "A17 A18 B18 B19 A19 C19 B17 A18", "moves": "D19 A19 B16", "caption": "Black cannot connect the ko: after White 9, Black 10 is self-atari, and White 11 captures seven stones."}
+   ],
+   "text": [
+    "Black 8 has just taken the ko, but White needs no threat elsewhere. White 9 in Diagram 2 takes Black's extra liberty; without it, Black would win the capturing race. Now Black cannot connect the ko (Diagram 4) and has to answer locally. After Black 10, or Black at A16, White 11 retakes for free.",
+    "Then it is a direct ko: Black's retake puts White's three stones in atari, so White needs a threat in turn. If Black runs out first, White kills (Diagram 3). White wins with equal threats, which is KO+. Both reviewers agree. The solver gives KO+ in its search area; its wider area stayed undecided at equal threats, which the reviewers put down to extra points that give Black nothing.",
+    "The author's marks at a and b in Diagram 1, with the comment about room for manoeuvre, point at exactly this resource. The sibling leaf with White B16 instead of White 7 is a correct S[KO-], as White 3 cannot be saved there; the solver agrees."
+   ]
+  },
+  {
+   "case": "c092",
+   "headline": "With White's D19 already on the board, Black's capture only forces White to connect; Black still cannot connect the ko and needs the first threat: KO+, not KO−.",
+   "diagrams": [
+    {"start": "", "moves": "A17 A18 B18 B19 A19 C19 D19 A18", "caption": "The tree's line, marked S[KO-] with the comment 'your opponent takes first'; the solver said KO+. Black 8 takes the ko by capturing White 5 and ataris White 3."},
+    {"start": "A17 A18 B18 B19 A19 C19 D19 A18", "moves": "B17 B16 A19", "caption": "White 9 must connect. Black 10 ataris three White stones, and White 11 retakes without a threat elsewhere. Now Black needs the first threat."},
+    {"start": "A17 A18 B18 B19 A19 C19 D19 A18 B17 B16 A19", "moves": "pass A18 A16 A18", "caption": "From Diagram 2, with Black out of threats: White 13 gives up five stones, and after Black 14 captures, White 15 on the vital point of the bulky five kills."},
+    {"start": "A17 A18 B18 B19 A19 C19 D19", "moves": "A16 B17 A18", "caption": "One reviewer's line: Black 8 at A16 instead of the tree's capture. White 9 connects, and Black 10 takes the ko without a threat elsewhere, with three White stones in atari, so White needs the first threat. The solver gives KO− after Black 8."}
+   ],
+   "text": [
+    "Black 8 also ataris White 3, so White 9 in Diagram 2 must connect, which transposes to leaf c091 after White's D19. With White 7 on the board, Black cannot connect the ko, as that would be self-atari. Black 10 ataris three stones, White 11 retakes without a threat elsewhere, and Black must find the first threat. If Black runs out, White kills (Diagram 3). White wins with equal threats: KO+, and the comment 'your opponent takes first' does not fit this leaf.",
+    "Both reviewers agree. The solver gives KO+ in its search area, also with more edge points added; its wider area stayed undecided at equal threats, which the reviewers trace to limits of the model and of the search budget, not to a Black resource.",
+    "One reviewer adds a caveat: the tree's Black 8 is a mistake, and answering White 7 at A16 keeps the ko at KO− (Diagram 4). The author's KO− and comment fit that reply. So this reviewer would make it Black's main reply, with S[KO-], and keep this leaf only as a side line with S[KO+]; changing only this leaf would make White 7 look better than it is."
+   ]
+  }
+ ]
+}

@@ -1,0 +1,36 @@
+{
+ "topic": "target-15678",
+ "text": [
+  "The SGF says only Black to kill; it names no target and has no description. Every DEAD leaf kills only the top stones, on rows 18 and 19. White's left side lives with two eyes (Diagrams 1 and 2) or stays joined to the three bottom stones, which can always run out to the open lower side. In every ALIVE leaf the top stones survive. So the tree scores the top stones. The checker, like any solver, reads the goal as the whole group, which no line of the tree kills on the board as given.",
+  "Top stones: the DEAD leaves c119 and c120 stay as they are, and the description should state the goal. The KO+ leaf (Diagram 3) becomes S[KO-3]: Black must win the ko twice (Diagram 4), and White's atari at H19 is one more free threat. One reviewer counted KO-2, and the solver left the full count undecided. Nothing changes in the site's grading.",
+  "Whole group: all three leaves become ALIVE, the KO+ leaf because of White 10 in Diagram 4. Then the main line's Black 11 (Diagram 1) and four Black moves in side lines become wrong on the site. On the board as given, no correct answer is left: the lines where Black connects at A15 kill the whole group only if the edge of the solver's search area counts as a Black wall, and even that kill is unproven. This option means closing the lower side and rewriting the main line.",
+  "Either way, the tree's S[KO+] is wrong: White 8 in Diagram 3 has just taken that ko."
+ ],
+ "diagrams": [
+  {
+   "problem": "15678",
+   "start": "",
+   "moves": "B15 B16 A18 D19 E17 C19 G19 B19 F19 A17 H19 A15 E19",
+   "caption": "The tree's main line, leaf c120, marked S[DEAD]. White 12 captures Black 1, and Black 13 leaves the seven top stones one liberty, at A19."
+  },
+  {
+   "problem": "15678",
+   "start": "B15 B16 A18 D19 E17 C19 G19 B19 F19 A17 H19 A15 E19",
+   "moves": "B17 A19",
+   "caption": "From Diagram 1: White 14 puts Black's three corner stones in atari, so Black 15 must capture the seven top stones. White's left side lives with two real eyes, at A16 and B15: DEAD for the top stones, ALIVE for the whole group."
+  },
+  {
+   "problem": "15678",
+   "start": "",
+   "moves": "C19 B17 G19 D19 A17 A16 A19 A18",
+   "caption": "Leaf c121, marked S[KO+], which says Black takes the ko first. But White 8 has just taken it, and Black's four corner stones are in atari at B19."
+  },
+  {
+   "problem": "15678",
+   "start": "C19 B17 G19 D19 A17 A16 A19 A18",
+   "moves": "A17! B15 E17 A18",
+   "caption": "From Diagram 3: Black 9 retakes after a threat elsewhere. Whole group: White 10 joins the wall to the bottom stones, and the group lives (ALIVE). Top stones: Black 11 takes one of their three liberties, White 12 retakes for free, and Black must win the ko a second time."
+  }
+ ],
+ "suggestion": "Top stones, with the goal stated in the description, for example \"capture the top stones\". Keep S[DEAD] on c119 and c120, and change c121 from S[KO+] to S[KO-3]."
+}

@@ -1,0 +1,36 @@
+{
+ "problem": "10393",
+ "cards": [
+  {
+   "case": "c043",
+   "headline": "Black has just taken the ko and still has a free local threat, while White has none, so White needs two threats more than Black: KO+2, not KO+.",
+   "diagrams": [
+    {"start": "", "moves": "B18 D19 A17 B19 A19", "caption": "The tree's line. Black 5 captures the stone at A18 and takes the ko; the tree marks the leaf S[KO+]."},
+    {"start": "B18 D19 A17 B19 A19", "moves": "A18! E19 F19 A19 pass C19", "caption": "White 6 retakes after a threat elsewhere. Black 7 puts D19 in atari, White 8 must capture Black 7, and Black 9 retakes without a threat elsewhere. White has no second threat and plays elsewhere with White 10; Black 11 captures and lives."},
+    {"start": "B18 D19 A17 B19 A19", "moves": "A18! E19 F19 A19 A18! pass C19 A19 E19", "caption": "With two threats more than Black, White 10 retakes again and Black has none left (Black 11 is elsewhere). After White 12 and White 14, Black 13 can be taken at A18 again, and Black can never connect there: dead."},
+    {"start": "B18 D19 A17 B19 A19", "moves": "A18! E19 C19 A19", "caption": "Black 7 is a real threat. If White 8 saves D19 this way instead, Black 9 captures four stones and lives."}
+   ],
+   "text": [
+    "Black 5 takes the ko, which is why the tree says KO+: White needs one threat more than Black. But after White 6 retakes in Diagram 2, Black 7 is a free local threat. It puts D19 in atari, and White 8 is White's only answer that does not lose: saving D19 as in Diagram 4 loses four stones, and if White ignores it, Black captures D19 and then retakes to live. Black 9 retakes without spending a threat elsewhere.",
+    "White has no local threat of its own: at the leaf, any White move other than the retake lets Black capture and settle the ko. So Black lives with one threat fewer than White (Diagram 2) and dies only when White has two more (Diagram 3). That is KO+2. Once Black 7 has been used, the same ko is a plain KO+, so the extra step is exactly that threat.",
+    "Both reviewers confirm KO+2. Only a literal 'Black took first' reading keeps KO+, and the site's tutorial counts local ko threats. Black 7 is a ko threat, not an approach move (White retakes directly), so there is no A+ prefix. In the solver's largest area the case with White two threats ahead came back undecided, but by reading Black has no second local threat, so White kills there and the label is KO+2, not KO+3."
+   ]
+  },
+  {
+   "case": "c044",
+   "headline": "White has just taken the ko, but Black's forced capture lifts the ban and Black's local threat costs White a move: Black lives at equal threats, KO+, not KO−.",
+   "diagrams": [
+    {"start": "", "moves": "B18 D19 C19 A17 A19 B19", "caption": "The tree's line. White 6 captures Black 5 and takes the ko, leaving Black in atari; the tree marks the leaf S[KO-]."},
+    {"start": "B18 D19 C19 A17 A19 B19", "moves": "E19 F18 A19 pass B17", "caption": "Black 7 must capture D19, which also lifts the ko ban. White 8, White's best, takes F18, the point of Black's local threat, and Black 9 retakes without a threat elsewhere. If White has no threat (White 10 is elsewhere), Black 11 captures two stones and lives."},
+    {"start": "B18 D19 C19 A17 A19 B19", "moves": "E19 A19 B17 A18 A19 B19 F18 F19 A19 pass A17", "caption": "If White 8 connects instead, Black 9 captures four stones and White 12 takes a bent-four ko. Black 13 is a local threat, an atari on E18. After White 14, Black 15 retakes; White has no threat (White 16 is elsewhere), and Black 17 makes two eyes."},
+    {"start": "B18 D19 C19 A17 A19 B19", "moves": "E19 F18 A19 B19! pass A19 B17 A18 A19 B19 pass A19", "caption": "With one threat more than Black, White 10 retakes and Black has none left (Black 11 is elsewhere). White 12 gives up four stones and White 16 takes the bent-four ko. With F18 already White's, Black has no local threat (Black 17 is elsewhere), and White 18 wins the ko: dead."}
+   ],
+   "text": [
+    "White 6 leaves Black in atari, so Black 7 in Diagram 2 must capture D19, and that lifts the ko ban. White cannot end the ko at once: connecting gives up four stones and leads to a bent-four ko in which Black 13 is a local threat, and Black lives at equal threats (Diagram 3).",
+    "White's best is to take F18 first, with White 8 in Diagram 2. Black 9 then retakes without a threat elsewhere, and from there White needs the first threat: Black lives with as many threats as White (Diagram 2) and dies against one more (Diagram 4). That is a plain KO+, not KO−.",
+    "Both reviewers confirm KO+. KO− is wrong in every area the solver tried, and KO+ is exact in both of its usual areas. Larger areas with White one threat ahead came back undecided, so there 'exactly KO+' rests on reading; the analysis rates it medium confidence. The result rests on Black's threat at F18: with a White stone at E17 the leaf would be KO−, but E17 is empty here.",
+    "With leaf c043 fixed to KO+2, its line still beats this one, so no move choice in the tree changes. Fixed alone, this leaf would make the two lines equal, so make both fixes."
+   ]
+  }
+ ]
+}

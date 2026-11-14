@@ -1,0 +1,20 @@
+{
+ "problem": "13545",
+ "cards": [
+  {
+   "case": "c068",
+   "headline": "White's answer at B19 lets Black make a ko that Black must win twice, so Black needs two threats more than White: S[KO-2], not S[ALIVE].",
+   "diagrams": [
+    {"start": "", "moves": "B18 B17 A17 A16 C18 A18 D16 B19", "caption": "The tree's line. White 6 captures Black 3, and after White 8 the tree marks the leaf S[ALIVE]; the solver said KO."},
+    {"start": "B18 B17 A17 A16 C18 A18 D16 B19", "moves": "C19 D19 A19 C17 A17", "caption": "Black 9 puts White 8 in atari. White 10 puts Black's three stones in atari, and Black 11 captures White 8. White 12 puts them in atari again, and Black 13 captures White 6 and takes a ko."},
+    {"start": "B18 B17 A17 A16 C18 A18 D16 B19 C19 D19 A19 C17 A17", "moves": "F19 A15 A18 A17! pass F18 A18 A17! pass G19", "caption": "Two threats against none. White 14 adds a liberty. After Black 15 and Black 19 fill liberties, White 16 and White 20 retake for free, so Black 17 and Black 21 each retake after a threat elsewhere. White has no threat (White 18 and White 22 are elsewhere), and Black 23 captures the whole group."},
+    {"start": "B18 B17 A17 A16 C18 A18 D16 B19 C19 D19 A19 C17 A17", "moves": "F19 A15 A18 A17! pass F18 A18 pass B19", "caption": "One threat against none. Black 17 uses Black's only threat, so Black cannot retake after White 20 (Black 21 is elsewhere). White 22 captures four stones, and White lives."}
+   ],
+   "text": [
+    "The tree's S[ALIVE] misses Black 9 in Diagram 2. It puts White 8 in atari, and after the forced replies Black 13 takes a ko. White's other answers to Black 9 reach the same ko or do no better. Black 9 is the only move: any other Black move there lets White live. White's real mistake is White 8: White at C19 in its place lives cleanly (solver: ALIVE).",
+    "Black 13 does not settle it: White's group still has outside liberties, three after White 14 in Diagram 3. Black must fill two of them before the capture, and after each fill White retakes for free, so each Black retake costs a threat. Neither side has a local threat. Black kills with two threats more than White (Diagram 3) and fails with one more (Diagram 4). Black has to win the ko twice: a two-step ko, S[KO-2] in the site tutorial's terms.",
+    "Both reviewers confirm S[KO-2]. In the solver's counts at the ko, two threats against one also fail, and three against one win. Two searches stayed undecided, one of them a count after Black 11, so the exact threat count rests partly on reading; the ko itself is certain. In besogo's approach notation the same ko could be S[A-2KO+]; S[KO-] would be wrong, since one threat fails. Instead of the new S[], the tree could keep S[ALIVE] with White 8 moved to C19."
+   ]
+  }
+ ]
+}

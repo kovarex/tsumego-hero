@@ -1,0 +1,20 @@
+{
+ "problem": "15509",
+ "cards": [
+  {
+   "case": "c116",
+   "headline": "White has just taken the ko and neither side has a local threat, so Black must find the first threat: KO−, not KO+.",
+   "diagrams": [
+    {"start": "", "moves": "A18 B18 B19 A19", "caption": "The tree's line. White 4 captures Black 1 and takes the ko, and the tree marks the leaf S[KO+]; the solver said KO−."},
+    {"start": "A18 B18 B19 A19", "moves": "pass A18 B17 pass A16 A18", "caption": "Equal threats, so Black runs out first: Black 5 is elsewhere, and White 6 connects the ko. Black 7 puts White's four stones in atari, White 8 is elsewhere, and Black 9 captures them, but White 10 takes the vital point of the pyramid four: dead."},
+    {"start": "A18 B18 B19 A19", "moves": "A18! pass B17", "caption": "One threat more for Black. Black 5 retakes after a threat elsewhere, White has no threat left and plays elsewhere with White 6, and Black 7 captures the stone at B18: eyes at A19 and B18."},
+    {"start": "A18 B18 B19 A19", "moves": "D18 A18 E19 F19 D19", "caption": "Black 5 ataris White's stone at D19, but it is no threat: White 6 connects the ko. Black 7 captures the stone, but the eye at D19 is false because of White's stone at E18: White 8 makes Black 9 fill it. Black stays dead."}
+   ],
+   "text": [
+    "White 4 in Diagram 1 has just captured Black 1, so Black cannot retake at once and must find the first threat. With equal threats Black runs out first, and White 6 in Diagram 2 connects and kills. With one threat more than White, Black retakes and lives (Diagram 3). That is KO−. The solver's ko tables agree: an equal count fails, one more succeeds.",
+    "The site's tutorial counts a ko White took first as KO+ only when Black has a local threat that White lacks. Black has none: White answers Black 7 or Black 9 of Diagram 2, played as a threat, by connecting the ko, and Black dies the same way. Black 5 in Diagram 4 ataris a stone, but White can ignore it, and D17 and D16 only fill Black's own liberties. After Black's retake in Diagram 3, every White move except a retake lets Black live, so White has no local threat either: a plain direct ko.",
+    "Both reviewers confirm KO−. S[KO+] looks like a slip: it is what besogo's editor writes for a ko unless the author presses the '-' button. The author's comment on this leaf, 'this is NOT the Ko to aim for', also fits a ko that is bad for Black."
+   ]
+  }
+ ]
+}

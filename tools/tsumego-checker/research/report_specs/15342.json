@@ -1,0 +1,33 @@
+{
+ "problem": "15342",
+ "cards": [
+  {
+   "case": "c100",
+   "headline": "Black lives: S[ALIVE] is right. The solver's KO is a false ko, because its search area counted the empty point E19 as a White wall.",
+   "diagrams": [
+    {"start": "", "moves": "B18 C18 A18 B17", "caption": "The tree's line, marked S[ALIVE]; the solver said KO. White 1 and White 3 have only two liberties."},
+    {"start": "B18 C18 A18 B17", "moves": "C19 D19", "labels": {"E19": "a"}, "caption": "White 5 ataris Black's stone at B19 but has one liberty itself, and Black 6 captures it. The solver's search area counts the point a as a White wall, so there Black 6 has one liberty and White retakes at C19: a ko. On the board a is empty, so Black 6 has two liberties and that retake is suicide."},
+    {"start": "B18 C18 A18 B17", "moves": "C19 D19 E19 C19", "caption": "The analysis's key line. White 7 ataris Black 6, and Black 8 connects. Every White move from here leaves Black alive."}
+   ],
+   "text": [
+    "Black can capture White 1 and White 3 for an eye in the corner, and the B16 area gives a second. The solver's KO is the false ko of Diagram 2, which exists only inside its search area. Its wider area should have caught this, but that search ran out of budget at this leaf.",
+    "With E19 added to its area, the solver finds Black alive against every White move, even when White may ignore the ko ban. In some side lines Black gets only a seki around White 1 and White 3, which still counts as alive."
+   ]
+  },
+  {
+   "case": "c101",
+   "headline": "White has just taken the ko and still has a free local threat, so Black needs two more ko threats than White: S[KO+2], not S[KO+].",
+   "diagrams": [
+    {"start": "", "moves": "C15 A15 A18 A17 B17 B16 A16", "caption": "The tree's line. White 7 takes the ko by capturing Black 4, and the tree marks the leaf S[KO+]; the solver said KO+2."},
+    {"start": "C15 A15 A18 A17 B17 B16 A16", "moves": "A17! B18 C18 A16", "caption": "The analysis's key line. Black 8 retakes after a threat elsewhere. White 9 threatens C18, which would join D18, so Black 10 must answer, and White 11 retakes without a threat elsewhere. This is the tree's own sibling leaf, marked S[KO+]."},
+    {"start": "C15 A15 A18 A17 B17 B16 A16", "moves": "A17! B18 A16 C18", "caption": "If Black 10 connects at the ko instead, White 11 joins D18, and Black's group has one liberty: dead."},
+    {"start": "C15 A15 A18 A17 B17 B16 A16", "moves": "B18 A17 A19 A17", "caption": "Black has no local threat: Black 8 is answered by White 9 connecting at the ko point, giving up four stones. After Black 10 captures them, White 11 takes the vital point of the pyramid four. Dead."}
+   ],
+   "text": [
+    "White 7 has just taken the ko, so the leaf is at least KO+, and White still has a free local threat. In Diagram 2, after Black 8 retakes, White 9 is White's only local move that keeps the ko. It threatens C18, so Black 10 must answer; every other move dies (Diagram 3). White 11 then retakes without a threat elsewhere, reaching the tree's own sibling leaf, which it also marks S[KO+]. Black has spent one threat to get there and White none, yet the tree gives both leaves the same value.",
+    "Black has no local threat at any stage: a Black move nearby only lets White connect at the ko and kill (Diagram 4). When Black retakes again after Diagram 2, White 9 and the two stones joined to it are in atari and White has no local move left, so White needs a threat elsewhere or Black captures them and lives. Black therefore needs two more threats than White: KO+2, a step ko that becomes plain KO+ once Black has won it once. The solver's threat counts agree, and so do both reviewers.",
+    "Confidence is medium: in the wider search areas some searches stayed undecided, as the long kills are hard for the solver, so the exact count rests on the forced line and on reading, not on a direct threat count there. KO+2 also assumes local threats count, as the site's tutorial says they usually do; if they do not, S[KO+] would stay."
+   ]
+  }
+ ]
+}

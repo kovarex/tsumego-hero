@@ -1,0 +1,19 @@
+{
+ "problem": "2416",
+ "cards": [
+  {
+   "case": "c017",
+   "headline": "S[ALIVE] holds: the leaf is a seki, so White lives. The solver's search area walled in White's outside stones, which can in fact run out toward J17.",
+   "diagrams": [
+    {"start": "", "moves": "A18 A17 B18 D19 C18 F19 B19 G18", "caption": "The tree's line. White 6 captures the Black stone at E19, and after White 8 the tree marks the leaf S[ALIVE]; the solver said DEAD."},
+    {"start": "A18 A17 B18 D19 C18 F19 B19 G18", "moves": "A15 G19", "labels": {"H19": "a", "J18": "a", "H17": "a", "G17": "a"}, "caption": "Black 9 protects A16, and White 10 connects the outside stones. Black has an eye at A19, White an eye at E19, and they share the liberty D18, which neither side can fill: seki. The points marked a are the edge of the solver's search area."},
+    {"start": "A18 A17 B18 D19 C18 F19 B19 G18 A15 G19", "moves": "H17 H18 G17 J18", "caption": "If Black blocks below with Black 11 and Black 13, White 12 and White 14 connect to the White stone at J17."},
+    {"start": "A18 A17 B18 D19 C18 F19 B19 G18 A15 G19", "moves": "H18 G17 H17 G16 H16 G15", "caption": "If Black blocks on the right, White runs down the G file; after White 16 the chain has five liberties, with E19 still an eye: seki."}
+   ],
+   "text": [
+    "The tree is right: seki is the exact status, as at the sibling leaves, and ALIVE is in the same class, so no fix is needed. Black 9 saves A16, in atari since White 2; otherwise White captures it, fills D18 and takes the corner. White's outside chain cannot be caught: it links up with J17 (Diagram 3) or runs down the G file (Diagram 4).",
+    "The solver counted everything beyond the points marked a in Diagram 2 as a Black wall, so the chain looked shut in. Its wider search was undecided; a reviewer's search with no wall found no kill within about 13 moves."
+   ]
+  }
+ ]
+}

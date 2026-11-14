@@ -123,7 +123,8 @@ def svg(problem, d, frame, title):
     width, height = margin * 2 + cell * (x2 - x1), margin * 2 + cell * (y2 - y1)
     px = lambda x: margin + (x - x1) * cell
     py = lambda y: margin + (y - y1) * cell
-    out = ['<svg class="board" viewBox="0 0 %d %d" role="img" aria-label="%s">' % (width, height, html.escape(title))]
+    #the board keeps its natural size (26 px a line) and only shrinks to fit, so a narrow frame is not blown up
+    out = ['<svg class="board" width="%d" height="%d" viewBox="0 0 %d %d" role="img" aria-label="%s">' % (width, height, width, height, html.escape(title))]
     out.append('<rect class="wood" x="0" y="0" width="%d" height="%d" rx="4"/>' % (width, height))
     for x in range(x1, x2 + 1):
         top = py(y1) if y1 == 0 else py(y1) - cell / 2
@@ -416,7 +417,7 @@ def render(specs_dir, out_path):
     body.append('</section>')
     body.append('<section id="errors"><h2>2. Clear errors on the site <span class="count">%d leaves</span></h2>' % len(errors))
     body.append('<p class="section-lede">For each leaf, an analyst and two independent reviewers agree that the tree\'s S[] is wrong. The fixes fall into three groups, by what else they need.</p>')
-    body.append('<h3 id="tree-changes">Change the tree as well <span class="count">%d problems</span></h3><p class="section-lede">With only the new S[], the site would grade some moves wrongly, usually because the tree lacks a move. Each problem says what to add or remove.</p>' % len(tree_group))
+    body.append('<h3 id="tree-changes">Change the tree as well <span class="count">%d problems</span></h3><p class="section-lede">With only the new S[], the site would grade some moves wrongly or not show the new status, usually because the tree lacks a move. Each problem says what to add or remove.</p>' % len(tree_group))
     body += [problem_block(p, cs) for p, cs in tree_group]
     body.append('<h3 id="grading-changes">Fixes that change which moves are correct <span class="count">%d problems</span></h3><p class="section-lede">The new S[] changes which moves the site accepts. A checker played the alternatives out and confirmed the new marks.</p>' % len(grading_group))
     body += [problem_block(p, cs) for p, cs in grading_group]

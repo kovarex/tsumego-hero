@@ -1,0 +1,45 @@
+{
+ "problem": "11283",
+ "cards": [
+  {
+   "case": "c051",
+   "headline": "White lives outright, with no ko: Black's C19 is a failed try and White's B19 the only right answer. S[ALIVE], not S[DEAD].",
+   "diagrams": [
+    {"start": "", "moves": "A16 A18 D19 C18 B17 A17 C19 B19", "caption": "The tree's line. After White 8 the tree marks the leaf S[DEAD]; the solver said ALIVE. Black is to play; Black 3 and Black 7 are in atari at E19, and Black 1 at A15."},
+    {"start": "A16 A18 D19 C18 B17 A17 C19 B19", "moves": "B18 C17 B17 B18", "caption": "Black 9 is a double atari, threatening to capture at A19, but it has a single liberty itself: White 10 captures two stones. White 12 captures the throw-in Black 11, and White has two eyes, at A19 and B17."},
+    {"start": "A16 A18 D19 C18 B17 A17 C19 B19", "moves": "D16 A15 C17 B18 pass C17", "caption": "Black 9 puts two White stones in atari. White 10 is the only living answer: it captures a stone and gives them a liberty at A16. White 12 captures two stones, and after Black 13 elsewhere, White 14 connects with eyes at A19, at B17 and at A16."},
+    {"start": "A16 A18 D19 C18 B17 A17 C19 B19", "moves": "E19 B18 D16 C17", "caption": "Black 9 saves Black 3 and Black 7, but White 10 puts Black 5 in atari, and after Black 11, White 12 captures it: eyes at A19 and B17. A15 or a pass instead of Black 9 gets the same answer."}
+   ],
+   "text": [
+    "At the leaf Black is to play, and A19 would be suicide. Black's sharpest try is Black 9 in Diagram 2. White 10 is the only answer that lives: White's A15 there gives a ko, the position of Leaf 1 below, and other White moves let Black capture both chains at A19. After White 10, White has an eye at A19 and a second one at B17 and B18: a throw-in at either point is captured from the other, and White 8 cannot be attacked.",
+    "Black's other tries fail too, as Diagrams 3 and 4 show. The solver finds White alive at the leaf and after every Black move, in both search areas and both modes, even when Black may ignore the ko ban: there is no ko.",
+    "White 8 is White's only living reply to Black 7, so it is the right answer, not a mistake the label could be blaming: Black 7 is a failed try. Another line of the tree, in the last diagram under On the site, reaches this position if White plays the only living move; the tree has White play E19 there, which loses. So the author misjudged this shape."
+   ]
+  }
+ ],
+ "grading": {
+  "text": [
+   "With S[ALIVE] on this leaf alone, the site marks two Black moves wrong that are correct today, both at C19: a in Diagram 1 and a in Diagram 2. Both go from DEAD to ALIVE; no move outside these two lines changes. A checker ran besogo's own code on the tree before and after the fix, tried to show the new marks wrong, and found both right.",
+   "Move a in Diagram 1 lets White live outright with no ko (the card above): in both search areas the solver finds every Black follow-up ALIVE, even when Black may ignore the ko ban. Moves b and c do better. After b, White has to capture at A15, and the line of Leaf 1 below gives a ko that Black takes first. The checker also reads c as DEAD. So a is clearly the worst choice.",
+   "After Black 5 and White 6 in Diagram 3, every Black move is ALIVE in both areas and both modes. Black 5's mark flips because of White 8, a move the tree lacks: it reaches the fixed leaf, and besogo links the two as a transposition, so no new node is needed. Move b in Diagram 2 does better than a: after the tree's answer Black reaches Diagram 1 with at least a ko, and against White's C19, which the tree also lacks, the narrow area still has four Black kills.",
+   "The solver cannot fully settle the b and c lines of Diagrams 1 and 2; in Diagram 2 they are still undecided at 2M nodes. Move a is wrong all the same: a move that lets White live with no ko can equal its siblings only if they all fail too. Then the whole line is lost, and Black 1 or Black 3 would already be the move marked wrong."
+  ],
+  "diagrams": [
+   {"start": "", "moves": "A16 A18 D19 C18 B17 A17", "labels": {"C19": "a", "B18": "b", "B19": "c"}, "caption": "Black to play move 7. Today a, b and c are all correct. With the fix the site marks a, the move to this leaf, wrong; b and c stay correct."},
+   {"start": "", "moves": "A16 A18 D19 C18", "labels": {"C19": "a", "B17": "b", "B19": "c"}, "caption": "Black to play move 5. Today a, b and c are all correct. With the fix the site marks a wrong here too; b and c stay correct."},
+   {"start": "", "moves": "A16 A18 D19 C18 C19 B19 B17 A17", "caption": "Black 5 at a in Diagram 2. The tree answers Black 7 with White E19, which loses. White 8, White's only living move, reaches the position of the fixed leaf with Black to play, so besogo links the two."}
+  ]
+ },
+ "also_check": {
+  "text": [
+   "Leaf 1, Diagrams 1 and 2: S[KO-] should probably be S[KO+], with moderate confidence; the solver could not decide the sign. Black is to play and can take the ko at once. White cannot just connect (Diagram 2), so White has to retake with a ko threat, which means Black took the ko first. This changes no mark today, because its sibling, the line of Diagram 3, is S[DEAD].",
+   "Leaf 2, Diagrams 3 and 4: S[DEAD] is doubtful but not confirmed; likely a ko, possibly ALIVE. One earlier solver run gave KO. Now the narrow area shows a kill only when Black may ignore the ko ban (undecided otherwise at 1M nodes), and the wider area is undecided. If this leaf is not DEAD, Black 7, b in the first diagram under On the site, would rank below c there, which is S[DEAD], and become wrong. It has no effect on the C19 marks."
+  ],
+  "diagrams": [
+   {"start": "", "moves": "A16 A18 D19 C18 B17 A17 B18 A15 C19 B19", "caption": "Leaf 1, marked S[KO-]. Black is to play and can take the ko at once at A19, capturing White 10. The checker suggests S[KO+] (moderate confidence)."},
+   {"start": "A16 A18 D19 C18 B17 A17 B18 A15 C19 B19", "moves": "A19 A16 D16 C17", "caption": "Black 11 takes the ko and puts two White stones in atari at A16. If White 12 connects there instead of retaking, Black 13 puts three more in atari at C17, and once White 14 connects, the whole White group has one liberty, at A14: Black kills."},
+   {"start": "", "moves": "A16 A18 D19 C18 B17 A17 B18 A15 B19 C19 D16", "caption": "Leaf 2, the sibling of Leaf 1: Black 9 at B19 instead. Marked S[DEAD]; the checker doubts it but could not confirm: likely a ko, possibly ALIVE."},
+   {"start": "A16 A18 D19 C18 B17 A17 B18 A15 B19 C19 D16", "moves": "E19", "caption": "White 12 captures Black 3. After it the checker found no clean kill: White threatens C17 against Black 5, Black 7 and Black 9, and Black can't retake at D19 until it has played F19."}
+  ]
+ }
+}

@@ -1,0 +1,20 @@
+{
+ "problem": "15639",
+ "cards": [
+  {
+   "case": "c118",
+   "headline": "Black captures four stones and White's group hangs on a ko it can never settle; Black has a local threat, White has none: DEAD, not ALIVE.",
+   "diagrams": [
+    {"start": "", "moves": "E19 D19 D17 D18 B19 B18 A16 A17 C19 A19 A18 A15 E16 B14 C15 B13", "caption": "The tree's line, marked S[ALIVE]. Black 13 puts four White stones in atari, and White 14 and White 16 leave them there."},
+    {"start": "E19 D19 D17 D18 B19 B18 A16 A17 C19 A19 A18 A15 E16 B14 C15 B13", "moves": "C18 A19 A14 A13 A18 pass A16", "caption": "Black 17 captures four stones and puts White's group in atari. White 18 takes the ko, Black 19 is a local threat that White 20 must answer, and Black 21 retakes. White has no ko threat, so White 22 is elsewhere, and Black 23 captures the group: every target stone is gone."},
+    {"start": "E19 D19 D17 D18 B19 B18 A16 A17 C19 A19 A18 A15 E16 B14 C15 B13", "moves": "C18 A19 pass A16", "caption": "If White wins the ko instead (Black 19 is elsewhere), White 20 connects. The group has no second eye in the problem area and White 18 stays in atari: the solver still says DEAD, even if Black passes once more."},
+    {"start": "E19 D19 D17 D18 B19 B18 A16 A17 C19 A19 A18 A15 E16 B14 C15", "moves": "F19", "caption": "The fix that keeps S[ALIVE]: White 16 at F19 captures Black's stone at E19 and lives. The solver finds it White's only living move here."}
+   ],
+   "text": [
+    "At the leaf, Black 17 in Diagram 2 captures four stones and puts White's main group in atari. White 18 is forced: any other move loses the group at once. White can never settle this ko, since filling at A18 is self-atari and the stone at A19 always stays in atari. Black 19 is a local threat that White must answer, so Black 21 retakes without spending a ko threat, while White needs one every time. With no threats elsewhere, Black 23 captures the group, and every target stone is gone.",
+    "Even if White wins the ko and connects (Diagram 3), the group has no second eye inside the problem area, and the solver still says DEAD. Only if White 14 and White 16 could run out to an open lower side would the joined group live; even then the leaf is a ko heavily in Black's favour (KO+), so ALIVE is never right. Confidence is medium: the solver's wider area stayed undecided, so DEAD rather than KO+ rests on reading and the closed-corner convention the problem and the solver use.",
+    "The slip is White 16: it must capture at F19 to live (Diagram 4). In the neighbouring line, with Black 13 at A19, the tree has the same White 14 and White 16, and there White lives because Black's corner stones are short of liberties; so Black 17 was likely missed. Either relabel the leaf S[DEAD], or replace White 16 with F19 and keep S[ALIVE]. One reviewer prefers the replacement, or the relabel plus F19 added beside White 16 with S[ALIVE], so that the tree does not make Black 13 look like a kill."
+   ]
+  }
+ ]
+}

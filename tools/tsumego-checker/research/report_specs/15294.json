@@ -1,0 +1,33 @@
+{
+ "problem": "15294",
+ "cards": [
+  {
+   "case": "c083",
+   "headline": "After each of Black's first two retakes, White retakes without using a threat elsewhere, so Black needs three more threats than White: KO+3, not KO+.",
+   "diagrams": [
+    {"start": "", "moves": "A18 A14 A13 B18 A17 B17 A15", "caption": "The tree's line. White 7 takes the ko first, and the tree marks the leaf S[KO+]; the solver said KO+3."},
+    {"start": "A18 A14 A13 B18 A17 B17 A15", "moves": "A14! pass A19 A15", "caption": "Black 8 retakes after a threat elsewhere. Black cannot yet connect at A15, which would leave four stones in atari, so White 9 can play elsewhere. Black 10 must spend a move capturing two stones, and White 11 retakes without a threat."},
+    {"start": "A18 A14 A13 B18 A17 B17 A15 A14! pass A19 A15", "moves": "A14! A17 A18 A15", "caption": "Black 12 retakes after a second threat. White 13 throws in, a local threat: if Black connects at A15 instead of capturing, White kills. Black 14 captures, and White 15 retakes without a threat elsewhere."},
+    {"start": "A18 A14 A13 B18 A17 B17 A15 A14! pass A19 A15 A14! A17 A18 A15", "moves": "A14! pass A15", "caption": "Black 16 retakes after a third threat. White has no local threat left; if it has none elsewhere either, White 17 plays elsewhere and Black 18 connects with two eyes."}
+   ],
+   "text": [
+    "The tree is right that White took the ko first: if Black does anything but retake at A14, White connects there and Black dies. But it is not a direct ko. Connecting at A15 is self-atari for Black while White 5 stands at A17, so White can ignore Black 8 and retake for free once Black 10 has captured (Diagram 2). After Black 12, White still has a local threat, White 13, and retakes for free again (Diagram 3).",
+    "Only after the third retake, Black 16 in Diagram 4, is White out of local threats, and Black can connect and live. White therefore wins unless Black has at least three more threats than White: S[KO+3]. That fits the author's comment at the leaf, a painful ko for Black. In besogo's approach-ko notation the same leaf would be S[A+1KO+2], with Black 10 the approach move and White 13 a local threat; KO+ is wrong either way.",
+    "The solver said KO+3, and both reviewers agree; its checks have White winning with two threats fewer than Black and losing with three fewer. Its wider search area stayed partly undecided, but by reading, the extra points there give Black no ko threat."
+   ]
+  },
+  {
+   "case": "c084",
+   "headline": "Black lives: it captures White's throw-in, and the capturing stone keeps a liberty at E19, so White cannot retake. The solver's narrow area counts E19 as White's wall.",
+   "diagrams": [
+    {"start": "", "moves": "B18 C18 B17 A18", "caption": "The tree's line. After Black 4 the tree marks the leaf S[ALIVE]; the solver said KO−."},
+    {"start": "B18 C18 B17 A18", "moves": "C19 D19 E19 C19", "caption": "White 5 throws in, and Black 6 captures it. Black 6 still has a liberty at E19, so White cannot retake at C19. If White 7 takes that liberty, Black 8 connects, and Black is alive."},
+    {"start": "B18 C18 B17 A18", "moves": "E19 C19", "caption": "White 5 plays at E19 first. Black 6 connects at once, and from here the solver finds Black alive in both areas. Had Black ignored White 5, the throw-in at C19 would have made a ko."}
+   ],
+   "text": [
+    "The tree is right. White 1 and White 3 have only two liberties, at A17 and B16: filling either is self-atari, and Black takes three stones at the other. A19 is suicide, which leaves White the rest of the top edge, where the throw-in fails (Diagram 2).",
+    "The solver said KO− because its narrow area counts E19 as White's wall, so the capturing stone has one liberty and White can retake. Its wider area ran out of budget at the leaf, but every White move it tries comes out ALIVE. White's E19 is in neither area, so a reviewer checked it (Diagram 3)."
+   ]
+  }
+ ]
+}

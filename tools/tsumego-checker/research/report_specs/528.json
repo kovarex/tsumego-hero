@@ -1,0 +1,20 @@
+{
+ "problem": "528",
+ "cards": [
+  {
+   "case": "c003",
+   "headline": "White has taken the ko first and neither side has a local threat, so Black needs one threat more than White: KO−, not KO+.",
+   "diagrams": [
+    {"start": "", "moves": "B18 C19 D19 B19 A19 A18", "caption": "The tree's line. Black 5 only ataris White 2 and White 4, and White 6 captures it: White takes the ko first. The tree marks the leaf S[KO+]."},
+    {"start": "B18 C19 D19 B19 A19 A18", "moves": "pass C18", "caption": "Without a ko threat Black dies. Black 7 plays elsewhere, White 8 captures four stones, and Black's three remaining stones are left in atari at E19."},
+    {"start": "B18 C19 D19 B19 A19 A18", "moves": "A19! pass C18", "caption": "Black 7 retakes after a ko threat elsewhere. White cannot connect at C18, which is suicide. If White 8 is elsewhere, or at E19, Black 9 captures two stones: two eyes, at A18 and at B19 and C19."},
+    {"start": "", "moves": "C18 B19 B18 E19 A19 A18", "caption": "The tree's branch that starts at C18 has the same ko at A19. Black 5 ataris White 2, White 6 captures it, and here the tree marks the leaf S[KO-]."}
+   ],
+   "text": [
+    "In Diagram 1, Black 5 is only an atari on White 2 and White 4, not a capture, so White 6 is the first capture of the ko: White has taken it. Black 1's group of four stones is in atari at C18, and Black cannot retake at once. Every local Black move dies: connecting at C18 leaves the whole group one liberty for White to fill, and any other move lets White capture at C18 (Diagram 2). So S[KO+], where Black takes first and lives with equal threats, is wrong.",
+    "After a threat elsewhere, Black 7 retakes (Diagram 3). Then White 2 and White 4 are in atari, and connecting them at C18 is suicide, so White needs a threat too, or Black 9 captures them and lives. Neither side has a local threat, so Black lives only with one threat more than White: S[KO-], besogo's 'White takes first'. Both reviewers and the solver agree. The solver gives KO− at every node of this line from Black 1 on, so no Black alternative in this branch reaches a ko that Black takes first.",
+    "The tree already marks the same ko S[KO-] in the branch of Diagram 4, and the solver agrees there, so no single convention gives KO− there and KO+ here. A likely cause is besogo's editor, where a new ko label starts at KO+ until the author presses '-'. Changing the leaf to S[KO-] does not change the site's grading: the solver finds Black alive outright from C19, so Black 1 fails under either label."
+   ]
+  }
+ ]
+}

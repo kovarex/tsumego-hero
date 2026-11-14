@@ -1,0 +1,21 @@
+{
+ "problem": "10145",
+ "cards": [
+  {
+   "case": "c042",
+   "headline": "Black gets only the bent four in the corner: dead under the site's rules, S[BENT4] in besogo's labels. The solver's KO− wrongly counts the ko as fought now.",
+   "diagrams": [
+    {"start": "", "moves": "B18 E19 D19 F19 B17 B19 B16 B15 A16 A18", "caption": "The tree's line, marked S[DEAD] after White 10; the solver said KO−. Black to play: Black's stones are split at D18 and have outside liberties at E16 and A15."},
+    {"start": "B18 E19 D19 F19 B17 B19 B16 B15 A16 A18", "moves": "D18 E16 pass A15 pass A19", "caption": "Black 11 connects, Black's best. White 12 and 14 fill Black's outside liberties, Black 13 and 15 are elsewhere, and White 16 closes the corner. With A17 and C19 empty, this is the bent four in the corner."},
+    {"start": "B18 E19 D19 F19 B17 B19 B16 B15 A16 A18 D18 E16 pass A15 pass A19", "moves": "pass A17 C19 A18 A19 B19", "caption": "From Diagram 2, whenever White chooses: White 18 sacrifices four stones, Black 19 captures them, White 20 takes the 1-2 point, and White 22 captures Black 21, taking the ko first. Black is in atari and needs a ko threat."},
+    {"start": "B18 E19 D19 F19 B17 B19 B16 B15 A16 A18", "moves": "E16 A19", "caption": "Black 11, the solver's suggestion, takes a liberty from White's three cutting stones around C16, but White 12 closes the corner at once. Black cannot catch the cutting stones in time, as one White move at C15 or D15 saves them: the same bent four."}
+   ],
+   "text": [
+    "Black's best at the leaf is Black 11 in Diagram 2; a pass comes to the same, since White's move at E16 then forces Black to connect. Black cannot avoid the shape. After White 16, Black A17 or C19 dies at once; played instead of Black 13, either move leaves a bent three that White kills. Nor can Black catch White's cutting stones in time (Diagram 4). White has no clean kill either: a Black with unlimited ko threats survives.",
+    "Only White can start the ko, whenever it likes (Diagram 3), and under the site's Japanese rules it first removes Black's ko threats, so the corner is dead. The solver's KO− is this ko fought at once: its ko table after White 22 is the one it gave at the leaf.",
+    "The solver's bent-four test stayed undecided at the leaf even at 3M nodes, so it kept KO. In its search area the same test proves BENT4 after Black 11 in Diagram 2 and after White 12 in Diagram 4; its wider area stayed undecided at the leaf and after Diagram 2's Black 11.",
+    "Both options describe the corner in Diagram 2 and differ only in the label: S[DEAD] for the result under the site's rules, S[BENT4] for besogo's exact status. Either way, the solver's KO− is wrong. Black is the side that must live, so both labels mark a failed line and the site's grading does not change. Twelve problems on the site already use S[BENT4], among them 455 and 456 from this collection."
+   ]
+  }
+ ]
+}

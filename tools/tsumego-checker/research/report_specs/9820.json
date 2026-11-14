@@ -1,0 +1,48 @@
+{
+ "problem": "9820",
+ "cards": [
+  {
+   "case": "c031",
+   "headline": "Not a clean kill: Black still has the descent at D19, and White's only answer leads to bent four in the corner, which only White can start.",
+   "diagrams": [
+    {"start": "", "moves": "C18 B19 B16 B15 A16 E18", "caption": "The tree's line. After White 6 the tree marks the leaf S[DEAD]; the solver said KO−."},
+    {"start": "C18 B19 B16 B15 A16 E18", "moves": "D19 A18 A15 E19 B18 A14 A19 B19", "caption": "Black 7 is Black's only move that does not die, and White 8 the only answer that stops Black living. Nothing Black tries from here avoids the bent four; White 10 and 12 fill Black's outside liberties. Black 13 captures two stones and White 14 takes one back. Black now has liberties only at A17 and C19, and every Black move inside is self-atari or suicide."},
+    {"start": "C18 B19 B16 B15 A16 E18 D19 A18 A15 E19 B18 A14 A19 B19", "moves": "pass A19 pass A17 C19 A18 A19 B19", "caption": "Whenever White chooses: White 16 connects, White 18 sacrifices four stones and Black 19 captures them. White 20 takes the vital point, and White 22 takes the ko first while Black's whole group is in atari."}
+   ],
+   "text": [
+    "At the leaf, Black 7 in Diagram 2 is Black's only move that does not die, and every White answer but White 8 lets Black live. White then cannot kill without a ko. It must first fill Black's outside liberties: sacrificing earlier lets Black live. After White 14 Black has no move inside, and White's tries at C19 or A17 only go round a cycle, giving up two stones and taking one back.",
+    "Whenever it likes, White sacrifices four stones (Diagram 3), and White 22 takes the ko first while Black's whole group is in atari. Black can neither start this ko nor avoid it: bent four in the corner. The position after White 8 is the tree's own S[BENT4] leaf where Black starts at D19, with Black 1 and White 6 added, so S[DEAD] here looks like a missed Black 7, not a labelling choice. Either label marks a failure for Black, so grading does not change.",
+    "The solver's KO− is its threat count for the same bent four: its bent-four search ran out of budget after Black 7, and it proves BENT4 after White 8. One reviewer adds a lead: the solver's one-move table gives White a clean kill by answering at D19 instead of White 6, but a direct search of that move was undecided."
+   ]
+  },
+  {
+   "case": "c032",
+   "headline": "Black can still atari the White stone at E19. White's only answer leads to bent four in the corner, plus an outside ko that gives Black nothing.",
+   "diagrams": [
+    {"start": "", "moves": "C18 B19 E18 F18 B16 B15 A16 E19", "caption": "The tree's line. After White 8 the tree marks the leaf S[DEAD]; the solver said BENT4."},
+    {"start": "C18 B19 E18 F18 B16 B15 A16 E19", "moves": "D19 A18 F19 G19 B18 E19 A19 B19", "caption": "Black 9 ataris the White stone at E19, and White 10 is the only answer that stops Black living. Black 11 captures; White 12 keeps Black from making an eye at E19, and White 14 takes the ko there. After White 16 the corner is as in leaf c031; outside, Black still has a liberty at A15, and the ko at E19 is over one more."},
+    {"start": "C18 B19 E18 F18 B16 B15 A16 E19 D19 A18 F19 G19 B18 E19 A19 B19", "moves": "pass F19 pass A15 pass A19 pass A17 C19 A18 A19 B19", "caption": "Whenever White chooses: White 18 connects and ends the outside ko, White 20 fills Black's last outside liberty, White 22 joins its corner stones, and White 24 sacrifices four stones. Black 25 captures them, White 26 takes the vital point, and White 28 takes the ko first while Black's whole group is in atari."},
+    {"start": "C18 B19 E18 F18 B16 B15 A16 E19", "moves": "D19 F19 A18", "caption": "If White 10 saves the stone at E19 instead, Black 11 lives: White's moves inside are self-atari or suicide."}
+   ],
+   "text": [
+    "At the leaf, Black 9 in Diagram 2 is Black's only move that does not die, and White 10 is the only answer that stops Black living; if White saves its stone instead, Black lives (Diagram 4). White then cannot kill without a ko. The ko at E19 is worthless to Black: connecting there only fills its own liberty, so Black can never settle it in its favour.",
+    "So whenever it likes, White settles that ko, fills Black's last outside liberty and sacrifices four stones (Diagram 3). White 28 takes the final ko first while Black's whole group is in atari, and Black can neither start this ko nor avoid it: bent four in the corner, as in leaf c031. The solver also says BENT4. Elsewhere the tree marks this corner S[BENT4], so S[DEAD] here looks like a missed Black 9.",
+    "The analysis gives medium confidence. With the outside left open, the solver's bent-four search stays undecided within budget; a reviewer notes that the extra room only gives Black ko threats, which White can remove first."
+   ]
+  },
+  {
+   "case": "c033",
+   "headline": "Black takes the ko first, but after White's retake Black still has two liberties, so White must win the ko twice: S[KO+2], not S[KO+].",
+   "diagrams": [
+    {"start": "", "moves": "E18 F18 B19 B18 A18 A19 C18 A17 B16 B15 A16 A15", "caption": "The tree's line. White 8 captured Black 5, and White 12 captured nothing, so Black may take the ko at once. The tree marks the leaf S[KO+]; the solver said KO+2."},
+    {"start": "E18 F18 B19 B18 A18 A19 C18 A17 B16 B15 A16 A15", "moves": "A18 A17! pass D19 A18 A17!", "caption": "Black 13 takes the ko, and White 14 retakes after a threat. Black still has two liberties, so Black 15 plays elsewhere. White 16 fills one, Black 17 retakes without a threat, and only a second threat lets White 18 retake. Now Black is in atari, in a plain direct ko."},
+    {"start": "E18 F18 B19 B18 A18 A19 C18 A17 B16 B15 A16 A15", "moves": "A18 A17! pass D19 A18 pass B19", "caption": "With one threat to Black's none, White can retake only once: White 18 is elsewhere, and Black 19 captures two stones, leaving three eyes."}
+   ],
+   "text": [
+    "White 12 captured nothing, so Black 13 in Diagram 2 takes the ko without a threat, and every White answer but the retake lets Black capture and live. After White 14 Black still has two liberties, so it needs no threat and plays elsewhere. White cannot connect at A18, which leaves four White stones in atari, so White 16 fills a liberty and Black 17 retakes for free.",
+    "Only a second threat lets White 18 retake, and only then is Black in atari. So Black lives with one threat fewer than White (Diagram 3) and dies with two fewer: the tutorial's two-step ko, which becomes a plain KO+ once White has won it once. The tree's KO+ is one threat short. The tree writes its other step kos as S[KO+2]; besogo's approach-ko label, S[A+1KO+], needs the same threats.",
+    "At one threat fewer the solver's wider search area ran out of budget; a reviewer settles that case by reading."
+   ]
+  }
+ ]
+}

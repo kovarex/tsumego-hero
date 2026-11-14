@@ -1,0 +1,20 @@
+{
+ "problem": "13661",
+ "cards": [
+  {
+   "case": "c072",
+   "headline": "Not a ko: White fills the shared liberty, Black cannot play at the ko point, and White captures five stones there. White lives outright: S[ALIVE], not S[A-4KO+].",
+   "diagrams": [
+    {"start": "", "moves": "B18 B17 C18 A18 F18 D19 B19 A16 A19 C17 A17 D18", "caption": "The tree's line. Black 11 takes the ko by capturing White 4, White 12 joins White 6 to the group, and the tree marks the leaf S[A-4KO+]; the solver said ALIVE."},
+    {"start": "B18 B17 C18 A18 F18 D19 B19 A16 A19 C17 A17 D18", "moves": "", "labels": {"C19": "a", "A18": "b"}, "caption": "The leaf, Black to play. Black's corner has two liberties, a and b, and the stone at A17 only b. If Black plays either, it is self-atari, and White captures six stones at the other."},
+    {"start": "B18 B17 C18 A18 F18 D19 B19 A16 A19 C17 A17 D18", "moves": "E18 C19 E19 A18", "caption": "Black 13 takes an outside liberty, and White 14 fills the shared one, keeping three liberties. The corner and the stone at A17 are left with only A18, where Black cannot play. After Black 15, White 16 captures five stones and lives. Another approach or a move elsewhere as Black 13 meets the same White 14."},
+    {"start": "", "moves": "B18 B17 C18 A18 E18 D18 F18 D19 B19 A16 A19 C17 A17", "caption": "The tree's leaf marked S[A-3KO+]. Black 13 has just taken the ko, and White is to play. The analyst finds the same misreading here: White fills C19 and lives outright."}
+   ],
+   "text": [
+    "The leaf ends with White 12, which captures nothing; Black is to play and has no forcing move. Either liberty of the corner is self-atari (Diagram 2), and White's group, joined through White 10 and White 12 in Diagram 1, has four more liberties outside. Whatever Black plays outside, White fills the shared liberty, as White 14 does in Diagram 3. Black can never play at A18 after that, and White 16 there is a plain capture of five stones, not a ko. White lives with the corner space and an eye at A17.",
+    "Both reviewers agree with the analyst. S[A-4KO+] counts White's four outside liberties as approach moves Black needs before a ko at A18 decides, but White never needs that ko, so Black's ko threats have nothing to work against. In the solver's search area the leaf is ALIVE even when Black may ignore the ko ban. A wider area stayed undecided at 1M nodes, which looks like a budget limit, as its extra points do not touch White's liberties; after White 14 in Diagram 3 it gives ALIVE too.",
+    "With S[ALIVE] on this leaf alone, the site's grading does not change. The analyst flags the same misreading in the leaf marked S[A-3KO+] (Diagram 4): White to play lives there too by filling C19. The checker passed that leaf only because it ends with Black's ko capture."
+   ]
+  }
+ ]
+}

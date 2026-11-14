@@ -1,0 +1,20 @@
+{
+ "problem": "370",
+ "cards": [
+  {
+   "case": "c002",
+   "headline": "After White's throw-in Black is not dead: capturing at C17 starts a direct ko that Black takes first, and neither side has a local threat. KO+, not DEAD.",
+   "diagrams": [
+    {"start": "", "moves": "A18 C16 C19 B19", "caption": "The tree's line. White 2 captures Black's stone at C17, Black 3 is the mistake, and White 4 throws in. The tree marks the leaf S[DEAD], Black to play; the solver said KO+."},
+    {"start": "A18 C16 C19 B19", "moves": "C17 C18! C17! pass C18", "caption": "With one threat each, Black wins. Black 5 captures White's stone at C18: a direct ko. White 6 retakes after a threat elsewhere, and Black 7 retakes after one of its own. With no threat left, White 8 plays elsewhere and Black 9 connects: alive, with eyes at E19 and B19 (Black takes White 4 at A19 when needed)."},
+    {"start": "A18 C16 C19 B19", "moves": "C17 C18! pass C17 A19 A17 B19", "caption": "With one threat more than Black, White wins. After Black 5 captures, White 6 retakes after a threat elsewhere; Black has none, so Black 7 plays elsewhere and White 8 connects. Black 9 takes White 4, but White 10 ataris the three corner stones and Black 11 must fill B19, leaving only the eye at E19: dead."}
+   ],
+   "text": [
+    "Black 3 is a mistake, but it does not lead to death. After White 4, White's stone at C18 is in atari, and Black 5 captures it: a direct ko for the whole group. Every other Black move at the leaf dies. If Black wins the ko, Black lives with eyes at E19 and B19 (Diagram 2). If White wins it and connects at C17, the corner eye is false and Black dies (Diagram 3).",
+    "The solver confirms that neither side has a local ko threat. Every White try is answered by Black connecting at C18, and White cannot play at A19 or E19: both are suicide. Every Black try is answered by White connecting at C17. Black takes the ko first, so Black wins when the threats are equal (Diagram 2), and the leaf should be S[KO+].",
+    "It is not S[KO+2]: there is no approach move, and one ko win settles the group either way. With White one threat ahead (Diagram 3) Black dies. The solver says so in its search area and stays undecided over a wider area, where by reading Black dies too: the crawls along the edge hit White's wall.",
+    "The tree's White 4 is right: it is White's only try, and every other White move there lets Black live. Black 3 stays a wrong answer, since Black at B19 instead lives without ko: the tree's S[ALIVE] leaf. So the site's grading does not change. Problems 556, 570 and 1418 of the same collection have KO− leaves next to ALIVE ones, so DEAD here looks like a misread, not a convention."
+   ]
+  }
+ ]
+}

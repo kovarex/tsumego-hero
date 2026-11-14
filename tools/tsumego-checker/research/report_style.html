@@ -64,7 +64,7 @@ section { display: grid; gap: 16px; }
 figure { margin: 0; display: grid; gap: 5px; min-width: 0; }
 figcaption { font-size: 0.88rem; }
 .notes { font: 0.78rem/1.45 var(--mono); color: var(--muted); }
-.board { width: 100%; max-width: 330px; height: auto; }
+.board { max-width: 100%; height: auto; }
 .board .wood { fill: var(--wood); }
 .board .grid { stroke: var(--wood-line); stroke-width: 1; }
 .board .grid.edge { stroke-width: 2; }
@@ -91,7 +91,7 @@ figcaption { font-size: 0.88rem; }
       <div><b>{decide}</b><span>leaves for four decisions</span></div>
       <div><b>{solver}</b><span>solver mistakes</span></div>
     </div>
-    <p>Of the clear errors, {label_leaves} leaves in {label_problems} problems need only the new S[]. In {grading} problems the fix also changes which moves the site accepts, and a checker confirmed the new marks. In {tree} problems the tree needs more than the new S[], or the site would grade some moves wrongly.</p>
+    <p>Of the clear errors, {label_leaves} leaves in {label_problems} problems need only the new S[]. In {grading} problems the fix also changes which moves the site accepts, and a checker confirmed the new marks. In {tree} problems the tree needs more than the new S[], or the site would grade some moves wrongly or not show the fix.</p>
   </header>
   <nav aria-label="Contents"><ul class="toc">TOC</ul></nav>
   <div class="reading">

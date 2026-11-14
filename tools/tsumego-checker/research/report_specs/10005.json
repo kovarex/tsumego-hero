@@ -1,0 +1,47 @@
+{
+ "problem": "10005",
+ "cards": [
+  {
+   "case": "c038",
+   "headline": "White's corner lives: White can always play A19, capturing Black's two stones, and get two real eyes. The solver targeted stones White gives up.",
+   "diagrams": [
+    {"start": "", "moves": "A18 D19 B19 B17 C17 C18 E18 A17 D18 C19", "caption": "The tree's line. Black 9 captures two White stones. After White 10 the tree marks the leaf S[ALIVE]; the solver said DEAD."},
+    {"start": "A18 D19 B19 B17 C17 C18 E18 A17 D18 C19", "moves": "E19 A19 G19 pass A16", "caption": "Black 11 ataris White's corner and the two stones on the right. White 12 captures Black's two corner stones, and Black 13 takes the two on the right. After Black 15 White still has two real eyes, at A18 and B19: Black can play neither point, since each is suicide."}
+   ],
+   "text": [
+    "The tree is right. Black 1 and Black 3 each have one liberty, at A19, where Black cannot play: it is suicide. White's corner has two liberties, so Black cannot capture it first: whatever Black plays, White captures both stones (White 12 in Diagram 2) and has two real eyes.",
+    "The solver said DEAD only because of its target: White's four stones on the right, picked at the start without B18. Black 9 has captured two of them, and White can give up the other two. With White's corner as the target, the solver says ALIVE after every Black move. The problem asks Black to kill the whole corner, B18 included, so the tree needs no change."
+   ]
+  },
+  {
+   "case": "c039",
+   "headline": "White has just taken the ko, but Black's free local threat at G19 means White must find the first outside threat: KO+, not KO−.",
+   "diagrams": [
+    {"start": "", "moves": "A18 D19 E18 D18 B19 C17 A17 C19 B17 A19", "caption": "The tree's line. White 10 takes the ko by capturing Black 5, and the tree marks the leaf S[KO-]; the solver said KO+."},
+    {"start": "A18 D19 E18 D18 B19 C17 A17 C19 B17 A19", "moves": "G19 E19 B19 pass C18", "caption": "Black 11 ataris two White stones, and White 12 must capture Black's stone at E18 to save them. Black 13 retakes. With no threat, White 14 plays elsewhere, and Black 15 captures a stone: White's whole group is in atari at E18."},
+    {"start": "A18 D19 E18 D18 B19 C17 A17 C19 B17 A19", "moves": "G19 E19 B19 A19!", "caption": "With a threat elsewhere, White 14 retakes. Neither side has a local threat left, so Black now needs the next threat."},
+    {"start": "A18 D19 E18 D18 B19 C17 A17 C19 B17 A19", "moves": "G19 B19 E19", "caption": "If White 12 connects the ko instead, Black 13 captures two stones, and White's whole group has only C18 left, which White cannot fill."}
+   ],
+   "text": [
+    "White 10 has just taken the ko, so counting only who captured last gives the tree's KO−. But Black 11 in Diagram 2 is a free local threat: it ataris two White stones, whose capture would rescue Black 3 and kill. White 12 must capture Black 3; every other answer dies, including connecting the ko (Diagram 4). Black 13 then retakes without a threat elsewhere, and White has no local threat. So White needs the first outside threat, and Black wins with equal threats: KO+.",
+    "Winning this ko once settles it. After Black 15 in Diagram 2, White can retake at B18 only after a threat and can never end that second ko, since connecting at C18 is self-atari. When White has an outside threat and retakes (Diagram 3), Black 11 is spent: neither side has a local threat left, and Black needs the next threat. So Black 11 is worth exactly one threat: KO+, not KO+2.",
+    "The site's tutorial gives KO+ for exactly this case: the opponent took first, but the player has a local threat and the opponent has none."
+   ]
+  },
+  {
+   "case": "c040",
+   "headline": "Same as c039, with the ko at A18: Black's free local threat at G19 means White must find the first outside threat. KO+, not KO−.",
+   "diagrams": [
+    {"start": "", "moves": "A18 D19 E18 D18 B19 C17 C19 A17 B17 A19", "caption": "The tree's line. White 10 takes the ko by capturing Black 1, and the tree marks the leaf S[KO-]; the solver said KO+."},
+    {"start": "A18 D19 E18 D18 B19 C17 C19 A17 B17 A19", "moves": "G19 E19 A18 pass C18", "caption": "Black 11 ataris two White stones, and White 12 must capture Black's stone at E18 to save them. Black 13 retakes. With no threat, White 14 plays elsewhere, and Black 15 captures a stone: White's whole group is in atari at E18."},
+    {"start": "A18 D19 E18 D18 B19 C17 C19 A17 B17 A19", "moves": "G19 E19 A18 A19!", "caption": "With a threat elsewhere, White 14 retakes. Neither side has a local threat left, so Black now needs the next threat."},
+    {"start": "A18 D19 E18 D18 B19 C17 C19 A17 B17 A19", "moves": "G19 A18 E19 C18 A16", "caption": "If White 12 connects the ko instead, Black 13 captures two stones. White 14 takes two back, but after Black 15 White has only a two-point eye at B19 and C19."}
+   ],
+   "text": [
+    "White 10 has just taken the ko. Black 11 in Diagram 2 is a free local threat: it threatens to capture two White stones, rescue Black 3 and leave White without two eyes. White 12 must capture Black 3, Black 13 retakes, and White has no local threat. So White needs the first outside threat. With equal threats Black wins: Black 15 captures a stone and puts White's whole group in atari. That is KO+.",
+    "White's other answers to Black 11 die. Connecting the ko leaves White only a two-point eye (Diagram 4). Capturing Black 5 and Black 7 at C18 gives White at best a ko that only Black can end. The solver says DEAD there in its search area, and the reviewers' reading agrees; this line is why its wider area stays undecided at the leaf.",
+    "Once Black 11 is spent, White's retake in Diagram 3 leaves a plain ko in which Black needs the next threat, so Black 11 is worth exactly one threat: KO+, not KO+2. The site's tutorial gives KO+ for this case. In the branch where Black starts at D19, the tree's S[KO+] leaf comes after a local exchange and Black's retake, so the author probably missed Black 11 here."
+   ]
+  }
+ ]
+}

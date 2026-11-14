@@ -1,0 +1,50 @@
+{
+ "problem": "15340",
+ "cards": [
+  {
+   "case": "c096",
+   "headline": "White takes the ko first; after Black's retake, a free local threat stops Black from connecting, and White retakes. Black must win the ko twice: KO+2, not KO+.",
+   "diagrams": [
+    {"start": "", "moves": "A15 A16 C15 A14 C19 B19 A18 B18 A17 B17 A13 A19", "caption": "The tree's line. Black 12 captures two stones, and the tree marks the leaf S[KO+]; the solver said KO+2."},
+    {"start": "A15 A16 C15 A14 C19 B19 A18 B18 A17 B17 A13 A19", "moves": "A15 A14! A17 A18 A15", "caption": "White 13 takes the ko by capturing Black 4, and Black 14 retakes after a threat elsewhere. White 15 is a free local threat that stops Black from connecting (Diagram 3). Black 16 captures it, and White 17 retakes without a threat elsewhere. From here it is a plain KO+."},
+    {"start": "A15 A16 C15 A14 C19 B19 A18 B18 A17 B17 A13 A19", "moves": "A15 A14! A17 A15 B16", "caption": "If Black 16 connects instead, White 17 captures four stones, and Black is dead."},
+    {"start": "A15 A16 C15 A14 C19 B19 A18 B18 A17 B17 A13 A19", "moves": "A15 A14! A17 A18 A15 A14! pass A15", "caption": "Black 18 retakes a second time after another threat elsewhere. White has no local threat left and no threat elsewhere either, so White 19 plays elsewhere, and Black 20 connects and lives with eyes at B16 and A17."}
+   ],
+   "text": [
+    "Black 12 captured two stones but did not take a ko, so White 13 in Diagram 2 may take the ko at once. Black must retake: any other move lets White connect at A14, and Black is dead. After Black 14 retakes, White 15 is a free local threat: connecting instead of capturing it loses four stones (Diagram 3). So Black 16 must capture, and White 17 retakes without a threat elsewhere.",
+    "From there it is a plain KO+. If Black wins it a second time, White has no local threat left and Black lives (Diagram 4). So Black needs two threats more than White: a two-step ko, KO+2, which becomes plain KO+ once Black has won it once. Black has no local threat; the ataris on White 11 are no threats.",
+    "The sibling leaf, where Black already holds A17, has no such free threat and is a true KO+, so two leaves the tree rates equal differ by one threat. Both reviewers agree. The solver found KO+2 in its search area but could not decide the whole leaf in its larger areas, a node-budget limit; step-by-step checks cover it."
+   ]
+  },
+  {
+   "case": "c097",
+   "headline": "White takes the ko first; after Black's retake, a local threat lets White retake again for free. Black must win the ko twice: KO+2, not KO+.",
+   "diagrams": [
+    {"start": "", "moves": "A18 C19 A15 A16 A14 C15 A17 B17", "caption": "The tree's line, ending with Black 8. The tree marks the leaf S[KO+]; the solver said KO+2."},
+    {"start": "A18 C19 A15 A16 A14 C15 A17 B17", "moves": "B16 A16! D19 B18 B16", "caption": "White 9 takes the ko by capturing Black 4, and Black 10 retakes after a threat elsewhere. White 11 is a local threat; Black 12 answers it by putting White 1 and White 7 in atari, and White 13 retakes without a threat elsewhere. Black's whole group is in atari: a plain KO+ from here."},
+    {"start": "A18 C19 A15 A16 A14 C15 A17 B17", "moves": "B16 A16! D19 B16", "caption": "If Black 12 connects instead, the corner is too small to live with White 1 and White 7 inside: Black is dead even if White passes once."},
+    {"start": "A18 C19 A15 A16 A14 C15 A17 B17", "moves": "B16 A16! D19 B18 B16 A16! pass A19", "caption": "Black 14 retakes a second time after another threat elsewhere, and White 1 and White 7 are in atari. White has no local threat left and no threat elsewhere either, so White 15 plays elsewhere, and Black 16 captures them and lives."}
+   ],
+   "text": [
+    "White 9 in Diagram 2 takes the ko. Black must retake at once: any other move lets White connect at A16, and Black dies. One retake does not settle it: connecting leaves Black dead (Diagram 3), so Black must also capture White 1 and White 7, which needs an atari first. White 11 is a local threat; Black 12 answers it with that atari, and White 13 retakes without a threat elsewhere, with Black's group in atari.",
+    "From there it is a plain KO+, and if Black wins it a second time, Black lives (Diagram 4). So Black must win the ko twice: KO+2, which becomes plain KO+ once Black has won it once. Black has no local threat. Both reviewers agree; the solver's wider area stayed undecided at the leaf itself, and the step-by-step checks cover it.",
+    "White 1 is already a wrong first move: the tree kills with a different one, so the site's grading does not change. The fix makes White 7 strictly better than its three siblings, which the tree also marks KO+; leaf c098 is one of them, and it is really KO−."
+   ]
+  },
+  {
+   "case": "c098",
+   "headline": "White cannot take the ko first: after White's best play Black takes it first, so White needs the first threat elsewhere. KO−, not KO+.",
+   "diagrams": [
+    {"start": "", "moves": "A18 C19 A15 A16 A14 C15 B17 B18", "caption": "The tree's line, ending with Black 8. The tree marks the leaf S[KO+]; the solver said KO−."},
+    {"start": "A18 C19 A15 A16 A14 C15 B17 B18", "moves": "D19 B16 B19 A19", "caption": "White's best. White 9 is sente: if Black plays elsewhere, White takes the ko first. After Black 10 connects, White 11 ataris, and Black 12 captures it: Black has taken the ko first."},
+    {"start": "A18 C19 A15 A16 A14 C15 B17 B18", "moves": "D19 B16 B19 A19 pass A17", "caption": "If White has no threat and plays elsewhere with White 13, Black 14 captures two stones and lives with three eyes."},
+    {"start": "A18 C19 A15 A16 A14 C15 B17 B18", "moves": "D19 B16 B19 A19 B19! pass A17", "caption": "With one threat more than Black, White 13 retakes after a threat elsewhere and puts Black in atari. Black has no threat left, so Black 14 plays elsewhere, and White 15 captures the whole group."}
+   ],
+   "text": [
+    "At the leaf there is no ko on the board and White has nothing to capture, so White cannot take first. White's best is Diagram 2, where Black 12 takes the ko first. Without a threat White loses it (Diagram 3); with one threat more than Black, White kills (Diagram 4). Neither side has a local threat, so White needs the first threat: KO−.",
+    "Every other White move at the leaf lets Black live, except throwing in at B19 at once, which is worse for White: Black still captures first, and White's retake is not even atari. Both reviewers agree. In the solver's largest region the equal-threat case stayed undecided, but a larger region can only help Black.",
+    "The site's tutorial uses KO+ only when the opponent must find the first threat; here White must find it, so this is a site error. One reviewer notes the author marked all 14 ko leaves of this tree KO+, besogo's default."
+   ]
+  }
+ ]
+}

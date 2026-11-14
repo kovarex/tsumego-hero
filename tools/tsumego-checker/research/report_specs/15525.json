@@ -1,0 +1,45 @@
+{
+ "problem": "15525",
+ "cards": [
+  {
+   "case": "c117",
+   "headline": "White's A18 is a blunder: the five-stone White group has only two liberties, so Black puts it in atari and captures it. S[DEAD], not S[ALIVE].",
+   "diagrams": [
+    {"start": "", "moves": "G19 B19 D18 D17 C17 A18", "caption": "The tree's line. White 6 is the blunder, and the tree marks the leaf S[ALIVE]; the solver said DEAD."},
+    {"start": "G19 B19 D18 D17 C17 A18", "moves": "F19 E18 E19", "caption": "Black 7 puts the five stones in atari. White 8 extends, but the group still has only one liberty, and Black 9 captures six stones."},
+    {"start": "G19 B19 D18 D17 C17 A18", "moves": "F19 D19 E18", "caption": "If White 8 puts Black's stone at D18 in atari instead, Black 9 captures five stones first."}
+   ],
+   "text": [
+    "At the leaf, White 4 and the four stones joined to it have two liberties, at E18 and F19, and no eye space. None of the Black stones around them can be captured in time: Black 3 has two liberties, Black 5 is joined to the wall, and Black 1 to the stones on the H line. So Black 7 in Diagram 2 puts the group in atari, and White can neither escape nor capture first (Diagram 3).",
+    "Both reviewers agree, and the solver finds DEAD after every White reply to Black 7. White's corner stones, cut off by Black 3 and Black 5, cannot live on their own. The leaf is DEAD.",
+    "S[DEAD] is the right label, but on its own it makes the site accept Black 1 as correct. The two sections below say what to add to the tree, and why."
+   ]
+  }
+ ],
+ "tree_change": {
+  "text": [
+   "S[DEAD] alone is not enough: with it, the site would accept Black's G19 (see On the site, below). Keep the tree's answer to G19, White's B19, with the new S[DEAD] at the end of its line, and add White's stronger answer beside it: White 2 on the vital point. Any score under White 2 worse for Black than KO+ (S[KO-], S[KO-2] and so on, or S[ALIVE]) makes G19 wrong again; the exact score is not settled.",
+   "Diagrams 1 to 4 are the lines the grading check read under White 2, each with the S[] its reading supports. Black 3 at C17 needs no new line: besogo already finds that position in the tree's C17 branch, marked S[ALIVE]. Black 3 at B18, at C19 or at E19 stayed undecided; read those before choosing the score under White 2.",
+   "Do not fix the branch only by changing White's A18 at move 6 to D19, which leads into the main line's ko: G19 would then be as good as the main line, which this reading contradicts."
+  ],
+  "diagrams": [
+   {"start": "", "moves": "G19 D18 D17 E19", "caption": "Add White 2 as a second answer to Black 1, beside the tree's B19, then Black 3 and White 4. Black gets a ko at best and falls short when neither side has ko threats: S[KO-] or worse on White 4."},
+   {"start": "", "moves": "G19 D18 F19 E19", "caption": "Under the same White 2, add Black 3 and White 4. Black falls short when neither side has ko threats: S[KO-] or worse on White 4."},
+   {"start": "", "moves": "G19 D18 B19 E19", "caption": "Under White 2, add Black 3 and White 4. Black falls short even with two ko threats more than White: probably S[ALIVE] on White 4."},
+   {"start": "", "moves": "G19 D18 D19 C19", "caption": "Under White 2, add Black 3 and White 4. Black falls short when neither side has ko threats: S[KO-] or worse on White 4."}
+  ]
+ },
+ "grading": {
+  "text": [
+   "With S[DEAD] on the c117 leaf alone, the site marks a in Diagram 1 correct; today it is wrong. besogo also counts White 6 in Diagram 2 as a reply, because it reaches a position already in the tree: the main line after White 6 (Diagram 3), rated KO+. Once the leaf says DEAD, that is White's best move 6, so a scores KO+ instead of ALIVE, the same as b.",
+   "The grading check finds the new mark wrong, with moderate confidence. The tree answers a only with White 2 in Diagram 2. White's stronger answer is the vital point, White 2 in Diagram 4, which the tree already plays against Black's other wrong first moves. The solver could not settle Diagram 4 as a whole, so the check tested each Black reply against the main line's bar: Black must still win when neither side has ko threats. Every reply the solver decided falls short.",
+   "The solver treats everything outside its area as a Black wall, which only helps Black, so these failures hold on the real board. The three replies at z stayed undecided at up to 6M nodes, so this is not proven. A go player would expect it, though: in the main line Black takes the vital point and gets only a ko, so White taking it should be at least as good for White. So a is very probably worse than b and should stay wrong; the tree change above makes it wrong again."
+  ],
+  "diagrams": [
+   {"start": "", "moves": "", "labels": {"G19": "a", "D18": "b"}, "caption": "Black to play. Today b is correct and a is wrong. With only the new S[DEAD], the site marks a correct too."},
+   {"start": "", "moves": "G19 B19 D18 D17 C17 D19", "caption": "Black 1 at a, and White 6 in place of the tree's blunder. These are the stones of Diagram 3 after White 6, with Black to play."},
+   {"start": "", "moves": "D18 D17 C17 D19 G19 B19 A17 A18 B18", "caption": "The main line from b. Black 9 takes the ko, and the tree marks the leaf S[KO+]."},
+   {"start": "", "moves": "G19 D18", "labels": {"A19": "x", "A18": "x", "A17": "x", "C17": "x", "E18": "x", "D17": "y", "F19": "y", "D19": "y", "B19": "y", "B18": "z", "C19": "z", "E19": "z"}, "caption": "White 2 on the vital point is White's stronger answer to Black 1. Black 3 at x lets White live outright; at y Black falls short when neither side has ko threats; z stayed undecided."}
+  ]
+ }
+}

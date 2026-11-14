@@ -1,0 +1,20 @@
+{
+ "problem": "11334",
+ "cards": [
+  {
+   "case": "c053",
+   "headline": "Black is not dead: it can force a direct ko. White takes it first and neither side has a local threat, so KO−, not DEAD.",
+   "diagrams": [
+    {"start": "", "moves": "A16 B18 D19 B19", "caption": "The tree's line. Black 3 is a wrong answer; the tree marks the leaf S[DEAD], and the solver said KO−."},
+    {"start": "A16 B18 D19 B19", "moves": "B17 A18 C19 F19 A19 A18 B18 B19", "caption": "From the leaf. Black 5 ataris the stone at A17, and White 6 must connect. Black 7 ataris four stones, White 8 fills an outside liberty, and Black 9 captures. White 10 throws in, Black 11 ataris it, and White 12 captures Black 9: a direct ko, taken by White."},
+    {"start": "A16 B18 D19 B19 B17 A18 C19 F19 A19 A18 B18 B19", "moves": "A19! pass A17", "caption": "As in Diagram 2 up to White 12. With one threat more than White, Black 13 retakes; White 14 has no threat left, and Black 15 captures White 10: two eyes, at A18 and B19."},
+    {"start": "A16 B18 D19 B19 B17 A18 C19 F19 A19 A18 B18 B19", "moves": "pass A19 A17 A19", "caption": "As in Diagram 2 up to White 12. Without a threat, Black 13 plays elsewhere and White 14 connects the ko. Black 15 captures three stones, but White 16 on the vital point of the bent three kills."}
+   ],
+   "text": [
+    "S[DEAD] is wrong. Black 5 is Black's only move; the others die. Then White has no better line than Diagram 2: any other White 6 lets Black capture and live, White 8 must fill one of Black's two outside liberties or Black lives outright, and White 10 is the only move that keeps the ko. Black 11 is forced as well: B19 or A17 instead dies.",
+    "Black lives if it wins the ko (Diagram 3) and dies if it loses (Diagram 4). White 12 took the ko first, and neither side has a local threat; White 8 fills at F19 rather than A14, which would give Black one. So Black needs one threat more than White: KO−. The solver's ko table and both reviewers agree. The solver's wider-area search left equal threats undecided, but a reviewer found that the extra outside liberties on the real board do not help Black: extending to gain them costs a move.",
+    "Changing White 4 does not fix the tree: after Black 3 no White move kills outright, and White's best answers all give a ko. KO− still ranks below the main line's S[ADKO], so Black 3 stays a wrong move."
+   ]
+  }
+ ]
+}
