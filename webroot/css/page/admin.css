@@ -195,7 +195,7 @@
   cursor: pointer;
   font-weight: var(--weight-normal);
   font-size: var(--text-xs);
-  color: #888;
+  color: var(--color-text-muted);
   margin-left: 4px;
 }
 .schedule-page__column-toggle input {
@@ -214,7 +214,7 @@
 .schedule-page__preview-toggle {
   cursor: pointer;
   font-size: 12px;
-  color: #888;
+  color: var(--color-text-muted);
   margin-bottom: var(--space-2);
   display: inline-block;
 }

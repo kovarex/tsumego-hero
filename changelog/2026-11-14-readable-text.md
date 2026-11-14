@@ -1,0 +1,1 @@
+Changed: Text that was hard to read is easier to read now: the percent in the progress bars of the profile, the labels on this page, the dates and numbers of the charts, the greyed notes, the stats of a collection, the Ultra rare badge, the third place in the highscores and the Sign up link in the dark theme.

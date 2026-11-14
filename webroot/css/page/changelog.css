@@ -45,7 +45,7 @@
 
 .changelog-page__link
 {
-	color: var(--text-on-dark-soft);
+	color: var(--color-text-muted);
 	text-decoration: none;
 }
 
@@ -147,27 +147,27 @@ a[href="/changelog"]
 
 .changelog__category--added
 {
-	color: var(--status-c-color);
+	color: var(--changelog-added);
 }
 
 .changelog__category--fixed
 {
-	color: var(--status-f-color);
+	color: var(--changelog-fixed);
 }
 
 .changelog__category--changed
 {
-	color: var(--status-v-color);
+	color: var(--changelog-changed);
 }
 
 .changelog__category--performance
 {
-	color: var(--status-w-color);
+	color: var(--changelog-performance);
 }
 
 .changelog__category--removed
 {
-	color: var(--status-n-color);
+	color: var(--changelog-removed);
 }
 
 .changelog__list

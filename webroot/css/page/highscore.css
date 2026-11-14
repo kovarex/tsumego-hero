@@ -33,7 +33,7 @@
 .highscore-table__total
 {
   font-size: var(--text-sm);
-  color: #999;
+  color: var(--color-text-muted);
   padding: 8px 0;
 }
 /* The boards: a centred row of pills, wrapping on a phone */

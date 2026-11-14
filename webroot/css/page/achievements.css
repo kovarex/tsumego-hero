@@ -409,7 +409,7 @@
 }
 .rarity--ultra-rare {
 	color: var(--color-yellow);
-	background: var(--color-red);
+	background: var(--rarity-ultra-rare-background);
 }
 /* Text color per achievement (suffix 3 = popup variant; class built
    dynamically as achievement.color + '3' in AchievementAlerts.js).
