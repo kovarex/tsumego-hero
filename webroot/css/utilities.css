@@ -43,13 +43,6 @@
 	text-align: -webkit-left;
 }
 
-/* What align="right" did */
-.legacy-right
-{
-	text-align: -moz-right;
-	text-align: -webkit-right;
-}
-
 /* A form that sits in a line of text */
 .inline-form
 {
@@ -77,17 +70,6 @@
 .italic
 {
 	font-style: italic;
-}
-
-/* Table-cell vertical alignment */
-.valign-top
-{
-	vertical-align: top;
-}
-
-.valign-bottom
-{
-	vertical-align: bottom;
 }
 
 /* Plain link: inherit color, no underline until hover. */

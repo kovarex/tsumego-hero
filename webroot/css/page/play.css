@@ -38,8 +38,7 @@
   top: 10px;
   left: 57px;
 }
-/* The comments under the problem, and the reset form of a collection under its link */
-.tsumego-comments__content,
+/* The reset form of a collection under its link */
 .set-view__reset-form {
   margin: 2px 14px;
   position: relative;
@@ -388,9 +387,6 @@
 #multipleChoiceText,
 #potionAlerts {
   color: var(--play-dark-text);
-}
-.commentBox2 {
-  color: var(--admin-text-color);
 }
 /* =============================================================================
    Tsumego Comments & Issues Styling

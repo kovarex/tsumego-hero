@@ -653,13 +653,6 @@
 	color: var(--color-text);
 }
 
-.form-field__help
-{
-	margin-top: var(--space-1);
-	font-size: 12px;
-	color: var(--color-text-muted);
-}
-
 /* ── Color input (raw <input type="color">, set color picker) ── */
 .color-input
 {
