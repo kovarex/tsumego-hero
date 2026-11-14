@@ -119,7 +119,7 @@ def checks_line(c):
         parts.append('%s: %s%s' % (name, verdicts[j['verdict']], label(j.get('correct_status'))))
     facts = c.get('facts')
     if facts:
-        parts.append('fact check: %s%s' % ('facts confirmed' if facts['facts_hold'] else 'facts wrong',
+        parts.append('fact check: %s%s' % ('facts confirmed' if facts['facts_hold'] else 'corrects the analysis',
                                            '' if facts['verdict'] == 'definition' else ', calls it ' + verdicts[facts['verdict']]))
     return '<p class="dissent"><b>Checks:</b> %s.</p>' % '; '.join(parts) if parts else ''
 

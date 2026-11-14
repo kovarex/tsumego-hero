@@ -64,7 +64,7 @@
   "title": "Problem 15678: kill the whole White group, or only the top stones?",
   "text": [
    "The SGF names no target and has no description. Every DEAD leaf of the tree kills only the top stones (D19, D18 to G18) while White's left side lives with two eyes, and every ALIVE leaf is a line where the top stones get out. So the tree scores the top stones. The checker, like any solver given the problem, reads it as killing the whole group, and on the board as given no line of the tree kills the whole group: B13, B14 and C13 can always run out to the open lower side.",
-   "Top stones: the two DEAD leaves stay as they are (the goal is worth writing in the description), and the KO+ leaf becomes S[KO&minus;3]: White took first, Black must win the ko twice, and White's H19 atari is one more free threat. Whole group: all three leaves become ALIVE, and the main line needs rewriting, since none of its kills works.",
+   "Top stones: the two DEAD leaves stay as they are (the goal is worth writing in the description), and the KO+ leaf becomes S[KO&minus;3]: White took first, Black must win the ko twice, and White's H19 atari is one more free threat. Whole group: all three leaves become ALIVE, and the problem has no correct answer left, since no line of the tree kills the whole group on the board as given (the fact checker found the A15 sibling's kill only inside the solver's walled area, and unproven even there).",
    "Either way, the tree's S[KO+] is wrong: White has just taken that ko. Suggestion: top stones, with the goal stated in the description."
   ],
   "cases": [
