@@ -53,8 +53,14 @@ solver as a calculator, then by reviewers who try to refute each verdict (`resea
 ```sh
 python3 research/make_cases.py 'status.*.jsonl' problems.jsonl cases.json
 PROBLEMS=problems.jsonl python3 research/precompute.py cases.json evidence 0 1
-PROBLEMS=problems.jsonl python3 research/render_research.py results.json research.html
+PROBLEMS=problems.jsonl python3 research/impact_scenarios.py results.json scenarios.json
+node research/grading_impact.cjs scenarios.json impact.json
+PROBLEMS=problems.jsonl python3 research/render_research.py results.json research.html impact.json cases.json
 ```
+
+The page lists the questions to decide first, then the clear errors on the site, each with the moves the site would grade
+differently after the fix (`impact_scenarios.py` proposes each fix alone and all of a problem's fixes together); with
+the cases file, the leaves not checked yet are listed as still under review.
 
 `research/grading_impact.cjs` runs besogo's own grading (`webroot/besogo/tests.html` in a headless browser) on a tree
 before and after new S[] values, and lists the moves whose correct/wrong mark changes:
