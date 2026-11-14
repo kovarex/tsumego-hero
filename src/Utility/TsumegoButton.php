@@ -69,6 +69,15 @@ class TsumegoButton
 	//A button that can't be opened yet, which shows "?" and nothing about the problem: no link, no id,
 	//no preview, no tooltip. The mistake training overview shows it for a problem due today and not
 	//solved yet, so the list doesn't give away which one it is.
+	//Whether the problem counts as solved in the run through its part: a problem the reset put back in Review counts once it is
+	//solved again (a solve since the reset, or Mastered in the time mode, which keeps no attempt)
+	public function isSolvedInRun(): bool
+	{
+		if (!TsumegoUtil::isSolvedStatus($this->status))
+			return false;
+		return !$this->runStartedByReset || $this->status != TsumegoStatusTable::$REVIEW || $this->solvedAttempts > 0;
+	}
+
 	public static function renderLocked(string $accessibleName): void
 	{
 		echo '<li class="problem-nav__item problem-nav__item--N problem-nav__item--locked">'
@@ -160,6 +169,8 @@ class TsumegoButton
 	//without one counts as one)
 	public int $solvedAttempts = 0;
 	public int $failedAttempts = 0;
+	//Whether a reset of the part started the run the attempts are of (TsumegoButtons::loadAttempts())
+	public bool $runStartedByReset = false;
 	public bool $isCurrentlyOpened = false;
 	//The fewest buttons a row of the play page can show and still show this one: 5, 9 or 13; 0 for the
 	//first, the last and the open problem's, which always show (see play.php)

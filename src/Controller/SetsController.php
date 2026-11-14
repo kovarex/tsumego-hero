@@ -12,6 +12,7 @@ use App\Model\Table\SetTable;
 use App\Model\Table\SetConnectionTable;
 use App\Model\Table\SgfTable;
 use App\Model\Table\TsumegoTable;
+use App\Model\Table\TsumegoStatusTable;
 use Cake\Http\Exception\ConflictException;
 use App\Model\Table\AchievementConditionTable;
 use App\Model\Table\AdminActivityTypeTable;
@@ -666,9 +667,11 @@ ORDER BY sc.num ASC", [(int) $id]);
 		$pageIsAPart = $tsumegoFilters->collectionSize == ProgressDeletionTable::$PARTITION_SIZE && !$tsumegoFilters->hasProblemFilters();
 		$avgTime = 0;
 		$accuracy = 0;
+		$runSolvedPercent = $problemSolvedPercent;
 		if ($scoring)
 		{
 			$tsumegoButtons->loadAttempts(Auth::getUserID(), (int) $set->id);
+			$runSolvedPercent = $tsumegoButtons->getProblemsSolvedInRunPercent();
 			$avgTime = $tsumegoButtons->getAverageSolveTime();
 			$accuracy = $tsumegoButtons->getAccuracy();
 			if ($problemSolvedPercent >= 100)
@@ -697,6 +700,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 		$this->set('set', $set);
 		$this->set('avgTime', $avgTime);
 		$this->set('accuracy', $accuracy);
+		$this->set('runSolvedPercent', $runSolvedPercent);
 		$this->set('scoring', $scoring);
 		$this->set('partition', $partition);
 		return null;
@@ -817,10 +821,16 @@ ORDER BY sc.num ASC", [(int) $id]);
 		foreach ($tsumegoButtons as $tsumegoButton)
 			$tsumegoIDToClear[] = $tsumegoButton->tsumegoID;
 
-		if ($tsumegoButtons->getProblemsSolvedPercent() < 50)
+		// a problem a previous reset put back in Review counts once it is solved again, so a fresh reset can't be reset again
+		$tsumegoButtons->loadAttempts(Auth::getUserID(), $setID);
+		if ($tsumegoButtons->getProblemsSolvedInRunPercent() < 50)
 			return $this->redirect($redirectUrl);
 
-		Util::execute('DELETE FROM tsumego_status WHERE user_id = ? AND tsumego_id IN (' . implode(',', array_fill(0, count($tsumegoIDToClear), '?')) . ')',
+		//The problems solved once (forgotten ones too) go back to Review, solving them again masters them; the rest is cleared
+		$inClause = 'tsumego_id IN (' . implode(',', array_fill(0, count($tsumegoIDToClear), '?')) . ')';
+		Util::execute('UPDATE tsumego_status SET status = ? WHERE user_id = ? AND ' . $inClause . ' AND ' . TsumegoStatusTable::solvedCountCondition('status'),
+			[TsumegoStatusTable::$REVIEW, Auth::getUserID(), ...$tsumegoIDToClear]);
+		Util::execute('DELETE FROM tsumego_status WHERE user_id = ? AND ' . $inClause . ' AND NOT ' . TsumegoStatusTable::solvedCountCondition('status'),
 			[Auth::getUserID(), ...$tsumegoIDToClear]);
 		$progressDeletionTable = $this->fetchTable('ProgressDeletion');
 		$progressDeletionTable->saveOrFail($progressDeletionTable->newEntity([
