@@ -22,6 +22,8 @@ for line in open(os.environ.get('PROBLEMS', 'problems.jsonl')):
     records[record['set_connection_id']] = record
 results = json.load(open(os.path.join(RESEARCH, 'results', 'results.json')))
 topics = json.load(open(os.path.join(RESEARCH, 'topics.json')))
+#leaves the owner has fixed on the site: {case: {status, date}}
+fixed = json.load(open(os.path.join(RESEARCH, 'fixed.json')))
 names = {'B': 'Black', 'W': 'White'}
 COORD = r'(?<![A-Za-z0-9])[A-HJ-T](?:1[0-9]|[1-9])(?![0-9A-Za-z])'
 SEQUENCE = re.compile(COORD + r'!?(?:\s*,?\s+(?:pass\s+)?)' + COORD)
@@ -367,8 +369,10 @@ def render(specs_dir, out_path):
             pid, pid, pid, html.escape(problem.record['title']), problem.task())]
         for c in sorted(cases, key=lambda c: c['case']):
             card = cards[c['case']]
-            out.append('<article class="leaf" id="%s"><div class="leaf-head"><label><input type="checkbox" class="done" data-id="%s"> Leaf %s</label><code class="fix">%s</code></div><p class="headline">%s</p>%s%s</article>' % (
-                c['case'], c['case'], c['case'], html.escape(fix_label(c, in_topic.get(c['case']))), html.escape(card['headline']),
+            done = fixed.get(c['case'])
+            badge = '<span class="fixed-badge">Fixed on the site: S[%s], %s</span>' % (html.escape(done['status']), html.escape(done['date'])) if done else ''
+            out.append('<article class="leaf" id="%s"><div class="leaf-head"><label><input type="checkbox" class="done" data-id="%s"%s> Leaf %s</label><code class="fix">%s</code>%s</div><p class="headline">%s</p>%s%s</article>' % (
+                c['case'], c['case'], ' checked' if done else '', c['case'], html.escape(fix_label(c, in_topic.get(c['case']))), badge, html.escape(card['headline']),
                 figures(problem_of, card, frames, ''), prose(card.get('text', []))))
         titles = {'grading': 'On the site', 'tree_change': 'Change the tree as well', 'also_check': 'Other leaves to check in this tree'}
         if with_blocks:
@@ -438,7 +442,10 @@ def render(specs_dir, out_path):
            ('label-fixes', '2c. Change the S[]', '%d leaves' % leaves_of(label_group)),
            ('solver', "A. The solver's mistakes", '%d leaves' % len(solver_cases)),
            ('method', 'B. How the leaves were checked', '')]
-    counts = {'total': len(results), 'errors': len(errors), 'decide': len(decide), 'solver': len(solver_cases),
+    unknown = sorted(set(fixed) - set(by_case))
+    if unknown:
+        raise SystemExit('fixed.json names leaves not in the results: %s' % ', '.join(unknown))
+    counts = {'fixed': len(fixed), 'total': len(results), 'errors': len(errors), 'decide': len(decide), 'solver': len(solver_cases),
               'tree': len(tree_group), 'grading': len(grading_group), 'label_leaves': leaves_of(label_group), 'label_problems': len(label_group)}
     page = open(os.path.join(RESEARCH, 'report_style.html')).read()
     page = page.replace('TOC', ''.join('<li><a href="#%s">%s</a> <span class="count">%s</span></li>' % t for t in toc))

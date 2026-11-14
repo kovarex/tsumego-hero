@@ -73,6 +73,9 @@ PROBLEMS=problems.jsonl python3 research/report.py check research/report_specs/*
 PROBLEMS=problems.jsonl python3 research/report.py render research/report_specs report.html
 ```
 
+`research/fixed.json` lists the leaves already fixed on the site ({case: {status, date}}); the report marks their
+cards and counts them.
+
 `research/topics.json` holds the decisions several leaves share (bent four, a problem's target, an open edge): each
 topic's text, its leaves and the labels to choose from, which the page shows first.
 
