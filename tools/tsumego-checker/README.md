@@ -53,10 +53,15 @@ solver as a calculator, then by reviewers who try to refute each verdict (`resea
 ```sh
 python3 research/make_cases.py 'status.*.jsonl' problems.jsonl cases.json
 PROBLEMS=problems.jsonl python3 research/precompute.py cases.json evidence 0 1
-PROBLEMS=problems.jsonl python3 research/impact_scenarios.py results.json scenarios.json
+python3 research/merge_settled.py results.json judges.json facts.json > merged.json
+PROBLEMS=problems.jsonl python3 research/impact_scenarios.py merged.json scenarios.json
 node research/grading_impact.cjs scenarios.json impact.json
-PROBLEMS=problems.jsonl python3 research/render_research.py results.json research.html impact.json cases.json
+PROBLEMS=problems.jsonl python3 research/render_research.py merged.json research.html impact.json cases.json
 ```
+
+Cases the reviewers split on go to two independent judges, and each definition question to a fact checker
+(`research/settle.js`, which reads each case's views from `settle/<case>.a.txt`, `.b.txt` or `.facts.txt`);
+`merge_settled.py` folds their verdicts into the results.
 
 The page lists the questions to decide first, then the clear errors on the site, each with the moves the site would grade
 differently after the fix (`impact_scenarios.py` proposes each fix alone and all of a problem's fixes together); with

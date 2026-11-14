@@ -1,5 +1,5 @@
-#scenarios for grading_impact.cjs from the research results: each proposed S[] alone (the analysis label, and any other
-#label a reviewer or judge names), and per problem all its clear errors fixed together.
+#scenarios for grading_impact.cjs from the research results: each proposed S[] alone (the final label, else the analysis
+#label, and any other label a reviewer or judge names), and per problem all its clear errors fixed together.
 #usage: PROBLEMS=problems.jsonl impact_scenarios.py <results.json> <scenarios.json>
 import json, os, re, sys
 
@@ -10,9 +10,9 @@ results = json.load(open(sys.argv[1]))
 records = {json.loads(l)['set_connection_id']: json.loads(l) for l in open(os.environ.get('PROBLEMS', 'problems.jsonl'))}
 
 def labels(c):
-    #the analysis label first, then the other labels named for the case, each once
+    #the final label first (else the analysis label), then the other labels named for the case, each once
     a = c.get('analysis') or {}
-    named = [a.get('correct_status')] + [k.get('correct_status') for k in c.get('checks') or []]
+    named = [c.get('correct_status'), a.get('correct_status')] + [k.get('correct_status') for k in c.get('checks') or []]
     named += [j.get('correct_status') for j in c.get('judges') or []]
     out = []
     for text in named:
@@ -35,7 +35,7 @@ for c in results:
         scenarios.append({'key': key, 'sgf': records[c['id']]['sgf'], 'fixes': [{'line': c['line'], 'status': label}]})
 by_problem = {}
 for c in results:
-    label = ((c.get('analysis') or {}).get('correct_status') or '').strip()
+    label = c.get('correct_status', ((c.get('analysis') or {}).get('correct_status') or '').strip())
     if c['final'] == 'site_error' and LABEL.match(label):
         by_problem.setdefault(c['id'], []).append({'line': c['line'], 'status': label})
 for problem, fixes in by_problem.items():

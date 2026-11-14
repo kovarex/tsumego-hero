@@ -72,7 +72,7 @@ def grading(c, first, fixable):
     if impact is None:
         return ''
     a = c.get('analysis') or {}
-    label = (a.get('correct_status') or '').strip()
+    label = c.get('correct_status', (a.get('correct_status') or '').strip())
     lines = []
     main = impact.get(c['case'])
     if main:
@@ -97,7 +97,7 @@ def solver_text(c):
 
 def card(c, kind):
     a = c.get('analysis') or {}
-    right = a.get('correct_status') or '?'
+    right = c.get('correct_status', a.get('correct_status')) or '?'
     checks = c.get('checks') or []
     agreeing = [k['correct_status'] for k in checks if k.get('holds') and k.get('correct_status')]
     if kind == 'error' and agreeing and any(s != right for s in agreeing):
