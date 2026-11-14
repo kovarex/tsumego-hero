@@ -1,0 +1,19 @@
+    A B C D E F G
+ 19 . X X * X X -
+ 18 X . O X O X -
+ 17 O O O O O X -
+ 16 . O X X X - -
+ 15 O X - - - - -
+ 14 X - X - - - -
+ 13 - - - - - - -
+solver B attacker B to move W
+cycle 0 solve: result A=K D=K nodes=154 bestA=78 bestD=78 0.00s
+cycle 2 solve: result A=N D=K nodes=736 bestA=3 bestD=78 0.01s
+cycle 1 solve: result A=K D=K nodes=154 bestA=78 bestD=78 0.00s
+bentfour on: result A=K D=K nodes=530 bestA=78 bestD=78
+count s=0 o=3 end=0: solver WINS N=K nodes=2501 best=78 pv=WC15_BD19_WB14_BD15_WA13_BB15_WC15!_BA14_WA13!_BB15_WC15!_BA14_WA16_BB15_Wpass_BB18
+count s=0 o=3 end=1: solver WINS N=K nodes=3750 best=78 pv=WC15_BA16_WD19_BA15_Wpass_Bpass_BD18_WD19!_BB14_Wpass_Bpass_BD18_WD19!_BD15_Wpass_Bpass_BD18_WD19!_Bpass_Wpass_BD18_Wpass_BB18
+count s=0 o=4 end=0: solver fails N=N nodes=1895 best=3 pv=WD19!_BA19_WB18_BB19_WA19_BA18_WA19!_Bpass_WC19
+count s=0 o=4 end=1: solver WINS N=K nodes=5073 best=78 pv=WC15_BD19_WB14_BA13_Wpass_Bpass_BB18_Wpass_Bpass_BB15_WB14!_BD15_Wpass_BB15_Wpass_BA16
+count s=0 o=6 end=0: solver fails N=N nodes=2469 best=3 pv=WD19!_BA16_Wpass_BD18_WD19!_BB18_WA19_BB19_WB18_BA18_WA19!_Bpass_WC19
+count s=0 o=6 end=1: solver fails N=N nodes=6004 best=3 pv=WD19!_BA16_Wpass_Bpass_BD18_WD19!_Bpass_Wpass_BD18_WD19!

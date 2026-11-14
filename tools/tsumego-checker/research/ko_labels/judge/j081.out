@@ -1,0 +1,21 @@
+    A B C D E F G H J
+ 19 . X . X O - - - -
+ 18 O O X X O X - - -
+ 17 . . X O O - X X -
+ 16 X X X O - O - - -
+ 15 O O O O - O - - -
+ 14 - - - - O - - - -
+ 13 - - - - - - - - -
+[leaf] W to move opts=end=1,pv=1 s=0 o=0: solver WINS nodes=460 0.00s pv=WA19_Bpass_Wpass_WC19_Bpass_WB19_Bpass_WB17_BA17_WB18_BB19_WA18_Bpass_WB17_BA19_Wpass_BB18
+[leaf] W to move opts=end=1,pv=1 s=0 o=1: solver fails nodes=120 0.00s pv=WA19_Bpass_WC19_Bpass_WA17_BB19_WC19!_Bpass_WB17
+[leaf] W to move opts=end=1,pv=1 s=1 o=0: solver WINS nodes=173 0.00s pv=WB17_Bpass_WA19_BA17_Wpass_BB18
+[leaf] W to move opts=end=0,pv=1 s=0 o=0: solver fails nodes=154 0.00s pv=WA19_BC19_WA17_BB17_WA18_Bpass_WA19_Bpass_WB18_Bpass_WA17
+[leaf] W to move opts=end=0,pv=1 s=1 o=1: solver WINS nodes=581 0.00s pv=WA19_Bpass_WC19_Bpass_WB19_Bpass_WA17_BB17_WA18_BB19_WB18_BA19_WC19_BB19_Wpass_BA19_cycle
+[A19 pass C19] B to move opts=end=1,pb=1,pv=1 s=0 o=0: solver WINS nodes=334 0.00s pv=fp_WB19_Bpass_WB17_BA17_WB18_BB19_WA18_Bpass_WB17_BA19_Wpass_BB18
+[A19 pass C19] B to move opts=end=1,pb=1,pv=1 s=4 o=0: solver WINS nodes=684 0.00s pv=fp_WB19_Bpass_WA17_BB17_WB18_BA18
+[A19 pass C19] B to move opts=end=1,pb=2,pv=1 s=4 o=0: solver fails nodes=4 0.00s pv=fp_WA17_fp_WB17
+[A19 pass C19 B19!] W to move opts=end=1,pw=1,pv=1 s=0 o=0: solver WINS nodes=421 0.00s pv=fp_Bpass_Wpass
+[A19 pass C19 B19!] W to move opts=end=1,pw=1,pv=1 s=0 o=1: solver fails nodes=88 0.00s pv=fp_Bpass_WC19_Bpass_WA17_BB19_WC19!_Bpass_WB17
+[A19 pass C19 B19!] W to move opts=end=1,pw=1,pv=1 s=0 o=4: solver fails nodes=88 0.00s pv=fp_Bpass_WC19_Bpass_WA17_BB19_WC19!_Bpass_WB17
+[A19 pass C19 B19!] W to move opts=end=1,pw=2,pv=1 s=0 o=4: solver WINS nodes=58 0.00s pv=fp_BA17_fp_BB17_Wpass_BB18
+[A19 pass C19 B19! pass C19] W to move opts=end=1,pv=1 s=0 o=4: solver fails nodes=49 0.00s pv=WA17_BB17_WA18_Bpass_WA19_Bpass_WB18_Bpass_WA17

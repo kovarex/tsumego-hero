@@ -1,0 +1,6 @@
+problem 5628 leaf B18 A17 C18 A18 C19 B19 solver B attacker B to move B
+  [leaf] B to move, - forced 0, s=0 o=0 : solver fails  nodes=261 0.00s pv=Bpass_WA19_BE16_WD18_Bpass_WC18
+  [leaf] B to move, - forced 0, s=1 o=0 : solver WINS  nodes=33 0.00s pv=BA19_WE16_BE15_WB19_BA19!_Wpass_BD18
+  [A19] W to move, W forced 1, s=0 o=4 : solver fails  nodes=195 0.00s pv=fp_BB19_WE16_BE15_WD18_BB19_WC19_Bpass_WC18
+  [A19] W to move, W forced 2, s=0 o=4 : solver WINS  nodes=4 0.00s pv=fp_BD18_fp_BE16
+  [A19 B19!] B to move, B forced 1, s=4 o=0 : solver fails  nodes=31 0.00s pv=fp_WA19_BE16_WD18_Bpass_WC18

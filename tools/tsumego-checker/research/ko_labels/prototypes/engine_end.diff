@@ -1,0 +1,169 @@
+--- engine.cpp	2026-11-10 03:14:52.433108506 +0000
++++ /tmp/claude-0/proto/research/kodesign/line/engine_end.cpp	2026-11-14 19:41:18.264312191 +0000
+@@ -13,7 +13,7 @@
+ 
+ enum { EMPTY = 0, BLACK = 1, WHITE = 2, OUTSIDE = 3 };
+ enum { UNKNOWN = 0, KILL = 1, NOKILL = 2 };
+-enum { MODE_A = 0, MODE_D = 1, MODE_N = 2 }; // N: each side has the counted ko threats of the state (none by default)
++enum { MODE_A = 0, MODE_D = 1, MODE_N = 2, MODE_E = 3 }; // E: end-of-game play-out, no threats // N: each side has the counted ko threats of the state (none by default)
+ int searchMode = 0; // the ko mode of the search running now
+ 
+ int N, NN;
+@@ -368,6 +368,11 @@
+ }
+ 
+ bool bentFourRule = false;
++bool endgameRule = getenv("ENDGAME") == nullptr || string(getenv("ENDGAME")) != "0";
++bool inEndgame = false;
++unordered_map<u64, int8_t> endgameCache;
++int endgamePlayout(const State& s);
++int endgameResolve(const State& s, int p);
+ struct Result;
+ Result proofSearch(State& s, int mode);
+ bool bentFourEnd(const State& s);
+@@ -511,7 +516,7 @@
+           }
+       for (int p : active)
+         if (s.c[p] == defender && inArea[p] == areaStamp && chain(s, p, nullptr, 2) == 1)
+-          return KILL;
++          return endgameRule ? endgameResolve(s, p) : KILL;
+     }
+     return NOKILL;
+   }
+@@ -664,7 +669,7 @@
+ // a solve only sees its own entries: with repetitions a proof can depend on the path that led to the position
+ uint32_t generation = 1;
+ const int PN_BITS = 22;
+-vector<ProofEntry> proofTable[3];
++vector<ProofEntry> proofTable[4];
+ 
+ struct ProofChild { State state; int move; u64 key; int score; int terminal; int liberties; };
+ 
+@@ -787,7 +792,7 @@
+     return;
+   }
+   bool orNode = s.toMove == attacker;
+-  bool ignoreKo = mode == MODE_N ? s.threats[s.toMove] > 0 : (mode == MODE_D) == orNode;
++  bool ignoreKo = mode == MODE_N ? s.threats[s.toMove] > 0 : mode == MODE_E ? false : (mode == MODE_D) == orNode;
+   uint32_t pn, dn;
+   int ttBest;
+   lookup(mode, key, pn, dn, ttBest);
+@@ -898,6 +903,107 @@
+   return result;
+ }
+ 
++// The game ended with the defender chain at p in atari. The attacker takes it; when that is a ko capture, the attacker
++// also has to connect the ko. If its connected chain is then left with at most two liberties, all shared with the target,
++// the result is a seki standoff (the ten thousand years ko shape: whoever fills a shared liberty lets the other side
++// capture), not a kill. Every other case keeps the old rule: the chain in atari is taken and the target dies.
++int endgameResolve(const State& s, int p)
++{
++  vector<int> stones;
++  chain(s, p, &stones, 2);
++  int last = -1;
++  for (int q : stones)
++    for (int k = 0; k < neighbourCount[q] && last < 0; ++k)
++      if (s.c[neighbours[q][k]] == EMPTY)
++        last = neighbours[q][k];
++  if (last < 0)
++    return KILL;
++  State t = s;
++  t.toMove = attacker;
++  t.ko = -1;
++  int captured = 0;
++  if (!play(t, last, false, &captured) || captured != 1 || t.ko < 0)
++    return KILL; // not a ko capture: the old rule
++  int koPoint = t.ko;
++  t.toMove = attacker; // the defender passes, the attacker connects the ko
++  t.ko = -1;
++  if (!play(t, koPoint, false))
++    return KILL;
++  vector<int> own;
++  int ownLiberties = chain(t, koPoint, &own, 1000);
++  if (ownLiberties > 2)
++    return KILL;
++  // the liberties of the attacker's chain must all be liberties of the target
++  static int targetLib[361], stamp = 0;
++  ++stamp;
++  for (int q : target)
++    if (t.c[q] == defender)
++    {
++      vector<int> ts;
++      chain(t, q, &ts, 1000);
++      for (int x : ts)
++        for (int k = 0; k < neighbourCount[x]; ++k)
++          if (t.c[neighbours[x][k]] == EMPTY)
++            targetLib[neighbours[x][k]] = stamp;
++    }
++  for (int q : own)
++    for (int k = 0; k < neighbourCount[q]; ++k)
++    {
++      int r = neighbours[q][k];
++      if (t.c[r] == EMPTY && targetLib[r] != stamp)
++        return KILL;
++    }
++  return NOKILL;
++}
++
++// The game ended with a defender chain in atari. Taking it is a move, and what follows can be seki (a ten thousand
++// years ko) or a ko the attacker has to approach: play it out with no threats on either side, the attacker first.
++// Inside the play-out a double pass means the attacker declined to capture, so the defender lives.
++int endgamePlayout(const State& s)
++{
++  if (inEndgame)
++    return NOKILL;
++  u64 key = s.hash ^ 0x5bd1e9955bd1e995ULL;
++  auto found = endgameCache.find(key);
++  if (found != endgameCache.end())
++    return found->second;
++  State t = s;
++  t.passes = 0;
++  t.ko = -1;
++  t.threats[BLACK] = t.threats[WHITE] = 0;
++  t.toMove = attacker;
++  bool previousAborted = aborted;
++  inEndgame = true;
++  long long before = nodes, outerBudget = budget;
++  static long long endgameBudget = getenv("ENDGAME_BUDGET") ? atoll(getenv("ENDGAME_BUDGET")) : 20000;
++  budget = min(outerBudget, nodes + endgameBudget);
++  Result r = proofSearch(t, MODE_E);
++  budget = outerBudget;
++  static long long calls = 0, spent = 0;
++  ++calls; spent += nodes - before;
++  if (getenv("ENDDEBUG") && calls == 1)
++  {
++    for (int y = 0; y < 8 && y < N; ++y)
++    {
++      for (int x = 0; x < 12 && x < N; ++x)
++      {
++        int q = y * N + x;
++        cerr << (t.c[q] == BLACK ? 'X' : t.c[q] == WHITE ? 'O' : t.c[q] == OUTSIDE ? '#' : fringe[q] ? 'f' : '.');
++      }
++      cerr << endl;
++    }
++  }
++  if (getenv("ENDDEBUG") && (calls < 5 || calls % 1000 == 0))
++    cerr << "endgame call " << calls << " result " << r.result << " nodes " << nodes - before << " total " << spent << endl;
++  inEndgame = false;
++  bool undecided = aborted || r.result == UNKNOWN;
++  aborted = previousAborted;
++  int result = undecided ? KILL : r.result; // undecided: the old static rule
++  if (!undecided)
++    endgameCache[key] = result;
++  return result;
++}
++
+ // Move ordering learned in earlier queries usually helps, but it can also send a search into endless cycling.
+ // An undecided search gets one more try with fresh ordering, a new table generation and the same budget.
+ Result retryFresh(State& s, int mode)
+@@ -978,8 +1084,9 @@
+           best = min(best, abs(p % N - i % N) + abs(p / N - i / N));
+         distanceToTarget[i] = best;
+       }
+-      for (int m = 0; m < 3; ++m)
++      for (int m = 0; m < 4; ++m)
+         proofTable[m].assign(1 << PN_BITS, ProofEntry{0, 0, 0, 0, 0});
++      endgameCache.clear();
+       terminalTable.assign(1 << TERMINAL_BITS, TerminalEntry{0, 0});
+       memset(history, 0, sizeof(history));
+       cout << "ok" << endl;

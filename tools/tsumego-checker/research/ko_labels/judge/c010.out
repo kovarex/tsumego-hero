@@ -1,0 +1,7 @@
+problem 1807 leaf A18 B18 solver B attacker W to move B
+  [leaf] B to move, - forced 0, s=0 o=0 : solver WINS  nodes=10 0.00s pv=BB19_Wpass_BC18
+  [leaf] B to move, - forced 0, s=0 o=1 : solver WINS  nodes=46 0.00s pv=BB19_WA19!_BC18_WA17_BB19_WA18_BA16_Wpass_BB18
+  [leaf] B to move, - forced 0, s=0 o=2 : solver fails  nodes=80 0.00s pv=BB19_WA19!_BA17_WA16_BB19_WA19!_Bpass_WC18
+  [B19] W to move, W forced 1, s=0 o=4 : solver WINS  nodes=2 0.00s pv=fp_BC18
+  [B19 A19!] B to move, B forced 1, s=4 o=0 : solver fails  nodes=13 0.00s pv=fp_WA17_Bpass_WC18_Bpass_WA16
+  [B19 A19!] B to move, B forced 2, s=4 o=0 : solver fails  nodes=6 0.00s pv=fp_WA17_fp_WC18_Bpass_WA16

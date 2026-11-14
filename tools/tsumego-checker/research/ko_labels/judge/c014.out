@@ -1,0 +1,12 @@
+problem 2359 leaf B17 B19 E18 A18 solver B attacker W to move B
+  [leaf] B to move, - forced 0, s=0 o=0 : solver fails  nodes=6268 0.06s pv=BA17_WC18_BB17_WA17_Bpass_WB18_Bpass_WB16_BE19_Wpass
+  [leaf] B to move, - forced 0, s=1 o=0 : solver WINS  nodes=1519 0.01s pv=BC19_WE19_BA19
+  [leaf] B to move, - forced 0, s=0 o=1 : solver fails  nodes=9075 0.06s pv=BA17_WF18_BC19_WC18_BB17_WE19_BB18_WC17_BA19_WB19!_BB16_WA15_BA19_WA17_Bpass_Wpass
+  [C19 A17 A19] W to move, W forced 1, s=0 o=4 : solver WINS  nodes=512 0.00s pv=fp_BB19_WE19_BF19_WF18_BA15_WA16_BA17_WD19_BF19_Wpass_BE19
+  [C19 A17 A19] W to move, W forced 2, s=0 o=4 : solver WINS  nodes=14 0.00s pv=fp_BB19_fp_BE19
+  [C19 A17 A19 B19!] B to move, B forced 1, s=4 o=0 : solver fails  nodes=2568 0.01s pv=fp_WC18_BE19_WB17_Bpass_WB18_Bpass_WF18_Bpass_WF19_Bpass_WD19
+  [C19 A17 A19 B19!] B to move, B forced 2, s=4 o=0 : solver fails  nodes=258 0.00s pv=fp_WC18_fp_WB17_Bpass_WF18_Bpass_WE19_Bpass_WD19
+  [C19 A17 A19 B19!] B to move, B forced 3, s=4 o=0 : solver fails  nodes=211 0.00s pv=fp_WC18_fp_WF18_fp_WB17_BE19_WF19_Bpass_WD19
+  [C19 A17 A19 A15] B to move, - forced 0, s=0 o=0 : solver fails  nodes=154 0.00s pv=BC18_WB19_Bpass_WA19_Bpass_WD19_BF18_WE19_Bpass_WF19_Bpass_WF17
+  [C19 A17 A19 A15] B to move, - forced 0, s=1 o=0 : solver WINS  nodes=88 0.00s pv=BE19_WB19_BA19!_Wpass_BB19
+  [C19 A17 A19 A15] B to move, - forced 0, s=0 o=1 : solver fails  nodes=156 0.00s pv=BC18_WB19_Bpass_WA19_Bpass_WD19_BF18_WE19_Bpass_WF19_Bpass_WF17

@@ -1,0 +1,10 @@
+problem 10005 leaf D18 E18 D19 C19 A18 A17 C18 C17 B19 B17 solver B attacker B to move B
+  [leaf] B to move, - forced 0, s=0 o=0 : solver fails  nodes=1089 0.01s pv=BA19_WC19_BB19_WA19_BA18_Wpass
+  [leaf] B to move, - forced 0, s=1 o=0 : solver WINS  nodes=201 0.00s pv=BA16_WA19_BG19_WC19_BB19!_Wpass_BA18_Wpass_BE19
+  [leaf] B to move, - forced 0, s=0 o=1 : solver fails  nodes=1415 0.01s pv=BA19_WC19_BB19_WA19_BC19_Wpass_BA18_WE19_BA16_WA19_BB19_WC19_Bpass_WD18
+  [A16 A19] B to move, B forced 1, s=4 o=0 : solver fails  nodes=122 0.00s pv=fp_WC19_BB19!_WE19_Bpass_WC19_Bpass_WD18
+  [A16 A19] B to move, B forced 2, s=4 o=0 : solver fails  nodes=4 0.00s pv=fp_WC19_fp_WB19
+  [A16 A19 A18!] W to move, W forced 1, s=0 o=4 : solver fails  nodes=177 0.00s pv=fp_BA19_WC19_BB19_WA19_BC19_Wpass_BA18_WA19!_BG19_Wpass_BA18_WA19!_Bpass_Wpass
+  [A16 A19 A18!] W to move, W forced 2, s=0 o=4 : solver WINS  nodes=4 0.00s pv=fp_BE19_fp_BG19
+  [A16 A19 A18!] W to move, W forced 1, s=0 o=0 : solver fails  nodes=495 0.00s pv=fp_BA19_WC19_BB19_WA19_BA18_Wpass
+  [A16 A19 A18!] W to move, W forced 1, s=1 o=0 : solver WINS  nodes=13 0.00s pv=fp_BG19_WA19_BA18!_Wpass_BE19

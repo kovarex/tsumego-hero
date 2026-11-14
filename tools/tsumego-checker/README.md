@@ -93,3 +93,10 @@ before and after new S[] values, and lists the moves whose correct/wrong mark ch
 
 `research/explain.py` draws a page that explains disputed ko leaves move by move from a spec (`research/explain/9.json`
 for problem 9). It checks every move for legality and every step against the solver, and stops on any mismatch.
+
+## Full ko labels (in progress)
+
+`research/ko_labels/design.md` is the design for computing besogo's full ko labels (approaches, who takes first,
+local threats, 10kKO, double ko, superko, BENT4, SEKI) from small engine searches instead of one threat count.
+`research/ko_labels/prototypes/` holds the prototype engines (diffs against `engine.cpp`) and scripts it was built
+from, `research/ko_labels/judge/` the runs that verified its outputs on the settled leaves.

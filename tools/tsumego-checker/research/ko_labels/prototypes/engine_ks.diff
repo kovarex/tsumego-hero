@@ -1,0 +1,127 @@
+--- engine.cpp	2026-11-10 03:14:52.433108506 +0000
++++ /tmp/claude-0/proto/research/kodesign/structure/engine_ks.cpp	2026-11-14 19:37:54.074905946 +0000
+@@ -22,6 +22,7 @@
+ vector<int> neighbourCount;
+ int attacker, defender;
+ vector<int> target;
++vector<int> keepPoints; // attacker stones whose capture means the defender lives (hand-built models)
+ vector<int> active; // the points inside the region
+ bool fringe[361]; // empty edge points, playable only while a chain next to them is short of liberties
+ u64 zobrist[3][361], zobristKo[362], zobristSide, zobristPass, zobristThreats[3][16];
+@@ -368,6 +369,7 @@
+ }
+ 
+ bool bentFourRule = false;
++bool endPlay = false; // two passes do not end the game while a defender chain in the target's area is in atari
+ struct Result;
+ Result proofSearch(State& s, int mode);
+ bool bentFourEnd(const State& s);
+@@ -447,6 +449,34 @@
+     }
+   if (!anyLeft)
+     return KILL;
++  for (int p : keepPoints)
++    if (s.c[p] != attacker)
++      return NOKILL;
++  if (s.passes >= 2 && endPlay)
++  {
++    // endPlay: the game is not over while the side to move can capture a single stone in a ko shape (the passes
++    // lifted the ban): kos are resolved by play, repetitions by the cycle rule
++    for (int p : active)
++      if (s.c[p] == EMPTY)
++      {
++        int capturedStones = 0, capturedAt = -1;
++        bool single = true;
++        for (int k = 0; k < neighbourCount[p] && single; ++k)
++        {
++          int r = neighbours[p][k];
++          if (s.c[r] == 3 - s.toMove)
++          {
++            vector<int> stones;
++            if (chain(s, r, &stones, 1) == 0)
++              continue;
++          }
++        }
++        State t = s;
++        int captured = 0;
++        if (play(t, p, false, &captured) && captured == 1 && t.ko >= 0)
++          return UNKNOWN;
++      }
++  }
+   if (s.passes >= 2)
+   {
+     // with the bent four rule on, a defender left with a bent four in the corner is dead: the attacker removes all
+@@ -462,7 +492,7 @@
+         return NOKILL;
+     //with counted threats left the defender could still retake, so the attacker has to play it out instead of passing
+     //only chains in the target's own area count: a stray defender stone at the region's edge decides nothing
+-    if (searchMode != MODE_N || s.threats[defender] == 0)
++    if (endPlay || searchMode != MODE_N || s.threats[defender] == 0)
+     {
+       static int inArea[361], areaStamp = 0;
+       static int stack[361];
+@@ -511,7 +541,7 @@
+           }
+       for (int p : active)
+         if (s.c[p] == defender && inArea[p] == areaStamp && chain(s, p, nullptr, 2) == 1)
+-          return KILL;
++          return endPlay ? UNKNOWN : KILL; // endPlay: the game goes on, the attacker may take it and the result is played out
+     }
+     return NOKILL;
+   }
+@@ -991,6 +1021,26 @@
+       koFreeColor = side == "B" ? BLACK : side == "W" ? WHITE : 0;
+       cout << "ok" << endl;
+     }
++    else if (command == "keep")
++    {
++      string text;
++      cin >> text;
++      keepPoints.clear();
++      stringstream stream(text);
++      string item;
++      while (getline(stream, item, ','))
++        if (item != "-") keepPoints.push_back(stoi(item));
++      terminalTable.assign(1 << TERMINAL_BITS, TerminalEntry{0, 0});
++      cout << "ok" << endl;
++    }
++    else if (command == "endplay")
++    {
++      int value;
++      cin >> value;
++      endPlay = value != 0;
++      terminalTable.assign(1 << TERMINAL_BITS, TerminalEntry{0, 0});
++      cout << "ok" << endl;
++    }
+     else if (command == "bentfour")
+     {
+       int value;
+@@ -1019,7 +1069,27 @@
+       Result r = proofSearch(s, MODE_N);
+       if (r.result == UNKNOWN)
+         r = retryFresh(s, MODE_N);
+-      cout << "result N=" << (r.result == KILL ? "K" : r.result == NOKILL ? "N" : "U") << " nodes=" << nodes << " best=" << r.best << endl;
++      string pvText;
++      {
++        int savedMode = searchMode;
++        searchMode = MODE_N;
++        State line = s;
++        for (int ply = 0; ply < 40; ++ply)
++        {
++          uint32_t pn, dn;
++          int best;
++          lookup(MODE_N, positionKey(line), pn, dn, best);
++          if (best == -2 || terminal(line))
++            break;
++          bool brk = best >= 0 && best == line.ko;
++          int before = line.threats[line.toMove];
++          if (!play(line, best, line.threats[line.toMove] > 0))
++            break;
++          pvText += (ply ? "," : "") + (best < 0 ? string("pass") : to_string(best)) + (brk && line.threats[3 - line.toMove] < before ? "!" : "");
++        }
++        searchMode = savedMode;
++      }
++      cout << "result N=" << (r.result == KILL ? "K" : r.result == NOKILL ? "N" : "U") << " nodes=" << nodes << " best=" << r.best << " pv=" << (pvText.empty() ? "-" : pvText) << endl;
+     }
+     else if (command == "solveplain")
+     {

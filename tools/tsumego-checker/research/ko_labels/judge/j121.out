@@ -1,0 +1,10 @@
+P_S, W passes 1, s-o=0                                     line=A17!                   s=0 o=0 opts=pw=1,pv=1          -> Black fails nodes=480 0.02s pv=fp BJ18 WA18 Bpass WB19
+P_S, W passes 1, s-o=1                                     line=A17!                   s=1 o=0 opts=pw=1,pv=1          -> Black wins nodes=4646 0.09s pv=fp BF19 WH19 BE17 WE19 BF19 WG19 BJ19 Wpass BF19
+P_S, W passes 1, outright (0,3)                            line=A17!                   s=0 o=3 opts=pw=1               -> Black fails nodes=581 0.00s pv=
+P_S, W passes 2, outright (0,3)                            line=A17!                   s=0 o=3 opts=pw=2,pv=1          -> Black wins nodes=771 0.00s pv=fp BE19 fp BE17 Wpass BF19
+frozen: W passes 1 and barred from A18, (0,3)              line=A17!                   s=0 o=3 opts=pw=1,fw=19,pv=1    -> Black wins nodes=403346 1.33s pv=fp BF19 WH19 BE17 WE19 BF19 WG19 BJ19 Wpass BF19
+P_O=leaf, B passes 1, B outright with (4,0)?               line=leaf                   s=4 o=0 opts=pb=1,pv=1          -> Black fails nodes=2 0.00s pv=fp WB19
+direct ko A17! pass E17 A18, s-o=0                         line=A17! pass E17 A18      s=0 o=0 opts=pv=1               -> Black fails nodes=13 0.00s pv=Bpass WB19
+direct ko A17! pass E17 A18, s-o=1                         line=A17! pass E17 A18      s=1 o=0 opts=pv=1               -> Black wins nodes=553 0.00s pv=BA17! WH19 BF19 WE19 BF19 WG19 BJ19 Wpass BF19
+A17! H19 E17 A18, s-o=1                                    line=A17! H19 E17 A18       s=1 o=0 opts=pv=1               -> Black fails nodes=459 0.01s pv=BA17! WF19 BA13 WA18 Bpass WB19
+A17! H19 E17 A18, s-o=2                                    line=A17! H19 E17 A18       s=2 o=0 opts=pv=1               -> Black wins nodes=2930 0.04s pv=BA17! WF19 BJ19 WG13 BG19 Wpass BE19
