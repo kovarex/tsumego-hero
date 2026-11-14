@@ -861,6 +861,20 @@ void generate(const State& s, bool ignoreKo, vector<ProofChild>& children, int t
   stable_sort(children.begin(), children.end(), [](const ProofChild& a, const ProofChild& b) { return a.score > b.score; });
 }
 
+// a child that repeats a position of the path, decided by the cycle rule: true when the attacker kills
+bool cycleKills(const ProofChild& child, int pathKoBreaks, bool attackerMoved)
+{
+  if (cycleRule == 1)
+    return true;
+  if (cycleRule == 2)
+    return false;
+  if (cycleRule == 3)
+    return !attackerMoved; // the side that completes the repetition loses (positional superko)
+  // a cycle through a ko recapture is a ko nobody resolves: at the end the attacker takes it, dead;
+  // a cycle of legal captures (sending two, returning one) is a seki
+  return child.state.koBreaks > pathKoBreaks;
+}
+
 // child values with terminal positions and repetitions resolved; true when the child repeats a position of the path
 // and the cycle rule decided it
 bool childValues(int mode, ProofChild& child, bool attackerMoved, uint32_t& pn, uint32_t& dn)
@@ -869,18 +883,7 @@ bool childValues(int mode, ProofChild& child, bool attackerMoved, uint32_t& pn, 
   for (size_t i = 0; i < path.size(); ++i)
     if (path[i] == child.key)
     {
-      bool kill;
-      if (cycleRule == 1)
-        kill = true;
-      else if (cycleRule == 2)
-        kill = false;
-      else if (cycleRule == 3)
-        kill = !attackerMoved; // the side that completes the repetition loses (positional superko)
-      else
-        // a cycle through a ko recapture is a ko nobody resolves: at the end the attacker takes it, dead;
-        // a cycle of legal captures (sending two, returning one) is a seki
-        kill = child.state.koBreaks > pathKoBreaks[i];
-      if (kill) { pn = 0; dn = INF; }
+      if (cycleKills(child, pathKoBreaks[i], attackerMoved)) { pn = 0; dn = INF; }
       else { pn = INF; dn = 0; }
       return true;
     }
@@ -1061,14 +1064,54 @@ Result searchAfterRootMove(const State& root, ProofChild& child)
   return {pn == 0 ? KILL : dn == 0 ? NOKILL : UNKNOWN, false, best};
 }
 
-// The line a proof follows, from the stored best moves: B<i>, W<i>, Bpass or Wpass joined by _, ! after a ban break,
-// fp a forced pass, cycle where a position repeats; "-" for none. Only the winner's moves are what the proof needs.
-string principalLine(const State& start, int mode)
+// A move of the line where the proof stored none (its moves were all decided when the node was expanded) that keeps
+// the result: one that repeats a position of the line, so that the cycle shows, else one that ends the game, else one
+// with a stored proof; -2 for none.
+int closingMove(const State& s, int mode, int result, const vector<u64>& line, const vector<int>& lineKoBreaks)
+{
+  bool ignoreKo = mode == MODE_N ? s.threats[s.toMove] > 0 : (mode == MODE_D) == (s.toMove == attacker);
+  vector<ProofChild> children;
+  generate(s, ignoreKo, children, -2);
+  int moves[3] = {-2, -2, -2};
+  for (ProofChild& child : children)
+  {
+    size_t i = find(line.begin(), line.end(), child.key) - line.begin();
+    int kind = 2, value;
+    if (i < line.size())
+    {
+      kind = 0;
+      value = cycleKills(child, lineKoBreaks[i], s.toMove == attacker) ? KILL : NOKILL;
+    }
+    else if (child.terminal)
+    {
+      kind = 1;
+      value = child.terminal;
+    }
+    else
+    {
+      uint32_t pn, dn;
+      int best;
+      lookup(mode, child.key, pn, dn, best);
+      value = pn == 0 ? KILL : dn == 0 ? NOKILL : UNKNOWN;
+    }
+    if (value == result && moves[kind] == -2)
+      moves[kind] = child.move;
+  }
+  for (int move : moves)
+    if (move != -2)
+      return move;
+  return -2;
+}
+
+// The line a proof of result follows, from the stored best moves: B<i>, W<i>, Bpass or Wpass joined by _, ! after a ban
+// break, fp a forced pass, cycle where a position repeats; "-" for none. Only the winner's moves are what the proof needs.
+string principalLine(const State& start, int mode, int result)
 {
   int previousMode = searchMode;
   searchMode = mode;
   State line = start;
   vector<u64> seen;
+  vector<int> seenKoBreaks;
   string text;
   for (int ply = 0; ply < 60 && !terminal(line); ++ply)
   {
@@ -1079,6 +1122,7 @@ string principalLine(const State& start, int mode)
       break;
     }
     seen.push_back(key);
+    seenKoBreaks.push_back(line.koBreaks);
     if (line.forced[line.toMove] > 0)
     {
       line.forced[line.toMove]--;
@@ -1090,6 +1134,8 @@ string principalLine(const State& start, int mode)
     uint32_t pn, dn;
     int best;
     lookup(mode, key, pn, dn, best);
+    if (best == -2)
+      best = closingMove(line, mode, result, seen, seenKoBreaks);
     if (best == -2)
       break;
     bool ignoreKo = mode == MODE_N ? line.threats[line.toMove] > 0 : (mode == MODE_D) == (line.toMove == attacker);
@@ -1408,7 +1454,7 @@ int main()
           r = retryFresh(s, MODE_N);
         cout << "result N=" << resultText(r.result) << " nodes=" << nodes << " best=" << r.best << " cycles=" << cycles;
         if (wantPv)
-          cout << " pv=" << (r.result == UNKNOWN ? "-" : principalLine(s, MODE_N));
+          cout << " pv=" << (r.result == UNKNOWN ? "-" : principalLine(s, MODE_N, r.result));
         cout << endl;
       }
       beginCommand();
@@ -1492,7 +1538,7 @@ int main()
         bests[mode] = r.best;
         // read before the next mode's retry can start a new table generation
         if (switches.pv && r.result != UNKNOWN)
-          lines[mode] = principalLine(s, mode);
+          lines[mode] = principalLine(s, mode, r.result);
         // a kill without ko is a kill with ko too
         if (mode == MODE_A && r.result == KILL)
         {

@@ -27,7 +27,25 @@ the export is; `RESULTS` and `REPORT_DIR` do the same for `build_report.py`.
 - `engine.cpp`: the solver. df-pn proof search with Zobrist hashing, two ko modes (unlimited threats for either side)
   plus a plain one, Benson's unconditional life, a "no two eyes possible" test, a dynamic fringe around the region,
   the end-of-game and repetition rules for kos, bent four in the corner, and clean solving (no ko capture by the
-  solver's side). Reads commands on stdin (`problem`, `solve`, `solveplain`, `kofree`, `bentfour`).
+  solver's side). Reads commands on stdin, one answer line each (the protocol is at the top of the file):
+  - `problem`, `solve` (modes A and D, plus `cycles=`, the repetitions the cycle rule decided), `solvecount` (counted
+    threats), `solveplain`.
+  - `set <name> <value>`, switches that stay until changed: `cycle 0..3` (repetitions: 0 a cycle with a ban break
+    kills, else seki; 1 kill; 2 live; 3 the side completing it loses), `kofree B|W|0`, `bentfour 0|1`, `sekikill 0|1`
+    (at the end only unconditional life lives), `endplay 0|1|2` (counted searches: two passes do not end the game
+    while a defender chain in the target's area is in atari or the side to move can take a ko; 1 the attacker moves,
+    2 the side to move keeps the move), `pv 0|1` (`solve` prints `pvA=` and `pvD=`). `kofree`, `bentfour` and `cycle`
+    also work alone.
+  - `solvex <toMove> <ko> <budget> <black> <white> <options|-> <board>`: the counted search with `pb=k`/`pw=k`
+    (that colour passes its next k turns; a forced pass lifts the ko ban and never ends the game), `fb=i;j`/`fw=`
+    (barred points), `kb=`/`kw=` (barred while that colour is under a ko ban) and `end=`, `cyc=`, `sk=`, `pv=` (the
+    switches, for this command only). Prints `result N=K|N|U nodes= best= cycles= [pv=]`; a line is `B<i>`, `W<i>`,
+    `Bpass` joined by `_`, with `!` after a ban break, `fp` for a forced pass and `cycle` where a position repeats.
+    `solvecount` is `solvex` with no options and keeps its old output.
+  - `solvemoves`, with the arguments of `solvex`: every legal root move and the pass searched in one table generation,
+    `moves=<i>[!]:<K|N|U>:<nodes>,...` (-1 the pass, `!` a retake against the ban), with the budget per move.
+  - `keep <indices|->`: attacker stones whose capture means the defender lives (hand-built model boards).
+  A malformed `solvex`, `solvemoves`, `set` or `keep`, or an unknown command, answers `error <reason>`.
 - `tsumego.py`: SGF parsing, go rules, the problem region, and the bridge to the engine (statuses DEAD, KO, BENT4,
   ALIVE).
 - `check_tree.py`: the checker for one problem tree, and `site` mode over an export. Every finding is solved again
