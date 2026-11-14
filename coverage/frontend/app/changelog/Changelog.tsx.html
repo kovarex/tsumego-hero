@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">6.45% </span>
+                <span class="strong">29.03% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>2/31</span>
+                <span class='fraction'>9/31</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">50% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/12</span>
+                <span class='fraction'>6/12</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">25% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/12</span>
+                <span class='fraction'>3/12</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">6.89% </span>
+                <span class="strong">27.58% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>2/29</span>
+                <span class='fraction'>8/29</span>
             </div>
         
             
@@ -174,7 +174,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">322x</span>
+<span class="cline-any cline-yes">334x</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -182,7 +182,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">322x</span>
+<span class="cline-any cline-yes">334x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -239,19 +239,19 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -340,22 +340,22 @@ function <span class="fstat-no" title="function not covered" >Feed({</span> entr
 //Renders the changelog feed from the mount element's data-props. New entries
 //since the player's last visit are grouped at the top; the marker advances on
 //render.
-export function <span class="fstat-no" title="function not covered" >Changelog({</span> entries }: { entries: ChangelogEntry[] })
+export function Changelog({ entries }: { entries: ChangelogEntry[] })
 {
 	// Snapshot the marker at mount; it's advanced in the effect below.
-	const lastSeen = <span class="cstat-no" title="statement not covered" >useMemo(<span class="fstat-no" title="function not covered" >() =&gt; <span class="cstat-no" title="statement not covered" >g</span>etLastSeen(), [</span>]);</span>
+	const lastSeen = useMemo(() =&gt; getLastSeen(), []);
 &nbsp;
-<span class="cstat-no" title="statement not covered" >	useEffect(<span class="fstat-no" title="function not covered" >() =&gt;</span></span>
+	useEffect(() =&gt;
 	{
-<span class="cstat-no" title="statement not covered" >		<span class="missing-if-branch" title="if path not taken" >I</span>if (!entries || entries.length === 0)</span>
-<span class="cstat-no" title="statement not covered" >			return;</span>
+		if (!entries || entries.length === 0)
+			return;
 &nbsp;
 <span class="cstat-no" title="statement not covered" >		markSeen(entries[0].ts);</span>
 <span class="cstat-no" title="statement not covered" >		syncMenuNewBadge();</span>
 	}, [entries]);
 &nbsp;
-<span class="cstat-no" title="statement not covered" >	<span class="missing-if-branch" title="if path not taken" >I</span>if (!entries || entries.length === 0)</span>
-<span class="cstat-no" title="statement not covered" >		return &lt;p className="changelog__empty"&gt;No changes yet.&lt;/p&gt;;</span>
+	if (!entries || entries.length === 0)
+		return &lt;p className="changelog__empty"&gt;No changes yet.&lt;/p&gt;;
 &nbsp;
 	// Entries are sorted newest-first, so the new ones are a leading slice.
 	const newCount = <span class="cstat-no" title="statement not covered" >countNew(entries, lastSeen);</span>
@@ -382,7 +382,7 @@ export function <span class="fstat-no" title="function not covered" >Changelog({
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-11-14T23:04:08.418Z
+                at 2026-11-14T23:40:18.790Z
             </div>
         <script src="../../prettify.js"></script>
         <script>
