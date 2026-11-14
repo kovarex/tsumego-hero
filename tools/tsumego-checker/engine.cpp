@@ -2,11 +2,23 @@
 // liberties to the defender.
 // Exact local tsumego solver: depth-first iterative deepening proof search with a transposition table,
 // restricted to a region, Benson's unconditional life as the static "alive" test.
-// Protocol (stdin, one command per line):
+// Protocol (stdin, one command per line, one answer line each; a malformed solvex, solvemoves, set or keep answers
+// "error <reason>"):
 //   problem <size> <attacker B|W> <board size*size chars: . X O #(outside, empty, unplayable)> <target indices comma separated>
-//   solve <toMove B|W> <ko index or -1> <budget> <board>   -> "result A=<K|N|U> D=<K|N|U> nodes=<n> bestA=<i> bestD=<i>"
+//   solve <toMove B|W> <ko index or -1> <budget> <board>
+//     -> "result A=<K|N|U> D=<K|N|U> nodes=<n> bestA=<i> bestD=<i> cycles=<c> [pvA=<line> pvD=<line>]"
+//   solvecount <toMove> <ko> <budget> <black threats> <white threats> <board>   -> "result N=<K|N|U> nodes=<n> best=<i>"
+//   solvex <toMove> <ko> <budget> <black threats> <white threats> <options|-> <board>
+//     -> "result N=<K|N|U> nodes=<n> best=<i> cycles=<c> [pv=<line>]"
+//   solvemoves <as solvex> -> "result N=<K|N|U> nodes=<n> best=<i> cycles=<c> moves=<i>[!]:<K|N|U>:<nodes>,..."
+//   solveplain <toMove> <ko> <budget> <board>   -> "result N=<K|N|U> nodes=<n>"
+//   set cycle 0..3 | kofree B|W|0 | bentfour 0|1 | sekikill 0|1 | endplay 0|1|2 | pv 0|1;  keep <indices|->
 // A: the defender has infinite ko threats (attacker must kill without ko); D: the attacker has infinite ko threats.
-// K = attacker kills (captures a target stone), N = attacker can't kill, U = budget ran out.
+// N: counted threats, a retake against the ko ban costs the retaker one threat. K = attacker kills (captures a target
+// stone), N = attacker can't kill, U = budget ran out. cycles: repetitions the cycle rule adjudicated.
+// solvex options, comma separated: pb=k pw=k forced passes, fb=i;j fw=.. barred points, kb=.. kw=.. barred while that
+// colour is under a ko ban, end= cyc= sk= pv= as the switches for this command. A line: B<i>, W<i>, Bpass, Wpass joined
+// by _, ! after a ban break, fp a forced pass, cycle where a position repeats.
 #include <bits/stdc++.h>
 using namespace std;
 typedef uint64_t u64;
@@ -22,9 +34,20 @@ vector<array<int, 4>> neighbours;
 vector<int> neighbourCount;
 int attacker, defender;
 vector<int> target;
+vector<int> keepPoints; // attacker stones whose capture means the defender lives (hand-built model boards)
 vector<int> active; // the points inside the region
 bool fringe[361]; // empty edge points, playable only while a chain next to them is short of liberties
-u64 zobrist[3][361], zobristKo[362], zobristSide, zobristPass, zobristThreats[3][16];
+u64 zobrist[3][361], zobristKo[362], zobristSide, zobristPass, zobristThreats[3][16], zobristForced[3][9];
+// The switches below are in force for the command running now: each search command starts from the persistent ones
+// (set), and solvex options change them for that command only. Barred points and forced passes are per command.
+bool forbid[3][361]; // points a colour may not play (attribution of local threats)
+bool forbidBanned[3][361]; // points a colour may not play while it is under a ko ban (they cannot serve as ko threats)
+int endPlay = 0; // counted mode: two passes do not end the game while endPending(); 1 the attacker moves on, 2 the side to move
+int cycleRule = 0; // 0 ko-break cycles kill else seki, 1 cycles kill, 2 cycles live, 3 the side completing a cycle loses
+bool sekiKill = false; // at the end of the game a target that is not unconditionally alive is dead
+long long cycles; // repetitions adjudicated by the cycle rule in the command running now
+struct Switches { int cycleRule = 0, endPlay = 0; bool sekiKill = false, pv = false; };
+Switches switches; // the persistent ones
 
 struct State
 {
@@ -35,6 +58,7 @@ struct State
   u64 hash;
   int koBreaks; // recaptures made against the ko rule by the side with unlimited threats, not part of the hash
   int threats[3]; // counted ko threats left per colour (mode N), part of the hash
+  int forced[3]; // passes a colour must make on its next turns (tempo given to the other side), part of the hash
 };
 
 static int markStamp = 1;
@@ -83,9 +107,11 @@ int chain(const State& s, int p, vector<int>* stones, int maxLiberties, bool* to
 u64 positionKey(const State& s)
 {
   return s.hash ^ zobristKo[s.ko + 1] ^ (s.toMove == WHITE ? zobristSide : 0) ^ (s.passes ? zobristPass : 0) ^
-         zobristThreats[BLACK][s.threats[BLACK]] ^ zobristThreats[WHITE][s.threats[WHITE]];
+         zobristThreats[BLACK][s.threats[BLACK]] ^ zobristThreats[WHITE][s.threats[WHITE]] ^
+         zobristForced[BLACK][s.forced[BLACK]] ^ zobristForced[WHITE][s.forced[WHITE]];
 }
 
+bool endPending(const State& s);
 bool play(State& s, int p, bool ignoreKo, int* capturedOut = nullptr)
 {
   int color = s.toMove, opponent = 3 - color;
@@ -94,6 +120,18 @@ bool play(State& s, int p, bool ignoreKo, int* capturedOut = nullptr)
     s.passes++;
     s.ko = -1;
     s.toMove = opponent;
+    if (endPlay && searchMode == MODE_N && s.passes >= 2 && endPending(s))
+    {
+      // the end playout: something can still be taken, so the game goes on. 1: the attacker moves (Design 3);
+      // 2: the side to move keeps the move, and any further pass checks the end again (Design 2)
+      if (endPlay == 1)
+      {
+        s.passes = 0;
+        s.toMove = attacker;
+      }
+      else
+        s.passes = 1;
+    }
     return true;
   }
   if (s.c[p] != EMPTY)
@@ -433,6 +471,104 @@ int terminal(const State& s)
   return result;
 }
 
+// A defender chain in the target's area is in atari. Only chains in the target's own area count: a stray defender
+// stone at the region's edge decides nothing.
+bool areaChainInAtari(const State& s)
+{
+  static int inArea[361], areaStamp = 0;
+  static int stack[361];
+  ++areaStamp;
+  int top = 0;
+  for (int p : target)
+    if (s.c[p] == defender && inArea[p] != areaStamp)
+    {
+      inArea[p] = areaStamp;
+      stack[top++] = p;
+    }
+  while (top)
+  {
+    int q = stack[--top];
+    for (int k = 0; k < neighbourCount[q]; ++k)
+    {
+      int r = neighbours[q][k];
+      if (inArea[r] != areaStamp && (s.c[r] == EMPTY || s.c[r] == defender))
+      {
+        inArea[r] = areaStamp;
+        stack[top++] = r;
+      }
+    }
+  }
+  //and the defender stones next to an attacker chain there that could be captured (not touching the outside wall):
+  //they decide that capture
+  static int seenAttacker[361];
+  vector<int> attackerStones;
+  for (int p : active)
+    if (inArea[p] == areaStamp && s.c[p] != attacker)
+      for (int k = 0; k < neighbourCount[p]; ++k)
+      {
+        int r = neighbours[p][k];
+        if (s.c[r] != attacker || seenAttacker[r] == areaStamp)
+          continue;
+        attackerStones.clear();
+        bool outside;
+        chain(s, r, &attackerStones, 1000, &outside);
+        for (int a : attackerStones)
+          seenAttacker[a] = areaStamp;
+        if (!outside)
+          for (int a : attackerStones)
+            for (int j = 0; j < neighbourCount[a]; ++j)
+              if (s.c[neighbours[a][j]] == defender)
+                inArea[neighbours[a][j]] = areaStamp;
+      }
+  for (int p : active)
+    if (s.c[p] == defender && inArea[p] == areaStamp && chain(s, p, nullptr, 2) == 1)
+      return true;
+  return false;
+}
+
+// the side to move can take a single stone with a capture that sets a ko
+bool koCaptureAvailable(const State& s)
+{
+  int color = s.toMove, opponent = 3 - color;
+  for (int p : active)
+  {
+    if (s.c[p] != EMPTY || forbid[color][p])
+      continue;
+    bool nextToSingleStone = false;
+    for (int k = 0; k < neighbourCount[p] && !nextToSingleStone; ++k)
+    {
+      int r = neighbours[p][k];
+      vector<int> stones;
+      nextToSingleStone = s.c[r] == opponent && chain(s, r, &stones, 2) == 1 && stones.size() == 1;
+    }
+    if (!nextToSingleStone)
+      continue;
+    State t = s;
+    int captured = 0;
+    if (play(t, p, false, &captured) && captured == 1 && t.ko >= 0)
+      return true;
+  }
+  return false;
+}
+
+// The end playout (counted mode): two passes do not end the game while the target stands, is not unconditionally
+// alive, and either a defender chain in its area is in atari or the side to move can take a ko (the passes lifted the
+// ban). The attacker then has to capture for real.
+bool endPending(const State& s)
+{
+  bool anyLeft = false;
+  for (int p : target)
+    if (s.c[p] == defender)
+      anyLeft = true;
+  if (!anyLeft)
+    return false;
+  bensonAlive(s);
+  for (int p : target)
+    if (s.c[p] == defender && alive[p])
+      return false;
+  return areaChainInAtari(s) || koCaptureAvailable(s);
+}
+
 int terminalUncached(const State& s)
 {
   bool anyLeft = false;
@@ -447,8 +583,20 @@ int terminalUncached(const State& s)
     }
   if (!anyLeft)
     return KILL;
+  for (int p : keepPoints)
+    if (s.c[p] != attacker)
+      return NOKILL;
   if (s.passes >= 2)
   {
+    // sekikill: only unconditional life survives the end, a seki counts as dead
+    if (sekiKill)
+    {
+      bensonAlive(s);
+      for (int p : target)
+        if (s.c[p] == defender && alive[p])
+          return NOKILL;
+      return KILL;
+    }
     // with the bent four rule on, a defender left with a bent four in the corner is dead: the attacker removes all
     // ko threats first and then starts the ko
     if (bentFourRule && searchMode == MODE_A && bentFourEnd(s))
@@ -461,58 +609,8 @@ int terminalUncached(const State& s)
       if (s.c[p] == defender && alive[p])
         return NOKILL;
     //with counted threats left the defender could still retake, so the attacker has to play it out instead of passing
-    //only chains in the target's own area count: a stray defender stone at the region's edge decides nothing
-    if (searchMode != MODE_N || s.threats[defender] == 0)
-    {
-      static int inArea[361], areaStamp = 0;
-      static int stack[361];
-      ++areaStamp;
-      int top = 0;
-      for (int p : target)
-        if (s.c[p] == defender && inArea[p] != areaStamp)
-        {
-          inArea[p] = areaStamp;
-          stack[top++] = p;
-        }
-      while (top)
-      {
-        int q = stack[--top];
-        for (int k = 0; k < neighbourCount[q]; ++k)
-        {
-          int r = neighbours[q][k];
-          if (inArea[r] != areaStamp && (s.c[r] == EMPTY || s.c[r] == defender))
-          {
-            inArea[r] = areaStamp;
-            stack[top++] = r;
-          }
-        }
-      }
-      //and the defender stones next to an attacker chain there that could be captured (not touching the outside wall):
-      //they decide that capture
-      static int seenAttacker[361];
-      vector<int> attackerStones;
-      for (int p : active)
-        if (inArea[p] == areaStamp && s.c[p] != attacker)
-          for (int k = 0; k < neighbourCount[p]; ++k)
-          {
-            int r = neighbours[p][k];
-            if (s.c[r] != attacker || seenAttacker[r] == areaStamp)
-              continue;
-            attackerStones.clear();
-            bool outside;
-            chain(s, r, &attackerStones, 1000, &outside);
-            for (int a : attackerStones)
-              seenAttacker[a] = areaStamp;
-            if (!outside)
-              for (int a : attackerStones)
-                for (int j = 0; j < neighbourCount[a]; ++j)
-                  if (s.c[neighbours[a][j]] == defender)
-                    inArea[neighbours[a][j]] = areaStamp;
-          }
-      for (int p : active)
-        if (s.c[p] == defender && inArea[p] == areaStamp && chain(s, p, nullptr, 2) == 1)
-          return KILL;
-    }
+    if ((searchMode != MODE_N || s.threats[defender] == 0) && areaChainInAtari(s))
+      return KILL;
     return NOKILL;
   }
   bensonAlive(s);
@@ -686,6 +784,18 @@ void store(int mode, u64 key, uint32_t pn, uint32_t dn, int best)
 
 void generate(const State& s, bool ignoreKo, vector<ProofChild>& children, int ttBest)
 {
+  if (s.forced[s.toMove] > 0)
+  {
+    // a forced pass: a tenuki that gives the other side a free move; it lifts the ko ban and never ends the game
+    ProofChild child{s, -1, 0, 0, 0, 0};
+    child.state.forced[s.toMove]--;
+    child.state.ko = -1;
+    child.state.toMove = 3 - s.toMove;
+    child.key = positionKey(child.state);
+    child.terminal = terminal(child.state);
+    children.push_back(child);
+    return;
+  }
   static int targetLiberty[361];
   static int stamp = 0;
   ++stamp;
@@ -704,7 +814,7 @@ void generate(const State& s, bool ignoreKo, vector<ProofChild>& children, int t
         targetLiberty[neighbours[q][k]] = stamp;
   for (int p : active)
   {
-    if (s.c[p] != EMPTY)
+    if (s.c[p] != EMPTY || forbid[s.toMove][p] || (s.ko >= 0 && forbidBanned[s.toMove][p]))
       continue;
     if (fringe[p])
     {
@@ -751,22 +861,32 @@ void generate(const State& s, bool ignoreKo, vector<ProofChild>& children, int t
   stable_sort(children.begin(), children.end(), [](const ProofChild& a, const ProofChild& b) { return a.score > b.score; });
 }
 
-// child values with terminal positions and repetitions resolved
-void childValues(int mode, ProofChild& child, uint32_t& pn, uint32_t& dn)
+// child values with terminal positions and repetitions resolved; true when the child repeats a position of the path
+// and the cycle rule decided it
+bool childValues(int mode, ProofChild& child, bool attackerMoved, uint32_t& pn, uint32_t& dn)
 {
 #ifndef NO_REPETITION
   for (size_t i = 0; i < path.size(); ++i)
     if (path[i] == child.key)
     {
-      // a cycle through a ko recapture is a ko nobody resolves: at the end the attacker takes it, dead;
-      // a cycle of legal captures (sending two, returning one) is a seki
-      if (child.state.koBreaks > pathKoBreaks[i]) { pn = 0; dn = INF; }
+      bool kill;
+      if (cycleRule == 1)
+        kill = true;
+      else if (cycleRule == 2)
+        kill = false;
+      else if (cycleRule == 3)
+        kill = !attackerMoved; // the side that completes the repetition loses (positional superko)
+      else
+        // a cycle through a ko recapture is a ko nobody resolves: at the end the attacker takes it, dead;
+        // a cycle of legal captures (sending two, returning one) is a seki
+        kill = child.state.koBreaks > pathKoBreaks[i];
+      if (kill) { pn = 0; dn = INF; }
       else { pn = INF; dn = 0; }
-      return;
+      return true;
     }
 #endif
-  if (child.terminal == KILL) { pn = 0; dn = INF; return; }
-  if (child.terminal == NOKILL) { pn = INF; dn = 0; return; }
+  if (child.terminal == KILL) { pn = 0; dn = INF; return false; }
+  if (child.terminal == NOKILL) { pn = INF; dn = 0; return false; }
   int best;
   lookup(mode, child.key, pn, dn, best);
 #ifdef HEURISTIC_INIT
@@ -777,6 +897,7 @@ void childValues(int mode, ProofChild& child, uint32_t& pn, uint32_t& dn)
     dn = max(1, 4 - child.liberties);
   }
 #endif
+  return false;
 }
 
 void mid(State& s, u64 key, uint32_t thpn, uint32_t thdn, int mode)
@@ -796,6 +917,8 @@ void mid(State& s, u64 key, uint32_t thpn, uint32_t thdn, int mode)
   path.push_back(key);
   pathKoBreaks.push_back(s.koBreaks);
   int best = -2;
+  // the path is fixed while this node is expanded, so its repetitions are counted on the first pass only
+  bool firstPass = true;
   while (true)
   {
     // aggregate
@@ -805,7 +928,8 @@ void mid(State& s, u64 key, uint32_t thpn, uint32_t thdn, int mode)
     for (size_t i = 0; i < children.size(); ++i)
     {
       uint32_t cpn, cdn;
-      childValues(mode, children[i], cpn, cdn);
+      if (childValues(mode, children[i], orNode, cpn, cdn) && firstPass)
+        ++cycles;
       uint32_t selector = orNode ? cpn : cdn, other = orNode ? cdn : cpn;
       sum = min(INF, sum + other);
       if (selector < minValue)
@@ -819,6 +943,7 @@ void mid(State& s, u64 key, uint32_t thpn, uint32_t thdn, int mode)
       else if (selector < second)
         second = selector;
     }
+    firstPass = false;
     if (orNode) { pn = minValue; dn = sum; }
     else { dn = minValue; pn = sum; }
     if (bestIndex >= 0)
@@ -890,9 +1015,14 @@ bool bentFourEnd(const State& s)
   t.passes = 0;
   t.ko = -1;
   t.threats[BLACK] = t.threats[WHITE] = 0;
+  t.forced[BLACK] = t.forced[WHITE] = 0;
   t.toMove = attacker;
   bool previousAborted = aborted;
+  // this search belongs to mode A's class result, which keeps the old end
+  int previousEndPlay = endPlay;
+  endPlay = 0;
   Result r = proofSearch(t, MODE_N);
+  endPlay = previousEndPlay;
   bool result = !aborted && r.result == KILL;
   aborted = previousAborted;
   return result;
@@ -912,6 +1042,72 @@ Result retryFresh(State& s, int mode)
   return r;
 }
 
+// solvemoves: the position after one root move, searched with the root on the path, so that a line back to the root
+// is the repetition it is in the root's own search
+Result searchAfterRootMove(const State& root, ProofChild& child)
+{
+  if (child.terminal)
+    return {child.terminal, false, -2};
+  vector<u64> outerPath{positionKey(root)};
+  vector<int> outerKoBreaks{root.koBreaks};
+  swap(outerPath, path);
+  swap(outerKoBreaks, pathKoBreaks);
+  mid(child.state, child.key, INF - 1, INF - 1, MODE_N);
+  swap(outerPath, path);
+  swap(outerKoBreaks, pathKoBreaks);
+  uint32_t pn, dn;
+  int best;
+  lookup(MODE_N, child.key, pn, dn, best);
+  return {pn == 0 ? KILL : dn == 0 ? NOKILL : UNKNOWN, false, best};
+}
+
+// The line a proof follows, from the stored best moves: B<i>, W<i>, Bpass or Wpass joined by _, ! after a ban break,
+// fp a forced pass, cycle where a position repeats; "-" for none. Only the winner's moves are what the proof needs.
+string principalLine(const State& start, int mode)
+{
+  int previousMode = searchMode;
+  searchMode = mode;
+  State line = start;
+  vector<u64> seen;
+  string text;
+  for (int ply = 0; ply < 60 && !terminal(line); ++ply)
+  {
+    u64 key = positionKey(line);
+    if (find(seen.begin(), seen.end(), key) != seen.end())
+    {
+      text += "_cycle";
+      break;
+    }
+    seen.push_back(key);
+    if (line.forced[line.toMove] > 0)
+    {
+      line.forced[line.toMove]--;
+      line.ko = -1;
+      line.toMove = 3 - line.toMove;
+      text += "_fp";
+      continue;
+    }
+    uint32_t pn, dn;
+    int best;
+    lookup(mode, key, pn, dn, best);
+    if (best == -2)
+      break;
+    bool ignoreKo = mode == MODE_N ? line.threats[line.toMove] > 0 : (mode == MODE_D) == (line.toMove == attacker);
+    int koBreaks = line.koBreaks;
+    char who = line.toMove == BLACK ? 'B' : 'W';
+    if (!play(line, best, ignoreKo))
+      break;
+    text += string("_") + who + (best < 0 ? string("pass") : to_string(best)) + (line.koBreaks > koBreaks ? "!" : "");
+  }
+  searchMode = previousMode;
+  return text.empty() ? "-" : text.substr(1);
+}
+
+const char* resultText(int result)
+{
+  return result == KILL ? "K" : result == NOKILL ? "N" : "U";
+}
+
 void parseBoard(const string& text, State& s)
 {
   for (int i = 0; i < NN; ++i)
@@ -923,6 +1119,159 @@ void parseBoard(const string& text, State& s)
   for (int i = 0; i < NN; ++i)
     if (s.c[i] == BLACK || s.c[i] == WHITE)
       s.hash ^= zobrist[s.c[i]][i];
+}
+
+// a whole integer, false for anything else
+bool readInt(const string& text, int& value)
+{
+  char* end = nullptr;
+  long number = strtol(text.c_str(), &end, 10);
+  if (text.empty() || *end || number < INT_MIN || number > INT_MAX)
+    return false;
+  value = number;
+  return true;
+}
+
+// Every search command starts from the persistent switches with no barred points, so nothing a command's options set
+// outlives it. The proof table cannot carry such results over either: each command starts a new table generation.
+void beginCommand()
+{
+  cycleRule = switches.cycleRule;
+  endPlay = switches.endPlay;
+  sekiKill = switches.sekiKill;
+  memset(forbid, 0, sizeof(forbid));
+  memset(forbidBanned, 0, sizeof(forbidBanned));
+  cycles = 0;
+}
+
+// set <name> <value>: an error text, empty when the switch is set
+string setSwitch(const string& name, const string& value)
+{
+  int number = -1;
+  bool numeric = readInt(value, number);
+  if (name == "kofree" && (value == "B" || value == "W" || value == "0"))
+    koFreeColor = value == "B" ? BLACK : value == "W" ? WHITE : 0;
+  else if (name == "cycle" && numeric && number >= 0 && number <= 3)
+    switches.cycleRule = number;
+  else if (name == "endplay" && numeric && number >= 0 && number <= 2)
+    switches.endPlay = number;
+  else if (name == "bentfour" && numeric && (number == 0 || number == 1))
+    bentFourRule = number;
+  else if (name == "sekikill" && numeric && (number == 0 || number == 1))
+    switches.sekiKill = number;
+  else if (name == "pv" && numeric && (number == 0 || number == 1))
+    switches.pv = number;
+  else
+    return "unknown switch or value: " + name + " " + value;
+  return "";
+}
+
+// The arguments of solvex and solvemoves: <toMove> <ko> <budget> <black threats> <white threats> <options|-> <board>.
+// Fills the state, the forced passes, the barred points and this command's switches; an error text, empty if all is well.
+string readCounted(State& s, bool& wantPv)
+{
+  string line, side, options, board, extra;
+  getline(cin, line);
+  stringstream in(line);
+  int ko, black, white;
+  long long budgetValue;
+  if (!(in >> side >> ko >> budgetValue >> black >> white >> options >> board) || in >> extra)
+    return "expected <toMove> <ko> <budget> <black threats> <white threats> <options|-> <board>";
+  if ((side != "B" && side != "W") || (int)board.size() != NN || board.find_first_not_of(".XO#f") != string::npos)
+    return "bad side to move or board";
+  if (ko < -1 || ko >= NN || budgetValue < 0 || black < 0 || black > 15 || white < 0 || white > 15)
+    return "ko, budget or threats out of range (threats 0..15)";
+  budget = budgetValue;
+  parseBoard(board, s);
+  s.toMove = side == "B" ? BLACK : WHITE;
+  s.ko = ko;
+  s.passes = 0;
+  s.koBreaks = 0;
+  s.threats[0] = 0;
+  s.threats[BLACK] = black;
+  s.threats[WHITE] = white;
+  s.forced[0] = s.forced[BLACK] = s.forced[WHITE] = 0;
+  if (options == "-")
+    return "";
+  stringstream items(options);
+  string item;
+  while (getline(items, item, ','))
+  {
+    size_t equals = item.find('=');
+    string key = item.substr(0, equals), value = equals == string::npos ? "" : item.substr(equals + 1);
+    int number;
+    if (key == "fb" || key == "fw" || key == "kb" || key == "kw")
+    {
+      bool* points = (key[0] == 'f' ? forbid : forbidBanned)[key[1] == 'b' ? BLACK : WHITE];
+      stringstream list(value);
+      string text;
+      while (getline(list, text, ';'))
+        if (readInt(text, number) && number >= 0 && number < NN)
+          points[number] = true;
+        else
+          return "bad point '" + text + "' in " + item;
+    }
+    else if (!readInt(value, number))
+      return "bad option " + item;
+    else if ((key == "pb" || key == "pw") && number >= 0 && number <= 8)
+      s.forced[key[1] == 'b' ? BLACK : WHITE] = number;
+    else if (key == "end" && number >= 0 && number <= 2)
+      endPlay = number;
+    else if (key == "cyc" && number >= 0 && number <= 3)
+      cycleRule = number;
+    else if (key == "sk" && (number == 0 || number == 1))
+      sekiKill = number;
+    else if (key == "pv" && (number == 0 || number == 1))
+      wantPv = number;
+    else
+      return "bad option " + item;
+  }
+  return "";
+}
+
+// solvemoves: K/N/U after every legal root move and the pass (the forced pass when one is due), each with the full
+// budget and its own fresh retry, all in one table generation so that they share what they prove
+void solveMoves(State& s)
+{
+  int previousMode = searchMode;
+  searchMode = MODE_N;
+  s.koBreaks = 0;
+  int rootResult = terminal(s), best = -2;
+  long long total = 0;
+  string moves;
+  if (!rootResult)
+  {
+    vector<ProofChild> children;
+    generate(s, s.threats[s.toMove] > 0, children, -2);
+    int want = s.toMove == attacker ? KILL : NOKILL;
+    bool anyUnknown = false;
+    for (ProofChild& child : children)
+    {
+      nodes = 0;
+      aborted = false;
+      Result r = searchAfterRootMove(s, child);
+      if (r.result == UNKNOWN)
+      {
+        memset(history, 0, sizeof(history));
+        ++generation;
+        long long spent = nodes;
+        nodes = 0;
+        aborted = false;
+        r = searchAfterRootMove(s, child);
+        nodes += spent;
+      }
+      total += nodes;
+      if (r.result == want && best == -2)
+        best = child.move;
+      anyUnknown = anyUnknown || r.result == UNKNOWN;
+      moves += (moves.empty() ? "" : ",") + to_string(child.move) + (child.state.koBreaks > s.koBreaks ? "!" : "") + ":" +
+               resultText(r.result) + ":" + to_string(nodes);
+    }
+    rootResult = best != -2 ? want : anyUnknown ? UNKNOWN : want == KILL ? NOKILL : KILL;
+  }
+  searchMode = previousMode;
+  cout << "result N=" << resultText(rootResult) << " nodes=" << total << " best=" << best << " cycles=" << cycles
+       << " moves=" << (moves.empty() ? "-" : moves) << endl;
 }
 
 int main()
@@ -938,6 +1287,9 @@ int main()
   for (int c = 0; c < 3; ++c)
     for (int i = 0; i < 16; ++i)
       zobristThreats[c][i] = i ? random() : 0;
+  for (int c = 0; c < 3; ++c)
+    for (int i = 0; i < 9; ++i)
+      zobristForced[c][i] = i ? random() : 0;
   ios::sync_with_stdio(false);
   string command;
   while (cin >> command)
@@ -982,7 +1334,37 @@ int main()
         proofTable[m].assign(1 << PN_BITS, ProofEntry{0, 0, 0, 0, 0});
       terminalTable.assign(1 << TERMINAL_BITS, TerminalEntry{0, 0});
       memset(history, 0, sizeof(history));
+      keepPoints.clear();
       cout << "ok" << endl;
+    }
+    else if (command == "keep")
+    {
+      // attacker stones whose capture means the defender lives, or - for none; the cached ends depend on them
+      string text, item, error;
+      cin >> text;
+      vector<int> points;
+      stringstream stream(text == "-" ? "" : text);
+      int p;
+      while (getline(stream, item, ','))
+        if (readInt(item, p) && p >= 0 && p < NN)
+          points.push_back(p);
+        else
+          error = "bad point '" + item + "'";
+      if (error.empty())
+      {
+        keepPoints = points;
+        terminalTable.assign(1 << TERMINAL_BITS, TerminalEntry{0, 0});
+      }
+      cout << (error.empty() ? "ok" : "error " + error) << endl;
+    }
+    else if (command == "set")
+    {
+      string line, name, value, extra;
+      getline(cin, line);
+      stringstream in(line);
+      in >> name >> value;
+      string error = in >> extra ? "set takes <name> <value>" : setSwitch(name, value);
+      cout << (error.empty() ? "ok" : "error " + error) << endl;
     }
     else if (command == "kofree")
     {
@@ -998,12 +1380,46 @@ int main()
       bentFourRule = value != 0;
       cout << "ok" << endl;
     }
+    else if (command == "cycle")
+    {
+      // the same as set cycle
+      string value;
+      cin >> value;
+      string error = setSwitch("cycle", value);
+      cout << (error.empty() ? "ok" : "error " + error) << endl;
+    }
+    else if (command == "solvex" || command == "solvemoves")
+    {
+      beginCommand();
+      State s;
+      bool wantPv = switches.pv;
+      string error = readCounted(s, wantPv);
+      ++generation;
+      if (!error.empty())
+        cout << "error " << error << endl;
+      else if (command == "solvemoves")
+        solveMoves(s);
+      else
+      {
+        nodes = 0;
+        aborted = false;
+        Result r = proofSearch(s, MODE_N);
+        if (r.result == UNKNOWN)
+          r = retryFresh(s, MODE_N);
+        cout << "result N=" << resultText(r.result) << " nodes=" << nodes << " best=" << r.best << " cycles=" << cycles;
+        if (wantPv)
+          cout << " pv=" << (r.result == UNKNOWN ? "-" : principalLine(s, MODE_N));
+        cout << endl;
+      }
+      beginCommand();
+    }
     else if (command == "solvecount")
     {
-      // counted ko threats: <toMove> <ko> <budget> <black threats> <white threats> <board>
+      // counted ko threats: <toMove> <ko> <budget> <black threats> <white threats> <board>, solvex with no options
       string side, board;
       int ko, blackThreats, whiteThreats;
       cin >> side >> ko >> budget >> blackThreats >> whiteThreats >> board;
+      beginCommand();
       ++generation;
       State s;
       parseBoard(board, s);
@@ -1012,6 +1428,7 @@ int main()
       s.passes = 0;
       s.koBreaks = 0;
       s.threats[0] = 0;
+      s.forced[0] = s.forced[1] = s.forced[2] = 0;
       s.threats[BLACK] = min(15, blackThreats);
       s.threats[WHITE] = min(15, whiteThreats);
       nodes = 0;
@@ -1027,6 +1444,7 @@ int main()
       string side, board;
       int ko;
       cin >> side >> ko >> budget >> board;
+      beginCommand();
       ++generation;
       State s;
       parseBoard(board, s);
@@ -1035,6 +1453,7 @@ int main()
       s.passes = 0;
       s.koBreaks = 0;
       s.threats[BLACK] = s.threats[WHITE] = s.threats[0] = 0;
+      s.forced[0] = s.forced[1] = s.forced[2] = 0;
       nodes = 0;
       aborted = false;
       Result r = proofSearch(s, MODE_N);
@@ -1045,6 +1464,7 @@ int main()
       string side, board;
       int ko;
       cin >> side >> ko >> budget >> board;
+      beginCommand();
       ++generation;
       State s;
       parseBoard(board, s);
@@ -1053,7 +1473,8 @@ int main()
       s.passes = 0;
       s.koBreaks = 0;
       s.threats[BLACK] = s.threats[WHITE] = s.threats[0] = 0;
-      string out[2];
+      s.forced[0] = s.forced[1] = s.forced[2] = 0;
+      string out[2], lines[2] = {"-", "-"};
       int bests[2];
       long long total = 0;
       long long budgetPerMode = budget;
@@ -1069,35 +1490,29 @@ int main()
         total += nodes;
         out[mode] = r.result == KILL ? "K" : r.result == NOKILL ? "N" : "U";
         bests[mode] = r.best;
+        // read before the next mode's retry can start a new table generation
+        if (switches.pv && r.result != UNKNOWN)
+          lines[mode] = principalLine(s, mode);
         // a kill without ko is a kill with ko too
         if (mode == MODE_A && r.result == KILL)
         {
           out[1] = "K";
           bests[1] = r.best;
+          lines[1] = lines[0];
           break;
         }
       }
-      if (getenv("PV"))
-        for (int mode = 0; mode < 2; ++mode)
-        {
-          // the line the proof follows, from the stored best moves
-          State line = s;
-          cerr << "pv" << (mode ? "D" : "A") << ":";
-          for (int ply = 0; ply < 30; ++ply)
-          {
-            uint32_t pn, dn;
-            int best;
-            lookup(mode, positionKey(line), pn, dn, best);
-            if (best == -2 || terminal(line))
-              break;
-            bool attackerMoves = line.toMove == attacker;
-            if (!play(line, best, (mode == MODE_D) == attackerMoves))
-              break;
-            cerr << " " << (best < 0 ? string("pass") : string(1, 'a' + best % N) + string(1, 'a' + best / N)) << "[" << pn << "/" << dn << "]";
-          }
-          cerr << " terminal=" << terminal(line) << endl;
-        }
-      cout << "result A=" << out[0] << " D=" << out[1] << " nodes=" << total << " bestA=" << bests[0] << " bestD=" << bests[1] << endl;
+      cout << "result A=" << out[0] << " D=" << out[1] << " nodes=" << total << " bestA=" << bests[0] << " bestD=" << bests[1]
+           << " cycles=" << cycles;
+      if (switches.pv)
+        cout << " pvA=" << lines[0] << " pvD=" << lines[1];
+      cout << endl;
+    }
+    else
+    {
+      string rest;
+      getline(cin, rest);
+      cout << "error unknown command " << command << endl;
     }
   }
 }
