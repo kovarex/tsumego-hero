@@ -2,12 +2,12 @@
 // liberties to the defender.
 // Exact local tsumego solver: depth-first iterative deepening proof search with a transposition table,
 // restricted to a region, Benson's unconditional life as the static "alive" test.
-// Protocol (stdin, one command per line, one answer line each; a malformed solvex, solvemoves, set or keep answers
-// "error <reason>"):
+// Protocol (stdin, one command per line, one answer line each; a malformed solvex, solvemoves, set or keep, or an
+// unknown command, answers "error <reason>"):
 //   problem <size> <attacker B|W> <board size*size chars: . X O #(outside, empty, unplayable)> <target indices comma separated>
 //   solve <toMove B|W> <ko index or -1> <budget> <board>
 //     -> "result A=<K|N|U> D=<K|N|U> nodes=<n> bestA=<i> bestD=<i> cycles=<c> [pvA=<line> pvD=<line>]"
-//   solvecount <toMove> <ko> <budget> <black threats> <white threats> <board>   -> "result N=<K|N|U> nodes=<n> best=<i>"
+//   solvecount <toMove> <ko> <budget> <black threats> <white threats> <board>  -> "result N=<K|N|U> nodes=<n> best=<i>"
 //   solvex <toMove> <ko> <budget> <black threats> <white threats> <options|-> <board>
 //     -> "result N=<K|N|U> nodes=<n> best=<i> cycles=<c> [pv=<line>]"
 //   solvemoves <as solvex> -> "result N=<K|N|U> nodes=<n> best=<i> cycles=<c> moves=<i>[!]:<K|N|U>:<nodes>,..."
@@ -42,8 +42,8 @@ u64 zobrist[3][361], zobristKo[362], zobristSide, zobristPass, zobristThreats[3]
 // (set), and solvex options change them for that command only. Barred points and forced passes are per command.
 bool forbid[3][361]; // points a colour may not play (attribution of local threats)
 bool forbidBanned[3][361]; // points a colour may not play while it is under a ko ban (they cannot serve as ko threats)
-int endPlay = 0; // counted mode: two passes do not end the game while endPending(); 1 the attacker moves on, 2 the side to move
-int cycleRule = 0; // 0 ko-break cycles kill else seki, 1 cycles kill, 2 cycles live, 3 the side completing a cycle loses
+int endPlay = 0; // counted mode: no end at two passes while endPending(); 1 the attacker moves on, 2 the side to move
+int cycleRule = 0; // 0 ko-break cycles kill else seki, 1 cycles kill, 2 cycles live, 3 the side completing one loses
 bool sekiKill = false; // at the end of the game a target that is not unconditionally alive is dead
 long long cycles; // repetitions adjudicated by the cycle rule in the command running now
 struct Switches { int cycleRule = 0, endPlay = 0; bool sekiKill = false, pv = false; };
@@ -1104,7 +1104,7 @@ int closingMove(const State& s, int mode, int result, const vector<u64>& line, c
 }
 
 // The line a proof of result follows, from the stored best moves: B<i>, W<i>, Bpass or Wpass joined by _, ! after a ban
-// break, fp a forced pass, cycle where a position repeats; "-" for none. Only the winner's moves are what the proof needs.
+// break, fp a forced pass, cycle where a position repeats; "-" for none. Only the winner's moves are the proof's.
 string principalLine(const State& start, int mode, int result)
 {
   int previousMode = searchMode;
@@ -1213,7 +1213,8 @@ string setSwitch(const string& name, const string& value)
 }
 
 // The arguments of solvex and solvemoves: <toMove> <ko> <budget> <black threats> <white threats> <options|-> <board>.
-// Fills the state, the forced passes, the barred points and this command's switches; an error text, empty if all is well.
+// Fills the state, the forced passes, the barred points and this command's switches; an error text, empty if all is
+// well.
 string readCounted(State& s, bool& wantPv)
 {
   string line, side, options, board, extra;
@@ -1310,8 +1311,8 @@ void solveMoves(State& s)
       if (r.result == want && best == -2)
         best = child.move;
       anyUnknown = anyUnknown || r.result == UNKNOWN;
-      moves += (moves.empty() ? "" : ",") + to_string(child.move) + (child.state.koBreaks > s.koBreaks ? "!" : "") + ":" +
-               resultText(r.result) + ":" + to_string(nodes);
+      moves += (moves.empty() ? "" : ",") + to_string(child.move) + (child.state.koBreaks > s.koBreaks ? "!" : "") +
+               ":" + resultText(r.result) + ":" + to_string(nodes);
     }
     rootResult = best != -2 ? want : anyUnknown ? UNKNOWN : want == KILL ? NOKILL : KILL;
   }
@@ -1548,8 +1549,8 @@ int main()
           break;
         }
       }
-      cout << "result A=" << out[0] << " D=" << out[1] << " nodes=" << total << " bestA=" << bests[0] << " bestD=" << bests[1]
-           << " cycles=" << cycles;
+      cout << "result A=" << out[0] << " D=" << out[1] << " nodes=" << total << " bestA=" << bests[0]
+           << " bestD=" << bests[1] << " cycles=" << cycles;
       if (switches.pv)
         cout << " pvA=" << lines[0] << " pvD=" << lines[1];
       cout << endl;

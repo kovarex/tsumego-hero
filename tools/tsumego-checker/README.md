@@ -43,7 +43,8 @@ the export is; `RESULTS` and `REPORT_DIR` do the same for `build_report.py`.
     `Bpass` joined by `_`, with `!` after a ban break, `fp` for a forced pass and `cycle` where a position repeats.
     `solvecount` is `solvex` with no options and keeps its old output.
   - `solvemoves`, with the arguments of `solvex`: every legal root move and the pass searched in one table generation,
-    `moves=<i>[!]:<K|N|U>:<nodes>,...` (-1 the pass, `!` a retake against the ban), with the budget per move.
+    each with the full budget. Prints `result N= nodes= best= cycles= moves=<i>[!]:<K|N|U>:<nodes>,...` (-1 the pass,
+    `!` a retake against the ban).
   - `keep <indices|->`: attacker stones whose capture means the defender lives (hand-built model boards).
   A malformed `solvex`, `solvemoves`, `set` or `keep`, or an unknown command, answers `error <reason>`.
 - `tsumego.py`: SGF parsing, go rules, the problem region, and the bridge to the engine (statuses DEAD, KO, BENT4,
@@ -117,4 +118,5 @@ for problem 9). It checks every move for legality and every step against the sol
 `research/ko_labels/design.md` is the design for computing besogo's full ko labels (approaches, who takes first,
 local threats, 10kKO, double ko, superko, BENT4, SEKI) from small engine searches instead of one threat count.
 `research/ko_labels/prototypes/` holds the prototype engines (diffs against `engine.cpp`) and scripts it was built
-from, `research/ko_labels/judge/` the runs that verified its outputs on the settled leaves.
+from, `research/ko_labels/judge/` the runs that verified its outputs on the settled leaves. The engine part (the
+design's section 5) is in `engine.cpp`; its end playout stays off until the regression run of section 12.
