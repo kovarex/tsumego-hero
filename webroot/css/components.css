@@ -218,8 +218,9 @@
 	justify-content: center;
 	font-size: var(--text-xs);
 	font-weight: var(--weight-heavy);
-	color: var(--color-white);
-	text-shadow: 0 0 3px rgba(0, 0, 0, 0.8);
+	/* The text colour with a halo of the card, so it reads on the empty track and on the fill */
+	color: var(--color-text);
+	text-shadow: 0 0 2px var(--color-surface), 0 0 4px var(--color-surface);
 	pointer-events: none;
 }
 

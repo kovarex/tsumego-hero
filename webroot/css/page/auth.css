@@ -34,6 +34,9 @@
 .signin .hint {
 	color: var(--color-text);
 }
+.signin .hint a {
+	color: var(--signin-link);
+}
 .signin .btn {
 	margin-top: var(--space-5);
 	min-height: 44px;

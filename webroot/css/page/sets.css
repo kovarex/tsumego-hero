@@ -1,9 +1,9 @@
 @layer page
 {
 .setViewCompleted {
-  color: var(--set-accent-green);
+  color: var(--set-completed);
   margin: 2px 9px;
-  border: 1px solid var(--set-accent-green);
+  border: 1px solid var(--set-completed);
   padding: 3px;
   display: inline-block;
 }
