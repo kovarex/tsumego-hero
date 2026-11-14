@@ -88,17 +88,23 @@
   }
  },
  {
-  "key": "edge-11320",
-  "title": "Problem 11320: how much room does the open edge give?",
+  "key": "open-board",
+  "title": "Empty board around the corner: open, or the attacker's wall?",
   "text": [
-   "White has just retaken the ko, and Black must win it. The tree's S[KO&minus;2] counts one free White threat, the B14 exchange of the sibling line. White has better: the placement at A15 forces B14, then A14 forces B13, each letting White retake without spending a threat, and more pushes down the edge may follow. How many depends on how far the empty edge below row 13 runs, which the SGF leaves open. Two judges checked each frame with explicit stones.",
-   "Edge closed at row 11 or nearer: S[DEAD], and White's A15 also kills in the main line, so the problem would need a new answer. Edge closed at row 10, about the room the main line's ko needs: S[KO&minus;6]. Fully open edge: about S[KO&minus;4]. S[KO&minus;2] is wrong in every frame.",
-   "Suggestion (the judges'): add White stones on row 10 so the frame is fixed, and label the leaf S[KO&minus;6]."
+   "These two leaves depend on how much of the empty board counts. The SGFs have no stones there, the site shows part of the board, and the solver's search area treats everything outside it as the attacker's wall. Two judges checked each frame with explicit stones.",
+   "2359: Black should not retake at once. C18 first forces White's E18, and then Black takes the ko at A19 without a threat, so White needs the first threat: S[KO+] on the board as given (H19 and H18 empty, as the site shows them). Only if the right side were White's would White's D19 or E19 kill after C18, making it S[KO&minus;2]. S[KO&minus;] is wrong either way. Tree note from a judge: on the open board White's A18 at move 6 is a mistake, since E18 there gives KO&minus;; with this leaf at KO+, White's move 6 should become E18, or Black's A17 at move 3 grades as well as the main line.",
+   "11320: White has just retaken the ko, and Black must win it. The tree's S[KO&minus;2] counts one free White threat, the B14 exchange of the sibling line. White has better: the placement at A15 forces B14, then A14 forces B13, each letting White retake without spending a threat, and more pushes down the edge may follow. Edge closed at row 11 or nearer: S[DEAD], and White's A15 also kills in the main line, so the problem would need a new answer. Edge closed at row 10, about the room the main line's ko needs: S[KO&minus;6]. Fully open edge: about S[KO&minus;4] (the solver could not finish this one). S[KO&minus;2] is wrong in every frame.",
+   "Suggestion: count the board as the player sees it, and where a problem needs a closed edge, put the stones in the SGF. That makes 2359 S[KO+] (with White's move 6 changed to E18), and for 11320 either S[KO&minus;4] on the open edge or, as the judges suggest, White stones on row 10 and S[KO&minus;6], which keeps the main line as it is."
   ],
   "cases": [
+   "c013",
    "c052"
   ],
   "options": {
+   "c013": [
+    "KO+",
+    "KO-2"
+   ],
    "c052": [
     "KO-6",
     "KO-4",
