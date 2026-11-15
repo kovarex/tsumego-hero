@@ -128,3 +128,17 @@ direct-ko value), `ko_label` (the record of section 7.1 in both areas) and the c
 (cycle rules for double ko and superko, the clean result, the fixed bent-four test, SEKI and SEKI+). The counted
 searches of the label use `END_PLAY` (default 2, the side to move keeps the move; 1 the attacker moves on).
 `besogo_string`, `parse_status`, `label_threshold` and `better` mirror `status.js`.
+
+The rest of the label (D7, D8, steps 6-9 and section 7) is `explain_label`, which `ko_label` runs on the area the label
+comes from. `local_threats` bars the candidate moves of the side with the extra threats cumulatively, while it is under a
+ban only, and counts each unit change of the count as one local threat; the points barred for it are its forms. Extra
+threats no bar explains are read as stages on the direct-ko line. `approach_rounds` builds the conventional approach line
+(the other side plays elsewhere, approach, free retake, retake after a threat) and `round_gains` measures, round by round,
+what the other side's local move instead of its tenuki would gain: the located gains, the unlocated rest of the full
+count, and the strict label (from the parts when the full count is undecided). `counted_line` builds the lines of 7.2
+(approach, direct ko, gain and its no-gain twin; the full count's line when it beats the label, for a mutual approach,
+or when no other line can be built) from decided positions, with each move's role; each line carries a
+`research/report.py` diagram spec (`start`, `moves`, `first`, `caption`).
+`label_text` writes one sentence per part, `compare_label` the comparison of 7.3, and `label_summary` the fields
+`check_tree.py` and `status_eval.py` add to KO leaves (`KO_LABEL=0` turns them off). `evidence.py --label` prints the
+whole report.

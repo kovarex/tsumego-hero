@@ -57,7 +57,8 @@ for number, (sc, goal, line_text, authored, sign) in enumerate(sorted(cases, key
     #the disputed balance: the solver wins there by one reading and loses by the other
     disputed = min(a, s)
     x, y = max(disputed, 0), max(-disputed, 0)
-    wins, line = solver.counted_line(board, to_move, x, y)
+    wins, line = solver.counted_line(board, to_move, x, y, end=0)
+    line = [(c, p, 'retakes after a ko threat' if mark == '!' else '') for c, p, mark in line if mark != 'cycle']
     if wins is None or wins != (s <= a):
         #the wider region does not back the sign at the disputed balance: the sign is not settled, leave it out
         unsettled.append((sc, line_text, authored, sign))

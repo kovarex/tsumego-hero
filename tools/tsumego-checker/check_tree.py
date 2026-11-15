@@ -5,6 +5,8 @@ import json, sys, time, os
 SKIP_IDS = set(open(os.environ['SKIP']).read().split()) if os.environ.get('SKIP') else set()
 from tsumego import *
 from first_moves import opponent, solver_wins, rank
+#the full ko label of each KO leaf of a status problem, compared with its S[] (research/ko_labels/design.md 7.3)
+KO_LABEL = os.environ.get('KO_LABEL', '1') == '1'
 
 #solver's rank of an authored status (S[]) for the goal: 2 success, 1 ko, 0 failure
 STATUS_RANKS = {
@@ -270,6 +272,7 @@ def check(text, engine, budget, scan_missing=True, description=None, missing_dep
         return ' '.join(point_name(n.move, size) for n in node_chain if n is not root)
 
     tree_positions = {problem.board_text(n.board) + n.to_move for n in all_nodes(root)}
+    ko_leaves = [] #leaves the engine calls KO, labelled once the tree is done
     try:
         stack = [(root, [root])]
         while stack:
@@ -297,6 +300,8 @@ def check(text, engine, budget, scan_missing=True, description=None, missing_dep
                     elif r is not None and status_rank(node.status_text, goal) is not None and r != status_rank(node.status_text, goal) \
                         and not (node.status_text.strip() == 'BENT4' and status == STATUS_KO): #bent four is a ko the attacker wins by removing threats first
                         add_issue({'kind': 'status-mismatch', 'line': path(chain), 'authored': node.status_text, 'engine': status}, node)
+                    if KO_LABEL and node.status_text is not None and status == STATUS_KO:
+                        ko_leaves.append((node, chain))
                 continue
             if not node.children:
                 continue
@@ -366,6 +371,28 @@ def check(text, engine, budget, scan_missing=True, description=None, missing_dep
     #findings mean something only when the formulation is proven: the opponent moving first refutes (the problem is unsettled)
     opponent_first = rank(solver.status(root.board, opponent(solver_color))[0], goal) if not report.get('timed_out') else None
     report['unsettled'] = opponent_first is not None and opponent_first < 2
+    #the full labels of the KO leaves against their S[]: a different approach count or threat count is an issue; notation,
+    #count and undecided parts are notes, and so is a class difference the status check above did not report. A label past
+    #the time limit ends the labels, not the check
+    if ko_leaves:
+        report['labels'] = []
+        for node, chain in ko_leaves:
+            line = path(chain)
+            try:
+                record = solver.ko_label(node.board, node.to_move, node.move, start=line)
+            except TimeoutError:
+                report['labels'].append({'line': line, 'authored': node.status_text, 'timed_out': True})
+                break
+            entry = dict(label_summary(record, node.status_text, goal), line=line, authored=node.status_text)
+            report['labels'].append(entry)
+            for item in entry['comparison']:
+                finding = dict(item, line=line, engine=record['label'])
+                if item['severity'] in ('major', 'minor'):
+                    report['issues'].append(finding)
+                elif item['kind'] != 'status-mismatch':
+                    report['notes'].append(finding)
+                elif not any(issue['line'] == line for issue in report['issues']):
+                    report['notes'].append(dict(finding, kind='label-status-mismatch'))
     #statuses the solver doesn't tell apart (seki in sente or gote, super ko, double ko, bent four) can make a move
     #worse than the authored one although the solver sees the same outcome
     fine = {'SEKI', 'SEKI+', 'ASKO', 'ADKO', 'DSKO', 'DDKO', 'BENT4'}

@@ -210,6 +210,9 @@ ESCALATION = 5
 #the end playout of the counted searches (D13): 1 the attacker moves on (Design 3), 2 the side to move keeps the move
 #(Design 2), which decides c121's held-ko check (undecided at 8M nodes with 1) and c027's counts at any history
 END_PLAY = int(os.environ.get('END_PLAY', '2'))
+#D7: at most this many candidate bars per attribution; a line ends once its winner wins with no threat against this many
+THREAT_TESTS = 8
+LINE_OUTRIGHT = 4
 
 def other_colour(color):
     return 'W' if color == 'B' else 'B'
@@ -689,55 +692,181 @@ class Solver:
             return None
         return (fields['N'] == 'K') == (solver_color == self.attacker)
 
-    def counted_line(self, board, to_move, solver_threats, opponent_threats, plies=10):
-        #the line the counted-threat search follows: [(colour, point or None, note)], each move keeps the result;
-        #a retake against the ko ban uses one of the mover's threats
-        threats = {self.solver_color: solver_threats, other_colour(self.solver_color): opponent_threats}
-        expected = self.solver_wins(board, to_move, solver_threats, opponent_threats)
-        if expected is None:
-            return None, []
-        line, passes = [], 0
-        board = board.copy()
-        for ply in range(plies):
-            #the ko is over once the position is clean life or death whoever has the threats
-            if ply > 0 and self.status(board, to_move)[0] != STATUS_KO:
-                break
-            self.solver_wins(board, to_move, threats[self.solver_color], threats[other_colour(self.solver_color)])
-            #the ko first (a retake, if a threat is left), then the search's own move, then captures, then the rest
-            captures = []
-            for p in sorted(self.problem.region):
-                if p not in board.stones and p != board.ko:
-                    child = board.copy()
-                    if child.play(to_move, p) and len(child.stones) <= len(board.stones):
-                        captures.append(p)
-            candidates = [board.ko, self.last_best] + captures + sorted(self.problem.region) + [None]
-            chosen = None
-            for p in candidates:
-                if p is not None and p in board.stones:
-                    continue
-                if p is None and board.ko is not None and p in candidates[:1]:
-                    continue
-                retake = p is not None and p == board.ko
-                if retake and threats[to_move] == 0:
-                    continue
-                child = board.copy()
-                if not child.play(to_move, p, ignore_ko=retake):
-                    continue
-                left = dict(threats)
-                if retake:
-                    left[to_move] -= 1
-                if self.solver_wins(child, other_colour(to_move), left[self.solver_color], left[other_colour(self.solver_color)]) == expected:
-                    chosen = (p, child, left, retake)
+    def counted_line(self, board, to_move, solver_threats, opponent_threats, plies=24, **options):
+        #the line of the counted game G(P; s, o) with count's options (D2): True / False / None for the solver and the
+        #moves [(colour, point, mark)], every position on it decided with the same winner (walk_line)
+        walk = self.walk_line(board, to_move, solver_threats, opponent_threats, plies, **options)
+        return walk['result'], walk['moves']
+
+    def walk_line(self, board, to_move, s, o, plies=24, passes=None, **options):
+        #counted_line's walk: the winner plays its search's move, the loser resists in the canonical order (resistance), and
+        #the position after each move must be decided with the same winner. It stops at the end of the game, at a
+        #repetition (marked cycle), once the ko is over (after a move of the winner it wins with no threat against
+        #LINE_OUTRIGHT for the loser), after plies moves, or where a search is undecided. {result, moves, stop, threats
+        #left, nodes}
+        options.setdefault('escalate', False)
+        solver, opponent = self.solver_color, other_colour(self.solver_color)
+        threats = {solver: s, opponent: o}
+        passes = {color: k for color, k in (passes or {}).items() if k}
+        start = self.nodes
+        result, pv, nodes = self.count(board, to_move, s, o, passes=dict(passes) or None, **options)
+        walk = {'result': result, 'moves': [], 'stop': 'undecided' if result is None else 'plies'}
+        if result is not None:
+            winner = solver if result else opponent
+            voluntary = 0
+            #the engine's key: board, ban, side to move, a pass just made, threats left and forced passes
+            position = lambda b, t: (frozenset(b.stones.items()), b.ko, t, voluntary > 0, threats[solver], threats[opponent],
+                                     tuple(sorted(passes.items())))
+            seen = {position(board, to_move)}
+            #the point where the side to move may retake the last ko capture, and who made that capture
+            last_ko = (board.ko, other_colour(to_move)) if board.ko is not None else None
+            for ply in range(plies):
+                if passes.get(to_move):
+                    move = (to_move, None, 'fp')
+                elif to_move == winner:
+                    if not pv or pv[0][0] != to_move or pv[0][2] in ('fp', 'cycle'):
+                        walk['stop'] = 'no move on the search line'
+                        break
+                    move = pv[0]
+                else:
+                    move = self.resistance(board, to_move, winner, threats, passes, last_ko, walk['moves'], options)
+                color, p, mark = move
+                child = self.play(board, color, p, ignore_ko=mark == '!')
+                if child is None:
+                    raise RuntimeError('line move %s %s is illegal in the area' % (color, self.point_name(p)))
+                left, rest = dict(threats), dict(passes)
+                if mark == '!':
+                    left[color] -= 1
+                if mark == 'fp':
+                    rest[color] -= 1
+                rest = {c: k for c, k in rest.items() if k}
+                after, pv, nodes = self.count(child, other_colour(color), left[solver], left[opponent], passes=dict(rest) or None, **options)
+                if after != result:
+                    walk['stop'] = 'undecided' if after is None else 'the result changes after %s %s' % (color, self.point_name(p))
                     break
-            if chosen is None:
+                walk['moves'].append(move)
+                board, to_move, threats, passes = child, other_colour(color), left, rest
+                if child.ko is not None:
+                    last_ko = (child.ko, color)
+                voluntary = voluntary + 1 if p is None and mark != 'fp' else 0
+                if not any(q in board.stones for q in self.target):
+                    walk['stop'] = 'target captured'
+                elif voluntary >= 2 and options.get('end', self.end_play) == 0:
+                    walk['stop'] = 'two passes'
+                elif position(board, to_move) in seen:
+                    walk['moves'].append((None, None, 'cycle'))
+                    walk['stop'] = 'repetition'
+                elif color == winner and mark != 'fp' and self.outright(board, to_move, winner, passes, options):
+                    walk['stop'] = 'ko over'
+                else:
+                    seen.add(position(board, to_move))
+                    continue
                 break
-            p, board, threats, retake = chosen
-            line.append((to_move, p, 'retakes after a ko threat' if retake else ''))
-            passes = passes + 1 if p is None else 0
-            to_move = other_colour(to_move)
-            if passes >= 2 or not any(q in board.stones for q in self.target):
-                break
-        return expected, line
+        walk['threats'] = {'S': threats[solver], 'O': threats[opponent]}
+        walk['nodes'] = self.nodes - start
+        return walk
+
+    def resistance(self, board, to_move, winner, threats, passes, last_ko, moves, options):
+        #the loser's move on a counted line: a retake of the winner's last ko capture that it can afford (D2), else the
+        #first move that still costs the winner its whole margin (tight) of: the moves next to the last move (the answer to
+        #a local threat), a save of its chain from an atari (the answer to a direct capture; connecting its own ko stone
+        #resolves the ko and is no answer); else the tight move nearest the last move by solvemoves; else a pass. D2 passes
+        #while a pass stays tight and then takes the search's own move, but that move depends on the search's history and
+        #can ignore a threat it could answer (c001's B19), and a tight pass can still skip the fight: after two passes the
+        #end playout goes on (c081's take at C19), and c014's answer A17 is no neighbour of the last move
+        if last_ko is not None and last_ko[1] == winner:
+            point = last_ko[0]
+            banned = board.ko == point
+            child = self.play(board, to_move, point, ignore_ko=True)
+            if child is not None and child.ko is not None and (not banned or threats[to_move] > 0) \
+                    and not self.barred(to_move, point, banned, options):
+                return (to_move, point, '!' if banned else '')
+        candidates = []
+        last = moves[-1][1] if moves else None
+        if last is not None:
+            near = list(board.neighbours(last))
+            for q in board.neighbours(last):
+                if q in board.stones:
+                    chain, liberties = self.chain_of(board.stones, q)
+                    if len(liberties) <= 2:
+                        near.extend(sorted(liberties))
+            candidates += [q for q in dict.fromkeys(near) if q not in board.stones and q in self.problem.region][:4]
+        ko_connections = {point for holder, stone, point, banned in self.ko_shapes(board) if holder == to_move}
+        for q, color in sorted(board.stones.items()):
+            if color == to_move:
+                chain, liberties = self.chain_of(board.stones, q)
+                if len(liberties) == 1:
+                    p = next(iter(liberties))
+                    child = self.play(board, to_move, p)
+                    playable = p in self.problem.region or p in self.problem.fringe
+                    if playable and p not in candidates and p not in ko_connections and child is not None \
+                            and len(self.chain_of(child.stones, p)[1]) >= 2:
+                        candidates.append(p)
+        for p in candidates:
+            if self.tight(board, to_move, p, winner, threats, passes, options):
+                return (to_move, p, '')
+        #every move at once: the loser wins after a tight move when the winner's margin is one smaller
+        solver = self.solver_color
+        smaller = self.smaller_margin(threats, winner, to_move)
+        if smaller is not None:
+            table = self.counted_moves(board, to_move, smaller[solver], smaller[other_colour(solver)], passes=dict(passes) or None,
+                                       bar=options.get('bar'), bar_banned=options.get('bar_banned'), end=options.get('end'), budget=self.budget)
+            distance = lambda p: (abs(p[0] - last[0]) + abs(p[1] - last[1]) if last else 0, p)
+            tight = sorted((p for p, mark, wins, nodes in table if wins and p is not None and mark == ''), key=distance)
+            if tight:
+                return (to_move, tight[0], '')
+        return (to_move, None, '')
+
+    def smaller_margin(self, threats, winner, loser):
+        #the threats with the winner's margin one smaller: one threat less for it, else one more for the loser (None at 15)
+        smaller = dict(threats)
+        if smaller[winner]:
+            smaller[winner] -= 1
+        elif smaller[loser] < 15:
+            smaller[loser] += 1
+        else:
+            return None
+        return smaller
+
+    def outright(self, board, to_move, winner, passes, options):
+        #the ko is over: the winner wins with no threat against LINE_OUTRIGHT threats for the other side
+        solver = self.solver_color
+        s, o = (0, LINE_OUTRIGHT) if winner == solver else (LINE_OUTRIGHT, 0)
+        result, line, nodes = self.count(board, to_move, s, o, passes=dict(passes) or None, part='line end test', **options)
+        return result is not None and result == (winner == solver)
+
+    def tight(self, board, to_move, p, winner, threats, passes, options):
+        #after the loser's move p the winner still needs its whole margin: with one threat less, or the loser one more, it
+        #fails
+        if self.barred(to_move, p, board.ko is not None, options):
+            return False
+        child = self.play(board, to_move, p)
+        if child is None:
+            return False
+        solver = self.solver_color
+        smaller = self.smaller_margin(threats, winner, to_move)
+        if smaller is None:
+            return False
+        result, line, nodes = self.count(child, other_colour(to_move), smaller[solver], smaller[other_colour(solver)],
+                                         passes=dict(passes) or None, **options)
+        return result is not None and result != (winner == solver)
+
+    def barred(self, color, p, banned, options):
+        #whether the search's options bar color from p (for the whole search, or while it is under a ko ban)
+        if p is None:
+            return False
+        return p in (options.get('bar') or {}).get(color, ()) or (banned and p in (options.get('bar_banned') or {}).get(color, ()))
+
+    def ko_points(self, board):
+        #the ko of a position with a ban: the point to retake and the stone the retake captures
+        for holder, stone, point, banned in self.ko_shapes(board):
+            if point == board.ko:
+                return (point, stone)
+        return None
+
+    def saves(self, board, color, p):
+        #the move fills the last liberty of one of color's chains: it answers an atari (a direct capture's threat)
+        return any(board.stones.get(q) == color and self.chain_of(board.stones, q)[1] == {p} for q in board.neighbours(p))
 
     def ko_sign(self, board, to_move, limit=6):
         #who is ahead in a direct ko, as besogo writes it: KO+ the solver takes first, KO+n the opponent needs n-1
@@ -834,9 +963,9 @@ class Solver:
                 undecided.append(entry)
         return result, line, nodes
 
-    def counted_moves(self, board, to_move, s, o, passes=None, bar=None, budget=None):
+    def counted_moves(self, board, to_move, s, o, passes=None, bar=None, budget=None, bar_banned=None, end=None):
         #solvemoves: [(point, mark, mover wins True/False/None, nodes)] for every legal move and the pass of the side to move
-        arguments, ko = self.counted_options(board, to_move, s, o, passes, bar, None, None, None, False)
+        arguments, ko = self.counted_options(board, to_move, s, o, passes, bar, bar_banned, None, end, False)
         budget = budget or self.count_budget or self.budget * KO_BUDGET_FACTOR
         key = ('moves', to_move, ko, arguments, budget)
         if key not in self.counts:
@@ -853,10 +982,11 @@ class Solver:
             self.counts[key] = moves
         return self.counts[key]
 
-    def threshold(self, board, to_move, L=LABEL_LIMIT, start=0, **options):
+    def threshold(self, board, to_move, L=LABEL_LIMIT, start=0, shifted=True, **options):
         #d(P): the least d in -L..L with the solver winning G(P; d+, d-), by galloping from start and bisecting. d is None
         #when the searches leave a bracket, or beyond the limit ('beyond' -1: the solver wins at -L, +1: it fails at L).
-        #The shifted check: the solver still wins with one more threat each and still fails one below (None: undecided)
+        #The shifted check (shifted): the solver still wins with one more threat each and still fails one below (None:
+        #undecided)
         results, nodes = {}, 0
         low, high = -L - 1, L + 1 #the solver fails at low and wins at high; the bounds stand for "not known"
         direction_tests = 0
@@ -899,7 +1029,7 @@ class Solver:
             record['pv_win'] = results[high][1]
         if low in results:
             record['pv_fail'] = results[low][1]
-        if record['d'] is not None:
+        if record['d'] is not None and shifted:
             d = record['d']
             #a consistency check, not a part of the label: no escalation
             wins, line, spent = self.count(board, to_move, max(d, 0) + 1, max(-d, 0) + 1, escalate=False, **options)
@@ -940,8 +1070,8 @@ class Solver:
         #D2: the side taking the ko first, the ko (the point to retake, the taking stone), the preparation before it and the
         #positions P_F right after the take and P_other right after the other side's retake, each (board, side to move).
         #From the leaf's ban, else the principal line at d (one search confirms d(P_F) = d), else the mode lines
-        take = {'side': None, 'ko': None, 'preparation': [], 'P_F': None, 'P_other': None, 'how': None, 'notes': [],
-                'confirmed': None, 'first_move': first}
+        take = {'side': None, 'ko': None, 'preparation': [], 'P_F': None, 'P_other': None, 'to_other': None, 'how': None,
+                'notes': [], 'confirmed': None, 'first_move': first}
         if board.ko is not None:
             take.update(side=other_colour(to_move), ko=(board.ko, last_move), P_F=(board, to_move), how='leaf')
         elif d is not None:
@@ -986,13 +1116,15 @@ class Solver:
         child = self.play(after, retaker, after.ko, ignore_ko=True)
         if child is not None and child.ko is not None:
             take['P_other'] = (child, take['side'])
+            take['to_other'] = [(retaker, after.ko, '!')]
         elif d is not None:
             #the other side's first capture of the ko further on the principal line
             line, end = self.principal_line(after, retaker, d)
             points = set(take['ko'])
-            for color, p, mark, later in line:
+            for i, (color, p, mark, later) in enumerate(line):
                 if color == retaker and p in points and later.ko is not None:
                     take['P_other'] = (later, other_colour(color))
+                    take['to_other'] = [(c, q, m) for c, q, m, b in line[:i + 1]]
                     break
         if take['P_other'] is None:
             take['notes'].append('the other side has no capture of the ko: its count is n/a, taken as 0')
@@ -1140,9 +1272,11 @@ class Solver:
         record = {'label': None, 'class': None, 'class_inferred': False, 'class_open': [], 'besogo': None, 'count': None, 'd_conv': None,
                   'first_take': None, 'approaches': None, 'direct_ko': None, 'gain': None, 'strict_label': None,
                   'net_label': None, 'special': None, 'area': None, 'a': None, 'e': None, 'extra_threats': None, 'warnings': [],
-                  'undecided': [], 'nodes': 0, 'seconds': 0}
+                  'undecided': [], 'nodes': 0, 'seconds': 0, 'solver': self.solver_color,
+                  'goal': 'KILL' if self.solver_color == self.attacker else 'LIVE'}
         start, started = self.nodes, time.time()
         self.undecided = record['undecided']
+        self.label_state = None
         try:
             self.compute_label(board, to_move, last_move, approach_rule, record)
         finally:
@@ -1247,11 +1381,15 @@ class Solver:
                                 [{'move': self.point_name(t['first_move'][0]), 'label': p['label']} for t, f, p in labelled]}
         record['approaches'] = {side: self.profile_summary(profiles[side]) for side in ('S', 'O')}
         side = 'S' if parts['a'] is not None and parts['a'] < 0 else 'O' if parts['a'] else None
-        v = profiles[side]['v'] if side and profiles[side] and not parts['mutual'] else None
-        record['direct_ko'] = {'v': parts['v'], 'side': side, 'line': self.line_names(v['pv_win']) if v else None,
-                               'local_threats': None, 'stages': parts['stages']}
-        if parts['d_conv'] is not None and count['d'] is not None:
-            record['gain'] = {'total': count['d'] - parts['d_conv'], 'rounds': None, 'unlocated': None}
+        side = None if parts['mutual'] else side
+        v = profiles[side]['v'] if side and profiles[side] else None
+        record['direct_ko'] = {'v': parts['v'], 'side': side, 'v_line': self.line_names(v['pv_win']) if v else None, 'line': None,
+                               'local_threats': None, 'stages': [dict(stage, kind='held-ko check') for stage in parts['stages']],
+                               'attribution': None}
+        record['gain'] = gain_record(record, count['d'], side)
+        #steps 6-8 run on the area the label comes from (explain_label)
+        self.label_state = {'board': board, 'to_move': to_move, 'take': take, 'profiles': profiles, 'parts': parts, 'count': count,
+                            'approach_side': side}
         if record['class'] == STATUS_UNKNOWN:
             if all(profiles[side] and profiles[side]['t'] for side in ('S', 'O')):
                 record['class'] = STATUS_KO
@@ -1290,7 +1428,7 @@ class Solver:
                 'held_ok': profile['held_ok'], 'v': profile['v'] and profile['v']['d'],
                 'v_decided': profile['v'] and profile['v']['decided'],
                 'v_table': profile['v'] and profile['v']['table'],
-                'line': self.line_names(profile['line']), 'Lo': profile['Lo'], 'nodes': profile['nodes']}
+                'outright_line': self.line_names(profile['line']), 'line': None, 'Lo': profile['Lo'], 'nodes': profile['nodes']}
 
     def point_name(self, p):
         if p is None:
@@ -1308,17 +1446,18 @@ class Solver:
         #a point next to the outside of the area or to its fringe
         return p is not None and any(q not in self.problem.region or q in self.problem.fringe for q in self.problem.board.neighbours(p))
 
-    def ko_label(self, board, to_move, last_move=None, approach_rule=True):
-        #the label of a leaf (design 4 and 7.1), in the wider area and in this one: the wider area's label when it is
+    def ko_label(self, board, to_move, last_move=None, approach_rule=True, start=None, explain=True):
+        #the label of a leaf (design 4 and 7), in the wider area and in this one: the wider area's label when it is
         #decided, else this one's; a count undecided there comes from the other area, and a decided label that differs
-        #between the areas is flagged
+        #between the areas is flagged. explain: steps 6-8 (attribution, gains, lines) and the text on the area the label
+        #comes from; start: the moves from the problem's start to the leaf, for the lines' diagrams (research/report.py)
         areas = [('wide', self.wide), ('narrow', self)] if self.wide is not None and self.wide is not self else [('narrow', self)]
         records = [(name, solver.area_label(board, to_move, last_move, approach_rule)) for name, solver in areas]
         #a decided label first, else a decided class, the wider area on a tie
         decided = lambda record: ('?' not in record['label'], record['class'] not in (None, STATUS_UNKNOWN))
         name, main = max(records, key=lambda item: decided(item[1]) + (item[0] == 'wide',))
         result = dict(main, warnings=list(main['warnings']), undecided=[dict(item, area=name) for item in main['undecided']])
-        result['area'] = {part: name for part in ('label', 'class', 'count', 'first_take', 'approaches', 'direct_ko')}
+        result['area'] = {part: name for part in ('label', 'class', 'count', 'first_take', 'approaches', 'direct_ko', 'gain', 'lines')}
         result['areas'] = {other: record['label'] for other, record in records}
         for other, record in records:
             if other == name:
@@ -1332,11 +1471,760 @@ class Solver:
                 d, a = record['count']['d_full'], main['a']
                 if d is not None and a is not None:
                     result['strict_label'] = besogo_string(a, -d - a)
-                    if main['d_conv'] is not None:
-                        result['gain'] = {'total': d - main['d_conv'], 'rounds': None, 'unlocated': None}
+                    result['gain'] = gain_record(result, d, (main['direct_ko'] or {}).get('side'))
         result['nodes'] = sum(record['nodes'] for other, record in records)
         result['seconds'] = round(sum(record['seconds'] for other, record in records), 2)
+        result['start'] = start
+        result['lines'] = []
+        if explain:
+            solver = dict(areas)[name]
+            started, nodes, undecided = time.time(), solver.nodes, []
+            solver.undecided = undecided
+            try:
+                solver.explain_label(result, start)
+            finally:
+                solver.undecided = None
+                result['undecided'] += [dict(item, area=name) for item in undecided]
+                result['explain_nodes'] = solver.nodes - nodes
+                result['nodes'] += result['explain_nodes']
+                result['seconds'] = round(result['seconds'] + time.time() - started, 2)
+        result['text'] = label_text(result)
         return result
+
+    def line_roles(self, board, to_move, moves, ko=None, resolved=False, fixed=None):
+        #Design 1's events for the moves of a line from (board, to_move); ko: the main ko's two points, resolved: the line
+        #ends because the ko is over, fixed: {index: role} for moves placed by construction (a gain move). Roles: takes the
+        #ko, retake after a threat, free retake, second ko, elsewhere (approach round), elsewhere, approach, local threat and
+        #its answer, answer (it saves a chain from an atari, as after a direct capture), extra move (stage), gain move,
+        #captures (target stones), resolves the ko (the last move, when the ko is over), preparation, local move
+        ko = set(ko or ())
+        boards = [board] + self.replay(board, moves)
+        roles, taken = [], board.ko is not None and board.ko in ko
+        for i, (color, p, mark) in enumerate(moves):
+            if mark == 'cycle':
+                roles.append('repetition')
+                continue
+            before, after = boards[i], boards[i + 1]
+            captured = [q for q in before.stones if q not in after.stones]
+            if mark == 'fp':
+                role = 'elsewhere (approach round)'
+            elif p is None:
+                role = 'elsewhere'
+            elif after.ko is not None and p in ko:
+                role = 'retake after a threat' if mark == '!' else 'free retake' if taken else 'takes the ko'
+                taken = True
+            elif after.ko is not None:
+                role = 'second ko'
+            elif any(q in self.target for q in captured):
+                role = 'captures'
+            elif i > 0 and moves[i - 1][2] == 'fp':
+                role = 'approach'
+            elif before.ko is not None and self.saves(before, color, p):
+                role = 'answer'
+            else:
+                role = ''
+            roles.append(role)
+        #a move of the side under a ban that the other side answers locally is a local threat (the free retake follows)
+        for i in range(len(roles) - 1):
+            if roles[i] == '' and boards[i].ko is not None and roles[i + 1] in ('', 'answer') and moves[i + 1][1] is not None:
+                roles[i], roles[i + 1] = 'local threat', 'answer'
+        #a non-capturing move of X after X's own direct capture (answered) and before the other side's free retake: a stage
+        for i in range(2, len(roles) - 1):
+            if roles[i] == '' and moves[i][0] == moves[i - 2][0] and roles[i - 2] in ('takes the ko', 'free retake', 'retake after a threat') \
+                    and roles[i - 1] == 'answer' and roles[i + 1] == 'free retake' and len(boards[i + 1].stones) > len(boards[i].stones):
+                roles[i] = 'extra move (stage)'
+        for i, role in (fixed or {}).items():
+            roles[i] = role
+        if resolved and roles and roles[-1] in ('', 'second ko'):
+            roles[-1] = 'resolves the ko'
+        first = next((i for i, role in enumerate(roles) if role in ('takes the ko', 'free retake', 'retake after a threat')), None)
+        return [role or ('preparation' if first is not None and i < first and not (board.ko is not None and board.ko in ko) else 'local move')
+                for i, role in enumerate(roles)]
+
+    def line_record(self, name, board, to_move, moves, balance, result, ko=None, fixed=None, stop=None, start=None, caption=None):
+        #a line of the report (7.2) from the leaf: its moves as research/report.py's diagrams take them ('pass' for a move
+        #elsewhere, 'A18!' a retake after a threat), the role of each, the numbered text, and a diagram spec numbered from 1
+        solver = self.solver_color
+        roles = self.line_roles(board, to_move, moves, ko, resolved=stop == 'ko over', fixed=fixed)
+        boards = [board] + self.replay(board, moves)
+        captures = [[self.point_name(q) for q in sorted(before.stones) if q not in after.stones] for before, after in zip(boards, boards[1:])]
+        tokens, colours, texts, threats_used = [], [], [], {}
+        for i, ((color, p, mark), role) in enumerate(zip(moves, roles)):
+            if mark == 'cycle':
+                texts.append('(the position repeats)')
+                break
+            tokens.append('pass' if p is None else self.point_name(p) + ('!' if mark == '!' else ''))
+            colours.append(color)
+            if role == 'retake after a threat':
+                threats_used[color] = threats_used.get(color, 0) + 1
+                role = 'threat %d' % threats_used[color]
+            if p is None:
+                texts.append('%d %s elsewhere%s' % (i + 1, color, ' (approach round)' if mark == 'fp' else ''))
+            else:
+                texts.append('%d %s %s%s (%s)' % (i + 1, color, self.point_name(p), '!' if mark == '!' else '', role))
+        winner = None if result is None else solver if result else other_colour(solver)
+        diagram = {'moves': ' '.join(tokens), 'first': 1, 'caption': caption or name}
+        if start is not None:
+            diagram['start'] = start
+        return {'name': name, 'moves': diagram['moves'], 'colours': colours, 'roles': roles[:len(tokens)], 'captures': captures[:len(tokens)],
+                'text': ', '.join(texts),
+                'balance': balance, 'threats': {'S': max(balance, 0), 'O': max(-balance, 0)}, 'winner': winner, 'stop': stop,
+                'decided': winner is not None and stop not in ('undecided', 'no move on the search line')
+                and not str(stop).startswith('the result'), 'diagram': diagram}
+
+    def built_line(self, name, leaf, prefix, position, balance, ko, fixed=None, passes=None, start=None, caption=None, **options):
+        #a line from the leaf: the moves of prefix (the first take, the approach rounds), then counted_line's walk from
+        #position at the solver's balance there; the balance at the leaf adds the threats the prefix's retakes spend
+        board, to_move = position
+        walk = self.walk_line(board, to_move, max(balance, 0), max(-balance, 0), passes=passes, **options)
+        cost = sum(1 if color == self.solver_color else -1 for color, p, mark in prefix if mark == '!')
+        record = self.line_record(name, leaf[0], leaf[1], prefix + walk['moves'], balance + cost, walk['result'], ko, fixed,
+                                  walk['stop'], start, caption)
+        record['prefix'] = len(prefix)
+        return record
+
+    def take_prefix(self, take, color):
+        #the moves from the leaf to the position right after color took the ko (P_S or P_O): the preparation, the first take
+        #and, for the other side, the moves to its retake; None when they are not known
+        if take['side'] is None:
+            return None
+        moves = [(c, p, '') for c, p in take['preparation']]
+        if take['how'] != 'leaf':
+            moves.append((take['side'], take['ko'][1], ''))
+        if color != take['side']:
+            if take['to_other'] is None:
+                return None
+            moves += take['to_other']
+        return moves
+
+    def local_threats(self, board, to_move, x, d, lines, options):
+        #D7: the local threats of the side holding the extra threats x (> 0 the solver's, < 0 the opponent's) in the direct
+        #ko (board, to_move, options: the forced passes behind v) with threshold d. Its candidate moves are barred
+        #cumulatively while it is under a ban (kb/kw: they stay playable otherwise, as a move it needs later must), and the
+        #balance its win needs is tested again: each unit change of d is one threat, and the points barred for it are its
+        #forms (a point the change does not need is unbarred again). Candidates: its moves under a ban that are neither ko
+        #captures nor saves of its own chains from an atari, on the winners' lines at d and d-1 (lines) and on those of
+        #every test, and when these run out on counted_line where it wins (there the loser retakes when it can afford to,
+        #so the side is under a ban). {side, threats [{side, points, answers, units, d_before, d_after}], d_after,
+        #units_left, tests, nodes}
+        solver = self.solver_color
+        side = solver if x > 0 else other_colour(solver)
+        sign = 1 if side == solver else -1
+        winning = lambda d_now: d_now if side == solver else d_now - 1
+        #a bar that leaves a test undecided is kept and the next candidate added, so the tests are not escalated
+        counted = lambda balance, bars: self.count(board, to_move, max(balance, 0), max(-balance, 0), bar_banned={side: list(bars)},
+                                                   escalate=False, **options)
+        answers, order = {}, []
+        def collect(moves):
+            boards = [board] + self.replay(board, moves)
+            for i, (color, p, mark) in enumerate(moves[:len(boards) - 1]):
+                if color != side or p is None or mark != '' or boards[i].ko is None or boards[i + 1].ko is not None:
+                    continue
+                if self.saves(boards[i], color, p) or p in answers:
+                    continue
+                reply = moves[i + 1] if i + 1 < len(moves) else None
+                answers[p] = reply[1] if reply and reply[0] == other_colour(side) and reply[2] == '' else None
+                order.append(p)
+        for moves in lines:
+            collect(moves)
+        start = self.nodes
+        barred, group, found, tested, walked = [], [], [], set(), set()
+        d_now, tests = d, 0
+        while sum(threat['units'] for threat in found) < abs(x) and tests < THREAT_TESTS:
+            fresh = [p for p in order if p not in tested]
+            if not fresh:
+                if tuple(barred) in walked:
+                    break
+                walked.add(tuple(barred))
+                balance = winning(d_now)
+                walk = self.walk_line(board, to_move, max(balance, 0), max(-balance, 0), bar_banned={side: list(barred)}, **options)
+                collect(walk['moves'])
+                continue
+            p = fresh[0]
+            tested.add(p)
+            barred.append(p)
+            group.append(p)
+            tests += 1
+            results = {}
+            for balance in (d_now, d_now - 1):
+                results[balance] = counted(balance, barred)
+                collect(results[balance][1])
+            result = results[winning(d_now)][0]
+            if result is None or result == (side == solver):
+                continue
+            #the side no longer wins at its balance: one unit when it still wins one step further
+            further, line, nodes = counted(winning(d_now) + sign, barred)
+            collect(line)
+            if further is None:
+                break
+            step = 1
+            if further != (side == solver):
+                record = self.threshold(board, to_move, start=d_now + 2 * sign, shifted=False, bar_banned={side: list(barred)},
+                                        escalate=False, **options)
+                if record['d'] is None:
+                    break
+                step = abs(record['d'] - d_now)
+            #the forms: the points of the group whose bar the change needs (kept, and marked, when the test is undecided)
+            open_forms = []
+            for q in list(group):
+                rest = [r for r in barred if r != q]
+                result, line, nodes = counted(winning(d_now), rest)
+                if result is None:
+                    open_forms.append(q)
+                elif result != (side == solver):
+                    barred.remove(q)
+                    group.remove(q)
+            touching = [q for q in group + [answers.get(q) for q in group] if self.at_wall(q)]
+            found.append({'side': side, 'points': [self.point_name(q) for q in group],
+                          'answers': {self.point_name(q): self.point_name(answers[q]) for q in group if answers.get(q) is not None},
+                          'units': step, 'd_before': d_now, 'd_after': d_now + sign * step,
+                          'forms_undecided': [self.point_name(q) for q in open_forms],
+                          'wall': [self.point_name(q) for q in dict.fromkeys(touching)]})
+            d_now += sign * step
+            group = []
+        return {'side': side, 'threats': found, 'd_after': d_now, 'units_left': abs(x) - sum(threat['units'] for threat in found),
+                'barred': [self.point_name(q) for q in barred], 'tests': tests, 'nodes': self.nodes - start}
+
+    def approach_rounds(self, start, holder, profile):
+        #D8's conventional approach line from P_X = start (the holder X just took the ko, Y to move under the ban): in each of
+        #X's n rounds Y plays elsewhere (forced), X approaches, Y retakes for free, and before the next round X retakes after
+        #a threat. X's approach a_i is its move after Y's forced pass in the search of R_i with Y forced to pass for the
+        #rounds left, at X's winning balance with the direct-ko value v (that search validates the round).
+        #{rounds: [{start, approach, nodes}], moves, end: (board, X) after the last free retake, ko, broken}
+        board, other = start
+        n, v = profile['n'], profile['v']['d']
+        solver = self.solver_color
+        ko = self.ko_points(board)
+        result = {'rounds': [], 'moves': [], 'end': None, 'ko': ko, 'broken': None}
+        if ko is None or v is None:
+            result['broken'] = 'no ko at P_X' if ko is None else 'the direct-ko value is undecided'
+            return result
+        retake, stone = ko
+        win = v if holder == solver else v - 1
+        for i in range(1, n + 1):
+            self.part = 'approach round %d' % i
+            verdict, pv, nodes = self.count(board, other, max(win, 0), max(-win, 0), passes={other: n - i + 1})
+            if verdict != (holder == solver):
+                result['broken'] = 'round %d: the holder does not win R_%d at the direct-ko value' % (i, i)
+                break
+            if len(pv) < 2 or pv[0][2] != 'fp' or pv[1][0] != holder or pv[1][1] is None or pv[1][1] in ko:
+                result['broken'] = 'round %d: no approach move on the search line' % i
+                break
+            approach = pv[1][1]
+            after = self.play(self.play(board, other, None), holder, approach)
+            retaken = after and self.play(after, other, retake)
+            if retaken is None or retaken.ko != stone:
+                result['broken'] = 'round %d: no free retake after the approach' % i
+                break
+            result['rounds'].append({'start': (board, other), 'approach': approach, 'nodes': nodes})
+            result['moves'] += [(other, None, 'fp'), (holder, approach, ''), (other, retake, '')]
+            if i == n:
+                result['end'] = (retaken, holder)
+                break
+            board = self.play(retaken, holder, stone, ignore_ko=True)
+            if board is None or board.ko != retake:
+                result['broken'] = 'round %d: no retake after the free retake' % i
+                break
+            result['moves'].append((holder, stone, '!'))
+        return result
+
+    def round_position(self, rounds, i, holder, n, move):
+        #round i with Y's move (None: the forced tenuki) in place of the tenuki, then X's approach a_i, Y's free retake and,
+        #before the last round, X's retake after a threat: (moves, board, side to move, forced passes, threat offset), or
+        #why the move leaves no room for the round
+        board, other = rounds['rounds'][i - 1]['start']
+        approach = rounds['rounds'][i - 1]['approach']
+        retake, stone = rounds['ko']
+        first = self.play(board, other, move)
+        if first is None:
+            return 'illegal'
+        after = self.play(first, holder, approach)
+        if after is None:
+            return 'the approach is no longer possible'
+        retaken = self.play(after, other, retake)
+        if retaken is None or retaken.ko != stone:
+            return 'no free retake after the approach'
+        moves = [(other, move, 'fp' if move is None else ''), (holder, approach, ''), (other, retake, '')]
+        if i == n:
+            return moves, retaken, holder, None, 0
+        again = self.play(retaken, holder, stone, ignore_ko=True)
+        if again is None or again.ko != retake:
+            return 'no retake for the next round'
+        return moves + [(holder, stone, '!')], again, other, {other: n - i}, 1 if holder == self.solver_color else -1
+
+    def round_gains(self, rounds, holder, n, candidates):
+        #D8: per approach round i, the opponent Y's local move m in place of its forced tenuki against the tenuki itself:
+        #g_i(m) = d(R_i, m, a_i, Y's free retake) - d(R_i, pass, a_i, Y's free retake), from Y's side. Before the last
+        #round X then retakes after a threat and Y's forced passes stay for the rounds left (d of that position plus the
+        #retake's threat). Candidates: Y's moves on the full count's lines, then the legal moves nearest the target, at most
+        #6. [{round, value (the best gain, 0 for none), move, d_with, d_without, tried, positions: {move: (moves, position,
+        #forced passes, threshold)}}]
+        solver = self.solver_color
+        other = other_colour(holder)
+        sign = 1 if other != solver else -1
+        distance = lambda p: min(abs(p[0] - t[0]) + abs(p[1] - t[1]) for t in self.target)
+        gains = []
+        for i in range(1, len(rounds['rounds']) + 1):
+            self.part = 'gain round %d' % i
+            board, to_move = rounds['rounds'][i - 1]['start']
+            nearest = sorted((p for p in self.problem.region if p not in board.stones and p not in rounds['ko']
+                              and self.play(board, other, p) is not None), key=lambda p: (distance(p), p))
+            tried_moves = [p for p in candidates if p in nearest] + nearest
+            tried_moves = list(dict.fromkeys(tried_moves))[:6]
+            values, positions = {}, {}
+            for move in [None] + tried_moves:
+                position = self.round_position(rounds, i, holder, n, move)
+                if isinstance(position, str):
+                    values[move] = position
+                    continue
+                moves, after, side, passes, offset = position
+                begin = 0 if None not in values or not isinstance(values[None], int) else values[None] - offset
+                record = self.threshold(after, side, start=begin, shifted=False, passes=passes)
+                values[move] = None if record['d'] is None else record['d'] + offset
+                positions[move] = (moves, (after, side), passes, record['d'])
+            base = values[None]
+            entry = {'round': i, 'value': None, 'move': None, 'd_without': base if isinstance(base, int) else None, 'd_with': None,
+                     'tried': [{'move': self.point_name(m), 'value': (values[m] - base) * sign if isinstance(values[m], int) and isinstance(base, int)
+                                else values[m]} for m in tried_moves], 'positions': positions}
+            if isinstance(base, int):
+                best = max((m for m in tried_moves if isinstance(values[m], int)), key=lambda m: (values[m] - base) * sign, default=None)
+                entry['value'] = 0
+                if best is not None and (values[best] - base) * sign > 0:
+                    entry.update(value=(values[best] - base) * sign, move=best, d_with=values[best])
+            gains.append(entry)
+        return gains
+
+    def explain_label(self, record, start=None):
+        #design 4, steps 6-8, on the area the label comes from: the attribution of the extra threats (D7) with the stage
+        #fallback, the gains of the approach rounds (D8) and the lines of 7.2 (approach, direct ko, gain and its no-gain
+        #twin), each built by counted_line from decided positions; the record's count may come from the other area
+        state = self.label_state
+        if state is None or record.get('special') or record['label'] in (None, STATUS_UNKNOWN, STATUS_DEAD, STATUS_ALIVE):
+            return
+        board, take, profiles, parts = state['board'], state['take'], state['profiles'], state['parts']
+        solver, leaf = self.solver_color, (state['board'], state['to_move'])
+        x, d_leaf, side = parts['x'], state['count']['d'], state['approach_side']
+        holder = None if side is None else solver if side == 'S' else other_colour(solver)
+        profile = profiles[side] if side else None
+        ko = self.ko_points(take['P_F'][0]) if take['P_F'] else None
+        attribution = record['direct_ko']['attribution'] = {'x': x, 'position': None, 'd': None}
+        winning = lambda color: (lambda d: d if color == solver else d - 1)
+        #the direct ko: the leaf for a direct ko, else P_X with Y forced to pass for the approaches (the position behind v)
+        rounds, position, options, d, lines = None, None, {}, None, []
+        if side is None and not parts['mutual']:
+            position, d, lines = leaf, d_leaf, [state['count']['pv_win'], state['count']['pv_fail']]
+            attribution['position'] = 'the leaf'
+        elif side is not None and profile['v'] is not None:
+            P_X = take['P_F'] if take['side'] == holder else take['P_other']
+            position, d, lines = P_X, profile['v']['d'], [profile['v']['pv_win'], profile['v']['pv_fail']]
+            options = {'passes': {other_colour(holder): profile['n']}}
+            attribution['position'] = 'P_%s with %d forced pass%s' % (side, profile['n'], 'es' if profile['n'] > 1 else '')
+            prefix = self.take_prefix(take, holder)
+            if P_X is not None and prefix is not None:
+                rounds = self.approach_rounds(P_X, holder, profile)
+                rounds['prefix'] = prefix
+                if rounds['broken']:
+                    record['warnings'].append('approach line: %s' % rounds['broken'])
+        attribution['d'] = d
+        threats = None
+        if x and position is not None and d is not None:
+            self.part = 'local threats'
+            threats = self.local_threats(position[0], position[1], x, d, lines, options)
+            attribution.update({key: threats[key] for key in ('side', 'tests', 'barred', 'units_left', 'd_after', 'nodes')})
+            record['direct_ko']['local_threats'] = threats['threats']
+        elif x and position is None and parts['mutual']:
+            attribution['position'] = 'none: a mutual approach has no single direct ko'
+        elif x:
+            attribution['undecided'] = 'no direct-ko position or value'
+        elif x == 0 and position is not None:
+            record['direct_ko']['local_threats'] = []
+        def line_at(name, balance_of, caption):
+            #a line from the leaf (through the approach rounds) at the balance balance_of(threshold at the walk's start)
+            if rounds is not None:
+                if rounds['end'] is None:
+                    return None
+                end = self.threshold(rounds['end'][0], rounds['end'][1], start=d or 0, shifted=False)
+                if end['d'] is None:
+                    return None
+                return self.built_line(name, leaf, rounds['prefix'] + rounds['moves'], rounds['end'], balance_of(end['d']), ko,
+                                       start=start, caption=caption)
+            if side is None and d_leaf is not None:
+                return self.built_line(name, leaf, [], leaf, balance_of(d_leaf), ko, start=start, caption=caption)
+            return None
+        #the approach line: X wins at the label's count, Y plays elsewhere in X's rounds
+        approach_line = None
+        if rounds is not None:
+            self.part = 'approach line'
+            approach_line = line_at('approach', winning(holder), 'The approach line: %s approaches while %s plays elsewhere' % (
+                COLOUR_NAMES[holder], COLOUR_NAMES[other_colour(holder)]))
+            record['approaches'][side]['round_moves'] = [self.point_name(item['approach']) for item in rounds['rounds']]
+            if approach_line is not None:
+                record['approaches'][side]['line'] = approach_line
+                record['lines'].append(approach_line)
+        #the direct-ko line: where the side with the local threats wins (they are its winning moves there), where the side
+        #with a stage wins when no bar explains the extra threats, else where the approaching side or the solver wins
+        extra = None
+        if threats and threats['threats']:
+            extra = threats['side']
+        elif threats and threats['units_left']:
+            extra = other_colour(threats['side'])
+        self.part = 'direct-ko line'
+        if approach_line is not None and extra in (None, holder):
+            direct = approach_line
+        else:
+            if parts['mutual']:
+                direct = line_at('full count', winning(solver), 'The full count: both sides need an approach')
+            else:
+                direct = line_at('direct ko', winning(extra or holder or solver), 'The direct ko%s' % (
+                    ': %s wins it' % COLOUR_NAMES[extra] if extra else ''))
+            if direct is not None:
+                record['lines'].append(direct)
+        record['direct_ko']['line'] = direct
+        #each threat as the record of 7.1 has it: an answer, and where it shows on the direct-ko line
+        for threat in (threats or {}).get('threats') or []:
+            threat['answer'] = next((threat['answers'][point] for point in threat['points'] if point in threat['answers']), None)
+            shown = [i for i, (token, role, color) in enumerate(zip(direct['moves'].split(), direct['roles'], direct['colours']))
+                     if role == 'local threat' and color == threat['side'] and token in threat['points']] if direct else []
+            threat['line'] = {'name': direct['name'], 'number': shown[0] + 1} if shown else None
+        #the stage fallback (D7): extra threats no bar explains, read on the line where the side with the stage wins
+        if threats and threats['units_left'] > 0:
+            staged = other_colour(threats['side'])
+            stage_line = direct if direct is not None and direct['winner'] == staged else None
+            if stage_line is None:
+                stage_line = line_at('stage', winning(staged), 'The direct ko: %s needs an extra move' % COLOUR_NAMES[staged])
+                if stage_line is not None:
+                    record['lines'].append(stage_line)
+            found = []
+            for i, role in enumerate(stage_line['roles'] if stage_line else []):
+                if role == 'extra move (stage)' and stage_line['colours'][i] == staged and len(found) < threats['units_left']:
+                    found.append({'side': staged, 'move': stage_line['moves'].split()[i], 'kind': 'extra move', 'line': stage_line['name'],
+                                  'number': i + 1})
+            record['direct_ko']['stages'] += found
+            attribution['unattributed'] = threats['units_left'] - len(found)
+        #the gains of the approach rounds (D8), each located gain with its line and the no-gain twin
+        if rounds is not None and rounds['rounds']:
+            other = other_colour(holder)
+            candidates = []
+            for moves in (state['count']['pv_win'], state['count']['pv_fail']):
+                boards = [board] + self.replay(board, moves)
+                for i, (color, p, mark) in enumerate(moves[:len(boards) - 1]):
+                    if color == other and p is not None and mark == '' and boards[i + 1].ko is None and p not in candidates:
+                        candidates.append(p)
+            gain = record['gain']
+            gain['rounds'] = []
+            for entry in self.round_gains(rounds, holder, profile['n'], candidates):
+                item = {'round': entry['round'], 'side': other, 'move': self.point_name(entry['move']) if entry['move'] else None,
+                        'value': entry['value'], 'd_with': entry['d_with'], 'd_without': entry['d_without'], 'tried': entry['tried'],
+                        'line_with': None, 'line_without': None}
+                if entry['value']:
+                    before = rounds['prefix'] + rounds['moves'][:4 * (entry['round'] - 1)]
+                    twin = entry['positions'][None][3]
+                    self.part = 'gain line round %d' % entry['round']
+                    for key, move in (('line_with', entry['move']), ('line_without', None)):
+                        moves, after, passes, value = entry['positions'][move]
+                        caption = 'The gain line: %s plays %s instead of elsewhere' % (COLOUR_NAMES[other], self.point_name(move)) if move \
+                            else 'The no-gain twin: %s plays elsewhere' % COLOUR_NAMES[other]
+                        fixed = {len(before): 'gain move', len(before) + 1: 'approach'} if move else None
+                        item[key] = self.built_line('gain' if move else 'no gain', leaf, before + moves, after, winning(holder)(twin), ko,
+                                                    fixed=fixed, passes=passes, start=start, caption=caption)
+                        record['lines'].append(item[key])
+                gain['rounds'].append(item)
+            gain_totals(gain)
+            if gain['total'] is not None and gain['total'] < 0 and gain['d_full'] == d_leaf:
+                self.part = 'full-count line'
+                line = self.built_line('full count', leaf, [], leaf, winning(holder)(d_leaf), ko, start=start,
+                                       caption='The full count: %s needs fewer threats than the label says' % COLOUR_NAMES[holder])
+                gain['line'] = line
+                record['lines'].append(line)
+            if gain['d_full'] is None and record['d_conv'] is not None and record['a'] is not None and \
+                    all(item['value'] is not None for item in gain['rounds']):
+                #the full count is undecided: the label count with the located gains, marked as such
+                parts_count = record['d_conv'] + gain['located'] * (1 if gain['side'] != solver else -1)
+                record['strict_from_parts'] = besogo_string(record['a'], -parts_count - record['a'])
+                gain['count_from_parts'] = parts_count
+        if not record['lines'] and d_leaf is not None:
+            #no approach or direct-ko line could be built (an approach round without a free retake): the full count's line
+            self.part = 'full-count line'
+            line = self.built_line('full count', leaf, [], leaf, d_leaf, ko, start=start, caption='The full count')
+            record['lines'].append(line)
+        #walls create false approaches and threats (design 7.2): every threat point, answer and gain move touching one
+        for threat in record['direct_ko']['local_threats'] or []:
+            if threat['wall']:
+                record['warnings'].append('%s local threat %s or its answer touches the area wall at %s' % (
+                    COLOUR_NAMES[threat['side']], '/'.join(threat['points']), ', '.join(threat['wall'])))
+        for item in (record['gain'] or {}).get('rounds') or []:
+            if item['value'] and self.at_wall(self.problem_point(item['move'])):
+                record['warnings'].append('%s gain move %s touches the area wall' % (COLOUR_NAMES[item['side']], item['move']))
+        record['lines_decided'] = all(line['decided'] for line in record['lines'])
+
+    def problem_point(self, name):
+        #a point from its name (A19), None for 'pass'
+        if name in (None, 'pass'):
+            return None
+        return ('ABCDEFGHJKLMNOPQRST'.index(name[0]), self.problem.size - int(name[1:]))
+
+def gain_record(record, d_full, side):
+    #D8's totals: g = d_full - d_conv from the side that does not approach (Y), the gains located by round and the rest
+    #(unlocated); for a direct ko or a mutual approach the label already is the count. The total is None while d_full is
+    #undecided
+    solver = record['solver']
+    if side is None or record['d_conv'] is None:
+        return {'side': None, 'total': None if d_full is None or record['d_conv'] is None else d_full - record['d_conv'], 'd_full': d_full,
+                'd_conv': record['d_conv'], 'rounds': [], 'located': 0, 'unlocated': None}
+    other = other_colour(solver) if side == 'S' else solver
+    sign = 1 if other != solver else -1
+    gain = {'side': other, 'total': None if d_full is None else (d_full - record['d_conv']) * sign, 'd_full': d_full, 'd_conv': record['d_conv'],
+            'rounds': (record.get('gain') or {}).get('rounds') or [], 'located': 0, 'unlocated': None}
+    gain_totals(gain)
+    return gain
+
+def gain_totals(gain):
+    #the located gains (the positive round values) and the rest of the total, which no round explains
+    gain['located'] = sum(item['value'] for item in gain['rounds'] if item['value'])
+    gain['unlocated'] = None if gain['total'] is None else gain['total'] - gain['located']
+
+COLOUR_NAMES = {'B': 'Black', 'W': 'White'}
+
+#why the class step gives a special status (D10, D11)
+SPECIAL_REASONS = {
+    STATUS_DDKO: 'mode A kills under cycle rule 0 (a cycle with a ban break kills) and not under rule 2 (every cycle lives), and the '
+                 'cycle alternates between two kos: a double ko',
+    STATUS_ADKO: 'mode D kills under cycle rule 0 and not under rule 2, and the cycle alternates between two kos: the defender always '
+                 'has a legal capture in the other ko',
+    STATUS_DSKO: 'the result rests on a repetition that positional superko (cycle rule 3) decides for the attacker (unverified)',
+    STATUS_ASKO: 'the result rests on a repetition that positional superko (cycle rule 3) decides for the defender (unverified)',
+    STATUS_BENT4: 'mode A kills with the bent-four rule (the attacker removes the threats and starts the ko when it likes) and not '
+                  'without it, and the bent four is on the line',
+    STATUS_SEKI: 'the defender lives, but dies when a target without unconditional life counts as dead at the end',
+    STATUS_SEKI_SENTE: 'a seki in which the solver keeps sente',
+}
+
+NUMBER_WORDS = {1: 'one', 2: 'two', 3: 'three', 4: 'four', 5: 'five', 6: 'six'}
+
+def balance_text(solver, d):
+    #what a count d (the least balance of threats the solver wins at) means in words
+    opponent = other_colour(solver)
+    if d > 0:
+        return '%s needs %d threat%s more than %s' % (COLOUR_NAMES[solver], d, 's' if d > 1 else '', COLOUR_NAMES[opponent])
+    if d == 0:
+        return '%s wins with as many threats as %s' % (COLOUR_NAMES[solver], COLOUR_NAMES[opponent])
+    return '%s wins even when %s has %d threat%s more' % (COLOUR_NAMES[solver], COLOUR_NAMES[opponent], -d, 's' if d < -1 else '')
+
+def label_text(record):
+    #design 7.2: the label and one sentence per part with its reason; an undecided part shows as '?' with its nodes
+    solver = record['solver']
+    side_colour = lambda side: solver if side == 'S' else other_colour(solver)
+    label = record['label']
+    sentences = []
+    if record.get('special'):
+        return '%s: %s.' % (label, SPECIAL_REASONS.get(label, 'from the class step'))
+    if record.get('besogo') is None or label in (STATUS_DEAD, STATUS_ALIVE):
+        return '%s: no ko (class %s).' % (label, record.get('class'))
+    if record.get('class') in (STATUS_DEAD, STATUS_ALIVE):
+        return '%s: the line ends with the solver\'s capture of a ko, which the leaves count as taking first; without it the result ' \
+               'is clean %s.' % (label, record['class'])
+    head = label + (' (class KO inferred: each side wins while it holds the ko)' if record.get('class_inferred') else '')
+    take = record.get('first_take') or {}
+    if take.get('side') is None:
+        sentences.append('Who takes first is undecided')
+    elif take['how'] == 'leaf':
+        sentences.append('%s took first (%s)' % (COLOUR_NAMES[take['side']], take['point']))
+    else:
+        preparation = ', '.join('%s %s' % move for move in take['preparation'])
+        sentences.append('%s takes first at %s%s' % (COLOUR_NAMES[take['side']], take['point'],
+                                                     ' after the preparation %s' % preparation if preparation else ''))
+    approaches = record.get('approaches') or {}
+    approaching = [side for side in ('S', 'O') if (approaches.get(side) or {}).get('n')]
+    for side in ('S', 'O'):
+        summary = approaches.get(side)
+        if summary is None:
+            continue
+        name = COLOUR_NAMES[side_colour(side)]
+        if summary['n'] is None:
+            low, high = summary['bracket']
+            sentences.append('%s needs ? approaches (%s forced passes not enough, %s enough)' % (name, low, high or '?'))
+        elif summary['n'] and summary['held_ok'] is False:
+            sentences.append('%s\'s %d round%s are stages, not approaches (the held-ko check fails), so they count as threats' % (
+                name, summary['n'], 's' if summary['n'] > 1 else ''))
+        elif summary['n']:
+            moves = summary.get('round_moves') or summary['approach_moves']
+            #the alternatives of solvemoves are the first free moves that keep the win: for one approach, the other approaches
+            #(the ko's own points are no approach)
+            ko_points = (take.get('point'), take.get('retake_point'))
+            others = [alternative for alternative in summary['alternatives'] or [] if alternative.rstrip('?') not in moves
+                      and alternative.rstrip('?') not in ko_points] if summary['n'] == 1 else []
+            decided = [alternative for alternative in others if not alternative.endswith('?')]
+            open_moves = [alternative.rstrip('?') for alternative in others if alternative.endswith('?')]
+            listed = ' and '.join(moves) + (', or %s' % ' or '.join(decided) if decided else '') + \
+                ('; %s undecided' % ', '.join(open_moves) if open_moves else '')
+            sentences.append('%s needs %s approach%s (%s) before the ko is direct%s' % (
+                name, NUMBER_WORDS.get(summary['n'], summary['n']), 'es' if summary['n'] > 1 else '', listed,
+                '' if summary['held_ok'] else ' (held-ko check undecided)'))
+    if not approaching and approaches.get('S') and approaches.get('O') and all(approaches[side]['n'] == 0 for side in ('S', 'O')):
+        sentences.append('Both captures are direct')
+    if len(approaching) == 2:
+        attacker_side = 'S' if record['goal'] == 'KILL' else 'O'
+        count = approaches[attacker_side]['n']
+        sentences.append('Neither capture threatens anything, a mutual approach: %s' % (
+            'the attacker needs one approach, so 10kKO (D9)' if count == 1 else
+            'the attacker needs %d, so the A-form with its count, flagged' % count))
+    direct = record.get('direct_ko') or {}
+    threats, stages = direct.get('local_threats'), direct.get('stages') or []
+    x = record.get('extra_threats')
+    parts = []
+    for threat in threats or []:
+        forms = ['%s%s' % (point, ' answered at %s' % threat['answers'][point] if point in threat['answers'] else '') for point in threat['points']]
+        where = 'at %s' % forms[0] if len(forms) == 1 else 'in %s forms (%s)' % (NUMBER_WORDS.get(len(forms), len(forms)), ', '.join(forms))
+        if threat.get('forms_undecided'):
+            where += ' (whether %s %s needed is undecided)' % (' and '.join(threat['forms_undecided']), 'is' if len(threat['forms_undecided']) == 1 else 'are')
+        parts.append('%s has a local threat %s, which buys a free retake' % (COLOUR_NAMES[threat['side']], where))
+    for stage in stages:
+        if stage.get('kind') == 'extra move':
+            parts.append('%s needs an extra move at %s (a stage), and %s retakes for free in between' % (
+                COLOUR_NAMES[stage['side']], stage['move'], COLOUR_NAMES[other_colour(stage['side'])]))
+    attribution = direct.get('attribution') or {}
+    if attribution.get('unattributed'):
+        parts.append('%d extra threat%s not located' % (attribution['unattributed'], 's' if attribution['unattributed'] > 1 else ''))
+    if x and threats is None:
+        parts.append('the extra threats are not attributed (%s)' % (attribution.get('undecided') or 'undecided'))
+    if x == 0 and threats is not None:
+        parts.append('nobody has a local threat')
+    if approaching and len(approaching) == 1 and direct.get('v') is not None:
+        side = approaching[0]
+        v = direct['v']
+        kind = besogo_string(0, -v)
+        sentences.append('After %s, the direct ko is %s%s: %s%s' % (
+            'it' if approaches[side]['n'] == 1 else 'them', 'a plain ' if not x else '', kind, balance_text(solver, v),
+            ', and ' + '; '.join(parts) if parts else ''))
+    elif parts:
+        sentences.append('In the direct ko ' + '; '.join(parts))
+    if record.get('d_conv') is not None:
+        sentences.append('Label count: %s' % balance_text(solver, record['d_conv']))
+    count = record.get('count') or {}
+    gain = record.get('gain') or {}
+    d_full = count.get('d_full')
+    located = [item for item in gain.get('rounds') or [] if item['value']]
+    explained = []
+    for item in located:
+        explained.append(gain_sentence(item))
+    if d_full is not None:
+        text = 'Full count %d' % d_full
+        if gain.get('total') and gain['total'] > 0:
+            text += ': ' + '; '.join(explained) if explained else ''
+            if explained:
+                sentences.append(text)
+                sentences.append('Left out by the approach rule')
+            else:
+                sentences.append(text)
+            if gain.get('unlocated'):
+                sentences.append('%+d of the gain not located' % gain['unlocated'])
+        elif gain.get('total') and gain['total'] < 0:
+            better_side = other_colour(gain['side'])
+            line = gain.get('line')
+            kos = [token for token, role, color in zip(line['moves'].split(), line['roles'], line['colours'])
+                   if role == 'second ko' and color == better_side] if line else []
+            sentences.append('%s: the count is %s threat%s better for %s than the label (not located%s)' % (
+                text, NUMBER_WORDS.get(-gain['total'], -gain['total']), 's' if gain['total'] < -1 else '', COLOUR_NAMES[better_side],
+                '; its line uses a second ko at %s' % ', '.join(kos) if kos else ''))
+        else:
+            sentences.append(text)
+    elif count:
+        low, high = count.get('bracket') or (None, None)
+        bracket = 'at least %d' % low if high is None or high > LABEL_LIMIT else 'between %d and %d' % (low, high)
+        sentences.append('Full count undecided (%s)%s' % (bracket, ': located ' + '; '.join(explained) if explained else ''))
+        if explained:
+            sentences.append('Left out by the approach rule')
+    if record.get('strict_label') and record['strict_label'] != label:
+        sentences.append('Strict label %s' % record['strict_label'])
+    elif record.get('strict_from_parts') and record['strict_from_parts'] != label:
+        sentences.append('Strict label from the parts %s (the label count plus the located gains; the full count is undecided)' % record['strict_from_parts'])
+    if record.get('net_label'):
+        sentences.append('Net reading %s' % record['net_label'])
+    if label == STATUS_TEN_THOUSAND and (record.get('besogo') or {}).get('a_form'):
+        sentences.append('besogo ranks it as %s' % record['besogo']['a_form'])
+    undecided = {}
+    for item in record.get('undecided') or []:
+        undecided[item['part']] = undecided.get(item['part'], 0) + item['nodes']
+    if undecided:
+        sentences.append('Undecided: %s' % ', '.join('%s (%d nodes)' % item for item in undecided.items()))
+    return head + ': ' + '. '.join(sentences) + '.'
+
+def gain_sentence(item):
+    #a located gain of an approach round: Y's move, and what it becomes on the gain line (its later local threat)
+    name = COLOUR_NAMES[item['side']]
+    text = '%s\'s %s, played with the free move approach round %d gives %s' % (name, item['move'], item['round'], name)
+    line = item.get('line_with')
+    if line:
+        tokens = line['moves'].split()
+        for i, role in enumerate(line['roles']):
+            if i > line['prefix'] and role == 'local threat' and line['colours'][i] == item['side']:
+                taken = line['captures'][i]
+                text += ', later becomes the local threat %s%s' % (tokens[i], ' (takes %s)' % ', '.join(taken) if taken else '')
+                break
+    return text + ' (%+d)' % item['value']
+
+def label_summary(record, authored, goal):
+    #the label fields check_tree and status_eval add to a leaf: the parts, the text, the lines as research/report.py's
+    #diagrams, the undecided parts and the comparison with the tree's S[] (design 7.3)
+    count = record.get('count') or {}
+    take = record.get('first_take') or {}
+    direct = record.get('direct_ko') or {}
+    gain = record.get('gain') or {}
+    return {'label': record['label'], 'strict_label': record.get('strict_label'), 'strict_from_parts': record.get('strict_from_parts'),
+            'net_label': record.get('net_label'), 'class': record.get('class'), 'class_inferred': record.get('class_inferred'),
+            'count': count.get('d_full'), 'count_decided': count.get('decided'), 'd_conv': record.get('d_conv'),
+            'first_take': {key: take.get(key) for key in ('side', 'point', 'how', 'preparation')},
+            'approaches': {side: (summary or {}).get('n') for side, summary in (record.get('approaches') or {}).items()},
+            'local_threats': direct.get('local_threats'), 'stages': direct.get('stages'),
+            'gain': {key: gain.get(key) for key in ('side', 'total', 'located', 'unlocated')} if gain else None,
+            'gain_rounds': [{key: item.get(key) for key in ('round', 'move', 'value')} for item in gain.get('rounds') or []],
+            'text': record.get('text'), 'lines': [dict(line['diagram'], name=line['name'], text=line['text']) for line in record.get('lines') or []],
+            'areas': record.get('areas'), 'warnings': record.get('warnings'), 'undecided': record.get('undecided'),
+            'nodes': record.get('nodes'), 'seconds': record.get('seconds'), 'comparison': compare_label(authored, record, goal)}
+
+def compare_label(authored, record, goal):
+    #design 7.3: the tree's S[] against the label: the class first, then the approaches, then the threats, and the count
+    #beside them. [{kind, severity, ...}]: status-mismatch (error), ko-approach (major; same_count when T_label is equal),
+    #ko-threats (minor), ko-notation (note: 10kKO against an A-form besogo ranks equal), ko-count (info: the tree's T_label
+    #against the full count), label-undecided (info)
+    text = authored.strip()
+    tree = parse_status(text)
+    label = record.get('label') or STATUS_UNKNOWN
+    if tree is None:
+        return [{'kind': 'status-unreadable', 'severity': 'note', 'authored': text}]
+    if label == STATUS_UNKNOWN or record.get('class') in (None, STATUS_UNKNOWN) and not record.get('class_inferred'):
+        return [{'kind': 'label-undecided', 'severity': 'info', 'authored': text, 'label': label}]
+    ko_types = ('KO', STATUS_TEN_THOUSAND)
+    mine = parse_status(label) if '?' not in label else {'type': 'KO'}
+    issues = []
+    if tree['type'] not in ko_types or mine['type'] not in ko_types:
+        if (tree['type'], tree['sente']) != (mine['type'], mine.get('sente', False)):
+            issues.append({'kind': 'status-mismatch', 'severity': 'error', 'authored': text, 'label': label})
+        return issues
+    count = (record.get('count') or {}).get('d_full')
+    if '?' in label:
+        #only the decided parts are compared
+        prefix = label[:label.index('KO')]
+        if '?' not in prefix and tree['type'] == 'KO':
+            approaches = parse_status(prefix + 'KO')['approaches']
+            if approaches != tree['approaches']:
+                issues.append({'kind': 'ko-approach', 'severity': 'major', 'authored': text, 'label': label, 'same_count': None})
+        issues.append({'kind': 'label-undecided', 'severity': 'info', 'authored': text, 'label': label})
+    elif tree['type'] != mine['type']:
+        #10kKO against a KO: equal when besogo ranks neither above the other
+        if not better(text, label, goal) and not better(label, text, goal):
+            issues.append({'kind': 'ko-notation', 'severity': 'note', 'authored': text, 'label': label})
+        else:
+            issues.append({'kind': 'ko-approach', 'severity': 'major', 'authored': text, 'label': label, 'same_count': None})
+    elif tree['type'] == 'KO' and tree['approaches'] != mine['approaches']:
+        issues.append({'kind': 'ko-approach', 'severity': 'major', 'authored': text, 'label': label,
+                       'same_count': label_threshold(text) == label_threshold(label)})
+    elif tree['type'] == 'KO' and tree['extra_threats'] != mine['extra_threats']:
+        issues.append({'kind': 'ko-threats', 'severity': 'minor', 'authored': text, 'label': label})
+    tree_count = label_threshold(text)
+    if tree_count is not None and count is not None and tree_count != count:
+        issues.append({'kind': 'ko-count', 'severity': 'info', 'authored': text, 'label': label, 'tree_count': tree_count, 'count': count})
+    return issues
 
 def groups_of(board, color):
     #chains of one color joined when they share a liberty or touch diagonally, the largest first
