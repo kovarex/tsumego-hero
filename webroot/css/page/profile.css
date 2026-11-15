@@ -209,7 +209,7 @@
 .training-overview__title
 {
 	margin: 0 0 10px;
-	font-size: 14px;
+	font-size: var(--text-sm);
 	font-weight: var(--weight-heavy);
 	color: var(--training-title);
 }
@@ -310,7 +310,7 @@
 .training-calendar__month,
 .training-calendar__weekday
 {
-	font-size: 10px;
+	font-size: var(--text-xs);
 	line-height: 11px;
 	color: var(--color-text-muted);
 	white-space: nowrap;

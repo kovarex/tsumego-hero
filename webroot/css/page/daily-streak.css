@@ -215,11 +215,11 @@
 	width: 240px;
 	padding: 10px 12px;
 	border: 1px solid var(--color-gold);
-	border-radius: 5px;
+	border-radius: var(--radius-sm);
 	background: var(--surface-near-black);
 	color: var(--color-white);
 	font-family: var(--font-family-body);
-	font-size: 14px;
+	font-size: var(--text-sm);
 	font-weight: var(--weight-normal);
 	line-height: 1.4;
 	text-align: left;
@@ -267,7 +267,7 @@
 	height: 6px;
 	margin: 3px 0 5px;
 	border: none;
-	border-radius: 3px;
+	border-radius: var(--radius-sm);
 	background: var(--color-streak-track);
 	overflow: hidden;
 	appearance: none;
@@ -293,7 +293,7 @@
 {
 	margin-top: 6px;
 	color: var(--surface-muted-text);
-	font-size: 12px;
+	font-size: var(--text-sm);
 }
 
 @media (width < 77.5rem)

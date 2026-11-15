@@ -13,7 +13,7 @@
   position: relative;
   display: flex;
   margin: 20px 0;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   align-self: center;
   width: 100%;
   max-width: 1050px;
@@ -63,7 +63,7 @@
   background: var(--color-surface);
   flex: 1 1 0;
   min-width: 0;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
 }
 .timeline__event__date {
   font-weight: var(--weight-medium);
@@ -72,7 +72,7 @@
   justify-content: center;
   white-space: nowrap;
   padding: 0;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
 }
 .timeline__event__icon {
   display: flex;

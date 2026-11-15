@@ -391,10 +391,10 @@
 {
 	opacity: 0;
 	padding: 3px 8px;
-	font-size: 12px;
+	font-size: var(--text-sm);
 	font-weight: var(--weight-heavy);
 	text-align: center;
-	border-radius: 3px;
+	border-radius: var(--radius-sm);
 	transition: opacity 0.2s ease;
 }
 
@@ -402,14 +402,14 @@
 {
 	opacity: 0;
 	padding: 4px 6px;
-	font-size: 10px;
+	font-size: var(--text-xs);
 	color: var(--text-on-dark);
 	text-align: center;
 	max-width: 180px;
 	transition: opacity 0.3s ease;
 	line-height: 1.3;
 	background: rgba(0, 0, 0, 0.8);
-	border-radius: 0 0 3px 3px;
+	border-radius: 0 0 var(--radius-sm) var(--radius-sm);
 }
 
 a[data-tsumego-id]:hover .tooltip-box

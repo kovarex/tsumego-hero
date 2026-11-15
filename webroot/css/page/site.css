@@ -27,7 +27,7 @@ body {
 }
 .accessList {
   color: var(--color-gray);
-  font-size: 14px;
+  font-size: var(--text-sm);
 }
 .whitebox1 {
   position: relative;
@@ -137,7 +137,7 @@ li a.menuLi.nav__link--active {
   background-color: var(--color-sky);
 }
 .titleDescription1 {
-  font-size: 17px;
+  font-size: var(--text-lg);
 }
 .titleDescription2 {
   font-size: 22px;
@@ -175,7 +175,7 @@ li a.menuLi.nav__link--active {
   width: 144px;
   height: 26px;
   color: var(--color-white);
-  font-size: 14px;
+  font-size: var(--text-sm);
   font-style: normal;
   font-variant: normal;
   font-weight: var(--weight-medium);
@@ -191,7 +191,7 @@ li a.menuLi.nav__link--active {
   position: relative;
   margin: 3px 0px 0px 0px;
   color: var(--color-white);
-  font-size: 14px;
+  font-size: var(--text-sm);
   font-style: normal;
   font-variant: normal;
   font-weight: var(--weight-medium);
@@ -207,7 +207,7 @@ li a.menuLi.nav__link--active {
   top: 0;
   left: 0;
   display: inline-block;
-  font-size: 17px;
+  font-size: var(--text-lg);
   font-weight: var(--weight-bold);
   font-style: normal;
   font-variant: normal;
@@ -294,7 +294,7 @@ li a.menuLi.nav__link--active {
   background: var(--color-white);
   width: 10px;
   height: 100%;
-  border-radius: 5px;
+  border-radius: var(--radius-sm);
   -webkit-filter: blur(5px);
 }
 /* The help page's lists of an icon and what it means: the icons in a column, each meaning beside its icon */
@@ -358,7 +358,7 @@ li a.menuLi.nav__link--active {
   font-family: var(--font-family-display);
   letter-spacing: 1px;
   color: var(--color-purple-bright);
-  font-size: 16px;
+  font-size: var(--text-md);
   font-style: normal;
   font-variant: normal;
   font-weight: var(--weight-medium);
@@ -425,7 +425,7 @@ input.newCheck {
   color: var(--color-green);
   font-family: var(--font-family-display);
   letter-spacing: 1px;
-  font-size: 14px;
+  font-size: var(--text-sm);
   font-weight: var(--weight-medium);
   z-index: var(--layer-account-menu);
   cursor: pointer;
@@ -457,7 +457,7 @@ input.newCheck {
 .account-menu__item--row5 { --account-menu-row: 5; }
 .account-menu__item--row6 { --account-menu-row: 6; }
 #time-mode-countdown {
-  font-size: 21px;
+  font-size: var(--text-xl);
   font-weight: var(--weight-heavy);
 }
 .clear1 {
@@ -472,7 +472,7 @@ input.newCheck {
   position: absolute;
   top: 111px;
   left: 440px;
-  font-size: 21px;
+  font-size: var(--text-xl);
   font-weight: var(--weight-heavy);
   color: var(--color-blue-accent);
 }
@@ -655,7 +655,7 @@ nav ul ul ul li {
 .alert {
   padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-sm);
-  font-size: 12px;
+  font-size: var(--text-sm);
   margin-bottom: var(--space-3);
   /* Width and style only, so the border colour of .alert-error etc. above is not reset */
   border-width: 1px;
@@ -708,7 +708,7 @@ nav ul ul ul li {
   font-size: var(--text-lg);
 }
 .error-page__details {
-  font-size: 16px;
+  font-size: var(--text-md);
   margin-top: 20px;
 }
 /* What a developer sees about the error (debug mode only) */
@@ -740,7 +740,7 @@ nav ul ul ul li {
   color: var(--color-danger);
   background: rgba(0, 0, 0, 0.04);
   padding: 4px 8px;
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
   display: inline-block;
   margin-top: 5px;
   /* A long class name or path breaks instead of widening the page */
@@ -763,7 +763,7 @@ nav ul ul ul li {
   background: rgba(0, 0, 0, 0.8);
   color: var(--color-white);
   padding: 20px;
-  border-radius: 5px;
+  border-radius: var(--radius-sm);
   font-size: var(--text-sm);
   line-height: 1.6;
   margin-top: 10px;
@@ -842,7 +842,7 @@ nav ul ul ul li {
 		width: 58px;
 	}
 	.whitebox1 #account-bar-xp {
-		font-size: 10px;
+		font-size: var(--text-xs);
 	}
 }
 
@@ -895,7 +895,7 @@ nav ul ul ul li {
 		/* The header sits on the dark body gradient in BOTH themes, so the bars
 		   must stay light or they'd vanish (e.g. black-on-dark in light mode). */
 		background: var(--text-on-dark);
-		border-radius: 2px;
+		border-radius: var(--radius-sm);
 	}
 	.site-nav__signin {
 		display: none;
@@ -985,7 +985,7 @@ nav ul ul ul li {
 		display: none;
 	}
 	.site-nav nav ul ul li a {
-		font-size: 16px;
+		font-size: var(--text-md);
 	}
 	/* Icon row (sound / board / dark) sits side by side on one line. */
 	.site-nav nav ul {
@@ -1031,7 +1031,7 @@ nav ul ul ul li {
 		margin-bottom: var(--space-2);
 	}
 	.site-nav__account-user {
-		font-size: 16px;
+		font-size: var(--text-md);
 		padding: var(--space-2) var(--space-2) 0;
 		color: var(--color-white);
 	}

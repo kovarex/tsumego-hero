@@ -199,7 +199,7 @@
 .acDate {
   font-style: italic;
   padding: 8px 5px;
-  font-size: 14px;
+  font-size: var(--text-sm);
 }
 /* The achievements page (Achievements/index.php): a row each, the most common first */
 .achievement-list
@@ -215,7 +215,7 @@
 .achievement-list__title
 {
 	margin: 0 0 var(--space-2);
-	font-size: 15px;
+	font-size: var(--text-md);
 	font-weight: var(--weight-heavy);
 	font-variant-numeric: tabular-nums;
 }
