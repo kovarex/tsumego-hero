@@ -726,22 +726,168 @@ All three proposals print A-1KO- here.
 
 ---
 
-## 13. Questions for the owner, and where they stand
+## 13. Open questions
 
-1. **c121 and the approach rule: answered.** The owner set S[A-1KO-] on the site (14 November): what the opponent
-   gains with the free move of an approach round belongs to the approach. The gain is printed beside the label. The
-   target question of 15678 (whole group or the top stones) is still open.
-2. **Mutual approach, 10kKO and the plain ko: answered in principle (D9).** He wanted examples before settling it;
-   the question page, parts 1a and 1b, shows them and asks him to confirm.
-3. **c081 (15220):** the question page recommends 10kKO, the textbook shape (problem 15513 marks the same corner
-   10kKO). No move's grading changes in 15220; the earlier claim that it would was wrong.
-4. **c014 (2359):** the question page recommends A-1KO+: only Black needs the extra move at E19, and White can win the
-   ko once at any time. This reverses the earlier KO-. No move's grading changes.
-5. **10005:** the question page recommends the structure, A-1KO-, with the count printed as a note. No move's grading
-   changes.
-6. **Equal counts at the leaf:** the label besogo ranks higher for the side to move (default, not yet confirmed).
-7. **Frames (c013, c052):** the open-board decision in the research report.
-8. **DSKO/ASKO and SEKI+:** positional superko, and a seki where the solver keeps sente (defaults, no data).
+The full set of diagrams for questions 1 to 5 is on the question page, https://claude.ai/artifact/1EYiF4TGFP2WMAFoPtoXXW, in the part named under each question; questions 6 and 7 are in the research report, https://claude.ai/artifact/9MiMDZvGqnL4DHEYNP8zgR. The key diagrams are below. Numbers on the stones continue the move count of the problem, letters mark the points the text names, a square marks a ko point that may not be retaken at once, and faded stones were captured.
+
+### Question 1. Is this your 10kKO?
+
+Problem 10391, leaf 4, Black to kill (question page, part 1a). Both sides need the same move, at a or b, before their capture threatens anything. Whoever plays it, the other side captures for free and holds a direct ko, so the investment is wasted whoever makes it, and the ko cannot switch back.
+
+![Part 1a, Diagram 1](questions/q1a-d1.svg)
+
+*Part 1a, Diagram 1.* The tree's line to the leaf, with White to play. Black can take the ko by capturing White 4, and a and b are the liberties both sides share.
+
+![Part 1a, Diagram 4](questions/q1a-d4.svg)
+
+*Part 1a, Diagram 4.* Black invests with Black 9, and White 10 retakes at once without a threat, because Black 9 was not a ko capture. Now White threatens to capture Black's corner stones at a.
+
+![Part 1a, Diagram 6](questions/q1a-d6.svg)
+
+*Part 1a, Diagram 6.* If White invests instead, with White 6, Black 7 takes the ko for free, and Black's capture is a real threat at once.
+
+**Our proposal:** 10kKO for this shape, here and in 10393, 15513, 15516 and c081 (question 3). Is that what you mean by 10kKO?
+
+### Question 2. A ko that switches there and back: a plain KO?
+
+Problem 7487, leaf 98, Black to kill, marked S[A-1KO-] (question page, part 1b). Each side needs its own approach, Black at a and White at b. Whoever approaches, the other side retakes for free and still needs its own approach, so the ko switches there and back: by your answer, a plain KO, KO-2 from the count. But White can also use its extra move to capture at c, a second ko whose capture threatens at once; read that way, the whole position is your approach ko, as your A-1KO- says.
+
+![Part 1b, Diagram 1](questions/q1b-d1.svg)
+
+*Part 1b, Diagram 1.* The tree's line to the leaf marked S[A-1KO-]. White 16 has just taken the ko; Black can approach at a, White at b, and c is a second ko.
+
+![Part 1b, Diagram 3](questions/q1b-d3.svg)
+
+*Part 1b, Diagram 3.* Black approaches with Black 19, and White 20 retakes without a threat, since the ko ban held only for White 18. White's capture still needs its own approach at b.
+
+![Part 1b, Diagram 5](questions/q1b-d5.svg)
+
+*Part 1b, Diagram 5.* The other way round: Black 17 plays elsewhere, White approaches with White 18, and Black 19 retakes without a threat. Black's capture still needs its own approach at a.
+
+![Part 1b, Diagram 7](questions/q1b-d7.svg)
+
+*Part 1b, Diagram 7.* The second ko: Black 17 plays elsewhere and White 18 captures at c. This capture is a real threat at once: if Black passes again, White wins even against four ko threats.
+
+**Options:** KO-2, the plain KO from the count, or your A-1KO-, read through the second ko. No move's grading changes either way.
+
+**Our proposal:** keep your A-1KO- here. The solver prints a plain KO only for a single ko that switches there and back, and marks a switching ko next to a second ko for you instead of choosing. Do you agree?
+
+### Question 3. c081 in 15220: 10kKO or KO+?
+
+Problem 15220, leaf c081, Black to live, marked S[KO+] (question page, part 2). The shape of question 1 with the colours reversed: White needs the ko, both sides need the same move at a or b, and whoever plays it hands the other side a direct ko. Problem 15513 marks this very corner S[10kKO].
+
+![Part 2, Diagram 1](questions/q2-d1.svg)
+
+*Part 2, Diagram 1.* The tree's line to the leaf marked S[KO+], with White to play. Black's group and White's corner stones share the liberties a and b, and White can take a ko at c once Black 5 is in atari.
+
+![Part 2, Diagram 4](questions/q2-d4.svg)
+
+*Part 2, Diagram 4.* Black 11 plays elsewhere again, White 12 invests at a, and Black 13 retakes without a threat, because White 12 did not capture. White's four stones are now in atari at b, so White needs the first ko threat.
+
+![Part 2, Diagram 7](questions/q2-d7.svg)
+
+*Part 2, Diagram 7.* If Black also invests, with Black 13 at a after White 12 plays elsewhere, White 14 retakes without a threat. Black's group is now in atari at b, and Black needs one threat more than White.
+
+![Part 2, Diagram 13](questions/q2-d13.svg)
+
+*Part 2, Diagram 13.* The tree's line to its only leaf, marked S[10kKO]: the corner of Diagram 2, with Black to play after White 5. The tree's comment calls it a ten-thousand-year ko in which White still has to approach at b.
+
+**Options:** KO+, the tree's label, which gives the count of a plain ko, or 10kKO. No move's grading changes in 15220 either way.
+
+**Our proposal:** 10kKO, the same as question 1. Do you agree?
+
+### Question 4. c014 in 2359: KO- or A-1KO+?
+
+Problem 2359, leaf c014, Black to live, marked S[DEAD] (question page, part 3). It is a ko in which Black needs one threat more than White. Black takes first, White connects, and Black then needs the extra move at b (E19) before connecting at c; White's only answer to it is the retake.
+
+![Part 3, Diagram 1](questions/q3-d1.svg)
+
+*Part 3, Diagram 1.* The tree's line, marked S[DEAD], with Black to play. It is a ko: Black lives with one threat more than White.
+
+![Part 3, Diagram 3](questions/q3-d3.svg)
+
+*Part 3, Diagram 3.* White 8 connects, and Black holds the ko with Black to play. Connecting at c does not live yet: Black needs two moves in a row, first b (its best extra move) and then c.
+
+![Part 3, Diagram 4](questions/q3-d4.svg)
+
+*Part 3, Diagram 4.* Black 9 is the move at E19. White cannot play elsewhere, and its only answer is the retake at c: if White may not play there, Black wins.
+
+![Part 3, Diagram 5](questions/q3-d5.svg)
+
+*Part 3, Diagram 5.* White 10 retakes without a threat, since Black 9 was not a ko capture. White's capture threatens to kill at once, so Black needs a threat to retake.
+
+**Options:** KO-, with E19 an extra move inside the ko, or A-1KO+, with E19 an approach. Both need the same threats, and no move's grading changes in 2359.
+
+**Our proposal:** A-1KO+. Only Black needs the extra move, and White can win by winning the ko once, at any time: your approach ko. Which do you want?
+
+### Question 5. 10005: the structure or the count?
+
+Problem 10005, Black to kill, marked S[A-1KO-] (question page, part 4). Your label fits the ko when White takes at once: White's capture threatens, and Black's retake needs the approach at b first (Diagram 4). But Black can play the approach at once (Diagram 7). White's best answer is the second ko, and Black ends up needing only one threat more than White (Diagram 10), where A-1KO- implies two.
+
+![Part 4, Diagram 1](questions/q4-d1.svg)
+
+*Part 4, Diagram 1.* The tree's line to the leaf marked S[A-1KO-], with Black to play. White's group has the outside liberties a, b and c, and White can take a ko by capturing Black 5.
+
+![Part 4, Diagram 4](questions/q4-d4.svg)
+
+*Part 4, Diagram 4.* Black 13 retakes after a ko threat elsewhere. White's group still has b and c, so Black's capture threatens nothing yet.
+
+![Part 4, Diagram 7](questions/q4-d7.svg)
+
+*Part 4, Diagram 7.* Black 13 plays the approach at once, without retaking. Black still needs only one threat more than White, the count at the leaf.
+
+![Part 4, Diagram 10](questions/q4-d10.svg)
+
+*Part 4, Diagram 10.* White 16 has no threat and plays elsewhere, and Black 17 takes the main ko without a threat, since White 16 captured nothing. White's group is in atari at c.
+
+**Options:** A-1KO-, the structure, or a label from the count (A-1KO+ or KO-). No move's grading changes in 10005.
+
+**Our proposal:** keep your A-1KO-, and the solver prints the count beside it as a note. Do you agree?
+
+### Question 6. 15678: kill the whole White group, or only the top stones?
+
+Problem 15678 (research report, under Decisions). Every DEAD leaf of the tree kills only the top stones, while White's left side lives; the solver, given the whole group, says ALIVE. You asked whether to (a) improve the solver's choice of target, or (b) add a stone or two to the problem.
+
+![Research report, Diagram 1](questions/topic-target-15678-1.svg)
+
+*Research report, Diagram 1.* The tree's main line, leaf c120, marked S[DEAD]. White 12 captures Black 1, and Black 13 leaves the seven top stones one liberty, at A19.
+
+![Research report, Diagram 2](questions/topic-target-15678-2.svg)
+
+*Research report, Diagram 2.* From Diagram 1: White 14 puts Black's three corner stones in atari, so Black 15 must capture the seven top stones. White's left side lives with two real eyes, at A16 and B15: DEAD for the top stones, ALIVE for the whole group.
+
+**Our proposal:** (a). The solver should not join stones across a cut diagonal, and should take as its target the stones the tree's kill lines kill. With the top stones as the target, c121 comes out S[A-1KO-], your label. Shall we do (a)?
+
+### Question 7. Open board edges: c013 in 2359 and c052 in 11320
+
+These two leaves change label with how much of the empty board counts (research report, under Decisions). The solver treats everything outside its search area as the attacker's wall; the site shows the board open.
+
+![Research report, Diagram 1](questions/topic-open-board-1.svg)
+
+*Research report, Diagram 1.* 2359, Black to live: the tree's line to leaf c013, marked S[KO-], where White 6 takes the ko. On the board as given, Black 7 forces White 8, and Black 9 takes the ko back without a threat. White 2 and White 4 are now in atari, so White needs the first threat: S[KO+].
+
+![Research report, Diagram 3](questions/topic-open-board-3.svg)
+
+*Research report, Diagram 3.* 2359, the tree change that goes with S[KO+] on leaf c013: White 6 here instead of taking the ko. After Black 7, White 8 takes the ko and Black's group is in atari at D19, so Black needs one threat more than White: a plain KO−, as a judge found.
+
+![Research report, Diagram 4](questions/topic-open-board-4.svg)
+
+*Research report, Diagram 4.* 11320, Black to live, from the tree's leaf c052, marked S[KO-2]: White has just retaken the ko at A18, and three Black stones are in atari at B17. Black 9 retakes after a threat elsewhere. White 10 forces Black 11, and White 12 retakes without a threat. Black 13 needs another threat, and White 14 and Black 15 repeat the exchange before White 16 retakes. If Black connects the ko instead of answering, White kills.
+
+**Our proposal:** count the board as the player sees it, and where a problem needs a closed edge, put the stones in the SGF. That makes c013 S[KO+], with White's move 6 moved to E18, and c052 either S[KO-4] on the open edge or S[KO-6] with White stones closing the edge at row 10. Do you agree?
+
+### Question 8. Equal counts at the leaf
+
+When the side to move can either take first and then approach, or approach first and let the other side take, and both need the same threats, should the label be the one besogo ranks higher for that side (fewer approaches)? No leaf in the export shows this yet, so there is no diagram; the solver will flag the first one it finds.
+
+### Question 9. Superko and SEKI+
+
+No leaf in the export has DSKO, ASKO or SEKI+, so there is no diagram. Is superko positional superko, a whole-board position that may not repeat? And is SEKI+ a seki in which the solver keeps sente?
+
+### Answered
+
+- **c121 in 15678:** S[A-1KO-], set on the site on 14 November. What White gains with the free move of an approach round belongs to the approach; the solver prints it beside the label.
+- **Approach ko, 10kKO and plain KO:** your definitions are in D9; questions 1 and 2 check how they apply.
 
 ---
 

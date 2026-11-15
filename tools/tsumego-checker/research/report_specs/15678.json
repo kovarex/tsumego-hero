@@ -68,7 +68,7 @@
   },
   {
    "case": "c121",
-   "headline": "White has just taken the ko, so KO+ is wrong either way. Whole group: ALIVE, as White connects at B15. Top stones: KO−3.",
+   "headline": "White has just taken the ko, so KO+ is wrong either way. Whole group: ALIVE, as White connects at B15. Top stones: S[A-1KO-], your label.",
    "diagrams": [
     {
      "start": "",
@@ -83,7 +83,7 @@
     {
      "start": "C19 B17 G19 D19 A17 A16 A19 A18",
      "moves": "A17! H19 J19 A18 A17! B15 E17 A18 A17! pass F19 A18 E19",
-     "caption": "Top stones, S[KO-3]. White has no threats and Black needs three: Black 9, 13 and 17 each retake after a threat elsewhere, while White's retakes need none. White 10 ataris the Black stone at G19, and Black 11 captures it before White 12 retakes. White 14 joins the wall to the bottom stones. Black 15 fills a liberty and White 16 retakes. White 18 plays elsewhere, Black 19 fills another liberty, and after White 20 retakes, Black 21 captures the five top stones."
+     "caption": "Top stones: Black needs three threats more than White. White has no threats and Black needs three: Black 9, 13 and 17 each retake after a threat elsewhere, while White's retakes need none. White 10 ataris the Black stone at G19, and Black 11 captures it before White 12 retakes. White 14 joins the wall to the bottom stones. Black 15 fills a liberty and White 16 retakes. White 18 plays elsewhere, Black 19 fills another liberty, and after White 20 retakes, Black 21 captures the five top stones."
     },
     {
      "start": "C19 B17 G19 D19 A17 A16 A19 A18",
@@ -93,8 +93,8 @@
    ],
    "text": [
     "S[KO+] is wrong under either option: White 8 was the ko capture, so White took first. Black has no local threat, because any Black move except the retake lets White capture the four corner stones at B19 and join everything. Black can never connect either: A18 and B19 are both self-atari for Black.",
-    "Whole group: White ignores the ko (Diagram 2), and the solver finds no kill even when Black may ignore the ko ban. Top stones: Black must win the ko twice, filling liberties in between, and White's atari at H19 is one more free threat, so Black needs three threats more than White (Diagram 3). Black's counter at B15 does not save a threat, because White's push at E17 is another free threat (Diagram 4).",
-    "Reviewer 2 and both judges count KO−3. The solver left the full count undecided; Judge A checked it with an engine on a hand-built model of the open board. Reviewer 1's KO−2 missed the push at E17, which the solver cannot see: its area counts the empty E16 as a Black wall. Neither option changes the site's grading."
+    "Whole group: White ignores the ko (Diagram 2), and the solver finds no kill even when Black may ignore the ko ban. Top stones: you set S[A-1KO-], and the new ko-label design gives the same. White took first, and Black needs one approach before the ko is direct. White's atari at H19, played with the free move the approach gives White, adds one threat, so Black needs three threats more than White in all (Diagram 3); by your rule that belongs to the approach, not to the label. Black's counter at B15 does not save a threat, because White's push at E17 is another free threat (Diagram 4).",
+    "Reviewer 2 and both judges count three threats, which the counted notation writes KO−3. The solver left the full count undecided; Judge A checked it with an engine on a hand-built model of the open board. Reviewer 1's KO−2 missed the push at E17, which the solver cannot see: its area counts the empty E16 as a Black wall. Neither option changes the site's grading."
    ]
   }
  ]
