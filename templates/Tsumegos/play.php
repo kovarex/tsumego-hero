@@ -91,7 +91,7 @@ use App\Utility\ViteManifest;
 				</div>
 			</div>
 		<?php endif; ?>
-		<?php //The hero powers: a row of their own on a wide screen, behind the ⚡ button on a phone (play.css) ?>
+		<?php //The hero powers: a row of their own on a wide screen, behind the ⚡ button on a phone (play.css); hidden by an inline style, not the hidden attribute, which the wide screen could not override ?>
 		<?php if (!Auth::isInMistakeTrainingMode() && Auth::isLoggedIn()): ?>
 			<div id="heroPowersTray" class="play-powers" style="display: none;">
 				<?php HeroPowers::render(); ?>
@@ -114,12 +114,12 @@ use App\Utility\ViteManifest;
 			<a id="showFilters" class="btn btn--pill play-actions__button play-filters-toggle"<?php echo empty($tsumegoFilters->sets) && empty($tsumegoFilters->ranks) && empty($tsumegoFilters->tags) ? ' style="display: none;"' : ''; ?> href="#" data-toggle="msgFilters">Filters</a>
 		</div>
 		<div class="filters-outer">
-			<div id="msgFilters" class="play-filters" style="display: none;">
+			<div id="msgFilters" class="play-filters" hidden>
 				<div class="active-tiles-container tiles-view"></div>
 			</div>
 		</div>
 		<?php if ($commentCounts !== null): ?>
-			<div id="commentsPanel" class="play-panel" style="display: none;">
+			<div id="commentsPanel" class="play-panel" hidden>
 				<?php echo $this->element('TsumegoComments/section', ['tsumegoId' => $tsumego->id, 'solved' => $solved, 'counts' => $commentCounts]); ?>
 			</div>
 		<?php endif; ?>

@@ -687,10 +687,6 @@ a[href="/challenges"],
 	overflow-y: auto;
 }
 
-.player-suggestions[hidden]
-{
-	display: none;
-}
 
 /* li floats left everywhere on the site (site.css) */
 .player-suggestions__option

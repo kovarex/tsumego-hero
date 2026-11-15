@@ -92,6 +92,26 @@ class UserSettingsTest extends IntegrationTestCase
 		$this->assertTrue($browser->find('input[name="email"]')->isDisplayed(), 'Enter on the change link must open the form');
 	}
 
+	//A change button opens its form and turns into cancel, which closes it again
+	public function testChangeOpensTheFormAndCancelClosesIt(): void
+	{
+		new ContextPreparator(['user' => ['name' => 'toggler']]);
+		$browser = Browser::instance();
+
+		$browser->get('users/settings');
+		foreach (['email', 'password'] as $form)
+		{
+			$button = $browser->find('#change-' . $form);
+			$this->assertFalse($browser->find('#' . $form . '-form')->isDisplayed(), 'the ' . $form . ' form starts closed');
+			$button->click();
+			$this->assertTrue($browser->find('#' . $form . '-form')->isDisplayed(), 'change opens the ' . $form . ' form');
+			$this->assertSame('cancel', $button->getText());
+			$button->click();
+			$this->assertFalse($browser->find('#' . $form . '-form')->isDisplayed(), 'cancel closes the ' . $form . ' form');
+			$this->assertSame('change', $button->getText());
+		}
+	}
+
 	public function testEmailFieldIsLabelledForScreenReaders(): void
 	{
 		new ContextPreparator(['user' => ['name' => 'labelled']]);

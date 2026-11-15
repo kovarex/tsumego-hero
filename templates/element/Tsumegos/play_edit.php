@@ -32,7 +32,7 @@ use App\Utility\Util;
 $checked = fn(bool $isChecked): string => $isChecked ? 'checked="checked"' : '';
 $variantType = $tv ? (int) $tv->tsumego_variant_type_id : null;
 ?>
-<div id="editSection" class="play-edit" style="display: none;">
+<div id="editSection" class="play-edit" hidden>
 	<?php //The tags of the problem first, with adding one under them ?>
 	<div class="tag-container">
 		<div data-tag-editor-root data-props="<?php echo htmlspecialchars($tagEditorProps); ?>"></div>

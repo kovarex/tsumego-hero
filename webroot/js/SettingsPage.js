@@ -56,9 +56,8 @@
 			return;
 		button.addEventListener('click', function()
 		{
-			const opened = form.style.display !== 'none';
-			form.style.display = opened ? 'none' : 'block';
-			button.textContent = opened ? 'change' : 'cancel';
+			form.hidden = !form.hidden;
+			button.textContent = form.hidden ? 'change' : 'cancel';
 		});
 	});
 
