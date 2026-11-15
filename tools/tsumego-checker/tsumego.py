@@ -1209,14 +1209,15 @@ class Solver:
     def profile(self, board, to_move, holder, K=PASS_LIMIT, Lo=4):
         #D3-D5 for the holder X of the ko at P_X (board, to_move = Y under the ban): t, the least k <= K for which X wins
         #outright (0 threats against Lo) while Y is forced to pass k times, n = t - 1 its approaches, the held-ko check (Y
-        #also barred from retaking for the whole search) and v, the threshold with Y forced to pass n times. fill: X's free
-        #move on v's line fills the ko (D5), and v_unfilled is v with X barred from the filling point. alternatives: X's
-        #first free moves that keep v (v_unfilled after a fill) in v's own game, where Y may answer them, the others in
-        #alternatives_rejected; approach: the one the text names (approach_alternatives)
+        #also barred from retaking for the whole search, and a free retake after the approach) and v, the threshold with Y
+        #forced to pass n times. fill: X's free move on v's line fills the ko (D5), and v_unfilled is v with X barred from
+        #the filling point. alternatives: X's first free moves that keep v (v_unfilled after a fill) in v's own game, where Y
+        #may answer them, the others in alternatives_rejected; approach: the one the text names (approach_alternatives);
+        #second_ko_capture: the approach when the held-ko check fails because it captures in a second ko
         mover = to_move
         result = {'n': None, 't': None, 'decided': False, 'bracket': None, 'outright': {}, 'moves': [], 'resolving': None,
                   'approach_moves': [], 'approach': None, 'alternatives': None, 'alternatives_rejected': None, 'held_ok': None,
-                  'v': None, 'line': [], 'Lo': Lo, 'nodes': 0, 'fill': None, 'v_unfilled': None}
+                  'v': None, 'line': [], 'Lo': Lo, 'nodes': 0, 'fill': None, 'v_unfilled': None, 'second_ko_capture': None}
         start = self.nodes
         s, o = (0, Lo) if holder == self.solver_color else (Lo, 0)
         wins = lambda verdict: None if verdict is None else verdict == (holder == self.solver_color)
@@ -1261,8 +1262,26 @@ class Solver:
                                                               bar={holder: [board.ko]})
                 self.part = 'approach alternatives %s' % holder
                 result['alternatives'], result['alternatives_rejected'] = self.approach_alternatives(board, holder, result, candidates)
+                #D4: an approach leaves Y a free retake. When every move that keeps v captures in a second ko after which Y
+                #cannot retake for free, Y's defence was the retake in the second ko, and the bar above also took Y's later
+                #capture at the retake point: a stage, not an approach (1807's B19, 7693's C18, 7487 leaf 98's B19)
+                kept = [p for p, wins in result['alternatives'] or []]
+                if result['held_ok'] and not result['fill'] and result['approach'] is not None and \
+                        all(self.second_ko_capture(board, holder, p) for p in kept):
+                    result['held_ok'] = False
+                    result['second_ko_capture'] = result['approach']
         result['nodes'] = self.nodes - start
         return result
+
+    def second_ko_capture(self, board, holder, p):
+        #D4: whether X's free move p at P_X (board, Y to move under the ban), after Y's tenuki, is a ko capture in a second ko
+        #that leaves Y no free retake of the main ko (the retake is illegal there, or no longer a ko capture)
+        ko = self.ko_points(board)
+        after = self.play(self.play(board, other_colour(holder), None), holder, p)
+        if ko is None or after is None or after.ko is None:
+            return False
+        retaken = self.play(after, other_colour(holder), ko[0])
+        return retaken is None or retaken.ko != ko[1]
 
     def approach_alternatives(self, board, holder, profile, candidates):
         #D3: the holder X's first free moves at P_X (board, Y to move under the ban) that keep its outright win while Y must
@@ -1391,13 +1410,28 @@ class Solver:
                 signs[side] = profile['bracket'][0] >= 1
             elif profile['n'] >= 1 and profile['held_ok'] is False:
                 counts[side] = 0
-                parts['stages'].append({'side': side, 'rounds': profile['n'], 'moves': profile['moves']})
+                parts['stages'].append({'side': side, 'rounds': profile['n'], 'moves': profile['moves'],
+                                        'second_ko_capture': profile.get('second_ko_capture')})
             elif profile['n'] >= 1 and profile['held_ok'] is None:
                 counts[side] = None
                 signs[side] = True
             else:
                 counts[side] = profile['n']
         n_s, n_o = counts['S'], counts['O']
+        #D9: a capture in a second ko is no approach (D4), so the side's capture reads as direct through that ko. Beside the
+        #other side's approach the label turns on the owner's question 1b (7487 leaf 98): it keeps the question page's
+        #proposal, that approach ko, and the plain KO from the count, the reading of a ko that switches there and back, is
+        #the net reading
+        for stage in parts['stages']:
+            other = 'O' if stage['side'] == 'S' else 'S'
+            if stage['second_ko_capture'] is not None and counts[other]:
+                parts['net_label'] = None if d_full is None else besogo_string(0, -d_full)
+                parts['notes'].append('design 13, question 1b: %s\'s %s captures in a second ko, so its capture is read as direct and '
+                                      'the label is %s\'s approach ko (the question page\'s proposal); as a ko that switches there and '
+                                      'back it is %s, the plain KO from the count' % (
+                                          COLOUR_NAMES[solver if stage['side'] == 'S' else other_colour(solver)],
+                                          self.point_name(stage['second_ko_capture']),
+                                          COLOUR_NAMES[solver if other == 'S' else other_colour(solver)], parts['net_label'] or 'KO?'))
         a = e = None
         approaches_text = None
         if n_s is None or n_o is None:
@@ -1606,7 +1640,10 @@ class Solver:
         side = None if parts['mutual'] else side
         v = profiles[side]['v'] if side and profiles[side] else None
         record['direct_ko'] = {'v': parts['v'], 'side': side, 'v_line': self.line_names(v['pv_win']) if v else None, 'line': None,
-                               'local_threats': None, 'stages': [dict(stage, kind='held-ko check') for stage in parts['stages']],
+                               'local_threats': None,
+                               'stages': [dict(stage, kind='second ko' if stage['second_ko_capture'] else 'held-ko check',
+                                               second_ko_capture=stage['second_ko_capture'] and self.point_name(stage['second_ko_capture']))
+                                          for stage in parts['stages']],
                                'attribution': None}
         record['gain'] = gain_record(record, count['d'], side)
         #steps 6-8 run on the area the label comes from (explain_label)
@@ -1650,7 +1687,9 @@ class Solver:
                 ['%s%s' % (self.point_name(p), '' if wins else '?') for p, wins in profile['alternatives']],
                 'alternatives_rejected': None if profile['alternatives_rejected'] is None else
                 [(self.point_name(p), value) for p, value in profile['alternatives_rejected']],
-                'held_ok': profile['held_ok'], 'v': profile['v'] and profile['v']['d'],
+                'held_ok': profile['held_ok'],
+                'second_ko_capture': self.point_name(profile['second_ko_capture']) if profile.get('second_ko_capture') else None,
+                'v': profile['v'] and profile['v']['d'],
                 'v_decided': profile['v'] and profile['v']['decided'], 'v_beyond': profile['v'] and profile['v']['beyond'],
                 'v_table': profile['v'] and profile['v']['table'],
                 'fill': self.point_name(profile['fill']['point']) if profile['fill'] else None,
@@ -2443,7 +2482,12 @@ def label_text(record):
                                                        ' (from the mode lines)' if take['how'] == 'modes' else ''))
     approaches = record.get('approaches') or {}
     second = record.get('second_ko')
-    approaching = [side for side in ('S', 'O') if (approaches.get(side) or {}).get('n') and not (second and second['side'] == side)]
+    #a side whose rounds are stages (the held-ko check fails) does not approach
+    approaching = [side for side in ('S', 'O') if (approaches.get(side) or {}).get('n') and approaches[side]['held_ok'] is not False
+                   and not (second and second['side'] == side)]
+    #a capture in a second ko in place of an approach reads the side's capture as direct through that ko (D4)
+    direct_sides = [side for side in ('S', 'O') if approaches.get(side) and
+                    (approaches[side]['n'] == 0 or approaches[side].get('second_ko_capture'))]
     failures = []
     for side in ('S', 'O'):
         summary = approaches.get(side)
@@ -2455,6 +2499,12 @@ def label_text(record):
             sentences.append('%s needs ? approaches (%s)' % (name, bracket_text(*summary['bracket'])))
         elif summary['n'] == 0 and other is None:
             sentences.append('%s\'s capture is direct' % name)
+        elif summary['n'] and summary['held_ok'] is False and summary.get('second_ko_capture'):
+            #D4: the free move takes a second ko and leaves no free retake; beside the other side's approach that is question 1b
+            sentences.append('%s\'s %s is a capture in a second ko, after which %s has no free retake, so it is no approach (D4)%s' % (
+                name, summary['second_ko_capture'], COLOUR_NAMES[other_colour(side_colour(side))],
+                ': %s\'s capture is direct through that ko (design 13, question 1b)' % name if other and
+                (approaches.get('O' if side == 'S' else 'S') or {}).get('held_ok') is not False else ''))
         elif summary['n'] and summary['held_ok'] is False:
             sentences.append('%s\'s %d round%s are stages, not approaches (the held-ko check fails), so they count as threats' % (
                 name, summary['n'], 's' if summary['n'] > 1 else ''))
@@ -2490,7 +2540,7 @@ def label_text(record):
                             'retake), so the approach is sente (design risk 2)' % (
                                 failure['round'], COLOUR_NAMES[other_colour(side_colour(side))], failure['approach'],
                                 ' at %s' % failure['answer'] if failure['answer'] else '', failure['base']))
-    if not approaching and approaches.get('S') and approaches.get('O') and all(approaches[side]['n'] == 0 for side in ('S', 'O')):
+    if not approaching and len(direct_sides) == 2:
         sentences.append('Both captures are direct')
     if len(approaching) == 2:
         attacker_side = 'S' if record['goal'] == 'KILL' else 'O'

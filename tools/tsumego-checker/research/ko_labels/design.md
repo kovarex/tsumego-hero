@@ -225,7 +225,8 @@ player is White:
     D8's gain is Y's move in place of the tenuki before the approach, which neither includes. v's first free move has
     the count v by v's own searches. No retake point is needed, so a best move after which the ko cannot be retaken at
     once is tested too (7487 leaf 98: White's B19, a capture in the second ko, keeps v = 3, while E18 and A17 give 1 and
-    2; the retake-only test of the earlier draft left all three undecided and printed E18 as the approach).
+    2; the retake-only test of the earlier draft left all three undecided and printed E18 as the approach). Such a
+    capture is then no approach by D4, since Y has no free retake after it.
     - A move that works only because Y must pass is rejected with its count: the capture played before the approach
       (10005's E19, c019's D18), a self-atari that Y's answer captures (13169's D19: Black fails at every balance up
       to +6), and a self-atari that Y takes later as a local threat (c121's E19: White retakes for free, Black retakes
@@ -252,6 +253,21 @@ player is White:
   **approaches**.
 - If not, Y has another ko or resource. The rounds are **stages** of a step ko and count as threats: the side's
   approach count becomes 0 and the stage is listed.
+- **A capture in a second ko is no approach.** An approach leaves Y a free retake of κ. When every move that keeps v
+  (D3's alternatives, the named approach among them) is a ko capture in a second ko after which Y cannot retake κ for
+  free (the retake is illegal there, or no longer a ko capture), the rounds are stages as well, whatever the search
+  above gave. Y's defence after one forced pass is the threat-backed retake in the second ko, and barring κ's
+  recapture point for the whole search also bars Y's later capture at that point, which is why X won there. The test
+  plays the approach and the retake; it adds no search.
+  - 1807 "A16 B18 A18 A17": Black's B19 takes A19, after which White's A17 is suicide and A19 is banned. With White
+    barred from A17 for the whole search Black wins (even C18 is then safe), but barring A19 alone wins too: White's
+    defence is the retake in the second ko. Black's capture is direct through the second ko, as White's A17 is, and
+    the ko switches between the two kos: D6's direct case, a = 0 and e = -d(leaf), KO- (it printed A-1KO+). The same
+    in 2089 (A17), 7693 and 9947 (C18: KO+, where A-1KO+2 and A-1KO+4 were printed), 10005, 1731 (A19), 15341
+    (White's B17) and 11334 (White's C19).
+  - The label then needs the full count; where it is undecided the label is KO? with its bracket (10005 "C18 C17 B17
+    D18 B19 C19 A18 A19": between 1 and 4).
+  - Beside an approach of the other side the label turns on question 1b (D9, 7487 leaf 98).
 - This check is needed only when n_X ≥ 1.
 
 ### D5 Direct-ko value
@@ -360,7 +376,10 @@ below waits for his confirmation there.
   - **No:** the free retake still needs its own approach, so the ko switches there and back: the owner's **plain
     KO**. Print the KO sign from the count: a = 0, e = -d_full.
   - **A second ko gives one side a direct threat** (7487 leaf 98): his definitions do not decide. Print both readings
-    and mark the leaf for the owner.
+    and mark the leaf for the owner. The checker keeps the question page's proposal: the capture in the second ko is
+    no approach (D4), so that side's capture reads as direct and the label is the other side's approach ko (A-1KO- in
+    7487 leaf 98, the owner's label). The plain KO from the count, the reading of a ko that switches there and back
+    (KO-2 there), is the net reading, and a warning names question 1b.
 - **No ko on the board yet**, one side must make it with moves that cost nothing in the count (10393): 10kKO.
 - With more than one approach on a side, the test applies to each round; a mixed result is marked for the owner.
 - The tree's 10kKO on a leaf where one side's capture threatens from the start (seven leaves, for example 13547) is
@@ -469,7 +488,8 @@ Apply the tie rule D12.
 - v_X by a threshold scan around 1 for S and around 0 for O.
 
 **Step 5. Label** (D6, or D9 for a mutual approach): compute a, e, d_conv, x and the besogo string.
-- If an approach side's held-ko check failed, its rounds are stages. That count is set to 0 and e = -d_full.
+- If an approach side's held-ko check failed (a capture in a second ko as its approach included, D4), its rounds are
+  stages. That count is set to 0 and e = -d_full.
 - If an approach side's free move fills the ko (D5), the label is the direct reading (a = 0, e = -d_full), and the
   A-form with the filling point barred is printed beside it with its own full count.
 
