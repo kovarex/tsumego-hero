@@ -171,7 +171,7 @@ use App\Utility\ViteManifest;
 		<?php //The goal of the problem shows here until the problem says Correct! or Incorrect! (or a move its comment), which take its place (play.css) ?>
 		<div class="play-message">
 			<div class="play-message__goal">
-				<div id="titleDescription" class="<?php echo Auth::isInRatingMode() || Auth::isInTimeMode() ? 'titleDescription2' : 'titleDescription1'; ?>">
+				<div id="titleDescription" class="<?php echo Auth::isInRatingMode() || Auth::isInTimeMode() ? 'play-description--large' : 'play-description'; ?>">
 					<?php //The color to move as a stone instead of its name: "White to kill." shows a white stone and "to kill." ?>
 					<?php $goal = Play::splitGoalColor($displayGoal); ?>
 					<?php if ($goal['color'] !== null): ?>

@@ -77,7 +77,7 @@ class AccountWidget
 	{
 		this.bar.className = 'xp-bar-fill-c1';
 		this.accountBar.className = 'account-bar-level';
-		this.modeSelector.className = 'modeSelectorInLevelBar';
+		this.modeSelector.className = 'mode-selector--level';
 		this.setBarRatio(this.xp / this.xpForNextLevel(this.level));
 		this.barCaption.innerHTML = this.hovered ? (formatNumber(this.xp) + '/' + formatNumber(this.xpForNextLevel(this.level))) : 'Level ' + this.level;
 	}
@@ -86,7 +86,7 @@ class AccountWidget
 	{
 		this.bar.className = 'xp-bar-fill-c2';
 		this.accountBar.className = 'account-bar-rating';
-		this.modeSelector.className = 'modeSelectorInRatingBar';
+		this.modeSelector.className = 'mode-selector--rating';
 		let rank = Rating.getRankFromRating(this.rating);
 		let rankStart = Rating.getRankMinimalRating(rank);
 		let nextRank = Rating.getRankMinimalRating(rank + 1);

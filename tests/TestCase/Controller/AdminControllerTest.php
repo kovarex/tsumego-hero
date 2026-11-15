@@ -156,9 +156,9 @@ class AdminControllerTest extends IntegrationTestCase
 		new ContextPreparator(['user' => ['admin' => true]]);
 		$this->get('/changelog');
 		$page = $this->view;
-		$this->assertSame(1, substr_count($page, 'class="adminLink'));
+		$this->assertSame(1, substr_count($page, 'class="nav__admin-link'));
 		$this->assertStringContainsString('href="/admin">Admin</a>', $page);
-		$this->assertStringNotContainsString('adminLink-more', $page);
+		$this->assertStringNotContainsString('nav__admin-link-more', $page);
 
 		new ContextPreparator(['user' => ['admin' => false]]);
 		$this->get('/changelog');

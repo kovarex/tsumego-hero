@@ -25,7 +25,7 @@ body {
   min-width: 0;
   max-width: 1300px;
 }
-.accessList {
+.sandbox-page__access-list {
   color: var(--color-gray);
   font-size: var(--text-sm);
 }
@@ -84,7 +84,7 @@ body {
 .site-nav__account {
   display: none;
 }
-li a.menuLi {
+li a.nav__menu-link {
   font-family: var(--font-family-display);
   letter-spacing: 1px;
   padding: 6px 8px 7px 8px;
@@ -97,13 +97,13 @@ li a.menuLi {
   line-height: 20px;
   cursor: pointer;
 }
-.menuLi:hover {
+.nav__menu-link:hover {
   background-color: var(--color-gray);
   color: var(--color-green);
 }
 /* Active nav link */
 .nav__link--active,
-li a.menuLi.nav__link--active {
+li a.nav__menu-link.nav__link--active {
   color: var(--color-green);
 }
 #signInMenu {
@@ -112,10 +112,10 @@ li a.menuLi.nav__link--active {
   width: 115px;
 }
 /* The sign-in link lives in a <div class="site-nav__signin">, not an <li>, so the
-   `li a.menuLi` rule doesn't reach it. Apply the same top-level menu look here so
+   `li a.nav__menu-link` rule doesn't reach it. Apply the same top-level menu look here so
    it matches the nav items (purple, bold, no underline) instead of defaulting
    to a browser-blue underlined link. */
-.site-nav__signin a.menuLi,
+.site-nav__signin a.nav__menu-link,
 .site-nav__signin #signInMenu {
   font-family: var(--font-family-display);
   letter-spacing: 1px;
@@ -127,7 +127,7 @@ li a.menuLi.nav__link--active {
   padding: 7px 9px 10px 9px;
   cursor: pointer;
 }
-.site-nav__signin a.menuLi:hover {
+.site-nav__signin a.nav__menu-link:hover {
   background-color: var(--color-gray);
   color: var(--color-green);
 }
@@ -136,10 +136,10 @@ li a.menuLi.nav__link--active {
   padding: 2px;
   background-color: var(--color-sky);
 }
-.titleDescription1 {
+.play-description {
   font-size: var(--text-lg);
 }
-.titleDescription2 {
+.play-description--large {
   font-size: 22px;
 }
 /* The flame of the daily streak and the account bar, side by side at the right of the header */
@@ -502,10 +502,10 @@ nav ul li {
   border-bottom: 2px solid var(--color-black);
   border-left: 2px solid var(--surface-border-light);
 }
-nav ul .menuIcons1 {
+nav ul .nav__icon-item {
   height: 34px;
 }
-.menuIcons2 {
+.nav__icon-link {
   padding: 4px 10px;
 }
 /* The history of a problem: its title and table centred, as wide as the table */
@@ -518,7 +518,7 @@ nav ul .menuIcons1 {
 a.historyLink {
   color: var(--color-red);
 }
-.historyLink2 {
+.sandbox-page__guide-link {
   color: var(--color-red-light);
 }
 
@@ -565,27 +565,27 @@ nav ul ul ul li {
 /* Home submenu: widen to fit the longest item ("Functions & Modes") at the
    standard nav font so the text doesn't overflow. Other submenus are 169/159px;
    this one is a touch wider because its labels are the longest. */
-.newMenuLi1 li {
+.nav__submenu--home li {
   width: 185px;
 }
-.newMenuLi2 li {
+.nav__submenu--collections li {
   width: 169px;
 }
-.newMenuLi3 li,
-.newMenuLi4 li {
+.nav__submenu--play li,
+.nav__submenu--highscore li {
   width: 159px;
 }
-.newMenuLi3 a,
-.newMenuLi4 a {
+.nav__submenu--play a,
+.nav__submenu--highscore a {
   font-weight: var(--weight-normal);
   font-size: 19px;
 }
-.adminLink {
+.nav__admin-link {
   font-weight: var(--weight-normal);
   font-size: 19px;
   color: var(--color-red-light);
 }
-.homeMenuLink {
+.nav__top-link {
   width: 115px;
 }
 #soundButton {
@@ -626,10 +626,10 @@ nav ul ul ul li {
   border-top-right-radius: 2px;
   cursor: pointer;
 }
-.modeSelectorInRatingBar {
+.mode-selector--rating {
   background-image: var(--color-green-btn-gradient);
 }
-.modeSelectorInLevelBar {
+.mode-selector--level {
   background-image: var(--color-purple-btn-gradient);
 }
 /* The rating of the problem under the board: <font size="4"> was large */
@@ -784,7 +784,7 @@ nav ul ul ul li {
 		padding-top: 3px;
 		padding-bottom: 3px;
 	}
-	li a.menuLi {
+	li a.nav__menu-link {
 		padding-bottom: 9px;
 		padding-top: 9px;
 	}
@@ -984,12 +984,12 @@ nav ul ul ul li {
 		display: block;
 		padding-left: var(--space-5);
 	}
-	.site-nav nav ul ul.newMenuLi4 {
+	.site-nav nav ul ul.nav__submenu--highscore {
 		display: none;
 	}
 	/* The Home submenu is left out on a phone: its informational links (Functions & Modes, Go Rules, About) aren't
 	   important to tap there, and the forums are in the menu itself. */
-	.site-nav nav ul ul.newMenuLi1 li {
+	.site-nav nav ul ul.nav__submenu--home li {
 		display: none;
 	}
 	.site-nav nav ul ul li a {
@@ -1000,16 +1000,16 @@ nav ul ul ul li {
 		display: flex;
 		flex-wrap: wrap;
 	}
-	.site-nav nav ul > li:not(.menuIcons1) {
+	.site-nav nav ul > li:not(.nav__icon-item) {
 		flex: 1 0 100%;
 	}
-	.site-nav nav ul > li.menuIcons1 {
+	.site-nav nav ul > li.nav__icon-item {
 		flex: 0 0 33.333%;
 		height: auto;
 		padding: 0;
 	}
-	.site-nav nav ul > li.menuIcons1 > a,
-	.site-nav nav ul > li.menuIcons1 .board-picker {
+	.site-nav nav ul > li.nav__icon-item > a,
+	.site-nav nav ul > li.nav__icon-item .board-picker {
 		display: flex;
 		align-items: center;
 		justify-content: center;
@@ -1018,11 +1018,11 @@ nav ul ul ul li {
 		padding: 0 var(--space-2);
 		text-align: center;
 	}
-	.site-nav nav ul > li.menuIcons1 .board-picker {
+	.site-nav nav ul > li.nav__icon-item .board-picker {
 		position: relative;
 	}
 	/* The board picker dropdown is position:absolute; on mobile keep it in-flow. */
-	.site-nav nav ul > li.menuIcons1 .dropdown__menu {
+	.site-nav nav ul > li.nav__icon-item .dropdown__menu {
 		position: static;
 		width: 100%;
 		max-width: 100%;
@@ -1107,7 +1107,7 @@ nav ul ul ul li {
 	.btn,
 	input[type="submit"],
 	input[type="button"],
-	.menuLi,
+	.nav__menu-link,
 	.selectable-text,
 	.problem-nav__item {
 		-webkit-tap-highlight-color: transparent;
@@ -1119,8 +1119,8 @@ nav ul ul ul li {
    looks to the idle state so a tap behaves like a tap. */
 @media (hover: none)
 {
-	.menuLi:hover,
-	.site-nav__signin a.menuLi:hover,
+	.nav__menu-link:hover,
+	.site-nav__signin a.nav__menu-link:hover,
 	#logo1:hover,
 	#newMenu li:hover,
 	.problem-nav__item--N:hover,
