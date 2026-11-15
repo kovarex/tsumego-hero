@@ -3,6 +3,7 @@
 #can be continued
 #usage: validate.py <budget> <problems.jsonl> <worker> <workers> <out.jsonl> [--limit=<seconds per leaf>] [--narrow]
 #       [--keys=<file>]: only the leaves listed there, one '<problem id><tab><moves from the start>' per line
+#       [--skip-open-class]: no label where the class itself is undecided ('?'); the leaf is recorded as such
 import json, os, re, sys, time
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 from check_tree import *
@@ -22,7 +23,7 @@ def leaves_of(root, size):
             out.append((node, moves))
     return out
 
-def main(budget, path, worker, workers, out_path, limit, narrow, keys=None):
+def main(budget, path, worker, workers, out_path, limit, narrow, keys=None, skip_open_class=False):
     done = set()
     if os.path.exists(out_path):
         for line in open(out_path):
@@ -69,7 +70,9 @@ def main(budget, path, worker, workers, out_path, limit, narrow, keys=None):
                 item['class'] = record['status']
                 item['class_open'] = record.get('open') or []
                 item['status_text'] = status_text(record)
-                if authored not in CLASS_ONLY:
+                if authored not in CLASS_ONLY and skip_open_class and record['status'] == '?':
+                    item['label_skipped'] = 'class undecided'
+                elif authored not in CLASS_ONLY:
                     label_record = solver.ko_label(node.board, node.to_move, node.move, start=' '.join(moves))
                     item['label'] = label_summary(label_record, authored, goal)
             except TimeoutError:
@@ -88,4 +91,4 @@ def main(budget, path, worker, workers, out_path, limit, narrow, keys=None):
 if __name__ == '__main__':
     options = dict(a[2:].split('=', 1) if '=' in a else (a[2:], '1') for a in sys.argv[6:])
     keys = set(tuple(line.rstrip('\n').split('\t', 1)) for line in open(options['keys'])) if 'keys' in options else None
-    main(int(sys.argv[1]), sys.argv[2], int(sys.argv[3]), int(sys.argv[4]), sys.argv[5], float(options.get('limit', 60)), 'narrow' in options, keys)
+    main(int(sys.argv[1]), sys.argv[2], int(sys.argv[3]), int(sys.argv[4]), sys.argv[5], float(options.get('limit', 60)), 'narrow' in options, keys, 'skip-open-class' in options)
