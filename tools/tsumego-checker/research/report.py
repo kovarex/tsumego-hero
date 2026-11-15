@@ -430,7 +430,7 @@ def render(specs_dir, out_path):
             if c['final'] == 'site_error':
                 return 'the solver agrees' if solver == c['correct_status'] else 'the solver said %s' % solver
             return 'the solver said %s' % solver
-        line = '; '.join('%s %s (%s)' % (c['case'], fix_label(c, None), tag(c)) for c in sorted(cases, key=lambda c: c['case']))
+        line = '; '.join('%s %s (%s)' % (c['case'], fix_label(c, in_topic.get(c['case'])), tag(c)) for c in sorted(cases, key=lambda c: c['case']))
         return '<details class="fold"><summary><b>%s</b> %s <span class="fold-line">%s</span></summary>%s</details>' % (
             pid, html.escape(problem_of_id(pid).record['title']), html.escape(line), block)
 
@@ -470,7 +470,7 @@ def render(specs_dir, out_path):
         body.append(figures(lambda d: problem_of_id(d['problem']), spec, frames, ''))
         body.append('<p class="suggestion"><b>Suggestion.</b> %s</p>' % html.escape(spec['suggestion']))
         for pid, cs in group(cases):
-            body.append(problem_block(pid, cs, with_blocks=False))
+            body.append(folded(pid, cs, with_blocks=False))
         body.append('</div>')
     body.append('</section>')
     body.append('<section id="errors"><h2>2. Clear errors on the site <span class="count">%d leaves</span></h2>' % len(errors))
