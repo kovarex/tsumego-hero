@@ -12,15 +12,16 @@
 //     -> "result N=<K|N|U> nodes=<n> best=<i> cycles=<c> [pv=<line>]"
 //   solvemoves <as solvex> -> "result N=<K|N|U> nodes=<n> best=<i> cycles=<c> moves=<i>[!]:<K|N|U>:<nodes>,..."
 //   solveplain <toMove> <ko> <budget> <board>   -> "result N=<K|N|U> nodes=<n>"
-//   set cycle 0..3 | kofree B|W|0 | bentfour 0|1 | sekikill 0|1 | endplay 0|1|2 | pv 0|1;  keep <indices|->
+//   set cycle 0..3 | kofree B|W|0 | bentfour 0|1 | sekikill 0|1 | endplay 0|1|2 | koend 0|1 | pv 0|1;  keep <indices|->
 // A: the defender has infinite ko threats (attacker must kill without ko); D: the attacker has infinite ko threats.
 // N: counted threats, a retake against the ko ban costs the retaker one threat. K = attacker kills (captures a target
 // stone), N = attacker can't kill, U = budget ran out. cycles: repetitions the cycle rule adjudicated.
 // solvex options, comma separated: pb=k pw=k forced passes (each a tenuki: it lifts the ban and breaks a run of passes),
 // ps=1 the last move was a pass, fb=i;j fw=.. barred points, kb=.. kw=.. barred while that colour is under a ko ban,
 // end= cyc= sk= pv= as the switches for this command. sekikill (sk=1): at the end only unconditional life lives, and every
-// repetition kills, whatever the cycle rule. A line: B<i>, W<i>, Bpass, Wpass joined by _, ! after a ban
-// break, fp a forced pass, cycle where a position repeats.
+// repetition kills, whatever the cycle rule. koend (modes A and D): at two passes a defender ko stone in atari whose
+// capture the defender answers by taking a ko of its own (a double ko) is not taken. A line: B<i>, W<i>, Bpass, Wpass
+// joined by _, ! after a ban break, fp a forced pass, cycle where a position repeats.
 #include <bits/stdc++.h>
 using namespace std;
 typedef uint64_t u64;
@@ -48,8 +49,9 @@ u64 barredKey = 0; // the barred points of the command running now, 0 for none: 
 int endPlay = 0; // counted mode: no end at two passes while endPending(); 1 the attacker moves on, 2 the side to move
 int cycleRule = 0; // 0 ko-break cycles kill else seki, 1 cycles kill, 2 cycles live, 3 the side completing one loses
 bool sekiKill = false; // at the end of the game a target that is not unconditionally alive is dead; every repetition kills
+bool koEnd = false; // modes A and D: the end does not take a ko stone the defender answers in another ko (double-ko test)
 long long cycles; // repetitions adjudicated by the cycle rule in the command running now
-struct Switches { int cycleRule = 0, endPlay = 0; bool sekiKill = false, pv = false; };
+struct Switches { int cycleRule = 0, endPlay = 0; bool sekiKill = false, pv = false, koEnd = false; };
 Switches switches; // the persistent ones
 
 struct State
@@ -488,9 +490,11 @@ int terminal(const State& s)
   return result;
 }
 
+bool answeredKoStone(const State& s, int stone);
+
 // A defender chain in the target's area is in atari. Only chains in the target's own area count: a stray defender
-// stone at the region's edge decides nothing.
-bool areaChainInAtari(const State& s)
+// stone at the region's edge decides nothing. answered: a ko stone the defender answers in another ko does not count
+bool areaChainInAtari(const State& s, bool answered = false)
 {
   static int inArea[361], areaStamp = 0;
   static int stack[361];
@@ -538,7 +542,7 @@ bool areaChainInAtari(const State& s)
                 inArea[neighbours[a][j]] = areaStamp;
       }
   for (int p : active)
-    if (s.c[p] == defender && inArea[p] == areaStamp && chain(s, p, nullptr, 2) == 1)
+    if (s.c[p] == defender && inArea[p] == areaStamp && chain(s, p, nullptr, 2) == 1 && !(answered && answeredKoStone(s, p)))
       return true;
   return false;
 }
@@ -564,6 +568,26 @@ bool koCaptureAvailable(const State& s)
     int captured = 0;
     if (play(t, p, false, &captured) && captured == 1 && t.ko >= 0)
       return true;
+  }
+  return false;
+}
+
+// A defender stone in atari whose capture is a ko capture that the defender answers by taking a ko of its own: the two
+// kos of a double ko. Taking it at the end settles nothing, since the defender needs no threat to answer it.
+bool answeredKoStone(const State& s, int stone)
+{
+  vector<int> stones;
+  if (chain(s, stone, &stones, 2) != 1 || stones.size() != 1)
+    return false;
+  for (int k = 0; k < neighbourCount[stone]; ++k)
+  {
+    int p = neighbours[stone][k];
+    if (s.c[p] != EMPTY)
+      continue;
+    State t = s;
+    t.toMove = attacker;
+    t.ko = -1;
+    return play(t, p, true) && t.ko == stone && koCaptureAvailable(t);
   }
   return false;
 }
@@ -620,13 +644,14 @@ int terminalUncached(const State& s)
       return KILL;
     // the game ends: a defender chain still in atari (a target chain, or a stone the defender's eye shape depends on,
     // like a ko stone making a false eye) is taken at the end, and the defender has no threats left to retake. So
-    // unless the target is unconditionally alive, only a group where nothing can be taken (seki or life) survives
+    // unless the target is unconditionally alive, only a group where nothing can be taken (seki or life) survives.
+    // koend: a ko stone the defender answers by taking another ko needs no threat, so it is not taken (double ko)
     bensonAlive(s);
     for (int p : target)
       if (s.c[p] == defender && alive[p])
         return NOKILL;
     //with counted threats left the defender could still retake, so the attacker has to play it out instead of passing
-    if ((searchMode != MODE_N || s.threats[defender] == 0) && areaChainInAtari(s))
+    if ((searchMode != MODE_N || s.threats[defender] == 0) && areaChainInAtari(s, koEnd && searchMode != MODE_N))
       return KILL;
     return NOKILL;
   }
@@ -1207,6 +1232,7 @@ void beginCommand()
   cycleRule = switches.cycleRule;
   endPlay = switches.endPlay;
   sekiKill = switches.sekiKill;
+  koEnd = switches.koEnd;
   memset(forbid, 0, sizeof(forbid));
   memset(forbidBanned, 0, sizeof(forbidBanned));
   barredKey = 0;
@@ -1228,6 +1254,8 @@ string setSwitch(const string& name, const string& value)
     bentFourRule = number;
   else if (name == "sekikill" && numeric && (number == 0 || number == 1))
     switches.sekiKill = number;
+  else if (name == "koend" && numeric && (number == 0 || number == 1))
+    switches.koEnd = number;
   else if (name == "pv" && numeric && (number == 0 || number == 1))
     switches.pv = number;
   else

@@ -160,7 +160,8 @@ player is White:
 - **Cycle rules** for repetitions:
   - 0: today's rule. A cycle with a ban break kills; any other cycle is seki.
   - 1: every cycle kills.
-  - 2: every cycle lives.
+  - 2: every cycle lives. In modes A and D the end under it does not take a ko stone that the defender answers by
+    taking another ko (D10).
   - 3: the side that completes the repetition loses (positional superko).
   - Under `sekikill` (`sk=1`) every cycle kills, whatever the rule: only unconditional life lives, and a life that rests
     on a repetition is not. Rule 0 alone scored a cycle of legal captures (sending two, returning one) as seki, which
@@ -402,6 +403,38 @@ below waits for his confirmation there.
   attacker threats cannot win when the defender always has a legal capture in the other ko.
 - With three or more capture points in the cycle, or a cycle without ko captures, go to the superko test.
 
+**The end under rule 2.** Rule 2 must leave the attacker only kills that do not rest on the ko fight going on for ever.
+The modes keep the old end of D13: two passes end the game, and a defender chain left in atari counts as taken, since
+"the defender has no threats left to retake" (`terminalUncached`). A ko stone of a double ko is the exception:
+the defender needs no threat to answer its capture, since it takes the other ko. Counting it as taken let the attacker
+stop the cycle where such a stone stood in atari and pass twice. In 7487 leaf 39 (S[ADKO]) mode D's rule-2 kill ended
+"… G19 pass C19 D19! pass pass" with White's G19 in atari, and the class was KO: White, banned at C19, lost by passing
+with G19 in atari, so the line has it spend moves on A15 and B14 at the area's fringe and on its own eye at E18.
+
+- **Under rule 2 the end does not take an answered ko stone:** a defender stone in atari whose capture is a ko
+  capture, after which the defender can take a ko of its own. Every other chain in atari counts as before. This holds
+  for the test's modes and for the defender's moves on the line where each side plays from its own proof (`koend`).
+- **Rule 0 keeps the old end,** and so do rules 1 and 3 of the superko test, so the class of step 1 does not move. A
+  double ko still kills under rule 0, by its cycle of ban breaks, so the test still sees a kill that rule 2 undoes.
+- **What it changes:** a rule-2 kill that rested on an answered ko stone left in atari at two passes. The attacker
+  must take the stone instead, the defender takes the other ko, and play goes round the cycle, which rule 2 scores as
+  life. 7487 leaf 39 is now ADKO (rule 0 A=N D=K, rule 2 A=N D=N), the tree's label. So are the positions after
+  Black's fills (A15 pass, A15 pass A16 pass), the research's X ("F19 C19 D19! G19 A15 C19 D19!") and X after White's
+  pass, with the edge open or closed by Black A14 B14; the old end gave KO after A15 pass and after X's pass even with
+  the edge closed. In the reviewer's model that opens A14 B14 C14 behind Black A13 B13, the leaf's test stays
+  undecided at 2,000,000 nodes (ADKO open beside KO; the old end gave KO), and the fills and X are ADKO there too. Of
+  the 212 leaves of the validation run that reach the test at 200,000 nodes, leaf 39 is the only one whose rule-2
+  result moves.
+- **What it keeps:** a single ko, whose capture leaves the defender no ko to take (in mode D it cannot retake, so the
+  stone is taken as before); a stray chain in atari that is no ko stone; a double ko the attacker breaks into a single
+  ko it wins (5832 leaf 1, S[ADKO]: White's sacrifice at A19 makes a new corner ko, KO+ as the research found); and
+  the double kos the test decided before (c027's DDKO and the 15 ADKO leaves of the validation run).
+- **Not the end playout of D13.** Playing every end out under rule 2 gives leaf 39 ADKO too, but it also drops the old
+  end's verdict where no second ko answers, so mode D has to capture the target for real: on 15 KO leaves of the
+  validation run (2359, 7151, 10005 and 11278 among them) rule 2 became undecided at 400,000 nodes, 2359's still at
+  8,000,000, where the old end decides it, mostly in a few thousand nodes; their class would have left ADKO, DSKO and
+  ASKO open.
+
 **Superko.** It runs when a mode's proof adjudicated a repetition (`cycles=` > 0) and the result differs between
 rules 1 and 2:
 
@@ -436,7 +469,7 @@ rules 1 and 2:
   - (b) the side to move has a legal single-stone ko capture, because the passes lifted the ban.
 - **Play continues instead.** Endless passing becomes a repetition, since passes are a flag in the key, and cycle
   rule 0 scores it as seki. So the attacker must actually capture to win.
-- **Modes A and D keep the old rule,** so classes do not move.
+- **Modes A and D keep the old rule,** so classes do not move. Under rule 2 the double-ko test refines it (D10).
 - **Measured:**
   - c081 in the judges' 14-point corner region gives d=0, with S winning at (0,0) and (1,0) and failing at (0,1).
     The old rule failed at (0,0) and won at (1,1).
@@ -535,7 +568,9 @@ The starting point is Design 3's `/tmp/claude-0/proto/research/kodesign/game/eng
    completing the repetition loses. *New:* a `cycles` counter of adjudicated repetitions, printed as `cycles=`.
 5. **Commands:**
    - `set <name> <value>` (*new*, replacing the one-off commands) for persistent switches: `cycle 0..3`,
-     `kofree B|W|0`, `bentfour 0|1`, `sekikill 0|1`, `endplay 0|1`, `pv 0|1`. `solve` and `solveplain` use them.
+     `kofree B|W|0`, `bentfour 0|1`, `sekikill 0|1`, `endplay 0|1`, `koend 0|1`, `pv 0|1`. `solve` and `solveplain`
+     use them. `koend` (D10): at two passes in modes A and D a defender ko stone in atari that the defender answers by
+     taking another ko is not taken; the double-ko test's rule 2 sets it.
    - `solve` prints `pvA=` and `pvD=` when `pv 1` is set (today this goes to stderr under an environment variable),
      plus `cycles=`.
    - `solvex <toMove> <ko> <budget> <b> <w> <opts|-> <board>`, the counted search, takes these options:
@@ -783,9 +818,11 @@ nodes per solve, 400,000 per counted search), from the review of the implementat
    problem 10kKO ranks like A-1).
 5. **The end playout changes every counted search.** It needs the regression run, and it can turn wrong fast
    answers into undecided ones (c081's narrow area).
-6. **Double ko and superko by cycle rules.** DDKO is confirmed on c027; ADKO and superko are untested. Rule 3 with
+6. **Double ko and superko by cycle rules.** DDKO is confirmed on c027 and ADKO on the owner's ADKO leaves of the
+   validation run; 7487 leaf 39 needed rule 2's end for answered ko stones (D10). Superko is untested. Rule 3 with
    path-dependent results in the transposition table carries a graph-history-interaction risk. Superko is used only
-   when a proof adjudicated a repetition, and is marked unverified.
+   when a proof adjudicated a repetition, and is marked unverified. Rules 1 and 3 keep the old end, so a superko result
+   can still rest on a ko stone left in atari at two passes.
 7. **PVs.** Only the winner's moves in a df-pn PV are reliable. Approach moves come from the winning side's PV, and
    lines come from `counted_line`. Equivalent approach moves are listed as alternatives.
 8. **Area and target.**

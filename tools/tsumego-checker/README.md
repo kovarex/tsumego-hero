@@ -34,8 +34,10 @@ the export is; `RESULTS` and `REPORT_DIR` do the same for `build_report.py`.
     kills, else seki; 1 kill; 2 live; 3 the side completing it loses), `kofree B|W|0`, `bentfour 0|1`, `sekikill 0|1`
     (at the end only unconditional life lives, and every repetition kills, whatever the cycle rule), `endplay 0|1|2`
     (counted searches: two passes do not end the game while a defender chain in the target's area is in atari or the
-    side to move can take a ko; 1 the attacker moves, 2 the side to move keeps the move), `pv 0|1` (`solve` prints
-    `pvA=` and `pvD=`). `kofree`, `bentfour` and `cycle` also work alone.
+    side to move can take a ko; 1 the attacker moves, 2 the side to move keeps the move), `koend 0|1` (modes A and D:
+    at two passes a defender ko stone in atari that the defender answers by taking another ko is not taken; the
+    double-ko test's rule 2), `pv 0|1` (`solve` prints `pvA=` and `pvD=`). `kofree`, `bentfour` and `cycle` also work
+    alone.
   - `solvex <toMove> <ko> <budget> <black> <white> <options|-> <board>`: the counted search with `pb=k`/`pw=k`
     (that colour passes its next k turns; a forced pass is a tenuki: it lifts the ko ban and breaks a run of passes,
     so it never ends the game), `ps=1` (the last move was a pass), `fb=i;j`/`fw=` (barred points), `kb=`/`kw=`

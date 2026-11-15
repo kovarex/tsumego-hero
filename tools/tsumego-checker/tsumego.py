@@ -468,17 +468,19 @@ class Solver:
                 shapes.append((color, q, p, board.ko == q))
         return shapes
 
-    def modes(self, board, to_move, budget=None, cycle=0, kofree=None, bentfour=False, sekikill=False):
-        #one solve: modes A and D with these switches and their principal lines, the answer's fields (cached)
+    def modes(self, board, to_move, budget=None, cycle=0, kofree=None, bentfour=False, sekikill=False, koend=False):
+        #one solve: modes A and D with these switches and their principal lines, the answer's fields (cached); koend: at
+        #two passes a defender ko stone in atari that the defender answers by taking another ko is not taken (D10)
         text = self.problem.board_text(board)
         ko = self.problem.index(board.ko) if board.ko else -1
         budget = budget or self.budget
-        key = (text, ko, to_move, budget, cycle, kofree, bentfour, sekikill)
+        key = (text, ko, to_move, budget, cycle, kofree, bentfour, sekikill, koend)
         if key not in self.solved:
             if Solver.deadline and time.time() > Solver.deadline:
                 raise TimeoutError('problem time limit')
             switches = [(name, value, default) for name, value, default in (('cycle', cycle, 0), ('kofree', kofree or '0', '0'),
-                        ('bentfour', int(bentfour), 0), ('sekikill', int(sekikill), 0), ('pv', 1, 0)) if value != default]
+                        ('bentfour', int(bentfour), 0), ('sekikill', int(sekikill), 0), ('koend', int(koend), 0), ('pv', 1, 0))
+                        if value != default]
             for name, value, default in switches:
                 self.ask('set %s %s' % (name, value))
             try:
@@ -549,11 +551,13 @@ class Solver:
         #D10 when the rule-0 proofs adjudicated repetitions. Rule 1 (every cycle kills) only helps the attacker and rule 2
         #(every cycle lives) the defender, so a rule-0 kill stands under rule 1 and a rule-0 life under rule 2. A kill that
         #rule 2 undoes is a double ko when its cycle alternates between two kos, else superko, which rule 3 decides.
-        #The status, or None when the cycle rule changes nothing
+        #Under rule 2 the end does not take a ko stone left in atari that the defender answers by taking the other ko: no
+        #threat is needed for that, so it is no kill. The status, or None when the cycle rule changes nothing
         a, d = plain['A'], plain['D']
         test = record['tests']['cycle'] = {}
+        rule_two = {'cycle': 2, 'koend': True}
         def solve(rule):
-            fields = self.modes(board, to_move, budget, cycle=rule)
+            fields = self.modes(board, to_move, budget, **(rule_two if rule == 2 else {'cycle': rule}))
             test['rule %d' % rule] = '%s%s' % (fields['A'], fields['D'])
             return fields
         if a == 'K' or d == 'K':
@@ -567,7 +571,7 @@ class Solver:
                 #the cycle shows on the rule-0 line when the defender's moves there happen to be its best, else on the line
                 #where each side plays from its own proof
                 if self.two_ko_cycle(board, self.line_moves(plain['pv' + mode], to_move)) or \
-                        self.two_ko_cycle(board, self.proofs_line(board, to_move, mode, {'cycle': 0}, {'cycle': 2}, budget)):
+                        self.two_ko_cycle(board, self.proofs_line(board, to_move, mode, {'cycle': 0}, rule_two, budget)):
                     return STATUS_DDKO if mode == 'A' else STATUS_ADKO
                 return self.superko(board, to_move, record, budget)
             if a == 'K':
@@ -2315,8 +2319,9 @@ COLOUR_NAMES = {'B': 'Black', 'W': 'White'}
 
 #why the class step gives a special status (D10, D11)
 SPECIAL_REASONS = {
-    STATUS_DDKO: 'mode A kills under cycle rule 0 (a cycle with a ban break kills) and not under rule 2 (every cycle lives), and the '
-                 'cycle alternates between two kos: a double ko',
+    STATUS_DDKO: 'mode A kills under cycle rule 0 (a cycle with a ban break kills) and not under rule 2 (every cycle lives, and a ko '
+                 'stone left in atari that the other ko answers is not taken at the end), and the cycle alternates between two kos: '
+                 'a double ko',
     STATUS_ADKO: 'mode D kills under cycle rule 0 and not under rule 2, and the cycle alternates between two kos: the defender always '
                  'has a legal capture in the other ko',
     STATUS_DSKO: 'the result rests on a repetition that positional superko (cycle rule 3) decides for the attacker (unverified)',
