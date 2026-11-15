@@ -63,7 +63,7 @@
   white-space: nowrap;
   cursor: pointer;
   text-decoration: none;
-  background-image: var(--tile-shade) !important;
+  background-image: var(--tile-shade);
 }
 .display1 {
   font-size: var(--text-xl);
@@ -155,7 +155,7 @@
   -webkit-tap-highlight-color: transparent;
 }
 .besogo-board-red-glow {
-  box-shadow: var(--board-red-glow) !important;
+  box-shadow: var(--board-red-glow);
 }
 .besogo-tsumegoPlayTool {
   display: flex;
@@ -254,22 +254,22 @@
   max-width: 100%;
 }
 .besogo-control {
-  width: 33% !important;
+  width: 33%;
 }
 .besogo-tool {
-  width: auto !important;
+  width: auto;
 }
 /* A big tree scrolls both ways in its own box, so its scrollbars and the buttons under it stay in sight */
 .besogo-tree {
-  flex: none !important;
-  width: auto !important;
+  flex: none;
+  width: auto;
   max-width: 625px;
   max-height: 350px;
   overflow: auto;
 }
 .besogo-comment {
-  flex: none !important;
-  width: auto !important;
+  flex: none;
+  width: auto;
 }
 .besogo-comment table {
   display: none;
@@ -765,7 +765,7 @@
    vertical scrollbar to the tree when that showed later, and scrolled sideways for nothing. */
 .play-screen__panel > .besogo-panels .besogo-tree {
   align-self: flex-start;
-  width: 100% !important;
+  width: 100%;
   max-width: 100%;
   max-height: max(350px, var(--tree-height, 350px));
   margin: 0;
@@ -835,11 +835,11 @@
 	.besogo-control,
 	.besogo-tool,
 	.besogo-tree {
-		width: 100% !important;
+		width: 100%;
 		max-width: none;
 	}
 	.besogo-comment {
-		width: 100% !important;
+		width: 100%;
 	}
 	.besogo-board {
 		width: 100% !important;
