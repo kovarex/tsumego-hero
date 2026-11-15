@@ -393,7 +393,7 @@ class UsersControllerTest extends IntegrationTestCase
 		$this->get('users/view/' . $context->user['id']);
 
 		$this->assertStringContainsString(
-			'1 of ' . AchievementId::count() . ' <span class="achievementEarnedTimes" title="Earned 3 times">+3</span>',
+			'1 of ' . AchievementId::count() . ' <span class="achievement-earned-times" title="Earned 3 times">+3</span>',
 			$this->view,
 			'the count of completed achievements carries how often the repeatable one was earned');
 	}

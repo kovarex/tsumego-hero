@@ -19,7 +19,7 @@ class AchievementHelper extends AppHelper
 	{
 		if ($earnedTimes < 2)
 			return '';
-		return ' <span class="achievementEarnedTimes" title="Earned ' . $earnedTimes . ' times">+'
+		return ' <span class="achievement-earned-times" title="Earned ' . $earnedTimes . ' times">+'
 			. $earnedTimes . '</span>';
 	}
 
@@ -29,7 +29,7 @@ class AchievementHelper extends AppHelper
 	{
 		if ($earnedCount < 2)
 			return '';
-		return '<div class="achievementEarnedCount" title="Earned ' . $earnedCount . ' times">'
+		return '<div class="achievement-earned-count" title="Earned ' . $earnedCount . ' times">'
 			. $earnedCount . 'x</div>';
 	}
 

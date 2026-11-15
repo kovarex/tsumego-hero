@@ -459,7 +459,7 @@ class AchievementsControllerTest extends IntegrationTestCase
 		$this->assertStringContainsString('title="50% of all users"', $result);
 		// Rarity badge belongs below the achievement card, not above it
 		$this->assertGreaterThan(
-			strpos($result, 'achievementWrapper'),
+			strpos($result, 'achievement-view__card-area'),
 			strpos($result, 'rarity')
 		);
 	}

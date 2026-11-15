@@ -37,34 +37,34 @@ $profileUserID = $viewedUser['id'] ?? (Auth::isLoggedIn() ? Auth::getUserID() : 
 $markedCollections = count(array_filter($collections, fn(array $collection) => $collection['earned']));
 ?>
 <div class="legacy-center">
-	<div class="acHeader">
-		<div class="achievemetIndexLink">
+	<div class="achievement-view__header">
+		<div class="achievement-view__index-link">
 			<a href="/achievements<?php echo $viewedUser ? '/user/' . $viewedUser['id'] : ''; ?>">View Achievements</a>
 		</div>
 		<?php if ($viewedUser): ?>
-		<p class="acOwner"><?php echo h($viewedUser['display_name']); ?>'s achievement</p>
+		<p class="achievement-view__owner"><?php echo h($viewedUser['display_name']); ?>'s achievement</p>
 		<?php endif; ?>
-		<div class="achievemetProfileLink">
+		<div class="achievement-view__profile-link">
 			<?php if ($profileUserID): ?><a href="/users/view/<?php echo $profileUserID; ?>">Profile</a><?php endif; ?>
 		</div>
 	</div>
-	<div class="legacy-center" id="achievementWrapper">
+	<div class="legacy-center achievement-view__card-area">
 	<a href="/achievements" class="achievement-view__back">
 	<div class="legacy-center achievement2 <?php echo $aColor; ?>">
-		<div class="acTitle">
+		<div class="achievement-view__title">
 			<h1><?php echo h($achievement->name); ?></h1>
 		</div>
-		<div class="acImg">
+		<div class="achievement-view__image">
 			<img src="/img/<?php echo $displayImage; ?>.png">
 			<?php echo AchievementHelper::renderEarnedBadge($earnedCount); ?>
-			<div class="acImgXp">
+			<div class="achievement-view__xp">
 			<?php echo Util::formatNumber($achievement->xp); ?> XP
 			</div>
 		</div>
-		<div class="acDesc">
+		<div class="achievement-view__description">
 			<?php echo h($achievement->description) . ($achievement->additional_description != null ? '*' : ''); ?>
 		</div>
-		<div class="acDate">
+		<div class="achievement-view__date">
 			<?php if ($unlocked): ?><time datetime="<?php echo $currentUserStatus->created->format('c'); ?>" data-format="datetime"><?php echo $currentUserStatus->created->format('Y-m-d H:i:s'); ?></time><?php endif; ?>
 		</div>
 	</div>
@@ -76,20 +76,20 @@ $markedCollections = count(array_filter($collections, fn(array $collection) => $
 			<div class="progress__label"><?php echo $progress; ?>/<?php echo $progressGoal; ?></div>
 		</div>
 	<?php endif; ?>
-	<div class="acRarity">
+	<div class="achievement-view__rarity">
 		<span class="rarity rarity--<?php echo strtolower(str_replace(' ', '-', $rarity)); ?>" title="<?php echo $completionPercent; ?>% of all users"><?php echo h($rarity); ?></span>
 	</div>
 	<span class="text-muted">
 	<?php if ($achievement->additional_description != null) echo '*' . h($achievement->additional_description); ?></span>
 	<?php if ($collections): ?>
-	<div class="acCollections">
-		<p class="acCollections__title">Collections that can earn this</p>
+	<div class="achievement-collections">
+		<p class="achievement-collections__title">Collections that can earn this</p>
 		<?php if ($earnedCount > $markedCollections): ?>
-		<p class="acCollections__hint"><?= (int) ($earnedCount - $markedCollections) ?> of the collections it was earned on no longer count.</p>
+		<p class="achievement-collections__hint"><?= (int) ($earnedCount - $markedCollections) ?> of the collections it was earned on no longer count.</p>
 		<?php endif; ?>
-		<div class="acCollections__list">
+		<div class="achievement-collections__list">
 			<?php foreach ($collections as $collection): ?>
-				<a href="<?= SetTable::url((int) $collection['id'], $collection['partition'] + 1) ?>" class="acCollections__link<?= $collection['earned'] ? ' acCollections__link--earned' : '' ?>"><?= h($collection['title']) ?><?php if (!$collection['earned'] && $collection['accuracy'] > 0): ?><span class="acCollections__percent"><?= h($collection['accuracy']) ?>%</span><?php endif; ?></a>
+				<a href="<?= SetTable::url((int) $collection['id'], $collection['partition'] + 1) ?>" class="achievement-collections__link<?= $collection['earned'] ? ' achievement-collections__link--earned' : '' ?>"><?= h($collection['title']) ?><?php if (!$collection['earned'] && $collection['accuracy'] > 0): ?><span class="achievement-collections__percent"><?= h($collection['accuracy']) ?>%</span><?php endif; ?></a>
 			<?php endforeach; ?>
 		</div>
 	</div>
