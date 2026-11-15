@@ -9,6 +9,8 @@
 #problem's start, not numbered), moves are numbered from first (default: the move after start); 'pass' is a move
 #elsewhere, 'A18!' a retake after a ko threat elsewhere; labels mark points; problem defaults to the spec's.
 #Text names diagrams as "Diagram 2" and stones as "Black 7" or "White 12"; it never lists moves.
+#The data files default to the first research and can be set for another one (the ko-label research): RESULTS, TOPICS,
+#FIXED, IMPACT (results/impact.json) and STYLE (the page template, report_style.html).
 import html, json, os, re, sys
 here = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, here)
@@ -20,10 +22,10 @@ records = {}
 for line in open(os.environ.get('PROBLEMS', 'problems.jsonl')):
     record = json.loads(line)
     records[record['set_connection_id']] = record
-results = json.load(open(os.path.join(RESEARCH, 'results', 'results.json')))
-topics = json.load(open(os.path.join(RESEARCH, 'topics.json')))
+results = json.load(open(os.environ.get('RESULTS', os.path.join(RESEARCH, 'results', 'results.json'))))
+topics = json.load(open(os.environ.get('TOPICS', os.path.join(RESEARCH, 'topics.json'))))
 #leaves the owner has fixed on the site: {case: {status, date}}
-fixed = json.load(open(os.path.join(RESEARCH, 'fixed.json')))
+fixed = json.load(open(os.environ.get('FIXED', os.path.join(RESEARCH, 'fixed.json'))))
 names = {'B': 'Black', 'W': 'White'}
 COORD = r'(?<![A-Za-z0-9])[A-HJ-T](?:1[0-9]|[1-9])(?![0-9A-Za-z])'
 SEQUENCE = re.compile(COORD + r'!?(?:\s*,?\s+(?:pass\s+)?)' + COORD)
@@ -319,7 +321,7 @@ def prose(paragraphs, css='prose'):
     return '<div class="%s">%s</div>' % (css, ''.join('<p>%s</p>' % html.escape(p) for p in paragraphs)) if paragraphs else ''
 
 def render(specs_dir, out_path):
-    impact = {r['key']: r for r in json.load(open(os.path.join(RESEARCH, 'results', 'impact.json')))}
+    impact = {r['key']: r for r in json.load(open(os.environ.get('IMPACT', os.path.join(RESEARCH, 'results', 'impact.json'))))}
     by_case = {c['case']: c for c in results}
     in_topic = {case: t for t in topics for case in t['cases']}
     specs, topic_specs = {}, {}
@@ -447,7 +449,7 @@ def render(specs_dir, out_path):
         raise SystemExit('fixed.json names leaves not in the results: %s' % ', '.join(unknown))
     counts = {'fixed': len(fixed), 'total': len(results), 'errors': len(errors), 'decide': len(decide), 'solver': len(solver_cases),
               'tree': len(tree_group), 'grading': len(grading_group), 'label_leaves': leaves_of(label_group), 'label_problems': len(label_group)}
-    page = open(os.path.join(RESEARCH, 'report_style.html')).read()
+    page = open(os.environ.get('STYLE', os.path.join(RESEARCH, 'report_style.html'))).read()
     page = page.replace('TOC', ''.join('<li><a href="#%s">%s</a> <span class="count">%s</span></li>' % t for t in toc))
     page = page.replace('BODY', '\n'.join(body))
     for key, value in counts.items():

@@ -1,6 +1,7 @@
 #one dossier per problem for the report writers: the tree's leaves, every verdict and check of the research on the
 #problem's leaves, the grading effect of the fixes, and which blocks the problem's report spec needs.
 #usage: PROBLEMS=problems.jsonl report_dossier.py <impact.json> <out dir>
+#RESULTS and TOPICS set the research (default: the first one's results/results.json and topics.json)
 import json, os, sys
 here = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, here)
@@ -9,8 +10,8 @@ from go_figure import LETTERS
 
 RESEARCH = os.path.dirname(os.path.abspath(__file__))
 records = {json.loads(l)['set_connection_id']: json.loads(l) for l in open(os.environ.get('PROBLEMS', 'problems.jsonl'))}
-results = json.load(open(os.path.join(RESEARCH, 'results', 'results.json')))
-topics = json.load(open(os.path.join(RESEARCH, 'topics.json')))
+results = json.load(open(os.environ.get('RESULTS', os.path.join(RESEARCH, 'results', 'results.json'))))
+topics = json.load(open(os.environ.get('TOPICS', os.path.join(RESEARCH, 'topics.json'))))
 impact = {r['key']: r for r in json.load(open(sys.argv[1]))}
 out_dir = sys.argv[2]
 os.makedirs(out_dir, exist_ok=True)
@@ -72,7 +73,7 @@ for pid, cases in sorted(by_problem.items(), key=lambda kv: int(kv[0])):
             sys.exit('%s: final %s outside the topics' % (c['case'], c['final']))
         lines += ['### Leaf %s: %s' % (c['case'], category), '',
                   '- Leaf: %s (moves from the start)' % c['line'],
-                  '- Tree S[%s]; the solver said %s' % (c['authored'], c.get('solver_sign') or c['solver']),
+                  '- Tree S[%s]; the solver said %s' % (c['authored'], c.get('solver_sign') or c.get('solver') or c['label']),
                   '- Analysis (%s, %s confidence, says %s): %s' % (a.get('verdict'), a.get('confidence'), a.get('correct_status') or '?', a.get('summary')),
                   '- Variations: %s' % a.get('variations'),
                   '- Key line from the leaf: %s' % (a.get('key_line') or '(none)')]
