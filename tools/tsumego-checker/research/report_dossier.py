@@ -59,7 +59,7 @@ for pid, cases in sorted(by_problem.items(), key=lambda kv: int(kv[0])):
     lines += ['## Leaves of the tree (S[] and the moves from the start)', '']
     lines += ['- %s: %s' % (status, path) for status, path in tree_leaves]
     lines += ['', '## Leaves of this problem in the report', '']
-    checks = None
+    checks, check_reviews = None, None
     for c in sorted(cases, key=lambda c: c['case']):
         a = c.get('analysis') or {}
         topic = in_topic.get(c['case'])
@@ -96,6 +96,7 @@ for pid, cases in sorted(by_problem.items(), key=lambda kv: int(kv[0])):
                 lines.append('- Grading with S[%s] instead: %s' % (key.split('@', 1)[1], describe(r)))
         lines.append('')
         checks = checks or c.get('grading_check')
+        check_reviews = check_reviews or c.get('grading_reviews')
     together = impact.get('all:' + pid)
     if together:
         lines += ['## Grading with all clear fixes of this problem together', '', describe(together), '']
@@ -104,7 +105,14 @@ for pid, cases in sorted(by_problem.items(), key=lambda kv: int(kv[0])):
         lines += ['- New marks right with the S[] fixes alone: %s' % ('yes' if checks['holds'] else 'no'),
                   '- Explanation: %s' % checks['explanation'],
                   '- Tree changes needed: %s' % (checks['tree_changes'] or 'none'),
-                  '- Other leaves: %s' % (checks['other_leaves'] or 'none'), '']
+                  '- Other leaves: %s' % (checks['other_leaves'] or 'none')]
+        if checks.get('variations'):
+            lines.append('- Lines: %s' % checks['variations'])
+        for i, r in enumerate(check_reviews or [], 1):
+            lines.append('- Review %d of the grading check (%s lens, %s): leaf S[] %s%s. %s Lines: %s' % (
+                i, r['lens'], 'upholds it' if r['holds'] else 'does not uphold it', r['leaf_status'] or '?',
+                ', open question ' + r['question'] if r.get('question') else '', r['explanation'], r['variations']))
+        lines.append('')
     else:
         lines += ['None for this problem.', '']
     blocks = ['cards: one card per leaf above (%s)' % ', '.join(sorted(c['case'] for c in cases))]
