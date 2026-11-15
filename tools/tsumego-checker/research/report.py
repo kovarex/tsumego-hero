@@ -11,6 +11,9 @@
 #Text names diagrams as "Diagram 2" and stones as "Black 7" or "White 12"; it never lists moves.
 #The data files default to the first research and can be set for another one (the ko-label research): RESULTS, TOPICS,
 #FIXED, IMPACT (results/impact.json) and STYLE (the page template, report_style.html).
+#LAYOUT=ko (the ko-label research) adds a status line to every leaf (does the solver agree with the fix, is it the owner's
+#decision), a table of every open decision from DECISIONS (a JSON list) at the top, and folds the problems that need only
+#a new S[] and the solver's mistakes into one-line summaries that open on a click.
 import html, json, os, re, sys
 here = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, here)
@@ -324,6 +327,32 @@ def figures(problem_of, block, frames, prefix):
 def prose(paragraphs, css='prose'):
     return '<div class="%s">%s</div>' % (css, ''.join('<p>%s</p>' % html.escape(p) for p in paragraphs)) if paragraphs else ''
 
+KO_LAYOUT = os.environ.get('LAYOUT') == 'ko'
+
+def leaf_status(c):
+    #the ko-label research: who agrees with whom on this leaf, in one line
+    solver = c.get('label') or '?'
+    if c.get('answered'):
+        return 'Settled by your answer to question %s.' % c['answered']['question'] + (
+            ' Your S[] is right; the solver said %s.' % solver if c['final'] == 'solver_error' else
+            ' The solver already says S[%s].' % c['correct_status'] if solver == c['correct_status'] else
+            " The solver's label (%s) was wrong too." % solver)
+    if c['final'] == 'site_error':
+        if solver == c['correct_status']:
+            return 'Your S[] is wrong, and the solver already says S[%s]: nothing in dispute.' % c['correct_status']
+        return "Your S[] is wrong. The solver's label (%s) was wrong too; the reviewers settled S[%s]." % (solver, c['correct_status'])
+    if c['final'] == 'solver_error':
+        return 'Your S[] is right. The solver said %s, which was its mistake: nothing for you to do.' % solver
+    return 'Your decision: the right S[] depends on the open question above. The solver says %s.' % solver
+
+def decision_table(rows):
+    #the open decisions, one row each: {question, title, anchor, yours, solver, options, leaves, proposal}
+    head = '<tr><th>Question</th><th>Your trees</th><th>The solver</th><th>The options</th><th>Leaves it settles</th><th>Our proposal</th></tr>'
+    body = ''.join('<tr><td><a href="%s">%s</a></td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>' % (
+        html.escape(r['anchor']), html.escape(r['question'] + '. ' + r['title']), html.escape(r['yours']), html.escape(r['solver']),
+        html.escape(r['options']), html.escape(r['leaves']), html.escape(r['proposal'])) for r in rows)
+    return '<div class="table-wrap"><table class="index decisions">%s%s</table></div>' % (head, body)
+
 def render(specs_dir, out_path):
     impact = {r['key']: r for r in json.load(open(os.environ.get('IMPACT', os.path.join(RESEARCH, 'results', 'impact.json'))))}
     by_case = {c['case']: c for c in results}
@@ -377,8 +406,9 @@ def render(specs_dir, out_path):
             card = cards[c['case']]
             done = fixed.get(c['case'])
             badge = '<span class="fixed-badge">Fixed on the site: S[%s], %s</span>' % (html.escape(done['status']), html.escape(done['date'])) if done else ''
-            out.append('<article class="leaf" id="%s"><div class="leaf-head"><label><input type="checkbox" class="done" data-id="%s"%s> Leaf %s</label><code class="fix">%s</code>%s</div><p class="headline">%s</p>%s%s</article>' % (
-                c['case'], c['case'], ' checked' if done else '', c['case'], html.escape(fix_label(c, in_topic.get(c['case']))), badge, html.escape(card['headline']),
+            status = '<p class="leaf-status">%s</p>' % html.escape(leaf_status(c)) if KO_LAYOUT else ''
+            out.append('<article class="leaf" id="%s"><div class="leaf-head"><label><input type="checkbox" class="done" data-id="%s"%s> Leaf %s</label><code class="fix">%s</code>%s</div>%s<p class="headline">%s</p>%s%s</article>' % (
+                c['case'], c['case'], ' checked' if done else '', c['case'], html.escape(fix_label(c, in_topic.get(c['case']))), badge, status, html.escape(card['headline']),
                 figures(problem_of, card, frames, ''), prose(card.get('text', []))))
         titles = {'grading': 'On the site', 'tree_change': 'Change the tree as well', 'also_check': 'Other leaves to check in this tree'}
         if with_blocks:
@@ -389,6 +419,20 @@ def render(specs_dir, out_path):
                 out.append(site_note(pid, cases, impact))
         out.append('</section>')
         return ''.join(out)
+
+    def folded(pid, cases, **options):
+        #LAYOUT=ko: the problem as one summary line (its leaves and their S[]) that opens on a click
+        block = problem_block(pid, cases, **options)
+        if not KO_LAYOUT:
+            return block
+        def tag(c):
+            solver = c.get('label') or '?'
+            if c['final'] == 'site_error':
+                return 'the solver agrees' if solver == c['correct_status'] else 'the solver said %s' % solver
+            return 'the solver said %s' % solver
+        line = '; '.join('%s %s (%s)' % (c['case'], fix_label(c, None), tag(c)) for c in sorted(cases, key=lambda c: c['case']))
+        return '<details class="fold"><summary><b>%s</b> %s <span class="fold-line">%s</span></summary>%s</details>' % (
+            pid, html.escape(problem_of_id(pid).record['title']), html.escape(line), block)
 
     def group(cases):
         by = {}
@@ -412,6 +456,10 @@ def render(specs_dir, out_path):
     body = []
     body.append('<section id="decisions"><h2>1. Decisions for you <span class="count">%d leaves</span></h2>' % len(decide))
     body.append('<p class="section-lede">These leaves are not plain errors: the right S[] depends on how the site wants to label a shape or read a problem. Each decision is explained once, with a suggestion, and the leaves it settles follow.</p>')
+    if KO_LAYOUT and os.environ.get('DECISIONS'):
+        decisions = json.load(open(os.environ['DECISIONS']))
+        body.append('<h3 id="decision-table">Everything open, at a glance</h3>' + decision_table(decisions['open']))
+        body.append(prose(decisions.get('answered', []), 'prose answered'))
     for t in topics:
         if t['key'] not in topic_specs:
             continue
@@ -436,11 +484,13 @@ def render(specs_dir, out_path):
         p, p, html.escape(problem_of_id(p).record['title']),
         '<br>'.join('<a href="#%s">%s</a> <code>%s</code>' % (c['case'], c['case'], html.escape(fix_label(c, None))) for c in sorted(cs, key=lambda c: c['case'])))
         for p, cs in label_group)
-    body.append('<div class="table-wrap"><table class="index"><thead><tr><th>Problem</th><th>Title</th><th>Leaf and fix</th></tr></thead><tbody>%s</tbody></table></div>' % rows)
-    body += [problem_block(p, cs) for p, cs in label_group]
+    if not KO_LAYOUT:
+        #the ko layout's folded problems are the list
+        body.append('<div class="table-wrap"><table class="index"><thead><tr><th>Problem</th><th>Title</th><th>Leaf and fix</th></tr></thead><tbody>%s</tbody></table></div>' % rows)
+    body += [folded(p, cs) for p, cs in label_group]
     body.append('</section>')
     body.append('<section id="solver"><h2>Appendix A. The solver\'s mistakes <span class="count">%d leaves</span></h2><p class="section-lede">Here the tree is right and the solver was wrong; nothing to change on the site. These are for improving the checker.</p>' % len(solver_cases))
-    body += [problem_block(p, cs, note=False) for p, cs in group(solver_cases)]
+    body += [folded(p, cs, note=False) for p, cs in group(solver_cases)]
     body.append('</section>')
     toc = [('decisions', '1. Decisions for you', '%d leaves' % len(decide)),
            ('tree-changes', '2a. Change the tree as well', '%d problems' % len(tree_group)),

@@ -80,6 +80,17 @@ figcaption { font-size: 0.88rem; }
 .board .ko { fill: none; stroke: var(--ko); stroke-width: 2; }
 .method { display: grid; gap: 8px; }
 .method ol { margin: 0; padding-left: 20px; display: grid; gap: 6px; max-width: 68ch; }
+/* the ko layout: a status line per leaf, the decision table, problems folded to one line */
+.leaf-status { font-size: 0.88rem; color: var(--muted); border-left: 3px solid var(--rule); padding-left: 8px; }
+table.decisions { min-width: 720px; }
+.decisions td:first-child { font-variant-numeric: normal; min-width: 150px; }
+.answered { color: var(--muted); font-size: 0.92rem; }
+details.fold { background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; }
+details.fold > summary { cursor: pointer; padding: 10px 14px; list-style-position: inside; }
+details.fold > summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+details.fold .fold-line { display: block; font: 0.84rem var(--mono); color: var(--muted); margin-top: 2px; overflow-wrap: anywhere; }
+details.fold[open] > summary { border-bottom: 1px solid var(--rule); }
+details.fold > .problem { border: 0; border-radius: 0 0 8px 8px; }
 </style>
 <div class="page">
   <header class="report-head">
@@ -92,7 +103,7 @@ figcaption { font-size: 0.88rem; }
       <div><b>{decide}</b><span>leaves for your open questions</span></div>
       <div><b>{solver}</b><span>solver mistakes</span></div>
     </div>
-    <p>Of the clear errors, {label_leaves} leaves in {label_problems} problems need only the new S[]. In {grading} problems the fix also changes which moves the site accepts, and a checker confirmed the new marks. In {tree} problems the tree needs more than the new S[]. The open questions are the ones on the <a href="https://claude.ai/artifact/1EYiF4TGFP2WMAFoPtoXXW">ko question page</a>; each section below names its question and shows the leaves it decides. Fixed on the site so far: {fixed}, marked on their cards.</p>
+    <p><b>What to read.</b> Section 1 starts with one table of everything still open: your label, the solver's, the options, and the leaves each answer changes; a short section with diagrams follows for each decision. Section 2 lists your clear errors: {tree} problems need a change to the tree, {grading} problems change which moves the site accepts, and {label_leaves} leaves in {label_problems} problems need only the new S[] (one line each; click to see the diagrams). Every leaf says in one line whether the solver already agrees with the fix or the reviewers had to correct it too. Appendix A, folded, is the solver's own mistakes: nothing to do on the site. Fixed on the site so far: {fixed}.</p>
   </header>
   <nav aria-label="Contents"><ul class="toc">TOC</ul></nav>
   <div class="reading">
