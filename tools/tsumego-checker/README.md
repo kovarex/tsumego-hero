@@ -32,10 +32,10 @@ the export is; `RESULTS` and `REPORT_DIR` do the same for `build_report.py`.
     threats), `solveplain`.
   - `set <name> <value>`, switches that stay until changed: `cycle 0..3` (repetitions: 0 a cycle with a ban break
     kills, else seki; 1 kill; 2 live; 3 the side completing it loses), `kofree B|W|0`, `bentfour 0|1`, `sekikill 0|1`
-    (at the end only unconditional life lives), `endplay 0|1|2` (counted searches: two passes do not end the game
-    while a defender chain in the target's area is in atari or the side to move can take a ko; 1 the attacker moves,
-    2 the side to move keeps the move), `pv 0|1` (`solve` prints `pvA=` and `pvD=`). `kofree`, `bentfour` and `cycle`
-    also work alone.
+    (at the end only unconditional life lives, and every repetition kills, whatever the cycle rule), `endplay 0|1|2`
+    (counted searches: two passes do not end the game while a defender chain in the target's area is in atari or the
+    side to move can take a ko; 1 the attacker moves, 2 the side to move keeps the move), `pv 0|1` (`solve` prints
+    `pvA=` and `pvD=`). `kofree`, `bentfour` and `cycle` also work alone.
   - `solvex <toMove> <ko> <budget> <black> <white> <options|-> <board>`: the counted search with `pb=k`/`pw=k`
     (that colour passes its next k turns; a forced pass is a tenuki: it lifts the ko ban and breaks a run of passes,
     so it never ends the game), `ps=1` (the last move was a pass), `fb=i;j`/`fw=` (barred points), `kb=`/`kw=`
@@ -50,7 +50,12 @@ the export is; `RESULTS` and `REPORT_DIR` do the same for `build_report.py`.
   - `keep <indices|->`: attacker stones whose capture means the defender lives (hand-built model boards).
   A malformed `solvex`, `solvemoves`, `set` or `keep`, or an unknown command, answers `error <reason>`.
 - `tsumego.py`: SGF parsing, go rules, the problem region, and the bridge to the engine (statuses DEAD, KO, BENT4,
-  ALIVE).
+  ALIVE, SEKI, SEKI+, double ko, superko). `Solver.status` gives the class and its best move. When a refinement test of
+  the class step stays undecided (double ko, superko, the wider area a KO is asked again in, clean result, bent four,
+  seki, seki in sente), the class comes with the statuses it leaves open ("KO, BENT4 not ruled out (bent-four test
+  undecided at 2,000,047 nodes)", `status_text`), never alone; `Solver.status_record` has the parts. `check_tree.py`
+  turns a finding that an open status would undo into a note `<kind>-open` and writes no S[] for such a class;
+  `status_eval.py` adds `engine_open` and `engine_text` to the leaf.
 - `check_tree.py`: the checker for one problem tree, and `site` mode over an export. Every finding is solved again
   over a wider region with a bigger budget and kept only if that agrees.
 - `status_eval.py`, `status_summary.py`: accuracy on the status problems, leaf by leaf.
@@ -142,9 +147,14 @@ count, and the strict label (from the parts when the full count is undecided). `
 (approach, direct ko, gain and its no-gain twin; the full count's line when it beats the label, for a mutual approach,
 or when no other line can be built) from decided positions, with each move's role; each line carries a
 `research/report.py` diagram spec (`start`, `moves`, `first`, `caption`).
-A holder's free move that fills its own ko is no approach: the label then counts the second ko that follows (215 and
-13169: a bent four) and prints the A-form with the filling point barred beside it (design D5, question 5). An
-approach round whose free retake loses outright is reported as failing (a sente approach, D8).
+A holder's free move that fills its own ko is no approach: the label then counts the second ko that follows, named by
+the solver's class after the other side's capture (215 and 13169: a second ko Black must start at once, KO and not
+BENT4), and prints the A-form with the filling point barred beside it (design D5, question 5); where that reading's
+direct-ko value is beyond the limit against the holder, the holder has no approach there and the text says so (5832). An
+approach must keep v, the count of the direct ko after it, in v's own game, where the other side may answer it (D3), so
+a move that only works while the other side passes is no approach (10005's E19, 13169's D19, c121's self-atari E19), and
+the approach the text names is always a move that keeps the outright win (never 7487's A15, which keeps only the count).
+An approach round whose free retake loses outright is reported as failing (a sente approach, D8).
 `label_text` writes one sentence per part, also for a partly undecided label, `compare_label` the comparison of 7.3
 (on the decided parts of a partly undecided label), and `label_summary` the fields
 `check_tree.py` and `status_eval.py` add to KO leaves (`KO_LABEL=0` turns them off). `evidence.py --label` prints the
@@ -157,7 +167,8 @@ approach kos, and three single leaves): each position is drawn as numbered diagr
 solver check that runs when the page is built; a failed or undecided check, an illegal move or a move list in the text
 stops the build. The page spec is `research/questions/page.json` with one file per section; the checks use the
 checker's engine (`solvex` with forced passes, barred points and the end playout) and the class of `Solver.status`,
-SEKI and SEKI+ included:
+SEKI and SEKI+ included. A status check whose class leaves other statuses open passes only when it names them
+(`open`); a check option the page cannot show (`pv`) is refused:
 
 ```
 PROBLEMS=status_problems.jsonl ENGINE=engine python3 research/questions.py research/questions/page.json out.html [--only <section id>]

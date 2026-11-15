@@ -36,9 +36,18 @@
      "start": "",
      "moves": "B17 B19 E18 A18",
      "caption": "The tree's line, marked S[DEAD], with Black to play. It is a ko: Black lives with one threat more than White.",
+     "text": [
+      "The first check finds a ko in the checker's own area. In the wider area, two rings of empty points more, the solver does not decide within 2,000,000 nodes whether Black lives without the ko, so life, in seki or not, is not ruled out there."
+     ],
      "checks": [
       {
-       "status": "KO"
+       "status": "KO",
+       "open": [
+        "ALIVE",
+        "BENT4",
+        "SEKI",
+        "SEKI+"
+       ]
       },
       {
        "balance": 1,

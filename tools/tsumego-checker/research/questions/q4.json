@@ -45,11 +45,16 @@
      },
      "caption": "The tree's line to the leaf marked S[A-1KO-], with Black to play. White's group has the outside liberties a, b and c, and White can take a ko by capturing Black 5.",
      "text": [
-      "Black needs one ko threat more than White. The last two checks give White a threat too: Black still needs exactly one more."
+      "Black needs one ko threat more than White. The last two checks give White a threat too: Black still needs exactly one more.",
+      "The first check finds a ko in the checker's own area. In the wider area, two rings of empty points more, the solver does not decide within 2,000,000 nodes whether Black kills without the ko, so a kill is not ruled out there."
      ],
      "checks": [
       {
-       "status": "KO"
+       "status": "KO",
+       "open": [
+        "BENT4",
+        "DEAD"
+       ]
       },
       {
        "balance": 1,

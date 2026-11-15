@@ -22,7 +22,8 @@ status = load('dump_status.*.jsonl')
 for d in status:
     seconds += d['seconds']
     for leaf in d['leaves']:
-        engine = leaf['engine']
+        #a class with the statuses an undecided test leaves open is its own entry
+        engine = leaf['engine'] + (' (or %s)' % '/'.join(leaf['engine_open']) if leaf.get('engine_open') else '')
         confusion[(leaf['expected'], engine)] += 1
 leaves = sum(confusion.values())
 decided = sum(v for (e, g), v in confusion.items() if g != '?')
@@ -57,7 +58,7 @@ for r in sorted(status_checks + marker_checks, key=lambda r: int(r['set_connecti
         cls, text = labels.get(issue['kind'], ('info', issue['kind']))
         detail = 'line %s' % issue['line']
         if issue['kind'] == 'status-mismatch':
-            detail += ': authored %s, solver %s' % (issue['authored'], issue['engine'])
+            detail += ': authored %s, solver %s' % (issue['authored'], issue.get('engine_text') or issue['engine'])
             try:
                 out = subprocess.run(['python3', proto + 'line.py', r['set_connection_id'], issue['line'], r['goal'], '300000'],
                                      capture_output=True, text=True, timeout=300).stdout.split('\n')[0]

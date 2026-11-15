@@ -21,13 +21,17 @@ board, to_move = root.board.copy(), solver_color
 for text in moves:
     assert board.play(to_move, parse(text)), text
     to_move = opponent(to_move)
+#a status text carries what its undecided tests leave open, with their nodes: positions are compared by their class
+class_of = lambda board, to_move: status_parts(solver.status(board, to_move)[0])[0]
 played = []
+text, best = solver.status(board, to_move)
+status = status_parts(text)[0]
 for ply in range(14):
-    status, best = solver.status(board, to_move)
+    best = solver.status(board, to_move)[1]
     #the stored best move is only a hint: keep it only if it keeps the result, else search for one that does
     if best is not None:
         child = board.copy()
-        if not child.play(to_move, best) or solver.status(child, opponent(to_move))[0] != status:
+        if not child.play(to_move, best) or class_of(child, opponent(to_move)) != status:
             best = None
     if best is None:
         #the losing side: its reply that keeps the result longest is not stored, take any move that keeps the status
@@ -35,15 +39,15 @@ for ply in range(14):
         for p in sorted(problem.region):
             child = board.copy()
             if p not in child.stones and child.play(to_move, p):
-                candidates.append((solver.status(child, opponent(to_move))[0] == status, p))
+                candidates.append((class_of(child, opponent(to_move)) == status, p))
         best = next((p for keeps, p in candidates if keeps), None)
     played.append('%s%s' % ('B' if to_move == 'B' else 'W', name(best)))
     if best is None or not board.play(to_move, best):
         break
     to_move = opponent(to_move)
-    if status != solver.status(board, to_move)[0]:
+    if status != class_of(board, to_move):
         played.append('(status changed)')
         break
-print(' '.join(moves), '->', status, ':', ' '.join(played))
+print(' '.join(moves), '->', text, ':', ' '.join(played))
 for y in range(0, 7):
     print('%2d ' % (size - y) + ' '.join({'B': 'X', 'W': 'O'}.get(board.stones.get((x, y)), '.') for x in range(0, 7)))

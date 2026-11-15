@@ -171,7 +171,10 @@
      "first": 1,
      "caption": "White 12 captures Black 3 at B16 and takes the ko. Black may not retake at B16 at once.",
      "check": {
-      "status": "KO"
+      "status": "KO",
+      "open": [
+       "BENT4"
+      ]
      }
     },
     {

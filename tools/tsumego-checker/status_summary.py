@@ -6,7 +6,8 @@ for path in sorted(glob.glob(sys.argv[1])):
         d = json.loads(line); problems += 1; seconds += d['seconds']
         agree = 0
         for leaf in d['leaves']:
-            engine = leaf['engine']
+            #a class with the statuses an undecided test leaves open is its own entry
+            engine = leaf['engine'] + (' (or %s)' % '/'.join(leaf['engine_open']) if leaf.get('engine_open') else '')
             confusion[(leaf['expected'], engine)] += 1
             agree += leaf['expected'] == engine
         per_problem.append((d['url'], agree, len(d['leaves']), d.get('timed_out', False)))

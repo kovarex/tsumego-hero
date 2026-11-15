@@ -13,11 +13,13 @@
 #D: {start (default: the leaf), moves, first, caption, labels: {point: letter}, text, checks: [C]}, drawn as report.py
 #   draws: 'pass' is a move elsewhere, 'A18!' a retake after a ko threat elsewhere
 #C: {count: [s, o], opts, expect: wins | fails} | {balance: d, opts} | {status: DEAD | KO | ALIVE | BENT4 | SEKI | SEKI+ |
-#   DDKO | ADKO | DSKO | ASKO}, run at the position after the diagram's moves with the side to move there; status: the
-#   class of Solver.status (SEKI+: a seki in which the solver keeps sente, design D11; DDKO and ADKO: dead or alive in a
-#   double ko, DSKO and ASKO: by superko, design D10); s and o are the outside ko threats of the problem's
+#   DDKO | ADKO | DSKO | ASKO, open: [statuses]}, run at the position after the diagram's moves with the side to move there;
+#   status: the class of Solver.status (SEKI+: a seki in which the solver keeps sente, design D11; DDKO and ADKO: dead or
+#   alive in a double ko, DSKO and ASKO: by superko, design D10), and open: the statuses an undecided test of the class
+#   step leaves open beside it, which a check must name to pass; s and o are the outside ko threats of the problem's
 #   first player (the solver) and of its opponent; balance d: the solver wins at s - o = d and fails at d - 1, each at
-#   the smallest pair; opts: solvex options with point names (pw=1,end=1,fw=A18;B19; sk=1: a seki counts as dead)
+#   the smallest pair; opts: solvex options with point names (pw=1,end=1,fw=A18;B19; sk=1: a seki or a repeated
+#   position counts as dead)
 #diagrams are numbered through the section; text names them "Diagram 2" and their stones "Black 7" (in a position,
 #stones of its own diagrams), and never lists moves
 import html, json, os, re, sys, time
@@ -49,7 +51,7 @@ PAGE_KEYS = {'title', 'intro', 'sections'}
 SECTION_KEYS = {'id', 'heading', 'question', 'options', 'recommendation', 'text', 'positions', 'table'}
 POSITION_KEYS = {'problem', 'leaf', 'tree', 'heading', 'area', 'target', 'text', 'diagrams'}
 DIAGRAM_KEYS = {'start', 'moves', 'first', 'caption', 'labels', 'text', 'checks'}
-CHECK_KEYS = {'count': {'count', 'opts', 'expect'}, 'balance': {'balance', 'opts'}, 'status': {'status'}}
+CHECK_KEYS = {'count': {'count', 'opts', 'expect'}, 'balance': {'balance', 'opts'}, 'status': {'status', 'open'}}
 #a point name followed by '!' is the spec's retake notation, and reads as "a good move" to a go player
 NOTATION = re.compile(report.COORD + '!')
 #research leaves by (problem, line), for the leaf's case name and its fix on the site
@@ -422,7 +424,10 @@ def parse_options(text, problem, solver):
     items, words, seen = [], [], set()
     for item in text.split(','):
         key, equals, value = item.strip().partition('=')
-        if not equals or key not in ('pb', 'pw', 'fb', 'fw', 'kb', 'kw', 'end', 'cyc', 'pv', 'sk'):
+        if key == 'pv':
+            #a check reads only the verdict, so a line would be dropped without a word
+            raise CheckError('pv: a check shows no line; leave pv out')
+        if not equals or key not in ('pb', 'pw', 'fb', 'fw', 'kb', 'kw', 'end', 'cyc', 'sk'):
             raise CheckError('unknown option %r' % item)
         if key in seen:
             raise CheckError('option %s given twice' % key)
@@ -466,14 +471,15 @@ def parse_options(text, problem, solver):
             items.append('cyc=%d' % number)
             words.append(CYCLES[number])
         elif key == 'sk':
-            #design D11's sekikill: only life without a seki counts as life, as in the checker's SEKI and SEKI+ tests
+            #design D11's sekikill: only life without a seki counts as life, as in the checker's SEKI and SEKI+ tests, and the
+            #engine counts every repeated position as a kill under it
             if number > 1:
                 raise CheckError('sk: 0 or 1')
             items.append('sk=%d' % number)
             if number:
-                words.append('a seki counts as dead')
-        elif number > 1:
-            raise CheckError('pv: 0 or 1')
+                words.append('a seki or a repeated position counts as dead')
+    if 'sk=1' in items and 'cyc' in seen:
+        raise CheckError('cyc: with sk=1 every repeated position counts as a kill, whatever the cycle rule; leave cyc out')
     return ','.join(items) or '-', words
 
 def counted(solver, board, to_move, s, o, options):
@@ -501,21 +507,23 @@ def counted(solver, board, to_move, s, o, options):
     return result
 
 def status_of(solver, board, to_move):
-    #the checker's class with Solver.status, None when undecided at both budgets
+    #the checker's class record (Solver.status_record): the class and the statuses its undecided tests leave open, tried
+    #once more at the second budget when the class is undecided or something is left open; None when the class is
+    #undecided at both budgets
     both = [s for s in (solver, solver.wide) if s is not None]
     try:
-        found = solver.status(board, to_move)[0]
-        if found == STATUS_UNKNOWN:
+        record = solver.status_record(board, to_move)
+        if record['status'] == STATUS_UNKNOWN or record['open']:
             for s in both:
                 s.budget = BUDGETS[1]
                 s.cache.clear()
-            found = solver.status(board, to_move)[0]
+            record = solver.status_record(board, to_move)
     except (OSError, KeyError, ValueError) as error:
         raise CheckError('the engine failed in the status search (%r)' % error)
     finally:
         for s in both:
             s.budget = BUDGETS[0]
-    return None if found == STATUS_UNKNOWN else found
+    return None if record['status'] == STATUS_UNKNOWN else record
 
 def threat_words(colour, s, o):
     first, second = names[colour], names[opponent(colour)]
@@ -570,12 +578,23 @@ def evaluate(position, diagram, check):
     if kind == 'status':
         if check['status'] not in STATUSES:
             raise CheckError('status must be one of %s' % ', '.join(STATUSES))
-        found = status_of(solver, board, to_move)
-        if found is None:
+        named = check.get('open', [])
+        if 'open' in check and (not isinstance(named, list) or not named or not all(s in STATUSES for s in named)):
+            raise CheckError('open must be a non-empty list of statuses, each one of %s' % ', '.join(STATUSES))
+        record = status_of(solver, board, to_move)
+        if record is None:
             raise CheckError('the status search is undecided at %d nodes' % BUDGETS[-1])
+        found, left = record['status'], record['open']
         if found != check['status']:
-            raise CheckError('the solver says %s, the check expects %s' % (found, check['status']))
-        return context, status_words(found, defender, position['spec'].get('target') is None, colour)
+            raise CheckError('the solver says %s, the check expects %s' % (tsumego.status_text(record), check['status']))
+        if sorted(left) != sorted(named) and left:
+            #a class with other statuses left open is one of several, never the class alone
+            raise CheckError('the solver says %s; the check must name what is left open (open: %s)' % (
+                tsumego.status_text(record), json.dumps(sorted(left))))
+        if sorted(left) != sorted(named):
+            raise CheckError('the solver says %s with nothing left open, but the check names %s' % (found, ', '.join(named)))
+        words = status_words(found, defender, position['spec'].get('target') is None, colour)
+        return context, words + ('; ' + tsumego.open_text(record) if left else '')
     options, words = parse_options(check.get('opts', ''), problem, solver)
     if kind == 'count':
         pair = check['count']

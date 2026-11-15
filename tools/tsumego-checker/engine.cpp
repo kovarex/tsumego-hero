@@ -18,7 +18,8 @@
 // stone), N = attacker can't kill, U = budget ran out. cycles: repetitions the cycle rule adjudicated.
 // solvex options, comma separated: pb=k pw=k forced passes (each a tenuki: it lifts the ban and breaks a run of passes),
 // ps=1 the last move was a pass, fb=i;j fw=.. barred points, kb=.. kw=.. barred while that colour is under a ko ban,
-// end= cyc= sk= pv= as the switches for this command. A line: B<i>, W<i>, Bpass, Wpass joined by _, ! after a ban
+// end= cyc= sk= pv= as the switches for this command. sekikill (sk=1): at the end only unconditional life lives, and every
+// repetition kills, whatever the cycle rule. A line: B<i>, W<i>, Bpass, Wpass joined by _, ! after a ban
 // break, fp a forced pass, cycle where a position repeats.
 #include <bits/stdc++.h>
 using namespace std;
@@ -46,7 +47,7 @@ bool forbidBanned[3][361]; // points a colour may not play while it is under a k
 u64 barredKey = 0; // the barred points of the command running now, 0 for none: the end tests depend on them
 int endPlay = 0; // counted mode: no end at two passes while endPending(); 1 the attacker moves on, 2 the side to move
 int cycleRule = 0; // 0 ko-break cycles kill else seki, 1 cycles kill, 2 cycles live, 3 the side completing one loses
-bool sekiKill = false; // at the end of the game a target that is not unconditionally alive is dead
+bool sekiKill = false; // at the end of the game a target that is not unconditionally alive is dead; every repetition kills
 long long cycles; // repetitions adjudicated by the cycle rule in the command running now
 struct Switches { int cycleRule = 0, endPlay = 0; bool sekiKill = false, pv = false; };
 Switches switches; // the persistent ones
@@ -879,10 +880,12 @@ void generate(const State& s, bool ignoreKo, vector<ProofChild>& children, int t
   stable_sort(children.begin(), children.end(), [](const ProofChild& a, const ProofChild& b) { return a.score > b.score; });
 }
 
-// a child that repeats a position of the path, decided by the cycle rule: true when the attacker kills
+// a child that repeats a position of the path, decided by the cycle rule: true when the attacker kills. Under sekikill every
+// repetition kills, whatever the rule: only unconditional life lives, and a life that rests on a repetition is not (rule 0
+// would score a cycle of legal captures, sending two and returning one, as a seki, which sekikill counts as dead)
 bool cycleKills(const ProofChild& child, int pathKoBreaks, bool attackerMoved)
 {
-  if (cycleRule == 1)
+  if (sekiKill || cycleRule == 1)
     return true;
   if (cycleRule == 2)
     return false;

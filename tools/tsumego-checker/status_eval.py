@@ -60,10 +60,15 @@ def main(budget, path, worker, workers):
                     stack.append((child, line_moves + [point_name(child.move, size)]))
                 if node.status_text and not node.children:
                     expected = authored_class(node.status_text, goal)
-                    status, best = solver.status(node.board, node.to_move)
-                    raw = status
-                    status = ko_taken_by(node.board, opponent(node.to_move) if node.move is not None else None, solver_color, status)
+                    record = solver.status_record(node.board, node.to_move)
+                    raw = record['status']
+                    status = ko_taken_by(node.board, opponent(node.to_move) if node.move is not None else None, solver_color, raw)
                     leaf = {'line': ' '.join(line_moves), 'authored': node.status_text, 'expected': expected, 'engine': status}
+                    #the statuses an undecided test of the class leaves open beside it: engine is then one of several
+                    left = [s for s in record['open'] if s != status]
+                    if left:
+                        leaf['engine_open'] = left
+                        leaf['engine_text'] = status_text(dict(record, status=status, open=left))
                     if status == STATUS_KO and KO_SIGN:
                         leaf['sign'] = solver.ko_sign(node.board, node.to_move)
                         if leaf['sign'] is None and raw != STATUS_KO:

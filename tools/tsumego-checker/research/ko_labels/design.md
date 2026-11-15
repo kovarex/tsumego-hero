@@ -162,6 +162,10 @@ player is White:
   - 1: every cycle kills.
   - 2: every cycle lives.
   - 3: the side that completes the repetition loses (positional superko).
+  - Under `sekikill` (`sk=1`) every cycle kills, whatever the rule: only unconditional life lives, and a life that rests
+    on a repetition is not. Rule 0 alone scored a cycle of legal captures (sending two, returning one) as seki, which
+    is life, so the SEKI tests called a group alive that only lived by repetition (the q6 review: 840 leaf 2 and the
+    "no seki" of 15512 and 15518; in 1862 after White's pass and Black's E19, White's F19 forces such a cycle).
 - **Outright win of X:** X wins with 0 threats against Lo threats for Y. Lo = max(4, |d|+2), at most 15.
 
 ---
@@ -214,8 +218,32 @@ player is White:
 - **Approach moves** are X's moves during the forced passes in the winning line.
   - The PV order is free, so they are reported as a set, naming the move that captures or connects last. In c019
     the PV played D18 then E16, and the report names E16 as the approach and D18 as the capture.
-  - Alternatives come from `solvemoves` at the first approach position: the moves that keep "outright with t_X-1
-    more forced passes". In c121 these are E17, F19 and E19.
+  - Alternatives: the candidates are X's moves at the first approach position that keep "outright with t_X-1 more
+    forced passes" (`solvemoves`). A candidate is an approach only when it also works when Y may answer it: in v's own
+    game (D5: Y's forced pass, the candidate, then Y free to answer it, with Y forced to pass for the rounds left) the
+    count after it must equal v. v itself lets Y answer the approach freely, so the test keeps the label's own count;
+    D8's gain is Y's move in place of the tenuki before the approach, which neither includes. v's first free move has
+    the count v by v's own searches. No retake point is needed, so a best move after which the ko cannot be retaken at
+    once is tested too (7487 leaf 98: White's B19, a capture in the second ko, keeps v = 3, while E18 and A17 give 1 and
+    2; the retake-only test of the earlier draft left all three undecided and printed E18 as the approach).
+    - A move that works only because Y must pass is rejected with its count: the capture played before the approach
+      (10005's E19, c019's D18), a self-atari that Y's answer captures (13169's D19: Black fails at every balance up
+      to +6), and a self-atari that Y takes later as a local threat (c121's E19: White retakes for free, Black retakes
+      after a threat, White's F19 captures E19 as a local threat, Black answers at J19 and White retakes for free, so
+      Black needs two threats instead of one).
+    - The approach the text names is v's first free move when it is kept, else the first kept candidate, never a move
+      outside the candidates. In 7487 leaf 53 v's line spends Black's free move on A15, which keeps the count but not
+      the outright win, so the text names E18, or F18 (A15 is then a stage, D7). The rounds of D8's approach line take
+      their approaches the same way: round 1 the one named here, a later round the search's move when it keeps the
+      outright win, else the first move that keeps it and the round's count.
+    - When X passes on v's line (the mutual approach of c081), the candidates' best count stands for v.
+    - A candidate whose count is undecided stays, marked undecided, only while its bracket still holds the reference;
+      otherwise it is rejected with its bound (c121's B16, B15 and A15: at least 2 against 1).
+    - When v is beyond the limit against X, X has no approach in that reading: every candidate is rejected with the
+      bound, and the text says so (D5's 5832).
+    - When X's free move fills the ko (D5), the test runs with X barred from the filling point, the reading the
+      approaches belong to.
+    - The text lists alternatives for one approach only.
 
 ### D4 Held-ko check (approach or stage)
 
@@ -233,9 +261,16 @@ player is White:
 - X's own local threats and Y's local threats in that direct ko are included.
 - For a plain direct ko: v_S = 1 (O holds it after its free retake and S needs a threat) and v_O = 0.
 - **A free move that fills the ko is no approach.** When X's free move on v's line (X's winning line) is at P_X's
-  retake point, X throws in at its own ko, Y captures, and a second ko follows. In 215 and 13169 it is a bent four:
-  Black fills at A19, White takes four stones and is left with a bent four in the corner, which the owner's trees
-  mark BENT4 (215 "A19 E19 C19", 13169 "A19"). v counts that second ko, but the outright tests do not, because Y's
+  retake point, X throws in at its own ko, Y captures the stones it joins, and a second ko follows. What follows is
+  named by the solver's class of the position after the capture, with X to move and with Y to move, never by its
+  shape. In 215 and 13169 Black fills at A19 and White captures four stones at D19: the corner has the shape of a bent
+  four, but the class there is KO with Black to move and ALIVE with White to move, so it is a second ko that Black
+  must start at once, not the owner's BENT4. The bent-four test does not kill there in the area the label comes from
+  (the checker's area in 215; in 13169, enclosed, either area). In 215's wider area, which adds empty points on the
+  open side, it stays undecided at 2,000,000 nodes, so `Solver.status` there gives "KO, BENT4 not ruled out (bent-four
+  test undecided at 4,007,799 nodes)", as question 5 says: Diagram 3 there, where White settles the corner if Black
+  waits, shows it is no bent four. His BENT4 leaves, 215 "A19 E19 C19" and 13169 "A19", keep Black's stones in the
+  corner, and Black starts the ko when it likes. v counts that second ko, but the outright tests do not, because Y's
   Lo threats win it. So n_X says "approach" while v describes a different ko, and D6 would give A-1KO+2 in 215, which
   fits no reading.
   - The label is then the direct reading: X's capture threatens the second ko, so a = 0 and e = -d(leaf).
@@ -243,6 +278,11 @@ player is White:
     search (`fb`/`fw`) gives the A-form by D6, with its own full count (the leaf with the same bar). In 215 these
     are A-1KO+ with count 1 and in 13169 A-1KO- with count 2, the owner's labels. Which reading a label follows is
     question 5.
+  - When that v is beyond the limit against X, X has no approach in the reading without the fill, and there is no
+    A-form: in 5832 leaf 1 (S[ADKO]) White's free move fills at A19, and with A19 barred Black wins even when White has
+    6 threats more. The text says that White has no approach there, rejects D19 and A16 (D3) and gives the full count
+    as beyond -6; it printed "A+1KO?, full count undecided" before. A count decided beyond the limit is a bound, never
+    "undecided".
   - v_S < 1 (or v_O > 0) alone does not mark this case: a local threat of X in the direct ko gives the same values
     (D6's KO+2 rows). The filling move does, and the approach line (D8) stops at it.
 
@@ -355,7 +395,7 @@ rules 1 and 2:
   `kofree`. The bent-four shape must also appear on the line. Today the rule-on solve runs without `kofree` and so
   repeats the plain kill, which is why c027 was printed BENT4.
 - **SEKI against ALIVE:** the defender lives under the normal end rule, but dies when a target that is not
-  Benson-alive at the end counts as dead (`sekikill`).
+  Benson-alive at the end counts as dead (`sekikill`, under which every repetition kills too: section 2).
 - **SEKI+ (seki in sente for the solver):**
   - With the opponent to move: one forced opponent pass lets the solver improve (kill or a ko). The opponent must
     answer, so the solver keeps sente.
@@ -399,6 +439,17 @@ the narrow and wide areas. Every part is computed in the wide area first, with t
 2. Apply the double-ko and superko tests of D10. When one fires, stop with that status.
 3. Run `kofree`, then the fixed BENT4 test (D11).
 4. ALIVE leads to the SEKI tests.
+   - `Solver.status` asks a KO of steps 1 and 2 again in the wider area (two rings more), since a ko next to the
+     area's edge can come from the wall taking a liberty. A class decided there replaces the narrow one, with the wider
+     area's own tests. Undecided there, the narrow KO stands and goes on to steps 3 and 4, and the classes the wider
+     area's undecided modes leave possible stay open beside it: DEAD when its mode A is undecided, ALIVE when its mode
+     D is, with SEKI and SEKI+, since the seki tests that refine an ALIVE ran in neither area (the narrow area's own
+     tests stand for the refinements of its KO). In 7487 leaf 76 (c023) the wider area stays undecided at 2,000,000
+     nodes in question 6's census, so the class is "KO, DEAD, ALIVE, SEKI or SEKI+ not ruled out (wider-area test
+     undecided at 8,000,004 nodes)".
+   - A refinement test of steps 2 to 4 (double ko, superko, the wider area, clean result, bent four, seki, seki in
+     sente) that stays undecided leaves the class of the steps before it, and the statuses it could have given stay
+     open beside it (section 9). The class is never printed or compared without them.
 5. The leaf convention `ko_taken_by` is unchanged. A clean DEAD or ALIVE that it turns into KO is printed KO+,
    with "the solver's clean result: …".
 6. If the class is undecided:
@@ -478,7 +529,8 @@ The starting point is Design 3's `/tmp/claude-0/proto/research/kodesign/game/eng
    - `solvemoves <toMove> <ko> <budget> <b> <w> <opts|-> <board>` (Design 1) prints K/N/U for every legal root
      move in one call that shares the tables. It is used for one-ply expansion, the alternatives and the tie rule.
    - `keep <points>` (optional, from the judges' `engine_keep.cpp`) is for hand-built model boards only.
-6. **`sekikill` (Design 2):** at the end of the game, a target that is not Benson-alive counts as dead.
+6. **`sekikill` (Design 2):** at the end of the game, a target that is not Benson-alive counts as dead, and every
+   repetition kills, whatever the cycle rule (section 2): `cycleKills()` answers a kill under it.
 
 ---
 
@@ -495,7 +547,11 @@ The starting point is Design 3's `/tmp/claude-0/proto/research/kodesign/game/eng
 - `local_threats(Q, side, d)` returns [{side, points, answer, line}].
 - `round_gains(approach_line, Y)` returns [{round, move, gain, lines}].
 - `ko_label(board, to_move, last_move)` returns the `KoLabel` record (section 7.1).
-- `special(board, to_move)` returns DDKO / ADKO / DSKO / ASKO / BENT4 / SEKI / SEKI+ / None.
+- `status_record(board, to_move)` returns the class record behind `status()`: the class, and `open`, the statuses an
+  undecided refinement test leaves open beside it, with `open_tests` (which test, at how many nodes). `status()` never
+  gives such a class alone: it returns it as `status_text` writes it, "KO, BENT4 not ruled out (bent-four test
+  undecided at 2,000,047 nodes)", so a caller that prints it shows the open set and one that compares it with a bare
+  class finds no match; `status_parts` reads it back, and `rank` gives it a rank only when every open status has it.
 - `besogo_string(a, e)` mirrors `getKoApproachesStr` + `getKoStr`. `label_threshold(text)` gives T_label.
   `better(l1, l2, goal)` is a port of `status.better`.
 - `status()`:
@@ -519,10 +575,14 @@ The starting point is Design 3's `/tmp/claude-0/proto/research/kodesign/game/eng
 {label, class, class_inferred, besogo: {type, approaches, extraThreats},
  count: {d_full, decided, bracket, table[-3..+3], shifted_check},
  d_conv, first_take: {side, point, how, preparation},
- approaches: {S: {n, bracket, moves, resolving, alternatives, held_ok, fill, v_unfilled, round_fails, line}, O: {...}},
+ approaches: {S: {n, bracket, moves, resolving, approach, alternatives, alternatives_rejected, held_ok, fill, v_unfilled,
+               round_fails, line}, O: {...}},
  direct_ko: {v, line, local_threats: [{side, points, answer, line}], stages: [...]},
  gain: {total, rounds: [{side, move, value, base, fails, line_with, line_without}], unlocated},
- second_ko: {side, point, bent_four} and alternative: {label, count, reading} (D5's fill only),
+ second_ko: {side, point, capture, status, reply} (the solver's classes after the capture, with the holder and with the
+            other side to move, each with what it leaves open) and alternative: {label, count, beyond, v_beyond, reading}
+            (D5's fill only; no label when the direct-ko value without the fill is beyond the limit),
+ class_open, class_open_tests (the statuses an undecided test of the class step leaves open),
  strict_label, net_label (mutual only), special, area, warnings, undecided: [{part, search, nodes}]}
 ```
 
@@ -530,7 +590,7 @@ The starting point is Design 3's `/tmp/claude-0/proto/research/kodesign/game/eng
 
 **One sentence names each part and its reason.** For c121:
 
-> A-1KO-: White took first (A18). Black needs one approach (E17, or F19 or E19) before the ko is direct. After it,
+> A-1KO-: White took first (A18). Black needs one approach (E17, or F19) before the ko is direct. After it,
 > the direct ko is a plain KO-: Black needs 1 threat, and nobody has a local threat. Label count: Black needs 2
 > threats more than White. Full count 3: White's H19, played with the free move the approach round gives White,
 > later becomes the local threat F19 (takes G19). Left out by the approach rule. Strict label A-1KO-2.
@@ -566,6 +626,7 @@ Compare the class first, then the approach count, then e. besogo ranks approache
 | `ko-convention` | the tree is the other reading of a second ko (D5: the A-form with the filling point barred), compared with that reading's own count; question 5 | note |
 | `ko-count` | the tree's T_label differs from d_full, or lies outside the bracket of an undecided count where a search decided that bound (shown alongside the others, since the label may differ from the count on purpose) | info |
 | `label-undecided` | a part of the label is undecided | info |
+| `class-open` | a test of the class step is undecided and leaves other statuses open beside the class; when the tree's status is among them, it is no `status-mismatch` | info |
 
 **A partly undecided label** (a "?" in it) is compared on its decided parts all the same:
 - the approaches: the tree's approach count must be one the profiles allow. A decided n allows n (and 0 while its
@@ -638,6 +699,7 @@ Each counted search is capped at `KO_BUDGET_FACTOR × budget`, with the existing
 | any part of a KO label | the text still names every decided part, e.g. "White's capture is direct", "Black needs ? approaches (1 forced pass is not enough, 3 are)", "full count undecided (between 2 and 4)", and the undecided searches with their nodes |
 | d itself, no approaches | "KO, sign undecided", as today |
 | class | "class ?" unless the profile infers KO |
+| a refinement test of the class (double ko, superko, the wider area, clean result, bent four, seki, seki in sente) | the class of the steps before it, with the statuses the test could have given: "KO, BENT4 not ruled out (bent-four test undecided at 2,000,047 nodes)"; an undecided wider area leaves DEAD open when its mode A is undecided and ALIVE, SEKI and SEKI+ when its mode D is (step 1). Every caller shows them: the label text and comparison (`class-open`), `check_tree` (a finding one of them would undo is a note `<kind>-open`, and no S[] is written), `status_eval` (`engine_open`), the question page (a status check passes only when it names them) |
 
 Every part carries decided or undecided and its node count.
 
@@ -651,10 +713,10 @@ searches (Appendix B). Other rows rest on the proposals' runs and the research.
 | case | position | settled | output | parts and reason | check |
 |---|---|---|---|---|---|
 | c073 | 14153 B18 A18 | KO+2 (reviewer: A+1KO+) | **A+1KO+** | Black takes first at A19 (n_S=0). White's retake at B19 needs 1 approach (A17, then C17 captures); the held-ko check confirms it. Same count as KO+2 (d=-1). Problems 2521 and 15418 write this shape A+1KO+ | verified |
-| c011 | 1807 C18 B18 | KO+2 (reviewer: A+1KO+) | **A+1KO+** | Black's B19 is direct. White's C19 retake needs A17 (A16 captures): one forced Black pass is not enough, two are | verified |
+| c011 | 1807 C18 B18 | KO+2 (reviewer: A+1KO+) | **A+1KO+** | Black's B19 is direct. White's C19 retake needs one approach: A17 (then A16 captures), or A16 or A18 first, each with the same count when Black may answer it. One forced Black pass is not enough, two are | verified |
 | c010 | 1807 A18 B18 | KO+2 | **KO+2** | Both captures are direct (n_S = n_O = 0), d=-1. The extra threat is Black's local threat C18, answered by A17, then a free retake at B19 (the research's step ko). This is the pair to c011: a local threat, not an approach | verified |
 | c048 | 10974 | KO+2 (reviewer: A+1KO+) | **A+1KO+** | White's retake needs the approach C19 | proposals |
-| c019 | 5628 | KO- (reviewer: A-1KO+) | **A-1KO+** | Black takes first at A19 and needs E16 (D18 captures) | verified |
+| c019 | 5628 | KO- (reviewer: A-1KO+) | **A-1KO+** | Black takes first at A19 and needs E16 (D18 captures; D18 first fails once White may answer it) | verified |
 | c102 | 15363 (White solves) | KO-2 (reviewer: A-1KO-) | **A-1KO-** | Black took first. White needs B17 or A17 | proposals |
 | c023 | 7487, leaf before the throw-in | A-2KO- | **A-2KO-** | Preparation A19, then White takes first at B19. Black needs E18 and H19 (F18 captures): two forced passes are not enough, three are. v_S=1, so A-2KO- with d_conv = 3 = d_full | verified |
 | c121 | 15678, model board, target D18-G18 | none (target question) | **A-1KO-** (count 3, strict A-1KO-2) | Section 11.1 | verified |
@@ -670,9 +732,9 @@ searches (Appendix B). Other rows rest on the proposals' runs and the research.
 | c027 | 8937 | DDKO | **DDKO** | Mode A kills under rule 0 and not under rule 2. Ko points D18/D19 and A15/A16. The old output BENT4 came from the bent-four test repeating the plain kill | verified |
 | c006 | 840 | ADKO | **ADKO** expected in the B10 frame | The narrow area gives DEAD because it cuts White off from B10. That is an area problem this design does not fix | not run |
 | c016 | 2406 … C18 B18 | ALIVE | **ALIVE** | No ko | research |
-| 10005 | D18 E18 D19 C19 A18 A17 C18 C17 B19 B17 | owner A-1KO- | **A-1KO-** (count 1) | Preparation B A16, then White takes first at A19. Black needs one approach (G19; E19 is the capture, not an approach); White's capture is direct. d_conv = 2 but d_full = 1, so the count is one better for Black (the line uses the second ko at B19/C19). Design 2's static test gave n=2 | verified |
-| 215 | C19 A19 A18 | owner A-1KO+ | **KO+**, other reading A-1KO+ (count 1) | Black took first at A18. The outright tests give n_S=1 (D19, then E19), but v's line fills the ko at A19: White takes four stones and a bent four follows (D5). Counted with it the ko is direct, d=0. With Black barred from A19, v=1 and the count 1 give the owner's A-1KO+ (`ko-convention`, question 5) | checker run |
-| 13169 | A18 A19 | owner A-1KO- | **KO-**, other reading A-1KO- (count 2) | White took first at A19. After Black's retake the same throw-in at A19 follows; d=1. Barred from A19, Black needs D19 (or E18) and the count is 2 | checker run |
+| 10005 | D18 E18 D19 C19 A18 A17 C18 C17 B19 B17 | owner A-1KO- | **A-1KO-** (count 1) | Preparation B G19, then White takes first at A19. Black needs one approach, A16 (G19 and A16 can swap roles). E19, the capture, is no approach: played first it puts Black's stones in atari, and after White's free retake Black fails at every balance up to +6. White's capture is direct. d_conv = 2 but d_full = 1, so the count is one better for Black (the line uses the second ko at B19/C19). Design 2's static test gave n=2 | verified |
+| 215 | C19 A19 A18 | owner A-1KO+ | **KO+**, other reading A-1KO+ (count 1) | Black took first at A18. The outright tests give n_S=1 (D19, then E19), but v's line fills the ko at A19: White captures four stones at D19, and a second ko follows that Black must start at once (in the checker's area the class there is KO with Black to move and ALIVE with White to move, and the bent-four test does not kill; in the wider area that test stays undecided at 2,000,000 nodes, so `Solver.status` gives KO with BENT4 open: D5). Counted with it the ko is direct, d=0. With Black barred from A19, v=1 and the count 1 give the owner's A-1KO+, with the approach E19, or D19 or F19 (`ko-convention`, question 5) | checker run |
+| 13169 | A18 A19 | owner A-1KO- | **KO-**, other reading A-1KO- (count 2) | White took first at A19. After Black's retake the same throw-in at A19 follows, and the same second ko that Black must start at once (the corner is enclosed, and the bent-four test does not kill in either area); d=1. Barred from A19, Black needs E18 and the count is 2. D19 is no approach: it leaves B19-D19 in atari, and White's free retake at A19 takes them with the ko stone, four stones (beyond +6) | checker run |
 | 13677 | A18 B18 C19 A17 D19 B15 A16 F18 B19 | owner A+1KO- | **A+1KO-**, approach round 1 fails | White takes first at A19 and needs one approach (E19). After the conventional round Black's free retake at A18 loses even with 6 threats more, so Black answers at F19: a sente approach (D8, risk 2). Full count -1 | checker run |
 | 10403 | B18 A18 C19 A16 A19 | owner A+1KO- | **A-?KO?** | White takes first at B19 (mode lines) and its capture is direct (n_O=0); Black needs 1 or 2 approaches (one forced pass is not enough, three are); full count between 2 and 4. On these decided parts S[A+1KO-] is a `ko-approach` issue with a `ko-count` beside it (7.3) | checker run |
 
@@ -730,7 +792,11 @@ wins while it holds the ko (below).
 **Black's profile, from P_S = leaf + A17!:**
 - White forced to pass once: not outright (Black fails with 0 against 3).
 - Twice: outright (Black wins with 0 against 3, 771 nodes). So t_S = 2 and **n_S = 1**.
-- The approach is E17, with F19 and E19 as alternatives: any of the top stones' three liberties.
+- The approach is E17, with F19 as the alternative. E19, the top stones' third liberty, is no alternative: Black's
+  stone there is a self-atari, and after White's free retake and Black's retake White's F19 captures it as a local
+  threat (Black answers at J19 and White retakes for free), so Black needs two threats instead of one. B16, B15 and
+  A15 also keep the outright win, but with White free to answer they need at least two threats. The outright test,
+  with White passing, cannot see either (D3).
 - Held-ko check: with White barred from A18 and one forced pass, Black wins (403k nodes). So it is an approach,
   not a stage.
 
@@ -1074,10 +1140,11 @@ implementation needs, pending the owner's answers:
    win the ko once at any time), not KO-. If he agrees, replace the D7 stage fallback: when X's capture is a threat
    that Y answers locally without retaking, count X's approaches from the position after Y's answer, confirmed by
    D4, and pick the approach that keeps the best count (E19, not F19 or F18).
-5. **10005:** E19 is the capture, not an approach (D3's alternatives admit moves that fail once the opponent may
-   answer); the approach is G19. White can also wait before taking, with the same count, and D2's canonical loser
-   order may then build the principal line with White passing, which gives A+1KO-2 instead of A-1KO-. The first take
-   needs a rule for this.
+5. **10005:** E19 is the capture, not an approach (D3's alternatives admitted moves that fail once the opponent may
+   answer; fixed: D3 now keeps an alternative only when it keeps v with the opponent free to answer it); the approach is
+   A16, after the preparation G19, as the checker prints it (the two can swap roles: section 10). White can also wait
+   before taking, with the same count, and D2's canonical loser order may then build the principal line with White
+   passing, which gives A+1KO-2 instead of A-1KO-. The first take needs a rule for this.
 6. **Semeai shapes:** D3 counts 3 or 4 approaches where the count is one threat (13541 leaves 1 and 6, 11280 leaves 9
    and 18, 13475 leaf 8). Approaches there come with tempo (section 11 risk 2 is real), so the approach count needs a
    bound from the count before it is printed.
@@ -1086,3 +1153,16 @@ implementation needs, pending the owner's answers:
 8. **The tree is not consistent:** identical profiles and counts carry 10kKO and A-1KO+ (13547 leaves 1 and 2;
    15516 against 13549 leaf 10), so no rule reproduces every tree label; the checker reports such leaves as notation
    or for the owner, never silently.
+9. **The sekikill fix outside question 6's table.** Counting every repetition as a kill under `sekikill` (section 2)
+   also turns S[ALIVE] leaves into seki. A census of the owner's 1,537 S[ALIVE] leaves and 2,015 other leaves outside
+   the table (Solver.status as the question page builds it, on the code of the fix with the engine before and after
+   it, 200,000 nodes, the candidates left open again at 2,000,000) finds 8 decided classes that change, all of them
+   S[ALIVE], and none changes a grade (besogo's own code): 2387 leaf 4 becomes SEKI+, and 844 leaves 3 and 6, 5628
+   leaf 7, 7487 leaf 80, 7546 leaf 8, 10971 leaf 11 and 11279 leaf 21 become SEKI. In each, the seki test's solve
+   before the fix let the target live only through repetitions it scored as life (2 to 115 adjudicated cycles), and
+   that scoring is the only difference between the engines; after the fix the attacker's line ends in a repetition
+   (844 leaf 3, 7487 leaf 80, 7546 leaf 8, 10971 leaf 11), at an end where the target stands without unconditional
+   life (11279 leaf 21), or, since a proof's line keeps only the winner's moves, in a capture. They are new
+   `status-mismatch` findings against S[ALIVE], listed in question 6. No other leaf can change: no other seki test ran
+   without saying alive. The census cannot see the 310 S[ALIVE] leaves whose class is undecided before the seki test
+   at 200,000 nodes (not retried) or the 16 whose seki test stays undecided at 2,000,000 nodes on both engines.

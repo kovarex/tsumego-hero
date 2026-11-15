@@ -23,7 +23,7 @@ def solver_line(solver, board, to_move, result, plies=12):
             child = board.copy()
             if not child.play(to_move, p):
                 continue
-            if solver.status(child, opponent(to_move))[0] == result:
+            if solver.status_record(child, opponent(to_move))['status'] == result:
                 chosen = (p, child)
                 break
         if chosen is None:
@@ -47,7 +47,9 @@ for path in glob.glob(sys.argv[1]):
     for line in open(path):
         result = json.loads(line)
         for leaf in result.get('leaves', []):
-            if leaf['engine'] in DECIDED and leaf['expected'] in DECIDED and leaf['engine'] != leaf['expected']:
+            #a class with the authored one among the statuses an undecided test leaves open is no decided disagreement
+            if leaf['engine'] in DECIDED and leaf['expected'] in DECIDED and leaf['engine'] != leaf['expected'] \
+                    and leaf['expected'] not in leaf.get('engine_open', []):
                 cases.append((result['set_connection_id'], result['goal'], leaf['line'], leaf['authored'].strip(), leaf['expected'], leaf['engine']))
 cases.sort(key=lambda c: (int(c[0]), c[2]))
 

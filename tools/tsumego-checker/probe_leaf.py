@@ -24,8 +24,10 @@ node = root
 for text in sys.argv[3].split():
     p = (LETTERS.index(text[0]), size - int(text[1:]))
     node = next(c for c in node.children if c.move == p)
-status, best = solver.status(node.board, node.to_move)
-raw = status
-status = ko_taken_by(node.board, opponent(node.to_move) if node.move is not None else None, solver_color, status)
+record = solver.status_record(node.board, node.to_move)
+raw = record['status']
+status = ko_taken_by(node.board, opponent(node.to_move) if node.move is not None else None, solver_color, raw)
 sign = solver.ko_sign(node.board, node.to_move) if status == STATUS_KO else None
-print(sys.argv[2], sys.argv[3], 'authored', node.status_text, 'solver', status, sign or '')
+#the class with the statuses an undecided test leaves open beside it
+print(sys.argv[2], sys.argv[3], 'authored', node.status_text, 'solver',
+      status_text(dict(record, status=status, open=[s for s in record['open'] if s != status])), sign or '')

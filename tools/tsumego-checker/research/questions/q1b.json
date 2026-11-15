@@ -45,11 +45,16 @@
      },
      "caption": "The tree's line to the leaf marked S[A-1KO-]. White 16 has just taken the ko; Black can approach at a, White at b, and c is a second ko.",
      "text": [
-      "The last two checks give White free moves while Black passes. With one, White still cannot win against four Black threats, so White's capture is not yet a threat; with two, White wins. White needs one approach."
+      "The last two checks give White free moves while Black passes. With one, White still cannot win against four Black threats, so White's capture is not yet a threat; with two, White wins. White needs one approach.",
+      "The first check finds a ko in the checker's own area. In the wider area, two rings of empty points more, the solver does not decide within 2,000,000 nodes whether Black kills without the ko, so a kill is not ruled out there."
      ],
      "checks": [
       {
-       "status": "KO"
+       "status": "KO",
+       "open": [
+        "BENT4",
+        "DEAD"
+       ]
       },
       {
        "balance": 2,
@@ -230,7 +235,10 @@
      "caption": "The tree's line to the leaf marked S[A-1KO+]. Black to play can take the ko at A19, and needs one ko threat more than White.",
      "checks": [
       {
-       "status": "KO"
+       "status": "KO",
+       "open": [
+        "BENT4"
+       ]
       },
       {
        "balance": 1,
@@ -348,9 +356,17 @@
       "A17": "a"
      },
      "caption": "The tree's line to the leaf marked S[A+1KO-], with White to play. Black fails with one ko threat more than White, and wins with three more.",
+     "text": [
+      "The first check finds a ko in the checker's own area. In the wider area, two rings of empty points more, the solver does not decide within 2,000,000 nodes whether White lives without the ko, so life, in seki or not, is not ruled out there."
+     ],
      "checks": [
       {
-       "status": "KO"
+       "status": "KO",
+       "open": [
+        "ALIVE",
+        "SEKI",
+        "SEKI+"
+       ]
       },
       {
        "count": [

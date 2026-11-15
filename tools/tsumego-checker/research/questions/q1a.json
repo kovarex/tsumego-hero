@@ -113,7 +113,7 @@
      "labels": {"A17": "a", "B17": "b", "E19": "c"},
      "caption": "The tree's line, with White to play and no ko on the board.",
      "checks": [
-      {"status": "KO"},
+      {"status": "KO", "open": ["BENT4"]},
       {"balance": 0, "opts": "end=1"}
      ]
     },
@@ -175,9 +175,10 @@
      "moves": "B18 B19 B17 C18 D19 A17 A18 D16 A16 A15 E19 C19 A14",
      "labels": {"A19": "a", "C17": "b"},
      "caption": "The tree's line, written 10kKO, with White to play. White can take the ko by capturing Black 9.",
-     "text": ["If nobody may ever take the ko, Black kills even without threats: here White is the side that needs it."],
+     "text": ["If nobody may ever take the ko, Black kills even without threats: here White is the side that needs it.",
+              "The first check finds a ko in the checker's own area. In the wider area, two rings of empty points more, the solver does not decide within 2,000,000 nodes whether Black kills without the ko, so a kill is not ruled out there."],
      "checks": [
-      {"status": "KO"},
+      {"status": "KO", "open": ["DEAD"]},
       {"balance": 2, "opts": "end=1"},
       {"count": [0, 0], "opts": "end=1,fb=A16,fw=A17", "expect": "wins"}
      ]
