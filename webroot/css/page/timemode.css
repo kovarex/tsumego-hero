@@ -1,27 +1,27 @@
 @layer page
 {
-.timeTableMiddle {
+.sgf-versions__cell--middle {
   border-top: 1px solid var(--color-black);
   border-bottom: 1px solid var(--color-black);
 }
-.timeTableLeft {
+.sgf-versions__cell--first {
   border-radius: var(--radius-lg) 0 0 var(--radius-lg);
   border-left: 1px solid var(--color-black);
   border-top: 1px solid var(--color-black);
   border-bottom: 1px solid var(--color-black);
 }
-.versionColor {
+.sgf-versions__cell {
   background: var(--time-table-gradient);
 }
 /* The ranks played, one under the other: the row of a rank opens its runs and problems */
-.timeModeTable {
+.time-results {
   display: grid;
   gap: var(--space-1);
   max-width: 900px;
   margin: 0 auto;
 }
 /* The row of a rank: its category, rank, outcome, points, date and arrow, in the columns of the runs under it */
-.timeModeTable2 {
+.time-result__rank-row {
   display: grid;
   grid-template-columns: 9fr 46fr 15fr 13fr 14fr 3fr;
   align-items: center;
@@ -62,10 +62,10 @@
   color: var(--color-black);
   text-decoration: none;
 }
-.timeModeTable2 .timeModeTable2td {
+.time-result__rank-row .time-result__right {
   text-align: right;
 }
-.tScoreTitle {
+.time-result__rank-head {
   padding: 5px;
   border-bottom-right-radius: 7px;
   border-bottom-left-radius: 7px;
@@ -74,19 +74,19 @@
   border: 1px solid var(--time-border);
   cursor: pointer;
 }
-.tScoreTitle1 {
+.time-result__rank-head--passed {
   background-image: var(--time-title1-gradient);
 }
-.tScoreTitle1:hover {
+.time-result__rank-head--passed:hover {
   background-image: var(--time-title1-gradient-hover);
 }
-.tScoreTitle2 {
+.time-result__rank-head--failed {
   background-image: var(--time-title2-gradient);
 }
-.tScoreTitle2:hover {
+.time-result__rank-head--failed:hover {
   background-image: var(--time-title2-gradient-hover);
 }
-.timeModeTable3 {
+.time-result__rank-runs {
   border: 1px solid var(--time-border);
   padding: 5px;
   border-bottom-right-radius: 7px;
@@ -106,11 +106,11 @@
 #time-mode3 {
   display: flow-root;
 }
-.timeModeIcons {
+.time-mode-icon {
   position: relative;
   top: 4px;
 }
-.timeGraph {
+.rating-chart {
 	max-width: 650px;
 	margin: var(--space-3) auto;
 	padding-top: 20px;
@@ -121,7 +121,7 @@
 
 /* Dark overrides */
 /* Dark only: in light the links keep the colour they get from the rest of the page */
-[data-theme="dark"] .versionColor a {
+[data-theme="dark"] .sgf-versions__cell a {
   color: var(--color-blue-accent);
 }
 }

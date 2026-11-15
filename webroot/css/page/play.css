@@ -17,7 +17,7 @@
 .sandboxTable2__heading {
   padding-bottom: 7px;
 }
-.timeTableRight {
+.sgf-versions__cell--last {
   border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
   border-right: 1px solid var(--color-black);
   border-top: 1px solid var(--color-black);

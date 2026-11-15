@@ -306,23 +306,23 @@ class ChartsBrowserTest extends IntegrationTestCase
 
 		$browser = Browser::instance();
 		$browser->get('tsumegos/history/' . $context->tsumegos[0]['set-connections'][0]['id']);
-		$browser->waitUntilCssSelectorDisplayed('.timeGraph .line-chart__line');
-		$this->assertSame('Rating history', $browser->find('.timeGraph .chart__title')->getText());
+		$browser->waitUntilCssSelectorDisplayed('.rating-chart .line-chart__line');
+		$this->assertSame('Rating history', $browser->find('.rating-chart .chart__title')->getText());
 		// the value axis fits the rating instead of starting at zero, with its ticks at the edges of the ranks around it:
 		// 9k from 1150, 8k from 1250
-		$valueTicks = array_map(fn($tick) => $tick->getText(), $browser->getElements(".timeGraph .line-chart__tick[text-anchor='end']"));
+		$valueTicks = array_map(fn($tick) => $tick->getText(), $browser->getElements(".rating-chart .line-chart__tick[text-anchor='end']"));
 		$this->assertSame(['9k', '8k'], $valueTicks);
 		// the ranks are in the chart's text colour like the dates under it, not the green of the line
-		$colors = $browser->driver->executeScript("return [...document.querySelectorAll('.timeGraph .line-chart__tick')].map(tick => getComputedStyle(tick).fill)");
+		$colors = $browser->driver->executeScript("return [...document.querySelectorAll('.rating-chart .line-chart__tick')].map(tick => getComputedStyle(tick).fill)");
 		$this->assertCount(1, array_unique($colors), implode(', ', $colors));
 		// the tooltip of the last day: the rating as a plain number, with its rank
 		$browser->driver->executeScript(<<<'JS'
-			const svg = document.querySelector('.timeGraph svg');
+			const svg = document.querySelector('.rating-chart svg');
 			const box = svg.getBoundingClientRect();
 			svg.dispatchEvent(new MouseEvent('mousemove', {bubbles: true, clientX: box.right - 2, clientY: box.top + box.height / 2}));
 			JS);
-		$browser->waitUntilCssSelectorDisplayed('.timeGraph .chart__tooltip');
-		$this->assertStringContainsString('Rating: 1250 (8k)', $browser->find('.timeGraph .chart__tooltip')->getText());
+		$browser->waitUntilCssSelectorDisplayed('.rating-chart .chart__tooltip');
+		$this->assertStringContainsString('Rating: 1250 (8k)', $browser->find('.rating-chart .chart__tooltip')->getText());
 		$browser->assertNoJsErrors();
 	}
 }

@@ -58,9 +58,9 @@ function initTimeModeOverview(page)
 //The results list a run per category and rank, each opening to its problems and history
 function initTimeModeResult(page)
 {
-	for (const title of document.querySelectorAll('.tScoreTitle'))
+	for (const title of document.querySelectorAll('.time-result__rank-head'))
 		title.addEventListener('click', () => {
-			const content = title.parentElement.querySelector('.timeModeTable3');
+			const content = title.parentElement.querySelector('.time-result__rank-runs');
 			const opening = getComputedStyle(content).display === 'none';
 			content.style.display = opening ? '' : 'none';
 			title.querySelector('.rankArrow').setAttribute('src', opening ? page.rankArrowOpened : page.rankArrowClosed);

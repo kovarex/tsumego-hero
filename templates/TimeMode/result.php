@@ -33,7 +33,7 @@ use App\Utility\ViteManifest;
 		</div>
 		</label>
 	<?php endif; ?>
-	<div class="timeModeTable">
+	<div class="time-results">
 	<?php foreach ($sessionsToShow as $categoryToShow): ?>
 		<?php foreach ($categoryToShow as $rankToShow):
 			$isOpen = isset($rankToShow['current']);
@@ -41,17 +41,17 @@ use App\Utility\ViteManifest;
 			$headerSession = $rankToShow['best'] ?? $rankToShow['current'];
 		?>
 		<div class="time-result__rank-block">
-				<div class="tScoreTitle <?php echo $headerSession['status'] == 'passed' ? 'tScoreTitle1' : 'tScoreTitle2'; ?>" id="title<?php echo $headerSession['id']; ?>">
-					<div class="timeModeTable2">
+				<div class="time-result__rank-head <?php echo $headerSession['status'] == 'passed' ? 'time-result__rank-head--passed' : 'time-result__rank-head--failed'; ?>" id="title<?php echo $headerSession['id']; ?>">
+					<div class="time-result__rank-row">
 							<span class="time-result__category"><?php echo $headerSession['category']; ?></span>
 							<span class="time-result__rank"><?php echo $headerSession['rank']; ?></span>
 							<span class="time-result__status"><b><?php echo $headerSession['status']; ?></b></span>
 							<span class="time-result__points"><?php echo $headerSession['points']; ?> points</span>
-							<span class="timeModeTable2td"><time datetime="<?php echo Util::toIso8601($headerSession['created']); ?>" data-format="datetime"><?php echo $headerSession['created']; ?></time></span>
-							<span class="time-result__arrow timeModeTable2td"><img class="rankArrow" src="<?php echo $isOpen ? $rankArrowOpened : $rankArrowClosed; ?>" alt=""></span>
+							<span class="time-result__right"><time datetime="<?php echo Util::toIso8601($headerSession['created']); ?>" data-format="datetime"><?php echo $headerSession['created']; ?></time></span>
+							<span class="time-result__arrow time-result__right"><img class="rankArrow" src="<?php echo $isOpen ? $rankArrowOpened : $rankArrowClosed; ?>" alt=""></span>
 					</div>
 				</div>
-				<div class="timeModeTable3" style="display: <?php echo $isOpen ? '' : 'none'; ?>;" id="results_<?php echo $headerSession['category']; ?>_<?php echo $headerSession['rank']; ?>">
+				<div class="time-result__rank-runs" style="display: <?php echo $isOpen ? '' : 'none'; ?>;" id="results_<?php echo $headerSession['category']; ?>_<?php echo $headerSession['rank']; ?>">
 					<table class="scoreTable time-result__runs">
 					<?php
 					if (isset($rankToShow['best']))
