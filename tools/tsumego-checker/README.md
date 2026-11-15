@@ -120,3 +120,19 @@ local threats, 10kKO, double ko, superko, BENT4, SEKI) from small engine searche
 `research/ko_labels/prototypes/` holds the prototype engines (diffs against `engine.cpp`) and scripts it was built
 from, `research/ko_labels/judge/` the runs that verified its outputs on the settled leaves. The engine part (the
 design's section 5) is in `engine.cpp`; its end playout stays off until the regression run of section 12.
+
+## Ko label questions page
+
+`research/questions.py` renders the page of questions for the owner about ko labels (10kKO against a plain KO and
+approach kos, and three single leaves): each position is drawn as numbered diagrams, and every claim under a diagram is a
+solver check that runs when the page is built; a failed or undecided check, an illegal move or a move list in the text
+stops the build. The page spec is `research/questions/page.json` with one file per section; the checks use the
+prototype engine of the design (`solvex` with forced passes, barred points and the end playout):
+
+```
+PROBLEMS=status_problems.jsonl ENGINE=<engine with solvex> python3 research/questions.py research/questions/page.json out.html [--only <section id>]
+```
+
+`research/questions/inventory/` holds the facts behind question 1: every 10kKO leaf of the export and the owner's
+approach-form leaves where both sides seem to need an approach, with each side's forced-pass count, the investment, the
+switch test and the searches behind them (`inventory.md` summarises them).

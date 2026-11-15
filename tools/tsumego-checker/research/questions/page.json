@@ -1,0 +1,17 @@
+{
+ "title": "Ko Label Questions",
+ "intro": [
+  "These are the four questions from our last message, now with diagrams, as you asked. Every claim on a diagram is checked by the solver when this page is built: a check that failed or stayed undecided would have stopped the build. Each section was also read by a second reviewer who tried to refute it.",
+  "In short. 1. Your definitions sort your leaves cleanly. Where each side's capture needs the same one move, at a liberty both groups share, the investment is wasted whoever makes it and the ko cannot switch back: your 10kKO, as in problems 10391, 10393, 15513 and 15516. Only one leaf of the export has its approaches at different points, so that the ko switches there and back, and it has a second ko as well (7487, part 1b). Seven of your 10kKO leaves are approach kos by your own definition, because one side's capture threatens from the start (13547, part 1a).",
+  "2. c081 in 15220 has the same textbook shape: 10kKO, and problem 15513 marks the same corner S[10kKO]. 3. For c014 in 2359 we now recommend A-1KO+, not the KO- we recommended before: only Black needs the extra move, and White can win by winning the ko once. 4. For 10005, your A-1KO-, with the count shown as a note. None of these three changes any move's grade on the site.",
+  "What we got wrong before. 10408 is not a leaf where each side needs an approach: White's capture there threatens at once (part 1a). besogo does not grade 10403's A+1KO- and 9883's A+1KO+ like 10kKO: when Black kills, besogo counts 10kKO as an approach Black needs, while A+1 gives the approach to White; 10403's label also disagrees with the solver (part 1b). In 15220 the choice between KO+ and 10kKO changes no grading, and the research did see the shape: a judge called it the classic ten-thousand-year ko and kept KO+ for its count (question 2). And for c014 we now recommend A-1KO+ (question 3).",
+  "Leaves are numbered from 1 in the order of their tree. The solver searches the checker's own area around each problem unless a position names another; where a wider area leaves a check undecided, the section says so."
+ ],
+ "sections": [
+  "q1a.json",
+  "q1b.json",
+  "q2.json",
+  "q3.json",
+  "q4.json"
+ ]
+}

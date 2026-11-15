@@ -1,0 +1,350 @@
+{
+ "c081": {
+  "investment": "Yes: no ko on the board. White must first play A19 (atari on B19); after it only White can capture (C19), Black has no ko capture.",
+  "first_take": "White C19, after the preparation White A19 (both principal lines, frame).",
+  "approach_points_same": "same set: A17 or B17 for both sides",
+  "switch": "No switch back: after either side approaches at A17 or B17, the other side retakes free and both captures are then threats (n=0/0); count there 0 after White approached, 1 after Black approached.",
+  "who_needs_the_ko": "White (attacker): with the ko points barred for both, Black lives (seki-like cycle).",
+  "fit": "10kKO",
+  "fit_reason": "Each side needs exactly one approach at the shared liberty, one investment turns it into a direct ko in which the other side retook free, whoever took first.",
+  "notes": [
+   "Corner frame only (judges' 14 points), as asked; the tree says KO+ and the research settled KO+; count d=0 (Black wins at equal threats)."
+  ]
+ },
+ "10391_3": {
+  "investment": "None needed: a ko capture is available now (Black, see ko_shapes_on_board).",
+  "first_take": "Black C19 (after White passes)",
+  "approach_points_same": "same set: A17 or B17 for both sides",
+  "switch": "No switch back: after either side's approach at A17 or B17 the other side retakes free and both captures are threats (n=0/0).",
+  "who_needs_the_ko": "The attacker: with the ko points barred for both, the defender lives.",
+  "fit": "10kKO",
+  "fit_reason": "Both captures need one approach at the same point, so one investment by either side makes the ko direct with the opponent holding the free retake."
+ },
+ "10051_11": {
+  "investment": "None needed: a ko capture is available now (Black, see ko_shapes_on_board).",
+  "first_take": "Black A19 (after White and Black pass; the end playout hands Black the move)",
+  "approach_points_same": "same set: D19 or D18 for both sides",
+  "switch": "No switch back: after either side's approach at D19 or D18 the other side retakes free and both captures are threats (n=0/0).",
+  "who_needs_the_ko": "The attacker: with the ko points barred for both, the defender lives.",
+  "fit": "10kKO",
+  "fit_reason": "Both captures need one approach at the same point, so one investment by either side makes the ko direct with the opponent holding the free retake."
+ },
+ "15513_0": {
+  "investment": "None needed: a ko capture is available now (White, see ko_shapes_on_board).",
+  "first_take": "White C19 (after Black passes)",
+  "approach_points_same": "same set: A17 or B17 for both sides",
+  "switch": "No switch back: after either side's approach at A17 or B17 the other side retakes free and both captures are threats (n=0/0).",
+  "who_needs_the_ko": "The attacker: with the ko points barred for both, the defender lives.",
+  "fit": "10kKO",
+  "fit_reason": "Both captures need one approach at the same point, so one investment by either side makes the ko direct with the opponent holding the free retake.",
+  "notes": [
+   "Same shape as c081 one move later (White has played A19, Black tenuki); solver is White. Leaf comment: \"you still have to approach at X\" (X = B17)."
+  ]
+ },
+ "15516_0": {
+  "investment": "None needed: a ko capture is available now (Black, see ko_shapes_on_board).",
+  "first_take": "Black A19 (after White passes)",
+  "approach_points_same": "same set: A16 or B16 for both sides",
+  "switch": "No switch back: after either side's approach at A16 or B16 the other side retakes free and both captures are threats (n=0/0).",
+  "who_needs_the_ko": "The attacker: with the ko points barred for both, the defender lives.",
+  "fit": "10kKO",
+  "fit_reason": "Both captures need one approach at the same point, so one investment by either side makes the ko direct with the opponent holding the free retake.",
+  "notes": [
+   "Leaf comment: \"He'd rather fight the 10 thousand years Ko than submit to a seki\"."
+  ]
+ },
+ "10393_0": {
+  "investment": "Yes: no ko on the board. White must first play A19 (atari on B19); after it only White can capture (C19).",
+  "first_take": "White C19 after the preparation White A19 (both lines, narrow).",
+  "approach_points_same": "overlap A17, B17 (White also needs E19, which touches the narrow area's fringe)",
+  "switch": "At A17/B17: no switch back for Black's approach (direct both ways, count 1); after White's A17/B17 Black's free retake threatens but White's own retake still needs E19 (count -1). If White plays E19 first, Black's free retake needs an approach of its own (switches back once).",
+  "who_needs_the_ko": "White (attacker): Black lives with the ko barred.",
+  "fit": "none decides it",
+  "fit_reason": "The textbook shape at the shared liberties A17/B17, plus one extra private approach for the attacker White (E19, next to the area's fringe): the definitions do not say whether 10kKO plus an approach is still 10kKO.",
+  "notes": [
+   "Wide count undecided at 4.8M nodes; E19 sits next to the narrow fringe, so the extra White approach may be an area effect."
+  ]
+ },
+ "2406_0": {
+  "investment": "Yes: no ko on the board. Narrow: White A15 outside, Black C18, then White's throw-in A18 is captured by Black A19 (first take). Frame: White D18, Black's throw-in A19 is captured by White A18 (first take).",
+  "first_take": "Narrow: Black A19 after White A15, Black C18, White A18. Frame: White A18 after White D18, Black A19.",
+  "approach_points_same": "not mutual",
+  "switch": "Not mutual in either area: the holder's retake is a real threat (narrow: Black n=0 at A19; frame: Black n=0) while White needs 1 (narrow: D18 or F19) or 2 (frame: C18 plus A15 or F19, at the frame edge) approaches.",
+  "who_needs_the_ko": "White (attacker): Black lives with the ko barred, in both areas.",
+  "fit": "approach ko",
+  "fit_reason": "In both areas one side's capture is a real threat and White needs approach moves first, which is the owner's approach ko.",
+  "notes": [
+   "Narrow count -2, frame count -1; wide count undecided at 4.8M. Not reproduced: the design's \"corner frame A16:F19: d=0, mutual 1/1\" (same frame points, engine_x end=1 gives d=-1 and White 2 / Black 0)."
+  ]
+ },
+ "2406_3": {
+  "investment": "No ko at all: ALIVE in both areas (modes A=N, D=N); counted search wins for Black at every balance down to -5.",
+  "first_take": "none",
+  "approach_points_same": "n/a",
+  "switch": "n/a",
+  "who_needs_the_ko": "n/a",
+  "fit": "none decides it",
+  "fit_reason": "The engine finds no ko; the research (c016) settled ALIVE and traced the 10kKO label to the sibling reached by White C19."
+ },
+ "10051_23": {
+  "investment": "None needed: White can capture at B19 now.",
+  "first_take": "undecided (count undecided in both areas at 4.8M)",
+  "approach_points_same": "Black's approach points D19, D18; White's undecided",
+  "switch": "After Black's approach (D18) White's free retake is a threat (n=0); White's side undecided.",
+  "who_needs_the_ko": "White (defender): Black kills with the ko barred.",
+  "fit": "none decides it",
+  "fit_reason": "White's count is undecided in [0, 1] (one-ply expansion: 2 of 5 first moves fail, D19/D18/G19 undecided, D18 undecided at 4.8M): with 1 it would be the textbook shape like its sibling 10051_11, with 0 an approach ko for Black.",
+  "notes": [
+   "Black's F19 is in atari (White G19 captures it): an outside resource on the open edge."
+  ]
+ },
+ "10408_3": {
+  "investment": "None needed: White just took at A19 (ban B19).",
+  "first_take": "White (the leaf's last move A19)",
+  "approach_points_same": "not mutual on the decided side",
+  "switch": "not run (White direct)",
+  "who_needs_the_ko": "Black (defender): in the frame, with White's capture at A19 standing and both ko points barred, Black dies (the ko was just taken, so this test freezes it in White's favour).",
+  "fit": "none decides it",
+  "fit_reason": "White's capture is a real threat (n=0, decided in narrow and frame); Black's count is undecided in [0, 1], so this is either a direct ko or an approach ko for Black, not the mutual shape.",
+  "notes": [
+   "Class and count undecided in narrow, wide and frame at 4.8M. The batch's static test (both need A17) is not confirmed: White's A19 capture threatens A17."
+  ]
+ },
+ "11280_8": {
+  "investment": "None needed: White can capture at B19 now (Black holds A19).",
+  "first_take": "White B19 on both principal lines",
+  "approach_points_same": "not mutual",
+  "switch": "not mutual",
+  "who_needs_the_ko": "White (defender): Black kills with the ko barred.",
+  "fit": "approach ko",
+  "fit_reason": "White's capture at B19 is a real threat (n=0) while Black needs 3 free moves first (forced-pass count, narrow), the owner's approach ko.",
+  "notes": [
+   "Forced-pass count 3 but the leaf count is 1: Black needs only 1 threat(s) more than White, the count of a one-approach ko (A-1KO+). The forced-pass test overstates semeai approaches here."
+  ]
+ },
+ "11280_17": {
+  "investment": "None needed: White can capture at B19 now (Black holds A19).",
+  "first_take": "undecided (count undecided)",
+  "approach_points_same": "not mutual",
+  "switch": "not mutual",
+  "who_needs_the_ko": "White (defender): Black kills with the ko barred.",
+  "fit": "approach ko",
+  "fit_reason": "White's capture at B19 is a real threat (n=0) while Black needs 4 free moves first (forced-pass count, narrow), the owner's approach ko.",
+  "notes": [
+   "Count undecided at 4.8M (narrow and wide)."
+  ]
+ },
+ "13541_0": {
+  "investment": "None needed: White can capture at B19 now (Black holds A19).",
+  "first_take": "White B19 on both principal lines",
+  "approach_points_same": "not mutual",
+  "switch": "not mutual",
+  "who_needs_the_ko": "White (defender): Black kills with the ko barred.",
+  "fit": "approach ko",
+  "fit_reason": "White's capture at B19 is a real threat (n=0) while Black needs 3 free moves first (forced-pass count, narrow), the owner's approach ko.",
+  "notes": [
+   "Forced-pass count 3 but the leaf count is 1: Black needs only 1 threat(s) more than White, the count of a one-approach ko (A-1KO+). The forced-pass test overstates semeai approaches here."
+  ]
+ },
+ "13541_5": {
+  "investment": "None needed: White can capture at B19 now (Black holds A19).",
+  "first_take": "White B19 on both principal lines",
+  "approach_points_same": "not mutual",
+  "switch": "not mutual",
+  "who_needs_the_ko": "White (defender): Black kills with the ko barred.",
+  "fit": "approach ko",
+  "fit_reason": "White's capture at B19 is a real threat (n=0) while Black needs 3 free moves first (forced-pass count, narrow), the owner's approach ko.",
+  "notes": [
+   "Forced-pass count 3 but the leaf count is 1: Black needs only 1 threat(s) more than White, the count of a one-approach ko (A-1KO+). The forced-pass test overstates semeai approaches here."
+  ]
+ },
+ "11279_0": {
+  "investment": "None needed: White can capture at B19 now (Black holds the throw-in A19).",
+  "first_take": "undecided (count undecided)",
+  "approach_points_same": "not mutual",
+  "switch": "not mutual",
+  "who_needs_the_ko": "White (defender): Black kills with the ko barred.",
+  "fit": "none decides it",
+  "fit_reason": "White's capture is a real threat (n=0); Black's count is undecided in [0, 3] (expansion: 6 of 7 first moves fail, connecting at B19 undecided even with White restricted), so approach ko unless Black's retake is itself a threat.",
+  "notes": [
+   "Leaf comment \"10 000 years ko\"; sibling comment: \"b has to throw-in to even start the 10000 years ko\"."
+  ]
+ },
+ "11282_6": {
+  "investment": "None needed: White can capture now (see ko_shapes_on_board).",
+  "first_take": "undecided (count undecided)",
+  "approach_points_same": "not mutual",
+  "switch": "not mutual",
+  "who_needs_the_ko": "White (defender): Black kills with the ko barred.",
+  "fit": "none decides it",
+  "fit_reason": "White's capture is a real threat (n=0); Black's count is undecided in [0, 2], so approach ko unless Black's retake is itself a threat."
+ },
+ "11282_7": {
+  "investment": "None needed: White can capture now (see ko_shapes_on_board).",
+  "first_take": "undecided (count undecided)",
+  "approach_points_same": "not mutual",
+  "switch": "not mutual",
+  "who_needs_the_ko": "White (defender): Black kills with the ko barred.",
+  "fit": "none decides it",
+  "fit_reason": "White's capture is a real threat (n=0); Black's count is undecided in [0, 2], so approach ko unless Black's retake is itself a threat."
+ },
+ "13547_18": {
+  "investment": "None needed: White can capture now (see ko_shapes_on_board).",
+  "first_take": "undecided (count undecided)",
+  "approach_points_same": "not mutual",
+  "switch": "not mutual",
+  "who_needs_the_ko": "White (defender): Black kills with the ko barred.",
+  "fit": "none decides it",
+  "fit_reason": "White's capture is a real threat (n=0); Black's count is undecided in [0, 1], so approach ko unless Black's retake is itself a threat."
+ },
+ "11282_4": {
+  "investment": "None needed: White can capture at B19 now.",
+  "first_take": "undecided (count undecided)",
+  "approach_points_same": "overlap B17, C17 (White also F19; Black needs 2)",
+  "switch": "After White's approach at B17 or C17 Black's free retake has count [0, 1] (undecided) and White's retake is a threat.",
+  "who_needs_the_ko": "White (defender): Black kills with the ko barred.",
+  "fit": "none decides it",
+  "fit_reason": "Mutual in the narrow area (White 1, Black 2) but the switch test is undecided, so neither 10kKO nor the symmetric case is shown."
+ },
+ "11282_5": {
+  "investment": "None needed: White can capture at B19 now.",
+  "first_take": "undecided (count undecided)",
+  "approach_points_same": "n/a",
+  "switch": "not run",
+  "who_needs_the_ko": "White (defender): Black kills with the ko barred.",
+  "fit": "none decides it",
+  "fit_reason": "White needs 1 approach, Black's count is undecided in [0, 2]."
+ },
+ "13475_7": {
+  "investment": "None needed: Black can capture at B19 now.",
+  "first_take": "Black B19 on the failing line (after Black F19, White A16); on the winning line White connects at B19 and no ko is taken.",
+  "approach_points_same": "not mutual",
+  "switch": "not mutual",
+  "who_needs_the_ko": "Black (defender): Black dies with the ko barred.",
+  "fit": "approach ko",
+  "fit_reason": "Black's capture at B19 is a real threat (n=0) while White needs 3 approaches (narrow; A16 and F19 at the area wall), the owner's approach ko.",
+  "notes": [
+   "Count -1: White needs 2 threats more than Black, the count of a one-approach ko (A+1KO+), not of three approaches."
+  ]
+ },
+ "13547_0": {
+  "investment": "None needed: White can capture at A17 now.",
+  "first_take": "White A17 at once (both lines).",
+  "approach_points_same": "not mutual",
+  "switch": "After Black's approach (A19) White's free retake is a threat; count 1 there.",
+  "who_needs_the_ko": "White (defender): Black kills with the ko barred.",
+  "fit": "approach ko",
+  "fit_reason": "White takes first and its capture is a real threat; Black needs exactly one approach (A19 or C17): this is A-1KO- by the owner's own definition, and the count 2 is exactly A-1KO-'s.",
+  "notes": [
+   "Structurally the same as its sibling leaf 1 (A-1KO+ in the tree, also White direct, Black 1, count 2)."
+  ]
+ },
+ "13547_19": {
+  "investment": "None needed: White can capture at A18 or at E19 now.",
+  "first_take": "undecided (count fails at 0, undecided at 1)",
+  "approach_points_same": "n/a",
+  "switch": "A19/A18 ko: after Black's approach (C17) White's free retake is a threat. D19/E19 ko: Black's rounds are stages (held-ko check fails).",
+  "who_needs_the_ko": "not separable (two kos)",
+  "fit": "none decides it",
+  "fit_reason": "Two ko shapes; White's counts are undecided ([0, 1] and [0, 2]) and the D19 ko is a stage, not an approach."
+ },
+ "13547_20": {
+  "investment": "None needed: White can capture at A18 now.",
+  "first_take": "undecided (count undecided)",
+  "approach_points_same": "overlap A16, C17 (Black also C18)",
+  "switch": "Switches back for Black's C18: White's free retake then needs its own approach (C17), and after it Black's free retake is a threat (count 0). After Black's A16, White's free retake is a threat but Black still needs one more.",
+  "who_needs_the_ko": "White (defender): Black kills with the ko barred.",
+  "fit": "none decides it",
+  "fit_reason": "Black needs 2 approaches, White's count is undecided in [0, 1]; the line through C18 shows the \"switch there and back\" pattern inside a 10kKO-labelled leaf."
+ },
+ "13547_25": {
+  "investment": "None needed: White can capture at A18 now.",
+  "first_take": "undecided (count undecided)",
+  "approach_points_same": "same set: A16 or C17 for both",
+  "switch": "No switch back: after either side's approach the other side's free retake and the approacher's retake are both threats; count 0 after White approached, 1 after Black approached.",
+  "who_needs_the_ko": "White (defender): Black kills with the ko barred.",
+  "fit": "10kKO",
+  "fit_reason": "The textbook profile (one shared approach each, direct after one investment), although here the attacker, not the defender, wins if the ko is never played."
+ },
+ "13547_26": {
+  "investment": "None needed: Black can capture at A19 now.",
+  "first_take": "undecided (count undecided)",
+  "approach_points_same": "n/a",
+  "switch": "not run",
+  "who_needs_the_ko": "Black (attacker): White lives with the ko barred.",
+  "fit": "none decides it",
+  "fit_reason": "Both counts undecided in [0, 1]."
+ },
+ "13549_13": {
+  "investment": "None needed: White can capture at B19 now (Black's A19 is a throw-in).",
+  "first_take": "White B19 on the winning line (after White passes, Black E19).",
+  "approach_points_same": "overlap B17, C17 (Black also needs E19, at the area wall)",
+  "switch": "White's approach at B17/C17: direct both ways. Black's approach at B17/C17: White's free retake is a threat but Black still needs E19 (count 2). Black's E19 first: White's free retake needs an approach (switches back once).",
+  "who_needs_the_ko": "White (defender): Black kills with the ko barred.",
+  "fit": "none decides it",
+  "fit_reason": "The textbook shape at the shared liberties B17/C17, plus one extra private approach for the attacker Black (E19, at the narrow area's wall): the definitions do not say whether 10kKO plus an approach is still 10kKO.",
+  "notes": [
+   "Its sibling leaf 9 (A-1KO+ in the tree) has the pure shared profile: both sides 1 at B17/C17, direct after one approach, count 1."
+  ]
+ },
+ "13661_4": {
+  "investment": "None needed: White can capture at B19 now.",
+  "first_take": "undecided on the line (the winning line uses a second ko at F19/G19 on the area edge)",
+  "approach_points_same": "n/a",
+  "switch": "not run",
+  "who_needs_the_ko": "White (defender): Black kills with the ko barred.",
+  "fit": "none decides it",
+  "fit_reason": "Both counts undecided in [0, 1]; count 2."
+ },
+ "10403_0": {
+  "investment": "None needed: both sides can capture now (Black at A17, White at B19).",
+  "first_take": "undecided (count fails at 0 and 1, undecided at 2)",
+  "approach_points_same": "A18/A17 ko: overlap B19, C18, D19 (Black also E19, F19)",
+  "switch": "A18/A17 ko switches back: after Black's approach at C18, D19, E19 or F19, White's free retake needs its own approach; after White's C18 Black's needs one. Only Black's B19 (a capture in the other ko) or White's D19 makes it direct at once.",
+  "who_needs_the_ko": "A18/A17 ko barred: Black fails; A19/B19 ko barred: Black kills (the other ko stays open in each test).",
+  "fit": "symmetric (normal KO)",
+  "fit_reason": "The A18/A17 ko is mutual (1/1) and switches there and back for most approach choices, the owner's symmetric case; the second ko (A19/B19) is an approach ko for Black (White direct, Black 1 or 2).",
+  "notes": [
+   "Tree label A+1KO- implies Black wins at equal threats, but Black fails at balances 0 and 1 (count at least 2, decided in both areas)."
+  ]
+ },
+ "9883_2": {
+  "investment": "None needed: Black can capture at D18 now; White's capture at F19 is banned (Black just took at E19).",
+  "first_take": "Black E19 (the leaf's last move)",
+  "approach_points_same": "n/a",
+  "switch": "not run (counts undecided)",
+  "who_needs_the_ko": "undecided",
+  "fit": "none decides it",
+  "fit_reason": "Class, count and most profiles undecided at 4.8M; Black's capture at D18 is a real threat (n=0, decided), everything else is bracketed."
+ },
+ "7487_97": {
+  "investment": "None needed: White just took at A18 (ban A17); White can also capture A19 at B19.",
+  "first_take": "White A18 (the leaf's last move)",
+  "approach_points_same": "A18/A17 ko: disjoint (Black A15 or G19; White E18, plus B19 which is a capture in the other ko)",
+  "switch": "Switches there and back: after Black's approach (A15 or G19) White's free retake needs its own approach (E18 or B19), and after White's E18 Black's free retake needs its own (G19 or A15); count 1 in each case.",
+  "who_needs_the_ko": "not separable (two kos)",
+  "fit": "symmetric (normal KO)",
+  "fit_reason": "Both sides need one approach at different points and the ko switches back after each, the owner's symmetric case; the second ko (A19/B19) is an approach ko for Black.",
+  "notes": [
+   "Count 2, equal to the tree label A-1KO-."
+  ]
+ },
+ "2406_0_frame": {
+  "investment": "",
+  "first_take": "",
+  "approach_points_same": "",
+  "switch": "",
+  "who_needs_the_ko": "",
+  "fit": "approach ko",
+  "fit_reason": "Frame run of 2406_0, see that leaf."
+ },
+ "10408_3_frame": {
+  "investment": "",
+  "first_take": "",
+  "approach_points_same": "",
+  "switch": "",
+  "who_needs_the_ko": "",
+  "fit": "none decides it",
+  "fit_reason": "Frame run of 10408_3, see that leaf."
+ }
+}

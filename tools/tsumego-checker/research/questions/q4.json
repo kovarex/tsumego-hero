@@ -1,0 +1,458 @@
+{
+ "id": "q4",
+ "heading": "4. Problem 10005: structure or count",
+ "question": "Your S[A-1KO-] at this leaf matches the ko's structure when White takes at once: Black needs one approach. But Black can play that approach at once, and White's best answer is a second ko, so Black needs only one threat more than White where A-1KO- implies two: should the label follow the structure or the count?",
+ "options": [
+  {
+   "label": "A-1KO-",
+   "meaning": "Your label, by the structure when White takes at once. In besogo: Black needs one approach move to start a direct ko, and White takes first. It implies that Black needs two threats more than White, which is what Black needs if it retakes before approaching (Diagrams 4 to 6), one more than its best line (Diagrams 7 to 10). The checker would print the count beside it as a note."
+  },
+  {
+   "label": "A-1KO+",
+   "meaning": "The count, keeping the approach. In besogo: Black needs one approach move and takes first, which implies one threat more for Black, the count here. But here White takes first. besogo ranks it one step above A-1KO- for Black; in this problem no move's grade changes."
+  },
+  {
+   "label": "KO-",
+   "meaning": "The count as a plain ko: White takes first, and Black needs one threat more. It is the ko White takes if it waits (Diagrams 14 and 15); when White takes at once, it leaves out the approach Black then needs (Diagram 4). besogo ranks it above both approach forms for Black; in this problem no move's grade changes."
+  }
+ ],
+ "recommendation": "A-1KO-, your label, with the count printed as a note. When White takes at once, the ko is an approach ko by your definitions, and Black's one approach comes free because it also answers White's capture; if White waits, the ko is KO- with the same count (Diagrams 14 and 15), and besogo, which takes at White's turn the status lowest for Black, would still give the leaf your label. No grade in this problem depends on the choice.",
+ "text": [
+  "Diagrams 1 to 6 show the structure your label describes. Before any ko starts, Black fills a, an outside liberty of White's group, and White takes the ko (Diagram 2). White's capture is a real threat at once (Diagrams 2 and 3). Black's retake is not: Black must first fill b, one approach (Diagram 4). If Black retakes before approaching, White retakes for free after the approach, and Black needs a second threat (Diagrams 5 and 6). That is two threats more than White, the count A-1KO- implies.",
+  "Yet at the leaf Black needs only one threat more than White (Diagram 1). Black plays the approach at once, before retaking (Diagram 7). It also answers White's capture: after it, White can no longer follow the second ko with c (Diagrams 3 and 12). So White's best answer is to take the second ko (Diagram 8). Black retakes there with its one threat, and when White, with no threat, plays elsewhere, Black takes the main ko without one (Diagrams 9 and 10). Black saves the retake of Diagram 4.",
+  "By your definitions the ko White takes at once is an approach ko: White's capture threatens at once (Diagram 2), and only Black must approach before its own capture threatens (Diagram 4). It is not your 10kKO, since White's capture needs no investment. Nor is it your symmetric case, since White never needs an approach: after Black's approach, White's capture in the main ko no longer threatens (Diagram 5), but its capture in the second ko does, at once (Diagram 8). From then on each side's capture threatens in one of the two kos only. Your definitions do not cover two linked kos, and that is where the count of one comes from. As in part 1b, we read the leaf by the ko White takes.",
+  "What the checker prints. On the line where White takes at once, it reads the structure with forced passes: White's capture threatens (Diagram 2), Black's needs one approach (Diagram 4), and White took first, so it prints S[A-1KO-]. It also counts the leaf, finds one threat where the label implies two, and prints that beside the label: count 1, one better for Black than A-1KO-, with the line of Diagrams 7 to 10, and A-1KO+, the label that keeps the approach and takes the leaf's count. In the wider area the leaf's count stays undecided within 2,000,000 nodes, and the checker says so; of this section's 31 checks, 26 agree there, 5 stay undecided, and none disagrees.",
+  "Our question said that Black's best line uses the second ko. More exactly, the second ko is White's best answer to Black's approach (Diagrams 8 and 13), and Black's one threat goes there. It also missed that White can wait before taking, with the same count, and that Black then needs no approach after White's take (Diagrams 14 and 15). The rest of our question stands.",
+  "On the site the choice changes no grade in this problem (table). The leaf lies below Black's A18 at move 5, which besogo grades wrong under any of the three labels, since Black's B17 at move 5 kills outright, S[DEAD]. The choice matters where such a leaf has siblings with other ko labels: besogo ranks KO- and A-1KO+ above A-1KO- for Black."
+ ],
+ "positions": [
+  {
+   "problem": "10005",
+   "leaf": "D18 E18 D19 C19 A18 A17 C18 C17 B19 B17",
+   "tree": "A-1KO-",
+   "heading": "The structure: White takes first, Black needs one approach",
+   "text": [
+    "Black kills. White's group has three outside liberties, a, b and c in Diagram 1, and White can take a ko by capturing Black 5. Black needs a and b filled before its capture in that ko threatens anything; c is White's last liberty. Once White holds the ko, Black 9 is in atari at d (Diagram 2): a second ko."
+   ],
+   "diagrams": [
+    {
+     "start": "",
+     "moves": "D18 E18 D19 C19 A18 A17 C18 C17 B19 B17",
+     "labels": {
+      "A16": "a",
+      "G19": "b",
+      "E19": "c"
+     },
+     "caption": "The tree's line to the leaf marked S[A-1KO-], with Black to play. White's group has the outside liberties a, b and c, and White can take a ko by capturing Black 5.",
+     "text": [
+      "Black needs one ko threat more than White. The last two checks give White a threat too: Black still needs exactly one more."
+     ],
+     "checks": [
+      {
+       "status": "KO"
+      },
+      {
+       "balance": 1,
+       "opts": "end=1"
+      },
+      {
+       "count": [
+        2,
+        1
+       ],
+       "opts": "end=1",
+       "expect": "wins"
+      },
+      {
+       "count": [
+        1,
+        1
+       ],
+       "opts": "end=1",
+       "expect": "fails"
+      }
+     ]
+    },
+    {
+     "moves": "A16 A19",
+     "labels": {
+      "G19": "b",
+      "E19": "c",
+      "C19": "d"
+     },
+     "caption": "Black 11 fills a before any ko has started, and White 12 takes the ko. The Black stone at B19 is now in atari at d, a second ko.",
+     "text": [
+      "Black still needs one threat more than White, as at the leaf. If Black plays elsewhere once, White wins even against four ko threats: its capture is a real threat. If White may not play at d, its capture threatens nothing."
+     ],
+     "checks": [
+      {
+       "balance": 1,
+       "opts": "end=1"
+      },
+      {
+       "count": [
+        4,
+        0
+       ],
+       "opts": "pb=1,end=1",
+       "expect": "fails"
+      },
+      {
+       "count": [
+        4,
+        0
+       ],
+       "opts": "pb=1,end=1,fw=C19",
+       "expect": "wins"
+      }
+     ]
+    },
+    {
+     "moves": "A16 A19 pass C19 B19! E19",
+     "caption": "What White 12 threatens: if Black 13 plays elsewhere, White 14 takes the second ko. Even when Black 15 retakes after a ko threat, White 16 leaves three Black stones in atari, and Black fails even with four threats.",
+     "checks": [
+      {
+       "count": [
+        4,
+        0
+       ],
+       "opts": "end=1",
+       "expect": "fails"
+      }
+     ]
+    },
+    {
+     "moves": "A16 A19 A18!",
+     "labels": {
+      "G19": "b",
+      "E19": "c"
+     },
+     "caption": "Black 13 retakes after a ko threat elsewhere. White's group still has b and c, so Black's capture threatens nothing yet.",
+     "text": [
+      "With one free move Black still fails, with two it wins: Black needs one approach. If White may not retake at A19, one free move is enough, so White's only answer to the approach is the retake. Having spent one threat, Black still needs one more than White."
+     ],
+     "checks": [
+      {
+       "count": [
+        0,
+        4
+       ],
+       "opts": "pw=1,end=1",
+       "expect": "fails"
+      },
+      {
+       "count": [
+        0,
+        4
+       ],
+       "opts": "pw=2,end=1",
+       "expect": "wins"
+      },
+      {
+       "count": [
+        0,
+        4
+       ],
+       "opts": "pw=1,end=1,fw=A19",
+       "expect": "wins"
+      },
+      {
+       "balance": 1,
+       "opts": "end=1"
+      }
+     ]
+    },
+    {
+     "moves": "A16 A19 A18! pass G19 A19",
+     "labels": {
+      "E19": "c"
+     },
+     "caption": "White 14 plays elsewhere, Black 15 approaches at b, and White 16 retakes without a threat, since Black 15 captured nothing. Black needs a threat again.",
+     "checks": [
+      {
+       "balance": 1,
+       "opts": "end=1"
+      },
+      {
+       "count": [
+        4,
+        0
+       ],
+       "opts": "pb=1,end=1",
+       "expect": "wins"
+      }
+     ],
+     "text": [
+      "If Black plays elsewhere once, White still cannot win against four Black ko threats: after the approach, White's capture threatens nothing by itself. White's threat now lies in the second ko (Diagram 8)."
+     ]
+    },
+    {
+     "moves": "A16 A19 A18! pass G19 A19 A18!",
+     "labels": {
+      "E19": "c"
+     },
+     "caption": "Black 17 retakes after a second ko threat, and White's group is in atari at c. The ko is now direct: White needs a threat to retake.",
+     "text": [
+      "Played this way Black spends two threats, with Black 13 and Black 17: two more than White, the count A-1KO- implies."
+     ],
+     "checks": [
+      {
+       "count": [
+        0,
+        4
+       ],
+       "opts": "pw=1,end=1",
+       "expect": "wins"
+      },
+      {
+       "balance": 0,
+       "opts": "end=1"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "problem": "10005",
+   "leaf": "D18 E18 D19 C19 A18 A17 C18 C17 B19 B17",
+   "tree": "A-1KO-",
+   "heading": "The count: Black approaches at once, and its threat goes to the second ko",
+   "text": [
+    "Black does better than in Diagrams 4 to 6 by approaching at once, while White still holds the ko. White's best answer is the second ko. Black retakes there with its one threat, and its capture in the main ko then needs no threat at all. After the approach, in each ko only one side's capture threatens anything: Black's in the main ko (Diagram 10), White's in the second (Diagram 8). White's capture in the main ko (Diagram 5) and Black's in the second (Diagram 9) do not."
+   ],
+   "diagrams": [
+    {
+     "moves": "A16 A19 G19",
+     "labels": {
+      "E19": "c",
+      "C19": "d"
+     },
+     "caption": "Black 13 plays the approach at once, without retaking. Black still needs only one threat more than White, the count at the leaf.",
+     "text": [
+      "If White may not play at d, Black wins even without threats: the second ko is White's only resource now."
+     ],
+     "checks": [
+      {
+       "balance": 1,
+       "opts": "end=1"
+      },
+      {
+       "count": [
+        0,
+        0
+       ],
+       "opts": "end=1,fw=C19",
+       "expect": "wins"
+      }
+     ]
+    },
+    {
+     "moves": "A16 A19 G19 C19",
+     "labels": {
+      "E19": "c"
+     },
+     "caption": "White 14 takes the second ko by capturing the Black stone at B19, and three Black stones are in atari at c. If Black plays elsewhere, White wins even against four threats.",
+     "checks": [
+      {
+       "count": [
+        4,
+        0
+       ],
+       "opts": "pb=1,end=1",
+       "expect": "fails"
+      },
+      {
+       "balance": 1,
+       "opts": "end=1"
+      }
+     ]
+    },
+    {
+     "moves": "A16 A19 G19 C19 B19!",
+     "caption": "Black 15 retakes after a ko threat elsewhere, the one threat Black spends in this line. Now White needs a threat to retake.",
+     "checks": [
+      {
+       "balance": 0,
+       "opts": "end=1"
+      },
+      {
+       "count": [
+        0,
+        1
+       ],
+       "opts": "pw=1,end=1",
+       "expect": "fails"
+      }
+     ],
+     "text": [
+      "If White plays elsewhere once, Black still fails when White has one threat: Black's retake threatens nothing by itself. What it gains is the main ko, which Black can now take without a threat."
+     ]
+    },
+    {
+     "moves": "A16 A19 G19 C19 B19! pass A18",
+     "labels": {
+      "E19": "c"
+     },
+     "caption": "White 16 has no threat and plays elsewhere, and Black 17 takes the main ko without a threat, since White 16 captured nothing. White's group is in atari at c.",
+     "text": [
+      "Black has spent one threat and White none: one threat more than White, as at the leaf."
+     ],
+     "checks": [
+      {
+       "count": [
+        0,
+        4
+       ],
+       "opts": "pw=1,end=1",
+       "expect": "wins"
+      },
+      {
+       "balance": 0,
+       "opts": "end=1"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "problem": "10005",
+   "leaf": "D18 E18 D19 C19 A18 A17 C18 C17 B19 B17",
+   "tree": "A-1KO-",
+   "heading": "Why the approach can come at once",
+   "text": [
+    "Black's approach also answers White's capture. Before it, White's capture in the second ko wins even when Black retakes there (Diagram 3); after it, White cannot follow up at c (Diagram 12), and Black's retake holds until White finds a threat (Diagram 9). White cannot connect the main ko either (Diagram 11), and playing elsewhere is worse for White than taking the second ko (Diagram 13)."
+   ],
+   "diagrams": [
+    {
+     "moves": "A16 A19 G19 A18",
+     "labels": {
+      "E19": "c"
+     },
+     "caption": "If White 14 connects the ko instead, its group has only c left, and Black kills whatever the ko threats.",
+     "checks": [
+      {
+       "status": "DEAD"
+      }
+     ]
+    },
+    {
+     "moves": "A16 A19 G19 C19 B19! E19",
+     "caption": "After the approach, White 16 fails where it worked in Diagram 3: it leaves White's own group in atari, and Black kills whatever the ko threats.",
+     "checks": [
+      {
+       "status": "DEAD"
+      }
+     ]
+    },
+    {
+     "moves": "A16 A19 G19 pass A18",
+     "labels": {
+      "E19": "c"
+     },
+     "caption": "If White 14 plays elsewhere, Black 15 takes the main ko at once without a threat, and White's group is in atari at c. Black then wins with as many threats as White, one better for Black than Diagram 8.",
+     "checks": [
+      {
+       "balance": 0,
+       "opts": "end=1"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "problem": "10005",
+   "leaf": "D18 E18 D19 C19 A18 A17 C18 C17 B19 B17",
+   "tree": "A-1KO-",
+   "heading": "White can also wait",
+   "text": [
+    "White loses nothing by waiting at move 12. Black then fills b at once, and White must take the ko to save its group, which gives the position of Diagram 5 with no threat spent (Diagram 14). From there Black's capture threatens at once (Diagram 15), so in this line Black never needs an approach, and KO- describes the ko White takes, with the same count. Your A-1KO- describes the line in which White takes at once."
+   ],
+   "diagrams": [
+    {
+     "moves": "A16 pass G19 A19",
+     "labels": {
+      "E19": "c",
+      "C19": "d"
+     },
+     "caption": "White 12 plays elsewhere instead of taking, Black 13 fills b, and White 14 must take the ko, since its group was in atari at c. Black still needs only one threat more than White, the count at the leaf.",
+     "text": [
+      "If Black plays elsewhere once, White still cannot win against four Black ko threats, as in Diagram 5: its threat is the second ko at d."
+     ],
+     "checks": [
+      {
+       "balance": 1,
+       "opts": "end=1"
+      },
+      {
+       "count": [
+        4,
+        0
+       ],
+       "opts": "pb=1,end=1",
+       "expect": "wins"
+      }
+     ]
+    },
+    {
+     "moves": "A16 pass G19 A19 A18!",
+     "labels": {
+      "E19": "c"
+     },
+     "caption": "Black 15 retakes after a ko threat, and White's group is in atari at c again: Black's capture threatens at once, without an approach.",
+     "text": [
+      "If White plays elsewhere once, Black wins even against four White ko threats. Black has spent one threat and now needs as many as White: one more in all, as at the leaf."
+     ],
+     "checks": [
+      {
+       "count": [
+        0,
+        4
+       ],
+       "opts": "pw=1,end=1",
+       "expect": "wins"
+      },
+      {
+       "balance": 0,
+       "opts": "end=1"
+      }
+     ]
+    }
+   ]
+  }
+ ],
+ "table": {
+  "caption": "Grading on the site: besogo's own code (grading_impact.cjs) on Problem 10005's tree, with only this leaf changed. The solver's count at the leaf is one threat.",
+  "columns": [
+   "Label at the leaf",
+   "Threats beyond White's that the label implies",
+   "What it says in besogo",
+   "Moves whose grade changes"
+  ],
+  "rows": [
+   [
+    "S[A-1KO-] (the tree now)",
+    "two",
+    "Black needs one approach; White takes first",
+    "none"
+   ],
+   [
+    "S[A-1KO+]",
+    "one",
+    "Black needs one approach; Black takes first",
+    "none"
+   ],
+   [
+    "S[KO-]",
+    "one",
+    "no approach; White takes first",
+    "none"
+   ],
+   [
+    "S[DEAD], for comparison",
+    "none: no ko",
+    "Black kills outright",
+    "Black's A18 at move 5 and the five moves after it on the leaf's line become correct"
+   ]
+  ]
+ }
+}

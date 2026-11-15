@@ -1,0 +1,307 @@
+{
+ "id": "q1a",
+ "heading": "1a. What your 10kKO leaves have in common",
+ "question": "Do Diagrams 1 to 7 show what you mean by 10kKO? And what should the checker print on your 10kKO leaves where one side's capture is already a real threat, such as the first leaf of 13547 in Diagrams 13 to 17?",
+ "options": [
+  {"label": "10kKO", "meaning": "Keep your label. besogo grades 10kKO like an approach ko in which the attacker needs one approach, so in this KILL problem like A-1KO- and A-1KO+ alike, and no grading changes. But by your definitions this is an approach ko, not a 10kKO: White's capture threatens from the start (Diagram 14), so White can win by winning the ko at any time."},
+  {"label": "A-1KO-", "meaning": "Your approach ko: White takes first, and Black needs one approach and two threats more than White, as A-1KO- implies (Diagrams 13 to 17). besogo counts 10kKO equal to both A-1KO- and A-1KO+, but ranks A-1KO+ higher for Black, and the tree writes A-1KO+ on the neighbouring leaves. So writing A-1KO- on this leaf alone makes Black's A14 wrong at moves 11 and 13, and the problem's own status, which besogo takes from its best leaf, becomes A-1KO+."},
+  {"label": "A-1KO+", "meaning": "The tree's label for the same kind of approach ko at the next leaf (Diagrams 18 and 19). besogo grades it like 10kKO, so no move's grading changes; only the problem's own status becomes A-1KO+. But in besogo it says that Black takes first, which implies one threat more for Black; here White takes first and Black needs two."}
+ ],
+ "recommendation": "Yes to 10kKO for the shape of Diagrams 1 to 7, and for 10393 (Diagrams 8 to 12), whose extra White move costs nothing. On the leaves where one side's capture already threatens, the approach form your definition gives: A-1KO- on the first leaf of 13547. The checker should report your 10kKO there as notation, not as an error, wherever besogo counts the two labels equal, as on 13547; rewriting the tree is your choice, and on 13547 it changes the grading of Black's A14, because of the A-1KO+ leaves next to it.",
+ "text": [
+  "Your answer describes three cases. In an approach ko one side's capture already threatens, and only the other side must approach first. In 10kKO one side must make an investment that is wasted, whoever started. In the symmetric case, shown in part 1b, both sides need an approach and the ko switches there and back; you would call that a plain KO. Below, your 27 10kKO leaves are sorted by these definitions.",
+  "Diagrams 1 to 7 show the shape your clearest 10kKO leaves share (problem 10391): each side's capture needs the same one move at a shared liberty, and whoever plays it, the other side then captures for free and holds a direct ko. That is your 10kKO exactly. It cannot switch back, so it is not the symmetric case. The table lists three more leaves with this shape, and a fourth where White, the defender, is the side that needs the ko.",
+  "Diagrams 8 to 12 (problem 10393) have no ko on the board yet: White must make it, and White needs one move more than Black before its capture threatens. These moves cost White nothing in the count, so the leaf behaves like Diagrams 1 to 7. The table has one more leaf where one side needs an extra move, in 13549: there the ko is already on the board, the extra move is Black's, and the count is still one, as in Diagrams 1 to 7.",
+  "Diagrams 13 to 17 (problem 13547) show an approach ko by your own definition: White's capture threatens from the start, and only Black needs an approach. Diagrams 18 and 19 show the next leaf of the same tree, the same kind of approach ko with the same count, written A-1KO+. The table lists seven such leaves, five more where White's capture already threatens, seven the searches cannot decide, and one with no ko.",
+  "A correction to our question 1: it named 10408 as a leaf where each side's capture needs one approach, but Diagram 20 shows that White's capture there is a real threat at once. Part 1b corrects what we said about 10403, 9883 and 7487.",
+  "How to read the checks: when a side must pass, the other side gets free moves. A capture that wins with one free move is a real threat; a capture that needs two must first add a move, an approach or an investment. Every check searches the checker's own area. A wider area gives the same results for 10391, and for 10393 whenever a side must pass, but leaves several checks of 10393 and 13547, and both of 10408's, undecided."
+ ],
+ "positions": [
+  {
+   "problem": "10391",
+   "leaf": "A18 D19 B18 B19 A19",
+   "tree": "10kKO",
+   "heading": "Problem 10391, leaf 4: the shape of your clearest 10kKO leaves",
+   "text": [
+    "Black kills. White's group and Black's corner stones share the liberties a and b, and only Black needs the ko: without it, White lives (Diagram 1). After either side's capture the other side's stones still have a and b, so neither capture threatens anything until its side adds a move there (Diagrams 2 and 3). That move is the investment, and Diagrams 4 to 7 show that it is wasted whoever plays it."
+   ],
+   "diagrams": [
+    {
+     "start": "",
+     "moves": "A18 D19 B18 B19 A19",
+     "labels": {"A17": "a", "B17": "b"},
+     "caption": "The tree's line to the leaf, with White to play. Black can take the ko by capturing White 4, and a and b are the liberties both sides share.",
+     "text": ["If Black may never capture at C19, Black fails even with four threats: without the ko, White lives."],
+     "checks": [
+      {"status": "KO"},
+      {"balance": 1, "opts": "end=1"},
+      {"count": [4, 0], "opts": "end=1,fb=C19", "expect": "fails"}
+     ]
+    },
+    {
+     "moves": "pass C19",
+     "labels": {"A17": "a", "B17": "b"},
+     "caption": "White 6 plays elsewhere and Black 7 takes the ko. Black's capture is not a threat yet.",
+     "text": ["With one free move Black still fails, with two it wins, but not when barred from a and b: Black must add a move at a or b before its capture threatens anything."],
+     "checks": [
+      {"count": [0, 4], "opts": "end=1,pw=1", "expect": "fails"},
+      {"count": [0, 4], "opts": "end=1,pw=2", "expect": "wins"},
+      {"count": [0, 4], "opts": "end=1,pw=2,fb=A17;B17", "expect": "fails"}
+     ]
+    },
+    {
+     "moves": "pass C19 B19!",
+     "labels": {"A17": "a", "B17": "b"},
+     "caption": "White 8 retakes after a ko threat elsewhere. White's capture is no threat either.",
+     "text": ["One free move is not enough for White, two are, unless White is barred from a and b: White too must add a move at a or b first. Both sides need the same single move."],
+     "checks": [
+      {"count": [4, 0], "opts": "end=1,pb=1", "expect": "wins"},
+      {"count": [4, 0], "opts": "end=1,pb=2", "expect": "fails"},
+      {"count": [4, 0], "opts": "end=1,pb=2,fw=A17;B17", "expect": "wins"}
+     ]
+    },
+    {
+     "moves": "pass C19 pass B17 B19",
+     "labels": {"A17": "a"},
+     "caption": "Black invests with Black 9, and White 10 retakes at once without a threat, because Black 9 was not a ko capture. Now White threatens to capture Black's corner stones at a.",
+     "text": ["Black still needs one threat more than White, as at the leaf. The investment only started the ko, and White holds it."],
+     "checks": [
+      {"count": [4, 0], "opts": "end=1,pb=1", "expect": "fails"},
+      {"count": [4, 0], "opts": "end=1,pb=1,fw=A17", "expect": "wins"},
+      {"balance": 1, "opts": "end=1"}
+     ]
+    },
+    {
+     "moves": "pass C19 pass B17 B19 C19!",
+     "caption": "Black 11 retakes after a ko threat elsewhere, and this capture is a real threat too. The ko is now direct both ways and cannot switch back.",
+     "checks": [
+      {"count": [0, 4], "opts": "end=1,pw=1", "expect": "wins"},
+      {"balance": 0, "opts": "end=1"}
+     ]
+    },
+    {
+     "moves": "B17 C19",
+     "labels": {"A17": "a"},
+     "caption": "If White invests instead, with White 6, Black 7 takes the ko for free, and Black's capture is a real threat at once.",
+     "text": ["Now Black wins with as many threats as White: White's investment handed Black the ko. So White never invests and Black must, and the investment is wasted whoever makes it."],
+     "checks": [
+      {"count": [0, 4], "opts": "end=1,pw=1", "expect": "wins"},
+      {"balance": 0, "opts": "end=1"}
+     ]
+    },
+    {
+     "moves": "B17 C19 B19!",
+     "caption": "White 8 retakes after a ko threat elsewhere, and White's capture is a real threat as well. After White's investment too, the ko is direct both ways.",
+     "checks": [
+      {"count": [4, 0], "opts": "end=1,pb=1", "expect": "fails"}
+     ]
+    }
+   ]
+  },
+  {
+   "problem": "10393",
+   "leaf": "D19 B18 B19",
+   "tree": "10kKO",
+   "heading": "Problem 10393, leaf 1: no ko on the board yet",
+   "text": [
+    "Black lives. There is no ko yet: White must make one by playing at A19, which puts Black 3 in atari. Black's group and White's corner stones share a and b, as in Diagrams 1 to 7, and Black's group has one more liberty at c. So after White takes, Black still has a, b and c, and after Black retakes, White still has a and b."
+   ],
+   "diagrams": [
+    {
+     "start": "",
+     "moves": "D19 B18 B19",
+     "labels": {"A17": "a", "B17": "b", "E19": "c"},
+     "caption": "The tree's line, with White to play and no ko on the board.",
+     "checks": [
+      {"status": "KO"},
+      {"balance": 0, "opts": "end=1"}
+     ]
+    },
+    {
+     "moves": "A19 pass C19",
+     "labels": {"A17": "a", "B17": "b", "E19": "c"},
+     "caption": "White 4 makes the ko, Black 5 plays elsewhere, and White 6 takes it. White's capture needs two more White moves before it threatens: c, and a or b.",
+     "text": ["Two free moves are not enough for White, three are, unless White is barred from c, or from a and b. Black still needs only as many threats as White."],
+     "checks": [
+      {"count": [4, 0], "opts": "end=1,pb=2", "expect": "wins"},
+      {"count": [4, 0], "opts": "end=1,pb=3", "expect": "fails"},
+      {"count": [4, 0], "opts": "end=1,pb=3,fw=E19", "expect": "wins"},
+      {"count": [4, 0], "opts": "end=1,pb=3,fw=A17;B17", "expect": "wins"},
+      {"balance": 0, "opts": "end=1"}
+     ]
+    },
+    {
+     "moves": "A19 pass C19 B19!",
+     "labels": {"A17": "a", "B17": "b"},
+     "caption": "Black 7 retakes after a ko threat elsewhere, and Black's capture needs one move first, at a or b. So neither capture threatens anything yet.",
+     "checks": [
+      {"count": [0, 4], "opts": "end=1,pw=1", "expect": "fails"},
+      {"count": [0, 4], "opts": "end=1,pw=2", "expect": "wins"},
+      {"count": [0, 4], "opts": "end=1,pw=2,fb=A17;B17", "expect": "fails"}
+     ]
+    },
+    {
+     "moves": "A19 pass C19 pass E19 pass B17 B19",
+     "labels": {"A17": "a"},
+     "caption": "White invests twice, with White 8 at c and White 10, and Black 11 retakes for free. Black's capture is a real threat, and Black holds the ko.",
+     "text": ["Black needs only as many threats as White, the count at the leaf: White's two moves started the ko and bought nothing. Your 10kKO fits if an investment may be two moves. Problem 15220 of question 2 has the same corner, with c already filled by White."],
+     "checks": [
+      {"count": [0, 4], "opts": "end=1,pw=1", "expect": "wins"},
+      {"balance": 0, "opts": "end=1"}
+     ]
+    },
+    {
+     "moves": "A19 pass C19 B19! pass B17 C19",
+     "labels": {"A17": "a", "E19": "c"},
+     "caption": "If Black invests instead, with Black 9, White 10 retakes for free, and White's capture is a real threat at once. Black now needs one threat more than White: its investment handed White the ko.",
+     "checks": [
+      {"count": [4, 0], "opts": "end=1,pb=1", "expect": "fails"},
+      {"balance": 1, "opts": "end=1"}
+     ]
+    }
+   ]
+  },
+  {
+   "problem": "13547",
+   "leaf": "B18 B19 B17 C18 D19 A17 A18 D16 A16 A15 E19 C19 A14",
+   "tree": "10kKO",
+   "heading": "Problem 13547, leaf 1: an approach ko written 10kKO",
+   "text": [
+    "Black kills. White can take the ko at once, and White's capture always threatens: in your words, White can win by winning one ko at any time. Black's retake leaves White's stones with the liberties a and b, so Black must fill one of them before its capture threatens. That is your approach ko, and Black needs two threats more than White, as A-1KO- implies."
+   ],
+   "diagrams": [
+    {
+     "start": "",
+     "moves": "B18 B19 B17 C18 D19 A17 A18 D16 A16 A15 E19 C19 A14",
+     "labels": {"A19": "a", "C17": "b"},
+     "caption": "The tree's line, written 10kKO, with White to play. White can take the ko by capturing Black 9.",
+     "text": ["If nobody may ever take the ko, Black kills even without threats: here White is the side that needs it."],
+     "checks": [
+      {"status": "KO"},
+      {"balance": 2, "opts": "end=1"},
+      {"count": [0, 0], "opts": "end=1,fb=A16,fw=A17", "expect": "wins"}
+     ]
+    },
+    {
+     "moves": "A17",
+     "caption": "White 14 takes the ko, and the capture is a real threat at once: next White would connect at A16.",
+     "text": ["If Black plays elsewhere once, White wins even when Black has four threats, and Black survives that free move if White may not play at A16."],
+     "checks": [
+      {"count": [4, 0], "opts": "end=1,pb=1", "expect": "fails"},
+      {"count": [4, 0], "opts": "end=1,pb=1,fw=A16", "expect": "wins"},
+      {"balance": 2, "opts": "end=1"}
+     ]
+    },
+    {
+     "moves": "A17 A16!",
+     "labels": {"A19": "a", "C17": "b"},
+     "caption": "Black 15 retakes after a ko threat elsewhere, but its capture threatens nothing yet. Black needs one more move first, at a or b.",
+     "checks": [
+      {"count": [0, 4], "opts": "end=1,pw=1", "expect": "fails"},
+      {"count": [0, 4], "opts": "end=1,pw=2", "expect": "wins"},
+      {"count": [0, 4], "opts": "end=1,pw=2,fb=A19;C17", "expect": "fails"}
+     ]
+    },
+    {
+     "moves": "A17 A16! pass C17 A17",
+     "caption": "White 16 plays elsewhere, Black 17 approaches, and White 18 retakes for free. White's capture still threatens, and Black needs one threat more than White.",
+     "checks": [
+      {"count": [4, 0], "opts": "end=1,pb=1", "expect": "fails"},
+      {"balance": 1, "opts": "end=1"}
+     ]
+    },
+    {
+     "moves": "A17 A16! pass C17 A17 A16!",
+     "caption": "Black 19 retakes after a ko threat, and now Black's capture is a real threat too. After one approach it is a normal ko that White took first.",
+     "checks": [
+      {"count": [0, 4], "opts": "end=1,pw=1", "expect": "wins"},
+      {"balance": 0, "opts": "end=1"}
+     ]
+    }
+   ]
+  },
+  {
+   "problem": "13547",
+   "leaf": "B18 B19 B17 C18 D19 A17 A18 D16 A16 A15 E19 C19 C17 A17",
+   "tree": "A-1KO+",
+   "heading": "Problem 13547, leaf 2: the same kind of approach ko, written A-1KO+",
+   "text": [
+    "The next leaf of the same tree: Black 13 plays at C17 instead of A14, and White 14 takes the ko. As in Diagrams 14 and 15, White's capture is a real threat at once, Black's retake needs one more move, and the count is two, yet the tree writes A-1KO+ here and 10kKO there."
+   ],
+   "diagrams": [
+    {
+     "start": "B18 B19 B17 C18 D19 A17 A18 D16 A16 A15 E19 C19",
+     "moves": "C17 A17",
+     "caption": "Black 13 plays at C17 and White 14 takes the ko, a real threat at once.",
+     "checks": [
+      {"count": [4, 0], "opts": "end=1,pb=1", "expect": "fails"},
+      {"balance": 2, "opts": "end=1"}
+     ]
+    },
+    {
+     "moves": "A16!",
+     "caption": "Black 15 retakes after a ko threat, and again Black needs one more move before its capture threatens.",
+     "checks": [
+      {"count": [0, 4], "opts": "end=1,pw=1", "expect": "fails"},
+      {"count": [0, 4], "opts": "end=1,pw=2", "expect": "wins"}
+     ]
+    }
+   ]
+  },
+  {
+   "problem": "10408",
+   "leaf": "D17 B18 A18 C18 B19 C19 E19 A19",
+   "tree": "10kKO",
+   "heading": "Problem 10408, leaf 4: White's capture already threatens",
+   "text": [
+    "Black lives. Our question named 10408 as a leaf where each side's capture needs one approach. That was wrong: White's capture threatens at once, so whatever Black's capture needs, your definitions do not make this a 10kKO."
+   ],
+   "diagrams": [
+    {
+     "start": "",
+     "moves": "D17 B18 A18 C18 B19 C19 E19 A19",
+     "labels": {"A17": "a"},
+     "caption": "The tree's line: White 8 has just taken the ko, with Black to play. If Black plays elsewhere once, White captures Black 3 at a and wins.",
+     "text": ["White wins even when Black has four threats, and Black survives the same free move if White may not play at a."],
+     "checks": [
+      {"count": [4, 0], "opts": "end=1,pb=1", "expect": "fails"},
+      {"count": [4, 0], "opts": "end=1,pb=1,fw=A17", "expect": "wins"}
+     ]
+    }
+   ]
+  }
+ ],
+ "table": {
+  "caption": "Your 27 10kKO leaves, from the inventory's searches with the frozen engine in the checker's area (2406 also in a corner frame); the table is not re-run on this page. Leaves are counted from 1 in the order of the tree. Black needs and White needs: how many moves that side must add before its ko capture is a real threat (0: it is one already), with the points where it can play them. Count: how many ko threats the solver needs beyond its opponent's. Undecided: no result within 4.8 million nodes (800,000 for the searches after one investment).",
+  "columns": ["Leaf", "Goal", "At the leaf", "Black needs", "White needs", "Count", "After one investment", "Your definitions"],
+  "rows": [
+   ["Problem 10391, leaf 4 of 11", "Black kills", "White to play; Black can take", "1 (A17 or B17)", "1 (A17 or B17)", "1", "direct, held by the side that did not invest", "10kKO (Diagrams 1 to 7)"],
+   ["Problem 10051, leaf 12 of 28", "Black kills", "White to play; Black can take", "1 (D18 or D19)", "1 (D18 or D19)", "1", "direct, held by the side that did not invest", "10kKO"],
+   ["Problem 15513, leaf 1 of 1", "White kills", "Black to play; White can take", "1 (A17 or B17)", "1 (A17 or B17)", "1", "direct, held by the side that did not invest", "10kKO"],
+   ["Problem 15516, leaf 1 of 6", "Black kills", "White to play; Black can take", "1 (A16 or B16)", "1 (A16 or B16)", "1", "direct, held by the side that did not invest", "10kKO"],
+   ["Problem 13547, leaf 26 of 62", "Black kills", "White to play; White can take", "1 (A16 or C17)", "1 (A16 or C17)", "undecided", "direct, held by the side that did not invest", "10kKO shape, but here White, the defender, needs the ko"],
+   ["Problem 10393, leaf 1 of 4", "Black lives", "White to play; no ko yet", "1 (A17 or B17)", "2 (E19, and A17 or B17)", "0", "direct after White's two moves, held by Black", "10kKO if an investment may be two moves (Diagrams 8 to 12)"],
+   ["Problem 13549, leaf 14 of 42", "Black kills", "White to play; White can take", "2 (E19, at the edge of the area, and B17 or C17)", "1 (B17 or C17)", "1", "direct after White's investment; after Black's, Black still needs E19", "10kKO plus one Black move; your definitions do not say"],
+   ["Problem 13547, leaf 1 of 62", "Black kills", "White to play; White can take", "1 (A19 or C17)", "0", "2", "no investment: White's capture threatens", "approach ko, A-1KO- (Diagrams 13 to 17)"],
+   ["Problem 13541, leaf 1 of 24", "Black kills", "Black to play; White can take", "3", "0", "1", "no investment: White's capture threatens", "approach ko, though Black needs only one threat more than White"],
+   ["Problem 13541, leaf 6 of 24", "Black kills", "Black to play; White can take", "3", "0", "1", "no investment: White's capture threatens", "approach ko, though Black needs only one threat more than White"],
+   ["Problem 11280, leaf 9 of 45", "Black kills", "Black to play; White can take", "3", "0", "1", "no investment: White's capture threatens", "approach ko, though Black needs only one threat more than White"],
+   ["Problem 11280, leaf 18 of 45", "Black kills", "Black to play; White can take", "4", "0", "undecided", "no investment: White's capture threatens", "approach ko"],
+   ["Problem 13475, leaf 8 of 9", "Black lives", "Black to play; Black can take", "0", "3 (two of them at the edge of the area)", "-1", "no investment: Black's capture threatens", "approach ko, though the count is that of one approach"],
+   ["Problem 2406, leaf 1 of 14", "Black lives", "White to play; no ko yet, a throw-in starts it", "0", "1 (2 in the corner frame)", "-2 (-1 in the corner frame)", "no investment: Black's capture threatens", "approach ko"],
+   ["Problem 10408, leaf 4 of 13", "Black lives", "Black to play; White has just taken", "0 or 1 (undecided)", "0", "undecided", "no investment: White's capture threatens", "not 10kKO: White's capture threatens (Diagram 20)"],
+   ["Problem 11279, leaf 1 of 30", "Black kills", "Black to play; White can take", "0 to 3 (undecided)", "0", "undecided", "no investment: White's capture threatens", "not 10kKO: White's capture threatens"],
+   ["Problem 11282, leaf 7 of 22", "Black kills", "White to play; White can take", "0 to 2 (undecided)", "0", "undecided", "no investment: White's capture threatens", "not 10kKO: White's capture threatens"],
+   ["Problem 11282, leaf 8 of 22", "Black kills", "White to play; White can take", "0 to 2 (undecided)", "0", "undecided", "no investment: White's capture threatens", "not 10kKO: White's capture threatens"],
+   ["Problem 13547, leaf 19 of 62", "Black kills", "Black to play; White can take", "0 or 1 (undecided)", "0", "undecided", "no investment: White's capture threatens", "not 10kKO: White's capture threatens"],
+   ["Problem 10051, leaf 24 of 28", "Black kills", "White to play; White can take", "1 (D18 or D19)", "0 or 1 (undecided)", "undecided", "after Black's investment, White's free retake threatens", "undecided: 10kKO if White needs 1, approach ko if 0"],
+   ["Problem 11282, leaf 5 of 22", "Black kills", "White to play; White can take", "2", "1 (B17 or C17, among others)", "undecided", "undecided", "undecided"],
+   ["Problem 11282, leaf 6 of 22", "Black kills", "White to play; White can take", "0 to 2 (undecided)", "1", "undecided", "not run", "undecided"],
+   ["Problem 13547, leaf 20 of 62", "Black kills", "White to play; two kos, White can take in either", "1 (A16 or C17)", "0 or 1 at A18, 0 to 2 at E19 (undecided)", "undecided", "after Black's, White's free retake at A18 threatens", "undecided"],
+   ["Problem 13547, leaf 21 of 62", "Black kills", "Black to play; White can take", "2", "0 or 1 (undecided)", "undecided", "switches back after Black's C18, not after Black's A16", "undecided"],
+   ["Problem 13547, leaf 27 of 62", "Black kills", "White to play; Black can take", "0 or 1 (undecided)", "0 or 1 (undecided)", "undecided", "not run", "undecided"],
+   ["Problem 13661, leaf 5 of 12", "Black kills", "Black to play; White can take", "0 or 1 (undecided)", "0 or 1 (undecided)", "2", "not run", "undecided"],
+   ["Problem 2406, leaf 4 of 14", "Black lives", "White to play; no ko", "none", "none", "Black lives at every count tried", "no ko", "no ko: Black lives (research leaf c016, listed there as a site error)"]
+  ]
+ }
+}

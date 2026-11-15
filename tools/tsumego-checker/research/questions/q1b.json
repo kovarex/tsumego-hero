@@ -1,0 +1,491 @@
+{
+ "id": "q1b",
+ "heading": "1b. Leaves where both sides need an approach",
+ "question": "7487 leaf 98 is the only leaf here where each side needs its own approach and the ko switches there and back, your symmetric case, but it also has a second ko that gives White a direct threat. Should the checker print the plain KO from the count there (KO-2) or keep your A-1KO-, and should it keep 10kKO for leaves where one approach serves both sides, like 13549 leaf 10?",
+ "options": [
+  {
+   "label": "KO-2",
+   "meaning": "A plain ko that White took first, in which Black needs two ko threats more than White. besogo reads it as no approach moves, with Black needing one threat to start the ko, and ranks it above A-1KO- and 10kKO for Black. Writing it at this leaf flips no move's grading in problem 7487."
+  },
+  {
+   "label": "A-1KO-",
+   "meaning": "What the tree has: Black needs one approach move and White took first, the same count of two. besogo grades it exactly like 10kKO when Black kills. It leaves out that White needs an approach in this ko as well; only in the second ko, at B19, does Black alone need approaches."
+  },
+  {
+   "label": "10kKO",
+   "meaning": "What the checker's draft rule prints whenever each side needs one approach. besogo grades it like A-1KO- here, so it flips no move either. By your definition it belongs to 13549 leaf 10, where the investment is wasted, and not to this leaf."
+  }
+ ],
+ "recommendation": "Keep 10kKO where one approach serves both sides (13549 leaf 10), and the approach form where only one side needs approaches (10403). For 7487 leaf 98 the choice is yours, and it changes no grading. The ko White has just taken switches there and back, which by your answer is a plain KO (KO-2). But White can also spend its extra move capturing at c, which threatens at once (Diagram 7), and read that way the whole position is your approach ko, as your A-1KO- says. We would keep A-1KO-, and have the checker mark a switching ko next to a second ko for you instead of choosing.",
+ "text": [
+  "Our question 1 said that in 10403, 9883 and 7487 each side's capture needs one approach, and that besogo grades their labels like 10kKO. Both statements need correcting. Of these three, the solver finds each side needing an approach only in 7487 leaf 98: in 10403 White's capture needs none, and 9883 is undecided. And when Black kills, besogo grades 10kKO like an approach ko in which Black needs one approach. 10403's A+1KO- and 9883's A+1KO+ say that White needs it, so they rank higher for Black than 10kKO; only 7487's A-1KO- is graded the same.",
+  "We add 13549 leaf 10, which the tree writes as A-1KO+ but which has the shape of your 10kKO, so that the two cases can be compared. What separates them is the moment after one approach. If the other side's free retake is then a real threat, the investment only handed over a direct ko: your 10kKO. If the free retake still needs its own approach, the ko switches there and back: your normal KO.",
+  "So we propose for the checker: when each side needs one approach, print 10kKO if one approach makes the other side's free retake a threat, and the plain KO from the count if it does not; when only one side needs approaches, print the approach form; and when a second ko gives one side a direct threat, as in 7487, mark the leaf for you. The checker's draft rule prints 10kKO for both 7487 leaf 98 and 13549 leaf 10, so it needs this test. Problem 15220, leaf c081, is the subject of question 2."
+ ],
+ "positions": [
+  {
+   "problem": "7487",
+   "leaf": "B18 C17 G18 A18 A17 A16 A19 F18 C18 D18 C19 B17 D19 F19 E19 A18",
+   "tree": "A-1KO-",
+   "heading": "7487, leaf 98: each side needs its own approach",
+   "text": [
+    "White 16 has just taken the ko. Neither capture is a real threat yet: White needs one approach (Diagram 1) and so does Black (Diagram 2). Black can approach at a and White at b, and neither approach helps the other side (Diagrams 3 and 5).",
+    "So whoever approaches first gets an approach ko in its own favour: its next capture threatens, and the other side still has to approach (Diagrams 4 and 6). This ko is your symmetric case: both sides can go one direction or the other, and it switches there and back.",
+    "White also has a second ko at c, which exists while White holds the first one. There White's capture is a real threat at once and Black's retake needs one or two approaches (Diagrams 7 and 8): on its own, an approach ko in White's favour. The count of two covers the whole position, both kos included.",
+    "Read as a plain ko, the count gives KO-2: White took first, and Black needs two threats more than White (Diagram 1). But White's extra move need not be the approach at b: White can capture at c instead, which threatens at once (Diagram 7), and Black's retake there needs approaches (Diagram 8). So through the second ko White can win by winning one ko, as in your approach ko, and that reading gives the tree's A-1KO-, with the same count. Your definitions do not say how to read two kos together, and the checker's draft rule would print 10kKO."
+   ],
+   "diagrams": [
+    {
+     "start": "",
+     "moves": "B18 C17 G18 A18 A17 A16 A19 F18 C18 D18 C19 B17 D19 F19 E19 A18",
+     "labels": {
+      "G19": "a",
+      "E18": "b",
+      "B19": "c"
+     },
+     "caption": "The tree's line to the leaf marked S[A-1KO-]. White 16 has just taken the ko; Black can approach at a, White at b, and c is a second ko.",
+     "text": [
+      "The last two checks give White free moves while Black passes. With one, White still cannot win against four Black threats, so White's capture is not yet a threat; with two, White wins. White needs one approach."
+     ],
+     "checks": [
+      {
+       "status": "KO"
+      },
+      {
+       "balance": 2,
+       "opts": "end=1"
+      },
+      {
+       "count": [
+        4,
+        0
+       ],
+       "opts": "pb=1,end=1",
+       "expect": "wins"
+      },
+      {
+       "count": [
+        4,
+        0
+       ],
+       "opts": "pb=2,end=1",
+       "expect": "fails"
+      }
+     ]
+    },
+    {
+     "moves": "A17!",
+     "labels": {
+      "G19": "a"
+     },
+     "caption": "Black 17 retakes after a ko threat elsewhere. Black's capture is no threat yet either: with one free move Black still fails, with two it wins.",
+     "checks": [
+      {
+       "count": [
+        0,
+        4
+       ],
+       "opts": "pw=1,end=1",
+       "expect": "fails"
+      },
+      {
+       "count": [
+        0,
+        4
+       ],
+       "opts": "pw=2,end=1",
+       "expect": "wins"
+      }
+     ]
+    },
+    {
+     "moves": "A17! pass G19 A18",
+     "labels": {
+      "E18": "b"
+     },
+     "caption": "Black approaches with Black 19, and White 20 retakes without a threat, since the ko ban held only for White 18. White's capture still needs its own approach at b.",
+     "checks": [
+      {
+       "count": [
+        4,
+        0
+       ],
+       "opts": "pb=1,end=1",
+       "expect": "wins"
+      },
+      {
+       "count": [
+        4,
+        0
+       ],
+       "opts": "pb=2,end=1",
+       "expect": "fails"
+      }
+     ]
+    },
+    {
+     "moves": "A17! pass G19 A18 A17!",
+     "caption": "Black 21 retakes after a ko threat, and this capture is a real threat: White must retake at once. After Black's approach only White still needs one.",
+     "checks": [
+      {
+       "count": [
+        0,
+        4
+       ],
+       "opts": "pw=1,end=1",
+       "expect": "wins"
+      }
+     ]
+    },
+    {
+     "moves": "pass E18 A17",
+     "labels": {
+      "G19": "a"
+     },
+     "caption": "The other way round: Black 17 plays elsewhere, White approaches with White 18, and Black 19 retakes without a threat. Black's capture still needs its own approach at a.",
+     "checks": [
+      {
+       "count": [
+        0,
+        4
+       ],
+       "opts": "pw=1,end=1",
+       "expect": "fails"
+      },
+      {
+       "count": [
+        0,
+        4
+       ],
+       "opts": "pw=2,end=1",
+       "expect": "wins"
+      }
+     ]
+    },
+    {
+     "moves": "pass E18 A17 A18!",
+     "caption": "White 20 retakes after a ko threat, and now White's capture is a real threat. After White's approach only Black still needs one: the ko has switched the other way.",
+     "checks": [
+      {
+       "count": [
+        4,
+        0
+       ],
+       "opts": "pb=1,end=1",
+       "expect": "fails"
+      }
+     ]
+    },
+    {
+     "moves": "pass B19",
+     "caption": "The second ko: Black 17 plays elsewhere and White 18 captures at c. This capture is a real threat at once: if Black passes again, White wins even against four ko threats.",
+     "checks": [
+      {
+       "count": [
+        4,
+        0
+       ],
+       "opts": "pb=1,end=1",
+       "expect": "fails"
+      }
+     ]
+    },
+    {
+     "moves": "pass B19 A19!",
+     "caption": "Black 19 retakes after a ko threat. Black's capture is not a threat: one free move is not enough and three are, so Black needs one or two approaches in this ko.",
+     "checks": [
+      {
+       "count": [
+        0,
+        4
+       ],
+       "opts": "pw=1,end=1",
+       "expect": "fails"
+      },
+      {
+       "count": [
+        0,
+        4
+       ],
+       "opts": "pw=3,end=1",
+       "expect": "wins"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "problem": "13549",
+   "leaf": "B18 A18 C18 D19 A16 A17 C19 A15 E19 A16 A14 B19",
+   "tree": "A-1KO+",
+   "heading": "13549, leaf 10: one approach that serves both sides",
+   "text": [
+    "Here too each side's capture needs one approach (Diagrams 10 and 11). But both sides need the same move, at one of the two liberties the groups share, so one move serves both: whoever plays it, the other side retakes for free and its capture is a real threat at once (Diagrams 12 and 14).",
+    "So the investment only hands the opponent a direct ko (Diagram 13), whoever starts: your 10kKO. The count after Black's investment is one, the same as at the leaf. The checker would print 10kKO and report the tree's A-1KO+ as a difference in notation only: besogo grades the two exactly alike when Black kills, and changing it flips no move."
+   ],
+   "diagrams": [
+    {
+     "start": "",
+     "moves": "B18 A18 C18 D19 A16 A17 C19 A15 E19 A16 A14 B19",
+     "caption": "The tree's line to the leaf marked S[A-1KO+]. Black to play can take the ko at A19, and needs one ko threat more than White.",
+     "checks": [
+      {
+       "status": "KO"
+      },
+      {
+       "balance": 1,
+       "opts": "end=1"
+      }
+     ]
+    },
+    {
+     "moves": "A19",
+     "caption": "Black 13 takes the ko. Black's capture is not a threat yet: Black needs one approach.",
+     "checks": [
+      {
+       "count": [
+        0,
+        4
+       ],
+       "opts": "pw=1,end=1",
+       "expect": "fails"
+      },
+      {
+       "count": [
+        0,
+        4
+       ],
+       "opts": "pw=2,end=1",
+       "expect": "wins"
+      }
+     ]
+    },
+    {
+     "moves": "A19 B19!",
+     "caption": "White 14 retakes after a ko threat. White's capture needs one approach too.",
+     "checks": [
+      {
+       "count": [
+        4,
+        0
+       ],
+       "opts": "pb=1,end=1",
+       "expect": "wins"
+      },
+      {
+       "count": [
+        4,
+        0
+       ],
+       "opts": "pb=2,end=1",
+       "expect": "fails"
+      }
+     ]
+    },
+    {
+     "moves": "A19 pass C17 B19",
+     "caption": "Black 15 approaches at a point both sides need, and White 16 retakes without a threat. White's capture is a real threat at once, so Black 15 only started a direct ko for White.",
+     "checks": [
+      {
+       "count": [
+        4,
+        0
+       ],
+       "opts": "pb=1,end=1",
+       "expect": "fails"
+      },
+      {
+       "balance": 1,
+       "opts": "end=1"
+      }
+     ]
+    },
+    {
+     "moves": "A19 pass C17 B19 A19!",
+     "caption": "Black 17 retakes after a ko threat, and Black's capture is now a real threat too. Black 15 made the ko direct for both sides, but White got the first capture in it.",
+     "checks": [
+      {
+       "count": [
+        0,
+        4
+       ],
+       "opts": "pw=1,end=1",
+       "expect": "wins"
+      }
+     ]
+    },
+    {
+     "moves": "A19 B19! pass C17 A19",
+     "caption": "The other way round: White 16 invests on the same point while holding the ko, and Black 17 retakes without a threat. Now Black's capture is a real threat at once.",
+     "checks": [
+      {
+       "count": [
+        0,
+        4
+       ],
+       "opts": "pw=1,end=1",
+       "expect": "wins"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "problem": "10403",
+   "leaf": "B18 A18 C19 A16 A19",
+   "tree": "A+1KO-",
+   "heading": "10403, leaf 1: White's capture needs no approach",
+   "text": [
+    "White to play can take the ko at B19 (Diagram 16). That capture is a real threat at once, and Black's retake is not: Black needs at least one approach (Diagram 17). By your definitions this is an approach ko in White's favour: White can win by winning the ko at any time.",
+    "Our earlier test looked at the other ko shape, at a in Diagram 15. White 6 takes the atari off the White stone at A18, so that ko is gone while White holds this one.",
+    "The tree's A+1KO- says that White needs the approach, and it implies that Black wins with as many threats as White. The solver says Black fails even with one threat more (Diagram 15). The label should be an approach form in which Black needs the approaches, with a count of two or three, such as A-1KO-; the solver does not decide between two and three within 2,000,000 nodes. Changing the leaf flips no move, but the problem's own status, which besogo takes from its best leaf, would change from A+1KO- to the new label."
+   ],
+   "diagrams": [
+    {
+     "start": "",
+     "moves": "B18 A18 C19 A16 A19",
+     "labels": {
+      "A17": "a"
+     },
+     "caption": "The tree's line to the leaf marked S[A+1KO-], with White to play. Black fails with one ko threat more than White, and wins with three more.",
+     "checks": [
+      {
+       "status": "KO"
+      },
+      {
+       "count": [
+        1,
+        0
+       ],
+       "opts": "end=1",
+       "expect": "fails"
+      },
+      {
+       "count": [
+        3,
+        0
+       ],
+       "opts": "end=1",
+       "expect": "wins"
+      }
+     ]
+    },
+    {
+     "moves": "B19",
+     "caption": "White 6 takes the ko and puts Black's stone at B18 in atari. If Black passes once, White wins even against four ko threats.",
+     "checks": [
+      {
+       "count": [
+        4,
+        0
+       ],
+       "opts": "pb=1,end=1",
+       "expect": "fails"
+      }
+     ]
+    },
+    {
+     "moves": "B19 A19!",
+     "caption": "Black 7 retakes after a ko threat. One free move is not enough for Black and three are, so Black needs one or two approaches.",
+     "checks": [
+      {
+       "count": [
+        0,
+        4
+       ],
+       "opts": "pw=1,end=1",
+       "expect": "fails"
+      },
+      {
+       "count": [
+        0,
+        4
+       ],
+       "opts": "pw=3,end=1",
+       "expect": "wins"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "problem": "9883",
+   "leaf": "A16 B17 B19 F19 G19 D19 E19",
+   "tree": "A+1KO+",
+   "heading": "9883, leaf 3: undecided",
+   "text": [
+    "Black 7 has just taken the ko, and a second ko waits at a, where Black can take the White stone at E18. The solver decides neither the count nor whether Black's capture is a real threat within 2,000,000 nodes, in the checker's area or a wider one. So we cannot tell whether both sides need an approach here, and we withdraw it as an example."
+   ],
+   "diagrams": [
+    {
+     "start": "",
+     "moves": "A16 B17 B19 F19 G19 D19 E19",
+     "labels": {
+      "D18": "a"
+     },
+     "caption": "The tree's line to the leaf marked S[A+1KO+]; White to play may not retake at once. With two free moves Black wins, so Black needs at most one approach.",
+     "checks": [
+      {
+       "count": [
+        0,
+        4
+       ],
+       "opts": "pw=2,end=1",
+       "expect": "wins"
+      }
+     ]
+    }
+   ]
+  }
+ ],
+ "table": {
+  "caption": "The four leaves at a glance, in the checker's area; Black kills in all four problems. In the wider area 12 of this section's 32 checks stay undecided within 2,000,000 nodes, and the other 20 agree.",
+  "columns": [
+   "Leaf",
+   "Tree",
+   "Approaches needed",
+   "After one approach",
+   "Your definition",
+   "Label",
+   "Checker's draft rule"
+  ],
+  "rows": [
+   [
+    "7487, leaf 98",
+    "A-1KO-",
+    "one each, at different points; a second ko where only Black needs approaches",
+    "the free retake still needs its own: switches there and back",
+    "symmetric: normal KO (the second ko alone: approach ko in White's favour)",
+    "KO-2",
+    "10kKO"
+   ],
+   [
+    "13549, leaf 10",
+    "A-1KO+",
+    "one each, the same move for both",
+    "the free retake is a real threat: the investment is wasted",
+    "10kKO",
+    "10kKO, graded like A-1KO+",
+    "10kKO"
+   ],
+   [
+    "10403, leaf 1",
+    "A+1KO-",
+    "White none, Black one or two",
+    "does not apply",
+    "approach ko in White's favour",
+    "an approach form in which Black needs the approaches, count two or three",
+    "does not apply: White needs none"
+   ],
+   [
+    "9883, leaf 3",
+    "A+1KO+",
+    "undecided",
+    "undecided",
+    "undecided",
+    "none proposed",
+    "undecided"
+   ]
+  ]
+ }
+}
