@@ -274,20 +274,31 @@ player is White:
 - **Strict label:** with the rule switched off (`approach_rule=False`), e = -d_full - a. For c121 this gives
   A-1KO-2. The report prints the strict label as well, so the rule is never hidden.
 
-### D9 Mutual approach and the ten-thousand-year ko
+### D9 Mutual approach, the ten-thousand-year ko and the plain ko (the owner's definitions)
 
-- **Mutual approach:** n_S ≥ 1 and n_O ≥ 1, both confirmed by the held-ko check. Neither side's capture threatens
-  anything.
-- **If the attacker's count is 1, the label is 10kKO.** It is printed with its counted A-form: a = -1 for KILL or
-  +1 for LIVE, the attacker's approach, and e = -d_full - a.
-  - c081: 10kKO, A-form A+1KO-.
-  - besogo ranks 10kKO equal to every such A-form, whatever the threats.
-- **The net reading** is a = n_O - n_S with e = -d_full - a. It is printed too because the owner and the research
-  sometimes use it. For c081 it gives KO+, the research's settled label.
-- **If the attacker's count is ≥ 2,** the label is the A-form with the attacker's count, flagged "mutual approach
-  (the defender needs n too)" (open question 2).
-- d(P_S) and d(P_O) are reported but not required. Design 3 required them to be equal ("holding the ko is worth
-  nothing"). c081 satisfies that, but no other leaf was checked.
+The owner's answer to question 1 (14 November), verbatim: "If it is symmetrical, like both white and black need extra
+approach, and it can swith there and back, I would rate it as normal KO. It isn't approach ko, as in approach ko it
+isn't symmetrical, one side needs to do approaches to start a normal ko, while the other side can win by winning one ko
+at any time. In 10kKO, one side needs to do investment, which is then "wasted" to start a ko no matter who started."
+He asked to see examples first; the question page (`research/questions/`, parts 1a and 1b) shows them, and the rule
+below waits for his confirmation there.
+
+- **Approach ko** (one side's capture is a real threat, the other side needs n ≥ 1 approaches): the label of D6.
+- **Mutual approach** (n_S ≥ 1 and n_O ≥ 1, both confirmed by the held-ko check). The **switch test** decides: after one
+  side's approach and the other side's free retake, is that retake a real threat (D3 with k = 1)?
+  - **Yes, whichever side approaches:** the investment only hands the other side a direct ko, and the ko cannot switch
+    back. The approach is the same move for both sides, at a liberty both groups share. This is the owner's **10kKO**
+    (10391, 10393, 15513, 15516, c081). Print 10kKO.
+  - **No:** the free retake still needs its own approach, so the ko switches there and back: the owner's **plain
+    KO**. Print the KO sign from the count: a = 0, e = -d_full.
+  - **A second ko gives one side a direct threat** (7487 leaf 98): his definitions do not decide. Print both readings
+    and mark the leaf for the owner.
+- **No ko on the board yet**, one side must make it with moves that cost nothing in the count (10393): 10kKO.
+- With more than one approach on a side, the test applies to each round; a mixed result is marked for the owner.
+- The tree's 10kKO on a leaf where one side's capture threatens from the start (seven leaves, for example 13547) is
+  reported as notation where besogo ranks the two labels equal, and as a difference otherwise.
+- The earlier draft printed 10kKO for every mutual 1/1 and the net reading beside it. The question page found that
+  wrong for the switching case.
 
 ### D10 Double ko and superko (cycle rules in the modes)
 
@@ -599,7 +610,7 @@ searches (Appendix B). Other rows rest on the proposals' runs and the research.
 | c001 | 9 | KO-2 | **KO-2** | Both direct, d=2. White's local threat is B19, answered at C19 | proposals |
 | c005 | 562 | KO+2 | **KO+2** | Both direct, d=-1. Black's local threat A19 (answered B19): barring it while banned gives d=0. Barring it for the whole search breaks the kill | verified |
 | c012 | 2154 | KO-2 | **KO-2** | White has one local threat in three forms (C19, D18, A19). Only barring all three moves d | proposals |
-| c014 | 2359 B17 B19 E18 A18 | KO- | **KO-** | d=1. Black's A19 is direct (White must connect A15), and White's retake is direct too (n=0/0). The extra part (x=-1) is Black's E19: a stage Black needs before connecting at B19, during which White retakes free. Alternative reading A-1KO+, same count (open question 3) | verified |
+| c014 | 2359 B17 B19 E18 A18 | KO- | **KO-** (the question page recommends A-1KO+; owner to decide) | d=1. Black's A19 is direct (White must connect A15), and White's retake is direct too (n=0/0). The extra part (x=-1) is Black's E19: a stage Black needs before connecting at B19, during which White retakes free. Alternative reading A-1KO+, same count (open question 3) | verified |
 | c013 | 2359 B17 B19 A17 C19 A19 A18 | unclear | KO-2 in the solver's areas, **flagged** | The narrow area walls H19. On the open board (judges) Black's C18 is a local threat answered by E18, so KO+ (White took first, +1 local threat). The design labels the area it is given and warns at the wall | research |
 | c052 | 11320 | definition | DEAD (narrow) / KO-6 (wider), **flagged** | Five White local threats, A15/B14 and onwards, along an open edge. The frame decides (open edge: KO-4) | research |
 | c081 | 15220 | KO+ (judges: "10kKO would describe the shape as well") | **10kKO** (= A+1KO-; net reading KO+) | With the end playout in the corner frame, d=0. Preparation W A19, then White takes first at C19. White needs A17 (n_O=1). After Black's free retake Black needs A17 and B17 (n_S=1); connecting at C19 at once dies to the A17 sacrifice (pyramid four). Mutual approach with the attacker's count 1. In the official areas the count is undecided, so "?" with the frame's value | verified (corner frame) |
@@ -607,7 +618,7 @@ searches (Appendix B). Other rows rest on the proposals' runs and the research.
 | c027 | 8937 | DDKO | **DDKO** | Mode A kills under rule 0 and not under rule 2. Ko points D18/D19 and A15/A16. The old output BENT4 came from the bent-four test repeating the plain kill | verified |
 | c006 | 840 | ADKO | **ADKO** expected in the B10 frame | The narrow area gives DEAD because it cuts White off from B10. That is an area problem this design does not fix | not run |
 | c016 | 2406 … C18 B18 | ALIVE | **ALIVE** | No ko | research |
-| 10005 | D18 E18 D19 C19 A18 A17 C18 C17 B19 B17 | owner A-1KO- | **A-1KO-** (count 1) | Preparation B A16, then White takes first at A19. Black needs one approach (E19 or G19); White's capture is direct. d_conv = 2 but d_full = 1, so the count is one better for Black (the line uses the second ko at B19/C19). Design 2's static test gave n=2 | verified |
+| 10005 | D18 E18 D19 C19 A18 A17 C18 C17 B19 B17 | owner A-1KO- | **A-1KO-** (count 1) | Preparation B A16, then White takes first at A19. Black needs one approach (G19; E19 is the capture, not an approach); White's capture is direct. d_conv = 2 but d_full = 1, so the count is one better for Black (the line uses the second ko at B19/C19). Design 2's static test gave n=2 | verified |
 
 The approach notation in the c011, c019, c048, c073 and c102 rows is the reviewers' literal besogo label. The
 research settled the counted equivalent because the checker could not tell approaches apart. The comparison
@@ -623,11 +634,10 @@ reports these as `ko-approach` splits with the same count.
    d_full < d_conv (a negative gain) and the report says so. This is not seen in the data yet.
 3. **Approach against stage** rests on the held-ko check. Mixed structures (approach plus stage, a ko that changes
    shape) fall back to the counted label, flagged "mixed".
-4. **10kKO** has been checked only on c081 and 10391.
-   - 10391: class KO and d=1. White's connection at C19 lets Black kill, and Black's C19 capture leaves d=1.
-   - The mutual-approach rule matches Design 2's static result on the owner's 10kKO leaves (10051, 10391, 10408).
-   - On three mutual leaves the owner wrote A-forms instead (10403, 9883, a 7487 leaf). besogo grades these equal,
-     so they are reported as `ko-notation`.
+4. **10kKO** follows the owner's definitions (D9). The question page sorted all 27 of his 10kKO leaves by them (its
+   inventory is in `research/questions/inventory/`). The earlier claims here were wrong: 10408 is not mutual (White's
+   capture threatens at once), and besogo does not grade 10403's A+1KO- and 9883's A+1KO+ like 10kKO (in a KILL
+   problem 10kKO ranks like A-1).
 5. **The end playout changes every counted search.** It needs the regression run, and it can turn wrong fast
    answers into undecided ones (c081's narrow area).
 6. **Double ko and superko by cycle rules.** DDKO is confirmed on c027; ADKO and superko are untested. Rule 3 with
@@ -716,41 +726,22 @@ All three proposals print A-1KO- here.
 
 ---
 
-## 13. Open questions for the owner
+## 13. Questions for the owner, and where they stand
 
-1. **c121 and the approach rule.**
-   - Black needs **3** threats more than White, because White's H19, played in the round Black's retake gives
-     White, later becomes the local threat F19. With White playing elsewhere instead, Black needs **2**.
-   - The design prints **A-1KO-** (your label), with "count 3, strict A-1KO-2, White's H19". Is that the rule you
-     mean: whatever the opponent gains with the free move of an approach round is part of the approach and never
-     an extra threat? Or should such a gain be counted (A-1KO-2)?
-   - And which stones are the target in 15678: the whole group (ALIVE) or the top stones (this ko)? This is the same
-     question as c119 and c120.
-2. **Mutual approach kos and 10kKO.**
-   - When both sides' captures need one approach, the design prints 10kKO. You wrote 10kKO in 10051, 10391 and
-     10408, but A-forms in 10403 (A+1KO-), 9883 (A+1KO+) and a 7487 leaf (A-1KO-). besogo grades them equal.
-     Which should the checker print, and should it flag the other?
-   - When the attacker needs two or more approaches and the defender needs some too, is that still 10kKO or an
-     A-form?
-3. **c081 (15220).** The research settled KO+ (count 0). The shape is the classic ten-thousand-year ko, so the
-   design prints 10kKO (= A+1KO-, the same count). besogo ranks 10kKO above KO+ for Black living, so this choice
-   changes grading against sibling leaves. KO+ or 10kKO?
-4. **c014 (2359).**
-   - Black's capture forces White to connect at A15, but Black then needs E19 before it can connect the ko, and
-     White retakes free in between.
-   - The design prints KO- (the research's label: E19 counted as an extra move).
-   - A-1KO+ (E19 as an approach after the forced exchange) has the same count and ranks lower for Black. Which is
-     yours?
-5. **Count better than the label (10005).** Your A-1KO- matches the structure: one approach, White takes first.
-   But Black's best line uses the second ko at B19/C19 and needs only 1 threat. Should the label follow the
-   structure (the design's default) or the count?
-6. **Equal counts at the leaf.** When the side to move can either take first and then approach, or approach first
-   and let the opponent take, the counts are equal. The design prints the label besogo ranks higher for the side to
-   move (fewer approaches). Is that how you label?
-7. **Frames.** c013 and c052 change label with how open the board edge is assumed to be. Should open edges be
-   closed by stones in the SGF, so that one label is right?
-8. **DSKO/ASKO and SEKI+.** Neither has data. The design reads superko as positional superko, and SEKI+ as "the
-   solver keeps sente". Is that what you mean?
+1. **c121 and the approach rule: answered.** The owner set S[A-1KO-] on the site (14 November): what the opponent
+   gains with the free move of an approach round belongs to the approach. The gain is printed beside the label. The
+   target question of 15678 (whole group or the top stones) is still open.
+2. **Mutual approach, 10kKO and the plain ko: answered in principle (D9).** He wanted examples before settling it;
+   the question page, parts 1a and 1b, shows them and asks him to confirm.
+3. **c081 (15220):** the question page recommends 10kKO, the textbook shape (problem 15513 marks the same corner
+   10kKO). No move's grading changes in 15220; the earlier claim that it would was wrong.
+4. **c014 (2359):** the question page recommends A-1KO+: only Black needs the extra move at E19, and White can win the
+   ko once at any time. This reverses the earlier KO-. No move's grading changes.
+5. **10005:** the question page recommends the structure, A-1KO-, with the count printed as a note. No move's grading
+   changes.
+6. **Equal counts at the leaf:** the label besogo ranks higher for the side to move (default, not yet confirmed).
+7. **Frames (c013, c052):** the open-board decision in the research report.
+8. **DSKO/ASKO and SEKI+:** positional superko, and a seki where the solver keeps sente (defaults, no data).
 
 ---
 
@@ -808,6 +799,8 @@ The judge used about 2 minutes of engine time in total. The longest single searc
 ---
 
 ## Addendum (15 November): what the question page found
+
+Items 1 to 3 below are now in D9, section 11 and section 13.
 
 The page `research/questions/` (question 1's inventory is in `research/questions/inventory/`) checked the design's
 claims about mutual approach and three single leaves against the owner's own labels and definitions. Changes the
