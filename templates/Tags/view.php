@@ -39,7 +39,7 @@ use App\Utility\Util;
 		<?php if($canDeleteTag)
 		{ ?>
 			|
-			<form method="post" action="/tags/delete/<?php echo $tag->id; ?>" style="display:inline" onsubmit="return confirm('Delete this tag? It will be removed from every problem that has it.');">
+			<form method="post" action="/tags/delete/<?php echo $tag->id; ?>" class="inline-form" onsubmit="return confirm('Delete this tag? It will be removed from every problem that has it.');">
 				<input type="submit" class="btn btn--sm btn--danger" value="Delete" id="tag-delete">
 			</form>
 		<?php } ?>

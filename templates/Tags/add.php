@@ -7,7 +7,7 @@
 
 ?>
 <div class="tags-container">
-<div class="tags-content" style="text-align:center">
+<div class="tags-content tags-content--centered">
 	<h1>Add Tag</h1>
 	<form method="post" action="/tags/addAction">
 		<div class="stack">

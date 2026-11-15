@@ -507,6 +507,12 @@ nav ul .menuIcons1 {
 .menuIcons2 {
   padding: 4px 10px;
 }
+/* The history of a problem: its title and table centred, as wide as the table */
+.problem-history {
+  text-align: center;
+  width: fit-content;
+  margin: 0 auto;
+}
 .historyLink {
   color: var(--color-red) !important;
 }

@@ -56,7 +56,7 @@ use App\Utility\ViteManifest;
 			<?php if (!UserTable::signsInOnlyWithGoogle($user)): ?>
 			<tr>
 				<td colspan="2">
-					<div id="email-form" style="display:none;margin-top:3px;">
+					<div id="email-form" class="settings-account__form" hidden>
 						<?php
 						echo '<form action="/users/emailPreference" id="UserEmailPreferenceForm" method="post" accept-charset="utf-8"><div hidden><input type="hidden" name="_method" value="POST"/></div>';
 						echo '<div class="input"><input type="email" name="email" placeholder="New e-mail" aria-label="New e-mail" maxlength="' . UserTable::EMAIL_MAX_LENGTH . '" class="settings-account__field" required="required"></div>';
@@ -74,7 +74,7 @@ use App\Utility\ViteManifest;
 			</tr>
 			<tr>
 				<td colspan="2">
-					<div id="password-form" style="display:none;margin-top:3px;">
+					<div id="password-form" class="settings-account__form" hidden>
 						<?php
 						echo '<form action="/users/passwordPreference" id="UserPasswordPreferenceForm" method="post" accept-charset="utf-8"><div hidden><input type="hidden" name="_method" value="POST"/></div>';
 						echo '<div class="input"><input type="password" name="current" placeholder="Current password" aria-label="Current password" autocomplete="current-password" class="settings-account__field" required="required"></div>';

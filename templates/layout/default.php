@@ -234,7 +234,7 @@ $friendsBadge = $friendRequests > 0
 								<label for="board-picker-toggle" id="boardsInMenu" class="dropdown__trigger">
 									<img id="boardsButtonImage" src="/img/boards-icon1.png" width="25px">
 								</label>
-								<input class="dropdown__open" type="checkbox" id="board-picker-toggle" style="display:none;">
+								<input class="dropdown__open" type="checkbox" id="board-picker-toggle" hidden>
 								<label for="board-picker-toggle" class="dropdown__overlay"></label>
 								<div class="dropdown__menu">
 									<table id="dropdowntable"></table>

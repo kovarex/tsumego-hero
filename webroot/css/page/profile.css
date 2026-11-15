@@ -20,6 +20,9 @@
   }
 }
 /* Settings: the fields of a new e-mail and password */
+.settings-account__form {
+	margin-top: 3px;
+}
 .settings-account__field {
   width: 150px;
 }

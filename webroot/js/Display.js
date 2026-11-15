@@ -56,6 +56,8 @@ class Display
 
 	static showElement(element)
 	{
+		//An element first hidden by its hidden attribute
+		element.hidden = false;
 		let display = Display.oldDisplay.get(element);
 		if (!display && element.style.display === 'none')
 			element.style.display = '';

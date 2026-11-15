@@ -9,7 +9,7 @@
  */
 
 ?>
-<div style="text-align: center;width: fit-content;margin: 0 auto;">
+<div class="problem-history">
 <h2>History of <a href="/<?php echo $setConnection->id; ?>"><?php echo h($set->title) . ' - ' . $setConnection->num; ?></a></h2>
 <?php
 use App\Utility\ChartRenderer;

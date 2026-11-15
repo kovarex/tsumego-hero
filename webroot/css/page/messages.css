@@ -106,10 +106,6 @@
 	color: var(--color-text-muted);
 }
 
-.messages-unread-count[hidden]
-{
-	display: none;
-}
 
 /* ── Finding a player ── */
 

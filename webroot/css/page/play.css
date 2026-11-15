@@ -98,6 +98,9 @@
   padding: 20px;
   text-align: left;
 }
+.tags-content--centered {
+  text-align: center;
+}
 .existing-tags-list {
   padding: 20px;
   text-align: center;

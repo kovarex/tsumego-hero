@@ -8,6 +8,12 @@
 
 @layer base
 {
+	/* An element with the hidden attribute stays hidden, whatever display its class gives it */
+	[hidden]
+	{
+		display: none !important;
+	}
+
 	/* Element defaults. Moved out of the legacy page CSS so that
 	   components (components layer) can override them cleanly. */
 	html
