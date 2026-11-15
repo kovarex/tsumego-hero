@@ -228,7 +228,7 @@
   align-items: center;
 }
 .demote-admin__error {
-  color: #d63a49;
+  color: var(--color-red);
 }
 
 /* Step 1 of merging two problems: a short form, not stretched over the page */

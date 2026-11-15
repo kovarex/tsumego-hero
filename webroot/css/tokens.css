@@ -369,6 +369,50 @@
 		--color-red-dark: #8b3a3a;
 		--color-red-darker: #4a2020;
 		--color-red-light: #ff8080;
+		/* ── Colours of single components, the same in both themes ── */
+		/* The place medals of a challenge (SVG fills) */
+		--challenge-ribbon-left: #3b6fd8;
+		--challenge-ribbon-right: #d8463b;
+		--challenge-place-number: #2b2207;
+		--challenge-gold-rim: #b8860b;
+		--challenge-gold-face: #f4c430;
+		--challenge-silver-rim: #7d868f;
+		--challenge-silver-face: #d5dadf;
+		--challenge-bronze-rim: #8c5523;
+		--challenge-bronze-face: #d99a5b;
+		/* A tile of the menus (boards, collection size): a light top over a dark bottom, stronger under the pointer */
+		--tile-shade: linear-gradient(rgba(200, 200, 200, 0.15), rgba(33, 33, 33, 0.2));
+		--tile-shade-hover: linear-gradient(rgba(200, 200, 200, 0.35), rgba(33, 33, 33, 0.4));
+		--classes-picker-shade: linear-gradient(rgba(169, 169, 169, 0.30), rgba(0, 0, 0, 0.35));
+		/* The glow of a golden problem */
+		--gold-glow-shadow: 0 1px 4px rgba(218, 165, 32, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+		--gold-glow-border: rgba(180, 140, 30, 0.4);
+		--gold-stripe: rgba(233, 196, 90, 0.55);
+		/* The stones of a goal on the play page */
+		--stone-black-fill: radial-gradient(circle at 35% 30%, #666, #000 70%);
+		--stone-white-fill: radial-gradient(circle at 35% 30%, #fff, #ccc 80%);
+		--stone-white-border: #888;
+		/* The note under a field of the problem editor */
+		--play-edit-note: #888;
+		/* The time slider */
+		--slider-text: hsl(138, 0%, 47%);
+		--slider-thumb: hsl(138, 0%, 60%);
+		--slider-track: rgb(200, 200, 200);
+		/* Comments: a sequence of coordinates, and the overlays shown while a comment is dragged onto an issue */
+		--coord-sequence-background: rgba(109, 179, 242, 0.12);
+		--issue-drop-target: rgba(91, 192, 222, 0.85);
+		--issue-drop-target-active: rgba(51, 122, 183, 0.9);
+		--issue-drop-source: rgba(240, 173, 78, 0.85);
+		--issue-drop-source-active: rgba(200, 127, 10, 0.9);
+		/* The bands of a toast */
+		--toast-banner: linear-gradient(rgb(100, 100, 100), rgb(36, 36, 36));
+		--toast-banner-error: linear-gradient(rgb(217, 109, 112), rgb(202, 63, 76));
+		--toast-banner-success: linear-gradient(rgb(26, 181, 88), rgb(18, 121, 59));
+		/* The dark base a rank's colour is mixed with in a rank chip */
+		--rank-chip-base: #161616;
+		/* About: the shadow of a timeline card and the frame of the picture shown large */
+		--timeline-card-shadow-tint: rgba(50, 50, 93, 0.25);
+		--about-picture-frame: #333;
 	}
 
 	/* ── Theme tokens: light is default (:root) ── */

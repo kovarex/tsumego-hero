@@ -63,10 +63,7 @@
   white-space: nowrap;
   cursor: pointer;
   text-decoration: none;
-  background-image: linear-gradient(
-    rgba(200, 200, 200, 0.15),
-    rgba(33, 33, 33, 0.2)
-  ) !important;
+  background-image: var(--tile-shade) !important;
 }
 .display1 {
   font-size: var(--text-xl);
@@ -326,19 +323,19 @@
   text-align: center;
 }
 #sliderText {
-  color: hsl(138, 0%, 47%);
+  color: var(--slider-text);
   font-weight: var(--weight-normal);
   font-size: 20px;
 }
 .slider {
-  --SliderColor: hsl(138, 0%, 60%);
+  --SliderColor: var(--slider-thumb);
   -webkit-appearance: none;
   width: 230px;
   margin: 50px auto;
   height: 8px;
   border-radius: var(--radius-sm);
   margin-bottom: 15px;
-  background-color: rgb(200, 200, 200);
+  background-color: var(--slider-track);
   cursor: pointer;
 }
 /* --------------------------- webkit browsers */
@@ -518,11 +515,11 @@
   vertical-align: -0.12em;
 }
 .play-goal__stone--black {
-  background: radial-gradient(circle at 35% 30%, #666, #000 70%);
+  background: var(--stone-black-fill);
 }
 .play-goal__stone--white {
-  border: 1px solid #888;
-  background: radial-gradient(circle at 35% 30%, #fff, #ccc 80%);
+  border: 1px solid var(--stone-white-border);
+  background: var(--stone-white-fill);
 }
 .play-stake {
   display: flex;
@@ -973,7 +970,7 @@
   width: 100%;
 }
 .play-edit__note {
-  color: #888;
+  color: var(--play-edit-note);
 }
 .play-edit__part {
   margin-bottom: var(--space-3);

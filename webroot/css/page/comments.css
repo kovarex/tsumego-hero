@@ -174,7 +174,7 @@
 
 /* A long sequence wraps between its moves like the rest of the text; each line keeps its background */
 .go-coord-group--sequence {
-	background: rgba(109, 179, 242, 0.12);
+	background: var(--coord-sequence-background);
 	border-radius: var(--radius-sm);
 	padding: 0 2px;
 	box-decoration-break: clone;
@@ -372,7 +372,7 @@
 	left: 0;
 	right: 0;
 	bottom: 0;
-	background: rgba(91, 192, 222, 0.85);
+	background: var(--issue-drop-target);
 	display: none;
 	align-items: center;
 	justify-content: center;
@@ -388,17 +388,17 @@
 	text-shadow: 0 1px 2px rgba(0,0,0,0.3);
 }
 .tsumego-issue__drop-overlay--active {
-	background: rgba(51, 122, 183, 0.9);
+	background: var(--issue-drop-target-active);
 	border-color: var(--color-white);
 }
 /* Source issue overlay - different color for return */
 
 .tsumego-issue__drop-overlay--source {
-	background: rgba(240, 173, 78, 0.85);
+	background: var(--issue-drop-source);
 	border-color: var(--color-warning);
 }
 .tsumego-issue__drop-overlay--source.tsumego-issue__drop-overlay--active {
-	background: rgba(200, 127, 10, 0.9);
+	background: var(--issue-drop-source-active);
 	border-color: var(--color-white);
 }
 .tsumego-dnd__issue-dropzone {

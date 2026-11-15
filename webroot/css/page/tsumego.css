@@ -440,8 +440,8 @@ a[data-tsumego-id]:hover .tooltip-desc
 {
 	background: linear-gradient(135deg, var(--status-g-color), var(--status-g-highlight), var(--status-g-color));
 	color: var(--medal-gold-fg);
-	box-shadow: 0 1px 4px rgba(218, 165, 32, 0.5), inset 0 1px 0 rgba(255,255,255,0.3);
-	border: 1px solid rgba(180, 140, 30, 0.4);
+	box-shadow: var(--gold-glow-shadow);
+	border: 1px solid var(--gold-glow-border);
 	position: relative;
 	overflow: hidden;
 }
