@@ -1684,6 +1684,182 @@
   "nodes": 32029
  },
  {
+  "id": "11278",
+  "line": "B18 A18 C18 B17 C19 D19 A19 B19",
+  "authored": "KO-",
+  "goal": "KILL",
+  "area": "narrow",
+  "class": "KO",
+  "class_open": [
+   "BENT4"
+  ],
+  "status_text": "KO, BENT4 not ruled out (bent-four test undecided at 408,359 nodes)",
+  "label": {
+   "label": "A-1KO-",
+   "strict_label": null,
+   "strict_from_parts": null,
+   "net_label": null,
+   "alternative": null,
+   "second_ko": null,
+   "class": "KO",
+   "class_inferred": false,
+   "class_open": [
+    "BENT4"
+   ],
+   "class_open_tests": [
+    {
+     "part": "bent-four",
+     "nodes": 2008359,
+     "open": [
+      "BENT4"
+     ]
+    }
+   ],
+   "count": null,
+   "count_decided": false,
+   "d_conv": 2,
+   "first_take": {
+    "side": "W",
+    "point": "B19",
+    "how": "leaf",
+    "preparation": []
+   },
+   "approaches": {
+    "S": 1,
+    "O": 0
+   },
+   "local_threats": [],
+   "stages": [],
+   "gain": {
+    "side": "W",
+    "total": null,
+    "located": 0,
+    "unlocated": null
+   },
+   "gain_rounds": [],
+   "text": "A-1KO- (class KO, BENT4 not ruled out (bent-four test undecided at 2,008,359 nodes)): White took first (B19). Black needs one approach (A17; A16, F19 undecided) before the ko is direct. After it, the direct ko is a plain KO-: Black needs 1 threat more than White, and nobody has a local threat. Label count: Black needs 2 threats more than White. Full count undecided (at least 2). Undecided: bent-four (2008359 nodes), approach alternatives B (12000012 nodes), count (70002620 nodes).",
+   "lines": [],
+   "areas": {
+    "narrow": "A-1KO-"
+   },
+   "warnings": [
+    "bent-four test undecided",
+    "S approach move F19 touches the area wall",
+    "approach line: round 1: no free retake after the approach"
+   ],
+   "undecided": [
+    {
+     "part": "bent-four",
+     "search": "solve bentfour",
+     "nodes": 2008359,
+     "area": "narrow"
+    },
+    {
+     "part": "approach alternatives B",
+     "search": "W to move s=1 o=0 end=2,pv=1",
+     "nodes": 2000002,
+     "area": "narrow"
+    },
+    {
+     "part": "approach alternatives B",
+     "search": "W to move s=2 o=0 end=2,pv=1",
+     "nodes": 2000002,
+     "area": "narrow"
+    },
+    {
+     "part": "approach alternatives B",
+     "search": "W to move s=3 o=0 end=2,pv=1",
+     "nodes": 2000002,
+     "area": "narrow"
+    },
+    {
+     "part": "approach alternatives B",
+     "search": "W to move s=4 o=0 end=2,pv=1",
+     "nodes": 2000002,
+     "area": "narrow"
+    },
+    {
+     "part": "approach alternatives B",
+     "search": "W to move s=6 o=0 end=2,pv=1",
+     "nodes": 2000002,
+     "area": "narrow"
+    },
+    {
+     "part": "approach alternatives B",
+     "search": "W to move s=5 o=0 end=2,pv=1",
+     "nodes": 2000002,
+     "area": "narrow"
+    },
+    {
+     "part": "count",
+     "search": "B to move s=3 o=0 end=2,pv=1",
+     "nodes": 14000524,
+     "area": "narrow"
+    },
+    {
+     "part": "count",
+     "search": "B to move s=5 o=0 end=2,pv=1",
+     "nodes": 14000524,
+     "area": "narrow"
+    },
+    {
+     "part": "count",
+     "search": "B to move s=6 o=0 end=2,pv=1",
+     "nodes": 14000524,
+     "area": "narrow"
+    },
+    {
+     "part": "count",
+     "search": "B to move s=4 o=0 end=2,pv=1",
+     "nodes": 14000524,
+     "area": "narrow"
+    },
+    {
+     "part": "count",
+     "search": "B to move s=2 o=0 end=2,pv=1",
+     "nodes": 14000524,
+     "area": "narrow"
+    }
+   ],
+   "nodes": 92133918,
+   "seconds": 191.77,
+   "comparison": [
+    {
+     "kind": "class-open",
+     "severity": "info",
+     "authored": "KO-",
+     "label": "A-1KO-",
+     "open": [
+      "BENT4"
+     ],
+     "tree_open": false,
+     "text": "BENT4 not ruled out (bent-four test undecided at 2,008,359 nodes)"
+    },
+    {
+     "kind": "ko-approach",
+     "severity": "major",
+     "authored": "KO-",
+     "label": "A-1KO-",
+     "same_count": false
+    },
+    {
+     "kind": "ko-count",
+     "severity": "info",
+     "authored": "KO-",
+     "label": "A-1KO-",
+     "tree_count": 1,
+     "count": null,
+     "bracket": [
+      2,
+      7
+     ]
+    }
+   ]
+  },
+  "seconds": 192.8,
+  "nodes": 92570013
+ },
+ {
   "id": "11280",
   "line": "B18 A18 C18 D19 A16 A17 C19 A15 A14 B19 A19 A16",
   "authored": "10kKO",
@@ -6737,6 +6913,313 @@
   "nodes": 756
  },
  {
+  "id": "11279",
+  "line": "B18 A18 C18 D19 B17 A16 A17 C19 A19 B19 A14 A18",
+  "authored": "A-1KO+",
+  "goal": "KILL",
+  "area": "narrow",
+  "class": "KO",
+  "class_open": [
+   "BENT4"
+  ],
+  "status_text": "KO, BENT4 not ruled out (bent-four test undecided at 400,394 nodes)",
+  "label": {
+   "label": "A-1KO-",
+   "strict_label": "A-1KO-3",
+   "strict_from_parts": null,
+   "net_label": null,
+   "alternative": null,
+   "second_ko": null,
+   "class": "KO",
+   "class_inferred": false,
+   "class_open": [
+    "BENT4"
+   ],
+   "class_open_tests": [
+    {
+     "part": "bent-four",
+     "nodes": 2000394,
+     "open": [
+      "BENT4"
+     ]
+    }
+   ],
+   "count": 4,
+   "count_decided": true,
+   "d_conv": 2,
+   "first_take": {
+    "side": "W",
+    "point": "A18",
+    "how": "leaf",
+    "preparation": []
+   },
+   "approaches": {
+    "S": 1,
+    "O": 0
+   },
+   "local_threats": [],
+   "stages": [],
+   "gain": {
+    "side": "W",
+    "total": 2,
+    "located": 0,
+    "unlocated": 2
+   },
+   "gain_rounds": [
+    {
+     "round": 1,
+     "move": null,
+     "value": 0
+    }
+   ],
+   "text": "A-1KO- (class KO, BENT4 not ruled out (bent-four test undecided at 2,000,394 nodes)): White took first (A18). Black needs one approach (F19) before the ko is direct. After it, the direct ko is a plain KO-: Black needs 1 threat more than White, and nobody has a local threat. Label count: Black needs 2 threats more than White. Full count 4. +2 of the gain not located. Strict label A-1KO-3. Undecided: bent-four (2000394 nodes), count (4000004 nodes), gain round 1 (42000585 nodes).",
+   "lines": [
+    {
+     "moves": "A19! pass F19 A18 A19! pass C17",
+     "first": 1,
+     "caption": "The approach line: Black approaches while White plays elsewhere",
+     "start": "B18 A18 C18 D19 B17 A16 A17 C19 A19 B19 A14 A18",
+     "name": "approach",
+     "text": "1 B A19! (threat 1), 2 W elsewhere (approach round), 3 B F19 (approach), 4 W A18 (free retake), 5 B A19! (threat 2), 6 W elsewhere, 7 B C17 (captures)"
+    }
+   ],
+   "areas": {
+    "narrow": "A-1KO-"
+   },
+   "warnings": [
+    "bent-four test undecided",
+    "S approach move F19 touches the area wall"
+   ],
+   "undecided": [
+    {
+     "part": "bent-four",
+     "search": "solve bentfour",
+     "nodes": 2000394,
+     "area": "narrow"
+    },
+    {
+     "part": "count",
+     "search": "B to move s=5 o=1 end=2,pv=1",
+     "nodes": 2000002,
+     "area": "narrow"
+    },
+    {
+     "part": "count",
+     "search": "B to move s=4 o=1 end=2,pv=1",
+     "nodes": 2000002,
+     "area": "narrow"
+    },
+    {
+     "part": "gain round 1",
+     "search": "B to move s=3 o=0 end=2,pv=1",
+     "nodes": 14000209,
+     "area": "narrow"
+    },
+    {
+     "part": "gain round 1",
+     "search": "B to move s=1 o=0 end=2,pv=1",
+     "nodes": 14000195,
+     "area": "narrow"
+    },
+    {
+     "part": "gain round 1",
+     "search": "B to move s=2 o=0 end=2,pv=1",
+     "nodes": 14000181,
+     "area": "narrow"
+    }
+   ],
+   "nodes": 8032808,
+   "seconds": 27.09,
+   "comparison": [
+    {
+     "kind": "class-open",
+     "severity": "info",
+     "authored": "A-1KO+",
+     "label": "A-1KO-",
+     "open": [
+      "BENT4"
+     ],
+     "tree_open": false,
+     "text": "BENT4 not ruled out (bent-four test undecided at 2,000,394 nodes)"
+    },
+    {
+     "kind": "ko-threats",
+     "severity": "minor",
+     "authored": "A-1KO+",
+     "label": "A-1KO-"
+    },
+    {
+     "kind": "ko-count",
+     "severity": "info",
+     "authored": "A-1KO+",
+     "label": "A-1KO-",
+     "tree_count": 1,
+     "count": 4
+    }
+   ]
+  },
+  "seconds": 28.4,
+  "nodes": 8435945
+ },
+ {
+  "id": "11279",
+  "line": "B18 A18 C18 D19 A17 B17 A19 C19 A14 A16 F19 A18",
+  "authored": "A-1KO+",
+  "goal": "KILL",
+  "area": "narrow",
+  "class": "KO",
+  "class_open": [
+   "BENT4"
+  ],
+  "status_text": "KO, BENT4 not ruled out (bent-four test undecided at 400,285 nodes)",
+  "label": {
+   "label": "A-1KO-",
+   "strict_label": null,
+   "strict_from_parts": "A-1KO-",
+   "net_label": null,
+   "alternative": null,
+   "second_ko": null,
+   "class": "KO",
+   "class_inferred": false,
+   "class_open": [
+    "BENT4"
+   ],
+   "class_open_tests": [
+    {
+     "part": "bent-four",
+     "nodes": 2000285,
+     "open": [
+      "BENT4"
+     ]
+    }
+   ],
+   "count": null,
+   "count_decided": false,
+   "d_conv": 2,
+   "first_take": {
+    "side": "W",
+    "point": "A18",
+    "how": "leaf",
+    "preparation": []
+   },
+   "approaches": {
+    "S": 1,
+    "O": 0
+   },
+   "local_threats": [],
+   "stages": [],
+   "gain": {
+    "side": "W",
+    "total": null,
+    "located": 0,
+    "unlocated": null
+   },
+   "gain_rounds": [
+    {
+     "round": 1,
+     "move": null,
+     "value": 0
+    }
+   ],
+   "text": "A-1KO- (class KO, BENT4 not ruled out (bent-four test undecided at 2,000,285 nodes)): White took first (A18). Black needs one approach (B19, or C17) before the ko is direct. After it, the direct ko is a plain KO-: Black needs 1 threat more than White, and nobody has a local threat. Label count: Black needs 2 threats more than White. Full count undecided (between 2 and 4). Undecided: bent-four (2000285 nodes), count (28000122 nodes), gain round 1 (56000792 nodes).",
+   "lines": [
+    {
+     "moves": "A17! pass B19 A18 A17! pass C17",
+     "first": 1,
+     "caption": "The approach line: Black approaches while White plays elsewhere",
+     "start": "B18 A18 C18 D19 A17 B17 A19 C19 A14 A16 F19 A18",
+     "name": "approach",
+     "text": "1 B A17! (threat 1), 2 W elsewhere (approach round), 3 B B19 (approach), 4 W A18 (free retake), 5 B A17! (threat 2), 6 W elsewhere, 7 B C17 (captures)"
+    }
+   ],
+   "areas": {
+    "narrow": "A-1KO-"
+   },
+   "warnings": [
+    "bent-four test undecided"
+   ],
+   "undecided": [
+    {
+     "part": "bent-four",
+     "search": "solve bentfour",
+     "nodes": 2000285,
+     "area": "narrow"
+    },
+    {
+     "part": "count",
+     "search": "B to move s=3 o=0 end=2,pv=1",
+     "nodes": 14000061,
+     "area": "narrow"
+    },
+    {
+     "part": "count",
+     "search": "B to move s=2 o=0 end=2,pv=1",
+     "nodes": 14000061,
+     "area": "narrow"
+    },
+    {
+     "part": "gain round 1",
+     "search": "B to move s=2 o=0 end=2,pv=1",
+     "nodes": 14000181,
+     "area": "narrow"
+    },
+    {
+     "part": "gain round 1",
+     "search": "B to move s=3 o=0 end=2,pv=1",
+     "nodes": 14000206,
+     "area": "narrow"
+    },
+    {
+     "part": "gain round 1",
+     "search": "B to move s=2 o=0 end=2,pv=1",
+     "nodes": 14000196,
+     "area": "narrow"
+    },
+    {
+     "part": "gain round 1",
+     "search": "B to move s=3 o=0 end=2,pv=1",
+     "nodes": 14000209,
+     "area": "narrow"
+    }
+   ],
+   "nodes": 99075701,
+   "seconds": 216.06,
+   "comparison": [
+    {
+     "kind": "class-open",
+     "severity": "info",
+     "authored": "A-1KO+",
+     "label": "A-1KO-",
+     "open": [
+      "BENT4"
+     ],
+     "tree_open": false,
+     "text": "BENT4 not ruled out (bent-four test undecided at 2,000,285 nodes)"
+    },
+    {
+     "kind": "ko-threats",
+     "severity": "minor",
+     "authored": "A-1KO+",
+     "label": "A-1KO-"
+    },
+    {
+     "kind": "ko-count",
+     "severity": "info",
+     "authored": "A-1KO+",
+     "label": "A-1KO-",
+     "tree_count": 1,
+     "count": null,
+     "bracket": [
+      2,
+      4
+     ]
+    }
+   ]
+  },
+  "seconds": 216.9,
+  "nodes": 99476261
+ },
+ {
   "id": "11282",
   "line": "B18 A18 C18 D19 C19 B19 A19 A17 A14 A16 F19",
   "authored": "10kKO",
@@ -8529,6 +9012,194 @@
  },
  {
   "id": "13547",
+  "line": "B18 B19 B17 C18 D19 A17 A18 D16 A16 A15 C17 A17",
+  "authored": "A-1KO+",
+  "goal": "KILL",
+  "area": "narrow",
+  "class": "KO",
+  "class_open": [
+   "BENT4"
+  ],
+  "status_text": "KO, BENT4 not ruled out (bent-four test undecided at 400,988 nodes)",
+  "label": {
+   "label": "A-1KO-",
+   "strict_label": null,
+   "strict_from_parts": "A-1KO-",
+   "net_label": null,
+   "alternative": null,
+   "second_ko": null,
+   "class": "KO",
+   "class_inferred": false,
+   "class_open": [
+    "BENT4"
+   ],
+   "class_open_tests": [
+    {
+     "part": "bent-four",
+     "nodes": 2000988,
+     "open": [
+      "BENT4"
+     ]
+    }
+   ],
+   "count": null,
+   "count_decided": false,
+   "d_conv": 2,
+   "first_take": {
+    "side": "W",
+    "point": "A17",
+    "how": "leaf",
+    "preparation": []
+   },
+   "approaches": {
+    "S": 1,
+    "O": 0
+   },
+   "local_threats": [],
+   "stages": [],
+   "gain": {
+    "side": "W",
+    "total": null,
+    "located": 0,
+    "unlocated": null
+   },
+   "gain_rounds": [
+    {
+     "round": 1,
+     "move": null,
+     "value": 0
+    }
+   ],
+   "text": "A-1KO- (class KO, BENT4 not ruled out (bent-four test undecided at 2,000,988 nodes)): White took first (A17). Black needs one approach (A14) before the ko is direct. After it, the direct ko is a plain KO-: Black needs 1 threat more than White, and nobody has a local threat. Label count: Black needs 2 threats more than White. Full count undecided (between 4 and 5). Undecided: bent-four (2000988 nodes), approach alternatives B (8000008 nodes), count (14000518 nodes), gain round 1 (84001141 nodes).",
+   "lines": [
+    {
+     "moves": "A16! pass A14 A17 A16! pass C19",
+     "first": 1,
+     "caption": "The approach line: Black approaches while White plays elsewhere",
+     "start": "B18 B19 B17 C18 D19 A17 A18 D16 A16 A15 C17 A17",
+     "name": "approach",
+     "text": "1 B A16! (threat 1), 2 W elsewhere (approach round), 3 B A14 (approach), 4 W A17 (free retake), 5 B A16! (threat 2), 6 W elsewhere, 7 B C19 (captures)"
+    }
+   ],
+   "areas": {
+    "narrow": "A-1KO-"
+   },
+   "warnings": [
+    "bent-four test undecided"
+   ],
+   "undecided": [
+    {
+     "part": "bent-four",
+     "search": "solve bentfour",
+     "nodes": 2000988,
+     "area": "narrow"
+    },
+    {
+     "part": "approach alternatives B",
+     "search": "W to move s=4 o=0 end=2,pv=1",
+     "nodes": 2000002,
+     "area": "narrow"
+    },
+    {
+     "part": "approach alternatives B",
+     "search": "W to move s=6 o=0 end=2,pv=1",
+     "nodes": 2000002,
+     "area": "narrow"
+    },
+    {
+     "part": "approach alternatives B",
+     "search": "W to move s=5 o=0 end=2,pv=1",
+     "nodes": 2000002,
+     "area": "narrow"
+    },
+    {
+     "part": "approach alternatives B",
+     "search": "W to move s=3 o=0 end=2,pv=1",
+     "nodes": 2000002,
+     "area": "narrow"
+    },
+    {
+     "part": "count",
+     "search": "B to move s=4 o=0 end=2,pv=1",
+     "nodes": 14000518,
+     "area": "narrow"
+    },
+    {
+     "part": "gain round 1",
+     "search": "B to move s=4 o=0 end=2,pv=1",
+     "nodes": 14000192,
+     "area": "narrow"
+    },
+    {
+     "part": "gain round 1",
+     "search": "B to move s=6 o=0 end=2,pv=1",
+     "nodes": 14000185,
+     "area": "narrow"
+    },
+    {
+     "part": "gain round 1",
+     "search": "B to move s=5 o=0 end=2,pv=1",
+     "nodes": 14000185,
+     "area": "narrow"
+    },
+    {
+     "part": "gain round 1",
+     "search": "B to move s=4 o=0 end=2,pv=1",
+     "nodes": 14000194,
+     "area": "narrow"
+    },
+    {
+     "part": "gain round 1",
+     "search": "B to move s=6 o=0 end=2,pv=1",
+     "nodes": 14000191,
+     "area": "narrow"
+    },
+    {
+     "part": "gain round 1",
+     "search": "B to move s=5 o=0 end=2,pv=1",
+     "nodes": 14000194,
+     "area": "narrow"
+    }
+   ],
+   "nodes": 136097317,
+   "seconds": 381.67,
+   "comparison": [
+    {
+     "kind": "class-open",
+     "severity": "info",
+     "authored": "A-1KO+",
+     "label": "A-1KO-",
+     "open": [
+      "BENT4"
+     ],
+     "tree_open": false,
+     "text": "BENT4 not ruled out (bent-four test undecided at 2,000,988 nodes)"
+    },
+    {
+     "kind": "ko-threats",
+     "severity": "minor",
+     "authored": "A-1KO+",
+     "label": "A-1KO-"
+    },
+    {
+     "kind": "ko-count",
+     "severity": "info",
+     "authored": "A-1KO+",
+     "label": "A-1KO-",
+     "tree_count": 1,
+     "count": null,
+     "bracket": [
+      4,
+      5
+     ]
+    }
+   ]
+  },
+  "seconds": 382.7,
+  "nodes": 136504809
+ },
+ {
+  "id": "13547",
   "line": "B18 B19 B17 C18 D19 A17 A18 D16 A16 A15 E19 C19 C17 A17",
   "authored": "A-1KO+",
   "goal": "KILL",
@@ -9532,6 +10203,138 @@
   },
   "seconds": 0.0,
   "nodes": 7683
+ },
+ {
+  "id": "13959",
+  "line": "C19 C18 D18 D19",
+  "authored": "A-1KO-",
+  "goal": "LIVE",
+  "area": "narrow",
+  "class": "KO",
+  "class_open": [
+   "BENT4"
+  ],
+  "status_text": "KO, BENT4 not ruled out (bent-four test undecided at 400,396 nodes)",
+  "label": {
+   "label": "KO?",
+   "strict_label": null,
+   "strict_from_parts": null,
+   "net_label": null,
+   "alternative": null,
+   "second_ko": null,
+   "class": "KO",
+   "class_inferred": false,
+   "class_open": [
+    "BENT4"
+   ],
+   "class_open_tests": [
+    {
+     "part": "bent-four",
+     "nodes": 2000396,
+     "open": [
+      "BENT4"
+     ]
+    }
+   ],
+   "count": null,
+   "count_decided": false,
+   "d_conv": null,
+   "first_take": {
+    "side": "W",
+    "point": "D19",
+    "how": "leaf",
+    "preparation": []
+   },
+   "approaches": {
+    "S": 0,
+    "O": 0
+   },
+   "local_threats": null,
+   "stages": [],
+   "gain": {
+    "side": null,
+    "total": null,
+    "located": 0,
+    "unlocated": null
+   },
+   "gain_rounds": [],
+   "text": "KO? (class KO, BENT4 not ruled out (bent-four test undecided at 2,000,396 nodes)): White took first (D19). Both captures are direct. Full count undecided (between 0 and 2). Undecided: bent-four (2000396 nodes), count (38031231 nodes).",
+   "lines": [],
+   "areas": {
+    "narrow": "KO?"
+   },
+   "warnings": [
+    "bent-four test undecided"
+   ],
+   "undecided": [
+    {
+     "part": "bent-four",
+     "search": "solve bentfour",
+     "nodes": 2000396,
+     "area": "narrow"
+    },
+    {
+     "part": "count",
+     "search": "B to move s=0 o=0 end=2,pv=1",
+     "nodes": 16026560,
+     "area": "narrow"
+    },
+    {
+     "part": "count",
+     "search": "B to move s=1 o=0 end=2,pv=1",
+     "nodes": 22004671,
+     "area": "narrow"
+    }
+   ],
+   "nodes": 54060693,
+   "seconds": 180.86,
+   "comparison": [
+    {
+     "kind": "class-open",
+     "severity": "info",
+     "authored": "A-1KO-",
+     "label": "KO?",
+     "open": [
+      "BENT4"
+     ],
+     "tree_open": false,
+     "text": "BENT4 not ruled out (bent-four test undecided at 2,000,396 nodes)"
+    },
+    {
+     "kind": "ko-approach",
+     "severity": "major",
+     "authored": "A-1KO-",
+     "label": "KO?",
+     "same_count": null,
+     "allowed": {
+      "S": {
+       "n": 0,
+       "bracket": [
+        0,
+        1
+       ],
+       "held_ok": null
+      },
+      "O": {
+       "n": 0,
+       "bracket": [
+        0,
+        1
+       ],
+       "held_ok": null
+      }
+     }
+    },
+    {
+     "kind": "label-undecided",
+     "severity": "info",
+     "authored": "A-1KO-",
+     "label": "KO?"
+    }
+   ]
+  },
+  "seconds": 181.7,
+  "nodes": 54469480
  },
  {
   "id": "15216",
