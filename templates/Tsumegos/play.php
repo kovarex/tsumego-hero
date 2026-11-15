@@ -91,9 +91,9 @@ use App\Utility\ViteManifest;
 				</div>
 			</div>
 		<?php endif; ?>
-		<?php //The hero powers: a row of their own on a wide screen, behind the ⚡ button on a phone (play.css) ?>
+		<?php //The hero powers: a row of their own on a wide screen, behind the ⚡ button on a phone (play.css); hidden by an inline style, not the hidden attribute, which the wide screen could not override ?>
 		<?php if (!Auth::isInMistakeTrainingMode() && Auth::isLoggedIn()): ?>
-			<div id="heroPowersTray" class="play-powers" hidden>
+			<div id="heroPowersTray" class="play-powers" style="display: none;">
 				<?php HeroPowers::render(); ?>
 			</div>
 		<?php endif; ?>
