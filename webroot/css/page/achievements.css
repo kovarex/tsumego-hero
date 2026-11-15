@@ -43,6 +43,9 @@
 }
 .achievementColorGray {
   color: var(--ach-gray);
+}
+/* A card not reached yet has a flat shadow instead of the card's own */
+.achievement2.achievementColorGray {
   box-shadow: 1px 1px 2px var(--color-black);
 }
 .achievementColorBlack {
