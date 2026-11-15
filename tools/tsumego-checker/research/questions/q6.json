@@ -1,0 +1,1576 @@
+{
+ "id": "q6",
+ "heading": "6. SEKI+ and SEKI",
+ "question": "besogo prints S[SEKI+] as a seki in sente and S[SEKI] as one in gote, and ranks SEKI+ higher for the solver, whether it kills or lives. The checker reads SEKI+ as a seki in which the solver keeps sente: at the leaf the solver may play elsewhere, or the opponent must answer first. Is that your meaning? And on the leaves where your tree and the checker disagree, which label is right?",
+ "options": [
+  {
+   "label": "SEKI+: the solver keeps sente",
+   "meaning": "The checker's reading (design D11). With the solver to play, SEKI+ when it may play elsewhere and the seki holds (Diagram 1); with the opponent to play, when the opponent must answer, because otherwise the solver kills or lives without seki (Diagram 5). Everything else is SEKI, also a seki the opponent could still improve by a ko if the solver played elsewhere (Diagram 3). besogo ranks SEKI+ higher, so where the solver's sibling moves reach both, only the SEKI+ moves are correct (Diagram 2). In your trees this reading moves a grade only in Problem 15418, and there only if its leaf 3 is not SEKI+ as well."
+  },
+  {
+   "label": "SEKI+ only with the solver to play",
+   "meaning": "The + only on a seki whose line ends with the opponent's move. A leaf where the opponent must still answer is then SEKI, as in Problem 1862 (Diagram 5) and four more of your leaves, all in trees that use no +. Your three S[SEKI+] leaves with the opponent to play, in Problems 13872, 2049 and 2248, lose their +; that changes no grade."
+  },
+  {
+   "label": "No + from the checker",
+   "meaning": "The checker tells a seki from life and death but does not compare SEKI with SEKI+: your + stays as you wrote it, and so does the grading."
+  }
+ ],
+ "recommendation": "SEKI+: the solver keeps sente. Where your trees use the +, they use it this way. Problem 2521 splits the two labels as both readings do (Diagrams 1 and 2), and your three S[SEKI+] leaves with the opponent to play, in Problems 13872, 2049 and 2248, are sekis the opponent must still answer, which only this reading allows. In the trees that use the +, the checker agrees with 30 of the 32 leaves it decides. Per leaf: keep 2521; S[SEKI] for 1881 leaves 2 and 4; S[ALIVE] for 2089 leaf 2; S[SEKI+] for 1862 leaf 1, if trees that use no + should get it too. None of these changes a grade.",
+ "text": [
+  "Your trees mark 37 leaves S[SEKI+], in 28 problems, and 185 leaves S[SEKI], in 86; only four problems use both. besogo's editor offers the + as a sente box on a seki, and prints SEKI+ as in sente and SEKI as in gote. It ranks SEKI+ above SEKI for the solver whether the problem is to kill or to live, so the sente is always the solver's.",
+  "The checker calls a leaf a seki when the target lives whatever the ko threats, but cannot live without seki when the attacker has every threat. For the sente it plays one forced pass. With the solver to play, the solver passes, and the seki must still hold even when the opponent has four ko threats. With the opponent to play, the opponent passes, and the solver, with four ko threats, must then kill or live without seki. The checks with a forced pass under the diagrams are such searches; where a check says a seki counts as dead, only life without seki counts.",
+  "These tests needed one fix, found in this review. When a position repeats, the solver counts a cycle of plain captures, as in sending two and returning one, as a seki. Where a seki counts as dead, it still counted such a cycle as life, so a group that could only force a repetition passed for alive. In the table every repetition there counts as a kill, as a seki does: that changes 30 rows, each with a note of what the checker says today. The positions shown keep their classes, and Diagrams 3, 5 and 6 carry a check with every repetition counted as a kill.",
+  "A pass is not the only way to keep sente: the solver may still have a forcing move. So we also followed the forcing moves, up to two deep: a move of the solver that the opponent must answer, then every answer that keeps the seki. On all 128 leaves where both tests are decided, the answer is the same as with the single pass.",
+  "The table lists every SEKI+ and SEKI leaf. The checker searched its own area at 200,000 nodes per search, and the leaves left undecided once more at 2,000,000. Of your 37 SEKI+ leaves, it says SEKI+ on 27 and SEKI on 2, and 8 stay undecided. Of your 185 SEKI leaves, it says SEKI on 61, SEKI+ on 41, ALIVE on 7, DEAD on 1 and KO on 1, and 74 stay undecided.",
+  "The disagreements are of three kinds. 41 of your SEKI leaves are seki in the solver's sente: either the opponent must still answer (Diagram 5, and Problems 9, 1733, 15418 and 15454), or the solver may play elsewhere (36 leaves). All of them are in trees that use no +, so there your SEKI may only mean that the + was not considered. In the four trees that use both labels, the checker agrees with every leaf it decides.",
+  "Two of your SEKI+ leaves are seki in gote, 1881 leaves 2 and 4: if Black plays elsewhere there, White lives without seki, by a ko in leaf 2 (Diagram 3) and at once in leaf 4. And seven of your SEKI leaves are no seki: the target lives without one (Diagram 8). Two more are a kill and a ko (7487 leaves 73 and 76). We read the four leaves shown move by move; the other verdicts in the table are the checker's alone.",
+  "Most of these changes move no grade, because the seki is not the best result of its branch. The ones that do are not about the +: with the checker's decided classes in place of your labels, grading changes in Problems 2390 (Black's D19 at move 1 becomes wrong) and 7487 (Black's A16 at move 3 becomes correct), where your SEKI is life or a kill. Of the + changes, only 15418's can move a grade: Black's A16 at move 1 becomes wrong, unless leaf 3 is SEKI+ too, which the checker says unless its open clean-result test makes it a ko.",
+  "Your trees have no leaf marked DSKO or ASKO, so superko has no example here. The checker tests for it only when a proof had to decide a repeated position, and marks any DSKO or ASKO it finds as unverified. On these 222 leaves it found none; the test stayed undecided on four."
+ ],
+ "positions": [
+  {
+   "problem": "2521",
+   "leaf": "C18 C19 D19 A18",
+   "tree": "SEKI+",
+   "heading": "Problem 2521, leaves 1 and 3: your SEKI+ and your SEKI in one tree",
+   "text": [
+    "Both lines end in a seki. In leaf 1 White makes the last move, and Black may play elsewhere; in leaf 3 Black makes it, and White may. Your tree marks the first S[SEKI+] and the second S[SEKI], as the checker reads them, and besogo grades by it: Black 1 in Diagram 2 is wrong only because its seki ends in gote."
+   ],
+   "diagrams": [
+    {
+     "start": "",
+     "moves": "C18 C19 D19 A18",
+     "caption": "Leaf 1, marked S[SEKI+]. White 4 is the last move of the seki, and Black may play elsewhere.",
+     "checks": [
+      {
+       "status": "SEKI+"
+      },
+      {
+       "count": [
+        0,
+        4
+       ],
+       "opts": "pb=1,end=1",
+       "expect": "wins"
+      }
+     ]
+    },
+    {
+     "start": "",
+     "moves": "A18 C18 D19 C19 B18",
+     "caption": "Leaf 3, marked S[SEKI]. Black 5 is the last move, and White may play elsewhere: even with a free move, Black cannot live without the seki.",
+     "checks": [
+      {
+       "status": "SEKI"
+      },
+      {
+       "count": [
+        4,
+        0
+       ],
+       "opts": "pw=1,sk=1,end=1",
+       "expect": "fails"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "problem": "1881",
+   "leaf": "B19 A16 C19 D18 A18 B18",
+   "tree": "SEKI+",
+   "heading": "Problem 1881, leaf 2: S[SEKI+], but Black must still connect",
+   "text": [
+    "Black's three stones in the corner hold White to a seki, but the seki is not finished. If Black plays elsewhere now, White can fight a ko to live without seki (Diagram 3). Black 7 in Diagram 4 connects, and then White may play elsewhere: the seki ends in Black's gote, so the checker says SEKI. Leaf 4, also marked S[SEKI+], is this corner without Black 3 and White 4, and the checker says SEKI there too."
+   ],
+   "diagrams": [
+    {
+     "start": "",
+     "moves": "B19 A16 C19 D18 A18 B18",
+     "caption": "Leaf 2, marked S[SEKI+], with Black to play. If Black plays elsewhere, White can fight a ko to live without seki, and Black needs one threat more than White to stop it.",
+     "checks": [
+      {
+       "status": "SEKI"
+      },
+      {
+       "balance": 1,
+       "opts": "pb=1,sk=1,end=1"
+      },
+      {
+       "count": [
+        0,
+        0
+       ],
+       "opts": "pb=1,sk=1,end=1,cyc=1",
+       "expect": "fails"
+      }
+     ]
+    },
+    {
+     "moves": "A19",
+     "caption": "Black 7 connects. Now White may play elsewhere: even with a free move and four ko threats, Black cannot kill.",
+     "checks": [
+      {
+       "status": "SEKI"
+      },
+      {
+       "count": [
+        4,
+        0
+       ],
+       "opts": "pw=1,end=1",
+       "expect": "fails"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "problem": "1862",
+   "leaf": "C19",
+   "tree": "SEKI",
+   "heading": "Problem 1862, leaf 1: S[SEKI], but White must answer",
+   "text": [
+    "Black 1 makes the seki and threatens more: if White plays elsewhere, Black lives without seki (Diagram 6). After White's answer in Diagram 7, Black may play elsewhere, so Black keeps sente and the checker says SEKI+. Leaf 1 of Problem 13872 is the same case, and there your tree has S[SEKI+]; the tree of 1862 uses no + at all."
+   ],
+   "diagrams": [
+    {
+     "start": "",
+     "moves": "C19",
+     "caption": "Leaf 1, marked S[SEKI], with White to play. If White plays elsewhere, Black lives without seki, so White must answer.",
+     "checks": [
+      {
+       "status": "SEKI+"
+      },
+      {
+       "count": [
+        4,
+        0
+       ],
+       "opts": "pw=1,sk=1,end=1,cyc=1",
+       "expect": "wins"
+      }
+     ]
+    },
+    {
+     "moves": "pass A18",
+     "caption": "White 2 plays elsewhere, and Black 3 puts the three White stones inside in atari: Black captures them and lives without seki.",
+     "checks": [
+      {
+       "status": "ALIVE"
+      },
+      {
+       "count": [
+        0,
+        4
+       ],
+       "opts": "sk=1,end=1,cyc=1",
+       "expect": "wins"
+      }
+     ]
+    },
+    {
+     "moves": "E19",
+     "caption": "White 2 answers. Now Black may play elsewhere: the seki ends in Black's sente.",
+     "checks": [
+      {
+       "status": "SEKI+"
+      },
+      {
+       "count": [
+        0,
+        4
+       ],
+       "opts": "pb=1,end=1",
+       "expect": "wins"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "problem": "2089",
+   "leaf": "B18 A18 B17 B19",
+   "tree": "SEKI",
+   "heading": "Problem 2089, leaf 2: S[SEKI], but White lives",
+   "text": [
+    "Black 1 and Black 3 are dead inside White's corner: White lives with Black to play, and can capture them whenever it needs to (Diagram 9). A seki needed a different White 4, such as C18 (Diagram 10). The checker says ALIVE, the stronger claim: White lives without seki even when Black has every ko threat."
+   ],
+   "diagrams": [
+    {
+     "start": "",
+     "moves": "B18 A18 B17 B19",
+     "caption": "Leaf 2, marked S[SEKI], with Black to play. White 4 lives, and Black 1 and Black 3 are dead.",
+     "checks": [
+      {
+       "status": "ALIVE"
+      }
+     ]
+    },
+    {
+     "moves": "C18 A17",
+     "caption": "Black 5 is no help: after White 6, Black's three stones have one liberty left and cannot escape.",
+     "checks": [
+      {
+       "status": "ALIVE"
+      }
+     ]
+    },
+    {
+     "start": "",
+     "moves": "B18 A18 B17 C18",
+     "caption": "White 4 here instead would allow a seki.",
+     "checks": [
+      {
+       "status": "SEKI"
+      }
+     ]
+    }
+   ]
+  }
+ ],
+ "table": {
+  "caption": "Every leaf your trees mark S[SEKI+] or S[SEKI], in tree order within each problem, with the checker's class: Solver.status in the checker's search area, at 200,000 nodes per search and 2,000,000 for those left undecided, with every repetition counted as a kill where a seki counts as dead. Where that fix changes the class, the note gives what Solver.status says today. Grading: besogo's own code on the tree with every decided class of the problem in place of your labels.",
+  "columns": [
+   "Leaf",
+   "Your tree",
+   "Checker",
+   "Note"
+  ],
+  "rows": [
+   [
+    "Problem 524, leaf 1",
+    "SEKI+",
+    "SEKI+",
+    "–"
+   ],
+   [
+    "Problem 840, leaf 2",
+    "SEKI+",
+    "SEKI+",
+    "today: SEKI"
+   ],
+   [
+    "Problem 840, leaf 11",
+    "SEKI+",
+    "undecided",
+    "–"
+   ],
+   [
+    "Problem 1807, leaf 1",
+    "SEKI+",
+    "SEKI+",
+    "–"
+   ],
+   [
+    "Problem 1881, leaf 2",
+    "SEKI+",
+    "SEKI",
+    "Diagram 3"
+   ],
+   [
+    "Problem 1881, leaf 4",
+    "SEKI+",
+    "SEKI",
+    "–"
+   ],
+   [
+    "Problem 1988, leaf 1",
+    "SEKI+",
+    "SEKI+",
+    "–"
+   ],
+   [
+    "Problem 1988, leaf 2",
+    "SEKI+",
+    "SEKI+",
+    "–"
+   ],
+   [
+    "Problem 2049, leaf 1",
+    "SEKI+",
+    "SEKI+",
+    "–"
+   ],
+   [
+    "Problem 2093, leaf 3",
+    "SEKI+",
+    "SEKI+",
+    "–"
+   ],
+   [
+    "Problem 2093, leaf 4",
+    "SEKI+",
+    "SEKI+",
+    "today: SEKI or SEKI+"
+   ],
+   [
+    "Problem 2225, leaf 1",
+    "SEKI+",
+    "SEKI+",
+    "–"
+   ],
+   [
+    "Problem 2237, leaf 1",
+    "SEKI+",
+    "SEKI+",
+    "–"
+   ],
+   [
+    "Problem 2248, leaf 1",
+    "SEKI+",
+    "SEKI+",
+    "–"
+   ],
+   [
+    "Problem 2387, leaf 2",
+    "SEKI+",
+    "SEKI+",
+    "–"
+   ],
+   [
+    "Problem 2521, leaf 1",
+    "SEKI+",
+    "SEKI+",
+    "Diagram 1"
+   ],
+   [
+    "Problem 2521, leaf 2",
+    "SEKI+",
+    "SEKI+",
+    "–"
+   ],
+   [
+    "Problem 7693, leaf 7",
+    "SEKI+",
+    "SEKI+",
+    "–"
+   ],
+   [
+    "Problem 9896, leaf 3",
+    "SEKI+",
+    "SEKI+",
+    "–"
+   ],
+   [
+    "Problem 9922, leaf 8",
+    "SEKI+",
+    "SEKI+",
+    "–"
+   ],
+   [
+    "Problem 9925, leaf 3",
+    "SEKI+",
+    "SEKI or SEKI+ (sente test undecided)",
+    "–"
+   ],
+   [
+    "Problem 9925, leaf 12",
+    "SEKI+",
+    "undecided",
+    "–"
+   ],
+   [
+    "Problem 9926, leaf 8",
+    "SEKI+",
+    "SEKI+",
+    "today: SEKI or SEKI+"
+   ],
+   [
+    "Problem 9926, leaf 10",
+    "SEKI+",
+    "SEKI+",
+    "–"
+   ],
+   [
+    "Problem 9926, leaf 11",
+    "SEKI+",
+    "SEKI+",
+    "–"
+   ],
+   [
+    "Problem 9942, leaf 3",
+    "SEKI+",
+    "ALIVE or SEKI (seki test undecided)",
+    "–"
+   ],
+   [
+    "Problem 9945, leaf 8",
+    "SEKI+",
+    "SEKI+",
+    "today: SEKI or SEKI+"
+   ],
+   [
+    "Problem 9947, leaf 10",
+    "SEKI+",
+    "SEKI+",
+    "–"
+   ],
+   [
+    "Problem 10225, leaf 8",
+    "SEKI+",
+    "SEKI+",
+    "today: SEKI or SEKI+"
+   ],
+   [
+    "Problem 10249, leaf 3",
+    "SEKI+",
+    "undecided",
+    "–"
+   ],
+   [
+    "Problem 11011, leaf 7",
+    "SEKI+",
+    "SEKI+",
+    "today: SEKI or SEKI+"
+   ],
+   [
+    "Problem 13262, leaf 4",
+    "SEKI+",
+    "SEKI or SEKI+ (sente test undecided)",
+    "–"
+   ],
+   [
+    "Problem 13262, leaf 5",
+    "SEKI+",
+    "SEKI+",
+    "today: SEKI or SEKI+"
+   ],
+   [
+    "Problem 13872, leaf 1",
+    "SEKI+",
+    "SEKI+",
+    "the same case as Diagram 5"
+   ],
+   [
+    "Problem 15215, leaf 1",
+    "SEKI+",
+    "SEKI+",
+    "–"
+   ],
+   [
+    "Problem 15639, leaf 3",
+    "SEKI+",
+    "undecided",
+    "–"
+   ],
+   [
+    "Problem 15674, leaf 1",
+    "SEKI+",
+    "undecided",
+    "–"
+   ],
+   [
+    "Problem 9, leaf 5",
+    "SEKI",
+    "SEKI+",
+    "–"
+   ],
+   [
+    "Problem 844, leaf 5",
+    "SEKI",
+    "SEKI",
+    "–"
+   ],
+   [
+    "Problem 844, leaf 21",
+    "SEKI",
+    "SEKI",
+    "–"
+   ],
+   [
+    "Problem 844, leaf 22",
+    "SEKI",
+    "SEKI",
+    "–"
+   ],
+   [
+    "Problem 1396, leaf 8",
+    "SEKI",
+    "SEKI+",
+    "–"
+   ],
+   [
+    "Problem 1624, leaf 1",
+    "SEKI",
+    "SEKI",
+    "–"
+   ],
+   [
+    "Problem 1733, leaf 1",
+    "SEKI",
+    "SEKI+",
+    "–"
+   ],
+   [
+    "Problem 1808, leaf 1",
+    "SEKI",
+    "SEKI",
+    "–"
+   ],
+   [
+    "Problem 1862, leaf 1",
+    "SEKI",
+    "SEKI+",
+    "Diagram 5"
+   ],
+   [
+    "Problem 1868, leaf 1",
+    "SEKI",
+    "SEKI",
+    "–"
+   ],
+   [
+    "Problem 1911, leaf 1",
+    "SEKI",
+    "SEKI",
+    "–"
+   ],
+   [
+    "Problem 1911, leaf 2",
+    "SEKI",
+    "SEKI",
+    "–"
+   ],
+   [
+    "Problem 1919, leaf 1",
+    "SEKI",
+    "SEKI",
+    "–"
+   ],
+   [
+    "Problem 1961, leaf 1",
+    "SEKI",
+    "SEKI",
+    "–"
+   ],
+   [
+    "Problem 1989, leaf 1",
+    "SEKI",
+    "SEKI",
+    "today: ALIVE"
+   ],
+   [
+    "Problem 1989, leaf 2",
+    "SEKI",
+    "SEKI",
+    "today: ALIVE"
+   ],
+   [
+    "Problem 2089, leaf 2",
+    "SEKI",
+    "ALIVE",
+    "Diagram 8"
+   ],
+   [
+    "Problem 2089, leaf 3",
+    "SEKI",
+    "ALIVE",
+    "–"
+   ],
+   [
+    "Problem 2167, leaf 1",
+    "SEKI",
+    "SEKI",
+    "–"
+   ],
+   [
+    "Problem 2261, leaf 1",
+    "SEKI",
+    "SEKI",
+    "–"
+   ],
+   [
+    "Problem 2268, leaf 1",
+    "SEKI",
+    "SEKI",
+    "–"
+   ],
+   [
+    "Problem 2273, leaf 3",
+    "SEKI",
+    "SEKI",
+    "–"
+   ],
+   [
+    "Problem 2273, leaf 6",
+    "SEKI",
+    "SEKI",
+    "–"
+   ],
+   [
+    "Problem 2385, leaf 8",
+    "SEKI",
+    "SEKI+",
+    "–"
+   ],
+   [
+    "Problem 2385, leaf 9",
+    "SEKI",
+    "SEKI+",
+    "–"
+   ],
+   [
+    "Problem 2390, leaf 1",
+    "SEKI",
+    "ALIVE",
+    "changes a grade"
+   ],
+   [
+    "Problem 2390, leaf 2",
+    "SEKI",
+    "SEKI",
+    "–"
+   ],
+   [
+    "Problem 2416, leaf 4",
+    "SEKI",
+    "undecided",
+    "–"
+   ],
+   [
+    "Problem 2416, leaf 7",
+    "SEKI",
+    "undecided",
+    "–"
+   ],
+   [
+    "Problem 2416, leaf 9",
+    "SEKI",
+    "undecided",
+    "–"
+   ],
+   [
+    "Problem 2416, leaf 10",
+    "SEKI",
+    "SEKI or SEKI+ (sente test undecided)",
+    "–"
+   ],
+   [
+    "Problem 2416, leaf 11",
+    "SEKI",
+    "SEKI or SEKI+ (sente test undecided)",
+    "–"
+   ],
+   [
+    "Problem 2521, leaf 3",
+    "SEKI",
+    "SEKI",
+    "Diagram 2"
+   ],
+   [
+    "Problem 2521, leaf 4",
+    "SEKI",
+    "SEKI",
+    "–"
+   ],
+   [
+    "Problem 2536, leaf 9",
+    "SEKI",
+    "SEKI",
+    "–"
+   ],
+   [
+    "Problem 2536, leaf 18",
+    "SEKI",
+    "SEKI",
+    "today: ALIVE"
+   ],
+   [
+    "Problem 2536, leaf 24",
+    "SEKI",
+    "SEKI",
+    "–"
+   ],
+   [
+    "Problem 3725, leaf 3",
+    "SEKI",
+    "SEKI",
+    "–"
+   ],
+   [
+    "Problem 4409, leaf 5",
+    "SEKI",
+    "SEKI",
+    "–"
+   ],
+   [
+    "Problem 5593, leaf 4",
+    "SEKI",
+    "SEKI or SEKI+ (sente test undecided)",
+    "–"
+   ],
+   [
+    "Problem 5628, leaf 6",
+    "SEKI",
+    "SEKI",
+    "–"
+   ],
+   [
+    "Problem 5922, leaf 5",
+    "SEKI",
+    "undecided",
+    "–"
+   ],
+   [
+    "Problem 7151, leaf 2",
+    "SEKI",
+    "SEKI+",
+    "–"
+   ],
+   [
+    "Problem 7248, leaf 14",
+    "SEKI",
+    "SEKI+",
+    "–"
+   ],
+   [
+    "Problem 7487, leaf 4",
+    "SEKI",
+    "SEKI+",
+    "–"
+   ],
+   [
+    "Problem 7487, leaf 36",
+    "SEKI",
+    "SEKI",
+    "–"
+   ],
+   [
+    "Problem 7487, leaf 54",
+    "SEKI",
+    "SEKI",
+    "–"
+   ],
+   [
+    "Problem 7487, leaf 56",
+    "SEKI",
+    "SEKI+",
+    "today: SEKI or SEKI+"
+   ],
+   [
+    "Problem 7487, leaf 73",
+    "SEKI",
+    "DEAD",
+    "changes a grade"
+   ],
+   [
+    "Problem 7487, leaf 75",
+    "SEKI",
+    "SEKI+",
+    "–"
+   ],
+   [
+    "Problem 7487, leaf 76",
+    "SEKI",
+    "KO",
+    "–"
+   ],
+   [
+    "Problem 7487, leaf 78",
+    "SEKI",
+    "SEKI+",
+    "today: ALIVE"
+   ],
+   [
+    "Problem 7487, leaf 79",
+    "SEKI",
+    "SEKI",
+    "–"
+   ],
+   [
+    "Problem 7546, leaf 14",
+    "SEKI",
+    "SEKI",
+    "–"
+   ],
+   [
+    "Problem 7875, leaf 7",
+    "SEKI",
+    "undecided",
+    "–"
+   ],
+   [
+    "Problem 8816, leaf 1",
+    "SEKI",
+    "undecided",
+    "–"
+   ],
+   [
+    "Problem 9698, leaf 1",
+    "SEKI",
+    "SEKI",
+    "–"
+   ],
+   [
+    "Problem 9883, leaf 5",
+    "SEKI",
+    "SEKI",
+    "–"
+   ],
+   [
+    "Problem 9883, leaf 6",
+    "SEKI",
+    "undecided",
+    "–"
+   ],
+   [
+    "Problem 9995, leaf 7",
+    "SEKI",
+    "ALIVE",
+    "–"
+   ],
+   [
+    "Problem 10005, leaf 4",
+    "SEKI",
+    "SEKI+",
+    "today: SEKI or SEKI+"
+   ],
+   [
+    "Problem 10005, leaf 6",
+    "SEKI",
+    "undecided",
+    "–"
+   ],
+   [
+    "Problem 10051, leaf 7",
+    "SEKI",
+    "SEKI+",
+    "–"
+   ],
+   [
+    "Problem 10051, leaf 13",
+    "SEKI",
+    "SEKI+",
+    "–"
+   ],
+   [
+    "Problem 10249, leaf 5",
+    "SEKI",
+    "undecided",
+    "–"
+   ],
+   [
+    "Problem 10249, leaf 7",
+    "SEKI",
+    "undecided",
+    "–"
+   ],
+   [
+    "Problem 10249, leaf 10",
+    "SEKI",
+    "undecided",
+    "–"
+   ],
+   [
+    "Problem 10391, leaf 5",
+    "SEKI",
+    "SEKI",
+    "–"
+   ],
+   [
+    "Problem 10391, leaf 10",
+    "SEKI",
+    "SEKI+",
+    "today: SEKI"
+   ],
+   [
+    "Problem 10391, leaf 11",
+    "SEKI",
+    "SEKI+",
+    "today: ALIVE"
+   ],
+   [
+    "Problem 10403, leaf 7",
+    "SEKI",
+    "SEKI",
+    "–"
+   ],
+   [
+    "Problem 10408, leaf 5",
+    "SEKI",
+    "SEKI",
+    "–"
+   ],
+   [
+    "Problem 10549, leaf 1",
+    "SEKI",
+    "SEKI",
+    "–"
+   ],
+   [
+    "Problem 10559, leaf 1",
+    "SEKI",
+    "SEKI",
+    "–"
+   ],
+   [
+    "Problem 10578, leaf 1",
+    "SEKI",
+    "SEKI",
+    "–"
+   ],
+   [
+    "Problem 10930, leaf 4",
+    "SEKI",
+    "SEKI",
+    "–"
+   ],
+   [
+    "Problem 10950, leaf 8",
+    "SEKI",
+    "undecided",
+    "–"
+   ],
+   [
+    "Problem 10971, leaf 7",
+    "SEKI",
+    "SEKI",
+    "–"
+   ],
+   [
+    "Problem 10971, leaf 15",
+    "SEKI",
+    "SEKI",
+    "–"
+   ],
+   [
+    "Problem 10974, leaf 1",
+    "SEKI",
+    "SEKI",
+    "–"
+   ],
+   [
+    "Problem 10974, leaf 4",
+    "SEKI",
+    "SEKI",
+    "–"
+   ],
+   [
+    "Problem 10974, leaf 7",
+    "SEKI",
+    "SEKI",
+    "–"
+   ],
+   [
+    "Problem 11263, leaf 20",
+    "SEKI",
+    "SEKI+",
+    "today: SEKI or SEKI+"
+   ],
+   [
+    "Problem 11263, leaf 22",
+    "SEKI",
+    "SEKI (superko test undecided)",
+    "today: SEKI or SEKI+, superko open"
+   ],
+   [
+    "Problem 11263, leaf 25",
+    "SEKI",
+    "SEKI",
+    "–"
+   ],
+   [
+    "Problem 11272, leaf 7",
+    "SEKI",
+    "undecided",
+    "–"
+   ],
+   [
+    "Problem 11272, leaf 28",
+    "SEKI",
+    "undecided",
+    "–"
+   ],
+   [
+    "Problem 11272, leaf 30",
+    "SEKI",
+    "undecided",
+    "–"
+   ],
+   [
+    "Problem 11272, leaf 53",
+    "SEKI",
+    "undecided",
+    "–"
+   ],
+   [
+    "Problem 11272, leaf 55",
+    "SEKI",
+    "ALIVE or SEKI (seki test undecided)",
+    "–"
+   ],
+   [
+    "Problem 11272, leaf 62",
+    "SEKI",
+    "undecided",
+    "–"
+   ],
+   [
+    "Problem 11272, leaf 63",
+    "SEKI",
+    "undecided",
+    "–"
+   ],
+   [
+    "Problem 11278, leaf 3",
+    "SEKI",
+    "undecided",
+    "–"
+   ],
+   [
+    "Problem 11278, leaf 4",
+    "SEKI",
+    "SEKI or SEKI+ (sente test undecided)",
+    "–"
+   ],
+   [
+    "Problem 11278, leaf 10",
+    "SEKI",
+    "undecided",
+    "–"
+   ],
+   [
+    "Problem 11279, leaf 9",
+    "SEKI",
+    "undecided",
+    "–"
+   ],
+   [
+    "Problem 11279, leaf 13",
+    "SEKI",
+    "undecided",
+    "–"
+   ],
+   [
+    "Problem 11279, leaf 17",
+    "SEKI",
+    "undecided",
+    "–"
+   ],
+   [
+    "Problem 11279, leaf 18",
+    "SEKI",
+    "ALIVE or SEKI (seki test undecided)",
+    "–"
+   ],
+   [
+    "Problem 11279, leaf 20",
+    "SEKI",
+    "undecided",
+    "–"
+   ],
+   [
+    "Problem 11280, leaf 6",
+    "SEKI",
+    "SEKI or SEKI+ (sente test undecided)",
+    "–"
+   ],
+   [
+    "Problem 11280, leaf 8",
+    "SEKI",
+    "undecided",
+    "–"
+   ],
+   [
+    "Problem 11280, leaf 10",
+    "SEKI",
+    "SEKI+",
+    "–"
+   ],
+   [
+    "Problem 11280, leaf 14",
+    "SEKI",
+    "undecided",
+    "–"
+   ],
+   [
+    "Problem 11280, leaf 24",
+    "SEKI",
+    "undecided",
+    "–"
+   ],
+   [
+    "Problem 11280, leaf 26",
+    "SEKI",
+    "ALIVE or SEKI (seki and superko tests undecided)",
+    "today: SEKI or SEKI+, superko open"
+   ],
+   [
+    "Problem 11280, leaf 29",
+    "SEKI",
+    "undecided",
+    "–"
+   ],
+   [
+    "Problem 11280, leaf 30",
+    "SEKI",
+    "undecided",
+    "–"
+   ],
+   [
+    "Problem 11280, leaf 31",
+    "SEKI",
+    "undecided",
+    "–"
+   ],
+   [
+    "Problem 11280, leaf 32",
+    "SEKI",
+    "SEKI or SEKI+ (sente test undecided)",
+    "–"
+   ],
+   [
+    "Problem 11280, leaf 33",
+    "SEKI",
+    "undecided",
+    "–"
+   ],
+   [
+    "Problem 11280, leaf 39",
+    "SEKI",
+    "undecided",
+    "–"
+   ],
+   [
+    "Problem 11280, leaf 42",
+    "SEKI",
+    "undecided",
+    "–"
+   ],
+   [
+    "Problem 11282, leaf 4",
+    "SEKI",
+    "undecided",
+    "–"
+   ],
+   [
+    "Problem 11282, leaf 10",
+    "SEKI",
+    "undecided",
+    "–"
+   ],
+   [
+    "Problem 11282, leaf 16",
+    "SEKI",
+    "undecided",
+    "–"
+   ],
+   [
+    "Problem 11283, leaf 10",
+    "SEKI",
+    "SEKI+ (superko test undecided)",
+    "today: SEKI or SEKI+, superko open"
+   ],
+   [
+    "Problem 11283, leaf 16",
+    "SEKI",
+    "SEKI+",
+    "–"
+   ],
+   [
+    "Problem 11283, leaf 25",
+    "SEKI",
+    "SEKI+",
+    "–"
+   ],
+   [
+    "Problem 11283, leaf 58",
+    "SEKI",
+    "SEKI or SEKI+ (sente test undecided)",
+    "–"
+   ],
+   [
+    "Problem 11283, leaf 61",
+    "SEKI",
+    "SEKI+",
+    "today: SEKI or SEKI+"
+   ],
+   [
+    "Problem 13025, leaf 13",
+    "SEKI",
+    "undecided",
+    "–"
+   ],
+   [
+    "Problem 13099, leaf 6",
+    "SEKI",
+    "undecided",
+    "–"
+   ],
+   [
+    "Problem 13262, leaf 8",
+    "SEKI",
+    "SEKI",
+    "–"
+   ],
+   [
+    "Problem 13410, leaf 1",
+    "SEKI",
+    "undecided",
+    "–"
+   ],
+   [
+    "Problem 13410, leaf 8",
+    "SEKI",
+    "undecided",
+    "–"
+   ],
+   [
+    "Problem 13410, leaf 11",
+    "SEKI",
+    "undecided",
+    "–"
+   ],
+   [
+    "Problem 13475, leaf 1",
+    "SEKI",
+    "SEKI",
+    "–"
+   ],
+   [
+    "Problem 13489, leaf 35",
+    "SEKI",
+    "undecided",
+    "–"
+   ],
+   [
+    "Problem 13539, leaf 13",
+    "SEKI",
+    "SEKI",
+    "–"
+   ],
+   [
+    "Problem 13539, leaf 40",
+    "SEKI",
+    "SEKI+",
+    "–"
+   ],
+   [
+    "Problem 13539, leaf 43",
+    "SEKI",
+    "ALIVE",
+    "–"
+   ],
+   [
+    "Problem 13541, leaf 5",
+    "SEKI",
+    "SEKI+",
+    "today: SEKI or SEKI+"
+   ],
+   [
+    "Problem 13541, leaf 8",
+    "SEKI",
+    "SEKI or SEKI+ (sente test undecided)",
+    "–"
+   ],
+   [
+    "Problem 13541, leaf 16",
+    "SEKI",
+    "SEKI",
+    "–"
+   ],
+   [
+    "Problem 13541, leaf 23",
+    "SEKI",
+    "SEKI+",
+    "today: SEKI or SEKI+"
+   ],
+   [
+    "Problem 13547, leaf 11",
+    "SEKI",
+    "ALIVE",
+    "–"
+   ],
+   [
+    "Problem 13547, leaf 34",
+    "SEKI",
+    "SEKI or SEKI+ (sente test undecided)",
+    "–"
+   ],
+   [
+    "Problem 13547, leaf 41",
+    "SEKI",
+    "SEKI or SEKI+ (sente test undecided)",
+    "–"
+   ],
+   [
+    "Problem 13547, leaf 42",
+    "SEKI",
+    "undecided",
+    "–"
+   ],
+   [
+    "Problem 13549, leaf 7",
+    "SEKI",
+    "SEKI+",
+    "today: SEKI or SEKI+"
+   ],
+   [
+    "Problem 13549, leaf 9",
+    "SEKI",
+    "SEKI+",
+    "–"
+   ],
+   [
+    "Problem 13549, leaf 13",
+    "SEKI",
+    "SEKI",
+    "–"
+   ],
+   [
+    "Problem 13549, leaf 17",
+    "SEKI",
+    "SEKI+",
+    "today: SEKI or SEKI+"
+   ],
+   [
+    "Problem 13549, leaf 19",
+    "SEKI",
+    "SEKI",
+    "–"
+   ],
+   [
+    "Problem 13549, leaf 25",
+    "SEKI",
+    "undecided",
+    "–"
+   ],
+   [
+    "Problem 13549, leaf 39",
+    "SEKI",
+    "undecided",
+    "–"
+   ],
+   [
+    "Problem 13549, leaf 42",
+    "SEKI",
+    "undecided",
+    "–"
+   ],
+   [
+    "Problem 13661, leaf 6",
+    "SEKI",
+    "SEKI",
+    "today: ALIVE"
+   ],
+   [
+    "Problem 13661, leaf 7",
+    "SEKI",
+    "SEKI+",
+    "–"
+   ],
+   [
+    "Problem 14119, leaf 1",
+    "SEKI",
+    "SEKI",
+    "–"
+   ],
+   [
+    "Problem 14126, leaf 1",
+    "SEKI",
+    "SEKI",
+    "–"
+   ],
+   [
+    "Problem 14153, leaf 1",
+    "SEKI",
+    "SEKI",
+    "–"
+   ],
+   [
+    "Problem 15305, leaf 35",
+    "SEKI",
+    "SEKI+ (superko test undecided)",
+    "–"
+   ],
+   [
+    "Problem 15340, leaf 24",
+    "SEKI",
+    "SEKI or SEKI+ (sente test undecided)",
+    "–"
+   ],
+   [
+    "Problem 15341, leaf 8",
+    "SEKI",
+    "SEKI+",
+    "–"
+   ],
+   [
+    "Problem 15341, leaf 16",
+    "SEKI",
+    "SEKI+",
+    "–"
+   ],
+   [
+    "Problem 15341, leaf 29",
+    "SEKI",
+    "SEKI+",
+    "–"
+   ],
+   [
+    "Problem 15342, leaf 10",
+    "SEKI",
+    "SEKI+",
+    "–"
+   ],
+   [
+    "Problem 15418, leaf 1",
+    "SEKI",
+    "SEKI+",
+    "changes a grade, unless leaf 3 is SEKI+ too"
+   ],
+   [
+    "Problem 15418, leaf 3",
+    "SEKI",
+    "SEKI+, or KO (clean-result test undecided)",
+    "–"
+   ],
+   [
+    "Problem 15454, leaf 1",
+    "SEKI",
+    "SEKI+",
+    "–"
+   ],
+   [
+    "Problem 15494, leaf 4",
+    "SEKI",
+    "SEKI+",
+    "–"
+   ],
+   [
+    "Problem 15512, leaf 1",
+    "SEKI",
+    "SEKI+",
+    "today: ALIVE"
+   ],
+   [
+    "Problem 15512, leaf 2",
+    "SEKI",
+    "SEKI+",
+    "today: SEKI"
+   ],
+   [
+    "Problem 15512, leaf 3",
+    "SEKI",
+    "SEKI+",
+    "today: ALIVE"
+   ],
+   [
+    "Problem 15516, leaf 2",
+    "SEKI",
+    "SEKI",
+    "today: ALIVE"
+   ],
+   [
+    "Problem 15516, leaf 3",
+    "SEKI",
+    "ALIVE",
+    "–"
+   ],
+   [
+    "Problem 15516, leaf 4",
+    "SEKI",
+    "SEKI",
+    "–"
+   ],
+   [
+    "Problem 15518, leaf 1",
+    "SEKI",
+    "SEKI",
+    "today: ALIVE"
+   ],
+   [
+    "Problem 15518, leaf 3",
+    "SEKI",
+    "SEKI",
+    "–"
+   ],
+   [
+    "Problem 15518, leaf 4",
+    "SEKI",
+    "SEKI",
+    "–"
+   ],
+   [
+    "Problem 15566, leaf 5",
+    "SEKI",
+    "SEKI+",
+    "–"
+   ],
+   [
+    "Problem 15639, leaf 35",
+    "SEKI",
+    "undecided",
+    "–"
+   ],
+   [
+    "Problem 15678, leaf 23",
+    "SEKI",
+    "undecided",
+    "–"
+   ],
+   [
+    "Problem 15678, leaf 27",
+    "SEKI",
+    "undecided",
+    "–"
+   ],
+   [
+    "Problem 15678, leaf 30",
+    "SEKI",
+    "undecided",
+    "–"
+   ],
+   [
+    "Problem 15678, leaf 45",
+    "SEKI",
+    "undecided",
+    "–"
+   ],
+   [
+    "Problem 15730, leaf 18",
+    "SEKI",
+    "undecided",
+    "–"
+   ],
+   [
+    "Problem 15794, leaf 4",
+    "SEKI",
+    "undecided",
+    "–"
+   ],
+   [
+    "Problem 15794, leaf 5",
+    "SEKI",
+    "SEKI+",
+    "–"
+   ],
+   [
+    "Problem 15794, leaf 15",
+    "SEKI",
+    "undecided",
+    "–"
+   ],
+   [
+    "Problem 15794, leaf 28",
+    "SEKI",
+    "undecided",
+    "–"
+   ],
+   [
+    "Problem 15794, leaf 30",
+    "SEKI",
+    "undecided",
+    "–"
+   ],
+   [
+    "Problem 16601, leaf 9",
+    "SEKI",
+    "SEKI",
+    "–"
+   ]
+  ]
+ }
+}

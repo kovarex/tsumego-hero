@@ -156,10 +156,11 @@ whole report.
 approach kos, and three single leaves): each position is drawn as numbered diagrams, and every claim under a diagram is a
 solver check that runs when the page is built; a failed or undecided check, an illegal move or a move list in the text
 stops the build. The page spec is `research/questions/page.json` with one file per section; the checks use the
-prototype engine of the design (`solvex` with forced passes, barred points and the end playout):
+checker's engine (`solvex` with forced passes, barred points and the end playout) and the class of `Solver.status`,
+SEKI and SEKI+ included:
 
 ```
-PROBLEMS=status_problems.jsonl ENGINE=<engine with solvex> python3 research/questions.py research/questions/page.json out.html [--only <section id>]
+PROBLEMS=status_problems.jsonl ENGINE=engine python3 research/questions.py research/questions/page.json out.html [--only <section id>]
 ```
 
 `research/questions/inventory/` holds the facts behind question 1: every 10kKO leaf of the export and the owner's

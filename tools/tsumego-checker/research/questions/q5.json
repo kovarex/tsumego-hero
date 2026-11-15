@@ -1,0 +1,373 @@
+{
+ "id": "q5",
+ "heading": "5. A second ko after the capture: 215 and 13169",
+ "question": "At these two leaves White can ignore Black's capture once, and Black needs one more move. Your S[A-1KO+] and S[A-1KO-] count it as an approach, after which White retakes for free. But Black can throw in at A19 instead and take a new ko first, which saves Black one threat. Should the label count the throw-in, S[KO+] and S[KO-], or describe the clean kill, as yours do?",
+ "options": [
+  {
+   "label": "KO+ and KO-",
+   "meaning": "Count the throw-in. In besogo: no approaches; Black takes first in 215, White in 13169. They give the solver's count: Black needs as many threats as White in 215, and one more in 13169. They also say that White must answer Black's capture at once, which it need not (Diagrams 1 and 8). This is what the checker prints now. No move's grade changes in either problem."
+  },
+  {
+   "label": "A-1KO+ and A-1KO-",
+   "meaning": "Your labels, the clean kill. In besogo: \"Black needs to do 1 approach move to start a direct ko\"; Black takes first in 215, White in 13169. They imply one threat more than the solver's count, which is the count when Black may not throw in at A19 (Diagrams 1 and 7). besogo ranks them below KO+ and KO- for Black, since it compares approaches first. No move's grade changes in either problem."
+  }
+ ],
+ "recommendation": "Your A-1KO+ and A-1KO-, with the solver's count beside them as a note, as we proposed for 10005. A strong player calls a ko direct only when the capture must be answered at once. Here White can play elsewhere once, and Black needs one more move before White must answer (Diagrams 1 and 8). That the throw-in makes this move cost no threat is worth a note, but it does not make the ko direct. S[KO+] in 215 would also rank taking the ko first equal to filling E19 first, which gives White no free move (Diagram 13).",
+ "text": [
+  "Your labels describe the clean kill: White plays elsewhere, Black fills an outside liberty, White retakes for free, and Black retakes into a direct ko (Diagrams 5, 6 and 10). Counted that way, Black needs one threat more than White in 215 and two more in 13169. The solver gets the same counts when Black may not play at A19 (Diagrams 1 and 7).",
+  "With the throw-in Black does better. After White plays elsewhere, Black throws in at A19, White takes four stones, and Black takes a new ko first, so White needs a threat again (Diagrams 2 and 4, and Diagram 9 in 13169). The throw-in costs Black no threat where the approach costs one: Black needs as many threats as White in 215 and one more in 13169 (Diagrams 1 and 7), one fewer than your labels imply.",
+  "The corner after White's capture has the shape of a bent four, but it is not your BENT4. Black must start the ko at once, or White lives (Diagram 3), so the solver calls it a ko. In your BENT4 leaves, leaf 1 of each problem, Black's stones stay in the corner and White cannot settle the shape, so Black starts the ko when it likes, after removing White's threats (Diagrams 11 and 12). The throw-in leads to a second ko, not to a kill.",
+  "By your definition the ko at the leaf is an approach ko. White's capture threatens at once (Diagrams 5 and 7), while Black's does not: White can play elsewhere once, and Black needs one more move before it holds a ko that White must answer (Diagrams 1 and 8). The throw-in is the cheapest way to go on, since it costs Black no threat. Where Black fills E19 before taking, as in your leaf 2 of 215, Black's capture threatens at once (Diagram 13): that ko is direct, and S[KO+] fits it.",
+  "What the checker prints now: KO+ in 215 and KO- in 13169, the count with the throw-in, and beside them your A-1KO+ and A-1KO- with their counts, as the reading without it. The comparison with your tree is a convention note, not an error. Its explanation calls the corner after the capture a bent four; Diagrams 2 and 3 show that it is a ko Black must start at once. If you choose your labels, it would print them, with the count beside them as a note, as for 10005.",
+  "On the site neither choice changes a grade in either problem (table). In both, Black's A19 at move 1 makes your bent four, which besogo ranks above every ko, so Black's C19 in 215 and A18 in 13169 stay wrong under either label. The choice would matter in a problem without such a move: with your labels, filling E19 before taking, as at leaf 2 of 215, ranks above taking without it, as at leaf 5; with S[KO+] at both leaves they would rank equal.",
+  "In the wider area, which adds two rings of empty points on 215's open side, three checks of the throw-in in 215 stay undecided within 2,000,000 nodes: the count at the leaf and both checks after White takes four stones (Diagrams 1 and 2). So does the forced-pass check of Diagram 13, and at the leaf the wider search finds a ko but does not decide whether it is a bent four. The other 25 of this section's 30 checks agree there, and none disagrees; 13169 is enclosed, and all its checks agree in both areas."
+ ],
+ "positions": [
+  {
+   "problem": "215",
+   "leaf": "C19 A19 A18",
+   "tree": "A-1KO+",
+   "heading": "Problem 215, leaf 5: White can ignore Black's capture once",
+   "text": [
+    "Black 3 has just taken the ko. If White plays elsewhere, Black has two ways on. The throw-in at A19 leads to a new ko that Black takes first, and Black still needs only as many threats as White (Diagrams 2 to 4). Filling an outside liberty instead lets White retake for free, and Black needs one threat more (Diagrams 5 and 6)."
+   ],
+   "diagrams": [
+    {
+     "start": "",
+     "moves": "C19 A19 A18",
+     "labels": {
+      "D19": "a",
+      "E19": "b"
+     },
+     "caption": "The tree's line to leaf 5, marked S[A-1KO+], with White to play. Black 3 has just taken the ko by capturing White 2, and White's group has two outside liberties, a and b.",
+     "text": [
+      "Black needs as many ko threats as White; if Black may not play at A19, it needs one more, the count A-1KO+ implies. If White plays elsewhere once, Black still fails against four White threats; if twice, Black wins. So Black needs one more move before its capture threatens anything."
+     ],
+     "checks": [
+      {
+       "status": "KO"
+      },
+      {
+       "balance": 0,
+       "opts": "end=1"
+      },
+      {
+       "balance": 1,
+       "opts": "fb=A19,end=1"
+      },
+      {
+       "count": [
+        0,
+        4
+       ],
+       "opts": "pw=1,end=1",
+       "expect": "fails"
+      },
+      {
+       "count": [
+        0,
+        4
+       ],
+       "opts": "pw=2,end=1",
+       "expect": "wins"
+      }
+     ]
+    },
+    {
+     "moves": "pass A19 D19",
+     "caption": "If White 4 plays elsewhere, Black 5 throws in at A19, filling its own ko, and White 6 takes four stones. Black has lost nothing: it still needs only as many threats as White.",
+     "checks": [
+      {
+       "status": "KO"
+      },
+      {
+       "balance": 0,
+       "opts": "end=1"
+      }
+     ]
+    },
+    {
+     "moves": "pass A19 D19 pass",
+     "caption": "The corner has the shape of a bent four, but Black must start the ko at once: if Black 7 plays elsewhere, White lives.",
+     "checks": [
+      {
+       "status": "ALIVE"
+      }
+     ]
+    },
+    {
+     "start": "C19 A19 A18 pass A19 D19",
+     "moves": "B19 A19 A18",
+     "caption": "Black 7 starts the ko, White 8 plays in the corner, and Black 9 takes the ko by capturing White 8. Now White must answer at once, and Black still needs only as many threats as White.",
+     "checks": [
+      {
+       "count": [
+        0,
+        4
+       ],
+       "opts": "pw=1,end=1",
+       "expect": "wins"
+      },
+      {
+       "balance": 0,
+       "opts": "end=1"
+      }
+     ]
+    },
+    {
+     "moves": "pass E19 A19",
+     "labels": {
+      "D19": "a"
+     },
+     "caption": "The clean kill: White 4 plays elsewhere, Black 5 fills b instead, and White 6 retakes without a threat, since Black 5 captured nothing. White's capture threatens at once, so Black needs a threat to retake: one more than White.",
+     "checks": [
+      {
+       "count": [
+        4,
+        0
+       ],
+       "opts": "pb=1,end=1",
+       "expect": "fails"
+      },
+      {
+       "balance": 1,
+       "opts": "end=1"
+      }
+     ]
+    },
+    {
+     "moves": "pass E19 A19 A18!",
+     "labels": {
+      "D19": "a"
+     },
+     "caption": "Black 7 retakes after a ko threat elsewhere, and White's group is in atari at a: a direct ko. Black has spent one threat more than White, as A-1KO+ implies.",
+     "checks": [
+      {
+       "count": [
+        0,
+        4
+       ],
+       "opts": "pw=1,end=1",
+       "expect": "wins"
+      },
+      {
+       "balance": 0,
+       "opts": "end=1"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "problem": "13169",
+   "leaf": "A18 A19",
+   "tree": "A-1KO-",
+   "heading": "Problem 13169, leaf 3: the same corner, with White taking first",
+   "text": [
+    "White 2 has just taken the ko, and its capture threatens at once. Black's retake does not: White can play elsewhere once (Diagram 8). Black's throw-in then leads to a new ko that Black takes first (Diagram 9), while filling a lets White retake for free (Diagram 10)."
+   ],
+   "diagrams": [
+    {
+     "start": "",
+     "moves": "A18 A19",
+     "labels": {
+      "E18": "a"
+     },
+     "caption": "The tree's line to leaf 3, marked S[A-1KO-], with Black to play. White 2 has just taken the ko by capturing Black 1.",
+     "text": [
+      "Black needs one ko threat more than White; if Black may not play at A19, it needs two more, the count A-1KO- implies. White's capture threatens at once: if Black plays elsewhere, White wins even against four Black threats."
+     ],
+     "checks": [
+      {
+       "status": "KO"
+      },
+      {
+       "balance": 1,
+       "opts": "end=1"
+      },
+      {
+       "balance": 2,
+       "opts": "fb=A19,end=1"
+      },
+      {
+       "count": [
+        4,
+        0
+       ],
+       "opts": "pb=1,end=1",
+       "expect": "fails"
+      }
+     ]
+    },
+    {
+     "moves": "A18!",
+     "caption": "Black 3 retakes after a ko threat elsewhere. As in 215, its capture threatens nothing at once: if White plays elsewhere once, Black fails against four White threats, and only if twice does Black win.",
+     "checks": [
+      {
+       "count": [
+        0,
+        4
+       ],
+       "opts": "pw=1,end=1",
+       "expect": "fails"
+      },
+      {
+       "count": [
+        0,
+        4
+       ],
+       "opts": "pw=2,end=1",
+       "expect": "wins"
+      },
+      {
+       "balance": 0,
+       "opts": "end=1"
+      }
+     ]
+    },
+    {
+     "moves": "A18! pass A19 D19 B19 A19 A18",
+     "caption": "If White 4 plays elsewhere, Black 5 throws in, White 6 takes four stones, and Black 7 starts the ko at once. Black 9 takes it first, and White must answer: Black has spent only the threat of Black 3, one more than White.",
+     "checks": [
+      {
+       "count": [
+        0,
+        4
+       ],
+       "opts": "pw=1,end=1",
+       "expect": "wins"
+      },
+      {
+       "balance": 0,
+       "opts": "end=1"
+      }
+     ]
+    },
+    {
+     "moves": "A18! pass E18 A19",
+     "caption": "The clean kill: White 4 plays elsewhere, Black 5 fills a, and White 6 retakes without a threat. Black needs a second threat to retake, two more than White in all, as A-1KO- implies.",
+     "checks": [
+      {
+       "count": [
+        4,
+        0
+       ],
+       "opts": "pb=1,end=1",
+       "expect": "fails"
+      },
+      {
+       "balance": 1,
+       "opts": "end=1"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "problem": "215",
+   "leaf": "A19 E19 C19",
+   "tree": "BENT4",
+   "heading": "Problem 215, leaf 1: your bent four",
+   "diagrams": [
+    {
+     "start": "",
+     "moves": "A19 E19 C19",
+     "caption": "Your leaf 1, marked S[BENT4], with White to play. Black's stones stay in the corner and White cannot settle the shape, so Black starts the ko when it likes: the solver agrees.",
+     "checks": [
+      {
+       "status": "BENT4"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "problem": "13169",
+   "leaf": "A19",
+   "tree": "BENT4",
+   "heading": "Problem 13169, leaf 1: your bent four",
+   "diagrams": [
+    {
+     "start": "",
+     "moves": "A19",
+     "caption": "Your leaf 1, marked S[BENT4], with White to play: the same shape, and the solver agrees again.",
+     "checks": [
+      {
+       "status": "BENT4"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "problem": "215",
+   "leaf": "E19 A19 A18",
+   "tree": "KO+",
+   "heading": "Problem 215, leaf 2: filling first makes the ko direct",
+   "diagrams": [
+    {
+     "start": "",
+     "moves": "E19 A19 A18",
+     "caption": "Your leaf 2, marked S[KO+]: Black 1 fills the outside liberty at E19 before Black 3 takes the ko. Now Black's capture threatens at once, and Black needs as many threats as White, the same count as at leaf 5.",
+     "checks": [
+      {
+       "status": "KO"
+      },
+      {
+       "count": [
+        0,
+        4
+       ],
+       "opts": "pw=1,end=1",
+       "expect": "wins"
+      },
+      {
+       "balance": 0,
+       "opts": "end=1"
+      }
+     ]
+    }
+   ]
+  }
+ ],
+ "table": {
+  "caption": "Grading on the site: besogo's own code (grading_impact.cjs) on each problem's tree, with only the leaf changed. The solver's count: as many threats as White in 215, one more in 13169.",
+  "columns": [
+   "Label at the leaf",
+   "Threats beyond White's that the label implies",
+   "Moves whose grade changes"
+  ],
+  "rows": [
+   [
+    "Problem 215: S[A-1KO+] (the tree now)",
+    "one",
+    "none"
+   ],
+   [
+    "Problem 215: S[KO+]",
+    "none",
+    "none"
+   ],
+   [
+    "Problem 215: S[BENT4], for comparison",
+    "no count: Black starts the ko when it likes",
+    "Black's C19 at move 1 becomes correct"
+   ],
+   [
+    "Problem 13169: S[A-1KO-] (the tree now)",
+    "two",
+    "none"
+   ],
+   [
+    "Problem 13169: S[KO-]",
+    "one",
+    "none"
+   ],
+   [
+    "Problem 13169: S[BENT4], for comparison",
+    "no count: Black starts the ko when it likes",
+    "Black's A18 at move 1 becomes correct"
+   ]
+  ]
+ }
+}

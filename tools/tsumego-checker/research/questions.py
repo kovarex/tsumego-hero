@@ -1,7 +1,8 @@
 #the ko-label questions page: each section asks the owner one question, with its options, our recommendation and
 #positions drawn as numbered diagrams; the solver checks under each diagram run when the page is rendered, and a
 #failed or undecided check, an illegal move or a text-rule violation stops the render
-#usage: PROBLEMS=status_problems.jsonl ENGINE=engine_x questions.py <page.json> <out.html> [--only <section id>]
+#usage: PROBLEMS=status_problems.jsonl ENGINE=engine questions.py <page.json> <out.html> [--only <section id>]
+#       (ENGINE: the checker's engine, built from engine.cpp)
 #       (a section file in place of page.json renders that section alone)
 #page: {title, intro: [paragraph], sections: ["<section id>.json", ...]}, the section files next to page.json
 #section: {id, heading, question, options: [{label, meaning}], recommendation, text: [paragraph], positions: [P],
@@ -11,10 +12,12 @@
 #   area: where the solver searches (narrow: the checker's area, wide: two rings more, frame: points or ranges A16:D19)
 #D: {start (default: the leaf), moves, first, caption, labels: {point: letter}, text, checks: [C]}, drawn as report.py
 #   draws: 'pass' is a move elsewhere, 'A18!' a retake after a ko threat elsewhere
-#C: {count: [s, o], opts, expect: wins | fails} | {balance: d, opts} | {status: DEAD | KO | ALIVE | BENT4}, run at the
-#   position after the diagram's moves with the side to move there; s and o are the outside ko threats of the problem's
+#C: {count: [s, o], opts, expect: wins | fails} | {balance: d, opts} | {status: DEAD | KO | ALIVE | BENT4 | SEKI | SEKI+ |
+#   DDKO | ADKO | DSKO | ASKO}, run at the position after the diagram's moves with the side to move there; status: the
+#   class of Solver.status (SEKI+: a seki in which the solver keeps sente, design D11; DDKO and ADKO: dead or alive in a
+#   double ko, DSKO and ASKO: by superko, design D10); s and o are the outside ko threats of the problem's
 #   first player (the solver) and of its opponent; balance d: the solver wins at s - o = d and fails at d - 1, each at
-#   the smallest pair; opts: solvex options with point names (pw=1,end=1,fw=A18;B19)
+#   the smallest pair; opts: solvex options with point names (pw=1,end=1,fw=A18;B19; sk=1: a seki counts as dead)
 #diagrams are numbered through the section; text names them "Diagram 2" and their stones "Black 7" (in a position,
 #stones of its own diagrams), and never lists moves
 import html, json, os, re, sys, time
@@ -22,7 +25,7 @@ USAGE = 'usage: PROBLEMS=<status problems .jsonl> ENGINE=<engine with solvex> qu
 if not os.environ.get('PROBLEMS') or not os.environ.get('ENGINE'):
     sys.exit(USAGE)
 if not os.path.isfile(os.environ['ENGINE']) or b'solvex' not in open(os.environ['ENGINE'], 'rb').read():
-    sys.exit('ENGINE=%s has no solvex command; use the frozen engine_x' % os.environ['ENGINE'])
+    sys.exit('ENGINE=%s has no solvex command; use the checker\'s engine, built from engine.cpp' % os.environ['ENGINE'])
 RESEARCH = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.dirname(RESEARCH))
 sys.path.insert(0, RESEARCH)
@@ -37,7 +40,8 @@ names = report.names
 BUDGETS = (400000, 2000000)
 WORDS = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve',
          'thirteen', 'fourteen', 'fifteen']
-STATUSES = ('DEAD', 'KO', 'ALIVE', 'BENT4')
+#every class Solver.status returns, besides '?' (undecided)
+STATUSES = ('DEAD', 'KO', 'ALIVE', 'BENT4', 'SEKI', 'SEKI+', 'DDKO', 'ADKO', 'DSKO', 'ASKO')
 CYCLES = {0: 'a repeated position kills if a ko was retaken against the ban, and is seki otherwise',
           1: 'any repeated position counts as a kill', 2: 'any repeated position counts as life',
           3: 'the side that repeats a position loses'}
@@ -418,7 +422,7 @@ def parse_options(text, problem, solver):
     items, words, seen = [], [], set()
     for item in text.split(','):
         key, equals, value = item.strip().partition('=')
-        if not equals or key not in ('pb', 'pw', 'fb', 'fw', 'kb', 'kw', 'end', 'cyc', 'pv'):
+        if not equals or key not in ('pb', 'pw', 'fb', 'fw', 'kb', 'kw', 'end', 'cyc', 'pv', 'sk'):
             raise CheckError('unknown option %r' % item)
         if key in seen:
             raise CheckError('option %s given twice' % key)
@@ -461,6 +465,13 @@ def parse_options(text, problem, solver):
                 raise CheckError('cyc: from 0 to 3')
             items.append('cyc=%d' % number)
             words.append(CYCLES[number])
+        elif key == 'sk':
+            #design D11's sekikill: only life without a seki counts as life, as in the checker's SEKI and SEKI+ tests
+            if number > 1:
+                raise CheckError('sk: 0 or 1')
+            items.append('sk=%d' % number)
+            if number:
+                words.append('a seki counts as dead')
         elif number > 1:
             raise CheckError('pv: 0 or 1')
     return ','.join(items) or '-', words
@@ -525,10 +536,18 @@ def balance_words(colour, d):
     fail = 'with an equal number' if d == 1 else 'with %s %s' % (threats(d - 1), 'more' if d > 1 else 'fewer')
     return '%s wins %s, and fails %s' % (me, win, fail)
 
-def status_words(status, defender, own_target):
+def status_words(status, defender, own_target, solver):
     who = names[defender] if own_target else 'the target'
+    if status == 'SEKI+':
+        #design D11: the seki holds when the solver passes once, or the opponent must answer there
+        keeps = 'keeps sente' if own_target and defender == solver else '%s keeps sente' % names[solver]
+        return '%s lives in seki, whatever the ko threats, and %s' % (who, keeps)
     return {'DEAD': '%s dies, whatever the ko threats' % who, 'ALIVE': '%s lives, whatever the ko threats' % who,
-            'KO': 'a ko, decided by the ko threats', 'BENT4': 'bent four in the corner'}[status]
+            'KO': 'a ko, decided by the ko threats', 'BENT4': 'bent four in the corner',
+            'SEKI': '%s lives in seki, whatever the ko threats' % who,
+            'DDKO': '%s dies in a double ko, whatever the ko threats' % who,
+            'ADKO': '%s lives in a double ko, whatever the ko threats' % who,
+            'DSKO': '%s dies by superko' % who, 'ASKO': '%s lives by superko' % who}[status]
 
 def pair_words(colour, s, o):
     return '%s %d, %s %d' % (names[colour], s, names[opponent(colour)], o)
@@ -556,7 +575,7 @@ def evaluate(position, diagram, check):
             raise CheckError('the status search is undecided at %d nodes' % BUDGETS[-1])
         if found != check['status']:
             raise CheckError('the solver says %s, the check expects %s' % (found, check['status']))
-        return context, status_words(found, defender, position['spec'].get('target') is None)
+        return context, status_words(found, defender, position['spec'].get('target') is None, colour)
     options, words = parse_options(check.get('opts', ''), problem, solver)
     if kind == 'count':
         pair = check['count']

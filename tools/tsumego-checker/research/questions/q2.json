@@ -174,9 +174,9 @@
     {
      "moves": "A19 pass C19 pass B19",
      "labels": {"A17": "a", "B17": "b"},
-     "caption": "White's other choice: White 12 connects, and the corner is seki, with a and b shared. Black lives even when White has four ko threats.",
+     "caption": "White's other choice: White 12 connects in gote, and the corner is seki, with a and b shared. Black keeps sente, and lives even when White has four ko threats.",
      "checks": [
-      {"status": "ALIVE"},
+      {"status": "SEKI+"},
       {"count": [0, 4], "opts": "end=1", "expect": "wins"}
      ]
     }
