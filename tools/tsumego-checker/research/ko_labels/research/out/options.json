@@ -1,0 +1,278 @@
+{
+ "k001": {
+  "question": "5",
+  "options": [
+   [
+    "count the throw-in",
+    "KO+"
+   ],
+   [
+    "the clean kill, a ko is direct only when its capture must be answered at once",
+    "A+1KO-"
+   ]
+  ]
+ },
+ "k007": {
+  "question": "5",
+  "options": [
+   [
+    "count the throw-in (the checker's D5 reading)",
+    "KO+"
+   ],
+   [
+    "the clean kill, a ko is direct only when its capture must be answered at once",
+    "A+1KO-"
+   ]
+  ]
+ },
+ "k008": {
+  "question": "4",
+  "options": [
+   [
+    "by the count",
+    "KO+"
+   ],
+   [
+    "by the structure, with A15 after White's C19 an approach (the proposals for questions 3 and 4)",
+    "A-1KO-"
+   ],
+   [
+    "by the structure, with A15 an extra move inside the ko",
+    "KO-2"
+   ]
+  ]
+ },
+ "k010": {
+  "question": "3",
+  "options": [
+   [
+    "the extra move after a local answer is a stage inside the ko, counted as a threat",
+    "KO-"
+   ],
+   [
+    "it is an approach (the question page's proposal for c014)",
+    "A-1KO+"
+   ]
+  ]
+ },
+ "k011": {
+  "question": "3 (an extra move after a local answer to a threatening capture: approach or extra move inside the ko); the approach-label decision adds the counted form",
+  "options": [
+   [
+    "3 answered 'extra move inside the ko' (KO- for c014)",
+    "A-1KO-2"
+   ],
+   [
+    "3 answered 'approach' (A-1KO+ for c014, the proposal)",
+    "A-2KO-"
+   ],
+   [
+    "counted labels (approach-label decision, either answer to 3)",
+    "KO-3"
+   ]
+  ]
+ },
+ "k013": {
+  "question": "3",
+  "options": [
+   [
+    "KO- for c014 (the extra move after a local answer is a stage inside the ko, counted as a threat)",
+    "KO+2"
+   ],
+   [
+    "A-1KO+ for c014 (the extra move is an approach, counted from the position after the local answer)",
+    "A+1KO+"
+   ]
+  ]
+ },
+ "k014": {
+  "question": "8",
+  "options": [
+   [
+    "open board as the site shows it (the question's proposal)",
+    "KO+"
+   ],
+   [
+    "edge walled where the checker's search area ends (its narrow and wide areas, or Black stones at A13 B13)",
+    "KO+2"
+   ],
+   [
+    "edge closed by Black stones at A14 B14",
+    "DDKO"
+   ]
+  ]
+ },
+ "k018": {
+  "question": "8",
+  "options": [
+   [
+    "the outside counted as Black's, as the problem is built",
+    "KO-"
+   ],
+   [
+    "the board open as the player sees it",
+    "KO-2"
+   ]
+  ]
+ },
+ "k019": {
+  "question": "5",
+  "options": [
+   [
+    "count the second ko as direct (the tree's reading here and at leaf 20)",
+    "KO-"
+   ],
+   [
+    "the clean kill, approach A17 (the question page's recommendation, like 13169)",
+    "A-1KO-"
+   ]
+  ]
+ },
+ "k021": {
+  "question": "5",
+  "options": [
+   [
+    "count the second ko (Black's capture at C18 in the second ko)",
+    "KO-"
+   ],
+   [
+    "the clean kill, approach at D19 and then a direct ko",
+    "A-1KO-"
+   ]
+  ]
+ },
+ "k022": {
+  "question": "5",
+  "options": [
+   [
+    "count the second ko",
+    "KO-"
+   ],
+   [
+    "the clean kill, approach A17",
+    "A-1KO-"
+   ]
+  ]
+ },
+ "k023": {
+  "question": "1b",
+  "options": [
+   [
+    "the switch after Black's approach E19 counts as a normal ko (the question page's proposal for 10403)",
+    "A-1KO-"
+   ],
+   [
+    "Black's capture A17 in the second ko counts as a second approach",
+    "A-2KO+"
+   ]
+  ]
+ },
+ "k030": {
+  "question": "8",
+  "options": [
+   [
+    "the lower edge closed",
+    "KO+"
+   ],
+   [
+    "the board as the player sees it (Black's local threat at B14)",
+    "KO+2"
+   ]
+  ]
+ },
+ "k033": {
+  "question": "3",
+  "options": [
+   [
+    "approach reading (the question page's proposal, A-1KO+ for c014; B18 is White's approach, counted from the position after Black's answer F19)",
+    "A+1KO+"
+   ],
+   [
+    "extra-move reading (KO- for c014; B18 is an extra move inside a direct ko, the checker's D7 stage)",
+    "KO+2"
+   ]
+  ]
+ },
+ "k036": {
+  "question": "3",
+  "options": [
+   [
+    "the approach reading (the question page's proposal)",
+    "A+1KO+"
+   ],
+   [
+    "the extra-move reading",
+    "KO+2"
+   ]
+  ]
+ },
+ "k037": {
+  "question": "3",
+  "options": [
+   [
+    "E16 is an approach (the question page's proposal for c014)",
+    "A-1KO-"
+   ],
+   [
+    "E16 is an extra move inside the ko",
+    "KO-2"
+   ]
+  ]
+ },
+ "k051": {
+  "question": "approach-label",
+  "options": [
+   [
+    "approach-ko label",
+    "A+1KO-"
+   ],
+   [
+    "counted label",
+    "KO+"
+   ]
+  ]
+ },
+ "k052": {
+  "question": "approach-label",
+  "options": [
+   [
+    "approach-ko label",
+    "A+1KO+2"
+   ],
+   [
+    "counted label",
+    "KO+3"
+   ]
+  ]
+ },
+ "k053": {
+  "question": "8",
+  "options": [
+   [
+    "the outside as the problem is built, B13-C13 short of liberties",
+    "KO+"
+   ],
+   [
+    "the board as shown, where the crawl along the first line to B13-C13 gives two local threats (15399, with the same stones, shows this crawl)",
+    "KO-2"
+   ]
+  ]
+ },
+ "k056": {
+  "question": "5 (together with the approach-label decision: both readings have count 0 at this leaf)",
+  "options": [
+   [
+    "count the throw-in (D5's direct reading: White took first, Black's F19-F18 is one local threat)",
+    "KO+"
+   ],
+   [
+    "the clean kill with White barred from the throw-in (the question page's proposal), using approach-ko labels as in 215 and 13169",
+    "A+1KO-"
+   ],
+   [
+    "the clean kill with counted labels (the approach-label decision)",
+    "KO+"
+   ]
+  ]
+ }
+}

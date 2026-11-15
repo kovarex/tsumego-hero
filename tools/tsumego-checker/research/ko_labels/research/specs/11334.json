@@ -1,0 +1,44 @@
+{
+ "problem": "11334",
+ "cards": [
+  {
+   "case": "k030",
+   "headline": "Question 8: White's wall below the corner keeps the tree's S[KO+]; on the open board Black's atari at B14 is a local threat: S[KO+2]. The checker's A+1KO- fits neither.",
+   "diagrams": [
+    {
+     "start": "",
+     "moves": "A18 B18 A16 A19 B19 C19 D19 A14 B19 F19 A18",
+     "labels": {
+      "B14": "a"
+     },
+     "caption": "The tree's line, marked S[KO+]; the checker said A+1KO-. Black 11 has just taken the ko and threatens to capture two stones at B17. Black can atari White 8 at a."
+    },
+    {
+     "start": "A18 B18 A16 A19 B19 C19 D19 A14 B19 F19 A18",
+     "moves": "A19! B14 C19 A13 B19 C14 D15 A14 C13",
+     "labels": {
+      "A12": "b",
+      "D14": "c"
+     },
+     "caption": "White's wall: b and c lie outside the checker's narrow area, which counts them as White. White, one threat ahead, retakes with White 12 and ignores Black 13: White 14 captures in a second ko, and Black's nine stones are in atari at B17. Black 15 captures White 8, and White 16 connects. After Black 19, Black's only outside liberty is C13, and White 20 takes it: White wins."
+    },
+    {
+     "start": "A18 B18 A16 A19 B19 C19 D19 A14 B19 F19 A18",
+     "moves": "A19! B14 C19 A13 B19 C14 D15 A14 D14 B17 C13 A18",
+     "caption": "The open board, the same moves to Black 19. Black's group also has liberties at A12 and D14, so White 20 and White 22 come too late: Black 21 puts five White stones in atari, and Black 23 captures them and lives."
+    },
+    {
+     "start": "A18 B18 A16 A19 B19 C19 D19 A14 B19 F19 A18",
+     "moves": "A19! B14 C14 A18 pass B17",
+     "caption": "The open board, White answers Black 13 instead: White 14 captures it, and Black 15 retakes the ko without a threat elsewhere. White has no threat left, and Black 17 captures two stones and lives."
+    }
+   ],
+   "text": [
+    "Black 11 has just taken the ko and threatens to capture two stones, so White must retake with a threat. With as many threats as White, Black lives under either answer to question 8. The answers differ when White has one threat more. Then Black can atari White 8 at a in Diagram 1, as Black 13 does in Diagrams 2 to 4, and the empty board below the corner decides whether White can ignore it.",
+    "With White's wall, as the checker's narrow area reads the board, White ignores Black 13 and wins the race (Diagram 2), so Black needs as many threats as White: S[KO+], the tree's label. On the open board, as in the checker's wider area, ignoring fails (Diagram 3) and answering lets Black retake without a threat (Diagram 4). Black lives with one threat fewer than White and loses with two fewer: S[KO+2]. The tree can also keep S[KO+] by adding stones that close the edge. No move's grading changes either way.",
+    "The analyst left the race of Diagram 3 undecided and kept S[KO+]; a reviewer's decided searches in the wider area show Black wins it. That the fully open board is no worse for Black is reading, not a search.",
+    "The checker's A+1KO- is wrong under either answer. It counts White's capture at C19, White 14 in Diagram 2, as an approach, but that capture takes a second ko and leaves Black no free retake. Even if it and Black's capture at A18 were called approaches, the approach would change sides with whoever took last: the ko switches there and back, a plain KO by your rule. The label also says White took first, which is false."
+   ]
+  }
+ ]
+}

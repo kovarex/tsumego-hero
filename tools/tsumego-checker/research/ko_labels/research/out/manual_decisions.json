@@ -1,0 +1,80 @@
+{
+ "k001": {
+  "question": "5",
+  "tree_right_under_some_answer": true,
+  "options": "count the throw-in: S[KO+] | the clean kill, a ko is direct only when its capture must be answered at once: S[A+1KO-]",
+  "explanation": "From the solver reviewer: the count is 0 either way; KO+ if the throw-in counts, A+1KO- for the clean kill."
+ },
+ "k007": {
+  "question": "5",
+  "tree_right_under_some_answer": false,
+  "options": "count the throw-in (the checker's D5 reading): S[KO+] | the clean kill, a ko is direct only when its capture must be answered at once: S[A+1KO-]",
+  "explanation": "Both judges: not a double ko; White's throw-in at A19 makes a new corner ko, count 0; ADKO is wrong under both answers."
+ },
+ "k008": {
+  "question": "4",
+  "tree_right_under_some_answer": true,
+  "options": "by the count: S[KO+] | by the structure, with A15 after White's C19 an approach (the proposals for questions 3 and 4): S[A-1KO-] | by the structure, with A15 an extra move inside the ko: S[KO-2]",
+  "explanation": "Judge A: question 4 (structure or count); the analyst, the position reviewer and judge B read it by the count, KO+."
+ },
+ "k010": {
+  "question": "3",
+  "tree_right_under_some_answer": true,
+  "options": "the extra move after a local answer is a stage inside the ko, counted as a threat: S[KO-] | it is an approach (the question page's proposal for c014): S[A-1KO+]",
+  "explanation": "Both reviewers: the facts and the count (1) hold; KO- or the tree's A-1KO+ is question 3."
+ },
+ "k018": {
+  "question": "8",
+  "tree_right_under_some_answer": true,
+  "options": "the outside counted as Black's, as the problem is built: S[KO-] | the board open as the player sees it: S[KO-2]",
+  "explanation": "Both judges: question 8; on the open board White's push at C15 gives White a second local threat, at least KO-2. The checker's KO+ is wrong either way."
+ },
+ "k019": {
+  "question": "5",
+  "tree_right_under_some_answer": true,
+  "options": "count the second ko as direct (the tree's reading here and at leaf 20): S[KO-] | the clean kill, approach A17 (the question page's recommendation, like 13169): S[A-1KO-]",
+  "explanation": "Judge B: question 5; the checker's A-1KO+ fits neither answer."
+ },
+ "k022": {
+  "question": "5",
+  "tree_right_under_some_answer": true,
+  "options": "count the second ko: S[KO-] | the clean kill, approach A17: S[A-1KO-]",
+  "explanation": "Judge A: question 5; the analyst missed the clean approach A17; the checker's A-1KO+ fits neither answer."
+ },
+ "k023": {
+  "question": "1b",
+  "tree_right_under_some_answer": false,
+  "options": "the switch after Black's approach E19 counts as a normal ko (the question page's proposal for 10403): S[A-1KO-] | Black's capture A17 in the second ko counts as a second approach: S[A-2KO+]",
+  "explanation": "Both reviewers: the tree's A+1KO- is wrong (count 2); the definitions reviewer: the label turns on question 1b and the approach-label decision."
+ },
+ "k030": {
+  "question": "8",
+  "tree_right_under_some_answer": true,
+  "options": "the lower edge closed: S[KO+] | the board as the player sees it (Black's local threat at B14): S[KO+2]",
+  "explanation": "The solver reviewer: KO+ only with the lower edge closed; in the checker's wider area Black has a local threat at B14, count -1. The checker's A+1KO- is wrong either way."
+ },
+ "k036": {
+  "question": "3",
+  "tree_right_under_some_answer": false,
+  "options": "the approach reading (the question page's proposal): S[A+1KO+] | the extra-move reading: S[KO+2]",
+  "explanation": "Both reviewers: question 3; the tree's KO+ is wrong under both answers."
+ },
+ "k037": {
+  "question": "3",
+  "tree_right_under_some_answer": false,
+  "options": "E16 is an approach (the question page's proposal for c014): S[A-1KO-] | E16 is an extra move inside the ko: S[KO-2]",
+  "explanation": "The definitions reviewer: question 3, count 2 either way; the tree's KO+ is wrong under both answers."
+ },
+ "k053": {
+  "question": "8",
+  "tree_right_under_some_answer": true,
+  "options": "the outside as the problem is built, B13-C13 short of liberties: S[KO+] | the board as shown, where the crawl along the first line to B13-C13 gives two local threats (15399, with the same stones, shows this crawl): S[KO-2]",
+  "explanation": "The solver reviewer: on the board as shown, two local threats along the first line make it KO-2; every search area so far walled B13-C13 in. The checker's DEAD is wrong either way."
+ },
+ "k021": {
+  "question": "5",
+  "tree_right_under_some_answer": true,
+  "options": "count the second ko (Black's capture at C18 in the second ko): S[KO-] | the clean kill, approach at D19 and then a direct ko: S[A-1KO-]",
+  "explanation": "The solver reviewer: the tree's KO- is right when the second ko is counted; Black also has a clean approach at D19, after which White retakes for free, so with the clean-kill answer to question 5 the leaf is S[A-1KO-], like its sibling k022. The checker's A-1KO+ is wrong either way."
+ }
+}

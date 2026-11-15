@@ -1,0 +1,40 @@
+{
+ "problem": "9896",
+ "cards": [
+  {
+   "case": "k019",
+   "headline": "Question 5: counting Black's second ko at C18 keeps the tree's S[KO-]; describing the clean kill gives S[A-1KO-]. The checker's A-1KO+ fits neither answer.",
+   "diagrams": [
+    {
+     "start": "",
+     "moves": "F19 E19 E17 C19 A18 E18 B19 A19",
+     "caption": "The tree's line, marked S[KO-]; the checker said A-1KO+. White 8 takes the ko by capturing Black 7. Black to play."
+    },
+    {
+     "start": "F19 E19 E17 C19 A18 E18 B19 A19",
+     "moves": "B19! pass",
+     "labels": {
+      "C18": "a",
+      "A17": "b"
+     },
+     "caption": "Black 9 retakes after a threat elsewhere, and White can play elsewhere once (White 10). Black then needs one more move: a captures one stone and starts a second ko, b is a clean approach."
+    },
+    {
+     "start": "F19 E19 E17 C19 A18 E18 B19 A19",
+     "moves": "B19! pass C18 B18! pass A19",
+     "caption": "Counting the second ko. Black 11 captures and takes a new ko, and White's A19 is now illegal, so White 12 must retake at once, after a threat elsewhere. Black has no threat left and plays elsewhere (Black 13), and White 14 captures for free: the leaf again, each side one threat poorer. Black needs one threat more than White: S[KO-]."
+    },
+    {
+     "start": "F19 E19 E17 C19 A18 E18 B19 A19",
+     "moves": "B19! pass A17 A19 B19! pass A19",
+     "caption": "The clean kill: Black 11 is an approach and captures nothing, so White 12 retakes without a threat. Black 13 retakes after a second threat, and now White must answer at once: if White plays elsewhere (White 14), Black 15 connects and kills, even against four White threats. This way Black needs two threats more than White: S[A-1KO-]."
+    }
+   ],
+   "text": [
+    "White 8 has just taken the ko, and its capture is a real threat: if Black ignores it, White connects at B19 and lives with eyes at C18 and D19. Black needs exactly one threat more than White. After Black's retake, though, White can play elsewhere once (not twice), as in 13169, and Black then has two ways to go on (Diagram 2).",
+    "This is question 5. Counting the second ko gives your S[KO-]: Black 11 in Diagram 3 takes a ko that White must answer at once, with a threat, so Black never plays an approach; if White has no threat for that retake, Black connects at B18 and kills. The clean kill, which the question page proposes, gives S[A-1KO-]: Black 11 in Diagram 4 is an approach, White 12 retakes for free, and the label implies two threats more than White, with the checker's count of one as a note. No move's grading changes either way.",
+    "The checker's A-1KO+ fits neither answer: it takes the capture at C18 for an approach, though White has no free retake after it, and then credits the same capture back as an extra threat it cannot locate. Your other S[KO-] leaf, where Black starts at F17, has the same structure, while 13169 uses the clean kill, so question 5 decides both leaves here. All counts assume your tree's closed board edge (question 8); on the open board White might gain threats by pushing out through F17, which no search decided."
+   ]
+  }
+ ]
+}

@@ -1,0 +1,18 @@
+{
+ "problem": "840",
+ "cards": [
+  {
+   "case": "k002",
+   "headline": "S[ADKO] is right: White lives by double ko. The checker said DEAD only because its search area cuts White off from B10.",
+   "diagrams": [
+    {"start": "", "moves": "B18 B19 A17 A15 D19 A13 A12 B12 A14 A18 A19 A13", "caption": "The tree's line to the leaf marked S[ADKO], where the checker said DEAD. Black 11 has taken the top ko and White 12 has retaken the bottom one, leaving Black 7 in atari with Black to play."},
+    {"start": "B18 B19 A17 A15 D19 A13 A12 B12 A14 A18 A19 A13", "moves": "A11 B11 A14 A18 A19! A13 A14! A18", "caption": "Black 13 must save Black 7; White 14 ataris again and Black 15 retakes the bottom ko. White 16 retakes the top ko, putting Black 1 in atari. Black 17 and Black 19 each retake after a threat elsewhere, White 18 and White 20 for free. After White 20 the position repeats the one after White 16: Black has paid two threats, White none."},
+    {"start": "B18 B19 A17 A15 D19 A13 A12 B12 A14 A18 A19 A13", "moves": "C19 A11", "caption": "The checker's kill starts with Black 13, which captures White 2 and settles the top ko. On the board White 14 captures Black 7, and Black can fill neither A12 nor A14, so White's corner joins B10 and the open board below and lives."}
+   ],
+   "text": [
+    "White needs only one of the two kos: with the top one White captures Black 1 for two eyes, with the bottom one Black 7 and Black 13 of Diagram 2, joining B10. So Black pays a threat for every retake and White none: S[ADKO]. A reviewer agrees. In models that give B10 a living group, the solver confirms each step, though the whole leaf stayed undecided.",
+    "The checker said DEAD, with no wall warning, because its search area makes A10 and C11 wall and leaves B10 outside, so there White 14 of Diagram 3 cannot get out. This is not question 8: B10 is the problem's own stone, and the tree itself gives S[KO+] when Black 7 is at B12 instead, blocking that escape. Even with its area fixed, the checker may print ASKO here, wrongly: the cycle is a plain double ko and the SGF says RU[Japanese], so question 10 does not decide it."
+   ]
+  }
+ ]
+}

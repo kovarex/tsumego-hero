@@ -1,0 +1,41 @@
+{
+ "problem": "14119",
+ "cards": [
+  {
+   "case": "k050",
+   "headline": "Whoever first fills a shared liberty hands the other side a direct ko, so equal threats give seki: S[10kKO], as you confirmed for this shape, not S[KO-].",
+   "diagrams": [
+    {
+     "start": "",
+     "moves": "A18 C19",
+     "labels": {
+      "D18": "a",
+      "D19": "b",
+      "A19": "c"
+     },
+     "caption": "The tree's line to the leaf, marked S[KO-], with Black to play. White can capture Black's stone at B19 by playing at c whenever it likes. Black's group and the three White stones inside Black's shape, White 2 among them, share two liberties, a and b."
+    },
+    {
+     "start": "A18 C19",
+     "moves": "D19 A19 B19! pass D18",
+     "caption": "Black invests. Black 3 fills a shared liberty, and White 4's capture puts Black's group in atari: White has taken first in a direct ko. After White 4 the position is the tree's other S[KO-] leaf, which is right. With one threat more than White, Black 5 retakes after a threat elsewhere, White 6 has none left, and Black 7 captures three stones: alive."
+    },
+    {
+     "start": "A18 C19",
+     "moves": "pass A19 pass D18 B19 A19! pass D19",
+     "caption": "White invests. Black 3 plays elsewhere, and White 4 takes the ko, which threatens nothing yet. Black 5 plays elsewhere again, and White 6 fills a shared liberty. Black 7 retakes without a threat, since White 6 captured nothing, and White's four stones are in atari: now White needs the first threat. With one threat more than Black, White 8 retakes after a threat elsewhere, Black 9 has none left, and White 10 captures Black's group."
+    },
+    {
+     "start": "A18 C19",
+     "moves": "pass A19 pass B19",
+     "caption": "With equal threats nobody invests. Black 3 and Black 5 play elsewhere, White 4 takes the ko, and White 6 connects: seki."
+    }
+   ],
+   "text": [
+    "At the leaf neither side's ko capture threatens anything until someone fills a or b in Diagram 1. Whoever fills first hands the other side a direct ko. If Black fills, White's capture puts Black in atari, and Black needs one threat more than White (Diagram 2). The tree's KO− here is the value of that investment, which Black need not make. If White fills, Black retakes for free, and White needs the first threat (Diagram 3). With equal threats nobody fills, and White settles for seki (Diagram 4).",
+    "So Black needs no extra threat: seki with equal threats, alive with one threat more, dead with one fewer. This is the shape of question 1a, which you confirmed as 10kKO. You also marked this exact corner, colours reversed, S[10kKO] in 10051, leaf 11.",
+    "No move's grade changes: Black's correct first move, at C19, ends in the tree's seki, which besogo ranks above both KO− and 10kKO in a LIVE problem, so Black 1 in Diagram 1 stays wrong."
+   ]
+  }
+ ]
+}

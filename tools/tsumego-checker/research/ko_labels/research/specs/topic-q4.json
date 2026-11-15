@@ -1,0 +1,36 @@
+{
+  "topic": "q4",
+  "text": [
+    "Part 4 of the question page, drawn from 10005, asks what a ko label describes: the ko when the side to move retakes at once (the structure), or the best order of play (the count). In this research it decides one leaf, k008 in 7487, which the tree marks S[A-1KO-]. In Diagram 1, White 14 has just taken the ko, and Black is to play.",
+    "Your S[A-1KO-] describes the structure, Black retaking at once (Diagram 2). White's answer at C19 leaves Black needing A15 before its capture threatens again, and White retakes for free, so Black needs two threats more than White. With A15 read as an approach, question 3's proposal, the label is S[A-1KO-]; read as an extra move inside the ko, it is S[KO-2].",
+    "By the count, Black plays A15 first, and White must answer. Against C19, Black retakes without a threat (Diagram 3). Against B19, which ends the ko at A17, Black takes a second ko at A19 first (Diagram 4). Either way Black wins with as many threats as White and fails with one fewer: S[KO+], with medium confidence.",
+    "By the count, k008 becomes S[KO+]. By the structure, it keeps your S[A-1KO-] with question 3's proposal, or becomes S[KO-2] with question 3's other answer. No move's grading in 7487 changes under any of the three."
+  ],
+  "diagrams": [
+    {
+      "problem": "7487",
+      "start": "",
+      "moves": "B18 C17 G18 A18 A17 A16 A19 F18 E19 F19 C18 B17 D18 A18",
+      "caption": "The tree's line to the leaf marked S[A-1KO-], with Black to play. White 14 has just taken the ko by capturing Black 5, so Black needs a ko threat to retake at A17."
+    },
+    {
+      "problem": "7487",
+      "start": "B18 C17 G18 A18 A17 A16 A19 F18 E19 F19 C18 B17 D18 A18",
+      "moves": "A17! C19 A15 A18",
+      "caption": "The structure. Black 15 retakes after a ko threat elsewhere, and White 16 answers at C19. Now Black's capture threatens again only after Black 17 at A15, and White 18 retakes without a threat. Black needs a second ko threat: two more than White in all."
+    },
+    {
+      "problem": "7487",
+      "start": "B18 C17 G18 A18 A17 A16 A19 F18 E19 F19 C18 B17 D18 A18",
+      "moves": "A15 C19 A17",
+      "caption": "The count, against C19. Black 15 plays A15 first, and White must answer. After White 16 at C19, Black 17 retakes without a threat: a direct ko Black has taken. Black wins with equal threats; with one White threat more, only White's retake at A18 holds."
+    },
+    {
+      "problem": "7487",
+      "start": "B18 C17 G18 A18 A17 A16 A19 F18 E19 F19 C18 B17 D18 A18",
+      "moves": "A15 B19 C19 E18 A19",
+      "caption": "The count, against B19. White 16 captures at B19, which ends the ko at A17. Black 17 puts White 16 in atari, and after White 18, Black 19 takes a second ko first and puts the stone at A18 back in atari. Black wins with equal threats; with one White threat more, White holds only by retaking at B19 or playing D19."
+    }
+  ],
+  "suggestion": "The structure, as the question page proposes for questions 3 and 4: keep your S[A-1KO-] on k008, and the solver prints the count beside it as a note."
+}

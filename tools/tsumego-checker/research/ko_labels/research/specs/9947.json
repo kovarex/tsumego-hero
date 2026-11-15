@@ -1,0 +1,36 @@
+{
+ "problem": "9947",
+ "cards": [
+  {
+   "case": "k020",
+   "headline": "The tree's KO+ is right. The checker's A-1KO+2 counts a capture in a second ko as an approach.",
+   "diagrams": [
+    {
+     "start": "",
+     "moves": "A16 G19 C18 D18 A18 C19 B19",
+     "caption": "The tree's line. White 6 captures Black 3, and Black 7 captures White's stone at A19, taking the ko first; the tree marks the leaf S[KO+], the checker A-1KO+2."
+    },
+    {
+     "start": "A16 G19 C18 D18 A18 C19 B19",
+     "moves": "D19 C18 pass B18",
+     "caption": "No threats on either side. White may not retake at A19 yet, and White 8 saves its stone at C19. Black 9 captures White's stone at B18, a second ko: White may not retake there at once, A19 is now suicide, and with no threat White 10 plays elsewhere. Black 11 connects, and White has one eye: Black kills."
+    },
+    {
+     "start": "A16 G19 C18 D18 A18 C19 B19",
+     "moves": "E19 C18 B18! pass C18",
+     "caption": "White has one threat more. Black 9 captures in the second ko, White 10 retakes after a threat, and Black 11 has none and plays elsewhere. White 12 connects and lives, with eyes at D19 and F19 and A19 to capture Black's stone at B19."
+    },
+    {
+     "start": "A16 G19 C18 D18 A18 C19 B19",
+     "moves": "pass C18 B18! pass A19 B19!",
+     "caption": "White 8 plays elsewhere: Black's capture at B19 threatens nothing at once. Black 9 captures in the second ko and threatens to kill; White 10 retakes after a threat and threatens nothing, so Black 11 plays elsewhere. White 12 takes the first ko and threatens to live; Black 13 retakes after a threat, back at the leaf."
+    }
+   ],
+   "text": [
+    "Black kills with as many threats as White (Diagram 2) but not with one fewer (Diagram 3): KO+. The checker finds the same count but calls Black 9 an approach. Black 9 captures in a second ko, after which White cannot retake at A19 at all and needs a threat to retake at B18. That ban is the extra threat the checker could not locate.",
+    "The ko switches there and back (Diagram 4). Black 9 and White 12 threaten at once, Black 7 and White 10 do not, so each round each side spends one threat and gets one move elsewhere. That is a plain KO by your rule, and KO+ under either answer to question 1b. Nor is it the open approach-label decision: the two labels have the same count, but that decision needs a real approach, and Black's only one, at D19, would need one threat more than White.",
+    "No move's grading changes: any ko beats the ALIVE and SEKI+ leaves. In the whole wider area the kill with equal threats stays undecided, though the end of Diagram 2 is dead there too; no search shows another count. Problem 7693 has the same corner and the same leaf, also marked S[KO+]."
+   ]
+  }
+ ]
+}

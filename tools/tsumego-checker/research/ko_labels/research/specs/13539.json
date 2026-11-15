@@ -1,0 +1,68 @@
+{
+ "problem": "13539",
+ "cards": [
+  {
+   "case": "k036",
+   "headline": "Question 3, colours reversed: Black answers White's retake locally, and White then needs one more move. S[A+1KO+] as an approach, S[KO+2] as an extra move; not S[KO+].",
+   "diagrams": [
+    {
+     "start": "",
+     "moves": "E19 D19 A16 D17 A17 A18 B18 B19 A19",
+     "caption": "The tree's line, marked S[KO+]; the checker says S[KO+2]. Black 9 takes the ko and puts White 8 in atari at C19. White may not retake at once."
+    },
+    {
+     "start": "E19 D19 A16 D17 A17 A18 B18 B19 A19",
+     "moves": "A18! pass C18",
+     "caption": "White 10 retakes after a threat elsewhere and puts Black 7 in atari. If Black 11 plays elsewhere, White 12 takes it, and Black fails even with four threats. So both captures threaten at once: a direct ko."
+    },
+    {
+     "start": "E19 D19 A16 D17 A17 A18 B18 B19 A19",
+     "moves": "A18! C18 D18 A19 A18! pass C19",
+     "caption": "Black 11 answers instead of retaking. White's ko threatens nothing until White 12, the move the question is about, and Black 13 retakes without a threat: from here it is a plain ko. With a second threat, White 14 retakes; Black has none, and White 16 captures Black 7 and Black 11."
+    },
+    {
+     "start": "E19 D19 A16 D17 A17 A18 B18 B19 A19",
+     "moves": "A18! C18 D18 A19 pass C19",
+     "caption": "If White has only one threat more, it went into White 10. White 14 cannot retake and plays elsewhere, and Black 15 takes White 8. White's group is left in atari at E16: dead."
+    }
+   ],
+   "text": [
+    "Black 9 threatens to take White 8, and White 10's retake threatens to take Black 7 (Diagram 2). In Diagram 3, Black 11 answers instead of retaking; retaking with a threat would only repeat the leaf. White then needs White 12 (or C19) before its retake threatens again, and Black 13 retakes for free. This is question 3 (c014 in 2359) with the colours reversed, the shape of k033 in 13262, where your tree says S[A+1KO+].",
+    "The readings agree on every line and differ only in what White 12 is. As White's approach, counted from the position after Black 11, the label is S[A+1KO+]; as an extra move inside the direct ko, it is S[KO+2], as the checker prints. Either way White needs two threats more than Black (Diagram 3) and fails with one (Diagram 4): the tree's S[KO+] undervalues Black by one threat. Neither label changes any grade on the site.",
+    "The tree's other choice for Black 9, C18 before taking the ko, ends in a plain S[KO+], and the checker agrees. Its leaf is the position of Diagram 3 after Black 13, with White 12 at C19 instead of D18. So this leaf is the same ko with one more White threat to pay, and taking at once is Black's better move.",
+    "The count is decided only in the checker's narrow area. In the wider area, White's try at E16 after Black 11 stayed undecided; by reading, not search, it adds liberties but no eye."
+   ]
+  },
+  {
+   "case": "k037",
+   "headline": "Question 3, as in c014: White connects, Black needs one more move, and White has a local threat. S[A-1KO-] as an approach, S[KO-2] as an extra move; not S[KO+].",
+   "diagrams": [
+    {
+     "start": "",
+     "moves": "E19 D19 D18 D17 C19 B19 B18 A18 A19",
+     "caption": "The tree's line, marked S[KO+]; the checker says S[KO-2]. Black 9 takes the ko and puts White 8 in atari at A17. White may not retake at once."
+    },
+    {
+     "start": "E19 D19 D18 D17 C19 B19 B18 A18 A19",
+     "moves": "A17 E16 B19 A19! F19 G19 B19 A19! pass B19",
+     "caption": "White 10 connects, White's only good answer. Black 11 is the move the question is about, and White 12 retakes for free. Black 13 retakes with a threat, White 14 is a local threat that Black 15 answers, and White 16 retakes for free again. With a second threat, Black 17 retakes; White has none, and Black 19 connects and wins the race."
+    },
+    {
+     "start": "E19 D19 D18 D17 C19 B19 B18 A18 A19",
+     "moves": "A17 E16 B19 A19! F19 G19 B19 pass C18",
+     "caption": "With only one threat more, Black 17 cannot retake and plays elsewhere, and White 18 takes Black 7 and lives."
+    },
+    {
+     "start": "E19 D19 D18 D17 C19 B19 B18 A18 A19",
+     "moves": "A17 B19 C18",
+     "caption": "Connecting at once fails even with threats in hand: after White 12, Black's four corner stones have only D19, while White still has A16 and E16."
+    }
+   ],
+   "text": [
+    "Black 9's capture threatens to kill, but White 10 connects. Connecting at once then fails (Diagram 4), so Black first needs Black 11 (at E16, or A16 or C18), and White's only answer is the free retake, White 12. White also has a local threat, White 14, which Black 15 answers. So Black needs two threats more than White (Diagram 2) and fails with one (Diagram 3).",
+    "This is the c014 shape of question 3. The readings agree on every line and differ only in what Black 11 is. As Black's approach, counted from the position after White 10, the label is S[A-1KO-]; as an extra move inside the direct ko, as the checker counts it now, it is S[KO-2]. Both ask Black for two threats more than White, so the tree's S[KO+] overvalues Black by two threats either way. Neither label changes any grade on the site.",
+    "The count of two is decided only in the checker's narrow area; in the wider area S[KO+] fails too, and nothing decided contradicts two. White's push at E16 instead of White 10 gives White less in the narrow area; on the open board its follow-ups stayed undecided, and by reading they do not help White."
+   ]
+  }
+ ]
+}

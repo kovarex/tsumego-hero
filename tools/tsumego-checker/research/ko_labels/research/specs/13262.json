@@ -1,0 +1,36 @@
+{
+ "problem": "13262",
+ "cards": [
+  {
+   "case": "k033",
+   "headline": "Question 3, colours reversed: after Black's local answer, White needs one more move before its ko threatens. As an approach, the tree's S[A+1KO+]; as an extra move, S[KO+2].",
+   "diagrams": [
+    {
+     "start": "",
+     "moves": "C19 E17 E19 D19 D18",
+     "caption": "The tree's line, marked S[A+1KO+]; the checker says S[KO+2]. Black 5 takes the ko and puts White's six stones in atari at B18. White may not retake at once."
+    },
+    {
+     "start": "C19 E17 E19 D19 D18",
+     "moves": "D19! pass F19",
+     "caption": "White 6 retakes after a threat elsewhere and puts Black's stone at E19 in atari. If Black 7 plays elsewhere, White 8 takes it and lives; Black fails here even with four threats. So both captures threaten at once: the checker's direct ko."
+    },
+    {
+     "start": "C19 E17 E19 D19 D18",
+     "moves": "D19! F19 B18 D18 D19! pass A19",
+     "caption": "Black 7 answers instead of retaking. White's ko now threatens nothing until White 8, the move the question is about, and Black 9 retakes without a threat: from here it is a plain ko. With a second threat, White 10 retakes, Black has none, and White 12 takes two stones and lives."
+    },
+    {
+     "start": "C19 E17 E19 D19 D18",
+     "moves": "D19! F19 B18 D18 pass A19",
+     "caption": "If White's only extra threat went into White 6, White 10 cannot retake and plays elsewhere, and Black 11 takes eight stones."
+    }
+   ],
+   "text": [
+    "Black 5 threatens to capture six stones, so White must retake with a threat; no other White move works. White 6 threatens too (Diagram 2), so Black 7 in Diagram 3 answers instead of retaking; with a threat to spare, Black could retake at once, which repeats the leaf. Without White 8, Black retakes for free. White 8 threatens to take two stones at A19, as White 12 does, so Black must retake at once. This is question 3 (c014 in 2359) with the colours reversed.",
+    "Both readings agree on every line; they differ only in what White 8 is. Read as White's approach, counted from the position after Black 7, the label is S[A+1KO+]: the tree stands, and the checker's stage rule must change. The question page proposes this reading for c014. Read as an extra move inside a direct ko, the label is S[KO+2], as the checker prints. Either way Black fails when White has two threats more (Diagram 3) and wins when White has only one (Diagram 4), and besogo grades every move of 13262 the same.",
+    "Your S[A+1KO+] fits the approach reading, but your trees mark the same shape S[KO+], one threat short, at k013 in 7487 and k036 in 13539. The searches in the checker's area decide every step, and Diagrams 2 to 4 hold in the wider area too. There the checker's own label and a few tests stayed undecided, from search size, not from a White resource."
+   ]
+  }
+ ]
+}

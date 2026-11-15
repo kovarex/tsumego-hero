@@ -1,0 +1,20 @@
+{
+ "problem": "5832",
+ "cards": [
+  {
+   "case": "k007",
+   "headline": "Not a double ko: White can throw in at A19 and start a new corner ko. Black lives with as many threats as White: S[KO+] or S[A+1KO-] (question 5).",
+   "diagrams": [
+    {"start": "", "moves": "B18 B17 C17 A18 A19 A17 C19 A18 B17 B19 E19 F19 A19", "caption": "The tree's line, marked S[ADKO]. Black 13 takes the ko at A19 by capturing White 10, and White 6 and White 8 are left with one liberty, at A16. White can capture Black 11 at D19, a second ko."},
+    {"start": "B18 B17 C17 A18 A19 A17 C19 A18 B17 B19 E19 F19 A19", "moves": "B19! pass A19 A16 A18 A19 B19 pass A19 A17 A19", "caption": "One threat more for White: White kills. White 14 retakes after a threat elsewhere, and Black, with none, plays elsewhere (Black 15). White 16 throws in, and Black 17 takes four stones. White 18 must come at once, Black 19 is best, and White 20 takes a new ko. Black still has no threat (Black 21 is elsewhere): White 22 fills, Black 23 takes three stones, and White 24 on the vital point leaves one eye."},
+    {"start": "B18 B17 C17 A18 A19 A17 C19 A18 B17 B19 E19 F19 A19", "moves": "B19! pass A19 A16 A18 A19 B19 A19! pass A17", "caption": "One threat each: Black lives. As in Diagram 2, but Black keeps its threat for the new ko. Black 15 plays elsewhere, Black 21 retakes after a threat elsewhere, White has none left (White 22 is elsewhere), and Black 23 captures White 18: two eyes, at A18 and B19."},
+    {"start": "B18 B17 C17 A18 A19 A17 C19 A18 B17 B19 E19 F19 A19", "moves": "B19! pass D19 A19 B19! E19 D19! A19", "caption": "The tree's double ko, if White never throws in at A19. White 14, 18 and 20 each need a threat elsewhere, while Black 17, 19 and 21 capture for free. Barred from A19, White cannot kill even with six threats more than Black."}
+   ],
+   "text": [
+    "S[ADKO] says White can never kill. But after retaking with White 14 in Diagram 2, White can throw in with White 16: once Black 17 takes four stones, White 18 and White 20 start a new ko in the corner, which White takes first. With one threat more than Black, White kills; D19 is never Black's second eye, because White can always capture the stone at E19 there. With as many threats as White, Black lives (Diagram 3). The double ko of Diagram 4 holds only if White never throws in.",
+    "Both answers to question 5 need the same threats. Black can ignore White 14 at no cost, as Black 15 does in Diagram 3. Counting the throw-in as part of the ko makes White 14 a direct capture, so Black took first with Black 13: S[KO+], the checker's label. If a ko is direct only when its capture must be answered at once, as question 5 proposes, White 16 is White's one approach, and White then takes the new ko first with White 20: S[A+1KO-]. The same choice is the open approach-label decision.",
+    "The analyst, both reviewers and both judges agree that S[ADKO] is wrong. Taken literally, 'describe the clean kill' would keep it, since White has no kill without the throw-in, but only by forbidding that legal move. Either label changes the problem's overall result from S[ADKO]. S[KO+] would also accept A18 as Black's first move while the tree's line starting at A18 keeps its S[KO+]; S[A+1KO-] changes no move's grade. Case c020 of the first report corrects that line to S[KO-]; with it, B18 (Black 1 in Diagram 1) stays the only best first move under either answer."
+   ]
+  }
+ ]
+}

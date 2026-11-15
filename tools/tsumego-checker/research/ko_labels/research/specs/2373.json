@@ -1,0 +1,36 @@
+{
+ "problem": "2373",
+ "cards": [
+  {
+   "case": "k006",
+   "headline": "S[KO-] is right: White takes the ko first and Black needs one threat more. The checker said DEAD because its narrow search area leaves out the corner.",
+   "diagrams": [
+    {
+     "start": "",
+     "moves": "B18 A16 A17",
+     "labels": {"A19": "a", "A18": "b", "B19": "c"},
+     "caption": "The tree's line to the leaf, marked S[KO-], with White to play; the checker said DEAD. White can take the ko by capturing the Black stone at B16. The checker's narrow search area counts a as a wall and b and c only as fringe points."
+    },
+    {
+     "start": "B18 A16 A17",
+     "moves": "B17 B16! D19 A15 B19 C19 C18 A19 C19 E19",
+     "caption": "White 4 takes the ko, and Black 5 retakes after a threat elsewhere. White 6, White's best try, is no local threat, which settles the first research's doubt about KO−2: Black 7 captures the stone at A16 and ends the ko. Black 11 at A19, a wall in the checker's narrow area, forces White 12 to connect, and Black 13 captures four stones: Black lives."
+    },
+    {
+     "start": "B18 A16 A17",
+     "moves": "B17 A18 C19 B16 D19 A15 B19",
+     "caption": "Without a ko threat Black dies: after White 4 every Black move loses. Here White 6 answers Black 5, and Black 7 can then retake without a threat, but too late: after White 10 Black is dead."
+    },
+    {
+     "start": "B18 A16 A17",
+     "moves": "B17 D16 D15 B16 D19 A15 B19",
+     "caption": "On an open board Black 5 threatens to run out at D15, yet it is no ko threat: after White 6 answers and Black 7 retakes, White 8 kills. After White 10 Black is dead, and every other Black move at 9 fails too."
+    }
+   ],
+   "text": [
+    "The tree is right. White must take first, as any other White move lets Black live. Black then lives with a ko threat (Diagram 2) and dies without one (Diagram 3). Neither side has a local ko threat: not White 6 of Diagram 2, nor Black 5 of Diagram 4. So S[KO-].",
+    "As in the first research, the checker's mistake comes from its narrow search area, which leaves out the corner (Diagram 1): without the corner eye Black dies there even if it may ignore every ko ban, so the checker said DEAD. Its wider search area stayed undecided."
+   ]
+  }
+ ]
+}

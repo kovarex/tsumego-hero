@@ -1,0 +1,42 @@
+{
+ "problem": "11280",
+ "cards": [
+  {
+   "case": "k025",
+   "headline": "S[10kKO] is right: after two Black fills that cost nothing, this is the shape you confirmed as 10kKO in question 1a. The solver counted Black's investment as preparation.",
+   "diagrams": [
+    {
+     "start": "",
+     "moves": "B18 A18 C18 D19 A16 A17 C19 A15 A14 B19 A19 A16",
+     "labels": {
+      "D15": "a",
+      "E19": "b",
+      "C17": "c",
+      "B17": "d"
+     },
+     "caption": "The tree's line to the leaf, marked S[10kKO], with Black to play; the solver said KO−. White can take a ko by capturing Black 11. White's group has two outside liberties, a and b, and shares c and d with Black 1, Black 3 and Black 7."
+    },
+    {
+     "start": "B18 A18 C18 D19 A16 A17 C19 A15 A14 B19 A19 A16",
+     "moves": "D15 pass E19 pass C17 B19 A19! pass B17",
+     "caption": "Black invests. Black 13 and Black 15 fill White's outside liberties, and Black 17 fills a shared liberty. White 18 takes the ko without a threat, and Black's four stones are in atari. Black 19 retakes after a threat elsewhere; White has none, and Black 21 captures. Black needs one threat more than White."
+    },
+    {
+     "start": "B18 A18 C18 D19 A16 A17 C19 A15 A14 B19 A19 A16",
+     "moves": "D15 pass E19 B19 pass B17 A19",
+     "caption": "White invests. After Black 13 and Black 15, White 16 takes the ko, which now threatens nothing, and Black 17 plays elsewhere. White 18 fills a shared liberty and puts Black's three stones in atari, but Black 19 retakes without a threat, because White 18 captured nothing. Now White is in atari and needs the first threat: Black wins at equal threats."
+    },
+    {
+     "start": "B18 A18 C18 D19 A16 A17 C19 A15 A14 B19 A19 A16",
+     "moves": "D15 B19 E19 A19 C17 B17 C18",
+     "caption": "White takes and connects. After Black 13, White 14 takes the ko, which now threatens nothing, and Black 15 fills White's other outside liberty. White 16 connects, but Black 17 fills a shared liberty as a sacrifice, White 18 takes four stones, and Black 19 at the vital point kills the pyramid four, even when White has three threats more."
+    }
+   ],
+   "text": [
+    "After Black fills a and b, both sides need the same move, at c or d, and whoever plays it hands the other side a direct ko. If Black invests, White takes first and Black needs one threat more (Diagram 2); if White invests, Black retakes for free and wins at equal threats (Diagram 3), so the ko never switches back. That is the 10391 shape you confirmed as 10kKO.",
+    "The fills cost nothing. White's capture of Black 11 threatens only while a and b are both open, and Black can answer it with a fill; if White takes and connects, Black kills (Diagram 4). So the table in question 1a was wrong to list this leaf as a one-sided approach ko: that holds only before Black's first fill.",
+    "The solver's KO− has the right count, one threat more for Black, but its line files Black 13, Black 15 and Black 17 in Diagram 2 as preparation before White's first take, so its 10kKO test never runs. On 10391 its line takes the ko before investing, and it prints 10kKO. The count is decided only in the narrow search area; in the wider one the leaf's searches stayed undecided, though both investments gave the same results there."
+   ]
+  }
+ ]
+}

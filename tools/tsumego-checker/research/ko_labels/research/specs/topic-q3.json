@@ -1,0 +1,24 @@
+{
+  "topic": "q3",
+  "text": [
+    "Part 3 of the question page (c014 in 2359) asks about a ko in which one side's capture threatens, the other side answers locally instead of retaking, and the capturer then needs one more move, which the other side can answer only by retaking. If that move is an approach, c014 is S[A-1KO+]; if it is an extra move inside the ko, counted as a threat, c014 is S[KO-]. Both readings need the same threats. Six leaves in 7487, 13262 and 13539 have this shape.",
+    "In Diagram 1, the shape as in c014, the extra move is Black 11; in Diagram 2, with the colours reversed, it is White 8. Read as approaches, they make k037 S[A-1KO-] (KO−, not c014's KO+, because White also has a local threat at F19) and k033 S[A+1KO+], your own label there. Counted as threats, as the checker does now, they make S[KO-2] and S[KO+2], with the same counts.",
+    "With the approach reading, your S[A-1KO+] in k010 and S[A+1KO+] in k033 are right, and the other four leaves take the approach form: S[A-2KO-] in k011, S[A+1KO+] in k013 and k036, S[A-1KO-] in k037. With the extra-move reading all six change: S[KO-] in k010, S[A-1KO-2] in k011, S[KO+2] in k013, k033 and k036, S[KO-2] in k037. Under both answers the trees of k011, k013 and k036 are off by one threat and that of k037 by two. S[KO-3], k011's third option, comes only with counted labels in general (the approach-label decision).",
+    "No option changes the site's grading: with any of them, no move in the three problems changes between correct and wrong. Your trees are not consistent here: the approach form in k010 and k033, S[KO+] in k013, k036 and k037. Two leaves are less clean: in k010 the extra move follows a further exchange and White's free capture is in a second ko, a known weak point of the label; in k011 it follows a first approach. The counts of k036 and k037 are decided only in the checker's narrow area; nothing decided in the wider area contradicts them."
+  ],
+  "diagrams": [
+    {
+      "problem": "13539",
+      "start": "E19 D19 D18 D17 C19 B19 B18 A18",
+      "moves": "A19 A17 E16 B19",
+      "caption": "13539, k037, the shape as in c014. Black 9 takes the ko and threatens to kill, White 10 answers locally, Black 11 is the extra move, and White 12 retakes for free. With White's local threat at F19, Black needs two threats more than White; your tree says S[KO+]."
+    },
+    {
+      "problem": "13262",
+      "start": "C19 E17 E19 D19",
+      "moves": "D18 D19! F19 B18 D18 D19! pass A19",
+      "caption": "13262, k033, the colours reversed; your tree says S[A+1KO+]. Black 5 takes the ko. White 6 retakes after a threat elsewhere and threatens to take E19; Black 7 answers locally, White 8 is the extra move and Black 9 retakes for free. White 10 retakes after a second threat; Black 11 has none and plays elsewhere, and White 12 captures and lives. Black wins even when White has one threat more."
+    }
+  ],
+  "suggestion": "The approach reading, the question page's proposal for c014: only one side needs the extra move, and the other side can win by winning the ko once, which is your approach ko. It keeps your S[A-1KO+] in k010 and S[A+1KO+] in k033, and the checker's rule changes instead."
+}

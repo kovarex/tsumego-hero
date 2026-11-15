@@ -1,0 +1,31 @@
+{
+ "problem": "2089",
+ "cards": [
+  {
+   "case": "k005",
+   "headline": "S[KO-] is right: White took the ko first, and Black needs one threat more. The checker's A-1KO+ mistakes a capture in a second ko for an approach.",
+   "diagrams": [
+    {
+     "start": "",
+     "moves": "B18 A18 C19 B17 A19 B19",
+     "caption": "The tree's line. White 6 takes the ko first, capturing Black 5, and puts Black 1 and Black 3 in atari at C18; Black, to play, may not retake at once. The tree marks the leaf S[KO-]; the checker said A-1KO+."
+    },
+    {
+     "start": "B18 A18 C19 B17 A19 B19",
+     "moves": "A19! pass A17 A18! pass B19",
+     "caption": "Black 7 retakes after a threat elsewhere, and White 8 ignores it and plays elsewhere. Black 9 captures White 2, a second ko capture, and puts White's eight stones in atari at C18. White's only answer is the retake, so White 10 retakes after a threat elsewhere; without one, White loses the eight stones. Black 11 plays elsewhere, and White 12 captures Black 7: the leaf's position again, with one threat spent and one move played elsewhere by each side."
+    },
+    {
+     "start": "",
+     "moves": "B18 A18 B19 B17 A19 C18 A17",
+     "caption": "The tree's line to its S[KO+] leaf: Black 7 takes the ko first and puts White's nine stones in atari at C19. A reviewer found White 6 a mistake: if White plays elsewhere instead, Black needs one threat more than White."
+    }
+   ],
+   "text": [
+    "Black kills with one threat more than White and fails with equal threats, in both search areas: KO−, and the checker's count agrees. The checker calls Black 9 in Diagram 2 an approach, because White can ignore Black 7 once. But Black 9 is itself a ko capture: White must pay a threat for White 10, as Black did for Black 7, and White 12 restores the leaf. The checker's own warning says so: no free retake after the approach.",
+    "After White 10 the checker gives White the same kind of approach, A+1KO-2, so its approach changes sides within one turn of the ko; both readings of question 1b give the plain ko. besogo's A-1KO+ also says Black takes first, but White did. An approach ko that White takes first, A-1KO- as in your 13169, needs two threats more; Black needs one. Only KO− fits both who took first and the count. No other open question applies: Black has no approach that fills a liberty, since a fill in place of Black 9 fails even with six threats more.",
+    "Both labels need the same threats, and as the tree stands no grade changes: C19 stays below B19's S[KO+] and above the SEKI moves. But a reviewer found White 6 in Diagram 3 a mistake: if White plays elsewhere instead, Black needs one threat more there too, as from the start. With that line corrected, this leaf's label would decide how C19 ranks against B19, because besogo compares approaches first."
+   ]
+  }
+ ]
+}

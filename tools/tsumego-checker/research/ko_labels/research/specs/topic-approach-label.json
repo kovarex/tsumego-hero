@@ -1,0 +1,36 @@
+{
+  "topic": "approach-label",
+  "text": [
+    "The first research report left this decision open. When one side needs an approach before its ko is direct, besogo writes an approach-ko label: A+1 says the solver's opponent needs one approach, and the KO part says who took first and any extra threats. A counted label writes the same count of threats as a plain ko. besogo ranks approaches first: for the solver an A+1 label beats every plain KO label, even one with the same count. Both leaves fit your approach ko: one side's capture threatens at once, the other side's only after one approach.",
+    "In 15220, leaf k051, Black to live, White took the ko first, but its capture is not atari, while Black's retake threatens to capture at once (Diagram 1). When White fills D18, its approach, Black retakes without a threat (Diagram 2). Black lives with as many threats as White and dies with one fewer. As an approach ko that is S[A+1KO-]: White needs one approach and took first. Counted, it is S[KO+], your tree's label. S[A+1KO-] is read by hand from the solver's searches; the checker's own label code stays undecided on the open board.",
+    "In 15294, leaf k052, White to kill, White took first and its capture threatens to kill at once (Diagram 3). Black's retake threatens nothing until Black captures White's stones at A17 and A18, its approach (Diagram 4). Later, White's throw-in at A17 is a local threat that wins White a second free retake. Black needs three threats more than White: S[A+1KO+2] as an approach ko, S[KO+3] counted. In the wider search area this count is decided only under the old end rule. Your S[KO+] asks Black for only one threat more, so it is wrong under both answers.",
+    "Approach labels change both leaves; counted labels change only k052. In these two problems neither answer changes which moves the site accepts. In 15220 every move is graded the same with either label, and the problem stays ALIVE. In 15294 every other leaf is S[ALIVE], so the ko is White's best result: only the problem's overall status changes, from S[KO+] to S[A+1KO+2] with approach labels or to S[KO+3] with counted ones."
+  ],
+  "diagrams": [
+    {
+      "problem": "15220",
+      "start": "C19 D19 A16 A18 B18 A17 A19 B19",
+      "moves": "A19! pass B17",
+      "caption": "15220, k051, Black to live, at the leaf marked S[KO+]: White has just captured at B19 and taken the ko. Black's retake threatens at once: Black 9 retakes after a ko threat elsewhere, and if White 10 plays elsewhere, Black 11 captures two stones and lives."
+    },
+    {
+      "problem": "15220",
+      "start": "C19 D19 A16 A18 B18 A17 A19 B19",
+      "moves": "pass D18 A19",
+      "caption": "White's capture is not atari, so Black 9 can play elsewhere. White 10 fills D18, the approach, and Black 11 retakes without a threat, since White 10 captured nothing. A throw-in at A19 instead of White 10 gains nothing, as Black's E19 is a local threat in the ko it starts; the searches decide this in one model of the open right side, and it rests on reading in the other."
+    },
+    {
+      "problem": "15294",
+      "start": "A18 A14 A13 B18 A17 B17 A15",
+      "moves": "pass B16",
+      "caption": "15294, k052, White to kill, at the leaf marked S[KO+]: White has just captured at A15 and taken the ko. White's capture threatens to kill at once: if Black 8 plays elsewhere, White 9 captures two stones and Black is dead."
+    },
+    {
+      "problem": "15294",
+      "start": "A18 A14 A13 B18 A17 B17 A15",
+      "moves": "A14! pass A19 A15",
+      "caption": "Black 8 retakes after a ko threat elsewhere, but it threatens nothing yet: connecting at A15 would be self-atari while White's stones at A17 and A18 stand. So White 9 plays elsewhere, Black 10 captures them, the approach, and White 11 retakes without a threat."
+    }
+  ],
+  "suggestion": "The approach-ko labels, S[A+1KO-] for k051 and S[A+1KO+2] for k052, as besogo describes these shapes and as your trees already write them in 2521, 15418, 215, 10391 and 7487."
+}

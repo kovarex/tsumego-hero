@@ -1,0 +1,183 @@
+[
+ {
+  "key": "q1b",
+  "title": "Question 1b: a ko that switches through a second ko",
+  "cases": [
+   "k023"
+  ],
+  "text": [
+   "Part 1b of the question page asks how to label a ko where an approach lets the other side's free retake switch the ko, and a second ko is involved. In 10403 the tree's S[A+1KO-] is wrong under every reading: White's capture threatens at once, and Black needs two threats more than White.",
+   "If the switch after Black's approach at E19 is a normal ko, as the question page proposes for 10403, the label is S[A-1KO-]. If Black's capture at A17 in the second ko counts as a second approach, it is S[A-2KO+]. Both need the same threats."
+  ],
+  "suggestion": "S[A-1KO-], the question page's proposal for 10403.",
+  "options": {
+   "k023": [
+    "A-1KO-",
+    "A-2KO+"
+   ]
+  }
+ },
+ {
+  "key": "q3",
+  "title": "Question 3: an extra move after a local answer, an approach or a move inside the ko?",
+  "cases": [
+   "k010",
+   "k011",
+   "k013",
+   "k033",
+   "k036",
+   "k037"
+  ],
+  "text": [
+   "Part 3 of the question page (c014 in 2359) asks about a ko where one side's capture threatens, the other side answers locally instead of retaking, and the capturer then needs one more move, which the other side can answer only by retaking. The extra move can be read as an approach (A-1KO+ for c014) or as an extra move inside the ko, counted as a threat (KO- for c014). Both readings need the same threats.",
+   "Six leaves have this shape. With the approach reading, the trees of k010 in 7487 (S[A-1KO+]) and k033 in 13262 (S[A+1KO+]) are right, and the other four change to the approach form. With the extra-move reading, all six change. The trees of k011 and k013 in 7487 and of k036 and k037 in 13539 are wrong under both answers: each is one threat short."
+  ],
+  "suggestion": "The approach reading, the question page's proposal for c014: only one side needs the extra move, and the other side can win by winning the ko once, which is your approach ko.",
+  "options": {
+   "k010": [
+    "KO-",
+    "A-1KO+"
+   ],
+   "k011": [
+    "A-1KO-2",
+    "A-2KO-",
+    "KO-3"
+   ],
+   "k013": [
+    "KO+2",
+    "A+1KO+"
+   ],
+   "k033": [
+    "A+1KO+",
+    "KO+2"
+   ],
+   "k036": [
+    "A+1KO+",
+    "KO+2"
+   ],
+   "k037": [
+    "A-1KO-",
+    "KO-2"
+   ]
+  }
+ },
+ {
+  "key": "q4",
+  "title": "Question 4: the label by the structure or by the count?",
+  "cases": [
+   "k008"
+  ],
+  "text": [
+   "Part 4 of the question page (10005) asks whether a label describes the ko when the side to move retakes at once (the structure) or the best order of play (the count). At k008 in 7487 the tree's S[A-1KO-] describes Black's immediate retake: White answers at C19, and Black needs A15 before its capture threatens again. But Black does better by playing A15 first, and then needs no more threats than White: S[KO+] by the count.",
+   "With the structure, the tree's S[A-1KO-] is right (with A15 as an approach, question 3's proposal) or it is S[KO-2] (with A15 as an extra move inside the ko). With the count it is S[KO+]."
+  ],
+  "suggestion": "The structure, as the question page proposes: keep your S[A-1KO-], and the solver prints the count beside it as a note.",
+  "options": {
+   "k008": [
+    "KO+",
+    "A-1KO-",
+    "KO-2"
+   ]
+  }
+ },
+ {
+  "key": "q5",
+  "title": "Question 5: a second ko after the capture, count it or describe the clean kill?",
+  "cases": [
+   "k001",
+   "k007",
+   "k019",
+   "k021",
+   "k022",
+   "k056"
+  ],
+  "text": [
+   "Part 5 of the question page (215 and 13169) asks about a ko whose capture the other side can ignore once, because a throw-in or a second ko gives the capturer a direct threat later. One answer counts that second ko (a plain KO from the count); the other describes the clean kill, an approach followed by a direct ko (your S[A-1KO+] in 215 and S[A-1KO-] in 13169). Both need the same threats.",
+   "Five leaves have this shape, and your trees use both readings. Counting the second ko keeps the trees of 9, 9896, 10005 and 15454 (S[KO+], S[KO-], S[KO-], S[KO+]); the clean kill changes them to S[A+1KO-], S[A-1KO-], S[A-1KO-] and S[A+1KO-]. In 5832 the tree's S[ADKO] is wrong either way: White's throw-in makes a new corner ko, so it is S[KO+] counted or S[A+1KO-] as the clean kill."
+  ],
+  "suggestion": "The clean kill, as the question page proposes: a ko is direct only when its capture must be answered at once. Then 215 and 13169 stay, and these five leaves take the approach form.",
+  "options": {
+   "k001": [
+    "KO+",
+    "A+1KO-"
+   ],
+   "k007": [
+    "KO+",
+    "A+1KO-"
+   ],
+   "k019": [
+    "KO-",
+    "A-1KO-"
+   ],
+   "k022": [
+    "KO-",
+    "A-1KO-"
+   ],
+   "k056": [
+    "KO+",
+    "A+1KO-"
+   ],
+   "k021": [
+    "KO-",
+    "A-1KO-"
+   ]
+  }
+ },
+ {
+  "key": "q8",
+  "title": "Question 8: the empty board around the corner, open or the attacker's wall?",
+  "cases": [
+   "k014",
+   "k018",
+   "k030",
+   "k053"
+  ],
+  "text": [
+   "Part 8 of the question page asks whether the empty board beyond the corner counts as open, as the site shows it, or as the attacker's wall, which is how the solver's search area and some trees read it. Four leaves change label with that choice.",
+   "At k014 in 7487 the tree's S[KO+] is right on the open board (walled where the solver's area ends it would be S[KO+2]). The other three are right only with the outside closed: 9704's S[KO-] becomes S[KO-2] on the open board (White's push at C15 runs out unless Black seals it, and the seal gives White a second local threat at B15), 11334's S[KO+] becomes S[KO+2] (Black's local threat at B14), and 15364's S[KO+] becomes S[KO-2] (the crawl along the first line to B13 gives Black two local threats; 15399, with the same stones, shows this crawl in its tree)."
+  ],
+  "suggestion": "As the question page proposes, count the board as the player sees it, and where a problem needs a closed edge, put the stones in the SGF.",
+  "options": {
+   "k014": [
+    "KO+",
+    "KO+2",
+    "DDKO"
+   ],
+   "k018": [
+    "KO-",
+    "KO-2"
+   ],
+   "k030": [
+    "KO+",
+    "KO+2"
+   ],
+   "k053": [
+    "KO+",
+    "KO-2"
+   ]
+  }
+ },
+ {
+  "key": "approach-label",
+  "title": "One approach move before the ko: approach-ko label or counted label?",
+  "cases": [
+   "k051",
+   "k052"
+  ],
+  "text": [
+   "The first research report's open decision: when one side needs an approach before its ko is direct, write besogo's approach-ko label (A+1KO-) or the counted label with the same threats (KO+). besogo ranks the approach form above every counted label of the same sign.",
+   "In 15220 the tree's S[KO+] is the counted form of S[A+1KO-]. In 15294 the tree's S[KO+] is wrong either way: Black needs one approach (A19) and White also has a local threat (the throw-in at A17), so it is S[A+1KO+2] or, counted, S[KO+3]. No move's grading changes in either problem."
+  ],
+  "suggestion": "The approach-ko labels, as besogo describes these shapes and as your trees already write them in 2521, 15418, 215, 10391 and 7487.",
+  "options": {
+   "k051": [
+    "A+1KO-",
+    "KO+"
+   ],
+   "k052": [
+    "A+1KO+2",
+    "KO+3"
+   ]
+  }
+ }
+]

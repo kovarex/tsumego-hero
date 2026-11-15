@@ -1,0 +1,21 @@
+{
+ "problem": "15454",
+ "cards": [
+  {
+   "case": "k056",
+   "headline": "Question 5: counting the second ko keeps the tree's S[KO+]; the clean kill gives S[A+1KO-] only with approach labels. Either way Black needs as many threats as White.",
+   "diagrams": [
+    {"start": "", "moves": "B18 A17 D18 E18 C19 A18 A16 E19 A19 D19 C18 B19", "caption": "The tree's line, marked S[KO+] (the checker printed A+1KO?). White 12 captures Black 9 and takes the ko first, but Black still has two liberties. Black to play: the position question 5 is about."},
+    {"start": "B18 A17 D18 E18 C19 A18 A16 E19 A19 D19 C18 B19", "moves": "pass A19 B17 A18 A19 B19", "caption": "Counting the second ko: Black 13 plays elsewhere, White 14 throws in at A19, and Black 15 takes four stones. White 16, Black 17 and White 18 make a second ko that White took first: at equal threats Black dies, with one threat more Black lives (decided in the narrow search area only). It is no bent four: if White waited after Black 15, Black's A18 would make two eyes."},
+    {"start": "B18 A17 D18 E18 C19 A18 A16 E19 A19 D19 C18 B19", "moves": "pass A15 A19", "caption": "The clean kill leaves the throw-in out. Black 13 plays elsewhere, White 14 approaches and puts Black in atari, and Black 15 retakes without a threat, because White 14 captured nothing. Now White needs the first threat: S[A+1KO-] with approach labels."},
+    {"start": "B18 A17 D18 E18 C19 A18 A16 E19 A19 D19 C18 B19", "moves": "F19 A19 B17 A18 A19 B19 F18 E17 A19 pass A17", "caption": "Equal threats, against the throw-in. Black 13 prepares a local threat, and Black 19 uses it in the second ko that White 18 took: it puts White's three stones at the top in atari. White 20 connects, Black 21 retakes, White has no threat, and Black 23 captures: alive."}
+   ],
+   "text": [
+    "White 12 took the ko first, but Black still has two liberties, so the capture kills only after an approach at A15. Black lives with as many threats as White and dies with one fewer, in both search areas. The answers to question 5 differ in what White does when Black plays elsewhere: throw in at A19 (Diagram 2) or approach (Diagram 3).",
+    "Counting the second ko is the checker's rule for a throw-in at the ko point: if Black plays elsewhere, White 18 in Diagram 2 takes a new ko first, so White's capture is a direct ko White took first, and Black 13 and Black 19 in Diagram 4 are one local threat inside that new ko. That gives the tree's S[KO+]; both steps are decided in the narrow search area only. The clean kill leaves the throw-in out: White 14 in Diagram 3 is an approach, Black 15 retakes for free, and with approach labels it is S[A+1KO-].",
+    "In 215 and 13169 the throw-in saves its player a threat; here it gains White nothing: with White barred from A19 the count is still 0, even without Black's threat at the top, which works only inside the second ko. So both readings need the same threats and differ only in form, and the leaf also turns on the approach-label decision: with counted labels the clean kill is S[KO+] too. Your 215 and 13169 use the clean kill with approach labels, which here gives S[A+1KO-].",
+    "The checker printed A+1KO? because its search of Black playing elsewhere (Diagram 2) stayed undecided, so its rule for the throw-in never ran. Although besogo ranks S[A+1KO-] above S[KO+] for Black, no move's grading changes either way: Black 5 is already graded wrong, as Black's fifth move at D19 gives a seki."
+   ]
+  }
+ ]
+}

@@ -1,0 +1,40 @@
+{
+ "problem": "9704",
+ "cards": [
+  {
+   "case": "k018",
+   "headline": "The label turns on question 8: S[KO-] if the outside is Black's wall, at least S[KO-2] on the open board. The checker's KO+ is wrong either way.",
+   "diagrams": [
+    {
+     "start": "",
+     "moves": "D19 C17 E18 C19 D17",
+     "caption": "The tree's line to the leaf, marked S[KO-]; the checker said KO+. Black 1 is in atari, and White, to play, takes the ko first by capturing it."
+    },
+    {
+     "start": "D19 C17 E18 C19 D17",
+     "moves": "E19 A18 A17 D19 C16 B15 E19 D19! pass E19",
+     "caption": "With the outside as Black's wall: White 6 takes the ko. Black 7 threatens to kill, White 8 answers, and Black 9 retakes for free. White 10 cuts, threatening to capture B16, Black 11 answers, and White 12 retakes. Black 13 retakes after a threat elsewhere. White has no threat left, and Black 15 connects: White is dead. S[KO-]."
+    },
+    {
+     "start": "D19 C17 E18 C19 D17",
+     "moves": "E19 A18 A17 D19 C16 B15 C15",
+     "labels": {
+      "C14": "a",
+      "D15": "b"
+     },
+     "caption": "On the board as the SGF shows it, Black 11 is no answer to the cut: White 12 pushes instead of retaking and runs out at a or b; Black can block only one. This step is reading only; the engine cannot search the open centre."
+    },
+    {
+     "start": "D19 C17 E18 C19 D17",
+     "moves": "E19 A18 A17 D19 C16 C15 E19 D19! B15 A15 E19 D19! pass E19",
+     "caption": "So on the open board Black 11 must seal. White 12 retakes, and Black 13 retakes after a threat elsewhere. White 14 ataris the stone at B16, Black 15 must capture it, and White 16 retakes for free. Black 17 retakes after a second threat elsewhere, and Black 19 connects: White is dead. At least S[KO-2]."
+    }
+   ],
+   "text": [
+    "The tree's S[KO-] holds if the empty board beyond Black's stones at B14 and D16 counts as Black's wall, as the problem is built. White takes the ko first. In Diagram 2, Black 7 and White 10 are one local threat each, and Black 11 answers the cut: if Black connects the ko instead, White captures B16 and lives. So Black needs one threat more than White. The engine confirms this with the outside closed and finds no second White threat.",
+    "On the board as the SGF shows it, Black 11 in Diagram 2 is no answer (Diagram 3). Black must seal instead, and that hands White a second threat (Diagram 4). The engine confirms that threat with the outside closed, so it holds on the open board too. Then Black needs two threats more than White: at least S[KO-2]; the exact count is not decided. With S[KO-2], the problem's overall status goes from KO− to KO−2. Black stones at a and b in Diagram 3 would close the gap and keep S[KO-].",
+    "The checker's KO+ is wrong under either answer. Its narrow search area makes A14 and C14 Black wall, so White's cut never works there; its wider area sees the cut but was undecided at the leaf, so the label fell back to the narrow one. In every wider frame, after White 6, Black fails with equal threats. The first research filed this leaf (c029) as a solver error with the tree right; that holds only with the outside closed."
+   ]
+  }
+ ]
+}

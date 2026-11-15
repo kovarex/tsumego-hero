@@ -1,0 +1,20 @@
+{
+ "problem": "9",
+ "cards": [
+  {
+   "case": "k001",
+   "headline": "Question 5: White's capture threatens only through a throw-in at A19. Counting it gives the tree's S[KO+], the clean kill S[A+1KO-]; the checker's KO− is wrong either way.",
+   "diagrams": [
+    {"start": "", "moves": "B18 C19 B16 B15 A17 B19 D19 A15 A19 A16 B17 A18", "caption": "The tree's line, marked S[KO+]. White 12 captures Black 9 and takes the ko first. Black to play: the position question 5 is about."},
+    {"start": "B18 C19 B16 B15 A17 B19 D19 A15 A19 A16 B17 A18", "moves": "pass A19 C18 B19 A19 A18", "caption": "Counted: if Black 13 plays elsewhere, White 14 throws in at A19 and Black 15 takes four stones. White 16, Black 17 and White 18 make a second ko that White took first, and at equal threats Black dies."},
+    {"start": "B18 C19 B16 B15 A17 B19 D19 A15 A19 A16 B17 A18", "moves": "B14 A19 C18 B19 A19 A18 A14 C15 A19 pass C19", "caption": "Black's local answer. Black 13 threatens White's three stones below. If White 14 throws in, Black 15 takes four stones and White 18 takes a second ko, as in Diagram 2, but now Black 19 is an atari, a real threat. White 20 connects, Black 21 retakes, White has no threat, and Black 23 captures: alive at equal threats."},
+    {"start": "B18 C19 B16 B15 A17 B19 D19 A15 A19 A16 B17 A18", "moves": "pass E19 A19", "caption": "The clean kill leaves the throw-in out. Then, if Black 13 plays elsewhere, White 14 is an approach that puts Black in atari, and Black 15 retakes for free."}
+   ],
+   "text": [
+    "The count is 0: Black needs as many threats as White, and with one threat more White wins. Black 13 in Diagram 3 is a local threat, and White has none. Against any White reply but the throw-in, such as connecting at C15 at once, Black retakes for free. The checker's KO− comes from its narrow area, where Black may not play at A14 or B14. Its wide area has them but did not decide within its budget; with them, the checker's own rules print KO+.",
+    "The label turns on question 5. Counted, White's capture threatens through the throw-in in Diagram 2, so Black must answer it at once: the ko is direct, and the leaf is S[KO+], as the tree says. Black's death in Diagram 2 is decided in a small search area; in wider ones, Black's other answers to White 16 stay undecided. By reading they lose; if one held, both answers would give S[A+1KO-]. The clean kill leaves the throw-in out: White first needs the approach White 14 in Diagram 4, and the leaf is S[A+1KO-].",
+    "Both answers need the same threats, and no move's grading changes under either. But besogo ranks approaches first, so it ranks S[A+1KO-] above S[KO+] for Black, and its text for S[KO+] says Black takes first, though White took first here. This tree uses the counted form; the trees of 215 and 13169 use the clean kill."
+   ]
+  }
+ ]
+}

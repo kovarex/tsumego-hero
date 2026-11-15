@@ -1,0 +1,38 @@
+{
+ "problem": "15364",
+ "cards": [
+  {
+   "case": "k053",
+   "headline": "Question 8: with the lower side as White's wall, the tree's S[KO+] stands; on the open board, Black's first-line crawl to B13-C13 gives two local threats: S[KO-2].",
+   "diagrams": [
+    {
+     "start": "",
+     "moves": "B18 B19 A18 D19 E19 E18",
+     "labels": {"A13": "x", "B12": "x", "C12": "x", "D13": "x"},
+     "caption": "The tree's line to the leaf, marked S[KO+]; the checker said DEAD. White to play. The checker's search areas and the earlier analyses counted the points marked x as White's wall, leaving B13-C13 only B14 and C14."
+    },
+    {
+     "start": "B18 B19 A18 D19 E19 E18",
+     "moves": "C19 A15 D19 A16 A14 B14 A13 A12 A14 A13 pass A14",
+     "caption": "Open board. White 7 takes the ko and Black 8 crawls along the first line. If White 9 connects, Black 10 to Black 18 join the corner to B13-C13, and Black lives. With the x points of Diagram 1 as White's wall, White 9 wins instead."
+    },
+    {
+     "start": "B18 B19 A18 D19 E19 E18",
+     "moves": "C19 A15 A14 D19 C19! A16 D19 B14 A13 A12 A14 A13 pass A14",
+     "caption": "Open board. If White 9 answers the crawl, Black 10 retakes the ko without a threat elsewhere. White 11 retakes after one, and Black 12 is a second local threat: if White 13 connects, Black 14 to Black 20 join the corner to B13-C13 again."
+    },
+    {
+     "start": "B18 B19 A18 D19 E19 E18",
+     "moves": "C19 A15 A14 A17 A16 D19 C19! A15 D19 pass A16 pass B17",
+     "caption": "Open board, White with two outside threats more than Black: White kills. White 11 captures Black 8, starting a second ko, and Black 12 retakes the first; White 13 retakes after a threat elsewhere. Black 14 recaptures in the second ko, but White 15 fills the first, and White 17 and White 19 capture the corner."
+    }
+   ],
+   "text": [
+    "Under either answer to Question 8, White must take the ko at C19: any other move lets Black connect there or capture White 5, and the corner joins the outside stones, which reach the open top. The checker's DEAD is wrong either way: its search area walls in the problem's own outside stones, and it gave no wall warning.",
+    "The answers differ on the lower side. With the x points of Diagram 1 as White's wall, Black has no local threat, not even the crawl of Diagram 2, and White, who took the ko first, wins with equal threats: the tree's S[KO+]. S[KO+] thus needs the top open but the lower side walled, although B13-C13 belong to the problem just as the outside stones do.",
+    "On the open board B13-C13 have six liberties, and Black 8 is a local threat (Diagram 2). If White answers it, Black retakes for free, and Black 12 in Diagram 3 is a second threat: with one threat more than Black, every White reply to Black 8 fails. With two, White kills (Diagram 4): S[KO-2]. Problem 15399, with the same stones, has this crawl in its tree, with Black 8's point marked X and the comment “Ko but your opponent can be annoying with X and keep the ko in motion.”",
+    "The count of two was searched with a living Black group joined to B13-C13 standing in for the open lower side: exactly two with three extra White stones that only weaken Black, at least two without them. No move changes between correct and wrong under either answer; with S[KO-2], the problem's overall result goes from KO+ to KO−2."
+   ]
+  }
+ ]
+}

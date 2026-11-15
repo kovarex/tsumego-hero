@@ -1,0 +1,33 @@
+{
+ "problem": "13549",
+ "cards": [
+  {
+   "case": "k045",
+   "headline": "White has just taken the ko, and Black's retake needs one approach before it threatens anything: two threats more than White, S[A-1KO-], not S[A-1KO+].",
+   "diagrams": [
+    {"start": "", "moves": "B18 A18 C18 D19 A17 A16 A19 C19 A15 B19 E19 A18", "caption": "The tree's line to the leaf, marked S[A-1KO+]; the solver said A-1KO−. White 12 captures Black 7 and takes the ko. Black to play, and Black may not retake at once."},
+    {"start": "B18 A18 C18 D19 A17 A16 A19 C19 A15 B19 E19 A18", "moves": "A19! pass C17 A18 A19! pass B17", "caption": "Black 13 retakes after a threat. White's group still has two liberties, so the retake threatens nothing yet, and White 14 plays elsewhere. Black 15 approaches. White 16 retakes for free and puts Black's four stones in atari, so Black 17 needs a second threat before Black 19 captures."},
+    {"start": "B18 A18 C18 D19 A17 A16 A19 C19 A15 B19 E19 A18", "moves": "A19! pass C17 A18 pass B17", "caption": "With one threat more than White, Black fails: Black 13 uses the threat, Black 17 has none left and plays elsewhere, and White 18 captures four stones."},
+    {"start": "B18 A18 C18 D19 A17 A16 A19 C19 A15 B19 E19 A18", "moves": "pass B17", "caption": "If Black 13 plays elsewhere, White 14 captures the stone at A17 and puts Black's two stones in atari. A19 is now suicide for Black, so White lives: White's capture threatens at once."}
+   ],
+   "text": [
+    "White 12 has just taken the ko, and its capture threatens at once: if Black plays elsewhere, White lives (Diagram 4). Black's retake threatens nothing yet, because White's group still has two liberties, at B17 and C17. So Black needs one approach, and White 16 then retakes for free (Diagram 2). Black needs two threats more than White; with one, Black fails (Diagram 3).",
+    "White took first, and Black needs one approach and then a plain KO−: S[A-1KO-], the label you gave c121 on 14 November for the same structure. The tree's S[A-1KO+] says Black takes first and needs one threat more. The counted form, S[KO-2], also needs two, so A-1KO+ is wrong in either form. The same S[A-1KO+] after White's capture is on five other leaves of this report (k009, k038, k039, k042, k044), all judged A-1KO−.",
+    "Both reviewers agree. The solver's count of 2 is decided in its narrow area, and independent exact searches by the analyst and both reviewers also give 2. In the wider area Black's failing searches stay undecided, but Black's wall seals the corner, so the extra points cannot help Black. A-1KO+ does not fit the line before the leaf either: the count is also 2 before Black 11 and before White 12. No move's grading changes."
+   ]
+  },
+  {
+   "case": "k046",
+   "headline": "S[10kKO] is right: the shared-liberty ko you confirmed in question 1a, plus a free Black move at E19. The solver's A-2KO+2 counts one approach too many.",
+   "diagrams": [
+    {"start": "", "moves": "B18 A18 C18 D19 C19 A16 A15 A17 A19", "labels": {"B17": "a", "C17": "b", "E19": "c"}, "caption": "The tree's line to the leaf, marked S[10kKO]; the solver said A-2KO+2. White to play: White can capture Black 9 at B19, and Black can take back at A19. White's group and Black's three stones share the liberties a and b; c is White's third liberty."},
+    {"start": "B18 A18 C18 D19 C19 A16 A15 A17 A19", "moves": "pass E19 pass C17 B19 A19! pass B17", "caption": "White 10 and White 12 play elsewhere, and Black 11 fills White's third liberty at no cost. Black 13 invests, and White 14 takes the ko for free, putting Black's four stones in atari. Black 15 retakes with its one threat, White has none, and Black 17 captures. Black needs the threat, not White as the solver's KO+2 says."},
+    {"start": "B18 A18 C18 D19 C19 A16 A15 A17 A19", "moves": "pass E19 B19 pass C17 A19", "caption": "White invests instead. After Black 11 fills White's third liberty, White 12 takes the ko, which threatens nothing, and Black 13 plays elsewhere. White 14 invests at a shared liberty, and Black 15 retakes without a threat, since White 14 captured nothing. Now White's group is in atari, and White needs the first threat."}
+   ],
+   "text": [
+    "Whoever fills a or b hands the other side a direct ko: Black 13 in Diagram 2, White 14 in Diagram 3. That is the shape you confirmed as 10kKO in question 1a. Black, who needs the ko, must invest, so Black needs one threat more than White. Black's extra move at c costs no threat, whoever holds the ko when Black plays it. If you count c as an approach instead, the label is S[A-1KO+], which besogo grades the same here.",
+    "The solver gave Black two approaches, a and b, with White forced to pass. Once White may answer, Black's first fill already hands White a direct ko, so in effect the solver's second approach is the free c. The wider area left the count undecided; independent corner searches, with the edge closed and open, give the narrow area's count of 1. The bent-four test stayed undecided, though nothing in the corner reads as bent four."
+   ]
+  }
+ ]
+}

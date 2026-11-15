@@ -1,0 +1,36 @@
+{
+ "problem": "13605",
+ "cards": [
+  {
+   "case": "k047",
+   "headline": "White took first and has three local threats Black must answer: Black needs four threats more than White, S[KO-4]. The tree's S[KO-] and the checker's A-1KO+2 are both wrong.",
+   "diagrams": [
+    {
+     "start": "",
+     "moves": "C17 C16 A16 B17 B19 C19 A18 A19",
+     "caption": "The tree's line. White 8 takes the ko by capturing Black 5, and the tree marks the leaf S[KO-]; the checker said A-1KO+2. Black 7 is in atari and Black has no local threat, so Black must retake with a threat elsewhere."
+    },
+    {
+     "start": "C17 C16 A16 B17 B19 C19 A18 A19",
+     "moves": "B19! pass A17 A19 A15",
+     "caption": "Black 9 retakes after a threat elsewhere, and White 10 plays elsewhere. Black 11 ataris White's whole group, White 12 must capture Black 9, and Black 13 connects. White has one eye at C17 and can never connect at B19, a self-atari: dead whatever its threats. This is the checker's approach line, but it is the kill itself."
+    },
+    {
+     "start": "C17 C16 A16 B17 B19 C19 A18 A19",
+     "moves": "B19! A15 A14 A19 B19! E18 E19 A19 B19! F19 E18 A19 pass A17",
+     "caption": "Black 9, Black 13 and Black 17 retake after threats elsewhere. White 10 ataris the stone at A16; Black 11 must capture, as connecting at A17 lets White take four stones. White 14 ataris Black's stones at D18 and D19, and Black 15 captures; White 18 ataris them again, now three stones, and Black 19 connects. Each time White retakes without a threat elsewhere. With no fourth threat, Black 21 plays elsewhere, and White 22 captures and lives."
+    },
+    {
+     "start": "C17 C16 A16 B17 B19 C19 A18 A19 B19! A15 A14 A19 B19! E18 E19 A19 B19! F19 E18 A19",
+     "moves": "B19! pass A17 A19 A15",
+     "caption": "Diagram 3 to White 20. With a fourth threat, Black 21 retakes. White has no local threat left and no threat elsewhere, so White 22 plays elsewhere. Black 23 ataris White's group, White 24 must capture Black 21, and Black 25 connects: dead, as in Diagram 2. Black spent four threats, White none."
+    }
+   ],
+   "text": [
+    "White 8 took first, and both captures threaten at once: if Black does not retake, White lives, and if White ignores Black's retake, Black kills (Diagram 2). That alone is KO−. But White also has three local threats that Black must answer (Diagram 3), none of which can be repeated, and Black has none. Each lets White retake without a threat elsewhere, and a local threat counts like a ko threat, as in your S[KO-2] in 11320. So Black needs four threats more than White (Diagram 4): S[KO-4].",
+    "The checker's A-1KO+2 is wrong too. Its approach is Black 11 in Diagram 2, but that move is the kill itself, so Black's retake already threatens and no approach is needed. The narrow area that found it contradicts itself on that line: its approach rests on repetitions the engine scores as seki. The wider area prints KO-3 only because it counts F19 as Black's wall, so it misses White 18 in Diagram 3. On the board as given F19 is open. That is question 8 (open board edges); a closed edge would give S[KO-3], still not S[KO-].",
+    "No grade changes: Black's other move 5 in the tree, A18, leads to S[DEAD], and besogo ranks DEAD above any ko, so Black 5 stays the weaker move. Both reviewers agree, and the first research report found the same KO−4. Black fails with four threats against White's one, as KO−4 says; five against one stayed undecided in the searches, but the step counts, each threat worth exactly one, support KO−4 there too."
+   ]
+  }
+ ]
+}

@@ -1,0 +1,145 @@
+{
+ "problem": "11282",
+ "cards": [
+  {
+   "case": "k026",
+   "headline": "The tree's S[10kKO] is right: this is the shape you confirmed as 10kKO with 10391. The solver's KO− is the ko after Black's investment, which it counted as preparation.",
+   "diagrams": [
+    {
+     "start": "",
+     "moves": "B18 A18 C18 D19 C19 B19 A19 A17 A14 A16 F19",
+     "labels": {
+      "E16": "a",
+      "C17": "b",
+      "B17": "c"
+     },
+     "caption": "The tree's line to the leaf, marked S[10kKO], with White to play; the solver said KO−. The ko is at A19: White can capture Black 7 at any time and Black can take back, but neither capture threatens anything yet. White's group has one outside liberty, a, and shares b and c with Black's corner stones."
+    },
+    {
+     "start": "B18 A18 C18 D19 C19 B19 A19 A17 A14 A16 F19",
+     "moves": "pass E16 pass C17 B19 A19!",
+     "caption": "White lives if nobody starts, so Black must. White 12 and White 14 play elsewhere, Black 13 fills White's outside liberty at no cost, and Black 15 invests at a shared liberty. White 16 takes the ko for free, and Black's four stones are in atari. Black 17 retakes after a threat elsewhere, and now White is in atari: a direct ko that White took first, so Black needs one threat more than White."
+    },
+    {
+     "start": "B18 A18 C18 D19 C19 B19 A19 A17 A14 A16 F19",
+     "moves": "pass E16 B19 pass C17 A19",
+     "caption": "White invests instead. After Black 13's fill, White 14 takes the ko, which threatens nothing, and Black 15 plays elsewhere. White 16 invests at a shared liberty, and Black 17 retakes for free, since White 16 captured nothing. Now White is in atari and needs the first threat."
+    }
+   ],
+   "text": [
+    "This is the shape of 10391, which you confirmed as a clear example of 10kKO, here with one extra Black fill at a, which costs nothing if Black plays it first, like the free moves in 10393. Then both sides need the same move, at b or c, and whoever plays it hands the other side a free take that threatens at once: Black's investment in Diagram 2, White's in Diagram 3. So the tree's S[10kKO] is right, and Black needs one threat more than White.",
+    "The solver said KO− because its line counts Black's investment, Black 15 in Diagram 2, as preparation and reads only the ko after it. To print 10kKO here, it must also treat Black's fill at a as free."
+   ]
+  },
+  {
+   "case": "k027",
+   "headline": "White takes the ko at once, and Black needs one approach before its retake threatens: S[A-1KO-], two threats more than White, not A-1KO+ as besogo reads the tree.",
+   "diagrams": [
+    {
+     "start": "",
+     "moves": "B18 A18 C18 D19 A16 B17 C19 B19 A19 C17 A17 A18 A17 A16 F19",
+     "caption": "The tree's line to the leaf, marked S[A-1KO], with White to play; the solver said A-1KO−. Black 13 holds the ko and is in atari at A18. Black 15 has filled one of White's outside liberties; White keeps A14 and E16."
+    },
+    {
+     "start": "B18 A18 C18 D19 A16 B17 C19 B19 A19 C17 A17 A18 A17 A16 F19",
+     "moves": "A18 A17! pass A14 A18 A17! pass E16",
+     "caption": "White 16 takes the ko at once, without a threat, and Black's four corner stones are in atari. Black 17 retakes after a threat elsewhere, and White 18 plays elsewhere. Black 19 approaches, White 20 retakes for free, Black 21 retakes after a second threat, and Black 23 captures eleven stones. This is the label's line: two threats more than White."
+    },
+    {
+     "start": "B18 A18 C18 D19 A16 B17 C19 B19 A19 C17 A17 A18 A17 A16 F19",
+     "moves": "A18 A17! pass A14 A18 pass B19",
+     "caption": "With only one threat, Black 21 must play elsewhere, and White 22 captures four stones and lives. A-1KO+ says one threat more than White is enough; it is not."
+    }
+   ],
+   "text": [
+    "At the leaf White's best move is to take the ko at once: if White waits, Black approaches first and needs only one threat. White 16's capture threatens to take four stones, so Black must retake with a threat (Diagram 2), and Black 17 threatens nothing yet, since White still has two outside liberties. Black needs one approach, White retakes for free after it, and Black needs a second threat. So White took first, and Black needs two threats more than White: S[A-1KO-], the form you chose for c121.",
+    "The tree's S[A-1KO ] has a trailing space, which besogo trims; it then reads A-1KO+: Black takes first and needs one threat more. With one threat more than White, Black fails in both search areas (Diagram 3). Both reviewers agree with S[A-1KO-]. Change it together with the E16 leaf below: without that change, the site would mark Black 15 wrong.",
+    "Black must approach at A14 and keep E16 for the capture, where White can never extend. White 18 in Diagram 2 plays elsewhere, as the label counts it: by your c121 rule, what White gains with that free move belongs to the approach. With White's best free moves, Black needs four threats more in the narrow search area; in the wider one the count stayed undecided."
+   ]
+  },
+  {
+   "case": "k028",
+   "headline": "White has just taken the ko, and Black needs one approach before its retake threatens: S[A-1KO-], two threats more than White, not A-1KO+ as besogo reads the tree.",
+   "diagrams": [
+    {
+     "start": "",
+     "moves": "B18 A18 C18 D19 A16 B17 C19 B19 A19 C17 A17 A18 A17 A16 A14 A18",
+     "caption": "The tree's line to the leaf, marked S[A-1KO], with Black to play; the solver said A-1KO−. White 16 has just taken the ko, and Black's four corner stones are in atari. White's group keeps two outside liberties, E16 and F19."
+    },
+    {
+     "start": "B18 A18 C18 D19 A16 B17 C19 B19 A19 C17 A17 A18 A17 A16 A14 A18",
+     "moves": "A17! pass F19 A18 A17! pass E16",
+     "caption": "Black 17 retakes after a threat elsewhere, and White 18 plays elsewhere. Black 19 approaches, White 20 retakes for free, Black 21 retakes after a second threat, and Black 23 captures eleven stones. This is the label's line: two threats more than White."
+    },
+    {
+     "start": "B18 A18 C18 D19 A16 B17 C19 B19 A19 C17 A17 A18 A17 A16 A14 A18",
+     "moves": "A17! pass F19 A18 pass B19",
+     "caption": "With only one threat, Black 21 must play elsewhere, and White 22 captures four stones and lives. A-1KO+ says one threat more than White is enough; it is not."
+    }
+   ],
+   "text": [
+    "White 16 has just taken the ko, the line's first ko capture: Black 13 kept two liberties when it captured. White's capture threatens at once: if Black does not retake, White captures four stones and lives. Black 17's retake threatens nothing yet, since White still has two outside liberties. Black needs one approach, White retakes for free after it, and Black needs a second threat (Diagram 2). So White took first, and Black needs two threats more than White: S[A-1KO-], the form you chose for c121.",
+    "The tree's S[A-1KO ] has a trailing space, which besogo trims; it then reads A-1KO+: Black takes first and needs one threat more. With one threat more than White, Black fails in both search areas (Diagram 3). Both reviewers agree with S[A-1KO-]. Change it together with the E16 leaf below: without that change, the site would mark Black 15 wrong.",
+    "Black must approach at F19 and keep E16 for the capture, where White can never extend. White 18 in Diagram 2 plays elsewhere, as the label counts it; White's best free move there is the extension at F19, and by your c121 rule that gain belongs to the approach. With it, Black needs four threats more in the narrow search area; in the wider one the count stayed undecided."
+   ]
+  }
+ ],
+ "tree_change": {
+  "text": [
+   "Set S[A-1KO-2] on the E16 leaf, Black 15 in Diagram 1, the third answer beside the two fixed leaves: its S[A-1KO] has the same error (Other leaves to check in this tree, below). That is the label by your c121 rule; by the full count it would get the same S[] as its siblings. Without this change, the two fixes would make the site reject the other two answers (On the site, below).",
+   "Optional, not needed for the grading: add White's take, White 16, under it, as the A14 branch already has, and put the S[] on White 16."
+  ],
+  "diagrams": [
+   {
+    "start": "B18 A18 C18 D19 A16 B17 C19 B19 A19 C17 A17 A18 A17 A16",
+    "moves": "E16 A18",
+    "caption": "Black 15 is the leaf, now S[A-1KO]: set S[A-1KO-2]. Optional: add White 16 under it, as the A14 branch has, and put the S[] on White 16 instead."
+   }
+  ]
+ },
+ "grading": {
+  "text": [
+   "With the two fixes alone, the site marks a and b in Diagram 1 wrong, and White's take under a with them; today both are correct. The grading check found these new marks wrong: a and b lose their mark only because their sibling c keeps its S[A-1KO], which besogo reads as A-1KO+, and c has the same error. So fix c as well (Change the tree as well, above).",
+   "With c at S[A-1KO-2], the label by your c121 rule, only c turns wrong, and the problem's result becomes A-1KO−: c needs one threat more than a and b, because after c White can extend at either remaining liberty. Giving c the same S[] as a and b, as all three need four threats in the narrow area, changes no mark; but that is a label by the full count (question 4), against your c121 rule. Black's two correct answers at move 5 keep their mark either way, since leaf k026 keeps S[10kKO]."
+  ],
+  "diagrams": [
+   {
+    "start": "",
+    "moves": "B18 A18 C18 D19 A16 B17 C19 B19 A19 C17 A17 A18 A17 A16",
+    "labels": {
+     "A14": "a",
+     "F19": "b",
+     "E16": "c"
+    },
+    "caption": "Black to play move 15. The tree has three answers, all marked correct today: a, followed by White's take (leaf k028); b (leaf k027); and c, the leaf under Other leaves to check in this tree, below."
+   }
+  ]
+ },
+ "also_check": {
+  "text": [
+   "The grading checker found one more leaf, Black 15 in Diagram 1, marked S[A-1KO]. White takes first, and Black needs one approach, at a or b. Whichever of the two Black leaves for last, White extends there when Black's next retake puts it in atari; Black must fill again, and White retakes for free (Diagrams 2 and 3). That extension answers a threatening retake, so it stays in the label under your c121 rule, as White's local threat: S[A-1KO-2], three threats. Black 15 at a or b instead keeps E16 for the capture and needs two.",
+   "The tree's S[] is wrong under every reading: with one threat more than White, Black fails in both search areas, and both reviews of the check agree. The exact S[] is less settled. Read as a second approach (question 3), Black's extra fill gives S[A-2KO-], which grades the same. By the full count all three answers need four threats in the narrow area, so a label by the count (question 4) gives this leaf its siblings' S[]. The research missed the leaf because the solver left its direct ko undecided."
+  ],
+  "diagrams": [
+   {
+    "start": "",
+    "moves": "B18 A18 C18 D19 A16 B17 C19 B19 A19 C17 A17 A18 A17 A16 E16",
+    "labels": {
+     "A14": "a",
+     "F19": "b"
+    },
+    "caption": "The tree's line for Black 15 at E16, marked S[A-1KO], which besogo reads as A-1KO+. White's group keeps two outside liberties, a and b, and can extend from either. Suggested: S[A-1KO-2]."
+   },
+   {
+    "start": "B18 A18 C18 D19 A16 B17 C19 B19 A19 C17 A17 A18 A17 A16 E16",
+    "moves": "A18 A17! pass A14 A18 A17! F19 G19 A18 A17! pass F18",
+    "caption": "White 16 takes at once. Black 17 retakes after a threat, White 18 plays elsewhere, Black 19 approaches at A14, and White 20 retakes for free. Black 21 retakes after a second threat and puts White in atari, but White 22 extends at F19. Black 23 must fill, White 24 retakes for free, and only with a third threat can Black 25 retake and Black 27 capture."
+   },
+   {
+    "start": "B18 A18 C18 D19 A16 B17 C19 B19 A19 C17 A17 A18 A17 A16 E16",
+    "moves": "A18 A17! pass F19 A18 A17! A14",
+    "caption": "Approaching at F19 instead is no better: after Black 21's retake, White 22 extends at A14 and gains two liberties. With only two threats Black fails; with a third it wins."
+   }
+  ]
+ }
+}

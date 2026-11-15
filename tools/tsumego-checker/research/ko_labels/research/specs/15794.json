@@ -1,0 +1,38 @@
+{
+ "problem": "15794",
+ "cards": [
+  {
+   "case": "k057",
+   "headline": "Double ko: whenever Black retakes with a threat, White captures in the other ko without one, so Black never wins. S[ADKO], not S[KO-].",
+   "diagrams": [
+    {
+     "start": "",
+     "moves": "B17 B18 A18 C17 B19 A17 D19 C19 C18 A19",
+     "caption": "The tree's line. White 10 captures Black 3 and takes the ko, and the tree marks the leaf S[KO-]."
+    },
+    {
+     "start": "B17 B18 A18 C17 B19 A17 D19 C19 C18 A19",
+     "moves": "A18! C19 C18! A19",
+     "caption": "The double ko. Black 11 retakes after a threat, and White 12 captures Black 9 at C18 without one. Black 13 retakes after a second threat, and White 14 captures Black 11, again without one. This is the leaf again: Black has spent two threats, White none."
+    },
+    {
+     "start": "B17 B18 A18 C17 B19 A17 D19 C19 C18 A19",
+     "moves": "C19 E19",
+     "caption": "If Black 11 connects instead of retaking, White 12 captures four stones and lives. The counted lines end like this once Black gives up the ko."
+    },
+    {
+     "problem": "2100",
+     "start": "",
+     "moves": "B19 A19 D19 C17 A18 C19",
+     "caption": "Problem 2100, whose leaf you marked S[ADKO]: the same corner double ko, at the moment after White 12 in Diagram 2. White 6 has just captured Black's stone at C18, so Black's retake there is banned."
+    }
+   ],
+   "text": [
+    "At the leaf there is one ko, and White has just taken it. In Diagram 2, Black 11 retakes with a threat, which gives Black 5 a liberty at A19, so White 12 captures only Black 9: a second ko. C19 is not banned, so White needs no threat. Black 13 retakes with another threat, and White 14 again captures for free. The leaf is back, and each round costs Black two threats and White none.",
+    "Black has nothing better. If Black connects, White captures four stones (Diagram 3); if Black plays elsewhere, White's capture at C19 takes two stones and White lives. So White lives in double ko at any threat balance: S[ADKO], as the checker says, not S[KO-]. Black fails at every balance the searches decided, up to 15 threats ahead. The tree's KO- would hold only if White needed a threat to answer Black 11.",
+    "You marked the same corner double ko S[ADKO] in problem 2100 (Diagram 4). Superko plays no part: the threats played elsewhere change the board each round. ADKO rather than ALIVE rests on reading and on the checker's narrow search area, whose wall can only make White's life harder; the wider area is undecided. The checker's own double-ko line runs through a ko its wall creates, not this corner; its ADKO still stands, because the corner round passes the same test.",
+    "The fix changes no grade, and ALIVE would change none either: in the tree, White's answer at A16 to Black 3 already leads to ALIVE, so Black 3 stays ALIVE either way."
+   ]
+  }
+ ]
+}

@@ -1,0 +1,42 @@
+{
+ "problem": "10403",
+ "cards": [
+  {
+   "case": "k023",
+   "headline": "White takes first and its capture threatens at once; Black needs two threats more than White. Not S[A+1KO-]: S[A-1KO-] or S[A-2KO+], by your answer to question 1b.",
+   "diagrams": [
+    {
+     "start": "",
+     "moves": "B18 A18 C19 A16 A19",
+     "labels": {
+      "B19": "a",
+      "A17": "b",
+      "E19": "c"
+     },
+     "caption": "The tree's line to the leaf marked S[A+1KO-], White to play. White can take the ko at a by capturing Black 5. The second ko is at b, where Black can capture White 2; c is Black's approach point."
+    },
+    {
+     "start": "B18 A18 C19 A16 A19",
+     "moves": "B19 pass C18",
+     "caption": "White 6 takes the ko. If Black plays elsewhere, White 8 captures the stone at B18 and lives, even when Black holds four threats. White's capture needs no approach."
+    },
+    {
+     "start": "B18 A18 C19 A16 A19",
+     "moves": "B19 A19! C18 A17 E19 B19 A18 pass D19",
+     "caption": "One threat more is not enough. Black 7 retakes after a threat, and Black 9 takes the second ko. White 10 takes E19, Black's approach point, and White 12 retakes the second ko without a threat. Black has none left, and White 14 captures four stones. Black's other answers to White 8 and White 10 fail too."
+    },
+    {
+     "start": "B18 A18 C19 A16 A19",
+     "moves": "B19 A19! pass A17 G18 E19 A18 F17 B19 A19! C18 A17 pass D19",
+     "caption": "With two threats more Black kills. Black 9 takes the second ko before Black 11 approaches at E19: once White has played elsewhere at move 8, this order wins in both search areas, while approaching first fails in the wider one. Black 15 retakes after the second threat, Black 17 takes the second ko again, and Black 19 captures White's group."
+    }
+   ],
+   "text": [
+    "S[A+1KO-] says White needs an approach and that Black wins at equal threats. Both are wrong, in both search areas. White 6 takes first and threatens at once (Diagram 2). Black fails even with one threat more than White (Diagram 3); with two, Black kills (Diagram 4). The count of two is proven only in the checker's narrow search area; in the wider area, where White has extra moves against Black's stone at F18, three is not ruled out.",
+    "In Diagram 4, Black 7 retakes but threatens nothing yet: White plays elsewhere at move 8 for free. Black needs one approach, Black 11 at E19, before its capture at A17 in the second ko threatens to kill. Black 11 captures nothing, so White 12 retakes the second ko for free, and Black 17 must capture there again.",
+    "This is question 1b. After the approach, the ko switches there and back through the second ko. If that counts as a normal ko, the leaf is S[A-1KO-], your label with the approach sign flipped. If Black's capture at A17 counts as a second approach, as the checker's rules count it, it is S[A-2KO+]. Both need the same threats.",
+    "No move's grade changes either way: any ko beats the ALIVE and SEKI leaves. Only the problem's status, taken from its best leaf, changes from S[A+1KO-] to the label you choose."
+   ]
+  }
+ ]
+}

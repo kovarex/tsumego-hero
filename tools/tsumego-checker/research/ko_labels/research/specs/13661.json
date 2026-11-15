@@ -1,0 +1,33 @@
+{
+ "problem": "13661",
+ "cards": [
+  {
+   "case": "k048",
+   "headline": "Not a ko: White's C19 leaves Black's five corner stones one liberty, where Black can never play, so White lives without any ko. S[ALIVE], not S[A-3KO+].",
+   "diagrams": [
+    {"start": "", "moves": "B18 B17 C18 A18 E18 D18 F18 D19 B19 A16 A19 C17 A17", "caption": "The tree's line, marked S[A-3KO+]; the checker printed KO+. Black 13 takes the ko by capturing White 4. White to play."},
+    {"start": "B18 B17 C18 A18 E18 D18 F18 D19 B19 A16 A19 C17 A17", "moves": "C19 G18 A18 pass B18", "caption": "White 14 leaves Black's five corner stones one liberty, at A18, where Black can never play. Whatever Black 15 tries, White 16 captures all five, which is not a ko, and White 18 makes three eyes."},
+    {"start": "B18 B17 C18 A18 E18 D18 F18 D19 B19 A16 A19 C17 A17", "moves": "pass D16 pass E19 pass A15 A18 A17! pass C19", "caption": "The tree's reading: White 14, 16 and 18 play elsewhere while Black fills three liberties of White's group. White 20 retakes the ko, Black 21 retakes after a threat, and Black 23 captures White's group. White would have to ignore three Black moves instead of playing C19 at once, as in Diagram 2."},
+    {"start": "B18 B17 C18 A18 E18 D18 F18 D19 B19 A16 A19 C17 A17", "moves": "pass D16 C19", "caption": "White 14 plays elsewhere and Black 15 fills a liberty, but White 16 still leaves Black's corner one liberty, at A18: White captures first."}
+   ],
+   "text": [
+    "Black 13 has just taken the ko, but White does not need to retake it. White 14 in Diagram 2 leaves Black's five corner stones one liberty, at A18. Black can never play there: all its neighbours are Black stones, so the move is suicide. White 16 then captures five stones, not a ko. Black fails even with six ko threats more than White: S[ALIVE].",
+    "S[A-3KO+] counts Black's three liberty fills as approach moves. That works only if White plays elsewhere three times instead of playing C19 (Diagram 3). White can even play elsewhere once (Diagram 4); after a second time, White would need the ko. But White to play simply plays C19. By the owner's definition this is no approach ko: White wins without winning any ko. Both reviewers agree, and no open question applies.",
+    "The checker's class is ALIVE too. It printed KO+ only by a rule that marks a line ending in the solver's ko capture as a ko, a rule meant for the solver's success, not its failure. With S[ALIVE] no grade changes; with KO+ the site would wrongly accept Black 5. The tree's leaf marked S[A-4KO+], the same corner with Black to move, is probably the same misreading (ALIVE in the narrow area, undecided on the wider board); fixing both changes no grade either."
+   ]
+  },
+  {
+   "case": "k049",
+   "headline": "S[10kKO] is right: whoever fills a liberty both groups share hands the other side a direct ko. The checker's A+2KO-2 reads the wrong ko.",
+   "diagrams": [
+    {"start": "", "moves": "B18 B17 C18 A18 A16 F18 G18 E18 F19 B19 C19 E19 D16 C17 A19 A17", "caption": "The tree's line, marked S[10kKO]; the checker printed A+2KO-2. Black 15 takes the ko by capturing White 10, and White 16 connects. Black to play."},
+    {"start": "B18 B17 C18 A18 A16 F18 G18 E18 F19 B19 C19 E19 D16 C17 A19 A17", "moves": "pass B19 pass D19 A19 pass D18", "caption": "Black 17 plays elsewhere and White 18 retakes the ko, but the capture threatens nothing, so Black 19 plays elsewhere too. White 20 fills a liberty both groups share: Black 21 retakes without a threat, White's group is in atari, and Black 23 captures it."},
+    {"start": "B18 B17 C18 A18 A16 F18 G18 E18 F19 B19 C19 E19 D16 C17 A19 A17", "moves": "D19 B19 pass D18", "caption": "If Black fills first, with Black 17, White 18 captures Black 15 without a threat, and Black's corner is in atari. If Black 19 plays elsewhere, White 20 takes the corner and White lives, so Black must retake the ko with a threat."}
+   ],
+   "text": [
+    "Neither side's ko capture threatens anything until someone fills a liberty both groups share. Whoever fills hands the other side a free capture that threatens at once: White's fill in Diagram 2, Black's in Diagram 3. That is the owner's ten-thousand-year ko. That White's capture needs the fill is settled only in the narrow area; if it did not, the label would be A-1KO+ or A-1KO−, which besogo grades the same as 10kKO.",
+    "The checker took the wrong ko, a second one that only arises after White captures Black 5, and counted White's capture at B19 as an approach. A+2KO-2 says Black wins with as many threats as White, yet the checker's own count says Black needs two more. Keeping S[10kKO] changes no grade; with the checker's label, besogo would wrongly make Black 5 the best move at that point."
+   ]
+  }
+ ]
+}

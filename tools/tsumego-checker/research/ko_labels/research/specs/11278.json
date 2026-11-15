@@ -1,0 +1,36 @@
+{
+ "problem": "11278",
+ "cards": [
+  {
+   "case": "k024",
+   "headline": "White keeps two liberties after Black's retake, so Black must approach at A15 and White retakes for free: S[A-1KO-], not S[KO-].",
+   "diagrams": [
+    {
+     "start": "",
+     "moves": "B18 A18 B17 A17 C18 B19 C19 D19 A19 A16 F19 B19",
+     "caption": "The tree's line, marked S[KO-]. Black 9 took the ko, and White 12 retakes it, leaving Black 1, 3, 5 and 7 in atari at C17. Black to play."
+    },
+    {
+     "start": "B18 A18 B17 A17 C18 B19 C19 D19 A19 A16 F19 B19",
+     "moves": "A19! pass A15 B19 pass C17",
+     "caption": "One threat more than White, which S[KO-] says is enough. Black 13 retakes with it, and White 14 plays elsewhere, since White still has two liberties. Black 15 approaches, and White 16 retakes for free. Black has no threat left: Black 17 is elsewhere, and White 18 captures four stones and lives."
+    },
+    {
+     "start": "B18 A18 B17 A17 C18 B19 C19 D19 A19 A16 F19 B19",
+     "moves": "A19! pass A15 B19 A19! pass C17",
+     "caption": "If White 14 plays elsewhere, two threats more than White are enough: Black 17 retakes with the second, and Black 19 captures the ten White stones. This is the ko the label describes: one Black approach, Black 15, then a plain KO− with no local threats."
+    },
+    {
+     "start": "B18 A18 B17 A17 C18 B19 C19 D19 A19 A16 F19 B19",
+     "moves": "A19! F18 G19 B19 A19! pass A15 B19 A19! pass C17",
+     "caption": "White's best: White 14 uses the free move to atari Black 11 at F19 (the atari from G19 gives the same count). Black 15 is the best answer; capturing White 14 or ignoring it costs more. White 16 retakes for free. Black needs a third threat, for Black 21, before Black 23 captures; with two, Black has none left after White 20, and White captures at C17."
+    }
+   ],
+   "text": [
+    "After White 12, Black must retake at A19 with a threat, but White's group keeps two liberties, A15 and C17. Neither side can fill C17: Black there lets White capture six stones at B19; White there lets Black capture the whole group at A15. So Black must approach at A15, and White retakes for free. One threat more than White, which is what S[KO-] means, is not enough (Diagram 2) in any search area the reviewers could decide.",
+    "White's capture needs no approach: if Black plays elsewhere instead of retaking, White captures at C17 even with four Black threats against none. After Black's approach the ko is a plain KO− (Diagram 3), so the leaf is an approach ko White took first: S[A-1KO-], as the solver said. White can also use the approach round's free move for an atari (Diagram 4), so Black needs three threats more in all. As in c121, which you set to S[A-1KO-], that gain belongs to the approach, not to the label.",
+    "Three threats win in every search area tried. That two fail is proven in the narrow areas, while some wider searches stay undecided; under your c121 rule this moves only the count, not the label. The label rests on reading that rule as covering this free move; if it covers only the free retake after the approach, the leaf is the strict S[A-1KO-2], still not S[KO-]. The first research's S[KO-3] had the right count, but in c121 you chose the approach form over KO-3 for this shape. No move's grade changes with any of these labels."
+   ]
+  }
+ ]
+}

@@ -1,0 +1,36 @@
+{
+ "topic": "q5",
+ "text": [
+  "Part 5 of the question page (215 and 13169) asks about a ko whose capture the other side can ignore once. The capturer then needs one more move, and a throw-in or a capture can give it a second ko that it takes first. One answer counts that second ko: a plain KO from the count. The other describes the clean kill, an approach followed by a direct ko, as your S[A-1KO+] in 215 and S[A-1KO-] in 13169 do. Six leaves of this research have the shape, and your trees use both readings.",
+  "Diagrams 1 and 2 show the two readings in 9896; 10005 has the same shape in two leaves. After Black 9 retakes, White can play elsewhere once, and Black needs one more move. Counted, that move is Black 11 in Diagram 1, a capture that takes a second ko first, and Black needs one threat more than White: your S[KO-]. The clean kill uses the approach Black 11 in Diagram 2, which needs two threats more: S[A-1KO-], with the checker's count of 1 as a note. In 9896 the count assumes the tree's closed board edge (question 8).",
+  "In 9, 5832 and 15454 the roles are reversed: White's capture threatens only through a throw-in at its own ko point, which makes a second ko that White takes first (Diagram 3). Counted, the capture is direct: S[KO+]. As a clean kill, White first needs an approach, and Black retakes for free (Diagram 4): S[A+1KO-]. Both have count 0, so these leaves also turn on the approach-label decision: counted labels give S[KO+] under both answers. In 5832 White has no kill without the throw-in, so the clean-kill answer makes the throw-in White's approach; S[ADKO] is wrong either way.",
+  "Counting keeps your S[] in 9, 9896, 10005 and 15454, makes 5832 S[KO+], and changes 215 and 13169 to S[KO+] and S[KO-]. The clean kill keeps 215 and 13169 and changes the six leaves, 9 and 15454 only with approach labels. No move's grading changes either way, except that S[KO+] in 5832 would also accept A18 as a first move while the line starting at A18 keeps its S[KO+]. Case c020 of the first report corrects that line to S[KO-], and then B18 stays the only best first move. 5832's overall result changes from S[ADKO] either way."
+ ],
+ "diagrams": [
+  {
+   "problem": "9896",
+   "start": "F19 E19 E17 C19 A18 E18 B19 A19",
+   "moves": "B19! pass C18 pass B18",
+   "caption": "9896, leaf k019, your S[KO-]. White has just taken the ko at A19. Black 9 retakes after a threat elsewhere; White has no threat and plays elsewhere (White 10). Black 11 captures one stone and takes a second ko first. White still has no threat to retake at B18, so White 12 plays elsewhere, and Black 13 connects and kills."
+  },
+  {
+   "problem": "9896",
+   "start": "F19 E19 E17 C19 A18 E18 B19 A19",
+   "moves": "B19! pass A17 A19 B19!",
+   "caption": "The clean kill in 9896. Black 9 retakes after a threat, and White 10 plays elsewhere. Black 11 is an approach and captures nothing, so White 12 retakes without a threat. Black 13 retakes after a second threat, and now White must answer at once. Black needs two threats more than White: S[A-1KO-]."
+  },
+  {
+   "problem": "15454",
+   "start": "B18 A17 D18 E18 C19 A18 A16 E19 A19 D19 C18 B19",
+   "moves": "pass A19 B17 A18 A19 B19",
+   "caption": "15454, leaf k056, your S[KO+]. White has just taken the ko at B19. If Black 13 plays elsewhere, White 14 throws in at the ko point, and Black 15 takes four stones. After White 16 and Black 17, White 18 takes a new ko first, and Black needs a threat to live (decided in the narrow search area only). Counting this makes White's capture direct; with Black's local threat at F19, the leaf is S[KO+]."
+  },
+  {
+   "problem": "15454",
+   "start": "B18 A17 D18 E18 C19 A18 A16 E19 A19 D19 C18 B19",
+   "moves": "pass A15 A19",
+   "caption": "The clean kill in 15454 leaves the throw-in out. Black's group still has two liberties, so if Black 13 plays elsewhere, White 14 must approach first, and Black 15 retakes without a threat, since White 14 captured nothing. White then needs the first threat: S[A+1KO-] with approach labels, count 0 as well."
+  }
+ ],
+ "suggestion": "The clean kill, as the question page proposes: a ko is direct only when its capture must be answered at once. Then 215 and 13169 stay, and these six leaves take the approach form."
+}

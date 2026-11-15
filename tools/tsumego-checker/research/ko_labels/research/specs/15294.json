@@ -1,0 +1,20 @@
+{
+ "problem": "15294",
+ "cards": [
+  {
+   "case": "k052",
+   "headline": "The tree's S[KO+] is wrong: an approach and White's throw-in mean Black needs three threats more than White, not one. Only the notation is open: S[A+1KO+2] or S[KO+3].",
+   "diagrams": [
+    {"start": "", "moves": "A18 A14 A13 B18 A17 B17 A15", "caption": "The tree's line to the leaf marked S[KO+]. White 7 takes the ko, and its capture threatens to kill at once. Black to play."},
+    {"start": "A18 A14 A13 B18 A17 B17 A15", "moves": "A14! pass A19 A15 A14! A17 A18 A15", "caption": "Black 8 retakes after a threat elsewhere. It threatens nothing yet, so White 9 plays elsewhere, and Black 10 must capture White's two stones: the approach. White 11 retakes without a threat. Black 12 retakes after a second threat, White 13 throws in, Black 14 must capture, and White 15 again retakes without a threat."},
+    {"start": "A18 A14 A13 B18 A17 B17 A15 A14! pass A19 A15 A14! A17 A18 A15", "moves": "A14! pass A15", "caption": "With a third threat, Black 16 retakes, White 17 plays elsewhere, and Black 18 connects: two eyes, at A17 and B16. Black lives."},
+    {"start": "A18 A14 A13 B18 A17 B17 A15 A14! pass A19 A15 A14! A17 A18 A15", "moves": "pass A14", "caption": "Without a third threat, Black 16 plays elsewhere and White 17 connects: Black dies."}
+   ],
+   "text": [
+    "White 7's capture threatens to kill at once, but Black 8's retake does not: connecting at A15 would be self-atari while White 1 and White 5 stand. So White ignores it, and Black must spend Black 10 capturing them, one approach move. Then White 13's throw-in is a local threat that gives White a second free retake. Black lives with three threats more than White (Diagram 3) and dies with two (Diagram 4). The tree's S[KO+] asks for only one, so it is wrong in either notation.",
+    "In approach-ko form this is S[A+1KO+2]: Black needs one approach, and the throw-in is White's one extra threat. That is the checker's strict label; its printed A+1KO? left the ko part open only because a search stalled. In counted form it is S[KO+3], the status of the earlier research. Both give the same count; which to write is the open approach-label decision. besogo ranks S[A+1KO+2] higher for White, but every other leaf is ALIVE, so no move's grade changes either way, and the problem's overall status becomes the chosen label.",
+    "White's free move in the approach round, White 9, gains nothing even when played locally, so your c121 rule changes nothing here. The wider search area gives the same count under the old end rule; under the checker's default end rule that search stays undecided."
+   ]
+  }
+ ]
+}

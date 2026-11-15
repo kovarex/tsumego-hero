@@ -1,0 +1,36 @@
+{
+ "problem": "1731",
+ "cards": [
+  {
+   "case": "k003",
+   "headline": "The tree's KO− misses White's local threat at C18: Black needs two threats more than White, S[KO-2], as the earlier research found. The checker's A-1KO+ is wrong too.",
+   "diagrams": [
+    {
+     "start": "",
+     "moves": "B18 A18 A17",
+     "caption": "The tree's line, marked S[KO-]; the checker says A-1KO+. White to play can take a ko at B17 by capturing Black 3, and Black can take a second ko at A19 by capturing White 2."
+    },
+    {
+     "start": "B18 A18 A17",
+     "moves": "B17 A17! C18 C19 B17 A17! pass D18",
+     "caption": "Black lives with two threats against none. White 4 takes the ko and Black 5 retakes after a threat elsewhere. White 6 puts the whole group in atari, Black 7 must capture three stones, and White 8 retakes without a threat. Black 9 retakes after a second threat; White has no second local threat, so White 10 plays elsewhere and Black 11 lives."
+    },
+    {
+     "start": "B18 A18 A17",
+     "moves": "B17 A17! C18 C19 B17 A19 A17 D18 B19 pass C18",
+     "caption": "With one threat against none, Black dies. After Black 5 uses it, White 6 and Black 7 give White 8 a free retake. Black 9 takes a stone, but White 12 captures Black 9 in a ko; Black 13 has no threat left, and White 14 kills."
+    },
+    {
+     "start": "B18 A18 A17",
+     "moves": "B17 A17! pass A19 pass C19",
+     "caption": "If White 6 ignores the retake, Black 7 captures at A19 and takes a second ko first: the move the checker counts as Black's approach. White's B17 would now be suicide and its retake at A18 is banned, so White needs a threat; if White 8 plays elsewhere again, Black 9 lives."
+    }
+   ],
+   "text": [
+    "White 6 in Diagram 2 is a local ko threat: it puts the whole group in atari, Black 7 is the only answer, and White 8 retakes without a threat elsewhere. So Black needs two threats more than White. With two against none Black lives (Diagram 2); with one against none (Diagram 3), or two against one, Black dies. That is S[KO-2], the status the earlier research (c009) found. The tree's KO− leaves out exactly this threat.",
+    "The checker's A-1KO+ is wrong on two points. Its approach, Black 7 in Diagram 4, is a capture in a second ko with no free retake for White; with the fight in that ko, the checker calls White's capture at B17 the approach instead. The gain it sets aside under your c121 rule is White 6 of Diagram 2: a threat Black must answer at once, not a quiet move in an approach round. Neither side needs an approach that is not a capture: the leaf is a plain ko that White takes first, plus White's local threat.",
+    "The checker's own count is 2, and it warns that no free retake follows the approach. Its strict label, A-1KO-, has that count but is no alternative: the open approach-label decision covers a liberty-filling approach with a free retake, and this leaf has none. Nor does question 1b (7487) decide it: there your A-1KO- reads White's capture in a second ko as making White's side direct; read the same way, Black 7 of Diagram 4 makes Black's side direct too, so both sides are direct and the plain KO-2 follows. No other open question decides it."
+   ]
+  }
+ ]
+}

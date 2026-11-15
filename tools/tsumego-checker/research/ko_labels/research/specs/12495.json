@@ -1,0 +1,62 @@
+{
+ "problem": "12495",
+ "cards": [
+  {
+   "case": "k031",
+   "headline": "White has just taken the ko, but Black's D13 is a local threat White must answer, so Black retakes for free: KO+, not KO−.",
+   "diagrams": [
+    {
+     "start": "",
+     "moves": "A10 B9 A12 A11",
+     "caption": "The tree's line. White 4 takes the ko, and the tree marks the leaf S[KO-]."
+    },
+    {
+     "start": "A10 B9 A12 A11",
+     "moves": "D13 E13 A12 pass B13",
+     "caption": "Black 5 ataris C13, and White 6 must capture. Black 7 retakes without a threat elsewhere. With no threats on either side, White 8 plays elsewhere and Black 9 captures two stones and lives."
+    },
+    {
+     "start": "A10 B9 A12 A11",
+     "moves": "D13 E13 A12 A11! B10 B13 A12 D13",
+     "caption": "With one threat more than Black, White 8 retakes. Black has no second local threat (a Black stone at D13 would now be suicide), so Black 9 cannot retake. After White 10 and White 12 the top is White's, and A11 is a ko eye only White can resolve: dead."
+    },
+    {
+     "start": "A10 B9 A12 A11",
+     "moves": "pass D13 A12 B13",
+     "caption": "Black cannot ignore White's capture. After Black 5 elsewhere, White 6 and White 8 take the top, and A11 is a ko eye only White can resolve: dead even with six Black threats against none."
+    }
+   ],
+   "text": [
+    "White 4 took the ko, so the tree says KO−. But Black 5 in Diagram 2 is a local threat: White 6 is the only answer, and any other loses even with two White threats more. Black 7 then retakes without spending a threat, and White has no local threat. So White needs the first outside threat: Black lives with as many threats as White (Diagram 2) and dies with one fewer (Diagram 3). That is KO+, as the earlier research settled and as the site's tutorial says for this exact case.",
+    "If Black may not play D13 while banned from retaking, or White has a stone at E13, the leaf is the tree's KO−: D13 is worth exactly one threat. The checker's A+1KO-3 is wrong too. Its first take and full count are right, but White needs no approach: a Black tenuki loses at once (Diagram 4). Its approach comes from a forced-pass search whose answer changes with the repetition rule and the search order.",
+    "Fix this leaf together with leaf k032. With this fix alone, Black 1 and Black's start at A12 (leaf k032) would both be KO+, and the site would accept Black 1 as well. With both fixes, A12 stays the only correct start. Alternatively, if Kano's diagram has a White stone at E13, add it and keep both tree labels."
+   ]
+  },
+  {
+   "case": "k032",
+   "headline": "Black took the ko and also keeps the local threat at D13, so White must win the ko twice: KO+2, not KO+.",
+   "diagrams": [
+    {
+     "start": "",
+     "moves": "A12 A11 A10 B9 A12",
+     "caption": "The tree's line. Black 5 takes the ko, and the tree marks the leaf S[KO+]."
+    },
+    {
+     "start": "A12 A11 A10 B9 A12",
+     "moves": "A11! D13 E13 A12 pass B13",
+     "caption": "With one threat more than Black, White 6 retakes. Black 7 ataris C13, White 8 must capture, and Black 9 retakes for free. White has no second threat, so White 10 plays elsewhere and Black 11 captures two stones and lives."
+    },
+    {
+     "start": "A12 A11 A10 B9 A12",
+     "moves": "A11! D13 E13 A12 A11! B10 B13 A12 D13",
+     "caption": "With two threats more than Black, White 10 retakes again. A Black stone at D13 would now be suicide, so Black has no local threat left and Black 11 cannot retake. After White 12 and White 14 the top is White's, and A11 is a ko eye only White can resolve: dead."
+    }
+   ],
+   "text": [
+    "Black 5 took the ko, so the tree says KO+. But Black also keeps the local threat at D13: after White 6 retakes, the position is that of leaf k031, where Black 7 forces White 8 and Black 9 retakes without spending a threat. White has no local threat, so White must win the ko twice. Black lives with one threat fewer than White (Diagram 2) and dies with two fewer (Diagram 3). That is KO+2, as the earlier research settled; in the site's tutorial, a KO+2 the opponent has won once becomes a plain KO+.",
+    "If Black may not play D13 while banned from retaking, the leaf is exactly the tree's KO+: the tree simply ignores D13. It would be right only with a White stone on E13, which the SGF does not have. The checker's A+1KO-2 is wrong twice: it implies that Black needs one threat more than White, while its own full count says one fewer; and White needs no approach, since a Black tenuki after White's retake loses at once, as in leaf k031.",
+    "Black's start at A12 (now KO+2) still ranks above Black's start at A10 (KO+, leaf k031), so the problem's answer does not change."
+   ]
+  }
+ ]
+}

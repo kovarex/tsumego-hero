@@ -1,0 +1,38 @@
+{
+ "topic": "q1b",
+ "text": [
+  "Part 1b of the question page asks how to label a ko that switches there and back next to a second ko. In 10403 that happens after Black's approach. The tree's S[A+1KO-] is wrong under either answer: it says White needs an approach and that Black wins with as many threats as White. But White's capture at B19 threatens at once (Diagram 1), and Black fails even with one threat more than White. Black needs two threats more, a count decided only in the checker's narrow area; in the wider area it may be three.",
+  "Black's one approach is Black 9 at E19 (Diagram 2). White 10 retakes for free, and Black 11's retake still threatens nothing. Black must also capture in the second ko, Black 13 at A17, and only that capture threatens (Diagram 3). White 14 retakes after a threat but in turn threatens nothing until White also captures at B19. So after the approach the ko switches there and back through the second ko. These diagrams follow the checker's narrow area; in the wider area Black must take the second ko before approaching.",
+  "Your definitions do not say how a capture in a second ko counts. If the switch after the approach is a normal ko, the label is S[A-1KO-], your label with the approach's sign flipped: Black 9 is Black's only move that is not a capture, and White can recapture Black 13 only after a threat. If Black 13 counts as a second approach, since White gets a second free move before it, the label is S[A-2KO+], as the checker reads it. Both need two threats more than White; besogo ranks approaches first, so S[A-1KO-] ranks higher for Black.",
+  "Either answer changes only this leaf, and no move's grading: Black 1 leads to a ko, and any ko beats the ALIVE and SEKI siblings. Only the problem's own status, which besogo takes from its best leaf, goes from S[A+1KO-] to the chosen label."
+ ],
+ "diagrams": [
+  {
+   "problem": "10403",
+   "start": "",
+   "moves": "B18 A18 C19 A16 A19",
+   "labels": {
+    "B19": "a",
+    "A17": "b",
+    "E19": "c"
+   },
+   "caption": "The tree's line to the leaf marked S[A+1KO-], with White to play. White can take the ko at a by capturing Black 5, and that capture threatens at once: if Black then plays elsewhere, White lives even against four Black threats. The second ko is at b, where Black can capture White 2, and Black's approach point is c."
+  },
+  {
+   "problem": "10403",
+   "start": "B18 A18 C19 A16 A19",
+   "moves": "B19 A19! pass E19 B19 A19!",
+   "labels": {
+    "A17": "b"
+   },
+   "caption": "White 6 takes the ko, and Black 7 retakes after a threat but threatens nothing, so White 8 plays elsewhere for free. Black 9 approaches, White 10 retakes without a threat, and Black 11 retakes after a second threat. Black 11 still threatens nothing: White can play elsewhere again, and Black must still capture at b."
+  },
+  {
+   "problem": "10403",
+   "start": "B18 A18 C19 A16 A19 B19 A19! pass E19 B19 A19!",
+   "moves": "pass A17 A18!",
+   "caption": "White 12 plays elsewhere for free, and Black 13 captures in the second ko, which threatens at once. White 14 retakes after a threat. In the checker's narrow area White 14 threatens nothing until White also captures at B19, so Black can play elsewhere for free."
+  }
+ ],
+ "suggestion": "S[A-1KO-], the question page's proposal for 10403: Black needs only one move that is not a capture. It needs the same threats as S[A-2KO+], and neither changes any move's grading."
+}

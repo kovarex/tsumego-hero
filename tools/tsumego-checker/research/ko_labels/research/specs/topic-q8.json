@@ -1,0 +1,31 @@
+{
+  "topic": "q8",
+  "text": [
+    "Part 8 of the question page asks whether the empty board beyond the corner counts as open, as the site shows it, or as the attacker's wall, as the solver's search areas and some trees read it. Four leaves change label with the answer. In each, the open board gives the defender a resource that the wall takes away: a run into the empty side, a crawl to friendly stones, or a local threat.",
+    "At k014 in 7487 the open board keeps the tree's S[KO+]. Black 19 is a local threat, but White 20, which captures it, stays joined to White 22, 24 and 26 as they run into the empty lower left (Diagram 1), so Black needs as many threats as White. Walled where the solver's areas end, White 20 is wasted and the leaf is S[KO+2], the checker's label; with Black stones at A14 and B14 it is S[DDKO].",
+    "The other three trees are right only against the wall. In 9704, Black 11 answers White 10's cut only if the board beyond B14 and D16 is Black's, as the problem is built. On the open board White 12 gets out (Diagram 2), so Black must seal at C15, which hands White a second local threat: S[KO-] becomes at least S[KO-2]. In 15364, S[KO+] becomes S[KO-2]: Black's crawl to B13-C13, with six liberties on the board, gives two local threats (Diagram 3). In 11334, S[KO+] becomes S[KO+2]: Black's atari at B14 is a local threat on the open board.",
+    "No move changes between correct and wrong under either answer. With the open board, the overall result of 9704 goes from KO− to KO−2 and that of 15364 from KO+ to KO−2; 7487 and 11334 keep theirs, and with the wall only the S[] of k014 changes. The runs in 7487 and 9704 are reading, as the engine cannot search the open centre; 11334's threat was searched only in the solver's wider area, and 15364's count of 2 with a living group standing in for the open lower side."
+  ],
+  "diagrams": [
+    {
+      "problem": "7487",
+      "start": "B18 C17 A18 A17 G18 F18 C18 D19 F19 E19 D18 G19 H19 B19 C19 E18 F19",
+      "moves": "G19! A16 A15 F19 B14 G19 C14 D15 D14",
+      "caption": "7487, leaf k014, with White one threat ahead. White 18 retakes after a threat elsewhere. Black 19 ataris White's stone at A17, White 20 captures it, and Black 21 retakes. After White 22, Black 23 must connect the ko; White 24 forces Black 25, and White 26 runs into the empty lower left, still joined to White 20. Black fails, so the tree's S[KO+] stands (reading; the engine could not decide the run). The solver's narrow area does not let White play 22, nor its wide area 26; in both, Black wins: S[KO+2]."
+    },
+    {
+      "problem": "9704",
+      "start": "D19 C17 E18 C19 D17",
+      "moves": "E19 A18 A17 D19 C16 B15 C15",
+      "labels": {"C14": "a", "D15": "b"},
+      "caption": "9704, leaf k018 (the tree's S[KO-]). White 6 takes the ko. Black 7 and White 10 are local threats, answered by White 8 and Black 11, and Black 9 retakes. If the board beyond B14 and D16 is Black's wall, as the problem is built, Black 11 holds: White retakes at E19 instead of White 12, and Black needs one threat more than White. On the board as shown, White 12 gets out through a or b, since Black can block only one of them (reading; no search reached the open centre)."
+    },
+    {
+      "problem": "15364",
+      "start": "B18 B19 A18 D19 E19 E18",
+      "moves": "C19 A15 D19 A16 A14 B14 A13 A12 A14 A13 pass A14",
+      "caption": "15364, leaf k053 (the tree's S[KO+]); White plays first, so the signs are White's. White 7 takes the ko and Black 8 starts a crawl along the first line. If White 9 connects the ko, Black 10 to Black 18 join the corner to B13-C13: Black 14 captures two stones, Black 16 captures White 15, and Black 18 connects. Black lives along the edge. 15399, with the same stones, has this crawl in its tree. With B13-C13 walled in, as in every search area so far, the crawl fails."
+    }
+  ],
+  "suggestion": "As the question page proposes, count the board as the player sees it, and where a problem needs a closed edge, put the stones in the SGF. In 9704, Black stones at C14 and D15 would keep the tree's S[KO-]."
+}

@@ -1,0 +1,45 @@
+{
+ "problem": "7693",
+ "cards": [
+  {
+   "case": "k016",
+   "headline": "The tree's KO+ is right. The checker's A-1KO+4 mistakes a capture in a second ko for an approach and counts a local threat that White removes.",
+   "diagrams": [
+    {
+     "start": "",
+     "moves": "A16 G19 E19 D18 A18 C19 B19",
+     "caption": "The tree's line. Black 7 takes the ko first; the tree marks the leaf S[KO+], the checker A-1KO+4."
+    },
+    {
+     "start": "A16 G19 E19 D18 A18 C19 B19",
+     "moves": "F19 C18 B18! pass A19 B19!",
+     "caption": "White 8 removes Black's local threat at D19. Black 9 captures in a second ko and threatens to kill; White 10 retakes after a threat and threatens nothing, so Black 11 plays elsewhere. White 12 takes the first ko and threatens to live; Black 13 retakes after a threat, and White may now play elsewhere."
+    }
+   ],
+   "text": [
+    "Black wins with as many threats as White, and not with one fewer, in every search area. The checker calls Black 9 in Diagram 2 an approach to the ko at A19, but Black 9 captures in a second ko, after which White cannot retake at A19. White 10 retakes after a threat and threatens nothing, as Black 13 does: the ko switches there and back, a plain KO by your rule, and KO+ under either answer to question 1b.",
+    "The checker's other error: Black wins with two threats fewer only if White ignores Black 7, and White 8 removes Black's local threat at D19. Black can make a real approach ko by playing A17, but then Black needs one threat more than White."
+   ]
+  },
+  {
+   "case": "k017",
+   "headline": "The tree's KO+ is right, and the checker agrees on the count. Its A-1KO+2 mistakes a capture in a second ko for an approach.",
+   "diagrams": [
+    {
+     "start": "",
+     "moves": "A16 G19 C18 D18 A18 C19 B19",
+     "caption": "The tree's line. White 6 captures Black 3, and Black 7 takes the ko first; the tree marks the leaf S[KO+], the checker A-1KO+2."
+    },
+    {
+     "start": "A16 G19 C18 D18 A18 C19 B19",
+     "moves": "pass C18 B18! pass A19 B19!",
+     "caption": "White 8 plays elsewhere: Black 7 threatens nothing. Black 9 captures in a second ko and threatens to kill; White 10 retakes after a threat and threatens nothing, so Black 11 plays elsewhere. White 12 takes the first ko and threatens to live; Black 13 retakes after a threat, back at the leaf."
+    }
+   ],
+   "text": [
+    "Black wins with as many threats as White. The checker calls Black 9 in Diagram 2 an approach to the ko at A19, but Black 9 captures in a second ko, after which White cannot retake at A19. Each side has one capture that threatens nothing and one that does, so each spends one threat and gets one move elsewhere a round: a plain KO by your rule for kos that switch there and back, and KO+ under either answer to question 1b.",
+    "Nor is it the open approach-label decision, which needs a real one-sided approach. Confidence is medium. The count is 0 with either side of the wider area open; with both open it stays undecided, though by reading the extra points are dead space."
+   ]
+  }
+ ]
+}

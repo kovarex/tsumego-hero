@@ -1,0 +1,58 @@
+{
+ "problem": "13547",
+ "cards": [
+  {
+   "case": "k041",
+   "headline": "S[10kKO] is right: once White connects, each side must fill a shared liberty before its ko capture threatens to win. The checker followed a White mistake.",
+   "diagrams": [
+    {"start": "", "moves": "B18 B19 D19 C19 B17 A18 A17 A15 E19 C18 A14", "caption": "The tree's line to the leaf, marked S[10kKO]. White to play; Black can take the ko by capturing White 6."},
+    {"start": "B18 B19 D19 C19 B17 A18 A17 A15 E19 C18 A14", "moves": "D16 A19 pass C17 A18 A19! pass A16", "caption": "White 12 connects, Black 13 takes the ko and White 14 waits. Black 15 invests, White 16 retakes for free and threatens to capture at A16, so Black needs a threat for Black 17 before Black 19 captures."},
+    {"start": "B18 B19 D19 C19 B17 A18 A17 A15 E19 C18 A14", "moves": "A16 A19", "caption": "The checker's line: White 12 fills a shared liberty itself, and Black 13 takes the ko. Both captures now threaten at once and Black took first, a direct ko Black wins with equal threats: one threat better for Black than Diagram 2."}
+   ],
+   "text": [
+    "After White 12 in Diagram 2 joins White's groups, A16 and C17 are liberties of both White's group and Black's three inner stones. Whoever fills one hands the other side a free ko capture that threatens to win at once. That is your 10kKO, and Black needs one threat more, a count decided in the narrow area.",
+    "The checker's KO? came from the line in Diagram 3, where White fills A16 itself: a mistake that costs White a threat. It read that line because it left the count undecided. Question 1a does not change the verdict: 10kKO is either exact here or ranks equal to A-1KO+, and the checker's KO? is wrong under either answer."
+   ]
+  },
+  {
+   "case": "k042",
+   "headline": "White has just retaken the ko, and Black's retake still needs one approach: S[A-1KO-], not S[A-1KO+].",
+   "diagrams": [
+    {"start": "", "moves": "B18 B19 D19 C19 B17 A18 A17 A15 C18 E19 D16 C17 A19 D19 F19 A18", "caption": "The tree's line to the leaf, marked S[A-1KO+]. White 16 has just retaken the ko. Black to play."},
+    {"start": "B18 B19 D19 C19 B17 A18 A17 A15 C18 E19 D16 C17 A19 D19 F19 A18", "moves": "A19! pass A14 A18 A19! pass A16", "caption": "Black 17 retakes with a threat, and after White 18 plays elsewhere Black 19 approaches. White 20 retakes for free, so Black needs a second threat for Black 21 before Black 23 captures."},
+    {"start": "B18 B19 D19 C19 B17 A18 A17 A15 C18 E19 D16 C17 A19 D19 F19 A18", "moves": "A19! F18 G19 A18 A19! pass A14 A18 A19! pass A16", "caption": "White 18 ataris Black 15 before the approach, Black 19 answers, and White 20 retakes for free. Black needs a threat for each of Black 17, Black 21 and Black 25."}
+   ],
+   "text": [
+    "White 16 has just retaken the ko, and Black's four stones are in atari at A16, so White's capture threatens at once. Black must retake with a threat, and its retake threatens nothing until Black 19 in Diagram 2 fills A14; then White 20 retakes for free. One approach with White taking first is A-1KO-, a count of two. The tree's A-1KO+ says one, and looks carried over from Black 13's take.",
+    "White can gain one more threat before the approach (Diagram 3), so Black in fact needs three; that count is decided in the narrow area only. It is your c121 pattern: what White gains with its free move in an approach round belongs to the approach, so the label stays A-1KO-, and the strict label is A-1KO-2. Answer White 18 at G19, as Black 19 does in Diagram 3: on the open board, F17 would leave White a second atari."
+   ]
+  },
+  {
+   "case": "k043",
+   "headline": "White took first and Black needs one approach, not two: S[A-1KO-], not S[A-2KO+]. After Black retakes, White must extend; connecting dies.",
+   "diagrams": [
+    {"start": "", "moves": "B18 B19 B17 C18 A17 D19 A19 D16 A15 A16 A14 A18", "caption": "The tree's line to the leaf, marked S[A-2KO+]. White 12 has just taken the ko. Black to play."},
+    {"start": "B18 B19 B17 C18 A17 D19 A19 D16 A15 A16 A14 A18", "moves": "A19! E19 F19 A18 A19! pass C19 pass C17", "caption": "Black 13 retakes with a threat and ataris White 2. White 14 extends, Black 15 approaches, and White 16 retakes for free. With a second threat Black 17 retakes, and Black 19 and Black 21 capture."},
+    {"start": "B18 B19 B17 C18 A17 D19 A19 D16 A15 A16 A14 A18", "moves": "A19! C19 A18 C17 A18", "caption": "If White 14 connects instead, Black 15 throws in, White 16 takes five stones, and Black 17 takes the vital point of the bulky five. White dies without a ko."},
+    {"start": "B18 B19 B17 C18 A17 D19 A19 D16 A15 A16 A14 A18", "moves": "A19! pass C19", "caption": "The checker's approach: if White 14 plays elsewhere, Black 15 captures White 2 and starts a second ko. White has no free retake: A18 would be suicide, and B19 would retake a ko."}
+   ],
+   "text": [
+    "White 12 has just taken the ko, and Black's three stones are in atari at C17, so White's capture threatens at once. In Diagram 2 Black needs exactly one approach, Black 15, before its retake threatens to win at once, and White 16 then retakes for free. That is S[A-1KO-], two threats more than White. The tree's A-2KO+ has the same count, but no line gives Black two approaches, and Black did not take first. besogo ranks A-1KO- above A-2KO+ for Black, so this is no notation difference.",
+    "White must extend, as White 14 does in Diagram 2; connecting dies to the throw-in in Diagram 3. The checker's A-1KO+ took Black 15 in Diagram 4 as the approach, but that capture starts a second ko and leaves White no free retake, and White's extension prevents it at no cost.",
+    "In the wider search area the count stays partly undecided; only gains in the approach round could raise it, and your c121 rule keeps those out of the label. A fully open board was not tested (question 8); there, a White atari on Black 15 in Diagram 2 might become a real threat."
+   ]
+  },
+  {
+   "case": "k044",
+   "headline": "White 14 is the first ko capture and threatens at once, and Black's retake needs one approach: S[A-1KO-], two threats more, not S[A-1KO+].",
+   "diagrams": [
+    {"start": "", "moves": "B18 B19 B17 C18 D19 A17 A18 D16 A16 A15 E19 C19 C17 A17", "caption": "The tree's line to the leaf, marked S[A-1KO+]. White 14 has just taken the ko. Black to play."},
+    {"start": "B18 B19 B17 C18 D19 A17 A18 D16 A16 A15 E19 C19 C17 A17", "moves": "A16! pass A14 A17 A16! pass A19", "caption": "Black 15 retakes with a threat, and after White 16 plays elsewhere Black 17 approaches. White 18 retakes for free, so Black needs a second threat for Black 19 before Black 21 captures."}
+   ],
+   "text": [
+    "White 14 is the first ko capture: Black 9 captured White 6 but kept two liberties, so it was no ko capture. Black's four stones are in atari at A19, so White's capture threatens at once. Black must retake with a threat, and its retake threatens nothing until Black 17 in Diagram 2 fills A14; then White 18 retakes for free. One approach with White taking first is A-1KO-: Black needs two threats more than White. The tree's A-1KO+ says one, and Black fails with one.",
+    "Not settled here: the tree's other S[A-1KO+] leaf on this ko is the same position without Black 11 and White 12, and in the narrow area Black fails there even with three threats more. A grading check should look at it together with this leaf."
+   ]
+  }
+ ]
+}

@@ -1,0 +1,88 @@
+{
+ "open": [
+  {
+   "question": "3",
+   "title": "An extra move after a local answer: an approach, or a move inside the ko?",
+   "anchor": "#topic-q3",
+   "yours": "mostly the approach form; four leaves are one threat short",
+   "solver": "a move inside the ko (KO-, KO+2, KO-2)",
+   "options": "approach (A-1KO+ for c014) or a move inside the ko (KO- for c014)",
+   "leaves": "6 here (7487 three, 13262, 13539 two), c014 in 2359, 11282's E16 leaf",
+   "proposal": "approach"
+  },
+  {
+   "question": "5",
+   "title": "A second ko after the capture: count it, or the clean kill?",
+   "anchor": "#topic-q5",
+   "yours": "both: 215 and 13169 the clean kill; 9, 9896, 10005 and 15454 counted",
+   "solver": "counts it (KO+, KO-)",
+   "options": "count it (KO+, KO-) or the clean kill (A+1KO-, A-1KO-)",
+   "leaves": "6 here (9, 5832, 9896, 10005 two, 15454), 215, 13169",
+   "proposal": "the clean kill"
+  },
+  {
+   "question": "8",
+   "title": "The empty board around the corner: open, or the attacker's wall?",
+   "anchor": "#topic-q8",
+   "yours": "read both ways",
+   "solver": "its search area walls the board in",
+   "options": "the board as the player sees it, or a closed outside",
+   "leaves": "4 here (7487, 9704, 11334, 15364), c013 in 2359, c052 in 11320",
+   "proposal": "the board as the player sees it; stones in the SGF where an edge must be closed"
+  },
+  {
+   "question": "A",
+   "title": "One approach before the ko: approach-ko label or counted label?",
+   "anchor": "#topic-approach-label",
+   "yours": "both (15220's S[KO+] is the counted form)",
+   "solver": "the approach form",
+   "options": "approach-ko label (A+1KO-) or counted label (KO+)",
+   "leaves": "2 here (15220, 15294), 5 from the first report",
+   "proposal": "approach-ko labels"
+  },
+  {
+   "question": "1b",
+   "title": "A ko that switches through a second ko",
+   "anchor": "#topic-q1b",
+   "yours": "10403 S[A+1KO-], wrong either way; 7487 leaf 98 S[A-1KO-]",
+   "solver": "10403 undecided; 7487 leaf 98 10kKO",
+   "options": "A-1KO- (a normal switching ko) or A-2KO+ (the second-ko capture as a second approach)",
+   "leaves": "10403, 7487 leaf 98",
+   "proposal": "A-1KO- in both"
+  },
+  {
+   "question": "4",
+   "title": "The label by the structure or by the count?",
+   "anchor": "#topic-q4",
+   "yours": "the structure (10005, 7487 k008)",
+   "solver": "10005 agrees with you; 7487 k008 undecided",
+   "options": "the structure (your A-1KO-) or the count (KO+ at k008)",
+   "leaves": "7487 k008",
+   "proposal": "the structure"
+  },
+  {
+   "question": "6",
+   "title": "SEKI+ and SEKI",
+   "anchor": "https://claude.ai/artifact/1EYiF4TGFP2WMAFoPtoXXW",
+   "yours": "37 SEKI+ leaves",
+   "solver": "SEKI+ = a seki in which the solver keeps sente; agrees with 30 of the 32 it decides",
+   "options": "the solver's reading, SEKI+ only after the opponent's last move, or no + from the solver",
+   "leaves": "1881 leaves 2 and 4, 2089 leaf 2, 1862 leaf 1 (question page, part 6)",
+   "proposal": "SEKI+ when the solver keeps sente"
+  },
+  {
+   "question": "7",
+   "title": "15678: kill the whole White group, or only the top stones?",
+   "anchor": "https://claude.ai/artifact/9MiMDZvGqnL4DHEYNP8zgR",
+   "yours": "every DEAD leaf kills only the top stones",
+   "solver": "with the whole group as its target: ALIVE",
+   "options": "(a) the solver takes the target from the tree's kills, or (b) a stone or two added to the problem",
+   "leaves": "15678 (first report, under Decisions)",
+   "proposal": "(a)"
+  }
+ ],
+ "answered": [
+  "Answered: question 1a on 15 November (the shared-liberty shape is 10kKO): 14119 changes from S[KO-] to S[10kKO]; 11280, 11282 and 13549 keep their S[10kKO]. Question 2 follows from it: c081 in 15220 changes from S[KO+] to S[10kKO]. c121 in 15678 was settled on 14 November (S[A-1KO-] and the approach-round rule).",
+  "Questions 9 (equal counts) and 10 (superko) are dropped: none of your leaves has them."
+ ]
+}

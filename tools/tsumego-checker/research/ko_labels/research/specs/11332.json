@@ -1,0 +1,43 @@
+{
+ "problem": "11332",
+ "cards": [
+  {
+   "case": "k029",
+   "headline": "Black lives outright: if White retakes the ko at D18, Black simply connects, and White's corner stones run out of liberties. S[ALIVE], not S[ADKO].",
+   "diagrams": [
+    {"start": "", "moves": "D17 E19 D19 C19 B19 B18 C18 A19 D19", "caption": "The tree's line to the leaf, marked S[ADKO]; the checker printed KO+. Black 9 captures White's stone at D18, so White may not retake there at once. White to play."},
+    {"start": "D17 E19 D19 C19 B19 B18 C18 A19 D19", "moves": "D18! C17 B19 A18 A16 D19", "caption": "White 10 retakes after a ko threat elsewhere, and Black 11 connects instead of fighting the ko. After White 12 and Black 13, White's corner stones and White 10 have one liberty, at D19. White 14 fills an outside liberty, but Black still has two, and Black 15 captures five stones."},
+    {"start": "D17 E19 D19 C19 B19 B18 C18 A19 D19", "moves": "D18! C17 D19 A18 F19 B19", "caption": "If White 12 connects instead, Black 13 puts White's stones at A19 and B18 in atari. After White 14, Black 15 takes them: two eyes, at A19 and B18."}
+   ],
+   "text": [
+    "At the leaf White may not retake at D18, and White's corner stones are short of liberties: White 2 and White 4 are in atari, and White 6 and White 8 share only A18 and B19. White's only real try is to retake at D18 after a threat (Diagram 2). Black does not fight the ko: Black 11 joins all of Black's stones, with four liberties, and White runs out of liberties first. If White 12 connects at D19 instead (Diagram 3), Black takes two stones and has two eyes.",
+    "So Black lives without a single ko capture of its own, while S[ADKO] means Black lives only through a double ko. White's attacks on Black's outside liberties always come one move short; in both search areas every White move at the leaf fails. The leaf has two ko shapes, at D18 and at B19, which probably explains the tree's label, but Black needs neither.",
+    "The checker's KO+ is wrong too: its own class is ALIVE, and it printed KO+ only by its rule that a line ending in the solver's ko capture counts as a ko. Black wins even against unlimited White threats, and with S[KO+] besogo would mark Black 9 wrong, ranking it below the double ko after Black's A18 at move 9. Both reviewers agree, and no open question applies. The fix needs one more White move in the tree (Change the tree as well, below)."
+   ]
+  }
+ ],
+ "tree_change": {
+  "text": [
+   "Required: White 8 in Diagram 1. The fixed leaf shows that the tree's only answer to Black's C18 at move 7, at a, is a mistake; without White 8, besogo would think C18 lives outright (On the site, below). The retake is White's best answer: every other White move lets Black live outright. Black 9 in Diagram 2 then gives the position after the tree's A18 at move 7, with its double ko, so the new node gets S[ADKO]. besogo links the transposition by itself, so the single node is enough.",
+   "besogo's editor refuses an immediate ko retake, but its SGF loader accepts it, so add the node to the SGF by hand: ;W[cc]S[ADKO] as a second child of the ;B[cb] node whose only child is now ;W[aa]. None of the 314 trees in the export has such a retake yet, and the checker's tree reader drops such a node without a warning. Two passes standing in for the threat and its answer would not grade right: Black's best answer to White's pass is to connect at C17, which lives outright.",
+   "Optional, not caused by the fix: Black's C17 at move 9 (Diagram 3). It lives as well as the tree's D19, but the site rejects it today."
+  ],
+  "diagrams": [
+   {"start": "D17 E19 D19 C19 B19 B18 C18", "moves": "C17!", "labels": {"A19": "a"}, "caption": "Required. After Black's C18 at move 7, add White 8, retaking at C17 after a ko threat elsewhere, as a second answer beside the tree's answer at a, and put S[ADKO] on White 8."},
+   {"start": "D17 E19 D19 C19 B19 B18", "moves": "C18 C17! A18 A19 C18", "caption": "Why S[ADKO]: Black 9 gives the position after the tree's A18 at move 7, with White to play, and White 10 and Black 11 reach that line's leaf, marked S[ADKO]. besogo links the transposition by itself; adding this whole line grades the same."},
+   {"start": "D17 E19 D19 C19 B19 B18 C18 A19", "moves": "C17", "caption": "Optional, not caused by the fix: Black 9 lives as well as the tree's D19 (solver: ALIVE in both search areas). Add it with S[ALIVE], and besogo marks it correct."}
+  ]
+ },
+ "grading": {
+  "text": [
+   "With S[ALIVE] on the leaf alone, the problem's result goes from S[ADKO] to S[ALIVE], and the site marks a wrong in Diagrams 1 and 2, with the two moves after each; today both are correct. The grading check found the new result and the mark in Diagram 1 wrong, and the mark in Diagram 2 right. With the tree change above, besogo's own grading keeps the problem at S[ADKO] and a and b in Diagram 1 correct; only a in Diagram 2 and the two moves after it turn wrong.",
+   "Diagram 1: a and b are equally good: after b, White's best answer is to retake at C17 after a threat, which leads to the same double ko as a (Change the tree as well, above). The tree has only White's A19 after b, which the fixed leaf shows to be a mistake, so besogo thinks b lives outright, marks a wrong and raises the problem to ALIVE. These move-7 results are decided in the narrow search area only; the wider one stayed undecided even at 2,000,000 nodes.",
+   "Diagram 2: after White 8, b lives outright, as the fixed leaf shows, and Black's C17 lives as well. Move a lets White 10 retake at C17, and Black gets only the double ko of the tree's leaf (Diagram 3). ALIVE ranks above ADKO, so a is a real mistake."
+  ],
+  "diagrams": [
+   {"start": "", "moves": "D17 E19 D19 C19 B19 B18", "labels": {"A18": "a", "C18": "b"}, "caption": "Black to play move 7. Today a and b are both correct, each worth S[ADKO]. With the fix alone the site marks a wrong and calls the problem ALIVE. Not right: a and b lead to the same double ko."},
+   {"start": "", "moves": "D17 E19 D19 C19 B19 B18 C18 A19", "labels": {"A18": "a", "D19": "b"}, "caption": "Black to play move 9, after b in Diagram 1 and the tree's White 8. Today a and b are both correct; with the fix the site marks a wrong and keeps b, the fixed leaf. Right."},
+   {"start": "", "moves": "D17 E19 D19 C19 B19 B18 C18 A19 A18 C17 B19", "caption": "The tree's line for a in Diagram 2, marked S[ADKO]. White 10 retakes at C17, and Black 11 takes White 8: Black gets only a double ko, while b lives outright."}
+  ]
+ }
+}

@@ -1,0 +1,4 @@
+{
+ "1a": {"answer": "yes: the shared-liberty shape is 10kKO (the owner on 15 November, about 10391: 'a clear example of 10kKO')",
+        "cases": {"k025": ["solver_error", "10kKO"], "k026": ["solver_error", "10kKO"], "k046": ["solver_error", "10kKO"], "k050": ["site_error", "10kKO"]}}
+}

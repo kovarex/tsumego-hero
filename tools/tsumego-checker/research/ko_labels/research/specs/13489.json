@@ -1,0 +1,67 @@
+{
+ "problem": "13489",
+ "cards": [
+  {
+   "case": "k034",
+   "headline": "Black takes the main ko first, but White's local threat forces Black to capture, and White takes a second ko first: Black needs one threat more, S[KO-], not S[KO+].",
+   "diagrams": [
+    {
+     "start": "",
+     "moves": "C19 D17 E19 D19 D18 B19 B18 A18",
+     "caption": "The tree's line, marked S[KO+]. Black to play: White 6 is in atari, and Black can take the ko first at A19."
+    },
+    {
+     "start": "C19 D17 E19 D19 D18 B19 B18 A18",
+     "moves": "A19 C18 A17 D19 D18! pass A16",
+     "caption": "With one threat more than White, Black kills. Black 9 takes the ko, and White 10 threatens to capture two stones. Black 11 captures one stone and puts White's group in atari, and White 12 escapes by capturing the stone at D18, a second ko that White has taken first. Black 13 retakes after a threat elsewhere, and Black 15 captures the group."
+    },
+    {
+     "start": "C19 D17 E19 D19 D18 B19 B18 A18",
+     "moves": "A19 C18 A17 D19 A16 B19",
+     "caption": "With no threats on either side, Black cannot retake at D18, and every Black move fails. For example, Black 13 puts White in atari again, but White 14 captures the stone at C19 and starts a new ko there, so Black still needs a threat."
+    },
+    {
+     "start": "C19 D17 E19 D19 D18 B19 B18 A18",
+     "moves": "A19 C18 pass B19",
+     "caption": "Black cannot ignore White 10. If Black 11 plays elsewhere, White 12 captures two stones and lives, even when Black has six threats."
+    }
+   ],
+   "text": [
+    "Black 9 takes the main ko first, as the tree's KO+ says. But White 10 is a local threat: if Black ignores it, White 12 in Diagram 4 captures two stones and lives, even against six Black threats. So Black 11 in Diagram 2 must capture, which puts White in atari, and White escapes by capturing at D19: a second ko that White has taken first. Black kills with one threat more than White (Diagram 2) and fails with equal threats (Diagram 3). That is KO−.",
+    "Both reviewers agree. This is the checker's KO−; the extra threat it could not locate is White 10. The count is one in every search area tried, Black 9 is the only move that wins at the leaf, and no open question applies. besogo's text for KO− says White takes first: here Black takes the main ko first, but White takes the second ko first. KO− ranks below KO+ for Black, so the tree overstates Black's result."
+   ]
+  },
+  {
+   "case": "k035",
+   "headline": "Black's approach stone would be alone in atari, so Black first prepares; White then takes the ko at once, and Black needs two threats more: S[A-1KO-], not S[KO-].",
+   "diagrams": [
+    {
+     "start": "",
+     "moves": "B19 D17 D19 E19 A18 C18 C19 A17 F19 B18",
+     "caption": "The tree's line, marked S[KO-]. Black to play: Black 5 is in atari, and White can take the ko at A19."
+    },
+    {
+     "start": "B19 D17 D19 E19 A18 C18 C19 A17 F19 B18",
+     "moves": "A15 A19 A18! pass A16 A19 A18! pass D18",
+     "caption": "With two threats more than White, Black kills. Black 11 prepares, White 12 takes the ko at once, and Black 13 retakes with the first threat. Black 15, the approach, puts White in atari, and White 16 retakes without a threat, since Black 15 captured nothing. Black 17 retakes with the second threat, and Black 19 captures the group."
+    },
+    {
+     "start": "B19 D17 D19 E19 A18 C18 C19 A17 F19 B18",
+     "moves": "A16 A19 A18! A15",
+     "caption": "The tree's idea, the approach at once, fails: Black 11 is alone in atari. After Black 13 retakes, White 14 captures Black 11, and White can then retake at A19 without a threat. Black fails with one threat more than White, and even with two."
+    },
+    {
+     "start": "B19 D17 D19 E19 A18 C18 C19 A17 F19 B18",
+     "moves": "A15 A19 A18! pass A16 A19",
+     "caption": "With one threat more than White, Black 13 retakes with it. After Black 15, the approach, White 16 retakes without a threat, and Black has none left: White next captures three stones at D18."
+    }
+   ],
+   "text": [
+    "Black 5 is in atari, and White's capture at A19 also threatens Black's three edge stones. Black's retake threatens nothing until an approach puts White in atari. The tree's idea, approaching at once, fails (Diagram 3): Black 11 there is alone in atari, White 14 captures it, and White can retake at A19 without a threat. So Black first prepares with Black 11 in Diagram 2, and White 12 takes at once. Black kills with two threats more than White (Diagram 2) and fails with one (Diagram 4).",
+    "If White waits instead of taking with White 12, Black's approach forces the take and Black wins with one threat, so White takes at once. That is A-1KO-: one approach, and White takes first. Black 11 in Diagram 2 comes before the first take, so it is a preparation, not a second approach, as in 10005, which you marked S[A-1KO-]; S[A-2KO+] would have the same count. Structure and count agree, so question 4 does not arise. Under the open approach-label decision the counted form is S[KO-2]; the tree's KO− is wrong either way.",
+    "Both reviewers agree. The count is exactly two in the narrow area and with the left edge open, and at most two in the wide area; only Black 11 in Diagram 2 reaches it. The solver's bent-four test stays undecided, but by reading no bent four can arise. The checker printed A-1KO? and could not finish it; it also took J18, a move elsewhere, for Black's preparation.",
+    "besogo ranks KO− above both A-1KO- and KO-2 for Black, so the tree overstates Black's result at this leaf. No grade changes: Black's other move 3 in the tree, E19, ends in S[KO+], which ranks above all three."
+   ]
+  }
+ ]
+}

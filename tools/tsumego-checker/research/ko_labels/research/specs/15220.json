@@ -1,0 +1,20 @@
+{
+ "problem": "15220",
+ "cards": [
+  {
+   "case": "k051",
+   "headline": "White took first but needs one approach, at D18; Black lives at equal threats: S[A+1KO-] as an approach ko, the tree's S[KO+] counted. The checker's KO− is wrong.",
+   "diagrams": [
+    {"start": "", "moves": "C19 D19 A16 A18 B18 A17 A19 B19", "caption": "The tree's line to the leaf marked S[KO+]; the checker says KO−. White 8 captures Black 7 and takes the ko first, but Black is not in atari. Black to play."},
+    {"start": "C19 D19 A16 A18 B18 A17 A19 B19", "moves": "pass D18 A19 pass B17", "caption": "Black 9 plays elsewhere. White 10, the approach, puts Black in atari, and Black 11 retakes without a threat, since White 10 captured nothing. White has no threat, and Black 13 captures two stones: alive with as many threats as White (here none)."},
+    {"start": "C19 D19 A16 A18 B18 A17 A19 B19", "moves": "pass A19 B17 A18 A19 B19 E19 D18 A19 pass A17", "caption": "Black 9 plays elsewhere and White 10 throws in. Black 11 takes four stones, and White 14 takes a bent-four ko first, which threatens to kill at once. Black 15 threatens to capture at D18 for a second eye, so White 16 connects there; Black 17 retakes without a threat, and Black 19 captures: alive. The solver decides this in one of its two models of the open right side; in the other it rests on reading."},
+    {"start": "C19 D19 A16 A18 B18 A17 A19 B19", "moves": "E19 A19 B17 A18 D18 F19 G19", "caption": "Black 9 plays E19 at once. White 10 throws in, Black 11 takes four stones, and Black 13 captures a stone for a second eye at D19. White 14 is self-atari, and Black 15 takes it: alive. In the checker's search area G19 is a White wall, so White 14 can never be captured there and Black fails."}
+   ],
+   "text": [
+    "White 8 took the ko first, but its capture is not atari, so Black can play elsewhere once. If White then fills D18, its approach, Black retakes without a threat, while Black's own retake threatens to capture at once (Diagram 2). Black lives with as many threats as White and dies with one fewer. White's other try, the throw-in in Diagram 3, also fails, but only because Black 15 is a local threat inside the bent-four ko it starts. So question 5 does not arise here.",
+    "Which label to write is the open approach-label decision. As an approach ko it is S[A+1KO-]: White needs one approach and took first. The checker already prints that as its alternative; with the right side open, its own label code stays undecided, so this label is read by hand from the solver's searches. Counted, it is S[KO+], the tree's label, with the same count. besogo grades every move the same either way.",
+    "The checker's KO− is wrong under both answers. In its search area G19 is a White wall, so White 14 in Diagram 4 can never be captured and Black 9 fails there. Black 15 in Diagram 3 fails there too, so Black cannot play elsewhere, and the checker asks Black for one threat more. On the board both work; the solver decides the count in both its models of the open right side. The first report found this count and this cause, but missed the approach form and wrongly said Black must play E19 at once."
+   ]
+  }
+ ]
+}

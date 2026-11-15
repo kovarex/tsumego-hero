@@ -1,0 +1,118 @@
+{
+ "problem": "7487",
+ "cards": [
+  {
+   "case": "k008",
+   "headline": "Question 4: by the count Black needs no more threats than White, S[KO+]; by the structure the tree's S[A-1KO-] stands, or S[KO-2] with question 3's other answer.",
+   "diagrams": [
+    {"start": "", "moves": "B18 C17 G18 A18 A17 A16 A19 F18 E19 F19 C18 B17 D18 A18", "caption": "The tree's line, marked S[A-1KO-]; the checker left the approach count and the ko sign undecided. White 14 has just taken the ko by capturing Black 5, so Black needs a ko threat to retake at A17."},
+    {"start": "B18 C17 G18 A18 A17 A16 A19 F18 E19 F19 C18 B17 D18 A18", "moves": "A17! C19 A15 A18", "caption": "The structure: Black retakes at once. Black 15 retakes after a ko threat elsewhere, and White 16 answers at C19. Black's capture threatens again only after Black 17, and White 18 retakes without a threat. Black needs a second threat: two more than White in all."},
+    {"start": "B18 C17 G18 A18 A17 A16 A19 F18 E19 F19 C18 B17 D18 A18", "moves": "A15 C19 A17", "caption": "The count, against C19. Black plays A15 first, as Black 15, and White must answer it. After White 16, Black 17 retakes without a threat, since White 16 captured nothing: a direct ko that Black has taken."},
+    {"start": "B18 C17 G18 A18 A17 A16 A19 F18 E19 F19 C18 B17 D18 A18", "moves": "A15 B19 C19 E18 A19 D19 A17 pass G19", "caption": "The count, against B19. White 16 takes Black's stone at A19 and ends the ko at A17. Black 17 ataris White 16, and after White 18, Black 19 takes a second ko first and puts the stone at A18 back in atari. White 20 takes Black's stone at E19, Black 21 captures at A17, and Black wins with equal threats."}
+   ],
+   "text": [
+    "Question 4 asks whether the label describes the ko when Black retakes at once (the structure) or Black's best order (the count). Retaking at once, Black needs two threats more than White (Diagram 2). Black does better to play A15 (or G19) first, which White must answer. Against White's C19, Black then retakes for free (Diagram 3); against White's B19, which ends the ko at A17, Black takes a second ko first (Diagram 4). Either way Black wins with as many threats as White and fails with one fewer.",
+    "By the count the leaf is S[KO+]. By the structure it keeps your S[A-1KO-] if Black 17 in Diagram 2 is an approach, question 3's proposal, and becomes S[KO-2] if it is an extra move inside the ko. No move's grading changes under any of the three. The count has medium confidence: it is decided in the checker's search area, but in the wider area only Black's win with equal threats is."
+   ]
+  },
+  {
+   "case": "k009",
+   "headline": "White 16 took the ko first, so Black needs a threat to retake: S[A-1KO-], two threats more than White, not the tree's S[A-1KO+].",
+   "diagrams": [
+    {"start": "", "moves": "B18 C17 G18 A18 A17 A16 A19 F18 C18 D18 E19 D19 C19 B17 F19 A18", "caption": "The tree's line, marked S[A-1KO+]; the checker says S[A-1KO-]. White 16 takes the ko by capturing Black 5, so Black may not retake at A17 at once."},
+    {"start": "B18 C17 G18 A18 A17 A16 A19 F18 C18 D18 E19 D19 C19 B17 F19 A18", "moves": "pass B19", "caption": "White took first: if Black 17 plays elsewhere, White 18 takes four stones. Every Black move but the retake at A17 loses this way."},
+    {"start": "B18 C17 G18 A18 A17 A16 A19 F18 C18 D18 E19 D19 C19 B17 F19 A18", "moves": "A17! pass A15 A18 A17! pass E18", "caption": "Black 17 retakes after a ko threat elsewhere, and White 18 plays elsewhere. Black 19 is the approach, and White 20 retakes without a threat. Black 21 retakes after a second threat, and Black 23 takes 12 stones: S[A-1KO-], two threats more than White."},
+    {"start": "B18 C17 G18 A18 A17 A16 A19 F18 C18 D18 E19 D19 C19 B17 F19 A18", "moves": "A17! G19 A15 A18 A17! E18 F19 A18 pass B19", "caption": "White's best first round. White 18 puts two Black stones in atari, and Black 19 approaches anyway. Black 21 retakes with the second threat, White 22 takes the two stones, and after White 24 retakes, Black has no third threat: White 26 takes four stones."}
+   ],
+   "text": [
+    "White 16 has just captured at A18, and Black's four corner stones are in atari at B19, so White took first (Diagram 2). Black must retake with a threat, approach at A15, let White retake for free, and retake with a second threat (Diagram 3). That is S[A-1KO-]. The tree's S[A-1KO+] would have Black take first, which Black cannot.",
+    "White 18 in Diagram 4 is worth one more threat to White in the first approach round, so Black needs three threats more in all. By your c121 rule that gain belongs to the approach, so the label stays S[A-1KO-] (strictly S[A-1KO-2]). The tree's other leaves where White has just retaken at A18 are all S[A-1KO-]. The fix changes no grading."
+   ]
+  },
+  {
+   "case": "k010",
+   "headline": "Question 3: with Black 17 an approach, the tree's S[A-1KO+] stands; as a move inside the ko, S[KO-]. Black needs one threat more either way.",
+   "diagrams": [
+    {"start": "", "moves": "B18 C17 G18 A18 D19 B19 C18 D18 E19 B17 C19 F19", "caption": "The tree's line, marked S[A-1KO+]; the checker says S[KO-]. Black's chain of five stones is in atari at E18, so Black must take the ko at A19."},
+    {"start": "B18 C17 G18 A18 D19 B19 C18 D18 E19 B17 C19 F19", "moves": "A19 F18 A17 A16 A15 A18 A17!", "caption": "Black 13 takes the ko first. White 14 is a local threat, and Black 15 answers by capturing at A17. After White 16, Black 17 is the extra move, and White 18 captures in a second ko without a threat. With one threat more than White, Black 19 retakes and connects at A18 next."},
+    {"start": "B18 C17 G18 A18 D19 B19 C18 D18 E19 B17 C19 F19", "moves": "A19 F18 A17 A16 A15 A18 G19 B19 pass E18", "caption": "With equal threats Black cannot retake at A17. After Black 19, White 20 retakes the first ko, and White 22 takes five stones."}
+   ],
+   "text": [
+    "Black 13 takes the ko first and threatens to kill at once. White 14 must be answered: if Black plays elsewhere, White wins even when Black has three threats more. After White 16, Black needs two moves in a row. Black 17 is the first; White can answer it only by capturing at A18 for free, and Black needs one threat more than White (Diagrams 2 and 3).",
+    "That is question 3's shape, after one more exchange and with White's free capture in a second ko. Read as an approach, question 3's proposal, Black 17 makes the tree's S[A-1KO+] right; read as an extra move inside the ko, with White 14 counted as a local threat, the leaf is S[KO-], the checker's label. Both need the same threats; besogo ranks S[KO-] above S[A-1KO+] for Black. No move's grading changes either way. The count is decided only in the checker's search area."
+   ]
+  },
+  {
+   "case": "k011",
+   "headline": "Black needs three threats more than White, so the tree's S[A-1KO-] is one short. Question 3 decides between S[A-1KO-2] and S[A-2KO-]; counted labels give S[KO-3].",
+   "diagrams": [
+    {"start": "", "moves": "B18 C17 A18 A17 C18 G18 G19 F19 H19 D18 D19 E19 B17 A16 B19 C19", "caption": "The tree's line, marked S[A-1KO-]; the checker says S[A-1KO-2]. White 16 takes the ko by capturing Black 11. Black's corner is in atari at A19, and Black may not retake at D19 at once."},
+    {"start": "B18 C17 A18 A17 C18 G18 G19 F19 H19 D18 D19 E19 B17 A16 B19 C19", "moves": "D19! pass F18 C19 D19! E18 A15 C19 D19! pass F18", "caption": "Black 17 retakes after a threat elsewhere. Black 19 approaches, and White 20 retakes for free. Black 21 retakes after a second threat and puts two stones in atari, so White 22 takes Black 19. Black 23 is the extra move, and White 24 retakes for free. Black 25 retakes after a third threat, and Black 27 takes 14 stones. With two threats, Black has none for Black 25."}
+   ],
+   "text": [
+    "White 16 took first, and Black needs three threats more than White, not the two your S[A-1KO-] implies (Diagram 2). Black's best order starts with the approach Black 19. Black's next retake then threatens two stones, White's only answer is to take Black 19, and Black needs one more move, Black 23, which White can answer only by retaking. That is question 3's shape, after a first approach.",
+    "If Black 23 is an extra move inside the ko, the label is S[A-1KO-2], the checker's. If it is a second approach, question 3's proposal, it is S[A-2KO-]; with counted labels, S[KO-3]. The tree's S[A-1KO-] is wrong under every answer. No move's grading changes with any of the three."
+   ]
+  },
+  {
+   "case": "k012",
+   "headline": "The tree's S[ADKO] is right: a real double ko, where each White capture is free. The checker's KO came from an old end rule in its double-ko test.",
+   "diagrams": [
+    {"start": "", "moves": "B18 C17 A18 A17 F19 E19 E18 G19 D19 C19 C18 D18 B19 F18 G18 E19 H19 B17", "caption": "The tree's line, marked S[ADKO]; the checker said KO. Black to play. Black can capture at F19 and White at C19, so there are two kos."},
+    {"start": "B18 C17 A18 A17 F19 E19 E18 G19 D19 C19 C18 D18 B19 F18 G18 E19 H19 B17", "moves": "F19 C19 D19! G19", "caption": "Black 19 takes one ko, and White 20 captures in the other, putting Black's corner in atari at A19. Black 21 must retake after a ko threat, and White 22 retakes the first ko without one. The leaf's position is back, and Black has spent a threat."}
+   ],
+   "text": [
+    "Each White capture gives White's group a liberty back, and the one at C19 also puts Black's corner in atari. So whenever Black holds both kos it is White's move, and White captures in the other ko for free (Diagram 2). Black never gets to play the killing move at E18: even with A15 and A16 given to Black for free, Black fails with 15 threats against none. The checker's double-ko test ended the game after two passes and counted White's ko stone at G19, in atari, as captured."
+   ]
+  },
+  {
+   "case": "k013",
+   "headline": "Black wins even when White has one threat more, so the tree's S[KO+] is one threat short. Question 3, colours reversed: S[KO+2] or S[A+1KO+].",
+   "diagrams": [
+    {"start": "", "moves": "B18 C17 A18 A17 E19 F19 C18 G18 D18 E18 D19 B19 H19 B17 G19 C19 F18", "caption": "The tree's line, marked S[KO+]; the checker says S[KO+2]. Black 17 takes the ko, and White's eleven stones are in atari at A16, so White must retake at F19 with a threat."},
+    {"start": "B18 C17 A18 A17 E19 F19 C18 G18 D18 E18 D19 B19 H19 B17 G19 C19 F18", "moves": "F19! A19 B19 F18 F19! pass C19", "caption": "White with two threats more. White 18 retakes after a threat and puts six Black stones in atari; Black 19 takes two stones. White 20 is the extra move, an atari protected by a snapback, and Black 21 retakes for free. White 22 retakes after a second threat, and White 24 takes seven stones."},
+    {"start": "B18 C17 A18 A17 E19 F19 C18 G18 D18 E18 D19 B19 H19 B17 G19 C19 F18", "moves": "F19! A19 B19 F18 pass A16", "caption": "With only one threat more, White has none left after Black 21, and Black 23 takes eleven stones."}
+   ],
+   "text": [
+    "Black 17 took the ko first. White's retake puts Black's corner in atari, but Black answers by taking two stones, and White then needs one more move, White 20, before its retake threatens again; Black retakes for free in between. So White needs two threats more than Black (Diagrams 2 and 3). The tree's S[KO+] lets White win with one more: it is one threat short.",
+    "This is question 3 with the colours reversed. Read as White's approach, question 3's proposal, White 20 gives S[A+1KO+], your notation for the same shape in 13262; read as an extra move inside the ko, S[KO+2], the checker's label. White 20 can also be at C19. No move's grading changes with either label."
+   ]
+  },
+  {
+   "case": "k014",
+   "headline": "Question 8: on the open board the tree's S[KO+] stands; walled where the solver's areas end, the leaf is S[KO+2]; closed by Black stones at A14 and B14, S[DDKO].",
+   "diagrams": [
+    {"start": "", "moves": "B18 C17 A18 A17 G18 F18 C18 D19 F19 E19 D18 G19 H19 B19 C19 E18 F19", "caption": "The tree's line, marked S[KO+]; the checker says S[KO+2]. Black 17 takes the ko by capturing White 12, and White may not retake at G19 at once."},
+    {"start": "B18 C17 A18 A17 G18 F18 C18 D19 F19 E19 D18 G19 H19 B19 C19 E18 F19", "moves": "G19! A16 A15 F19 B14 G19 C14 D15 D14", "caption": "The open board, White one threat ahead. White 18 retakes after a threat, Black 19 ataris the stone at A17, White 20 captures Black 19, and Black 21 retakes without a threat. After White 22, Black 23 must connect the ko; White 24 forces Black 25, and White 26 runs into the empty lower left, still joined to White 20. Black fails. This is reading; the engine could not decide it."},
+    {"start": "B18 C17 A18 A17 G18 F18 C18 D19 F19 E19 D18 G19 H19 B19 C19 E18 F19", "moves": "G19! A16 A15 F19 B14 G19 C14 D15", "labels": {"D14": "a"}, "caption": "Walled where the solver's wider area ends, a is Black's wall: after Black 25 White's stones cannot get out, and Black wins with White one threat ahead: S[KO+2]. The narrow area does not even let White play White 22."},
+    {"start": "B18 C17 A18 A17 G18 F18 C18 D19 F19 E19 D18 G19 H19 B19 C19 E18 F19", "moves": "G19! A16 A15", "labels": {"A14": "a", "B14": "b"}, "caption": "With Black stones at a and b, White 20's capture makes a second ko, at A16. The two kos alternate, and the leaf is S[DDKO]."}
+   ],
+   "text": [
+    "Black 17 took the ko first. Black 19 is a local threat, and White 20 captures it. Whether that exchange gains Black a threat depends on the empty board below. On the open board, as the site shows it (question 8's proposal), White 20 runs out with White 22, 24 and 26 (Diagram 2), so Black needs as many threats as White: the tree's S[KO+].",
+    "Walled where the solver's areas end, White 20 is wasted and the leaf is S[KO+2], the checker's label (Diagram 3). With Black stones at A14 and B14 it is S[DDKO] (Diagram 4). The open-board line is reading; the engine could not decide the running fight. No move's grading changes with any of the three."
+   ]
+  },
+  {
+   "case": "k015",
+   "headline": "After White 20 takes the ko, Black 21 kills outright: White can fill neither of its last two liberties. S[DEAD], not the tree's S[A+1KO-].",
+   "diagrams": [
+    {"start": "", "moves": "B18 C17 A18 A17 G18 F18 C18 D18 E19 F19 D19 C19 B19 E18 G19 C19 D19 E19 A15 C19", "caption": "The tree's line, marked S[A+1KO-]; the checker says S[DEAD]. White 20 takes the ko by capturing Black 17, and Black may not retake at D19 at once."},
+    {"start": "B18 C17 A18 A17 G18 F18 C18 D18 E19 F19 D19 C19 B19 E18 G19 C19 D19 E19 A15 C19", "moves": "A16", "labels": {"B17": "a", "D19": "b"}, "caption": "Black 21 leaves White's big group two liberties, a and b. The stone at A17 is in atari at a and the ko stone at C19 at b, and filling either point puts White's whole group in atari."},
+    {"start": "B18 C17 A18 A17 G18 F18 C18 D18 E19 F19 D19 C19 B19 E18 G19 C19 D19 E19 A15 C19", "moves": "A16 B17 D19", "caption": "White 22 fills one liberty, and Black 23 takes 15 stones. White loses the same way at D19, and if White plays elsewhere, Black captures at B17 and White can never fill D19."}
+   ],
+   "text": [
+    "White 20 has just taken the ko, but Black does not need it. After Black 21, White can fill neither liberty, so Black kills whatever White plays, against any number of ko threats (Diagrams 2 and 3). There is no ko and no approach: the leaf is S[DEAD], as the checker says. The tree's S[A+1KO-] fits only if Black plays elsewhere instead of Black 21. With the fix, Black 19 becomes a correct move (see below)."
+   ]
+  }
+ ],
+ "grading": {
+  "text": [
+   "One move changes: Black's move 19 at a in Diagram 1 becomes correct, alongside the tree's b. It was wrong while its line ended in S[A+1KO-]. A checker tried to show the new mark wrong and found it right: after White 20 takes the ko, Black 21 kills (Diagram 2), and White's other answers to a are self-atari or let Black connect at C19. So a kills as b does; the open edge below does not matter, since a closes it.",
+   "The k009 fix changes no marks: it sits under Black's move 3 at G18, a ko line already wrong because A18 kills. The decision leaves change no marks under any answer. Not needed for the grading, but useful: the tree's line for a stops before Black 21, the only killing answer there; adding it would test it. Black's move 19 at c in Diagram 1 also kills but is not in the tree."
+  ],
+  "diagrams": [
+   {"start": "B18 C17 A18 A17 G18 F18 C18 D18 E19 F19 D19 C19 B19 E18 G19 C19 D19 E19", "moves": "", "labels": {"A15": "a", "C19": "b", "B17": "c"}, "caption": "Black to play move 19; Black's stone at D19 is in atari. The tree's correct answer is b; after the fix the site also accepts a. c kills too."},
+   {"start": "B18 C17 A18 A17 G18 F18 C18 D18 E19 F19 D19 C19 B19 E18 G19 C19 D19 E19", "moves": "A15 C19 A16", "caption": "The tree's line for a ends with White 20, now marked S[DEAD]. Black 21 kills: White can fill neither B17 nor D19."}
+  ]
+ }
+}

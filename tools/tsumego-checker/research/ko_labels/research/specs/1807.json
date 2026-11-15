@@ -1,0 +1,25 @@
+{
+ "problem": "1807",
+ "cards": [
+  {
+   "case": "k004",
+   "headline": "The tree's KO− is right: White took first, and Black needs one threat more. The checker's A-1KO+ reads a capture in a second ko as an approach.",
+   "diagrams": [
+    {
+     "start": "",
+     "moves": "A16 B18 A18 A17",
+     "caption": "The tree's line. White 4 captures Black 3, taking the ko first, and puts Black's seven stones in atari at C18. The tree marks the leaf S[KO-]; the checker said A-1KO+."
+    },
+    {
+     "start": "A16 B18 A18 A17",
+     "moves": "A18! pass B19 A19! pass A17",
+     "caption": "Black 5 retakes after a threat elsewhere, and White 6 plays elsewhere, ignoring it. Black 7 captures White's stone at A19, a second ko, and threatens to live at C18; White's other local moves are suicide, so White 8 retakes after a threat elsewhere. Black's local moves lose, and Black 9 plays elsewhere. White 10 takes the first ko again: back at the leaf, each side has spent one threat and played once elsewhere."
+    }
+   ],
+   "text": [
+    "Black lives with one threat more than White and dies with equal threats, in both search areas: KO−; the checker's count agrees. Black has no real approach: in place of Black 7, its other local moves are self-ataris.",
+    "Because White can ignore Black 5 once, the checker's forced-pass test sees an approach in Black 7. But Black 7 captures in a second ko: White has no free retake after it and must spend a threat on White 8, as Black did on Black 5. White 10 brings back the leaf, so this is a plain direct ko under either answer to question 1b. The checker's own warning gives it away: no free retake after the approach. After White 6 the checker makes the same error the other way, calling White's capture at A17 an approach."
+   ]
+  }
+ ]
+}
