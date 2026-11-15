@@ -317,9 +317,11 @@
 	text-decoration: none;
 }
 
+/* A button on its own line, centred: flex like every .btn, so its label stays centred in its height */
 .profile-header__message
 {
-	display: table;
+	display: flex;
+	width: fit-content;
 	margin: 0 auto var(--space-2);
 }
 }

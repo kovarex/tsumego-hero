@@ -51,7 +51,7 @@ export function BarChart({ title, categories, series, header }: Props)
 							{series.map((oneSeries, seriesIndex) => shown[seriesIndex] && oneSeries.values[index] > 0 && (
 								<span key={oneSeries.label} className="bar-chart__segment" data-label={oneSeries.label}
 									style={{ width: percent(oneSeries.values[index]), background: oneSeries.color }}>
-									{oneSeries.values[index]}
+									<span className="bar-chart__value">{oneSeries.values[index]}</span>
 								</span>
 							))}
 							<span className="bar-chart__total">{formatChartValue(totals[index])}</span>

@@ -1518,14 +1518,22 @@
 	padding-right: var(--bar-chart-total-space);
 	border-bottom: 1px solid var(--chart-grid-color);
 }
+/* The number sits in the middle of its bar: one line no taller than the text, centred in the bar's height */
 .bar-chart__segment {
+	display: flex;
+	align-items: center;
+	justify-content: center;
 	height: 70%;
 	overflow: hidden;
 	color: var(--chart-tooltip-text-color);
 	font-weight: var(--weight-bold);
-	text-align: center;
-	line-height: 1.6;
+	line-height: 1;
 	box-shadow: inset -1px 0 0 var(--chart-separator-color);
+}
+/* The digits' own height is centred, not the font's ascender and descender (a flex item, so a block, which text-box
+   trims; where text-box is not supported the line is centred, a little low) */
+.bar-chart__value {
+	text-box: trim-both cap alphabetic;
 }
 .bar-chart__total {
 	padding-left: var(--space-1);
