@@ -469,7 +469,7 @@ class TimeModeTest extends IntegrationTestCase
 
 		$browser->playWithResult($conditions['actuallySolvedSession'] ? 'S' : 'F'); // mark the problem solved
 		$browser->find('#besogo-next-button')->click();
-		$browser->find('.timeModeTable', 10); // wait for result page to load
+		$browser->find('.time-results', 10); // wait for result page to load
 
 		$this->assertEmpty($this->fetchTable('TimeModeSession')->find()->where([
 			'user_id' => Auth::getUserID(),

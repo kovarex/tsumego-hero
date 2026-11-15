@@ -24,7 +24,7 @@ class TagsUserTest extends IntegrationTestCase
 
 		$this->assertTextContains('lonely', $this->view);
 		// No legacy classes in the table
-		$this->assertStringNotContainsString('timeTableLeft', $this->view);
+		$this->assertStringNotContainsString('sgf-versions__cell--first', $this->view);
 	}
 
 	//All six contribution types render with correct labels and status colors.

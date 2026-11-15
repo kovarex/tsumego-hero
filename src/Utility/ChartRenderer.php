@@ -23,7 +23,7 @@ class ChartRenderer
 	public static function ratingLine(string $title, array $dailyResults): string
 	{
 		$points = array_map(fn($row) => [$row['day'], $row['Rating'] === null ? null : (int) $row['Rating']], $dailyResults);
-		return self::line($title, [['label' => 'Rating', 'color' => '#74d14c', 'axis' => 'left', 'fill' => false, 'points' => $points]], 'day', 360, false, 'timeGraph', true);
+		return self::line($title, [['label' => 'Rating', 'color' => '#74d14c', 'axis' => 'left', 'fill' => false, 'points' => $points]], 'day', 360, false, 'rating-chart', true);
 	}
 
 	//A line over time with the range buttons 1M · 6M · 1Y · All above it (app/charts/RangeChart.tsx), every range of
@@ -44,7 +44,7 @@ class ChartRenderer
 	//The rating chart of a profile, UserProfile::ratingRanges(), on an axis of ranks
 	public static function ratingRanges(array $ranges): string
 	{
-		return self::ranges('Overall rating', 'Rating', '#74d14c', $ranges, true, false, 'timeGraph');
+		return self::ranges('Overall rating', 'Rating', '#74d14c', $ranges, true, false, 'rating-chart');
 	}
 
 	//The "Site Growth" chart of the home page (app/charts/GrowthChart.tsx): the problems and the users month by month

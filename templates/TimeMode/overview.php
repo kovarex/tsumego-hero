@@ -57,11 +57,11 @@ foreach ($timeModeCategories as $timeModeCategory)
 		<?php if ($unlocked): ?>
 		<a class="time-mode__rank-link" href="/timeMode/start?categoryID=<?php echo $timeModeCategory->id; ?>&rankID=<?php echo $rankID; ?>">
 			<img src="/img/rankButton<?php echo $rank; ?>.png" data-hover-src="/img/rankButton<?php echo $rank; ?>hover.png">
-			<div class="imageContainerText2"> <img class="timeModeIcons" src="/img/timeModeStored.png"><?php echo $timeModeRank['tsumego_count']; ?></div>
+			<div class="imageContainerText2"> <img class="time-mode-icon" src="/img/timeModeStored.png"><?php echo $timeModeRank['tsumego_count']; ?></div>
 		</a>
 		<?php else: ?>
 		<img src="/img/rankButton<?php echo $rank; ?>inactive.png">
-		<div class="imageContainerText2"> <img class="timeModeIcons" src="/img/timeModeStored.png"><?php echo $timeModeRank['tsumego_count']; ?></div>
+		<div class="imageContainerText2"> <img class="time-mode-icon" src="/img/timeModeStored.png"><?php echo $timeModeRank['tsumego_count']; ?></div>
 		<?php endif; ?>
 	</div>
 	<?php

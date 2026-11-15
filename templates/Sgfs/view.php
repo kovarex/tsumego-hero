@@ -51,24 +51,24 @@ else
 		for($i = 0; $i < count($versions); $i++)
 		{
 			echo '<tr id="' . $versions[$i]['id'] . '">
-			<td class="timeTableLeft versionColor legacy-center">
+			<td class="sgf-versions__cell--first sgf-versions__cell legacy-center">
 				<time datetime="' . Util::toIso8601($versions[$i]['created']) . '" data-format="datetime">' . $versions[$i]['created'] . '</time>
 			</td>
-			<td class="timeTableMiddle versionColor legacy-left">';
+			<td class="sgf-versions__cell--middle sgf-versions__cell legacy-left">';
 			if($versions[$i]['user_id'] === null)
 				echo 'automatically generated';
 			else
 				echo '<a href="/sgfs/view/' . $versions[$i]['tsumego_id'] . '?user=' . $versions[$i]['user_id'] . '">' . h($versions[$i]['user']) . '</a>';
 			echo '</td>';
-			echo '<td class="timeTableMiddle versionColor legacy-left">';
+			echo '<td class="sgf-versions__cell--middle sgf-versions__cell legacy-left">';
 			if($type == 'tsumego')
 				echo '<a href="/tsumegos/play/' . ($versions[$i]['tsumego_id']) . '"> ' . h($versions[$i]['title']) . '</a> ';
 			else
 				echo '<a href="/sgfs/view/' . $versions[$i]['tsumego_id'] . '"> ' . h($versions[$i]['title']) . '</a> ';
 			echo '<a href="/sgfs/view/' . $versions[$i]['tsumego_id'] . '" id="dl1-' . $versions[$i]['id'] . '" data-download="' . h($versions[$i]['title'] . ' v' . $versions[$i]['version'] . '.sgf') . '">v ' . $versions[$i]['version'] . '</a>';
 			echo '</td>';
-			echo '<td class="timeTableMiddle versionColor proposal-description legacy-left" id="description-' . $versions[$i]['id'] . '">' . SgfDescription::render($versions[$i]['description'] ?? null) . '</td>';
-			echo '<td class="timeTableRight versionColor legacy-left">
+			echo '<td class="sgf-versions__cell--middle sgf-versions__cell proposal-description legacy-left" id="description-' . $versions[$i]['id'] . '">' . SgfDescription::render($versions[$i]['description'] ?? null) . '</td>';
+			echo '<td class="sgf-versions__cell--last sgf-versions__cell legacy-left">
 			<a id="open-' . $versions[$i]['id'] . '" class="openHistoryPointLink" href="/editor?sgfID=' . (int) $versions[$i]['id'] . '">open</a>&nbsp;&nbsp;&nbsp;';
 			if ($versions[$i]['diff'])
 				echo '<a id="compare-' . $versions[$i]['id'] . '" class="openDiff" href="/editor?sgfID=' . $versions[$i]['id'] . '&diffID=' . $versions[$i]['diff'] . '" data-compared-with="' . (int) $versions[$i]['diff'] . '">diff</a>&nbsp;&nbsp;&nbsp;';
