@@ -804,3 +804,37 @@ Scripts and logs are in `/tmp/claude-0/proto/research/kodesign/judge/`:
 Design 2's engine on c027 (`structure/ks.py … count 0 o --endplay`): Black wins at o = 4, 6 and 8.
 
 The judge used about 2 minutes of engine time in total. The longest single search took 18 s.
+
+---
+
+## Addendum (15 November): what the question page found
+
+The page `research/questions/` (question 1's inventory is in `research/questions/inventory/`) checked the design's
+claims about mutual approach and three single leaves against the owner's own labels and definitions. Changes the
+implementation needs, pending the owner's answers:
+
+1. **D9 needs the switch test.** "Each side needs one approach" covers two different shapes. When both sides need the
+   same move (a liberty both groups share), one investment makes the other side's free retake a real threat at once:
+   that is the owner's 10kKO (10391, 10393, 15513, 15516, c081). When the approaches are at different points and the
+   free retake still needs its own approach, the ko switches there and back: the owner's plain KO, from the count.
+   Printing 10kKO for every mutual 1/1 (D9 as written) is wrong for the second shape (7487 leaf 98). A second ko that
+   gives one side a direct threat makes the reading ambiguous (7487): mark such leaves for the owner.
+2. **10408 is not mutual** (White's capture threatens at once), and **10403's and 9883's A+1 labels are not graded
+   like 10kKO** (in a KILL problem 10kKO ranks like A-1). Section 11 risk 4 and open question 2 are wrong on both.
+3. **Section 13 question 3 is wrong about grading:** c081's label changes no move's grade in 15220.
+4. **c014:** read by the owner's approach-ko definition, the label is A-1KO+ (only Black needs E19, and White can
+   win the ko once at any time), not KO-. If he agrees, replace the D7 stage fallback: when X's capture is a threat
+   that Y answers locally without retaking, count X's approaches from the position after Y's answer, confirmed by
+   D4, and pick the approach that keeps the best count (E19, not F19 or F18).
+5. **10005:** E19 is the capture, not an approach (D3's alternatives admit moves that fail once the opponent may
+   answer); the approach is G19. White can also wait before taking, with the same count, and D2's canonical loser
+   order may then build the principal line with White passing, which gives A+1KO-2 instead of A-1KO-. The first take
+   needs a rule for this.
+6. **Semeai shapes:** D3 counts 3 or 4 approaches where the count is one threat (13541 leaves 1 and 6, 11280 leaves 9
+   and 18, 13475 leaf 8). Approaches there come with tempo (section 11 risk 2 is real), so the approach count needs a
+   bound from the count before it is printed.
+7. **2406:** in the corner frame A16:F19 the prototype engine gives d = -1 (White 2, Black 0), not the d = 0 and
+   mutual 1/1 of section 10.
+8. **The tree is not consistent:** identical profiles and counts carry 10kKO and A-1KO+ (13547 leaves 1 and 2;
+   15516 against 13549 leaf 10), so no rule reproduces every tree label; the checker reports such leaves as notation
+   or for the owner, never silently.
