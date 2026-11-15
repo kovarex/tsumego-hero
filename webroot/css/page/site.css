@@ -256,7 +256,8 @@ li a.menuLi.nav__link--active {
 .xp-bar-fill-c3 {
   background-image: linear-gradient(var(--color-orange-1), var(--color-orange-2));
 }
-.xp-text-fill-c3x {
+/* The name in the account bar during a time mode run (TimeModePages.js), over the green of #account-bar-user a */
+#account-bar-user .xp-text-fill-c3x {
   color: var(--color-orange-ink);
 }
 #xp-increase-fx {
@@ -513,7 +514,8 @@ nav ul .menuIcons1 {
   width: fit-content;
   margin: 0 auto;
 }
-.historyLink {
+/* A red link of the problem's info, over the colour of .selectable-text (play.css, loaded after this file) */
+a.historyLink {
   color: var(--color-red);
 }
 .historyLink2 {
