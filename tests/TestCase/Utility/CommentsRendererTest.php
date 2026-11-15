@@ -57,7 +57,7 @@ class CommentsRendererTest extends IntegrationTestCase
 		$this->login('kovarex');
 
 		$all = $this->render(null);
-		$this->assertMatchesRegularExpression('/<div class="commentBox2 text-muted" id="comment_\d+">\[You need to solve this problem to see the comment\]<\/div>/', $all);
+		$this->assertMatchesRegularExpression('/<div class="comment-text--admin text-muted" id="comment_\d+">\[You need to solve this problem to see the comment\]<\/div>/', $all);
 		$this->assertStringNotContainsString('admin comment', $all);
 	}
 

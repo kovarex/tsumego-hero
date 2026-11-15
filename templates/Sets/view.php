@@ -111,9 +111,9 @@ if ($tsumegoFilters->query != 'topics')
 				<?php if(Auth::isLoggedIn())
 				{ ?>
 					<?php
-					echo '<div class="setViewCompleted"><b>Completed: ' . $problemSolvedPercent . '%</b></div>';
-					echo '<div class="setViewAccuracy"><b>Accuracy: ' . $accuracy . '%</b>' . ($bestAccuracy !== null ? ' &middot; Best: ' . $bestAccuracy . '%' : '') . '</div>';
-					echo '<div class="setViewTime"><b>Avg. time: ' . $avgTime . 's</b>' . ($bestTime !== null && $bestTime != 60 ? ' &middot; Best: ' . $bestTime . 's' : '') . '</div>';
+					echo '<div class="set-view__completed"><b>Completed: ' . $problemSolvedPercent . '%</b></div>';
+					echo '<div class="set-view__accuracy"><b>Accuracy: ' . $accuracy . '%</b>' . ($bestAccuracy !== null ? ' &middot; Best: ' . $bestAccuracy . '%' : '') . '</div>';
+					echo '<div class="set-view__time"><b>Avg. time: ' . $avgTime . 's</b>' . ($bestTime !== null && $bestTime != 60 ? ' &middot; Best: ' . $bestTime . 's' : '') . '</div>';
 				} ?>
 			</div>
 			<?php //The reset of the progress under the scores, its form opening right under its link ?>
@@ -217,7 +217,7 @@ if ($tsumegoFilters->query != 'topics')
 	<div class="set-view-problems">
 		<p class="title4">Problems</p>
 		<?php // the Filters link is offered whenever any filter type has active selections ?>
-		<div class="showFilters<?php echo empty($tsumegoFilters->sets) && empty($tsumegoFilters->ranks) && empty($tsumegoFilters->tags) ? ' showFilters--hidden' : ''; ?>">
+		<div class="set-view__filters<?php echo empty($tsumegoFilters->sets) && empty($tsumegoFilters->ranks) && empty($tsumegoFilters->tags) ? ' set-view__filters--hidden' : ''; ?>">
 			<a id="showFilters" class="selectable-text">Filters<img id="greyArrowFilter" src="/img/greyArrow1.png"></a>
 		</div>
 		<label class="preview-toggle" title="Toggle board previews"><input type="checkbox" class="preview-zoom-toggle">🔍 Preview</label>

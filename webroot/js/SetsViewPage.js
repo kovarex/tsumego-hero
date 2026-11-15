@@ -67,9 +67,9 @@ foldingPanel("#showFilters", "#msgFilters", "greyArrowFilter");
 //What the problem buttons show under their picture: the numbers, the solved/failed attempts or the
 //best times, each with its explanation and the score of the collection it belongs to.
 const scoreViews = {
-	numbers: { button: "#numbersButton", info: "#numbersInfo", detail: ".problem-nav__number", score: ".setViewCompleted", accent: "--set-accent-green" },
-	ratio: { button: "#ratioButton", info: "#ratioInfo", detail: ".problem-nav__ratio", score: ".setViewAccuracy", accent: "--set-accent-purple" },
-	time: { button: "#timeButton", info: "#timeInfo", detail: ".problem-nav__time", score: ".setViewTime", accent: "--set-accent-orange" },
+	numbers: { button: "#numbersButton", info: "#numbersInfo", detail: ".problem-nav__number", score: ".set-view__completed", accent: "--set-accent-green" },
+	ratio: { button: "#ratioButton", info: "#ratioInfo", detail: ".problem-nav__ratio", score: ".set-view__accuracy", accent: "--set-accent-purple" },
+	time: { button: "#timeButton", info: "#timeInfo", detail: ".problem-nav__time", score: ".set-view__time", accent: "--set-accent-orange" },
 };
 
 function showScoreView(name) {

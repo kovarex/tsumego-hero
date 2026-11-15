@@ -25,7 +25,7 @@ function updateMistakeTrainingButton(button, xp)
 	if (badge)
 		badge.outerHTML = button.badge;
 	let label = link.querySelector(".tooltip-label");
-	label.className = "tooltip-label status" + button.status;
+	label.className = "tooltip-label tooltip-label--" + button.status;
 	label.textContent = button.label;
 	// the description is the server's HTML, with the day of the next review as a <time>
 	let description = link.querySelector(".tooltip-desc");

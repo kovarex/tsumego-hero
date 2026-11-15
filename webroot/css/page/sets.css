@@ -1,6 +1,6 @@
 @layer page
 {
-.setViewCompleted {
+.set-view__completed {
   color: var(--set-completed);
   margin: 2px 9px;
   border: 1px solid var(--set-completed);
@@ -28,20 +28,20 @@
   width: 100%;
 }
 
-.setViewAccuracy {
+.set-view__accuracy {
   color: var(--set-accuracy);
   margin: 2px 9px;
   padding: 3px;
   display: inline-block;
 }
-.setViewTime {
+.set-view__time {
   color: var(--set-time);
   margin: 2px 9px;
   padding: 3px;
   display: inline-block;
 }
 /* The scores of a collection, each on its own line (a score with its best), as wide as its text */
-.set-view__stats :is(.setViewCompleted, .setViewAccuracy, .setViewTime) {
+.set-view__stats :is(.set-view__completed, .set-view__accuracy, .set-view__time) {
   display: table;
   margin: 4px auto;
   white-space: nowrap;
@@ -159,7 +159,7 @@
   stroke-linejoin: round;
   transform-origin: center;
 }
-.rotateArrow {
+.set-filter-chevron--open {
   transform: rotate(180deg);
 }
 .set-search-menu {
@@ -199,7 +199,7 @@
 	margin: 0 var(--space-1) var(--space-2);
 }
 
-.set-view-problems .showFilters {
+.set-view-problems .set-view__filters {
 	display: inline-block;
 	margin: var(--space-2) var(--space-1);
 }
@@ -208,7 +208,7 @@
 	margin: var(--space-2) var(--space-1);
 }
 
-.set-view-problems .showFilters--hidden {
+.set-view-problems .set-view__filters--hidden {
 	display: none;
 }
 

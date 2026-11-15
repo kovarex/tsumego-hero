@@ -408,7 +408,7 @@ function applyNearestRangeEnd(index){
 let openMenu = null;
 
 function setMenuOpen(name, open){
-	document.querySelector("#set-button-icon-" + name + " .set-filter-chevron").classList.toggle("rotateArrow");
+	document.querySelector("#set-button-icon-" + name + " .set-filter-chevron").classList.toggle("set-filter-chevron--open");
 	if(open)
 		Display.fadeIn("#dropdown-" + name, 250);
 	else

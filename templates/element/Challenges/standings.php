@@ -36,7 +36,7 @@ $cellSymbols = ['failed' => '✗', 'timeout' => '⏱', 'skipped' => '–', 'queu
 						<th>Solved</th>
 						<th>Time</th>
 						<?php foreach ($problemButtons as $button): ?>
-						<th class="challenges__problem"><ul class="setViewButtons"><?php $button->render(); ?></ul></th>
+						<th class="challenges__problem"><ul class="problem-buttons"><?php $button->render(); ?></ul></th>
 						<?php endforeach; ?>
 					</tr>
 				</thead>

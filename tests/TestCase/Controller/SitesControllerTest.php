@@ -177,7 +177,7 @@ class SitesControllerTest extends IntegrationTestCase
 		$this->assertStringContainsString('Latest additions', $source);
 		$this->assertStringContainsString('Level Evaluation', $source);
 		$this->assertStringContainsString('Set Beginner', $source);
-		$this->assertSame(2, substr_count($source, 'class="scheduleTsumego"'));
+		$this->assertSame(2, substr_count($source, 'class="home-schedule__link"'));
 		$this->assertCount(2, $browser->getElements('.problem-nav__number'));
 	}
 
@@ -595,7 +595,7 @@ class SitesControllerTest extends IntegrationTestCase
 					background: background,
 					opaque: rgb(background)[3] === undefined || rgb(background)[3] === 1,
 					heading: contrast(getComputedStyle(document.querySelector('.latest-additions-heading')).color, background),
-					link: contrast(getComputedStyle(document.querySelector('.scheduleTsumego')).color, background)};
+					link: contrast(getComputedStyle(document.querySelector('.home-schedule__link')).color, background)};
 				JS, [$theme]);
 			$this->assertTrue($contrasts['opaque'], $theme . ': the box has a background colour of its own, ' . $contrasts['background']);
 			$this->assertGreaterThanOrEqual(4.5, $contrasts['heading'], $theme . ': the title reads on ' . $contrasts['background']);

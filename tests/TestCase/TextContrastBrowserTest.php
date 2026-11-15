@@ -58,7 +58,7 @@ class TextContrastBrowserTest extends IntegrationTestCase
 			'profile' => ['/users/view/' . $context->user['id'], '.progress__label'],
 			'what\'s new' => ['/changelog', '.changelog__category', 'labels'],
 			'highscore' => ['/users/highscore', '.highscore-table__total, .data-table__row--medal-bronze td'],
-			'collection' => ['/sets/view/' . $context->tsumegos[0]['set-connections'][0]['set_id'], '.setViewCompleted, .setViewAccuracy, .setViewTime'],
+			'collection' => ['/sets/view/' . $context->tsumegos[0]['set-connections'][0]['set_id'], '.set-view__completed, .set-view__accuracy, .set-view__time'],
 			'achievement' => ['/achievements/view/1', '.rarity'],
 			'play' => ['/' . $context->tsumegos[0]['set-connections'][0]['id'], '.tsumego-comment__date', 'comments']];
 		$failures = [];

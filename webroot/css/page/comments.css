@@ -94,12 +94,12 @@
 }
 /* Comment text content - ensure consistent spacing */
 
-.commentBox1,
-.commentBox2 {
+.comment-text,
+.comment-text--admin {
 	line-height: 1.5;
 }
 /* A comment of an admin */
-.commentBox2 {
+.comment-text--admin {
 	color: var(--admin-text-color);
 }
 .tsumego-comment__date {
@@ -185,7 +185,7 @@
 }
 /* Delete button cleanup - make it look dangerous */
 
-.deleteComment {
+.tsumego-comment__delete {
 	background: transparent;
 	border: 1px solid var(--color-danger);
 	font-size: var(--text-xs);
@@ -196,7 +196,7 @@
 	color: var(--comment-delete-text);
 	transition: background-color 0.15s, color 0.15s;
 }
-.deleteComment:hover {
+.tsumego-comment__delete:hover {
 	background: var(--color-danger);
 	color: var(--color-white);
 }
@@ -289,7 +289,7 @@
 .play-panel .tsumego-comments__content {
 	margin-inline: 0;
 }
-.play-panel .sandboxComment {
+.play-panel .tsumego-comment__main {
 	padding: var(--space-3);
 }
 .play-panel :is(.tsumego-comments__anchor-filter, .tsumego-comments__anchor-empty, .tsumego-comment--standalone, .tsumego-issue, .tsumego-comments__form) {
@@ -308,19 +308,19 @@
 .tsumego-comment--draggable .tsumego-comment__body {
 	grid-template-columns: auto minmax(0, 1fr) 5rem;
 }
-.tsumego-comment__body > .sandboxTable2time {
+.tsumego-comment__body > .tsumego-comment__meta {
 	padding-left: var(--space-2);
 }
-.sandboxTable2time > * {
+.tsumego-comment__meta > * {
 	display: block;
 	margin-left: auto;
 	text-align: right;
 }
-.sandboxTable2time > * + * {
+.tsumego-comment__meta > * + * {
 	margin-top: var(--space-1);
 }
 /* A comment (on the play page, the comments page and in an issue): a flat card */
-.sandboxComment {
+.tsumego-comment__main {
 	background: var(--comment-background);
 	padding: var(--space-3);
 	border: 1px solid var(--color-border);
@@ -520,14 +520,14 @@
 }
 /* Comments inside issues - remove the inner box styling */
 
-.tsumego-issue .sandboxComment {
+.tsumego-issue .tsumego-comment__main {
 	background: transparent;
 	border: none;
 	border-radius: 0;
 	padding: var(--space-2) 0;
 	border-bottom: 1px solid var(--issue-comment-divider);
 }
-.tsumego-issue .tsumego-comment:last-child .sandboxComment {
+.tsumego-issue .tsumego-comment:last-child .tsumego-comment__main {
 	border-bottom: none;
 }
 /* ── Issues page (/tsumego-issues) ── */

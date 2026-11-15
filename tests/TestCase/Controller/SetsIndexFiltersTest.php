@@ -177,22 +177,22 @@ class SetsIndexFiltersTest extends IntegrationTestCase
 		$browser->get('sets');
 		$browser->findById('topics-button')->click();
 		$browser->waitUntilCssSelectorDisplayed('#dropdown-topics');
-		$this->assertStringContainsString('rotateArrow', $browser->find('#set-button-icon-topics .set-filter-chevron')->getAttribute('class'));
+		$this->assertStringContainsString('set-filter-chevron--open', $browser->find('#set-button-icon-topics .set-filter-chevron')->getAttribute('class'));
 
 		$browser->findById('tags-button')->click();
 		$browser->waitUntilCssSelectorDisplayed('#dropdown-tags');
 		$browser->waitUntilCssSelectorNotDisplayed('#dropdown-topics');
-		$this->assertStringNotContainsString('rotateArrow', $browser->find('#set-button-icon-topics .set-filter-chevron')->getAttribute('class'));
-		$this->assertStringContainsString('rotateArrow', $browser->find('#set-button-icon-tags .set-filter-chevron')->getAttribute('class'));
+		$this->assertStringNotContainsString('set-filter-chevron--open', $browser->find('#set-button-icon-topics .set-filter-chevron')->getAttribute('class'));
+		$this->assertStringContainsString('set-filter-chevron--open', $browser->find('#set-button-icon-tags .set-filter-chevron')->getAttribute('class'));
 
 		$browser->findById('tags-button')->click();
 		$browser->waitUntilCssSelectorNotDisplayed('#dropdown-tags');
-		$this->assertStringNotContainsString('rotateArrow', $browser->find('#set-button-icon-tags .set-filter-chevron')->getAttribute('class'));
+		$this->assertStringNotContainsString('set-filter-chevron--open', $browser->find('#set-button-icon-tags .set-filter-chevron')->getAttribute('class'));
 
 		$browser->findById('difficulty-button')->click();
 		$browser->waitUntilCssSelectorDisplayed('#dropdown-difficulty');
 		$browser->find('.whitebox2')->click();
 		$browser->waitUntilCssSelectorNotDisplayed('#dropdown-difficulty');
-		$this->assertStringNotContainsString('rotateArrow', $browser->find('#set-button-icon-difficulty .set-filter-chevron')->getAttribute('class'));
+		$this->assertStringNotContainsString('set-filter-chevron--open', $browser->find('#set-button-icon-difficulty .set-filter-chevron')->getAttribute('class'));
 	}
 }

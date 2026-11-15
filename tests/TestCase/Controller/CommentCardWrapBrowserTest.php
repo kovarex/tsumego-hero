@@ -58,8 +58,8 @@ class CommentCardWrapBrowserTest extends IntegrationTestCase
 				return [...document.querySelectorAll('.tsumego-comment')].map(card => {
 					const box = card.getBoundingClientRect();
 					const panel = card.closest('.tsumego-comments__content').getBoundingClientRect();
-					const meta = card.querySelector('.sandboxTable2time').getBoundingClientRect();
-					const buttons = [...card.querySelectorAll('.sandboxTable2time button')].map(button => button.getBoundingClientRect().right);
+					const meta = card.querySelector('.tsumego-comment__meta').getBoundingClientRect();
+					const buttons = [...card.querySelectorAll('.tsumego-comment__meta button')].map(button => button.getBoundingClientRect().right);
 					return {
 						overflow: card.scrollWidth - card.clientWidth,
 						metaOutside: Math.max(0, Math.ceil(Math.max(meta.right, ...buttons) - box.right)),
@@ -92,7 +92,7 @@ class CommentCardWrapBrowserTest extends IntegrationTestCase
 					actions: shown('.play-actions > *'),
 					tabs: shown('.tsumego-comments__tab'),
 					filter: shown('.tsumego-comments__anchor-filter > *'),
-					comment: shown('.tsumego-comment .sandboxComment'),
+					comment: shown('.tsumego-comment .tsumego-comment__main'),
 					form: shown('.tsumego-comments__form'),
 				};
 				const result = {

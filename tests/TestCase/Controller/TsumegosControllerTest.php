@@ -66,11 +66,11 @@ class TsumegosControllerTest extends IntegrationTestCase
 		$setConnectionID = $context->tsumegos[0]['set-connections'][0]['id'];
 
 		$this->get('/' . $setConnectionID);
-		$this->assertStringContainsString('historyLink', $this->getStringDom()->getElementById('showx6')->getAttribute('class'));
+		$this->assertStringContainsString('play-edit__history-link--changed', $this->getStringDom()->getElementById('showx6')->getAttribute('class'));
 
 		Util::execute('UPDATE sgf SET user_id = NULL WHERE tsumego_id = ?', [$context->tsumegos[0]['id']]);
 		$this->get('/' . $setConnectionID);
-		$this->assertStringNotContainsString('historyLink', $this->getStringDom()->getElementById('showx6')->getAttribute('class'));
+		$this->assertStringNotContainsString('play-edit__history-link--changed', $this->getStringDom()->getElementById('showx6')->getAttribute('class'));
 	}
 
 	public function testTheFirstProblemOfACollectionLeadsBackToTheCollectionPage(): void
@@ -152,7 +152,7 @@ class TsumegosControllerTest extends IntegrationTestCase
 		$this->assertTextContains('tsumego set 1', $href->textContent);
 		$this->assertSame('666', trim($dom->getElementById('currentNavigationButton')->textContent), 'The open problem button shows its place in the collection');
 
-		$duplicateTable = $dom->querySelector('.duplicateTable');
+		$duplicateTable = $dom->querySelector('.play-edit__duplicates');
 		$links = $duplicateTable->getElementsByTagName('a');
 		$this->assertSame(count($links), 2);
 		$this->assertTextContains('/' . $context->tsumegos[0]['set-connections'][0]['id'], $links[0]->getAttribute('href'));
@@ -167,7 +167,7 @@ class TsumegosControllerTest extends IntegrationTestCase
 	{
 		$context = new ContextPreparator(['tsumego' => ['sets' => [['name' => 'first', 'num' => '1'], ['name' => '<img src=x onerror=alert(1)>', 'num' => '2']]]]);
 		$this->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
-		$duplicateTable = $this->getStringDom()->querySelector('.duplicateTable');
+		$duplicateTable = $this->getStringDom()->querySelector('.play-edit__duplicates');
 		$this->assertSame(0, $duplicateTable->getElementsByTagName('img')->length);
 		$this->assertTextContains('<img src=x onerror=alert(1)>', $duplicateTable->getElementsByTagName('a')[1]->textContent);
 	}
@@ -210,7 +210,7 @@ class TsumegosControllerTest extends IntegrationTestCase
 		$this->get('tsumegos/play/' . $context->tsumegos[0]['id']);
 
 		$dom = $this->getStringDom();
-		$links = $dom->querySelector('.duplicateTable')->getElementsByTagName('a');
+		$links = $dom->querySelector('.play-edit__duplicates')->getElementsByTagName('a');
 		$this->assertSame(2, count($links));
 		$this->assertTextContains('public set', $links[0]->textContent);
 		$this->assertTextContains('my favorites', $links[1]->textContent);
@@ -233,7 +233,7 @@ class TsumegosControllerTest extends IntegrationTestCase
 		$this->get('tsumegos/play/' . $context->tsumegos[0]['id']);
 
 		$dom = $this->getStringDom();
-		$links = $dom->querySelector('.duplicateTable')->getElementsByTagName('a');
+		$links = $dom->querySelector('.play-edit__duplicates')->getElementsByTagName('a');
 		$this->assertSame(2, count($links));
 		$this->assertTextContains('public set 1', $links[0]->textContent);
 		$this->assertTextContains('public set 2', $links[1]->textContent);
@@ -256,7 +256,7 @@ class TsumegosControllerTest extends IntegrationTestCase
 		$this->get('tsumegos/play/' . $context->tsumegos[0]['id']);
 
 		$dom = $this->getStringDom();
-		$links = $dom->querySelector('.duplicateTable')->getElementsByTagName('a');
+		$links = $dom->querySelector('.play-edit__duplicates')->getElementsByTagName('a');
 		$this->assertSame(2, count($links));
 		$this->assertTextContains('public set 1', $links[0]->textContent);
 		$this->assertTextContains('public set 2', $links[1]->textContent);
@@ -277,7 +277,7 @@ class TsumegosControllerTest extends IntegrationTestCase
 		$this->get('tsumegos/play/' . $context->tsumegos[0]['id']);
 
 		$dom = $this->getStringDom();
-		$links = $dom->querySelector('.duplicateTable')->getElementsByTagName('a');
+		$links = $dom->querySelector('.play-edit__duplicates')->getElementsByTagName('a');
 		$this->assertSame(2, count($links));
 		$this->assertTextContains('public set', $links[0]->textContent);
 		$this->assertTextContains('sandbox set', $links[1]->textContent);
@@ -299,7 +299,7 @@ class TsumegosControllerTest extends IntegrationTestCase
 		$this->get('tsumegos/play/' . $context->tsumegos[0]['id']);
 
 		$dom = $this->getStringDom();
-		$links = $dom->querySelector('.duplicateTable')->getElementsByTagName('a');
+		$links = $dom->querySelector('.play-edit__duplicates')->getElementsByTagName('a');
 		$this->assertSame(2, count($links));
 		$this->assertTextContains('public set 1', $links[0]->textContent);
 		$this->assertTextContains('public set 2', $links[1]->textContent);
@@ -322,7 +322,7 @@ class TsumegosControllerTest extends IntegrationTestCase
 		$this->get('tsumegos/play/' . $context->tsumegos[0]['id']);
 
 		$dom = $this->getStringDom();
-		$links = $dom->querySelector('.duplicateTable')->getElementsByTagName('a');
+		$links = $dom->querySelector('.play-edit__duplicates')->getElementsByTagName('a');
 		$this->assertSame(2, count($links));
 		$this->assertTextContains('public set 1', $links[0]->textContent);
 		$this->assertTextContains('public set 2', $links[1]->textContent);

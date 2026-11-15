@@ -6,7 +6,7 @@
   text-decoration: underline;
   cursor: pointer;
 }
-.sandboxTable2time {
+.tsumego-comment__meta {
   vertical-align: top;
   color: var(--play-comment-time);
 }

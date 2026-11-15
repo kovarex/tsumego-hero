@@ -2652,7 +2652,7 @@ class SetsControllerTest extends IntegrationTestCase
 			$layout = $browser->driver->executeScript(<<<'JS'
 				const width = document.documentElement.clientWidth;
 				return {
-					scores: ['.setViewAccuracy', '.setViewTime'].map(selector => {
+					scores: ['.set-view__accuracy', '.set-view__time'].map(selector => {
 						const element = document.querySelector(selector);
 						const rect = element.getBoundingClientRect();
 						const lineHeight = parseFloat(getComputedStyle(element).lineHeight) || parseFloat(getComputedStyle(element).fontSize) * 1.5;

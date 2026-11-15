@@ -39,7 +39,7 @@ export function ProblemButton({ problem, picked, onToggle }: ProblemButtonProps)
 			>
 				<div className="problem-nav__number">{problem.number}</div>
 				<span className="tooltip-box">
-					<div className={'tooltip-label ' + (picked ? 'statusS' : 'statusN')}>{picked ? 'Picked' : 'Not picked'}</div>
+					<div className={'tooltip-label ' + (picked ? 'tooltip-label--S' : 'tooltip-label--N')}>{picked ? 'Picked' : 'Not picked'}</div>
 					<div className="tooltip-desc">
 						{picked ? 'Click to take it out.' : 'Click to pick it.'} Ctrl+click opens it in a new tab.
 					</div>
