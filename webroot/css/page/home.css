@@ -232,7 +232,7 @@
   max-width: 460px;
   max-height: 100%;
   overflow-y: auto;
-  font-size: 14px;
+  font-size: var(--text-sm);
 }
 
 #recent-achievement-stream .recent-achievement-row {
@@ -242,7 +242,7 @@
   background-color: rgba(0, 0, 0, 0.45);
   color: var(--color-white);
   border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
 }
 
 #recent-achievement-stream .recent-achievement-icon {
@@ -287,7 +287,7 @@
 
 #recent-achievement-stream .recent-achievement-time {
   color: var(--text-on-dark);
-  font-size: 12px;
+  font-size: var(--text-sm);
   margin-left: var(--space-3);
   white-space: nowrap;
 }

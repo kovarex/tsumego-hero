@@ -6,7 +6,7 @@
   }
 }
 .selectable-text {
-  font-size: 16px;
+  font-size: var(--text-md);
   color: var(--play-link);
   text-decoration: underline;
   cursor: pointer;
@@ -56,12 +56,12 @@
   padding: 10px;
   width: 100%;
   max-width: 600px;
-  font-size: 16px;
+  font-size: var(--text-md);
 }
 .boards-tile {
   background-color: var(--surface-translucent);
   color: var(--color-green);
-  border-radius: 50px;
+  border-radius: var(--radius-full);
   padding: var(--space-1) var(--space-2);
   margin: var(--space-1);
   float: left;
@@ -74,7 +74,7 @@
   ) !important;
 }
 .display1 {
-  font-size: 20px;
+  font-size: var(--text-xl);
 }
 #playTitle {
   font-weight: var(--weight-heavy);
@@ -89,7 +89,7 @@
 #descriptionText { color: var(--color-text-muted); }
 .add-tag-list-anchor {
   color: var(--color-text-muted);
-  font-size: 14px;
+  font-size: var(--text-sm);
   text-decoration: underline;
   cursor: pointer;
 }
@@ -130,7 +130,7 @@
   background-color: var(--surface-border-strong);
   color: var(--color-white);
   text-align: center;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   padding: 5px 0;
   position: absolute;
   z-index: 1;
@@ -170,7 +170,7 @@
   overflow-x: auto;
 }
 .besogo-file input[type="button"] {
-  font-size: 16px;
+  font-size: var(--text-md);
   font-style: normal;
   font-variant: normal;
   font-weight: var(--weight-heavy);
@@ -202,7 +202,7 @@
 #besogo-multipleChoice2,
 #besogo-multipleChoice3,
 #besogo-multipleChoice4 {
-  font-size: 16px;
+  font-size: var(--text-md);
   font-style: normal;
   font-variant: normal;
   font-weight: var(--weight-heavy);
@@ -241,7 +241,7 @@
   width: fit-content;
   color: var(--color-white);
   font-weight: var(--weight-heavy);
-  font-size: 15px;
+  font-size: var(--text-md);
   text-decoration: none;
 }
 .besogo-container {
@@ -306,7 +306,7 @@
 #author-notice {
   position: absolute;
   font-family: var(--font-family-display);
-  font-size: 12px;
+  font-size: var(--text-sm);
   color: var(--color-text-muted);
   right: 207px;
   margin-top: 18px;

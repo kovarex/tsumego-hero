@@ -93,7 +93,7 @@
   gap: var(--space-2);
   padding: 10px 14px;
   border: 1px solid var(--color-border);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   background: var(--color-surface);
   color: var(--color-text); /* not the white of the menu links (li a in base.css) */
   font-size: var(--text-lg);
@@ -103,7 +103,7 @@
   border-color: var(--color-green);
 }
 .admin-area__links--tools .admin-area__link {
-  font-size: 16px;
+  font-size: var(--text-md);
 }
 /* A link with a count is as tall as one without */
 .admin-area__link .badge {
@@ -129,7 +129,7 @@
   border-radius: 50%;
   background: transparent;
   color: var(--color-border);
-  font-size: 16px;
+  font-size: var(--text-md);
   font-weight: var(--weight-bold);
   line-height: 1;
   vertical-align: middle;
@@ -213,7 +213,7 @@
 }
 .schedule-page__preview-toggle {
   cursor: pointer;
-  font-size: 12px;
+  font-size: var(--text-sm);
   color: var(--color-text-muted);
   margin-bottom: var(--space-2);
   display: inline-block;
