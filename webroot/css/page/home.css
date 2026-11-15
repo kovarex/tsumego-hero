@@ -32,7 +32,7 @@
 .scheduleTsumego {
   display: block;
   clear: both;
-  color: var(--schedule-link) !important;
+  color: var(--schedule-link);
 }
 /* The body of a card under its .title4 header */
 .new1 {
@@ -303,32 +303,32 @@
 
 
 .user-pick-q01 {
-  color: var(--color-white) !important;
+  color: var(--color-white);
   top: 172px;
   font-family: Comic Sans MS, Times New Roman, verdana;
 }
 
 .user-pick-q02 {
-  color: var(--color-white) !important;
+  color: var(--color-white);
   top: 106px;
   font-family: Impact, Times New Roman, verdana;
 }
 
 .user-pick-q03 {
-  color: var(--stat-pink) !important;
+  color: var(--stat-pink);
   top: 89px;
   font-family: Lucida Console, Times New Roman, verdana;
 }
 
 .user-pick-q04 {
-  color: var(--color-white) !important;
+  color: var(--color-white);
   top: 189px;
   font-weight: var(--weight-bold);
   font-family: Baskerville, Times New Roman, verdana;
 }
 
 .user-pick-q05 {
-  color: var(--color-white) !important;
+  color: var(--color-white);
   top: 121px;
   font-size: 22px;
   font-weight: var(--weight-bold);
@@ -336,48 +336,48 @@
 }
 
 .user-pick-q06 {
-  color: var(--stat-brown) !important;
+  color: var(--stat-brown);
   top: 151px;
   font-weight: var(--weight-bold);
   font-family: Comic Sans MS, Times New Roman, verdana;
 }
 
 .user-pick-q07 {
-  color: var(--stat-peach) !important;
+  color: var(--stat-peach);
   top: 113px;
   font-weight: var(--weight-bold);
   font-family: Comic Sans MS, Times New Roman, verdana;
 }
 
 .user-pick-q08 {
-  color: var(--color-black) !important;
+  color: var(--color-black);
   top: 22px;
   font-weight: var(--weight-bold);
   font-family: Garamond, Times New Roman, verdana;
 }
 
 .user-pick-q09 {
-  color: var(--color-white) !important;
+  color: var(--color-white);
   top: 53px;
   font-family: Helvetica, Times New Roman, verdana;
 }
 
 .user-pick-q10 {
-  color: var(--stat-gold) !important;
+  color: var(--stat-gold);
   top: 153px;
   font-weight: var(--weight-bold);
   font-family: Helvetica, Times New Roman, verdana;
 }
 
 .user-pick-q11 {
-  color: var(--stat-yellow) !important;
+  color: var(--stat-yellow);
   top: 125px;
   font-size: 15px;
   font-family: Helvetica, Times New Roman, verdana;
 }
 
 .user-pick-q12 {
-  color: var(--stat-red) !important;
+  color: var(--stat-red);
   top: 145px;
   font-family: Helvetica, Times New Roman, verdana;
 }

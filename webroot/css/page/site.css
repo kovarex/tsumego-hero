@@ -257,7 +257,7 @@ li a.menuLi.nav__link--active {
   background-image: linear-gradient(var(--color-orange-1), var(--color-orange-2));
 }
 .xp-text-fill-c3x {
-  color: var(--color-orange-ink) !important;
+  color: var(--color-orange-ink);
 }
 #xp-increase-fx {
 	position: relative;
@@ -514,10 +514,10 @@ nav ul .menuIcons1 {
   margin: 0 auto;
 }
 .historyLink {
-  color: var(--color-red) !important;
+  color: var(--color-red);
 }
 .historyLink2 {
-  color: var(--color-red-light) !important;
+  color: var(--color-red-light);
 }
 
 /* :where keeps the specificity of nav a, a button in the menu keeps its own look */
@@ -1087,7 +1087,7 @@ nav ul ul ul li {
 	}
 	.account-menu__item,
 	#modeSelector {
-		display: none !important;
+		display: none;
 	}
 }
 
