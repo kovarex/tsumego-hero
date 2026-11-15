@@ -113,7 +113,7 @@
      "labels": {"A17": "a", "B17": "b", "E19": "c"},
      "caption": "The tree's line, with White to play and no ko on the board.",
      "checks": [
-      {"status": "KO"},
+      {"status": "KO", "open": ["BENT4"]},
       {"balance": 0, "opts": "end=1"}
      ]
     },

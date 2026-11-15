@@ -10,6 +10,9 @@ def tally(pattern):
                 key = (r['set_connection_id'], lf['line'])
                 if e not in ('ALIVE', 'DEAD', 'KO', 'BENT4', 'SEKI', 'SEKI+', 'DDKO', 'ADKO', 'DSKO', 'ASKO') or x is None:
                     c['undecided/unclassified'] += 1; leaves[key] = 'undecided'; continue
+                #the class is one of several an undecided test leaves open, and the authored one is among them
+                if lf.get('engine_open') and (e == x or x in lf['engine_open']):
+                    c['open'] += 1; leaves[key] = 'open %s/%s' % (x, lf['engine_text']); continue
                 if e != x:
                     c['status_disagree'] += 1; dis[(x, e)] += 1; bad = True; leaves[key] = 'status %s/%s' % (x, e); continue
                 if e == 'KO' and re.fullmatch(r'KO[+-]\d*', a):

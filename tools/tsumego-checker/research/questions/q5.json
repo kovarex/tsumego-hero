@@ -16,11 +16,11 @@
  "text": [
   "Your labels describe the clean kill: White plays elsewhere, Black fills an outside liberty, White retakes for free, and Black retakes into a direct ko (Diagrams 5, 6 and 10). Counted that way, Black needs one threat more than White in 215 and two more in 13169. The solver gets the same counts when Black may not play at A19 (Diagrams 1 and 7).",
   "With the throw-in Black does better. After White plays elsewhere, Black throws in at A19, White takes four stones, and Black takes a new ko first, so White needs a threat again (Diagrams 2 and 4, and Diagram 9 in 13169). The throw-in costs Black no threat where the approach costs one: Black needs as many threats as White in 215 and one more in 13169 (Diagrams 1 and 7), one fewer than your labels imply.",
-  "The corner after White's capture has the shape of a bent four, but it is not your BENT4. Black must start the ko at once, or White lives (Diagram 3), so the solver calls it a ko. In your BENT4 leaves, leaf 1 of each problem, Black's stones stay in the corner and White cannot settle the shape, so Black starts the ko when it likes, after removing White's threats (Diagrams 11 and 12). The throw-in leads to a second ko, not to a kill.",
+  "The corner after White's capture has the shape of a bent four, but it is not your BENT4. Black must start the ko at once, or White lives (Diagram 3). The solver calls it a ko; its own bent-four test stays undecided there in the wider area, but Diagram 3 shows that White settles the corner if Black waits. In your BENT4 leaves, leaf 1 of each problem, Black's stones stay in the corner and White cannot settle the shape, so Black starts the ko when it likes, after removing White's threats (Diagrams 11 and 12). The throw-in leads to a second ko, not to a kill.",
   "By your definition the ko at the leaf is an approach ko. White's capture threatens at once (Diagrams 5 and 7), while Black's does not: White can play elsewhere once, and Black needs one more move before it holds a ko that White must answer (Diagrams 1 and 8). The throw-in is the cheapest way to go on, since it costs Black no threat. Where Black fills E19 before taking, as in your leaf 2 of 215, Black's capture threatens at once (Diagram 13): that ko is direct, and S[KO+] fits it.",
-  "What the checker prints now: KO+ in 215 and KO- in 13169, the count with the throw-in, and beside them your A-1KO+ and A-1KO- with their counts, as the reading without it. The comparison with your tree is a convention note, not an error. Its explanation calls the corner after the capture a bent four; Diagrams 2 and 3 show that it is a ko Black must start at once. If you choose your labels, it would print them, with the count beside them as a note, as for 10005.",
+  "What the checker prints now: KO+ in 215 and KO- in 13169, the count with the throw-in, and beside them your A-1KO+ and A-1KO- with their counts, as the reading without it. The comparison with your tree is a convention note, not an error. Its explanation names what follows the throw-in by the solver's class after White's capture: a second ko that Black must start at once, as Diagrams 2 and 3 show. If you choose your labels, it would print them, with the count beside them as a note, as for 10005.",
   "On the site neither choice changes a grade in either problem (table). In both, Black's A19 at move 1 makes your bent four, which besogo ranks above every ko, so Black's C19 in 215 and A18 in 13169 stay wrong under either label. The choice would matter in a problem without such a move: with your labels, filling E19 before taking, as at leaf 2 of 215, ranks above taking without it, as at leaf 5; with S[KO+] at both leaves they would rank equal.",
-  "In the wider area, which adds two rings of empty points on 215's open side, three checks of the throw-in in 215 stay undecided within 2,000,000 nodes: the count at the leaf and both checks after White takes four stones (Diagrams 1 and 2). So does the forced-pass check of Diagram 13, and at the leaf the wider search finds a ko but does not decide whether it is a bent four. The other 25 of this section's 30 checks agree there, and none disagrees; 13169 is enclosed, and all its checks agree in both areas."
+  "In the wider area, which adds two rings of empty points on 215's open side, three checks of the throw-in in 215 stay undecided within 2,000,000 nodes: the count at the leaf and both checks after White takes four stones (Diagrams 1 and 2). So does the forced-pass check of Diagram 13, and at the leaf and after White's capture the wider search finds a ko but does not decide whether it is a bent four. The other 25 of this section's 30 checks agree there, and none disagrees; 13169 is enclosed, and all its checks agree in both areas."
  ],
  "positions": [
   {
@@ -45,7 +45,10 @@
      ],
      "checks": [
       {
-       "status": "KO"
+       "status": "KO",
+       "open": [
+        "BENT4"
+       ]
       },
       {
        "balance": 0,
@@ -78,7 +81,10 @@
      "caption": "If White 4 plays elsewhere, Black 5 throws in at A19, filling its own ko, and White 6 takes four stones. Black has lost nothing: it still needs only as many threats as White.",
      "checks": [
       {
-       "status": "KO"
+       "status": "KO",
+       "open": [
+        "BENT4"
+       ]
       },
       {
        "balance": 0,

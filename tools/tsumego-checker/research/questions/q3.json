@@ -38,7 +38,10 @@
      "caption": "The tree's line, marked S[DEAD], with Black to play. It is a ko: Black lives with one threat more than White.",
      "checks": [
       {
-       "status": "KO"
+       "status": "KO",
+       "open": [
+        "BENT4"
+       ]
       },
       {
        "balance": 1,

@@ -9,7 +9,7 @@ import html, json, os, re, sys
 here = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, here)
 from check_tree import parse_sgf, build, opponent, all_nodes, region_of, groups_of, Problem, focused_region, Engine, Solver
-from tsumego import add_wide
+from tsumego import add_wide, status_text, open_text
 from go_figure import LETTERS
 
 spec = json.load(open(sys.argv[1]))
@@ -142,10 +142,15 @@ def check_text(step, board, to_move):
     wide = check.get('wide', False)
     who = 'Solver (wider area)' if wide else 'Solver (search area)'
     if 'status' in check:
-        status, _ = (solver.wide if wide else solver).status(board, to_move)
-        if status != check['status']:
-            sys.exit('step "%s": the solver says %s, the spec %s' % (step['title'], status, check['status']))
-        return '<p class="check">%s: %s to play, %s.</p>' % (who, names[to_move], {'DEAD': 'Black is dead', 'ALIVE': 'Black lives', 'KO': 'a ko', 'BENT4': 'bent four'}[status])
+        #a class with other statuses left open by an undecided test passes only when the check names them (open)
+        record = (solver.wide if wide else solver).status_record(board, to_move)
+        status = record['status']
+        if status != check['status'] or sorted(record['open']) != sorted(check.get('open', [])):
+            sys.exit('step "%s": the solver says %s, the spec %s%s' % (step['title'], status_text(record), check['status'],
+                                                                     ' with %s open' % ', '.join(check['open']) if check.get('open') else ''))
+        left = open_text(record)
+        return '<p class="check">%s: %s to play, %s%s.</p>' % (who, names[to_move], {'DEAD': 'Black is dead', 'ALIVE': 'Black lives', 'KO': 'a ko',
+                                                                                  'BENT4': 'bent four'}[status], '; ' + left if left else '')
     result = lives(board, to_move, check['s'], check['o'], wide)
     if result is None or result != check['black_lives']:
         sys.exit('step "%s": the solver says %s at s=%d o=%d, the spec %s' % (step['title'], result, check['s'], check['o'], check['black_lives']))

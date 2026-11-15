@@ -20,7 +20,7 @@
  "text": [
   "Your trees mark 37 leaves S[SEKI+], in 28 problems, and 185 leaves S[SEKI], in 86; only four problems use both. besogo's editor offers the + as a sente box on a seki, and prints SEKI+ as in sente and SEKI as in gote. It ranks SEKI+ above SEKI for the solver whether the problem is to kill or to live, so the sente is always the solver's.",
   "The checker calls a leaf a seki when the target lives whatever the ko threats, but cannot live without seki when the attacker has every threat. For the sente it plays one forced pass. With the solver to play, the solver passes, and the seki must still hold even when the opponent has four ko threats. With the opponent to play, the opponent passes, and the solver, with four ko threats, must then kill or live without seki. The checks with a forced pass under the diagrams are such searches; where a check says a seki counts as dead, only life without seki counts.",
-  "These tests needed one fix, found in this review. When a position repeats, the solver counts a cycle of plain captures, as in sending two and returning one, as a seki. Where a seki counts as dead, it still counted such a cycle as life, so a group that could only force a repetition passed for alive. In the table every repetition there counts as a kill, as a seki does: that changes 30 rows, each with a note of what the checker says today. The positions shown keep their classes, and Diagrams 3, 5 and 6 carry a check with every repetition counted as a kill.",
+  "These tests needed one fix, found in this review and now made in the checker. When a position repeats, the solver counts a cycle of plain captures, as in sending two and returning one, as a seki. Where a seki counts as dead, it still counted such a cycle as life, so a group that could only force a repetition passed for alive. Now every repetition counts as a kill wherever a seki counts as dead: that changed 30 rows of the table, each with a note of what the checker said before. The positions shown keep their classes, and so does every check under the diagrams that counts a seki as dead.",
   "A pass is not the only way to keep sente: the solver may still have a forcing move. So we also followed the forcing moves, up to two deep: a move of the solver that the opponent must answer, then every answer that keeps the seki. On all 128 leaves where both tests are decided, the answer is the same as with the single pass.",
   "The table lists every SEKI+ and SEKI leaf. The checker searched its own area at 200,000 nodes per search, and the leaves left undecided once more at 2,000,000. Of your 37 SEKI+ leaves, it says SEKI+ on 27 and SEKI on 2, and 8 stay undecided. Of your 185 SEKI leaves, it says SEKI on 61, SEKI+ on 41, ALIVE on 7, DEAD on 1 and KO on 1, and 74 stay undecided.",
   "The disagreements are of three kinds. 41 of your SEKI leaves are seki in the solver's sente: either the opponent must still answer (Diagram 5, and Problems 9, 1733, 15418 and 15454), or the solver may play elsewhere (36 leaves). All of them are in trees that use no +, so there your SEKI may only mean that the + was not considered. In the four trees that use both labels, the checker agrees with every leaf it decides.",
@@ -102,7 +102,7 @@
         0,
         0
        ],
-       "opts": "pb=1,sk=1,end=1,cyc=1",
+       "opts": "pb=1,sk=1,end=1",
        "expect": "fails"
       }
      ]
@@ -148,7 +148,7 @@
         4,
         0
        ],
-       "opts": "pw=1,sk=1,end=1,cyc=1",
+       "opts": "pw=1,sk=1,end=1",
        "expect": "wins"
       }
      ]
@@ -165,7 +165,7 @@
         0,
         4
        ],
-       "opts": "sk=1,end=1,cyc=1",
+       "opts": "sk=1,end=1",
        "expect": "wins"
       }
      ]
@@ -231,7 +231,7 @@
   }
  ],
  "table": {
-  "caption": "Every leaf your trees mark S[SEKI+] or S[SEKI], in tree order within each problem, with the checker's class: Solver.status in the checker's search area, at 200,000 nodes per search and 2,000,000 for those left undecided, with every repetition counted as a kill where a seki counts as dead. Where that fix changes the class, the note gives what Solver.status says today. Grading: besogo's own code on the tree with every decided class of the problem in place of your labels.",
+  "caption": "Every leaf your trees mark S[SEKI+] or S[SEKI], in tree order within each problem, with the checker's class: Solver.status in the checker's search area, at 200,000 nodes per search and 2,000,000 for those left undecided or with a test left open, which then names the classes it leaves open. Where a seki counts as dead, every repetition counts as a kill; where that fix changed the class, the note gives what Solver.status said before it. Grading: besogo's own code on the tree with every decided class of the problem in place of your labels.",
   "columns": [
    "Leaf",
    "Your tree",
@@ -249,7 +249,7 @@
     "Problem 840, leaf 2",
     "SEKI+",
     "SEKI+",
-    "today: SEKI"
+    "before the fix: SEKI"
    ],
    [
     "Problem 840, leaf 11",
@@ -303,7 +303,7 @@
     "Problem 2093, leaf 4",
     "SEKI+",
     "SEKI+",
-    "today: SEKI or SEKI+"
+    "before the fix: SEKI or SEKI+"
    ],
    [
     "Problem 2225, leaf 1",
@@ -375,7 +375,7 @@
     "Problem 9926, leaf 8",
     "SEKI+",
     "SEKI+",
-    "today: SEKI or SEKI+"
+    "before the fix: SEKI or SEKI+"
    ],
    [
     "Problem 9926, leaf 10",
@@ -392,14 +392,14 @@
    [
     "Problem 9942, leaf 3",
     "SEKI+",
-    "ALIVE or SEKI (seki test undecided)",
+    "ALIVE, SEKI or SEKI+ (seki test undecided)",
     "–"
    ],
    [
     "Problem 9945, leaf 8",
     "SEKI+",
     "SEKI+",
-    "today: SEKI or SEKI+"
+    "before the fix: SEKI or SEKI+"
    ],
    [
     "Problem 9947, leaf 10",
@@ -411,7 +411,7 @@
     "Problem 10225, leaf 8",
     "SEKI+",
     "SEKI+",
-    "today: SEKI or SEKI+"
+    "before the fix: SEKI or SEKI+"
    ],
    [
     "Problem 10249, leaf 3",
@@ -423,7 +423,7 @@
     "Problem 11011, leaf 7",
     "SEKI+",
     "SEKI+",
-    "today: SEKI or SEKI+"
+    "before the fix: SEKI or SEKI+"
    ],
    [
     "Problem 13262, leaf 4",
@@ -435,7 +435,7 @@
     "Problem 13262, leaf 5",
     "SEKI+",
     "SEKI+",
-    "today: SEKI or SEKI+"
+    "before the fix: SEKI or SEKI+"
    ],
    [
     "Problem 13872, leaf 1",
@@ -549,13 +549,13 @@
     "Problem 1989, leaf 1",
     "SEKI",
     "SEKI",
-    "today: ALIVE"
+    "before the fix: ALIVE"
    ],
    [
     "Problem 1989, leaf 2",
     "SEKI",
     "SEKI",
-    "today: ALIVE"
+    "before the fix: ALIVE"
    ],
    [
     "Problem 2089, leaf 2",
@@ -675,7 +675,7 @@
     "Problem 2536, leaf 18",
     "SEKI",
     "SEKI",
-    "today: ALIVE"
+    "before the fix: ALIVE"
    ],
    [
     "Problem 2536, leaf 24",
@@ -747,7 +747,7 @@
     "Problem 7487, leaf 56",
     "SEKI",
     "SEKI+",
-    "today: SEKI or SEKI+"
+    "before the fix: SEKI or SEKI+"
    ],
    [
     "Problem 7487, leaf 73",
@@ -771,7 +771,7 @@
     "Problem 7487, leaf 78",
     "SEKI",
     "SEKI+",
-    "today: ALIVE"
+    "before the fix: ALIVE"
    ],
    [
     "Problem 7487, leaf 79",
@@ -825,7 +825,7 @@
     "Problem 10005, leaf 4",
     "SEKI",
     "SEKI+",
-    "today: SEKI or SEKI+"
+    "before the fix: SEKI or SEKI+"
    ],
    [
     "Problem 10005, leaf 6",
@@ -873,13 +873,13 @@
     "Problem 10391, leaf 10",
     "SEKI",
     "SEKI+",
-    "today: SEKI"
+    "before the fix: SEKI"
    ],
    [
     "Problem 10391, leaf 11",
     "SEKI",
     "SEKI+",
-    "today: ALIVE"
+    "before the fix: ALIVE"
    ],
    [
     "Problem 10403, leaf 7",
@@ -957,13 +957,13 @@
     "Problem 11263, leaf 20",
     "SEKI",
     "SEKI+",
-    "today: SEKI or SEKI+"
+    "before the fix: SEKI or SEKI+"
    ],
    [
     "Problem 11263, leaf 22",
     "SEKI",
-    "SEKI (superko test undecided)",
-    "today: SEKI or SEKI+, superko open"
+    "SEKI, KO or DSKO (superko test undecided)",
+    "before the fix: SEKI or SEKI+, superko open"
    ],
    [
     "Problem 11263, leaf 25",
@@ -998,7 +998,7 @@
    [
     "Problem 11272, leaf 55",
     "SEKI",
-    "ALIVE or SEKI (seki test undecided)",
+    "ALIVE, SEKI or SEKI+ (seki test undecided)",
     "–"
    ],
    [
@@ -1052,7 +1052,7 @@
    [
     "Problem 11279, leaf 18",
     "SEKI",
-    "ALIVE or SEKI (seki test undecided)",
+    "ALIVE, SEKI or SEKI+ (seki test undecided)",
     "–"
    ],
    [
@@ -1094,8 +1094,8 @@
    [
     "Problem 11280, leaf 26",
     "SEKI",
-    "ALIVE or SEKI (seki and superko tests undecided)",
-    "today: SEKI or SEKI+, superko open"
+    "ALIVE, SEKI, SEKI+, KO or DSKO (superko and seki tests undecided)",
+    "before the fix: SEKI or SEKI+, superko open"
    ],
    [
     "Problem 11280, leaf 29",
@@ -1160,8 +1160,8 @@
    [
     "Problem 11283, leaf 10",
     "SEKI",
-    "SEKI+ (superko test undecided)",
-    "today: SEKI or SEKI+, superko open"
+    "SEKI+, KO or DSKO (superko test undecided)",
+    "before the fix: SEKI or SEKI+, superko open"
    ],
    [
     "Problem 11283, leaf 16",
@@ -1185,7 +1185,7 @@
     "Problem 11283, leaf 61",
     "SEKI",
     "SEKI+",
-    "today: SEKI or SEKI+"
+    "before the fix: SEKI or SEKI+"
    ],
    [
     "Problem 13025, leaf 13",
@@ -1257,7 +1257,7 @@
     "Problem 13541, leaf 5",
     "SEKI",
     "SEKI+",
-    "today: SEKI or SEKI+"
+    "before the fix: SEKI or SEKI+"
    ],
    [
     "Problem 13541, leaf 8",
@@ -1275,7 +1275,7 @@
     "Problem 13541, leaf 23",
     "SEKI",
     "SEKI+",
-    "today: SEKI or SEKI+"
+    "before the fix: SEKI or SEKI+"
    ],
    [
     "Problem 13547, leaf 11",
@@ -1305,7 +1305,7 @@
     "Problem 13549, leaf 7",
     "SEKI",
     "SEKI+",
-    "today: SEKI or SEKI+"
+    "before the fix: SEKI or SEKI+"
    ],
    [
     "Problem 13549, leaf 9",
@@ -1323,7 +1323,7 @@
     "Problem 13549, leaf 17",
     "SEKI",
     "SEKI+",
-    "today: SEKI or SEKI+"
+    "before the fix: SEKI or SEKI+"
    ],
    [
     "Problem 13549, leaf 19",
@@ -1353,7 +1353,7 @@
     "Problem 13661, leaf 6",
     "SEKI",
     "SEKI",
-    "today: ALIVE"
+    "before the fix: ALIVE"
    ],
    [
     "Problem 13661, leaf 7",
@@ -1382,7 +1382,7 @@
    [
     "Problem 15305, leaf 35",
     "SEKI",
-    "SEKI+ (superko test undecided)",
+    "SEKI+, KO or DSKO (superko test undecided)",
     "–"
    ],
    [
@@ -1424,7 +1424,7 @@
    [
     "Problem 15418, leaf 3",
     "SEKI",
-    "SEKI+, or KO (clean-result test undecided)",
+    "SEKI+ or KO (clean-result test undecided)",
     "–"
    ],
    [
@@ -1443,25 +1443,25 @@
     "Problem 15512, leaf 1",
     "SEKI",
     "SEKI+",
-    "today: ALIVE"
+    "before the fix: ALIVE"
    ],
    [
     "Problem 15512, leaf 2",
     "SEKI",
     "SEKI+",
-    "today: SEKI"
+    "before the fix: SEKI"
    ],
    [
     "Problem 15512, leaf 3",
     "SEKI",
     "SEKI+",
-    "today: ALIVE"
+    "before the fix: ALIVE"
    ],
    [
     "Problem 15516, leaf 2",
     "SEKI",
     "SEKI",
-    "today: ALIVE"
+    "before the fix: ALIVE"
    ],
    [
     "Problem 15516, leaf 3",
@@ -1479,7 +1479,7 @@
     "Problem 15518, leaf 1",
     "SEKI",
     "SEKI",
-    "today: ALIVE"
+    "before the fix: ALIVE"
    ],
    [
     "Problem 15518, leaf 3",

@@ -49,7 +49,10 @@
      ],
      "checks": [
       {
-       "status": "KO"
+       "status": "KO",
+       "open": [
+        "BENT4"
+       ]
       },
       {
        "balance": 2,
@@ -230,7 +233,10 @@
      "caption": "The tree's line to the leaf marked S[A-1KO+]. Black to play can take the ko at A19, and needs one ko threat more than White.",
      "checks": [
       {
-       "status": "KO"
+       "status": "KO",
+       "open": [
+        "BENT4"
+       ]
       },
       {
        "balance": 1,

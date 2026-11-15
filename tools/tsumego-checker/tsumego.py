@@ -451,14 +451,21 @@ class Solver:
         return self.solved[key]
 
     def note_undecided(self, record, part, search, fields, open_statuses=()):
-        #an undecided search of the class step, and the statuses it leaves open beside the one the class keeps
+        #an undecided solve of the class step, and the statuses it leaves open beside the one the class keeps
         record['undecided'].append({'part': part, 'search': search, 'nodes': int(fields['nodes'])})
+        self.note_open(record, part, int(fields['nodes']), open_statuses)
+
+    def note_open(self, record, part, nodes, open_statuses):
+        #a refinement test of the class that stays undecided: the class keeps the status of the steps before it, and the
+        #statuses the test could have given stay open beside it (open_tests: which test, at how many nodes)
         record['open'].extend(status for status in open_statuses if status not in record['open'])
+        record['open_tests'].append({'part': part, 'nodes': nodes, 'open': list(open_statuses)})
         record['warnings'].append('%s test undecided' % part)
 
     def classify(self, board, to_move, budget=None, use_wide=True):
         #the class (design 4, step 1): modes A and D under cycle rule 0, the double-ko and superko tests, the wider area for
-        #a ko, the clean result, the bent-four test and the seki tests. {status, best, modes, tests, warnings, undecided}
+        #a ko, the clean result, the bent-four test and the seki tests. {status, best, modes, tests, warnings, undecided,
+        #open: the statuses an undecided refinement test leaves open beside status, open_tests: those tests}
         text = self.problem.board_text(board)
         ko = self.problem.index(board.ko) if board.ko else -1
         key = (text, ko, to_move, budget or self.budget, use_wide)
@@ -469,7 +476,7 @@ class Solver:
         best = self.problem.from_index(int(plain['bestA'] if a == 'K' or d != 'K' else plain['bestD']))
         record = {'status': mode_class(a, d), 'best': best,
                   'modes': {'A': a, 'D': d, 'nodes': int(plain['nodes']), 'cycles': int(plain['cycles'])},
-                  'tests': {}, 'warnings': [], 'undecided': [], 'open': [], 'decided_by': None}
+                  'tests': {}, 'warnings': [], 'undecided': [], 'open': [], 'open_tests': [], 'decided_by': None}
         if record['status'] == STATUS_UNKNOWN:
             record['undecided'].append({'part': 'class', 'search': 'solve', 'nodes': int(plain['nodes'])})
         elif int(plain['cycles']):
@@ -489,6 +496,8 @@ class Solver:
                 record['status'] = self.bent_four_status(board, to_move, plain, record, budget)
             if record['status'] == STATUS_ALIVE:
                 record['status'] = self.seki_status(board, to_move, record, budget)
+        #a test can leave open the status a later step gave the class
+        record['open'] = [status for status in record['open'] if status != record['status']]
         self.classes[key] = record
         return record
 
@@ -507,7 +516,8 @@ class Solver:
             lives = solve(2)
             mode = 'A' if a == 'K' else 'D'
             if lives[mode] == 'U':
-                self.note_undecided(record, 'double-ko', 'solve cycle 2', lives, [STATUS_DDKO if mode == 'A' else STATUS_ADKO])
+                self.note_undecided(record, 'double-ko', 'solve cycle 2', lives,
+                                    [STATUS_DDKO if mode == 'A' else STATUS_ADKO] + self.superko_open(record))
                 return None
             if lives[mode] == 'N':
                 #the cycle shows on the rule-0 line when the defender's moves there happen to be its best, else on the line
@@ -520,7 +530,7 @@ class Solver:
                 return None
         kills = solve(1)
         if kills['A'] == 'U' or (kills['A'] == 'N' and kills['D'] == 'U' and d == 'N'):
-            self.note_undecided(record, 'superko', 'solve cycle 1', kills, [STATUS_DSKO, STATUS_ASKO])
+            self.note_undecided(record, 'superko', 'solve cycle 1', kills, self.superko_open(record))
             return None
         if kills['A'] == 'K' or (d == 'N' and kills['D'] == 'K'):
             return self.superko(board, to_move, record, budget)
@@ -534,13 +544,18 @@ class Solver:
         record['tests']['cycle']['rule 3'] = fields['A'] + fields['D']
         status = mode_class(fields['A'], fields['D'])
         if status == STATUS_UNKNOWN:
-            self.note_undecided(record, 'superko', 'solve cycle 3', fields, [STATUS_DSKO, STATUS_ASKO])
+            self.note_undecided(record, 'superko', 'solve cycle 3', fields, self.superko_open(record))
             return None
         plain = record['modes']
         if status == mode_class(plain['A'], plain['D']):
             return None
         record['warnings'].append('superko (unverified)')
         return {STATUS_DEAD: STATUS_DSKO, STATUS_ALIVE: STATUS_ASKO}.get(status, status)
+
+    def superko_open(self, record):
+        #what superko() can give: rule 3's class as DSKO, ASKO or KO, except the one of rule 0's class, which it keeps
+        kept = {STATUS_DEAD: STATUS_DSKO, STATUS_ALIVE: STATUS_ASKO}.get(mode_class(record['modes']['A'], record['modes']['D']), STATUS_KO)
+        return [status for status in (STATUS_DSKO, STATUS_ASKO, STATUS_KO) if status != kept]
 
     def proofs_line(self, board, to_move, mode, attacker_switches, defender_switches, budget, plies=24):
         #the line both sides play from their own proofs where two rules disagree: the attacker from its win under its
@@ -619,15 +634,21 @@ class Solver:
         if rule['A'] != 'K':
             return STATUS_KO
         defender = other_colour(self.attacker)
+        open_ends = 0
         for line in (self.line_moves(rule['pvA'], to_move), self.proofs_line(board, to_move, 'A', {'bentfour': True}, {}, budget)):
             boards = [board] + self.replay(board, line)
             if len(line) >= 2 and line[-1][1] is None and line[-2][1] is None:
                 kills, end_line, nodes = self.count(boards[-1], self.attacker, 0, 0, end=0, budget=budget, escalate=False,
                                                     record=record, part='bent-four end')
                 boards += self.replay(boards[-1], end_line) if kills is not None else []
+                open_ends += nodes if kills is None else 0
             if any(has_bent_four(b, defender) for b in boards):
                 return STATUS_BENT4
-        record['warnings'].append('bent-four rule kills, but no bent four on its lines')
+        if open_ends:
+            #the end's line is unknown, so the shape may be on it
+            self.note_open(record, 'bent-four end', open_ends, [STATUS_BENT4])
+        else:
+            record['warnings'].append('bent-four rule kills, but no bent four on its lines')
         return STATUS_KO
 
     def seki_status(self, board, to_move, record, budget):
@@ -637,7 +658,8 @@ class Solver:
         killed = self.modes(board, to_move, budget, sekikill=True)
         record['tests']['seki'] = killed['A'] + killed['D']
         if killed['D'] == 'U':
-            self.note_undecided(record, 'seki', 'solve sekikill', killed, [STATUS_SEKI])
+            #the sente test does not run, so a seki would be SEKI or SEKI+
+            self.note_undecided(record, 'seki', 'solve sekikill', killed, [STATUS_SEKI, STATUS_SEKI_SENTE])
             return STATUS_ALIVE
         if killed['D'] != 'K':
             return STATUS_ALIVE
@@ -648,34 +670,34 @@ class Solver:
         if to_move == solver_color:
             #the opponent gets a free move: the seki holds when it cannot live for real (attacker solving) or kill
             result, line, nodes = self.count(board, to_move, 0, 4, passes={to_move: 1}, sekikill=attacker_solves, budget=budget,
-                                             escalate=False, record=record, part='seki in sente')
+                                             escalate=False, record=record, part='seki-in-sente')
         else:
             #the solver gets a free move: it improves when it kills (attacker solving) or lives for real, or wins a ko for it
             result, line, nodes = self.count(board, to_move, 4, 0, passes={to_move: 1}, sekikill=not attacker_solves, budget=budget,
-                                             escalate=False, record=record, part='seki in sente')
+                                             escalate=False, record=record, part='seki-in-sente')
         record['tests']['seki in sente'] = result
         if result is None:
-            record['open'].append(STATUS_SEKI_SENTE)
-            record['warnings'].append('seki-in-sente test undecided')
+            self.note_open(record, 'seki-in-sente', nodes, [STATUS_SEKI_SENTE])
             return STATUS_SEKI
         return STATUS_SEKI_SENTE if result else STATUS_SEKI
 
     def status(self, board, to_move):
-        #the target's status with to_move to play (DEAD / KO / ALIVE / BENT4 / SEKI / SEKI+ / DDKO / ADKO / DSKO / ASKO /
-        #?), plus the best move found. A refinement test of the class that stays undecided leaves the status of the steps
-        #before it, as the clean-result and bent-four tests always did; classify() lists it with the statuses it leaves open
+        #the target's class with to_move to play (DEAD / KO / ALIVE / BENT4 / SEKI / SEKI+ / DDKO / ADKO / DSKO / ASKO /
+        #?), plus the best move found. A refinement test of the class that stays undecided leaves the class of the steps
+        #before it and the statuses it could have given open beside it, and the class is then never given alone: it comes
+        #as status_text writes it ('KO, BENT4 not ruled out (bent-four test undecided at 1,000,000 nodes)'), which
+        #status_parts reads back; status_record() has the parts
+        record = self.status_record(board, to_move)
+        return status_text(record), record['best']
+
+    def status_record(self, board, to_move):
+        #the class record behind status() (classify, cached per position): status, best, open, open_tests, undecided
         text = self.problem.board_text(board)
         ko = self.problem.index(board.ko) if board.ko else -1
         key = (text, ko, to_move)
         if key not in self.cache:
-            record = self.classify(board, to_move)
-            self.cache[key] = (record['status'], record['best'])
+            self.cache[key] = self.classify(board, to_move)
         return self.cache[key]
-
-    def special(self, board, to_move):
-        #DDKO / ADKO / DSKO / ASKO / BENT4 / SEKI / SEKI+ of the class step, None for another status
-        status = self.status(board, to_move)[0]
-        return status if status in SPECIAL_STATUSES else None
 
     def solver_wins(self, board, to_move, solver_threats, opponent_threats):
         #True / False / None (undecided): the solver's side reaches its goal when each side has that many ko threats
@@ -1144,11 +1166,13 @@ class Solver:
         #D3-D5 for the holder X of the ko at P_X (board, to_move = Y under the ban): t, the least k <= K for which X wins
         #outright (0 threats against Lo) while Y is forced to pass k times, n = t - 1 its approaches, the held-ko check (Y
         #also barred from retaking for the whole search) and v, the threshold with Y forced to pass n times. fill: X's free
-        #move on v's line fills the ko (D5), and v_unfilled is v with X barred from the filling point
+        #move on v's line fills the ko (D5), and v_unfilled is v with X barred from the filling point. approach: X's first
+        #free move on the line of v (of v_unfilled after a fill); alternatives: X's first free moves that keep its count when
+        #Y retakes for free (approach_alternatives), the others in alternatives_rejected
         mover = to_move
         result = {'n': None, 't': None, 'decided': False, 'bracket': None, 'outright': {}, 'moves': [], 'resolving': None,
-                  'approach_moves': [], 'alternatives': None, 'held_ok': None, 'v': None, 'line': [], 'Lo': Lo, 'nodes': 0,
-                  'fill': None, 'v_unfilled': None}
+                  'approach_moves': [], 'approach': None, 'alternatives': None, 'alternatives_rejected': None, 'held_ok': None,
+                  'v': None, 'line': [], 'Lo': Lo, 'nodes': 0, 'fill': None, 'v_unfilled': None}
         start = self.nodes
         s, o = (0, Lo) if holder == self.solver_color else (Lo, 0)
         wins = lambda verdict: None if verdict is None else verdict == (holder == self.solver_color)
@@ -1178,10 +1202,10 @@ class Solver:
                 verdict, line, nodes = self.count(board, mover, s, o, passes={mover: 1}, bar={mover: [board.ko]} if board.ko else None,
                                                    part='held-ko check %s' % holder)
                 result['held_ok'] = wins(verdict)
-                #D3: the approach moves that keep the win, from the first approach position
+                #D3: the first free moves that keep the outright win while Y passes, from the first approach position
                 first = self.play(board, None, None)
                 moves = self.counted_moves(first, holder, s, o, passes={mover: high - 1} if high > 1 else None)
-                result['alternatives'] = [(p, wins_move) for p, mark, wins_move, nodes in moves if wins_move is not False]
+                candidates = [(p, wins_move) for p, mark, wins_move, nodes in moves if wins_move is not False and p is not None]
                 if result['held_ok']:
                     self.part = 'direct ko %s' % holder
                     begin = 1 if holder == self.solver_color else 0
@@ -1191,20 +1215,96 @@ class Solver:
                         self.part = 'direct ko %s without the fill' % holder
                         result['v_unfilled'] = self.threshold(board, mover, start=begin, passes={mover: result['n']},
                                                               bar={holder: [board.ko]})
+                self.part = 'approach alternatives %s' % holder
+                result['alternatives'], result['alternatives_rejected'] = self.approach_alternatives(board, holder, result, candidates)
         result['nodes'] = self.nodes - start
         return result
 
+    def approach_alternatives(self, board, holder, profile, candidates):
+        #D3: the holder X's first free moves at P_X (board, Y to move under the ban) that keep its outright win while Y must
+        #pass (candidates [(point, True | None)], from solvemoves) are approaches only when they also work when Y may answer:
+        #after the move and Y's free retake at the ko (instead of the pass), with Y forced to pass for the rounds left, the
+        #count must equal the count after the approach on v's line and the same retake. A move that works only because Y
+        #must pass, as the capture played before the approach (10005's E19) or a self-atari that the retake captures (13169's
+        #D19), is rejected with its count. Y's other answers are the approach round's gain (D8), which the label leaves
+        #out. c121's E19 fails the test: it is a self-atari, and after the retakes White's F19 captures it as a local threat.
+        #When the free move fills the ko (D5) the test is the reading without the fill, X barred from the filling point.
+        #Without a decided count of the approach every candidate stays undecided (None). ([(point, True | None)],
+        #[(point, its count, or 'beyond +6', or why)])
+        mover = other_colour(holder)
+        v = profile['v_unfilled'] if profile['fill'] else profile['v']
+        bar = {holder: [board.ko]} if profile['fill'] else None
+        if v is None or v['d'] is None or board.ko is None:
+            return [(p, None) for p, wins in candidates], []
+        first = self.play(board, None, None)
+        passes = {mover: profile['n'] - 1} if profile['n'] > 1 else None
+        def count_after(p):
+            after = self.play(first, holder, p)
+            if after is None or self.barred(holder, p, False, {'bar': bar}):
+                return 'illegal or barred'
+            retaken = self.play(after, mover, board.ko)
+            if retaken is None:
+                return 'no retake after it'
+            return self.threshold(retaken, holder, start=v['d'], shifted=False, bar=bar, passes=passes, escalate=False)
+        line = v['pv_win'] if holder == self.solver_color else v['pv_fail']
+        approach = next((line[i + 1][1] for i in range(len(line) - 1) if line[i][2] == 'fp' and line[i + 1][0] == holder), None)
+        counts = {p: count_after(p) for p, wins in candidates}
+        reference = count_after(approach) if approach is not None else None
+        if approach is None:
+            #X passes on v's line, so v names no approach (a mutual approach, c081): the reference is the candidates' best
+            #count for X, when every candidate's count is decided
+            found = [record['d'] for record in counts.values() if isinstance(record, dict)]
+            if not found or None in found:
+                return [(p, None) for p, wins in candidates], []
+            best = min(found) if holder == self.solver_color else max(found)
+            approach = next(p for p, wins in candidates if isinstance(counts[p], dict) and counts[p]['d'] == best)
+            reference = counts[approach]
+        if not isinstance(reference, dict) or reference['d'] is None:
+            return [(p, None) for p, wins in candidates], []
+        profile['approach'] = approach
+        kept, rejected = [], []
+        for p, wins in candidates:
+            record = counts[p]
+            if isinstance(record, str):
+                rejected.append((p, record))
+            elif record['d'] == reference['d']:
+                kept.append((p, wins))
+            elif record['d'] is None and not record['beyond']:
+                kept.append((p, None))
+            else:
+                rejected.append((p, record['d'] if record['d'] is not None else 'beyond %+d' % (record['beyond'] * LABEL_LIMIT)))
+        return kept, rejected
+
     def ko_fill(self, board, holder, v):
         #D5: a free move of the holder X on its winning line behind v that fills the ko at P_X's retake point is a throw-in,
-        #not an approach: Y captures and a second ko follows, a bent four in 215 and 13169. v counts that second ko, the
-        #outright tests do not (Y's threats win it). {point, bent_four (the shape shows on the line)} or None
+        #not an approach: Y captures the stones it joins, and v counts what follows, which the outright tests do not (Y's
+        #threats win it). What follows is named by the solver's class of the position after the capture, with X to move and
+        #with Y to move, never by its shape: in 215 and 13169 the corner has the shape of a bent four, but it is a ko that X
+        #must start at once (KO, and Y lives if X passes), not BENT4. {point, capture, status, reply} (the class records,
+        #undecided ones included) or None
         if board.ko is None or v['d'] is None:
             return None
         line = v['pv_win'] if holder == self.solver_color else v['pv_fail']
-        if not any(line[i][2] == 'fp' and line[i + 1][0] == holder and line[i + 1][1] == board.ko for i in range(len(line) - 1)):
+        fills = [i for i in range(len(line) - 1) if line[i][2] == 'fp' and line[i + 1][0] == holder and line[i + 1][1] == board.ko]
+        if not fills:
             return None
-        boards = self.replay(board, line)
-        return {'point': board.ko, 'bent_four': any(has_bent_four(b, other_colour(self.attacker)) for b in boards)}
+        fill = {'point': board.ko, 'capture': None, 'status': None, 'reply': None}
+        filled = self.replay(board, line[:fills[0] + 2])[-1]
+        chain, liberties = self.chain_of(filled.stones, board.ko)
+        if len(liberties) != 1:
+            return fill
+        fill['capture'] = next(iter(liberties))
+        captured = self.play(filled, other_colour(holder), fill['capture'])
+        if captured is None:
+            return fill
+        for key, to_move in (('status', holder), ('reply', other_colour(holder))):
+            record = self.classify(captured, to_move, use_wide=False)
+            if record['status'] == STATUS_UNKNOWN or record['open']:
+                record = self.classify(captured, to_move, budget=ESCALATION * self.budget, use_wide=False)
+            fill[key] = record
+            if self.undecided is not None:
+                self.undecided.extend(dict(item, part='second ko %s' % item['part']) for item in record['undecided'])
+        return fill
 
     def leaf_moves(self, board, to_move, d):
         #D12: the moves of the side to move that keep d, nearest the target first, at most 3
@@ -1311,7 +1411,8 @@ class Solver:
 
     def area_label(self, board, to_move, last_move=None, approach_rule=True):
         #the label in this solver's area (design 4, steps 1-5): the record of design 7.1 with what the core computes
-        record = {'label': None, 'class': None, 'class_inferred': False, 'class_open': [], 'besogo': None, 'count': None, 'd_conv': None,
+        record = {'label': None, 'class': None, 'class_inferred': False, 'class_open': [], 'class_open_tests': [], 'besogo': None,
+                  'count': None, 'd_conv': None,
                   'first_take': None, 'approaches': None, 'direct_ko': None, 'gain': None, 'strict_label': None,
                   'net_label': None, 'second_ko': None, 'alternative': None, 'special': None, 'area': None, 'a': None, 'e': None,
                   'extra_threats': None, 'warnings': [], 'undecided': [], 'nodes': 0, 'seconds': 0, 'solver': self.solver_color,
@@ -1338,6 +1439,7 @@ class Solver:
             status = self.classify(board, to_move, budget=ESCALATION * self.budget, use_wide=False)
         record['class'] = status['status']
         record['class_open'] = list(status['open'])
+        record['class_open_tests'] = list(status['open_tests'])
         record['class_tests'] = {'modes': status['modes'], 'tests': status['tests'], 'nodes': self.nodes - start}
         record['warnings'].extend(status['warnings'])
         record['undecided'].extend(status['undecided'])
@@ -1422,14 +1524,19 @@ class Solver:
             holder = solver if second['side'] == 'S' else other_colour(solver)
             self.part = 'count without the fill'
             unfilled = self.threshold(board, to_move, bar={holder: [second['point']]})
-            record['second_ko'] = dict(second, point=self.point_name(second['point']), holder=holder)
+            record['second_ko'] = dict({key: second[key] for key in ('side', 'a', 'v', 'v_unfilled')}, holder=holder,
+                                       point=self.point_name(second['point']),
+                                       capture=self.point_name(second['capture']) if second['capture'] else None)
+            for key in ('status', 'reply'):
+                #the solver's classes after the capture, with the holder and with the other side to move
+                found = second[key]
+                record['second_ko'].update({key: found and found['status'], key + '_open': found and list(found['open']),
+                                            key + '_text': found and status_text(found)})
             record['alternative'] = {'label': parts['alternative'], 'count': unfilled['d'], 'bracket': unfilled['bracket'],
                                      'strict_label': None if unfilled['d'] is None else besogo_string(second['a'], -unfilled['d'] - second['a']),
                                      'reading': '%s may not fill the ko at %s' % (COLOUR_NAMES[holder], record['second_ko']['point'])}
-            record['warnings'].append('second ko after the capture: %s\'s free move fills the ko at %s and %s follows; the label counts '
-                                      'it, %s is the label without it (design 13, question 5)' % (
-                                          COLOUR_NAMES[holder], record['second_ko']['point'],
-                                          'a bent four' if second['bent_four'] else 'another ko', parts['alternative']))
+            record['warnings'].append('second ko after the capture: %s; the label counts it, %s is the label without it (design 13, '
+                                      'question 5)' % (fill_text(record['second_ko'], self.attacker), parts['alternative']))
         record['first_take'] = {'side': take['side'], 'point': self.point_name(take['ko'][1]) if take['ko'] else None,
                                 'retake_point': self.point_name(take['ko'][0]) if take['ko'] else None, 'how': take['how'],
                                 'preparation': [(c, self.point_name(p)) for c, p in take['preparation']], 'confirmed': take['confirmed'],
@@ -1480,8 +1587,11 @@ class Solver:
         return {'n': profile['n'], 't': profile['t'], 'decided': profile['decided'], 'bracket': profile['bracket'],
                 'outright': profile['outright'], 'moves': names(profile['moves']), 'resolving': self.point_name(profile['resolving']),
                 'approach_moves': names(profile['approach_moves']),
+                'approach': self.point_name(profile['approach']) if profile['approach'] else None,
                 'alternatives': None if profile['alternatives'] is None else
                 ['%s%s' % (self.point_name(p), '' if wins else '?') for p, wins in profile['alternatives']],
+                'alternatives_rejected': None if profile['alternatives_rejected'] is None else
+                [(self.point_name(p), value) for p, value in profile['alternatives_rejected']],
                 'held_ok': profile['held_ok'], 'v': profile['v'] and profile['v']['d'],
                 'v_decided': profile['v'] and profile['v']['decided'],
                 'v_table': profile['v'] and profile['v']['table'],
@@ -2100,6 +2210,34 @@ SPECIAL_REASONS = {
 
 NUMBER_WORDS = {1: 'one', 2: 'two', 3: 'three', 4: 'four', 5: 'five', 6: 'six'}
 
+def either(items):
+    #'A', 'A or B', 'A, B or C'
+    items = list(items)
+    return items[0] if len(items) == 1 else '%s or %s' % (', '.join(items[:-1]), items[-1])
+
+def open_text(record, key='open', tests_key='open_tests'):
+    #the statuses a class record leaves open and the undecided tests behind them, '' for none: 'BENT4 not ruled out
+    #(bent-four test undecided at 1,000,000 nodes)'
+    statuses = record.get(key) or []
+    if not statuses:
+        return ''
+    tests = ['%s test undecided at %s nodes' % (test['part'], format(test['nodes'], ',')) for test in record.get(tests_key) or []
+             if set(test['open']) & set(statuses)]
+    return '%s not ruled out (%s)' % (either(statuses), '; '.join(tests))
+
+def status_text(record):
+    #a class as a caller prints it: the status, and what its undecided tests leave open ('KO, BENT4 not ruled out
+    #(bent-four test undecided at 1,000,000 nodes)')
+    extra = open_text(record)
+    return record['status'] + (', ' + extra if extra else '')
+
+def status_parts(text):
+    #status_text read back: (the class, [the statuses left open])
+    if ' not ruled out (' not in text:
+        return text, []
+    status, rest = text.split(', ', 1)
+    return status, re.split(', | or ', rest.split(' not ruled out (', 1)[0])
+
 def balance_text(solver, d):
     #what a count d (the least balance of threats the solver wins at) means in words
     opponent = other_colour(solver)
@@ -2117,16 +2255,46 @@ def undecided_text(record):
     return 'Undecided: %s' % ', '.join('%s (%d nodes)' % item for item in undecided.items()) if undecided else ''
 
 def approach_listing(summary, take):
-    #the approach moves of a side, then the other first free moves that keep its win (solvemoves' alternatives, for one
-    #approach; the ko's own points are no approach), the undecided ones last
-    moves = summary.get('round_moves') or summary['approach_moves']
+    #the approach moves of a side: the rounds' moves, else (one approach) the approach on the line of v, else the outright
+    #test's; then, for one approach, the other first free moves that keep the same count when the other side retakes for
+    #free (the alternatives; the ko's own points are no approach), the undecided ones last. A move that test rejects is no
+    #approach, also when the outright test played it (13169's D19); the test runs on the first free move, so it rejects
+    #the outright test's move for one approach only
+    rejected = [point for point, value in summary.get('alternatives_rejected') or []] if summary['n'] == 1 else []
+    moves = summary.get('round_moves') or (summary['n'] == 1 and summary.get('approach') and [summary['approach']]) or \
+        [move for move in summary['approach_moves'] if move not in rejected]
     ko_points = (take.get('point'), take.get('retake_point'))
     others = [alternative for alternative in summary['alternatives'] or [] if alternative.rstrip('?') not in moves
               and alternative.rstrip('?') not in ko_points] if summary['n'] == 1 else []
     decided = [alternative for alternative in others if not alternative.endswith('?')]
     open_moves = [alternative.rstrip('?') for alternative in others if alternative.endswith('?')]
-    return ' and '.join(moves) + (', or %s' % ' or '.join(decided) if decided else '') + \
+    return (' and '.join(moves) or 'none found') + (', or %s' % ' or '.join(decided) if decided else '') + \
         ('; %s undecided' % ', '.join(open_moves) if open_moves else '')
+
+def fill_text(second, attacker):
+    #D5 in words: the holder's fill, the other side's capture, and what follows by the solver's classes there, with the
+    #holder to move and with the other side to move ('a second ko that Black must start at once': KO, and the other side
+    #settles it when the holder plays elsewhere)
+    holder, other = second['holder'], other_colour(second['holder'])
+    text = '%s fills the ko at %s' % (COLOUR_NAMES[holder], second['point'])
+    if second.get('capture') is None:
+        return text + ', and the stones it joins are not in atari'
+    text += ', %s captures at %s' % (COLOUR_NAMES[other], second['capture'])
+    status, reply = second.get('status'), second.get('reply')
+    #the other side's result without a ko: life when it defends, death when it attacks
+    settled = (STATUS_DEAD,) if other == attacker else (STATUS_ALIVE, STATUS_SEKI, STATUS_SEKI_SENTE)
+    if status == STATUS_KO and not second.get('status_open'):
+        if reply in settled and not second.get('reply_open'):
+            return text + ', and a second ko follows that %s must start at once' % COLOUR_NAMES[holder]
+        if reply == STATUS_UNKNOWN or second.get('reply_open'):
+            return text + ', and a second ko follows; whether %s must start it at once is open (with %s to move: %s)' % (
+                COLOUR_NAMES[holder], COLOUR_NAMES[other], second.get('reply_text'))
+        return text + ', and a second ko follows'
+    if status == STATUS_BENT4 and not second.get('status_open'):
+        return text + ', and a bent four in the corner follows (the solver\'s BENT4)'
+    if status in (None, STATUS_UNKNOWN):
+        return text + ', and the class after the capture is undecided'
+    return text + ', and the solver\'s class after the capture is %s' % second.get('status_text')
 
 def bracket_text(low, high):
     #what the outright tests of an undecided approach count say: low forced passes are not enough, high are (None: not known)
@@ -2146,18 +2314,21 @@ def label_text(record):
     side_colour = lambda side: solver if side == 'S' else other_colour(solver)
     label = record['label']
     sentences = []
+    #what an undecided test of the class step leaves open beside the class
+    class_open = open_text(record, 'class_open', 'class_open_tests')
     if record.get('special'):
-        return '%s: %s.' % (label, SPECIAL_REASONS.get(label, 'from the class step'))
+        return '%s: %s%s.' % (label, SPECIAL_REASONS.get(label, 'from the class step'), '; ' + class_open if class_open else '')
     if label in (STATUS_DEAD, STATUS_ALIVE):
-        return '%s: no ko (class %s).' % (label, record.get('class'))
+        return '%s: no ko (class %s%s).' % (label, record.get('class'), ', ' + class_open if class_open else '')
     if label is None or 'KO' not in label:
         undecided = undecided_text(record)
         return '%s: the class is undecided and the leaf has no ko shape%s.' % (label, '. ' + undecided if undecided else '')
     if record.get('class') in (STATUS_DEAD, STATUS_ALIVE):
         return '%s: the line ends with the solver\'s capture of a ko, which the leaves count as taking first; without it the result ' \
-               'is clean %s.' % (label, record['class'])
+               'is clean %s%s.' % (label, record['class'], ', ' + class_open if class_open else '')
     head = label + (' (class KO inferred: each side wins while it holds the ko)' if record.get('class_inferred') else
-                    ' (class undecided)' if record.get('class') == STATUS_UNKNOWN else '')
+                    ' (class undecided)' if record.get('class') == STATUS_UNKNOWN else
+                    ' (class KO, %s)' % class_open if class_open else '')
     take = record.get('first_take') or {}
     if take.get('side') is None:
         sentences.append('Who takes first is undecided')
@@ -2189,9 +2360,8 @@ def label_text(record):
             #D5: the free move fills the ko, so the capture threatens a second ko
             other_name = COLOUR_NAMES[other_colour(second['holder'])]
             alternative = record.get('alternative') or {}
-            sentences.append('%s\'s capture threatens a second ko: if %s ignores it, %s fills the ko at %s and %s follows. The label '
-                             'counts it, so the ko is direct' % (name, other_name, name, second['point'],
-                                                                 'a bent four in the corner' if second['bent_four'] else 'another ko'))
+            sentences.append('%s\'s capture threatens a second ko: if %s ignores it, %s. The label counts it, so the ko is direct' % (
+                name, other_name, fill_text(second, record['solver'] if record['goal'] == 'KILL' else other_colour(record['solver']))))
             sentences.append('Without it (%s) %s needs %s approach%s (%s): %s, full count %s. Which reading the labels follow is open '
                              '(design 13, question 5)' % (
                                  alternative.get('reading'), name, NUMBER_WORDS.get(summary['n'], summary['n']), 'es' if summary['n'] > 1 else '',
@@ -2324,7 +2494,8 @@ def label_summary(record, authored, goal):
     gain = record.get('gain') or {}
     return {'label': record['label'], 'strict_label': record.get('strict_label'), 'strict_from_parts': record.get('strict_from_parts'),
             'net_label': record.get('net_label'), 'alternative': record.get('alternative'), 'second_ko': record.get('second_ko'),
-            'class': record.get('class'), 'class_inferred': record.get('class_inferred'),
+            'class': record.get('class'), 'class_inferred': record.get('class_inferred'), 'class_open': record.get('class_open'),
+            'class_open_tests': record.get('class_open_tests'),
             'count': count.get('d_full'), 'count_decided': count.get('decided'), 'd_conv': record.get('d_conv'),
             'first_take': {key: take.get(key) for key in ('side', 'point', 'how', 'preparation')},
             'approaches': {side: (summary or {}).get('n') for side, summary in (record.get('approaches') or {}).items()},
@@ -2377,8 +2548,9 @@ def compare_label(authored, record, goal):
     #beside them. [{kind, severity, ...}]: status-mismatch (error), ko-approach (major; same_count when T_label is equal),
     #ko-threats (minor), ko-notation (note: 10kKO against an A-form besogo ranks equal), ko-convention (note: the tree is
     #the label without the second ko, design 13 question 5), ko-count (info: the tree's T_label against the full count, or
-    #outside the count's decided bracket while the count is undecided), label-undecided (info). A partly undecided label is
-    #compared on its decided parts: the approach counts its profiles allow, and the count's bracket
+    #outside the count's decided bracket while the count is undecided), label-undecided (info), class-open (info: an
+    #undecided test of the class step leaves other statuses open; a tree status among them is no status-mismatch). A partly
+    #undecided label is compared on its decided parts: the approach counts its profiles allow, and the count's bracket
     text = authored.strip()
     tree = parse_status(text)
     label = record.get('label') or STATUS_UNKNOWN
@@ -2389,8 +2561,14 @@ def compare_label(authored, record, goal):
     ko_types = ('KO', STATUS_TEN_THOUSAND)
     mine = parse_status(label) if '?' not in label else {'type': 'KO'}
     issues = []
+    open_statuses = record.get('class_open') or []
+    if open_statuses:
+        #the tree's status by its class: any ko label is the class KO
+        tree_class = STATUS_SEKI_SENTE if tree['sente'] else STATUS_KO if tree['type'] in ko_types else tree['type']
+        issues.append({'kind': 'class-open', 'severity': 'info', 'authored': text, 'label': label, 'open': list(open_statuses),
+                       'tree_open': tree_class in open_statuses, 'text': open_text(record, 'class_open', 'class_open_tests')})
     if tree['type'] not in ko_types or mine['type'] not in ko_types:
-        if (tree['type'], tree['sente']) != (mine['type'], mine.get('sente', False)):
+        if (tree['type'], tree['sente']) != (mine['type'], mine.get('sente', False)) and not (issues and issues[0]['tree_open']):
             issues.append({'kind': 'status-mismatch', 'severity': 'error', 'authored': text, 'label': label})
         return issues
     count = record.get('count') or {}
@@ -2556,35 +2734,6 @@ def has_bent_four(board, defender):
         if enclosed:
             return True
     return False
-
-def ko_kind(solver, board, to_move, plies=24):
-    #follows the solver's ko line; a ko that comes from a bent four in the corner is BENT4 (dead unless the attacker is
-    #forced to resolve it), else KO
-    defender = 'W' if solver.attacker == 'B' else 'B'
-    board = board.copy()
-    for _ in range(plies):
-        if has_bent_four(board, defender):
-            return 'BENT4'
-        status, best = solver.status(board, to_move)
-        if status != STATUS_KO:
-            break
-        move = None
-        if best is not None:
-            child = board.copy()
-            if child.play(to_move, best) and solver.status(child, 'W' if to_move == 'B' else 'B')[0] == STATUS_KO:
-                move = best
-        if move is None:
-            #moves near the target first, so the line stays in the fight instead of wandering off
-            near = lambda p: min(abs(p[0] - t[0]) + abs(p[1] - t[1]) for t in solver.target)
-            for p in sorted(solver.problem.region, key=near):
-                child = board.copy()
-                if p not in child.stones and child.play(to_move, p) and solver.status(child, 'W' if to_move == 'B' else 'B')[0] == STATUS_KO:
-                    move = p
-                    break
-        if move is None or not board.play(to_move, move):
-            break
-        to_move = 'W' if to_move == 'B' else 'B'
-    return 'KO'
 
 def ko_taken_by(board, last_mover, solver_color, status):
     #the convention for leaves: a line that ends with the solver's side capturing a ko is a ko (KO+, the solver took

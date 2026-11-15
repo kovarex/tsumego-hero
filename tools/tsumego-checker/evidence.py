@@ -138,10 +138,14 @@ def mode_text(fields):
         words[fields['A']], words[fields['D']])
 
 start = time.time()
-status, best = solver.status(board, to_move)
+record = solver.status_record(board, to_move)
+status, best = record['status'], record['best']
 last_mover = path[-1][1] if path else None
 final = ko_taken_by(board, last_mover, solver_color, status)
-print('\nSolver verdict for the %s group: %s%s' % (names[color], final, ' (the solver\'s own result was %s; a line ending with the solver capturing a ko counts as a ko)' % status if final != status else ''))
+#the statuses an undecided test of the class leaves open beside the verdict
+left = open_text(dict(record, open=[s for s in record['open'] if s != final]))
+print('\nSolver verdict for the %s group: %s%s%s' % (names[color], final, ', ' + left if left else '',
+      ' (the solver\'s own result was %s; a line ending with the solver capturing a ko counts as a ko)' % status if final != status else ''))
 normal = raw(solver, board, to_move)
 wide = raw(solver.wide, board, to_move)
 print('  search area: %s' % mode_text(normal))
@@ -165,7 +169,7 @@ def solver_line(s, board, to_move, result, plies=12):
             child = board.copy()
             if not child.play(to_move, p):
                 continue
-            if s.status(child, opponent(to_move))[0] == result:
+            if s.status_record(child, opponent(to_move))['status'] == result:
                 chosen = (p, child)
                 break
         if chosen is None:
@@ -191,9 +195,10 @@ if '--moves' in flags:
         child = board.copy()
         if not child.play(to_move, p):
             continue
-        child_status = solver.status(child, opponent(to_move))[0]
-        child_status = ko_taken_by(child, to_move, solver_color, child_status)
-        results.setdefault(child_status, []).append(name(p))
+        child_record = solver.status_record(child, opponent(to_move))
+        child_status = ko_taken_by(child, to_move, solver_color, child_record['status'])
+        left = [s for s in child_record['open'] if s != child_status]
+        results.setdefault(child_status, []).append(name(p) + (' (or %s)' % '/'.join(left) if left else ''))
     for key in ('DEAD', 'BENT4', 'DSKO', 'DDKO', 'KO', 'SEKI', 'SEKI+', 'ADKO', 'ASKO', 'ALIVE', '?'):
         if key in results:
             print('  %-5s after %s' % (key, ' '.join(results[key])))

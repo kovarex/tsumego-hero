@@ -4,7 +4,7 @@ import json, sys, time, os
 #ids already done by an earlier run, one per line
 SKIP_IDS = set(open(os.environ['SKIP']).read().split()) if os.environ.get('SKIP') else set()
 from tsumego import *
-from first_moves import opponent, solver_wins, rank
+from first_moves import opponent, solver_wins, rank, open_ranks, decided_rank, ahead
 #the full ko label of each KO leaf of a status problem, compared with its S[] (research/ko_labels/design.md 7.3)
 KO_LABEL = os.environ.get('KO_LABEL', '1') == '1'
 
@@ -192,17 +192,18 @@ def check(text, engine, budget, scan_missing=True, description=None, missing_dep
                 attacker = solver_color if goal == 'KILL' else opponent(solver_color)
                 problem = Problem(root.board, focused_region(root.board, box, stones, tree_points))
                 solver = Solver(engine, problem, attacker, stones, detect_budget)
-                first = rank(solver.status(root.board, solver_color)[0], goal)
-                second = rank(solver.status(root.board, opponent(solver_color))[0], goal)
+                #the ranks over every status an undecided test of the class leaves open
+                first = solver.status_record(root.board, solver_color)
+                second = solver.status_record(root.board, opponent(solver_color))
                 agreement = decided = 0
                 for child in root.children:
                     if child.label is not None:
-                        r = rank(solver.status(child.board, child.to_move)[0], goal)
+                        r = decided_rank(solver.status_record(child.board, child.to_move), goal)
                         decided += r is not None
                         agreement += (r is not None and (r == 2) == (child.label == 2))
                 if decided and agreement == decided and (fallback is None or (len(stones), agreement) > fallback[:2]):
                     fallback = (len(stones), agreement, goal, stones)
-                if first is None or second is None or first <= second:
+                if not ahead(first, second, goal):
                     continue
                 #the largest unsettled group is the problem's group; agreement with the tree only breaks ties
                 candidate = (len(stones), agreement, goal, stones)
@@ -237,27 +238,40 @@ def check(text, engine, budget, scan_missing=True, description=None, missing_dep
     report['target'] = sorted(point_name(p, size) for p in stones)
     report['region'] = len(problem.region)
 
-    positions = [] #(issue, node) to verify once the tree is done
+    positions = [] #(issue, node, holds) to verify once the tree is done
 
-    def add_issue(issue, node):
+    def add_issue(issue, node, holds):
         report['issues'].append(issue)
-        positions.append((issue, node))
+        positions.append((issue, node, holds))
+
+    def add_finding(issue, node, record, holds):
+        #a finding about the engine's class (record: its status_record); the statuses an undecided test leaves open are
+        #shown beside it, and when one of them would undo the finding (holds false for it) the finding is a note
+        #<kind>-open, not an issue
+        if record['open']:
+            issue['engine_open'] = list(record['open'])
+            issue['engine_text'] = status_text(record)
+        if all(holds(status) for status in record['open']):
+            add_issue(issue, node, holds)
+        else:
+            report['notes'].append(dict(issue, kind=issue['kind'] + '-open'))
 
     def is_detour(board, correct):
-        #the move only makes an exchange before the tree's own answer: after every opponent answer that still leaves the
-        #solver winning, one of the tree's correct moves from the same node wins too
+        #the move only makes an exchange before the tree's own answer: after every opponent answer that may still leave the
+        #solver winning (by its class or a status left open), one of the tree's correct moves from the same node surely wins
         if not correct:
             return False
         for p in sorted(problem.region) + [None]:
             child = board.copy()
             if (p is not None and p in child.stones) or not child.play(opponent(solver_color), p):
                 continue
-            if rank(solver.status(child, solver_color)[0], goal) != 2:
+            if 2 not in open_ranks(solver.status_record(child, solver_color), goal):
                 continue
             wins = False
             for c in correct:
                 grand = child.copy()
-                if c not in grand.stones and grand.play(solver_color, c) and rank(solver.status(grand, opponent(solver_color))[0], goal) == 2:
+                if c not in grand.stones and grand.play(solver_color, c) and \
+                        decided_rank(solver.status_record(grand, opponent(solver_color)), goal) == 2:
                     wins = True
                     break
             if not wins:
@@ -265,8 +279,9 @@ def check(text, engine, budget, scan_missing=True, description=None, missing_dep
         return True
 
     def engine_rank(node):
-        status, best_move = solver.status(node.board, node.to_move)
-        return rank(status, goal), status, best_move
+        #the rank of the engine's class, the class, its best move and its status_record (with the statuses left open)
+        record = solver.status_record(node.board, node.to_move)
+        return rank(record['status'], goal), record['status'], record['best'], record
 
     def path(node_chain):
         return ' '.join(point_name(n.move, size) for n in node_chain if n is not root)
@@ -284,22 +299,35 @@ def check(text, engine, budget, scan_missing=True, description=None, missing_dep
             if not node.children and not node.virtual:
                 #leaf status: the filler/fixer for status problems
                 if label.status_mode:
-                    r, status, _ = engine_rank(node)
+                    r, status, _, record = engine_rank(node)
                     last_mover = opponent(node.to_move) if node.move is not None else None
                     status = ko_taken_by(node.board, last_mover, solver_color, status)
                     r = rank(status, goal)
+                    record = dict(record, status=status, open=[s for s in record['open'] if s != status])
+                    authored = (node.status_text or '').strip()
+                    #bent four against plain dead (or the reverse): almost the same, but not quite (the tests are kept with
+                    #the finding for the wide check, so they keep this leaf's status)
+                    almost = lambda s, authored=authored: (s == STATUS_BENT4) != (authored == 'BENT4') and rank(s, goal) is not None \
+                        and rank(s, goal) == status_rank(authored, goal) and s != STATUS_UNKNOWN
+                    #bent four is a ko the attacker wins by removing threats first
+                    mismatch = lambda s, authored=authored: rank(s, goal) is not None and status_rank(authored, goal) is not None \
+                        and rank(s, goal) != status_rank(authored, goal) and not (authored == 'BENT4' and s == STATUS_KO)
                     if node.status_text is None:
-                        add_issue({'kind': 'missing-status', 'line': path(chain), 'engine': status}, node)
-                        if status in (STATUS_DEAD, STATUS_ALIVE, STATUS_KO):
+                        add_finding({'kind': 'missing-status', 'line': path(chain), 'engine': status}, node, record, lambda s: True)
+                        #the fix writes a class only when nothing is left open beside it
+                        if status in (STATUS_DEAD, STATUS_ALIVE, STATUS_KO) and not record['open']:
                             node.sgf.properties['S'] = [status]
                             report['fixed'] = True
-                    elif (status == STATUS_BENT4) != (node.status_text.strip() == 'BENT4') and r is not None \
-                            and r == status_rank(node.status_text, goal) and status != STATUS_UNKNOWN:
-                        #bent four against plain dead (or the reverse): almost the same, but not quite
-                        add_issue({'kind': 'status-almost', 'line': path(chain), 'authored': node.status_text, 'engine': status}, node)
-                    elif r is not None and status_rank(node.status_text, goal) is not None and r != status_rank(node.status_text, goal) \
-                        and not (node.status_text.strip() == 'BENT4' and status == STATUS_KO): #bent four is a ko the attacker wins by removing threats first
-                        add_issue({'kind': 'status-mismatch', 'line': path(chain), 'authored': node.status_text, 'engine': status}, node)
+                    elif almost(status):
+                        add_finding({'kind': 'status-almost', 'line': path(chain), 'authored': node.status_text, 'engine': status}, node,
+                                    record, almost)
+                    elif mismatch(status):
+                        add_finding({'kind': 'status-mismatch', 'line': path(chain), 'authored': node.status_text, 'engine': status}, node,
+                                    record, mismatch)
+                    elif record['open']:
+                        #no finding, but the class is one of several
+                        report['notes'].append({'kind': 'status-open', 'line': path(chain), 'authored': node.status_text, 'engine': status,
+                                                'engine_open': list(record['open']), 'engine_text': status_text(record)})
                     if KO_LABEL and node.status_text is not None and status == STATUS_KO:
                         ko_leaves.append((node, chain))
                 continue
@@ -309,15 +337,20 @@ def check(text, engine, budget, scan_missing=True, description=None, missing_dep
                 for child in node.children:
                     if child.label is None:
                         continue
-                    r, status, refutation = engine_rank(child)
+                    r, status, refutation, record = engine_rank(child)
                     if r is None:
                         report['notes'].append({'kind': 'undecided', 'line': path(chain + [child])})
                     elif child.label == 2 and r == 0:
-                        add_issue({'kind': 'correct-move-fails', 'line': path(chain + [child]), 'engine': status, 'refutation': point_name(refutation, size)}, child)
+                        add_finding({'kind': 'correct-move-fails', 'line': path(chain + [child]), 'engine': status,
+                                     'refutation': point_name(refutation, size)}, child, record, lambda s: rank(s, goal) == 0)
                     elif child.label == 0 and r == 2:
-                        add_issue({'kind': 'wrong-move-works', 'line': path(chain + [child]), 'engine': status}, child)
+                        add_finding({'kind': 'wrong-move-works', 'line': path(chain + [child]), 'engine': status}, child, record,
+                                    lambda s: rank(s, goal) == 2)
                     elif r != child.label:
-                        report['notes'].append({'kind': 'ko-difference', 'line': path(chain + [child]), 'tree': child.label, 'engine': status})
+                        note = {'kind': 'ko-difference', 'line': path(chain + [child]), 'tree': child.label, 'engine': status}
+                        if record['open']:
+                            note.update(engine_open=list(record['open']), engine_text=status_text(record))
+                        report['notes'].append(note)
                 #missing correct moves along the correct lines
                 on_correct_line = all(n.label == 2 for n in chain)
                 if scan_missing and on_correct_line and node.depth <= missing_depth and node.alias is None:
@@ -331,7 +364,7 @@ def check(text, engine, budget, scan_missing=True, description=None, missing_dep
                         if problem.board_text(child_board) + opponent(solver_color) in tree_positions:
                             continue #a transposition into the tree, besogo follows it
                         fake = TreeNode(node.sgf, child_board, opponent(solver_color), node.depth + 1)
-                        r, status, _ = engine_rank(fake)
+                        r, status, _, record = engine_rank(fake)
                         if r == 2 and ko_taken_by(child_board, solver_color, solver_color, status) == STATUS_KO:
                             #the move captures a ko: the opponent retakes after a threat, so it is no clean answer (rule 2)
                             report['notes'].append({'kind': 'ko-capture-alternative', 'line': (path(chain) + ' ' + point_name(p, size)).strip()})
@@ -342,15 +375,16 @@ def check(text, engine, budget, scan_missing=True, description=None, missing_dep
                             if is_detour(child_board, correct):
                                 report['notes'].append(dict(issue, kind='detour'))
                             else:
-                                add_issue(issue, fake)
+                                add_finding(issue, fake, record, lambda s: rank(s, goal) == 2)
             else:
                 #opponent's replies: in a wrong line each should refute, in a correct line none should
                 for child in node.children:
                     if child.label is None:
                         continue
-                    r, status, answer = engine_rank(child)
+                    r, status, answer, record = engine_rank(child)
                     if node.label == 0 and r == 2:
-                        add_issue({'kind': 'refutation-does-not-refute', 'line': path(chain + [child]), 'engine': status, 'solver-continues': point_name(answer, size)}, child)
+                        add_finding({'kind': 'refutation-does-not-refute', 'line': path(chain + [child]), 'engine': status,
+                                     'solver-continues': point_name(answer, size)}, child, record, lambda s: rank(s, goal) == 2)
     except TimeoutError:
         report['timed_out'] = True
     #every finding is solved again over a wider region with a bigger budget, and kept only if that agrees
@@ -358,19 +392,30 @@ def check(text, engine, budget, scan_missing=True, description=None, missing_dep
         verifier = Solver(wide_engine(), solver.wide.problem, attacker, stones, budget * 5)
         verifier.solver_color = solver_color
         Solver.deadline = time.time() + VERIFY_SECONDS
-        for issue, node in positions:
+        for issue, node, holds in positions:
+            #confirmed when the wider area gives the same class and nothing it leaves open undoes the finding
             try:
-                wide = verifier.status(node.board, node.to_move)[0]
+                record = verifier.status_record(node.board, node.to_move)
+                wide, left = record['status'], record['open']
             except TimeoutError:
-                wide = 'timeout'
-            if wide != issue['engine']:
+                wide, left = 'timeout', []
+            if wide != issue['engine'] or not all(holds(status) for status in left):
                 report['issues'].remove(issue)
-                report['notes'].append(dict(issue, kind=issue['kind'] + '-not-confirmed', wide=wide))
+                note = dict(issue, kind=issue['kind'] + '-not-confirmed', wide=wide)
+                if left:
+                    note.update(wide_open=list(left), wide_text=status_text(record))
+                report['notes'].append(note)
             else:
                 issue['confirmed_wide'] = True
+                if left:
+                    issue.update(wide_open=list(left), wide_text=status_text(record))
     #findings mean something only when the formulation is proven: the opponent moving first refutes (the problem is unsettled)
-    opponent_first = rank(solver.status(root.board, opponent(solver_color))[0], goal) if not report.get('timed_out') else None
-    report['unsettled'] = opponent_first is not None and opponent_first < 2
+    #proven only when every status the class leaves open fails for the solver too
+    opponent_first = solver.status_record(root.board, opponent(solver_color)) if not report.get('timed_out') else None
+    ranks = open_ranks(opponent_first, goal) if opponent_first else {None}
+    report['unsettled'] = None not in ranks and all(r < 2 for r in ranks)
+    if opponent_first and opponent_first['open']:
+        report['opponent_first'] = status_text(opponent_first)
     #the full labels of the KO leaves against their S[]: a different approach count or threat count is an issue; notation,
     #count and undecided parts are notes, and so is a class difference the status check above did not report. A label past
     #the time limit ends the labels, not the check

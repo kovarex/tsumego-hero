@@ -2,7 +2,7 @@
 #refutation), plus copies with one injected error each, to measure what check_tree.py catches
 import json, sys, os, random
 from tsumego import *
-from first_moves import opponent, rank, groups_of
+from first_moves import opponent, decided_rank, groups_of
 
 def sgf_point(p):
     return chr(97 + p[0]) + chr(97 + p[1])
@@ -45,8 +45,10 @@ def main(results_path, out_dir, budget, limit):
             child = board.copy()
             if not child.play(solver_color, p):
                 continue
-            status, refutation = solver.status(child, opponent(solver_color))
-            if rank(status, goal) == 0 and refutation:
+            #a planted wrong move must fail whatever an undecided test of the class leaves open
+            record = solver.status_record(child, opponent(solver_color))
+            refutation = record['best']
+            if decided_rank(record, goal) == 0 and refutation:
                 wrong.append((p, refutation))
         if len(wrong) < 2:
             continue
@@ -71,7 +73,7 @@ def main(results_path, out_dir, budget, limit):
             if q in child.stones or q == r:
                 continue
             grand = child.copy()
-            if grand.play(oc, q) and rank(solver.status(grand, sc)[0], goal) == 2:
+            if grand.play(oc, q) and decided_rank(solver.status_record(grand, sc), goal) == 2:
                 weak = q
                 break
         if weak:

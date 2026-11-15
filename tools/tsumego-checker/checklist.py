@@ -31,9 +31,11 @@ for sc, r in sorted(records.items(), key=lambda kv: int(kv[0])):
         if (sc, kind) in confirmed_findings or (sc, issue.get('line')) in dismissed:
             continue
         if kind in ('status-mismatch', 'status-almost'):
-            tree, solver = issue['authored'], issue['engine']
+            tree, solver = issue['authored'], issue.get('engine_text') or issue['engine']
         else:
             tree, solver = tree_says.get(kind, kind), solver_says.get(kind, issue.get('engine'))
+            if issue.get('engine_text'):
+                solver += ' (%s)' % issue['engine_text']
         try:
             out = subprocess.run(['python3', 'line.py', sc, issue['line'], r['goal'], '300000'], capture_output=True, text=True, timeout=300).stdout.split('\n')[0]
             moves = out.split(':', 1)[1].replace('(status changed)', '').split()
