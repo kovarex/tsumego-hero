@@ -332,7 +332,7 @@
 	display: block;
 	width: 11px;
 	height: 11px;
-	border-radius: var(--radius-sm);
+	border-radius: 2px;
 	background-color: var(--training-day-empty);
 }
 

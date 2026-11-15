@@ -593,11 +593,11 @@ nav ul ul ul li {
 .newMenuLi3 a,
 .newMenuLi4 a {
   font-weight: var(--weight-normal);
-  font-size: var(--text-lg);
+  font-size: 19px;
 }
 .adminLink {
   font-weight: var(--weight-normal);
-  font-size: var(--text-lg);
+  font-size: 19px;
   color: var(--color-red-light);
 }
 .homeMenuLink {
