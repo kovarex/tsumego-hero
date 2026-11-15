@@ -287,7 +287,11 @@ if __name__ == '__main__' and sys.argv[1] == 'check':
 #the report page
 def fix_label(c, topic):
     if topic:
-        return 'S[%s] now · options: %s' % (c['authored'], ' or '.join('S[%s]' % o for o in topic['options'][c['case']]))
+        options = ' or '.join('S[%s]' % o for o in topic['options'][c['case']])
+        #a leaf whose tree S[] no answer to the decision keeps (the ko-label research records it)
+        if c.get('tree_right_under_some_answer') is False:
+            return 'S[%s] is wrong either way · options: %s' % (c['authored'], options)
+        return 'S[%s] now · options: %s' % (c['authored'], options)
     if c['final'] == 'site_error':
         return 'S[%s] → S[%s]' % (c['authored'], c['correct_status'])
     return 'S[%s] is right' % c['authored']
