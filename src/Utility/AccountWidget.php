@@ -17,21 +17,21 @@ class AccountWidget
 				'text' => $timeMode->getTitle(),
 				'textClass' => '',
 				'switchText' => 'Level bar',
-				'modeSelectorClass' => 'modeSelectorInLevelBar'],
+				'modeSelectorClass' => 'mode-selector--level'],
 			'rating' => [
 				'fillClass' => 'xp-bar-fill-c2',
 				'ratio' => self::rankProgress($user['rating']),
 				'text' => Rating::getReadableRankFromRating($user['rating']),
 				'textClass' => 'account-bar-rating',
 				'switchText' => 'Level Bar',
-				'modeSelectorClass' => 'modeSelectorInRatingBar'],
+				'modeSelectorClass' => 'mode-selector--rating'],
 			default => [ //the level
 				'fillClass' => 'xp-bar-fill-c1',
 				'ratio' => $user['xp'] / Level::getXPForNext($user['level']),
 				'text' => 'Level ' . $user['level'],
 				'textClass' => 'account-bar-level',
 				'switchText' => 'Rating Bar',
-				'modeSelectorClass' => 'modeSelectorInLevelBar'],
+				'modeSelectorClass' => 'mode-selector--level'],
 		};
 	}
 

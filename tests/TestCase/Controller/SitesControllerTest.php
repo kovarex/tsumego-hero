@@ -363,7 +363,7 @@ class SitesControllerTest extends IntegrationTestCase
 
 		// The home link gets the green highlight via the nav__link--active class
 		$pageSource = $browser->driver->getPageSource();
-		$this->assertStringContainsString('class="homeMenuLink nav__link--active"', $pageSource,
+		$this->assertStringContainsString('class="nav__top-link nav__link--active"', $pageSource,
 			'Home page should have navigation highlighting');
 	}
 

@@ -175,8 +175,8 @@ $friendsBadge = $friendRequests > 0
 			<div id="newMenu">
 				<nav>
 					<ul>
-						<li><a class="homeMenuLink <?php echo $active('home'); ?>" href="/">Home</a>
-							<ul class="newMenuLi1">
+						<li><a class="nav__top-link <?php echo $active('home'); ?>" href="/">Home</a>
+							<ul class="nav__submenu--home">
 								<li><a class="<?php echo $active('websitefunctions'); ?>" href="/sites/websitefunctions">Functions & Modes</a></li>
 								<li><a class="<?php echo $active('gotutorial'); ?>" href="/sites/gotutorial">Go Rules</a></li>
 								<?php //The site's comments, the forums are in the menu itself ?>
@@ -191,7 +191,7 @@ $friendsBadge = $friendRequests > 0
 						</li>
 						<li><a class="<?php echo $active('set'); ?>" href="/sets">Collections<?php echo $classesBadge; ?></a>
 							<?php if (Auth::isLoggedIn()): ?>
-							<ul class="newMenuLi2">
+							<ul class="nav__submenu--collections">
 								<li><a href="/sets/mine">My Sets</a></li>
 								<li><a class="<?php echo $active('favs'); ?>" href="<?php echo SetTable::url('favorites'); ?>">Favorites</a></li>
 								<li><a class="<?php echo $active('classes'); ?>" href="/classes">Classes<?php echo $classesBadge; ?></a></li>
@@ -200,13 +200,13 @@ $friendsBadge = $friendRequests > 0
 								<?php endif; ?>
 								<?php if (Auth::isAdmin()): ?>
 								<?php //Everything an admin does is linked from the admin page ?>
-								<li><a class="adminLink <?php echo $active('admin'); ?>" href="/admin">Admin</a></li>
+								<li><a class="nav__admin-link <?php echo $active('admin'); ?>" href="/admin">Admin</a></li>
 								<?php endif; ?>
 							</ul>
 							<?php endif; ?>
 						</li>
-						<li><a class="homeMenuLink nav__play-link" href="<?php echo $playUrl; ?>">Play</a>
-							<ul class="newMenuLi3">
+						<li><a class="nav__top-link nav__play-link" href="<?php echo $playUrl; ?>">Play</a>
+							<ul class="nav__submenu--play">
 								<li><a class="<?php echo $active('level mode'); ?>" href="<?php echo $playUrl; ?>?mode=1">Level</a></li>
 								<?php if (Auth::isLoggedIn()): ?>
 								<li><a class="<?php echo $active('rating mode'); ?>" href="/ratingMode">Rating</a></li>
@@ -216,7 +216,7 @@ $friendsBadge = $friendRequests > 0
 							</ul>
 						</li>
 						<li><a class="<?php echo $active('highscore'); ?>" href="/users/<?php echo $highscoreLink; ?>">Highscore</a>
-							<ul class="newMenuLi4">
+							<ul class="nav__submenu--highscore">
 								<li><a class="<?php echo $active('levelHighscore'); ?>" href="/users/highscore">Level Highscore</a></li>
 								<li><a class="<?php echo $active('ratingHighscore'); ?>" href="/users/rating">Rating Highscore</a></li>
 								<li><a class="<?php echo $active('achievementHighscore'); ?>" href="/users/achievements">Achievement Highscore</a></li>
@@ -226,10 +226,10 @@ $friendsBadge = $friendRequests > 0
 							</ul>
 						</li>
 						<li><a href="/forums">Forums</a></li>
-						<li class="menuIcons1">
+						<li class="nav__icon-item">
 							<a href="#" id="soundButton" onclick="changeSound(); return false;"><img id="soundButtonImage" src="/img/<?php echo $soundSetting === 'off' ? 'sound-icon2.png' : 'sound-icon1.png'; ?>" width="25px"></a>
 						</li>
-						<li class="menuIcons1">
+						<li class="nav__icon-item">
 							<div class="board-picker">
 								<label for="board-picker-toggle" id="boardsInMenu" class="dropdown__trigger">
 									<img id="boardsButtonImage" src="/img/boards-icon1.png" width="25px">
@@ -246,15 +246,15 @@ $friendsBadge = $friendRequests > 0
 								</div>
 							</div>
 						</li>
-						<li class="menuIcons1">
-							<a class="menuIcons2" id="darkButton" onclick="darkAndLight();" title="Light or dark theme" aria-label="Switch between light and dark theme"><span class="theme-icon"></span></a>
+						<li class="nav__icon-item">
+							<a class="nav__icon-link" id="darkButton" onclick="darkAndLight();" title="Light or dark theme" aria-label="Switch between light and dark theme"><span class="theme-icon"></span></a>
 						</li>
 					</ul>
 				</nav>
 			</div>
 		</div>
 		<?php if (!Auth::isLoggedIn()): ?>
-		<div class="site-nav__signin"><a class="menuLi <?php echo $_page == 'login' ? 'nav__link--active ' : ''; ?>" id="signInMenu" href="/users/login">Sign In</a></div>
+		<div class="site-nav__signin"><a class="nav__menu-link <?php echo $_page == 'login' ? 'nav__link--active ' : ''; ?>" id="signInMenu" href="/users/login">Sign In</a></div>
 		<?php endif; ?>
 	</div>
 	<?php if (Auth::isLoggedIn()): ?>

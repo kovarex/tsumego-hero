@@ -70,12 +70,12 @@
 		padding-right: 9px;
 	}
 
-	.homeMenuLink
+	.nav__top-link
 	{
 		width: auto;
 	}
 
-	.menuIcons2,
+	.nav__icon-link,
 	#soundButton,
 	nav .board-picker
 	{
