@@ -37,11 +37,13 @@ the export is; `RESULTS` and `REPORT_DIR` do the same for `build_report.py`.
     2 the side to move keeps the move), `pv 0|1` (`solve` prints `pvA=` and `pvD=`). `kofree`, `bentfour` and `cycle`
     also work alone.
   - `solvex <toMove> <ko> <budget> <black> <white> <options|-> <board>`: the counted search with `pb=k`/`pw=k`
-    (that colour passes its next k turns; a forced pass lifts the ko ban and never ends the game), `fb=i;j`/`fw=`
-    (barred points), `kb=`/`kw=` (barred while that colour is under a ko ban) and `end=`, `cyc=`, `sk=`, `pv=` (the
-    switches, for this command only). Prints `result N=K|N|U nodes= best= cycles= [pv=]`; a line is `B<i>`, `W<i>`,
-    `Bpass` joined by `_`, with `!` after a ban break, `fp` for a forced pass and `cycle` where a position repeats.
-    `solvecount` is `solvex` with no options and keeps its old output.
+    (that colour passes its next k turns; a forced pass is a tenuki: it lifts the ko ban and breaks a run of passes,
+    so it never ends the game), `ps=1` (the last move was a pass), `fb=i;j`/`fw=` (barred points), `kb=`/`kw=`
+    (barred while that colour is under a ko ban) and `end=`, `cyc=`, `sk=`, `pv=` (the switches, for this command
+    only). The static "no two eyes" test counts the forced passes owed and the barred points. Prints
+    `result N=K|N|U nodes= best= cycles= [pv=]`; a line is `B<i>`, `W<i>`, `Bpass` joined by `_`, with `!` after a
+    ban break, `fp` for a forced pass and `cycle` where a position repeats. `solvecount` is `solvex` with no options
+    and keeps its old output.
   - `solvemoves`, with the arguments of `solvex`: every legal root move and the pass searched in one table generation,
     each with the full budget. Prints `result N= nodes= best= cycles= moves=<i>[!]:<K|N|U>:<nodes>,...` (-1 the pass,
     `!` a retake against the ban).
@@ -139,6 +141,10 @@ count, and the strict label (from the parts when the full count is undecided). `
 (approach, direct ko, gain and its no-gain twin; the full count's line when it beats the label, for a mutual approach,
 or when no other line can be built) from decided positions, with each move's role; each line carries a
 `research/report.py` diagram spec (`start`, `moves`, `first`, `caption`).
-`label_text` writes one sentence per part, `compare_label` the comparison of 7.3, and `label_summary` the fields
+A holder's free move that fills its own ko is no approach: the label then counts the second ko that follows (215 and
+13169: a bent four) and prints the A-form with the filling point barred beside it (design D5, open question 9). An
+approach round whose free retake loses outright is reported as failing (a sente approach, D8).
+`label_text` writes one sentence per part, also for a partly undecided label, `compare_label` the comparison of 7.3
+(on the decided parts of a partly undecided label), and `label_summary` the fields
 `check_tree.py` and `status_eval.py` add to KO leaves (`KO_LABEL=0` turns them off). `evidence.py --label` prints the
 whole report.

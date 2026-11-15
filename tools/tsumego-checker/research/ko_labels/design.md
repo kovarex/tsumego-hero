@@ -145,8 +145,16 @@ player is White:
     depends on the threat counts themselves, not only on s - o, and is flagged. c081 under the old end rule was
     such a case.
 - **Forced passes** (`pb=k` / `pw=k`): that colour must pass on its next k turns.
-  - A forced pass is a tenuki. It lifts the ko ban, never counts toward the two-pass end, and is part of the hash.
+  - A forced pass is a tenuki. It lifts the ko ban, breaks a run of passes and is part of the hash. So it never ends
+    the game, and neither do two voluntary passes around it: with the pass count kept, White pass, Black forced pass,
+    White pass ended the game although Black never passed, and a defender holder could connect and pass twice.
   - Each forced pass gives the other side one free move.
+  - The static "no two eyes" end test, which gives a three-point eye space two eyes only when the attacker does not
+    move next, takes the next real move after the forced passes owed. It also gives two eyes when the attacker is
+    barred from a point of the space (`fb`/`fw`, or `kb`/`kw` while it moves under the ban), since the defender can
+    then play the vital point whenever it likes.
+- **A pass already made** (`ps=1`): the position after a voluntary pass, where another pass can end the game.
+  `counted_line` uses it after each voluntary pass, so a line through a pass stays in the same game.
 - **Barred points:** `fb`/`fw` bar a colour from points for the whole search. `kb`/`kw` bar them only while that
   colour is under a ko ban, so the points cannot serve as ko threats but stay playable otherwise.
 - **Cycle rules** for repetitions:
@@ -224,6 +232,19 @@ player is White:
   retake. It is the direct ko that remains.
 - X's own local threats and Y's local threats in that direct ko are included.
 - For a plain direct ko: v_S = 1 (O holds it after its free retake and S needs a threat) and v_O = 0.
+- **A free move that fills the ko is no approach.** When X's free move on v's line (X's winning line) is at P_X's
+  retake point, X throws in at its own ko, Y captures, and a second ko follows. In 215 and 13169 it is a bent four:
+  Black fills at A19, White takes four stones and is left with a bent four in the corner, which the owner's trees
+  mark BENT4 (215 "A19 E19 C19", 13169 "A19"). v counts that second ko, but the outright tests do not, because Y's
+  Lo threats win it. So n_X says "approach" while v describes a different ko, and D6 would give A-1KO+2 in 215, which
+  fits no reading.
+  - The label is then the direct reading: X's capture threatens the second ko, so a = 0 and e = -d(leaf).
+  - The other reading, the clean kill, is printed beside it: v with X barred from the filling point for the whole
+    search (`fb`/`fw`) gives the A-form by D6, with its own full count (the leaf with the same bar). In 215 these
+    are A-1KO+ with count 1 and in 13169 A-1KO- with count 2, the owner's labels. Which reading a label follows is
+    open question 9.
+  - v_S < 1 (or v_O > 0) alone does not mark this case: a local threat of X in the direct ko gives the same values
+    (D6's KO+2 rows). The filling move does, and the approach line (D8) stops at it.
 
 ### D6 The label and the conventional count
 
@@ -235,6 +256,7 @@ player is White:
 | n_O ≥ 1, n_S = 0, F = S | n_O | -v_O |
 | n_O ≥ 1, n_S = 0, F = O | n_O | -(v_O + 1) |
 | both ≥ 1 | see D9 | |
+| X's free move fills the ko (D5) | 0 | -d(leaf); the A-form from v with the filling point barred is the other reading |
 
 - **d_conv = -(a + e)** is the count the label implies.
 - The **extra threats** are x = e - e0. x > 0 means S has net local threats or stages; x < 0 means O has.
@@ -268,6 +290,12 @@ player is White:
   - Candidates come from Y's moves in that round of the full-count line, else from the one-ply table nearest the
     target. At most 6 are tried.
   - On c121: "A17! H19 E17 A18" gives 2 and "A17! pass E17 A18" gives 1, so H19 gains White 1.
+  - A threshold decided beyond ±L is a bound ("beyond +6"), not an undecided value.
+  - **A failing round.** When the round with the tenuki is beyond in X's favour, Y's free retake after a_i loses
+    outright: Y must answer a_i instead, so the approach is sente (risk 2). The round has no gain to measure. It is
+    reported as "approach round i fails: Y must answer a_i" with Y's answer from v's line, and the approach line is
+    built at the limit to show the failure. In 13677 (S[A+1KO-]) White's E19 is such an approach: after Black's free
+    retake at A18 White wins even when Black has 6 threats more, and Black answers at F19.
 - **The full count** is d_full = d(leaf), when decided. The gain is g = d_full - d_conv.
   - The located gains must add up to g; any rest is printed as "unlocated".
   - A negative g means the count is better for X than the label. In 10005, d_full = 1 against d_conv = 2.
@@ -281,7 +309,8 @@ player is White:
 - **If the attacker's count is 1, the label is 10kKO.** It is printed with its counted A-form: a = -1 for KILL or
   +1 for LIVE, the attacker's approach, and e = -d_full - a.
   - c081: 10kKO, A-form A+1KO-.
-  - besogo ranks 10kKO equal to every such A-form, whatever the threats.
+  - besogo ranks 10kKO equal to the attacker's A-form (A-1 for KILL, A+1 for LIVE), whatever the threats, and to no
+    other: the defender's A-form (A+1 for KILL, A-1 for LIVE) ranks better for the solver than 10kKO.
 - **The net reading** is a = n_O - n_S with e = -d_full - a. It is printed too because the owner and the research
   sometimes use it. For c081 it gives KO+, the research's settled label.
 - **If the attacker's count is ≥ 2,** the label is the A-form with the attacker's count, flagged "mutual approach
@@ -376,6 +405,8 @@ Apply the tie rule D12.
 
 **Step 5. Label** (D6, or D9 for a mutual approach): compute a, e, d_conv, x and the besogo string.
 - If an approach side's held-ko check failed, its rounds are stages. That count is set to 0 and e = -d_full.
+- If an approach side's free move fills the ko (D5), the label is the direct reading (a = 0, e = -d_full), and the
+  A-form with the filling point barred is printed beside it with its own full count.
 
 **Step 6. Attribution** (D7) of x ≠ 0: one threshold per barred candidate set.
 
@@ -400,8 +431,11 @@ The starting point is Design 3's `/tmp/claude-0/proto/research/kodesign/game/eng
 1. **State gets `int forced[3]`.** `zobristForced[3][9]` is XORed into `positionKey`. Every command resets it to 0.
 2. **`generate()`:**
    - When `s.forced[s.toMove] > 0`, the only child is a forced pass: decrement `forced[mover]`, set `ko = -1`,
-     flip `toMove`, and leave `passes` unchanged.
+     flip `toMove`, and set `passes = 0` (a tenuki breaks a run of passes). The line printer does the same.
    - Skip p when `forbid[mover][p]` is set, or when `s.ko >= 0 && forbidBanned[mover][p]` is set.
+   - `noTwoEyes()` takes the next real move after the forced passes owed, and gives a three-point eye space two eyes
+     when the attacker may not play one of its points. The end-test cache key adds the forced passes, the barred
+     points of the command and, when any point is barred, the ban.
 3. **End playout (D13).**
    - `bool endPending(const State&)` holds when the target stands, is not Benson-alive, and either a defender chain
      in the area has one liberty or (*new*, Design 2's clause) the side to move has a legal single-stone ko
@@ -421,6 +455,7 @@ The starting point is Design 3's `/tmp/claude-0/proto/research/kodesign/game/eng
      plus `cycles=`.
    - `solvex <toMove> <ko> <budget> <b> <w> <opts|-> <board>`, the counted search, takes these options:
      - `pb=K`, `pw=K` (forced passes);
+     - `ps=1` (the last move was a pass, so another one can end the game: a child after a pass searched alone);
      - `fb=i;j`, `fw=…` (barred points);
      - `kb=…`, `kw=…` (barred while banned);
      - `end=0|1`, `cyc=0..3`, `pv=1`, `sk=1`.
@@ -468,11 +503,12 @@ The starting point is Design 3's `/tmp/claude-0/proto/research/kodesign/game/eng
 
 ```
 {label, class, class_inferred, besogo: {type, approaches, extraThreats},
- count: {d_full, decided, table[-3..+3], shifted_check},
+ count: {d_full, decided, bracket, table[-3..+3], shifted_check},
  d_conv, first_take: {side, point, how, preparation},
- approaches: {S: {n, moves, resolving, alternatives, held_ok, line}, O: {...}},
+ approaches: {S: {n, bracket, moves, resolving, alternatives, held_ok, fill, v_unfilled, round_fails, line}, O: {...}},
  direct_ko: {v, line, local_threats: [{side, points, answer, line}], stages: [...]},
- gain: {total, rounds: [{side, move, value, line_with, line_without}], unlocated},
+ gain: {total, rounds: [{side, move, value, base, fails, line_with, line_without}], unlocated},
+ second_ko: {side, point, bent_four} and alternative: {label, count, reading} (D5's fill only),
  strict_label, net_label (mutual only), special, area, warnings, undecided: [{part, search, nodes}]}
 ```
 
@@ -512,8 +548,20 @@ Compare the class first, then the approach count, then e. besogo ranks approache
 | `status-mismatch` | different class (DEAD/KO/ALIVE/SEKI/BENT4/double ko/superko) | error |
 | `ko-approach` | same class, different approach count or side. Marked "same count" when T_label is equal (a split: an approach written as a threat, as in c073's KO+2 against A+1KO+) | major |
 | `ko-threats` | same approaches, different e | minor |
-| `ko-notation` | 10kKO against an A-form that besogo ranks equal; not an error | note |
-| `ko-count` | the tree's T_label differs from d_full (shown alongside the others, since the label may differ from the count on purpose) | info |
+| `ko-notation` | 10kKO against an A-form that besogo ranks equal (the attacker's A-1 for KILL, A+1 for LIVE); not an error | note |
+| `ko-convention` | the tree is the other reading of a second ko (D5: the A-form with the filling point barred), compared with that reading's own count; open question 9 | note |
+| `ko-count` | the tree's T_label differs from d_full, or lies outside the bracket of an undecided count where a search decided that bound (shown alongside the others, since the label may differ from the count on purpose) | info |
+| `label-undecided` | a part of the label is undecided | info |
+
+**A partly undecided label** (a "?" in it) is compared on its decided parts all the same:
+- the approaches: the tree's approach count must be one the profiles allow. A decided n allows n (and 0 while its
+  held-ko check has not decided between approaches and stages), an undecided one any n in its bracket of outright
+  tests, and 0. One side approaches (D6), or the attacker's count stands for a mutual approach (D9, where 10kKO is
+  the attacker's count 1). A count the profiles exclude is a `ko-approach` issue. 10403: White's capture is direct
+  (n_O = 0) and Black needs 1 or 2 approaches, so S[A+1KO-] is a `ko-approach` issue although the label is A-?KO?;
+- the count: T_label against the bracket (10403: T = 0 below the bracket 2..4 is `ko-count`);
+- nothing of the approaches is known when the first take and both captures are undecided ("A?KO?"): no
+  `ko-approach` then.
 
 ---
 
@@ -572,7 +620,8 @@ Each counted search is capped at `KO_BUDGET_FACTOR × budget`, with the existing
 |---|---|
 | profile decided, d_full not | the label from the profile; "full count undecided"; the gains located by round |
 | a profile's k | n is bracketed, e.g. "n_S = 1 or 2" (9839: k=2 undecided at 800k, k=3 outright); label "A-?KO…" |
-| first take | "KO?" with both sides' counts if both P's were decidable |
+| first take | when the principal line stops, the mode lines, then (one ko shape) both captures of it; still undecided, "A?KO?" (nothing known of the approaches either), or "KO?" when both captures are known to be direct |
+| any part of a KO label | the text still names every decided part, e.g. "White's capture is direct", "Black needs ? approaches (1 forced pass is not enough, 3 are)", "full count undecided (between 2 and 4)", and the undecided searches with their nodes |
 | d itself, no approaches | "KO, sign undecided", as today |
 | class | "class ?" unless the profile infers KO |
 
@@ -608,10 +657,17 @@ searches (Appendix B). Other rows rest on the proposals' runs and the research.
 | c006 | 840 | ADKO | **ADKO** expected in the B10 frame | The narrow area gives DEAD because it cuts White off from B10. That is an area problem this design does not fix | not run |
 | c016 | 2406 … C18 B18 | ALIVE | **ALIVE** | No ko | research |
 | 10005 | D18 E18 D19 C19 A18 A17 C18 C17 B19 B17 | owner A-1KO- | **A-1KO-** (count 1) | Preparation B A16, then White takes first at A19. Black needs one approach (E19 or G19); White's capture is direct. d_conv = 2 but d_full = 1, so the count is one better for Black (the line uses the second ko at B19/C19). Design 2's static test gave n=2 | verified |
+| 215 | C19 A19 A18 | owner A-1KO+ | **KO+**, other reading A-1KO+ (count 1) | Black took first at A18. The outright tests give n_S=1 (D19, then E19), but v's line fills the ko at A19: White takes four stones and a bent four follows (D5). Counted with it the ko is direct, d=0. With Black barred from A19, v=1 and the count 1 give the owner's A-1KO+ (`ko-convention`, open question 9) | checker run |
+| 13169 | A18 A19 | owner A-1KO- | **KO-**, other reading A-1KO- (count 2) | White took first at A19. After Black's retake the same throw-in at A19 follows; d=1. Barred from A19, Black needs D19 (or E18) and the count is 2 | checker run |
+| 13677 | A18 B18 C19 A17 D19 B15 A16 F18 B19 | owner A+1KO- | **A+1KO-**, approach round 1 fails | White takes first at A19 and needs one approach (E19). After the conventional round Black's free retake at A18 loses even with 6 threats more, so Black answers at F19: a sente approach (D8, risk 2). Full count -1 | checker run |
+| 10403 | B18 A18 C19 A16 A19 | owner A+1KO- | **A-?KO?** | White takes first at B19 (mode lines) and its capture is direct (n_O=0); Black needs 1 or 2 approaches (one forced pass is not enough, three are); full count between 2 and 4. On these decided parts S[A+1KO-] is a `ko-approach` issue with a `ko-count` beside it (7.3) | checker run |
 
 The approach notation in the c011, c019, c048, c073 and c102 rows is the reviewers' literal besogo label. The
 research settled the counted equivalent because the checker could not tell approaches apart. The comparison
 reports these as `ko-approach` splits with the same count.
+
+The rows marked "checker run" are the implemented checker's own outputs on the owner's leaves (narrow area, 200,000
+nodes per solve, 400,000 per counted search), from the review of the implementation.
 
 ---
 
@@ -620,14 +676,19 @@ reports these as `ko-approach` splits with the same count.
 1. **The approach rule is a convention.** c121 is labelled A-1KO- though Black needs 3 threats. Mitigation: the
    gain, its move and both lines are always printed, along with the strict label. The rule is a switch.
 2. **Sente approaches.** A forced pass gives X free moves, so an approach X could play with tempo is counted. Then
-   d_full < d_conv (a negative gain) and the report says so. This is not seen in the data yet.
+   d_full < d_conv (a negative gain) and the report says so. Seen in 13677 (S[A+1KO-]): after White's approach E19
+   Black's free retake loses even with 6 threats more, so Black answers at F19 and the conventional round fails.
+   The report says "approach round 1 fails" and shows the failure on the approach line (D8).
 3. **Approach against stage** rests on the held-ko check. Mixed structures (approach plus stage, a ko that changes
    shape) fall back to the counted label, flagged "mixed".
 4. **10kKO** has been checked only on c081 and 10391.
    - 10391: class KO and d=1. White's connection at C19 lets Black kill, and Black's C19 capture leaves d=1.
    - The mutual-approach rule matches Design 2's static result on the owner's 10kKO leaves (10051, 10391, 10408).
-   - On three mutual leaves the owner wrote A-forms instead (10403, 9883, a 7487 leaf). besogo grades these equal,
-     so they are reported as `ko-notation`.
+   - On three leaves Design 2 read as mutual the owner wrote A-forms instead (10403, 9883, a 7487 leaf). besogo
+     grades only the 7487 leaf's A-1KO- equal to 10kKO, and that one is reported as `ko-notation`. 10403's A+1KO-
+     and 9883's A+1KO+ are the defender's approach in KILL problems, which besogo ranks better for the killer than
+     10kKO, so they are `ko-approach` issues if the checker prints 10kKO. In 10403 the search also finds White's
+     capture at B19 direct (n_O = 0), so it is not a mutual approach (7.3).
 5. **The end playout changes every counted search.** It needs the regression run, and it can turn wrong fast
    answers into undecided ones (c081's narrow area).
 6. **Double ko and superko by cycle rules.** DDKO is confirmed on c027; ADKO and superko are untested. Rule 3 with
@@ -728,8 +789,11 @@ All three proposals print A-1KO- here.
      question as c119 and c120.
 2. **Mutual approach kos and 10kKO.**
    - When both sides' captures need one approach, the design prints 10kKO. You wrote 10kKO in 10051, 10391 and
-     10408, but A-forms in 10403 (A+1KO-), 9883 (A+1KO+) and a 7487 leaf (A-1KO-). besogo grades them equal.
-     Which should the checker print, and should it flag the other?
+     10408, but A-forms in 10403 (A+1KO-), 9883 (A+1KO+) and a 7487 leaf (A-1KO-). besogo grades 10kKO equal only
+     to the attacker's approach: the 7487 leaf's A-1KO- is the same grade, but 10403's and 9883's A+1 is the
+     defender's approach in a KILL problem, which besogo ranks better for the killer than 10kKO. On a mutual
+     approach, do you write the defender's approach (A+1 in KILL)? If so, the checker should print that A-form there
+     and not 10kKO. (In 10403 the checker finds White's capture direct, so that leaf is no mutual approach anyway.)
    - When the attacker needs two or more approaches and the defender needs some too, is that still 10kKO or an
      A-form?
 3. **c081 (15220).** The research settled KO+ (count 0). The shape is the classic ten-thousand-year ko, so the
@@ -751,6 +815,17 @@ All three proposals print A-1KO- here.
    closed by stones in the SGF, so that one label is right?
 8. **DSKO/ASKO and SEKI+.** Neither has data. The design reads superko as positional superko, and SEKI+ as "the
    solver keeps sente". Is that what you mean?
+9. **A second ko after the capture (215, 13169).**
+   - In 215 (your S[A-1KO+]) Black has just taken at A18. If White ignores it, Black needs no approach: Black throws
+     in at A19, White must take the four stones at D19, and White is left with a bent four in the corner, the shape
+     your own trees mark BENT4 (215 "A19 E19 C19", 13169 "A19"). Counted that way, with threats, White must start
+     the bent-four ko and needs the first threat, so the ko at A18 is direct: KO+ (count 0) in 215 and KO- (count 1)
+     in 13169, each one threat better for Black than your label.
+   - Your labels describe the clean kill: Black approaches (D19, or E19 or F19 in 215; D19 or E18 in 13169) and White
+     retakes for free. With Black barred from A19 the counts are 1 and 2, exactly your A-1KO+ and A-1KO-.
+   - The checker prints the direct reading (KO+, KO-) with your A-form beside it as the other reading, and does not
+     report your label as an error. Should a KO label describe the clean kill and leave out the bent-four path, or
+     count it?
 
 ---
 

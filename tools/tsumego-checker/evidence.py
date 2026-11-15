@@ -227,6 +227,9 @@ def label_report(record):
                        ('strict_from_parts', 'strict label from the parts (the full count is undecided)'), ('net_label', 'net reading')):
         if record.get(key):
             print('  %s: %s' % (title, record[key]))
+    alternative = record.get('alternative')
+    if alternative:
+        print('  without the second ko (%s): %s, full count %s' % (alternative['reading'], alternative['label'], alternative['count']))
     print('\n' + record.get('text', ''))
     count = record.get('count')
     if count:
