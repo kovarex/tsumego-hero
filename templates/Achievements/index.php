@@ -16,7 +16,7 @@ use App\View\Helper\AchievementHelper;
  */
 
 ?>
-<div class="achievementsPage">
+<div class="achievements-page">
 <?php if (isset($viewedUser)): ?>
 	<?php echo $this->element('user_header', ['user' => $viewedUser, 'activeTab' => 'achievements']); ?>
 <?php else: ?>
