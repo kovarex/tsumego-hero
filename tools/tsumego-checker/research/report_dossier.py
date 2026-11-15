@@ -73,6 +73,8 @@ for pid, cases in sorted(by_problem.items(), key=lambda kv: int(kv[0])):
             sys.exit('%s: final %s outside the topics' % (c['case'], c['final']))
         lines += ['### Leaf %s: %s' % (c['case'], category), '',
                   '- Leaf: %s (moves from the start)' % c['line'],
+                  ] + (['- Settled by the owner\'s answer to open question %s: %s (before the answer it was a decision leaf)' % (
+                      c['answered']['question'], c['answered']['answer'])] if c.get('answered') else []) + [
                   '- Tree S[%s]; the solver said %s' % (c['authored'], c.get('solver_sign') or c.get('solver') or c['label']),
                   '- Analysis (%s, %s confidence, says %s): %s' % (a.get('verdict'), a.get('confidence'), a.get('correct_status') or '?', a.get('summary')),
                   '- Variations: %s' % a.get('variations'),
