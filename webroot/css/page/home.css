@@ -29,7 +29,7 @@
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
-.scheduleTsumego {
+.home-schedule__link {
   display: block;
   clear: both;
   color: var(--schedule-link);

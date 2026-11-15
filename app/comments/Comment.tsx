@@ -109,7 +109,7 @@ export function Comment({
 	const canMakeIssue = isAdmin && showIssueContext && onMakeIssue;
 
 	// User styling - admin comments use different class
-	const commentColorClass = comment.isAdmin ? 'commentBox2' : 'commentBox1';
+	const commentColorClass = comment.isAdmin ? 'comment-text--admin' : 'comment-text';
 
 	// The text is stored in the coordinates and colours of the SGF; show it as
 	// the viewer's board is oriented, again whenever the board is flipped or rotated.
@@ -137,7 +137,7 @@ export function Comment({
 
 	return (
 		<div className={`tsumego-comment${canDrag ? ' tsumego-comment--draggable' : ''}`} data-comment-id={comment.id}>
-			<div className="sandboxComment">
+			<div className="tsumego-comment__main">
 				<div className="tsumego-comment__body">
 					{canDrag && (
 						<div className="tsumego-comment__drag-handle-cell">
@@ -161,7 +161,7 @@ export function Comment({
 							<span className="comment__text">{commentContent}</span>
 						</div>
 					</div>
-					<div className="sandboxTable2time">
+					<div className="tsumego-comment__meta">
 						<time className="tsumego-comment__date" dateTime={comment.created}>
 							{formatDate(comment.created)}
 						</time>
@@ -176,7 +176,7 @@ export function Comment({
 							</button>
 						)}
 						{canDelete && (
-							<button className="deleteComment" onClick={() => onDelete(comment.id)}>
+							<button className="tsumego-comment__delete" onClick={() => onDelete(comment.id)}>
 								Delete
 							</button>
 						)}

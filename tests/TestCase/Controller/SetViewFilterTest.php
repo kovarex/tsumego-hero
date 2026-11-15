@@ -13,7 +13,7 @@ class SetViewFilterTest extends IntegrationTestCase
 		$browser = Browser::instance();
 		$browser->getAnonymous('sets/view/' . $setId);
 
-		$parent = $browser->find('.showFilters');
+		$parent = $browser->find('.set-view__filters');
 		$this->assertSame('none', $parent->getCssValue('display'));
 	}
 
@@ -30,7 +30,7 @@ class SetViewFilterTest extends IntegrationTestCase
 		$browser->driver->manage()->addCookie(['name' => 'filtered_ranks', 'value' => '15k']);
 		$browser->getAnonymous('sets/view/' . $setId);
 
-		$parent = $browser->find('.showFilters');
+		$parent = $browser->find('.set-view__filters');
 		$this->assertSame('inline-block', $parent->getCssValue('display'));
 	}
 
@@ -47,7 +47,7 @@ class SetViewFilterTest extends IntegrationTestCase
 		$browser->driver->manage()->addCookie(['name' => 'filtered_sets', 'value' => 'Filter Test Set']);
 		$browser->getAnonymous('sets/view/' . $setId);
 
-		$parent = $browser->find('.showFilters');
+		$parent = $browser->find('.set-view__filters');
 		$this->assertSame('inline-block', $parent->getCssValue('display'));
 	}
 
@@ -62,17 +62,17 @@ class SetViewFilterTest extends IntegrationTestCase
 		$browser->getAnonymous('sets/view/' . $setId);
 		$browser->driver->manage()->deleteAllCookies();
 		$browser->getAnonymous('sets/view/' . $setId);
-		$parent = $browser->find('.showFilters');
+		$parent = $browser->find('.set-view__filters');
 		$this->assertSame('none', $parent->getCssValue('display'));
 
 		$browser->driver->manage()->addCookie(['name' => 'filtered_ranks', 'value' => '15k']);
 		$browser->getAnonymous('sets/view/' . $setId);
-		$parent = $browser->find('.showFilters');
+		$parent = $browser->find('.set-view__filters');
 		$this->assertSame('inline-block', $parent->getCssValue('display'));
 
 		$browser->driver->manage()->deleteAllCookies();
 		$browser->getAnonymous('sets/view/' . $setId);
-		$parent = $browser->find('.showFilters');
+		$parent = $browser->find('.set-view__filters');
 		$this->assertSame('none', $parent->getCssValue('display'));
 	}
 

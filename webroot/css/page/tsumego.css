@@ -429,14 +429,14 @@ a[data-tsumego-id]:hover .tooltip-desc
 	transition-delay: 1.2s;
 }
 
-.tooltip-label.statusN { background-color: var(--status-n-color); color: var(--color-white); }
-.tooltip-label.statusV { background-color: var(--status-v-color); color: var(--color-white); }
-.tooltip-label.statusS { background-color: var(--status-s-color); color: var(--color-white); }
-.tooltip-label.statusC { background-color: var(--status-c-color); color: var(--color-white); }
-.tooltip-label.statusW { background-color: var(--status-w-color); color: var(--color-white); }
-.tooltip-label.statusF { background-color: var(--status-f-color); color: var(--color-white); }
-.tooltip-label.statusX { background-color: var(--status-x-color); color: var(--color-white); }
-.tooltip-label.statusG
+.tooltip-label.tooltip-label--N { background-color: var(--status-n-color); color: var(--color-white); }
+.tooltip-label.tooltip-label--V { background-color: var(--status-v-color); color: var(--color-white); }
+.tooltip-label.tooltip-label--S { background-color: var(--status-s-color); color: var(--color-white); }
+.tooltip-label.tooltip-label--C { background-color: var(--status-c-color); color: var(--color-white); }
+.tooltip-label.tooltip-label--W { background-color: var(--status-w-color); color: var(--color-white); }
+.tooltip-label.tooltip-label--F { background-color: var(--status-f-color); color: var(--color-white); }
+.tooltip-label.tooltip-label--X { background-color: var(--status-x-color); color: var(--color-white); }
+.tooltip-label.tooltip-label--G
 {
 	background: linear-gradient(135deg, var(--status-g-color), var(--status-g-highlight), var(--status-g-color));
 	color: var(--medal-gold-fg);
@@ -446,7 +446,7 @@ a[data-tsumego-id]:hover .tooltip-desc
 	overflow: hidden;
 }
 
-.tooltip-label.statusG::after
+.tooltip-label.tooltip-label--G::after
 {
 	content: "";
 	position: absolute;

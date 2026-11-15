@@ -703,7 +703,7 @@ class CommentsControllerTest extends IntegrationTestCase
 		$browser->driver->executeScript("window.confirm = function() { return true; };");
 
 		// Find and click the Delete button
-		$deleteButton = $browser->find('.deleteComment');
+		$deleteButton = $browser->find('.tsumego-comment__delete');
 		$deleteButton->click();
 
 		// Wait for comment to be removed from DOM
@@ -739,7 +739,7 @@ class CommentsControllerTest extends IntegrationTestCase
 		$browser->driver->executeScript("window.confirm = function() { return true; };");
 
 		// Find the delete button for the comment inside the issue
-		$deleteButton = $browser->find('.tsumego-issue .deleteComment');
+		$deleteButton = $browser->find('.tsumego-issue .tsumego-comment__delete');
 		$deleteButton->click();
 
 		// Wait for issue to be removed from DOM
@@ -781,7 +781,7 @@ class CommentsControllerTest extends IntegrationTestCase
 		$browser->driver->executeScript("window.confirm = function() { return true; };");
 
 		// Delete the standalone comment
-		$deleteButton = $browser->find('.tsumego-comment--standalone .deleteComment');
+		$deleteButton = $browser->find('.tsumego-comment--standalone .tsumego-comment__delete');
 		$deleteButton->click();
 
 		// Wait for standalone comment to be removed from DOM
@@ -1277,12 +1277,12 @@ class CommentsControllerTest extends IntegrationTestCase
 		$browser->driver->executeScript("window.confirm = function() { return true; };");
 
 		// Find and click delete on one of the comments in the open issue
-		$deleteButtons = $browser->getElements('.tsumego-issue--opened .deleteComment');
+		$deleteButtons = $browser->getElements('.tsumego-issue--opened .tsumego-comment__delete');
 		$deleteCountBefore = count($deleteButtons);
 		$this->assertGreaterThan(0, $deleteCountBefore, 'Should have delete buttons in open issue');
 		$deleteButtons[0]->click();
 		// Wait for delete to process (comment count should decrease)
-		$browser->waitUntilJs('document.querySelectorAll(".tsumego-issue--opened .deleteComment").length < ' . $deleteCountBefore);
+		$browser->waitUntilJs('document.querySelectorAll(".tsumego-issue--opened .tsumego-comment__delete").length < ' . $deleteCountBefore);
 
 		// After React re-render: Closed issue should STILL be hidden
 		$closedIssuesAfter = $browser->getElements('.tsumego-issue--closed');

@@ -38,7 +38,7 @@
 				var numTitle = c.num_collision ? ' title="Number already used in target set - will be renumbered on publish"' : '';
 				html += '<li class="problem-nav__item problem-nav__item--N"><a class="tooltip" href="/' + c.sc_id + '" data-tsumego-id="' + c.tsumego_id + '"' + sgfAttr + '>';
 				html += '<div class="problem-nav__number' + numCls + '"' + numTitle + '>' + c.num + '</div><div class="problem-nav__ratio">-</div><div class="problem-nav__time">-</div>';
-				html += '<span class="tooltip-box"><div class="tooltip-label statusN">Not visited</div><div class="tooltip-desc">' + (c.num_collision ? 'Number already used in target set - will be renumbered on publish.' : 'You haven\'t seen this problem yet.') + '</div></span>';
+				html += '<span class="tooltip-box"><div class="tooltip-label tooltip-label--N">Not visited</div><div class="tooltip-desc">' + (c.num_collision ? 'Number already used in target set - will be renumbered on publish.' : 'You haven\'t seen this problem yet.') + '</div></span>';
 				html += '</a></li>';
 				if (c.num_collision) hasCollision = true;
 			}

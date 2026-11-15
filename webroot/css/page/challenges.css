@@ -496,7 +496,7 @@
 	padding: 2px;
 }
 
-.challenges__problem .setViewButtons
+.challenges__problem .problem-buttons
 {
 	display: flex;
 	justify-content: center;

@@ -55,13 +55,13 @@ $variantType = $tv ? (int) $tv->tsumego_variant_type_id : null;
 		<a id="findSimilarProblems" href="/tsumegos/duplicatesearch/<?php echo $setConnection->id; ?>" class="selectable-text mr-5">Find Similar Problems</a>
 		<?php if (Auth::isAdmin()): ?>
 			<?php //the history is worth a look once a person changed the problem, not for an automatic version alone ?>
-			<a id="showx6" href="/sgfs/view/<?php echo $tsumego->id; ?>" class="selectable-text mr-5 <?php echo $sgf->user_id !== null ? 'historyLink' : ''; ?>">History</a>
+			<a id="showx6" href="/sgfs/view/<?php echo $tsumego->id; ?>" class="selectable-text mr-5 <?php echo $sgf->user_id !== null ? 'play-edit__history-link--changed' : ''; ?>">History</a>
 			<a id="showx8" href="/tsumegos/history/<?php echo $setConnection->id; ?>" class="selectable-text mr-5">Rating</a>
 			<a id="showx99" class="selectable-text mr-5">Request Solution</a>
 		<?php endif; ?>
 	</p>
 	<?php if ($hasDuplicates): ?>
-		<div class="duplicateTable">Duplicate group:
+		<div class="play-edit__duplicates">Duplicate group:
 			<?php echo implode(', ', array_map(fn($otherSetConnection) => '<a href="/' . $otherSetConnection['id'] . '">' . h($otherSetConnection['title']) . '</a>', $setConnections)); ?>
 		</div>
 	<?php endif; ?>

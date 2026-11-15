@@ -64,7 +64,7 @@ foreach ($tsumegoButtonsOfPublishedTsumegos as $tsumegoButton)
 			<?php if (!empty($publishedBySet)): ?>
 				<span class="latest-additions-heading">Latest additions<?php if ($latestPublishDate !== null): ?> (<time datetime="<?php echo $latestPublishDate; ?>" data-format="month-day"><?php echo $latestPublishDate; ?></time>)<?php endif; ?>:</span><br>
 				<?php foreach ($publishedBySet as $setID => $setButtons): ?>
-					<a class="scheduleTsumego" href="<?php echo SetTable::url($setID); ?>"><b><?php echo h($setButtons[0]->setTitle); ?> - <?php echo count($setButtons); ?> problems</b></a><br>
+					<a class="home-schedule__link" href="<?php echo SetTable::url($setID); ?>"><b><?php echo h($setButtons[0]->setTitle); ?> - <?php echo count($setButtons); ?> problems</b></a><br>
 					<div class="problem-nav__buttons">
 						<?php foreach ($setButtons as $tsumegoButton)
 							$tsumegoButton->render(); ?>

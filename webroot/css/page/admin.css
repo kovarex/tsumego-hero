@@ -3,7 +3,7 @@
 .adminpanel-link {
   overflow-wrap: anywhere;
 }
-.duplicateTable {
+.play-edit__duplicates {
   max-width: 800px;
 }
 .admin-text { color: var(--admin-text-color); }

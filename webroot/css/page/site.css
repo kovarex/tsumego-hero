@@ -376,7 +376,7 @@ li a.nav__menu-link.nav__link--active {
   display: inline-block;
   opacity: 1;
 }
-input.newCheck {
+input.board-picker__checkbox {
   width: 15px;
   height: 15px;
 }
@@ -515,7 +515,7 @@ nav ul .nav__icon-item {
   margin: 0 auto;
 }
 /* A red link of the problem's info, over the colour of .selectable-text (play.css, loaded after this file) */
-a.historyLink {
+a.play-edit__history-link--changed {
   color: var(--color-red);
 }
 .sandbox-page__guide-link {

@@ -60,7 +60,7 @@ class TsumegoButton
 			. $sgfAttr . '>'
 			. $num . $details
 			. '<span class="tooltip-box">'
-			. '<div class="tooltip-label status' . $status . '">' . h($label) . '</div>'
+			. '<div class="tooltip-label tooltip-label--' . $status . '">' . h($label) . '</div>'
 			. '<div class="tooltip-desc">' . $descriptionHtml . '</div>'
 			. '</span></a>';
 		echo '</li>';

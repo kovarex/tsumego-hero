@@ -75,7 +75,7 @@ class BoardSelector
 		BoardSelector.boards.forEach(board => {
 			const checked = this.isChecked(board.index) ? "checked" : "";
 			html += `<td class="board-picker__check">
-						<input type="checkbox" class="newCheck" id="newCheck${board.index}" ${checked} onclick="boardSelector.selectAndSave(${board.index}, this.checked);">
+						<input type="checkbox" class="board-picker__checkbox" id="newCheck${board.index}" ${checked} onclick="boardSelector.selectAndSave(${board.index}, this.checked);">
 					</td>
 					<td class="board-picker__preview">
 						<div class="img-${board.index}small"></div>
