@@ -40,8 +40,8 @@ class TsumegoXPAndRating
 		<div id="xpDisplay">
 			<span id="xpDisplayText"></span>
 			<span id="ratingHeader"></span>
-			<div class="eloTooltip"><span id="ratingGainShort"></span><span class="eloTooltiptext" id="ratingGainLong"></span></div>
-			<span id="ratingSeparator"></span><div class="eloTooltip"><span id="ratingLossShort"></span><span class="eloTooltiptext" id="ratingLossLong"></span></div>
+			<div class="rating-tooltip"><span id="ratingGainShort"></span><span class="rating-tooltip__text" id="ratingGainLong"></span></div>
+			<span id="ratingSeparator"></span><div class="rating-tooltip"><span id="ratingLossShort"></span><span class="rating-tooltip__text" id="ratingLossLong"></span></div>
 		</div>
 	</div>
 </div>';
