@@ -636,21 +636,21 @@ a[href="/challenges"],
 	filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.25));
 }
 
-.challenge-place__ribbon-left { fill: #3b6fd8; }
-.challenge-place__ribbon-right { fill: #d8463b; }
+.challenge-place__ribbon-left { fill: var(--challenge-ribbon-left); }
+.challenge-place__ribbon-right { fill: var(--challenge-ribbon-right); }
 
 .challenge-place__number
 {
 	font: bold 10px sans-serif;
-	fill: #2b2207;
+	fill: var(--challenge-place-number);
 }
 
-.challenge-place--gold .challenge-place__rim { fill: #b8860b; }
-.challenge-place--gold .challenge-place__face { fill: #f4c430; }
-.challenge-place--silver .challenge-place__rim { fill: #7d868f; }
-.challenge-place--silver .challenge-place__face { fill: #d5dadf; }
-.challenge-place--bronze .challenge-place__rim { fill: #8c5523; }
-.challenge-place--bronze .challenge-place__face { fill: #d99a5b; }
+.challenge-place--gold .challenge-place__rim { fill: var(--challenge-gold-rim); }
+.challenge-place--gold .challenge-place__face { fill: var(--challenge-gold-face); }
+.challenge-place--silver .challenge-place__rim { fill: var(--challenge-silver-rim); }
+.challenge-place--silver .challenge-place__face { fill: var(--challenge-silver-face); }
+.challenge-place--bronze .challenge-place__rim { fill: var(--challenge-bronze-rim); }
+.challenge-place--bronze .challenge-place__face { fill: var(--challenge-bronze-face); }
 
 .challenge-place--rank
 {

@@ -232,7 +232,7 @@
 	right: 0;
 	background: repeating-linear-gradient(-45deg,
 		rgba(0, 0, 0, 0.22) 0 3px,
-		rgba(233, 196, 90, 0.55) 3px 6px);
+		var(--gold-stripe) 3px 6px);
 }
 
 .progress__fill--drafts
@@ -552,8 +552,8 @@
 {
 	background: linear-gradient(135deg, var(--status-g-color), var(--status-g-highlight), var(--status-g-color));
 	color: var(--gold-ink);
-	box-shadow: 0 1px 4px rgba(218, 165, 32, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.3);
-	border: 1px solid rgba(180, 140, 30, 0.4);
+	box-shadow: var(--gold-glow-shadow);
+	border: 1px solid var(--gold-glow-border);
 	position: relative;
 	overflow: hidden;
 }
@@ -799,7 +799,7 @@
 	white-space: nowrap;
 	cursor: pointer;
 	text-decoration: none;
-	background-image: linear-gradient(rgba(200, 200, 200, 0.15), rgba(33, 33, 33, 0.2));
+	background-image: var(--tile-shade);
 }
 
 /* Under the pointer a tile is clearly lighter (twice the luminance of its resting fill on the dark menu), its white
@@ -807,7 +807,7 @@
 .dropdown__tile:hover
 {
 	background-color: var(--dropdown-tile-hover);
-	background-image: linear-gradient(rgba(200, 200, 200, 0.35), rgba(33, 33, 33, 0.4));
+	background-image: var(--tile-shade-hover);
 }
 
 .dropdown__tile--green
@@ -830,7 +830,7 @@
 	background-color: rgba(0, 0, 0, 0.35);
 	background-image: none;
 	color: var(--rank-color, var(--color-white));
-	color: color-mix(in srgb, var(--rank-color, var(--color-white)) 70%, #fff);
+	color: color-mix(in srgb, var(--rank-color, var(--color-white)) 70%, var(--color-white));
 	border: 1px solid var(--rank-color, transparent);
 	font-weight: var(--weight-bold);
 	box-shadow: none;
@@ -843,7 +843,7 @@
    would fall below 4.5:1 on any fill that changes that much) */
 .dropdown__tile--difficulty:hover
 {
-	background-color: color-mix(in srgb, var(--rank-color, var(--color-white)) 45%, #161616);
+	background-color: color-mix(in srgb, var(--rank-color, var(--color-white)) 45%, var(--rank-chip-base));
 	color: var(--color-white);
 	transform: translateY(-1px);
 }
@@ -857,7 +857,7 @@
    dark text on the full rank colour fell to 3.75:1 on the bright blues) and a white ring */
 .dropdown__tile--difficulty.is-selected
 {
-	background-color: color-mix(in srgb, var(--rank-color, var(--color-white)) 55%, #161616);
+	background-color: color-mix(in srgb, var(--rank-color, var(--color-white)) 55%, var(--rank-chip-base));
 	border-color: var(--color-white);
 	color: var(--color-white);
 	box-shadow: 0 0 0 2px var(--color-white);
@@ -1301,7 +1301,7 @@
 {
 	border-top-left-radius: var(--radius-md);
 	border-top-right-radius: var(--radius-md);
-	background: linear-gradient(rgb(100, 100, 100), rgb(36, 36, 36));
+	background: var(--toast-banner);
 	color: var(--color-white);
 	height: 31px;
 	width: 100%;
@@ -1310,12 +1310,12 @@
 
 .toast__banner--error
 {
-	background: linear-gradient(rgb(217, 109, 112), rgb(202, 63, 76));
+	background: var(--toast-banner-error);
 }
 
 .toast__banner--success
 {
-	background: linear-gradient(rgb(26, 181, 88), rgb(18, 121, 59));
+	background: var(--toast-banner-success);
 }
 
 .toast__close
