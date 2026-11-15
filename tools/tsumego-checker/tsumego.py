@@ -1267,7 +1267,7 @@ class Solver:
                 e_of = lambda v: -v if take['side'] == solver else -(v + 1)
             if profile['fill']:
                 #D5: the free move fills the ko and a second ko follows. Counted with it the capture is direct (a = 0 and the
-                #count's e); the A-form with the fill barred is the other reading (design 13, question 9)
+                #count's e); the A-form with the fill barred is the other reading (design 13, question 5)
                 unfilled = profile['v_unfilled'] and profile['v_unfilled']['d']
                 parts['second_ko'] = dict(profile['fill'], side=side, a=a, v=parts['v'], v_unfilled=unfilled)
                 if take['side'] is not None:
@@ -1427,7 +1427,7 @@ class Solver:
                                      'strict_label': None if unfilled['d'] is None else besogo_string(second['a'], -unfilled['d'] - second['a']),
                                      'reading': '%s may not fill the ko at %s' % (COLOUR_NAMES[holder], record['second_ko']['point'])}
             record['warnings'].append('second ko after the capture: %s\'s free move fills the ko at %s and %s follows; the label counts '
-                                      'it, %s is the label without it (design 13, question 9)' % (
+                                      'it, %s is the label without it (design 13, question 5)' % (
                                           COLOUR_NAMES[holder], record['second_ko']['point'],
                                           'a bent four' if second['bent_four'] else 'another ko', parts['alternative']))
         record['first_take'] = {'side': take['side'], 'point': self.point_name(take['ko'][1]) if take['ko'] else None,
@@ -2193,7 +2193,7 @@ def label_text(record):
                              'counts it, so the ko is direct' % (name, other_name, name, second['point'],
                                                                  'a bent four in the corner' if second['bent_four'] else 'another ko'))
             sentences.append('Without it (%s) %s needs %s approach%s (%s): %s, full count %s. Which reading the labels follow is open '
-                             '(design 13, question 9)' % (
+                             '(design 13, question 5)' % (
                                  alternative.get('reading'), name, NUMBER_WORDS.get(summary['n'], summary['n']), 'es' if summary['n'] > 1 else '',
                                  approach_listing(summary, take), alternative.get('label'),
                                  'undecided' if alternative.get('count') is None else alternative['count']))
@@ -2376,7 +2376,7 @@ def compare_label(authored, record, goal):
     #design 7.3: the tree's S[] against the label: the class first, then the approaches, then the threats, and the count
     #beside them. [{kind, severity, ...}]: status-mismatch (error), ko-approach (major; same_count when T_label is equal),
     #ko-threats (minor), ko-notation (note: 10kKO against an A-form besogo ranks equal), ko-convention (note: the tree is
-    #the label without the second ko, design 13 question 9), ko-count (info: the tree's T_label against the full count, or
+    #the label without the second ko, design 13 question 5), ko-count (info: the tree's T_label against the full count, or
     #outside the count's decided bracket while the count is undecided), label-undecided (info). A partly undecided label is
     #compared on its decided parts: the approach counts its profiles allow, and the count's bracket
     text = authored.strip()

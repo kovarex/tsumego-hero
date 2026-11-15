@@ -143,7 +143,7 @@ count, and the strict label (from the parts when the full count is undecided). `
 or when no other line can be built) from decided positions, with each move's role; each line carries a
 `research/report.py` diagram spec (`start`, `moves`, `first`, `caption`).
 A holder's free move that fills its own ko is no approach: the label then counts the second ko that follows (215 and
-13169: a bent four) and prints the A-form with the filling point barred beside it (design D5, question 10). An
+13169: a bent four) and prints the A-form with the filling point barred beside it (design D5, question 5). An
 approach round whose free retake loses outright is reported as failing (a sente approach, D8).
 `label_text` writes one sentence per part, also for a partly undecided label, `compare_label` the comparison of 7.3
 (on the decided parts of a partly undecided label), and `label_summary` the fields
