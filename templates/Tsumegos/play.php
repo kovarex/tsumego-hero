@@ -273,10 +273,4 @@ use App\Utility\ViteManifest;
 		</label>
 	<?php endif; ?>
 
-	<div class="loader-container">
-		<div class="loader-content">
-			<div class="loader-text">searching...</div>
-		</div>
-	</div>
-
 	<?php echo ViteManifest::legacyScript('play'); ?>
