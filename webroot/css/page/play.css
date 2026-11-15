@@ -105,11 +105,11 @@
   padding: 20px;
   text-align: center;
 }
-.xpDisplay { color: var(--xp-display); }
-.solvedXpDisplay { color: var(--xp-display-solved); }
-.goldenTsumegoXpDisplay { color: var(--xp-display-golden); font-weight:var(--weight-heavy); text-shadow: 0 0 6px rgba(218, 165, 32, 0.4); }
-.sprintXpDisplay { color: var(--xp-display-sprint); }
-.eloTooltip {
+.xp-display { color: var(--xp-display); }
+.xp-display--solved { color: var(--xp-display-solved); }
+.xp-display--golden { color: var(--xp-display-golden); font-weight:var(--weight-heavy); text-shadow: 0 0 6px rgba(218, 165, 32, 0.4); }
+.xp-display--sprint { color: var(--xp-display-sprint); }
+.rating-tooltip {
   position: relative;
   display: inline-block;
   border-bottom: 1px dotted var(--color-black);
@@ -117,7 +117,7 @@
 }
 /* Out of the layout until hovered, and opened leftwards under the number, so at the right edge of a
    phone it stays on the screen instead of widening the page */
-.eloTooltip .eloTooltiptext {
+.rating-tooltip .rating-tooltip__text {
   display: none;
   top: 100%;
   right: 0;
@@ -130,15 +130,15 @@
   position: absolute;
   z-index: 1;
 }
-.eloTooltip:hover .eloTooltiptext {
+.rating-tooltip:hover .rating-tooltip__text {
   display: block;
 }
 /* A number without an explanation behind it is no tooltip */
-.eloTooltip:has(.eloTooltiptext:empty) {
+.rating-tooltip:has(.rating-tooltip__text:empty) {
   border-bottom: 0;
   cursor: auto;
 }
-.eloTooltip:hover .eloTooltiptext:empty {
+.rating-tooltip:hover .rating-tooltip__text:empty {
   display: none;
 }
 .besogo-board {
@@ -224,11 +224,11 @@
 #besogo-multipleChoice4:hover {
   background-color: var(--color-purple-vivid);
 }
-.imageContainer1 {
+.time-mode__rank {
   float: left;
   margin: 15px;
 }
-.imageContainerText2 {
+.time-mode__rank-count {
   position: relative;
   top: -48px;
   left: 75px;

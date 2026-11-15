@@ -239,7 +239,7 @@ class IntegrationTestCase extends AppTestCase
 			const display = document.getElementById('xpDisplay')?.cloneNode(true);
 			if (!display)
 				return '';
-			display.querySelectorAll('.eloTooltiptext').forEach(tooltip => tooltip.remove());
+			display.querySelectorAll('.rating-tooltip__text').forEach(tooltip => tooltip.remove());
 			return display.textContent.replace(/\s+/g, ' ').trim();
 			JS);
 	}

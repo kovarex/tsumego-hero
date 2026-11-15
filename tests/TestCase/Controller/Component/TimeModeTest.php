@@ -650,7 +650,7 @@ class TimeModeTest extends IntegrationTestCase
 		$context = new ContextPreparator($contextParameters);
 		$browser = Browser::instance();
 		$browser->get('timeMode/overview');
-		$renderedCounts = $browser->getElements(".imageContainerText2");
+		$renderedCounts = $browser->getElements(".time-mode__rank-count");
 		$visibleCounts = array_values(array_filter($renderedCounts, function ($el) {
 			return $el->isDisplayed();
 		}));

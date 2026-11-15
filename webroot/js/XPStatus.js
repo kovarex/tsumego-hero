@@ -62,20 +62,20 @@ class XPStatus
 		if (this.goldenTsumego)
 		{
 			xpPart = 'Golden: ' + xpPart;
-			this.xpDisplayText.className = 'xpDisplay goldenTsumegoXpDisplay';
+			this.xpDisplayText.className = 'xp-display xp-display--golden';
 		}
 		else if (this.solved)
 		{
 			xpPart = 'Solved: ' + xpPart;
-			this.xpDisplayText.className = 'xpDisplay solvedXpDisplay';
+			this.xpDisplayText.className = 'xp-display xp-display--solved';
 		}
 		else if (this.isSprintActive())
 		{
 			xpPart = 'Sprint: ' + xpPart;
-			this.xpDisplayText.className = 'xpDisplay sprintXpDisplay';
+			this.xpDisplayText.className = 'xp-display xp-display--sprint';
 		}
 		else
-			this.xpDisplayText.className = 'xpDisplay';
+			this.xpDisplayText.className = 'xp-display';
 		this.xpDisplayText.innerHTML = xpPart;
 	}
 
@@ -101,8 +101,8 @@ class XPStatus
 
 		if (this.solved)
 		{
-			this.ratingGainShort.className = 'xpDisplay solvedXpDisplay';
-			this.ratingHeader.className = 'xpDisplay solvedXpDisplay';
+			this.ratingGainShort.className = 'xp-display xp-display--solved';
+			this.ratingHeader.className = 'xp-display xp-display--solved';
 			this.ratingSeparator.textContent = '';
 			this.ratingLossShort.textContent = '';
 			this.ratingLossLong.textContent = '';
