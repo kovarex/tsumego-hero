@@ -1,0 +1,247 @@
+{
+ "id": "q3",
+ "heading": "3. Problem 2359, leaf c014: KO- or A-1KO+?",
+ "question": "The tree marks this leaf S[DEAD], but it is a ko in which Black needs one threat more than White. Which label should it get, and which should the checker print: S[KO-], with E19 an extra move inside the ko, or S[A-1KO+], with E19 an approach?",
+ "options": [
+  {
+   "label": "KO-",
+   "meaning": "In besogo: no approaches, White takes first. It reads the ko as direct from Black's first capture, which White cannot ignore, and counts E19 as an extra move inside the ko: White uses it to retake for free, which is worth one threat, as if White had taken first. besogo ranks KO- above A-1KO+ for Black. No move's grading changes in this problem."
+  },
+  {
+   "label": "A-1KO+",
+   "meaning": "In besogo: \"Black needs to do 1 approach move to start a direct ko, Black takes first\". Black takes the ko first, and E19 is the approach Black needs before winning the ko wins. The same count as KO-: Black needs one threat more than White. No move's grading changes in this problem."
+  }
+ ],
+ "recommendation": "A-1KO+, which reverses our earlier recommendation of KO-. By your definition this is an approach ko: White wins by winning the ko once, at any time, while Black must first add E19, which White can answer only by retaking. Black's first capture is a threat, but White can answer it by connecting, and after that Black still needs the approach.",
+ "text": [
+  "The tree marks this leaf S[DEAD]. The research settled it as a ko in which Black lives with one threat more than White (Diagram 1). KO- and A-1KO+ both give that count. They differ in what they call Black's move at E19, which Black needs after taking the ko and before connecting it.",
+  "KO- reads the ko as direct from Black's first capture, Black 7, because White cannot ignore it, and counts E19 as an extra move inside the ko: White uses it to retake for free, which is worth one threat. A-1KO+ reads E19 as an approach: Black takes first, and needs one approach before winning the ko wins.",
+  "Your definition of an approach ko: one side must play approaches before its ko is a normal ko, while the other side can win by winning one ko at any time. That is this leaf. White can: every White capture threatens to kill at once (Diagrams 5 and 10). Black cannot: once White has connected, winning the ko by connecting dies (Diagram 8). Black must first add E19, and White's only answer to it is the retake (Diagram 4).",
+  "It is not your 10kKO either. In the 10kKO shape of part 1a each side's capture needs the same investment before it threatens, while here White's capture threatens without any, and only Black needs E19, which makes its second eye (Diagram 7). besogo also grades 10kKO like an approach ko in which the attacker needs the approach, which here is White, not Black. Nor is it your symmetric case, because White never needs an extra move.",
+  "The facts our question stated hold, with one correction. White need not connect after Black 7: it can also retake at once with a ko threat (Diagram 10), which comes to the same count. What does not hold up is our reason for KO-, that E19 comes after a threatening capture. Black 7 threatens to capture three White stones, and White can remove that threat by connecting, which leaves Black holding a ko it cannot yet win.",
+  "On the site the choice changes no grading in this problem (table). In the tree Black can also play C19 at move 3, instead of E18; that line ends in a leaf marked KO+, which besogo ranks above both labels, so E18 stays wrong either way. The choice matters where the two shapes appear among sibling moves, because KO- ranks higher for Black.",
+  "The checker's design prints KO- here. Its approach search lets White pass right after Black 7, when Black's capture still threatens the three stones, so it finds no approach (Diagram 2). To print A-1KO+, it would count Black's approaches after White's answer to that threat: one free move (Diagram 3). Its own test for telling an approach from an extra move, which bars White from the retake, already says approach (Diagram 4)."
+ ],
+ "positions": [
+  {
+   "problem": "2359",
+   "leaf": "B17 B19 E18 A18",
+   "tree": "DEAD",
+   "heading": "The ko: Black takes first, then needs E19",
+   "text": [
+    "Black 7 takes the ko and threatens three White stones, so White 8 connects instead of retaking, and Black still holds the ko. Black 9 is the move Black needs before connecting, and White 10 retakes for free. From Diagram 5 on it is a direct ko, which Black must win once."
+   ],
+   "diagrams": [
+    {
+     "start": "",
+     "moves": "B17 B19 E18 A18",
+     "caption": "The tree's line, marked S[DEAD], with Black to play. It is a ko: Black lives with one threat more than White.",
+     "checks": [
+      {
+       "status": "KO"
+      },
+      {
+       "balance": 1,
+       "opts": "end=1"
+      }
+     ]
+    },
+    {
+     "moves": "C19 A17 A19",
+     "labels": {
+      "A15": "a"
+     },
+     "caption": "Black 5 ataris the White stone at B19, White 6 ataris four Black stones, and Black 7 takes the ko by capturing that stone. Black 7 also leaves three White stones in atari at a, so White cannot play elsewhere.",
+     "checks": [
+      {
+       "count": [
+        0,
+        4
+       ],
+       "opts": "pw=1,end=1",
+       "expect": "wins"
+      },
+      {
+       "balance": 1,
+       "opts": "end=1"
+      }
+     ]
+    },
+    {
+     "moves": "C19 A17 A19 A15",
+     "labels": {
+      "E19": "b",
+      "B19": "c"
+     },
+     "caption": "White 8 connects, and Black holds the ko with Black to play. Connecting at c does not live yet: Black needs two moves in a row, first b (its best extra move) and then c.",
+     "checks": [
+      {
+       "count": [
+        0,
+        4
+       ],
+       "opts": "pw=1,end=1",
+       "expect": "wins"
+      },
+      {
+       "balance": 1,
+       "opts": "end=1"
+      }
+     ]
+    },
+    {
+     "moves": "C19 A17 A19 A15 E19",
+     "labels": {
+      "B19": "c"
+     },
+     "caption": "Black 9 is the move at E19. White cannot play elsewhere, and its only answer is the retake at c: if White may not play there, Black wins.",
+     "checks": [
+      {
+       "count": [
+        0,
+        4
+       ],
+       "opts": "pw=1,end=1",
+       "expect": "wins"
+      },
+      {
+       "count": [
+        0,
+        4
+       ],
+       "opts": "fw=B19,end=1",
+       "expect": "wins"
+      },
+      {
+       "balance": 1,
+       "opts": "end=1"
+      }
+     ]
+    },
+    {
+     "moves": "C19 A17 A19 A15 E19 B19",
+     "caption": "White 10 retakes without a threat, since Black 9 was not a ko capture. White's capture threatens to kill at once, so Black needs a threat to retake.",
+     "checks": [
+      {
+       "count": [
+        4,
+        0
+       ],
+       "opts": "pb=1,end=1",
+       "expect": "fails"
+      },
+      {
+       "balance": 1,
+       "opts": "end=1"
+      }
+     ]
+    },
+    {
+     "moves": "C19 A17 A19 A15 E19 B19 A19!",
+     "caption": "Black 11 retakes after a ko threat elsewhere, and now threatens to connect and live. It is a direct ko: White needs a threat to retake.",
+     "checks": [
+      {
+       "count": [
+        0,
+        4
+       ],
+       "opts": "pw=1,end=1",
+       "expect": "wins"
+      },
+      {
+       "balance": 0,
+       "opts": "end=1"
+      }
+     ]
+    },
+    {
+     "moves": "C19 A17 A19 A15 E19 B19 A19! pass B19",
+     "caption": "When White has no threat left, White 12 plays elsewhere and Black 13 connects. Black lives with eyes at C18 and D19.",
+     "checks": [
+      {
+       "status": "ALIVE"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "problem": "2359",
+   "leaf": "B17 B19 E18 A18",
+   "tree": "DEAD",
+   "heading": "Why Black needs E19, and White never needs an extra move",
+   "text": [
+    "Diagram 8 is why Black needs E19, and Diagram 9 why Black cannot play it before taking the ko. Diagram 10 shows White's capture threatening to kill before Black has played E19, as it does after (Diagram 5): White can win by winning the ko once, at any time."
+   ],
+   "diagrams": [
+    {
+     "moves": "C19 A17 A19 A15 B19 E19",
+     "labels": {
+      "C18": "a"
+     },
+     "caption": "If Black connects at once with Black 9, White 10 kills: Black is left with one eye, at a.",
+     "checks": [
+      {
+       "status": "DEAD"
+      }
+     ]
+    },
+    {
+     "moves": "E19 C19",
+     "caption": "If Black plays Black 5 at E19 before taking the ko, White 6 kills, whatever the ko threats.",
+     "checks": [
+      {
+       "status": "DEAD"
+      }
+     ]
+    },
+    {
+     "moves": "C19 A17 A19 B19!",
+     "caption": "Instead of connecting, White 8 can retake at once after a ko threat elsewhere. Its capture threatens to kill, so Black must retake with a threat.",
+     "text": [
+      "From here Black needs two threats more than White: one to retake now, and one more after E19. White has spent one threat on White 8, so overall Black still needs one threat more than White, as in Diagram 2."
+     ],
+     "checks": [
+      {
+       "count": [
+        4,
+        0
+       ],
+       "opts": "pb=1,end=1",
+       "expect": "fails"
+      },
+      {
+       "balance": 2,
+       "opts": "end=1"
+      }
+     ]
+    }
+   ]
+  }
+ ],
+ "table": {
+  "caption": "Grading on the site: besogo's own code (grading_impact.cjs) on Problem 2359's tree, with only this leaf changed.",
+  "columns": [
+   "Leaf label",
+   "Moves whose grading changes"
+  ],
+  "rows": [
+   [
+    "S[DEAD] to S[KO-]",
+    "none"
+   ],
+   [
+    "S[DEAD] to S[A-1KO+]",
+    "none"
+   ],
+   [
+    "S[KO-] to S[A-1KO+]",
+    "none"
+   ],
+   [
+    "S[DEAD] to S[KO+], for comparison",
+    "Black's E18 at move 3 becomes correct"
+   ]
+  ]
+ }
+}

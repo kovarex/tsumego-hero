@@ -1,0 +1,216 @@
+{
+ "id": "q2",
+ "heading": "2. Problem 15220, leaf c081",
+ "question": "The tree marks this leaf S[KO+], with the count of a plain ko, but neither side's capture threatens anything until that side adds one more move. By your answer to question 1, is it a plain KO+, your 10kKO, or the approach form A+1KO-?",
+ "options": [
+  {
+   "label": "KO+",
+   "meaning": "Keep the tree's label, which the research kept too: a plain ko in which Black wins with as many ko threats as White (Diagram 1). By your answer to question 1 a plain KO fits a ko that switches there and back, and this one cannot switch back once either side invests (Diagrams 5 and 8)."
+  },
+  {
+   "label": "10kKO",
+   "meaning": "White, who needs the ko, must invest one move at a or b after taking it, and whoever invests hands the other side a direct ko (Diagrams 4 and 7): your 10kKO. besogo grades it like A+1KO- here, above KO+ for Black, but no move in problem 15220 changes its grade (the table at the end)."
+  },
+  {
+   "label": "A+1KO-",
+   "meaning": "The approach form: White took first and needs one approach. besogo grades it exactly like 10kKO when Black lives, so it changes no grade either. But it says that only White needs a move, and Black's capture needs one too (Diagram 6): by your definition this is no approach ko, since Black cannot win by winning one ko."
+  }
+ ],
+ "recommendation": "10kKO, as for problem 10391 in part 1a. The one investment this ko needs is wasted whoever makes it, and the ko cannot switch back, so this is your 10kKO and not your symmetric case; problem 15513 marks this very corner S[10kKO] (Diagram 13). The change flips no grading in problem 15220.",
+ "text": [
+  "Our question 2 needs two corrections. The research did see this shape: one judge called it the classic ten-thousand-year ko and said 10kKO would describe it as well, but kept KO+ because its count is right. And no label changes grading here. besogo does rank 10kKO above KO+ for Black, but the leaf lies below Black 3, which besogo already grades wrong because the tree has living moves at that point, and no move anywhere in problem 15220 changes its grade, whichever of the three labels the leaf gets.",
+  "The diagrams show the following. White needs the ko: without it Black lives (Diagram 1). After White's preparation and capture, Black's group still has the two liberties a and b that it shares with White's corner stones, so White's capture threatens nothing until White adds a move there (Diagram 3), and Black's retake would need the same move (Diagram 6). Whoever invests, the other side retakes without a threat and holds a direct ko (Diagrams 4 and 7), and from then on both captures are real threats (Diagrams 5 and 8). Black wins with as many threats as White at the leaf, and whoever holds the ko (Diagrams 1, 3 and 6).",
+  "By your definitions: it is no approach ko, because neither side's capture threatens anything at first, so neither side can win by winning one ko. It is not your symmetric case, because both sides need the same move, and once either side plays it the ko is direct for both and stays so. It is your 10kKO: White, who needs the ko, must invest one move, and the investment is wasted, because it makes Black's capture a real threat as well: Black retakes for free, and White needs the first threat, the count at the leaf (Diagram 4). An investment by Black would hand White a direct ko the same way, before the ko or after it (Diagrams 7 and 11).",
+  "Two other trees agree. Problem 15513's only leaf is this corner right after White 8, with Black to play, and its tree marks it S[10kKO], with the comment that White still has to approach (Diagram 13). Problem 10391 in part 1a has the same corner with the colours reversed, also marked S[10kKO]. Whatever you decide there should hold here."
+ ],
+ "positions": [
+  {
+   "problem": "15220",
+   "leaf": "D19 E19 A16 B18 B19 A18 D18",
+   "tree": "KO+",
+   "heading": "The ko White must start",
+   "area": {"frame": ["A16", "B16", "C16", "A17", "B17", "C17", "A18", "B18", "C18", "D18", "A19", "B19", "C19", "D19"]},
+   "text": [
+    "White to play needs the ko, but its capture threatens nothing without one more move at a or b, and that move hands Black a direct ko.",
+    "White 8 is a preparation, not this investment: Black can leave it unanswered, and the count is the same before it, after it and after White's capture (Diagrams 1 to 3). The investment is White 12 (Diagram 4).",
+    "We use this frame, as the judges did, because the checker's own areas also take in points around the White wall and Black's outside stones; these cannot reach the corner, since the wall has eight liberties, but with them the decisive search, at equal threats, stays undecided at 2,000,000 nodes."
+   ],
+   "diagrams": [
+    {
+     "start": "",
+     "moves": "D19 E19 A16 B18 B19 A18 D18",
+     "labels": {"A17": "a", "B17": "b", "C19": "c"},
+     "caption": "The tree's line to the leaf marked S[KO+], with White to play. Black's group and White's corner stones share the liberties a and b, and White can take a ko at c once Black 5 is in atari.",
+     "text": [
+      "The last check bars White from c for the whole search: then Black lives even when White has four ko threats, so White is the side that needs the ko."
+     ],
+     "checks": [
+      {"status": "KO"},
+      {"balance": 0, "opts": "end=1"},
+      {"count": [0, 4], "opts": "end=1,fw=C19", "expect": "wins"}
+     ]
+    },
+    {
+     "moves": "A19",
+     "labels": {"A17": "a", "B17": "b", "C19": "c"},
+     "caption": "White 8 puts Black 5 in atari, the preparation for the ko. Black should leave it and play elsewhere (Diagrams 9 to 11).",
+     "checks": [
+      {"balance": 0, "opts": "end=1"}
+     ]
+    },
+    {
+     "moves": "A19 pass C19",
+     "labels": {"A17": "a", "B17": "b"},
+     "caption": "Black 9 plays elsewhere and White 10 takes the ko. Black's group still has a and b, so the capture threatens nothing yet.",
+     "text": [
+      "One free move does not let White kill, even when neither side has a threat; two kill even against four Black threats. White must first fill a or b: one investment."
+     ],
+     "checks": [
+      {"count": [0, 0], "opts": "end=1,pb=1", "expect": "wins"},
+      {"count": [4, 0], "opts": "end=1,pb=2", "expect": "fails"},
+      {"balance": 0, "opts": "end=1"}
+     ]
+    },
+    {
+     "moves": "A19 pass C19 pass A17 B19",
+     "labels": {"B17": "b"},
+     "caption": "Black 11 plays elsewhere again, White 12 invests at a, and Black 13 retakes without a threat, because White 12 did not capture. White's four stones are now in atari at b, so White needs the first ko threat.",
+     "text": [
+      "Black's capture is a real threat at once, and Black wins with as many threats as White, as at the leaf: White's investment bought only a direct ko that Black holds."
+     ],
+     "checks": [
+      {"count": [0, 4], "opts": "end=1,pw=1", "expect": "wins"},
+      {"balance": 0, "opts": "end=1"}
+     ]
+    },
+    {
+     "moves": "A19 pass C19 pass A17 B19 C19!",
+     "labels": {"B17": "b"},
+     "caption": "White 14 retakes after a ko threat elsewhere, and now Black's group is in atari at b. Both captures are real threats, so the ko stays direct both ways.",
+     "checks": [
+      {"count": [4, 0], "opts": "end=1,pb=1", "expect": "fails"}
+     ]
+    }
+   ]
+  },
+  {
+   "problem": "15220",
+   "leaf": "D19 E19 A16 B18 B19 A18 D18",
+   "tree": "KO+",
+   "heading": "Black's side of the ko",
+   "area": {"frame": ["A16", "B16", "C16", "A17", "B17", "C17", "A18", "B18", "C18", "D18", "A19", "B19", "C19", "D19"]},
+   "text": [
+    "If Black retakes at once, everything is reversed: Black's capture needs one move at a or b, and that move hands White a direct ko. Black has no reason to retake, since White's capture threatens nothing yet, and Black can retake for free once White invests (Diagrams 3 and 4)."
+   ],
+   "diagrams": [
+    {
+     "moves": "A19 pass C19 B19!",
+     "labels": {"A17": "a", "B17": "b"},
+     "caption": "Black 11 retakes at once, after a ko threat elsewhere. White's three stones still have a and b, so Black's capture threatens nothing yet either.",
+     "text": [
+      "Black too needs two free moves, an investment at a or b and the capture at the other, as White does. And Black still wins with as many threats as White, as in Diagram 3, so holding the ko is worth nothing and the threat Black spent on it is lost."
+     ],
+     "checks": [
+      {"count": [0, 4], "opts": "end=1,pw=1", "expect": "fails"},
+      {"count": [0, 4], "opts": "end=1,pw=2", "expect": "wins"},
+      {"balance": 0, "opts": "end=1"}
+     ]
+    },
+    {
+     "moves": "A19 pass C19 B19! pass A17 C19",
+     "labels": {"B17": "b"},
+     "caption": "If Black also invests, with Black 13 at a after White 12 plays elsewhere, White 14 retakes without a threat. Black's group is now in atari at b, and Black needs one threat more than White.",
+     "checks": [
+      {"count": [4, 0], "opts": "end=1,pb=1", "expect": "fails"},
+      {"balance": 1, "opts": "end=1"}
+     ]
+    },
+    {
+     "moves": "A19 pass C19 B19! pass A17 C19 B19!",
+     "labels": {"B17": "b"},
+     "caption": "Black 15 retakes after a ko threat elsewhere, and White's stones are in atari at b. After Black's investment too, both captures are real threats.",
+     "checks": [
+      {"count": [0, 4], "opts": "end=1,pw=1", "expect": "wins"}
+     ]
+    }
+   ]
+  },
+  {
+   "problem": "15220",
+   "leaf": "D19 E19 A16 B18 B19 A18 D18",
+   "tree": "KO+",
+   "heading": "Black's other answers to White 8, and White's seki",
+   "area": {"frame": ["A16", "B16", "C16", "A17", "B17", "C17", "A18", "B18", "C18", "D18", "A19", "B19", "C19", "D19"]},
+   "text": [
+    "Black answers White 8 by playing elsewhere because the local answers are worse. Connecting dies to a throw-in (Diagrams 9 and 10), and filling a is Black's own investment, which lets White take first in a direct ko (Diagram 11).",
+    "White, for its part, can settle for seki instead of investing (Diagram 12), as the tree's comment at the leaf says: \"Your opponent can choose to settle for a seki or fight a ko later.\""
+   ],
+   "diagrams": [
+    {
+     "moves": "A19 C19",
+     "labels": {"A17": "a", "B17": "b"},
+     "caption": "If Black 9 connects at once, Black dies, even when Black has four ko threats and White none.",
+     "checks": [
+      {"status": "DEAD"},
+      {"count": [4, 0], "opts": "end=1", "expect": "fails"}
+     ]
+    },
+    {
+     "moves": "A19 C19 A17 B17 A18",
+     "caption": "White 10 throws in, Black 11 must capture four stones, and White 12 takes the vital point of the eye space they leave, a pyramid four. Black has only one eye.",
+     "checks": [
+      {"status": "DEAD"}
+     ]
+    },
+    {
+     "moves": "A19 A17 C19",
+     "labels": {"B17": "b"},
+     "caption": "If Black 9 fills a instead, White 10 takes the ko, and Black's group is in atari at b. It is a direct ko that White took first, and Black needs one threat more than White.",
+     "checks": [
+      {"count": [4, 0], "opts": "end=1,pb=1", "expect": "fails"},
+      {"balance": 1, "opts": "end=1"}
+     ]
+    },
+    {
+     "moves": "A19 pass C19 pass B19",
+     "labels": {"A17": "a", "B17": "b"},
+     "caption": "White's other choice: White 12 connects, and the corner is seki, with a and b shared. Black lives even when White has four ko threats.",
+     "checks": [
+      {"status": "ALIVE"},
+      {"count": [0, 4], "opts": "end=1", "expect": "wins"}
+     ]
+    }
+   ]
+  },
+  {
+   "problem": "15513",
+   "leaf": "B18 B19 A18 pass A19",
+   "tree": "10kKO",
+   "heading": "Problem 15513: the same corner, marked S[10kKO]",
+   "text": [
+    "White kills in this problem, so the solver lines read from White's side: White wins only with one threat more than Black. That is the count of Diagram 2 seen from the other side, where Black wins with as many threats as White."
+   ],
+   "diagrams": [
+    {
+     "start": "",
+     "moves": "B18 B19 A18 pass A19",
+     "labels": {"A17": "a", "B17": "b"},
+     "caption": "The tree's line to its only leaf, marked S[10kKO]: the corner of Diagram 2, with Black to play after White 5. The tree's comment calls it a ten-thousand-year ko in which White still has to approach at b.",
+     "checks": [
+      {"status": "KO"},
+      {"balance": 1, "opts": "end=1"}
+     ]
+    }
+   ]
+  }
+ ],
+ "table": {
+  "caption": "Grading in problem 15220 with each label at the leaf, from besogo's own grading code run on the tree with the leaf changed. The leaf lies below Black 3, which is already graded wrong, so no label changes a grade.",
+  "columns": ["Label at the leaf", "How besogo ranks it for Black", "Moves whose grade changes"],
+  "rows": [
+   ["KO+ (the tree now)", "a plain ko, no approach moves", "none"],
+   ["10kKO", "like A+1KO-: White needs one approach; above KO+", "none"],
+   ["A+1KO-", "White needs one approach and took first; above KO+", "none"]
+  ]
+ }
+}
