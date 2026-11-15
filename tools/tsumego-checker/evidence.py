@@ -1,5 +1,7 @@
 #everything about one position of a status problem, for checking a disagreement by hand:
-#usage: evidence.py <problem id> "<moves from the start>" [--tree] [--moves] [--pv] [--ko] [--budget=N] [--problems=FILE]
+#usage: evidence.py <problem id> "<moves from the start>" [--tree] [--moves] [--pv] [--ko] [--label] [--budget=N] [--problems=FILE]
+#--label: the full besogo ko label of the position with each part, its reason, its lines and undecided parts
+#(research/ko_labels/design.md, section 7)
 #moves: points like A18, 'pass', or 'A18!' for a retake against the ko ban (it stands for a ko threat and its answer).
 #they alternate from the first player; the tree's own moves are followed while they match, other moves are allowed.
 import json, os, sys, time
@@ -176,7 +178,7 @@ def solver_line(s, board, to_move, result, plies=12):
             break
     return line
 
-if '--pv' in flags and status in ('DEAD', 'ALIVE', 'KO', 'BENT4'):
+if '--pv' in flags and status != '?':
     print('\nSolver line keeping %s (the side to play tries the engine\'s move first; the other side\'s moves are any that keep it):' % status)
     print('  ' + ' '.join(solver_line(solver, board, to_move, status)))
 
@@ -192,7 +194,7 @@ if '--moves' in flags:
         child_status = solver.status(child, opponent(to_move))[0]
         child_status = ko_taken_by(child, to_move, solver_color, child_status)
         results.setdefault(child_status, []).append(name(p))
-    for key in ('DEAD', 'BENT4', 'KO', 'ALIVE', '?'):
+    for key in ('DEAD', 'BENT4', 'DSKO', 'DDKO', 'KO', 'SEKI', 'SEKI+', 'ADKO', 'ASKO', 'ALIVE', '?'):
         if key in results:
             print('  %-5s after %s' % (key, ' '.join(results[key])))
 
@@ -211,7 +213,67 @@ if '--ko' in flags:
     print('  sign from the tables: %s' % (sign or 'undecided'))
     for k in (0, 1):
         x, y = max(k, 0), max(-k, 0)
-        wins, line = solver.wide.counted_line(board, to_move, x, y)
-        text = ' '.join('%s %s%s' % (names[c][0], name(p), ' (%s)' % note if note else '') for c, p, note in line)
+        wins, line = solver.wide.counted_line(board, to_move, x, y, end=0)
+        text = solver.wide.line_names(line)
         print('  wider area, s=%d o=%d: solver %s; line: %s' % (x, y, {True: 'wins', False: 'fails', None: 'undecided'}[wins], text or '(none)'))
+def label_report(record):
+    #design 7: the label, one sentence per part, the counted table, the parts, the lines (numbered from this position, with
+    #research/report.py's diagram specs), the other area's label, warnings and undecided parts with their nodes
+    besogo = record.get('besogo') or {}
+    print('\nKo label: %s%s, class %s%s' % (record['label'], ' (besogo: approaches %s, extra threats %s)' % (
+        besogo.get('approaches'), besogo.get('extraThreats')) if besogo.get('type') == 'KO' else '', record.get('class'),
+        ' (inferred)' if record.get('class_inferred') else ''))
+    for key, title in (('strict_label', 'strict label (the full count, no approach rule)'),
+                       ('strict_from_parts', 'strict label from the parts (the full count is undecided)'), ('net_label', 'net reading')):
+        if record.get(key):
+            print('  %s: %s' % (title, record[key]))
+    alternative = record.get('alternative')
+    if alternative:
+        print('  without the second ko (%s): %s, full count %s' % (alternative['reading'], alternative['label'], alternative['count']))
+    print('\n' + record.get('text', ''))
+    count = record.get('count')
+    if count:
+        row = '  '.join('%+d:%s' % (k, {True: 'yes', False: 'no', None: '?'}[count['table'].get(k, count['table'].get(str(k)))]) for k in range(-3, 4))
+        print('\nCounted table: does %s win with s - o =   %s' % (names[record['solver']], row))
+        print('  full count %s (bracket %s), shifted check %s, %d nodes, area %s' % (
+            count['d_full'], count['bracket'], count['shifted_check'], count['nodes'], record['area']['count']))
+    take = record.get('first_take')
+    if take:
+        print('First take: %s at %s (%s), preparation %s, confirmed %s' % (names.get(take['side'], '?'), take['point'], take['how'],
+              ' '.join('%s %s' % move for move in take['preparation']) or '-', take['confirmed']))
+    for side in ('S', 'O'):
+        summary = (record.get('approaches') or {}).get(side)
+        if summary:
+            print('Approaches of %s: n=%s (bracket %s, outright %s), moves %s, alternatives %s, held-ko check %s, direct-ko value %s, %d nodes' % (
+                'the solver' if side == 'S' else 'the opponent', summary['n'], summary['bracket'], summary['outright'],
+                ' '.join(summary.get('round_moves') or summary['moves']), summary['alternatives'], summary['held_ok'], summary['v'], summary['nodes']))
+    direct = record.get('direct_ko') or {}
+    if direct.get('attribution'):
+        print('Attribution of the extra threats: %s' % direct['attribution'])
+    for threat in direct.get('local_threats') or []:
+        print('  local threat of %s: %s (answers %s), d %d -> %d' % (names[threat['side']], ' '.join(threat['points']), threat['answers'],
+              threat['d_before'], threat['d_after']))
+    for stage in direct.get('stages') or []:
+        print('  stage of %s: %s' % (names.get(stage['side'], stage['side']), stage))
+    gain = record.get('gain') or {}
+    if gain.get('side'):
+        print('Gain of %s in the approach rounds: total %s, located %s, unlocated %s' % (names[gain['side']], gain['total'], gain['located'], gain['unlocated']))
+        for item in gain['rounds']:
+            print('  round %d: %s (value %s; d %s with it, %s with a move elsewhere), tried %s' % (item['round'], item['move'] or 'no gain',
+                  item['value'], item['d_with'], item['d_without'], ', '.join('%s %s' % (t['move'], t['value']) for t in item['tried'])))
+    for i, line in enumerate(record.get('lines') or [], 1):
+        print('\nLine %d, %s: %s wins with %d threats against %d%s' % (i, line['name'], names.get(line['winner'], '?'), line['threats']['S'] if line['winner'] == record['solver'] else line['threats']['O'],
+              line['threats']['O'] if line['winner'] == record['solver'] else line['threats']['S'], '' if line['decided'] else ' (stops: %s)' % line['stop']))
+        print('  ' + line['text'])
+        print('  diagram: %s' % json.dumps(line['diagram']))
+    print('\nAreas: %s' % record.get('areas'))
+    for warning in record.get('warnings') or []:
+        print('Warning: %s' % warning)
+    for item in record.get('undecided') or []:
+        print('Undecided: %s, %s (%d nodes, %s area)' % (item['part'], item['search'], item['nodes'], item.get('area')))
+    print('(%d nodes, %.1f s)' % (record['nodes'], record['seconds']))
+
+if '--label' in flags:
+    last_move = parse(path[-1][0].rstrip('!')) if path else None
+    label_report(solver.ko_label(board, to_move, last_move, start=line_text.strip() or None))
 print('\n(%.0f s, budget %d nodes per search)' % (time.time() - start, budget))

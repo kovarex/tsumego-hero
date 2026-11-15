@@ -37,11 +37,13 @@ the export is; `RESULTS` and `REPORT_DIR` do the same for `build_report.py`.
     2 the side to move keeps the move), `pv 0|1` (`solve` prints `pvA=` and `pvD=`). `kofree`, `bentfour` and `cycle`
     also work alone.
   - `solvex <toMove> <ko> <budget> <black> <white> <options|-> <board>`: the counted search with `pb=k`/`pw=k`
-    (that colour passes its next k turns; a forced pass lifts the ko ban and never ends the game), `fb=i;j`/`fw=`
-    (barred points), `kb=`/`kw=` (barred while that colour is under a ko ban) and `end=`, `cyc=`, `sk=`, `pv=` (the
-    switches, for this command only). Prints `result N=K|N|U nodes= best= cycles= [pv=]`; a line is `B<i>`, `W<i>`,
-    `Bpass` joined by `_`, with `!` after a ban break, `fp` for a forced pass and `cycle` where a position repeats.
-    `solvecount` is `solvex` with no options and keeps its old output.
+    (that colour passes its next k turns; a forced pass is a tenuki: it lifts the ko ban and breaks a run of passes,
+    so it never ends the game), `ps=1` (the last move was a pass), `fb=i;j`/`fw=` (barred points), `kb=`/`kw=`
+    (barred while that colour is under a ko ban) and `end=`, `cyc=`, `sk=`, `pv=` (the switches, for this command
+    only). The static "no two eyes" test counts the forced passes owed and the barred points. Prints
+    `result N=K|N|U nodes= best= cycles= [pv=]`; a line is `B<i>`, `W<i>`, `Bpass` joined by `_`, with `!` after a
+    ban break, `fp` for a forced pass and `cycle` where a position repeats. `solvecount` is `solvex` with no options
+    and keeps its old output.
   - `solvemoves`, with the arguments of `solvex`: every legal root move and the pass searched in one table generation,
     each with the full budget. Prints `result N= nodes= best= cycles= moves=<i>[!]:<K|N|U>:<nodes>,...` (-1 the pass,
     `!` a retake against the ban).
@@ -119,7 +121,34 @@ for problem 9). It checks every move for legality and every step against the sol
 local threats, 10kKO, double ko, superko, BENT4, SEKI) from small engine searches instead of one threat count.
 `research/ko_labels/prototypes/` holds the prototype engines (diffs against `engine.cpp`) and scripts it was built
 from, `research/ko_labels/judge/` the runs that verified its outputs on the settled leaves. The engine part (the
-design's section 5) is in `engine.cpp`; its end playout stays off until the regression run of section 12.
+design's section 5) is in `engine.cpp`; the label's counted searches use the end playout (`END_PLAY`), the old
+commands keep the old end until the regression run of section 12.
+
+The core of the label is on `Solver` in `tsumego.py` (sections 3, 4 steps 1-5, 6 and 9): `count` (the counted game,
+with forced passes, barred points, the cycle rule and the end playout, escalated at 5x the budget and then by one ply),
+`threshold` (galloping, bisection, the shifted check), `first_take`, `profile` (approach count, held-ko check, the
+direct-ko value), `ko_label` (the record of section 7.1 in both areas) and the class step `classify` behind `status`
+(cycle rules for double ko and superko, the clean result, the fixed bent-four test, SEKI and SEKI+). The counted
+searches of the label use `END_PLAY` (default 2, the side to move keeps the move; 1 the attacker moves on).
+`besogo_string`, `parse_status`, `label_threshold` and `better` mirror `status.js`.
+
+The rest of the label (D7, D8, steps 6-9 and section 7) is `explain_label`, which `ko_label` runs on the area the label
+comes from. `local_threats` bars the candidate moves of the side with the extra threats cumulatively, while it is under a
+ban only, and counts each unit change of the count as one local threat; the points barred for it are its forms. Extra
+threats no bar explains are read as stages on the direct-ko line. `approach_rounds` builds the conventional approach line
+(the other side plays elsewhere, approach, free retake, retake after a threat) and `round_gains` measures, round by round,
+what the other side's local move instead of its tenuki would gain: the located gains, the unlocated rest of the full
+count, and the strict label (from the parts when the full count is undecided). `counted_line` builds the lines of 7.2
+(approach, direct ko, gain and its no-gain twin; the full count's line when it beats the label, for a mutual approach,
+or when no other line can be built) from decided positions, with each move's role; each line carries a
+`research/report.py` diagram spec (`start`, `moves`, `first`, `caption`).
+A holder's free move that fills its own ko is no approach: the label then counts the second ko that follows (215 and
+13169: a bent four) and prints the A-form with the filling point barred beside it (design D5, question 10). An
+approach round whose free retake loses outright is reported as failing (a sente approach, D8).
+`label_text` writes one sentence per part, also for a partly undecided label, `compare_label` the comparison of 7.3
+(on the decided parts of a partly undecided label), and `label_summary` the fields
+`check_tree.py` and `status_eval.py` add to KO leaves (`KO_LABEL=0` turns them off). `evidence.py --label` prints the
+whole report.
 
 ## Ko label questions page
 

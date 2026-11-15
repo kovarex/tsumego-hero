@@ -16,9 +16,10 @@
 // A: the defender has infinite ko threats (attacker must kill without ko); D: the attacker has infinite ko threats.
 // N: counted threats, a retake against the ko ban costs the retaker one threat. K = attacker kills (captures a target
 // stone), N = attacker can't kill, U = budget ran out. cycles: repetitions the cycle rule adjudicated.
-// solvex options, comma separated: pb=k pw=k forced passes, fb=i;j fw=.. barred points, kb=.. kw=.. barred while that
-// colour is under a ko ban, end= cyc= sk= pv= as the switches for this command. A line: B<i>, W<i>, Bpass, Wpass joined
-// by _, ! after a ban break, fp a forced pass, cycle where a position repeats.
+// solvex options, comma separated: pb=k pw=k forced passes (each a tenuki: it lifts the ban and breaks a run of passes),
+// ps=1 the last move was a pass, fb=i;j fw=.. barred points, kb=.. kw=.. barred while that colour is under a ko ban,
+// end= cyc= sk= pv= as the switches for this command. A line: B<i>, W<i>, Bpass, Wpass joined by _, ! after a ban
+// break, fp a forced pass, cycle where a position repeats.
 #include <bits/stdc++.h>
 using namespace std;
 typedef uint64_t u64;
@@ -37,11 +38,12 @@ vector<int> target;
 vector<int> keepPoints; // attacker stones whose capture means the defender lives (hand-built model boards)
 vector<int> active; // the points inside the region
 bool fringe[361]; // empty edge points, playable only while a chain next to them is short of liberties
-u64 zobrist[3][361], zobristKo[362], zobristSide, zobristPass, zobristThreats[3][16], zobristForced[3][9];
+u64 zobrist[3][361], zobristKo[362], zobristSide, zobristPass, zobristThreats[3][16], zobristForced[3][9], zobristBarred[2][3][361];
 // The switches below are in force for the command running now: each search command starts from the persistent ones
 // (set), and solvex options change them for that command only. Barred points and forced passes are per command.
 bool forbid[3][361]; // points a colour may not play (attribution of local threats)
 bool forbidBanned[3][361]; // points a colour may not play while it is under a ko ban (they cannot serve as ko threats)
+u64 barredKey = 0; // the barred points of the command running now, 0 for none: the end tests depend on them
 int endPlay = 0; // counted mode: no end at two passes while endPending(); 1 the attacker moves on, 2 the side to move
 int cycleRule = 0; // 0 ko-break cycles kill else seki, 1 cycles kill, 2 cycles live, 3 the side completing one loses
 bool sekiKill = false; // at the end of the game a target that is not unconditionally alive is dead
@@ -319,9 +321,18 @@ void bensonAlive(const State& s)
 
 // The defender's area: the empty and defender points connected to the target. When every attacker chain around it is
 // safe (touches the outside wall), the empty points are all the eye space there will ever be. A part of at most 2
-// points gives at most one eye, a part of 3 gives two only when the defender moves next.
+// points gives at most one eye, a part of 3 gives two unless the attacker makes the next real move and may play every
+// point of it (no barred point, and no point barred while banned when it moves under the ban now).
 bool noTwoEyes(const State& s)
 {
+  // the next real move: the forced passes owed come first, and a forced pass lifts the ban
+  int next = s.toMove, owed[3] = {0, s.forced[BLACK], s.forced[WHITE]};
+  while (owed[next] > 0)
+  {
+    --owed[next];
+    next = 3 - next;
+  }
+  bool bannedNow = s.ko >= 0 && s.forced[s.toMove] == 0;
   static int seen[361], seenStamp = 0;
   ++seenStamp;
   static int stack[361], component[361];
@@ -376,6 +387,7 @@ bool noTwoEyes(const State& s)
     if (componentStamp[e] == stampValue)
       continue;
     int size = 0;
+    bool attackerFree = next == attacker;
     top = 0;
     stack[top++] = e;
     componentStamp[e] = stampValue;
@@ -383,6 +395,8 @@ bool noTwoEyes(const State& s)
     {
       int q = stack[--top];
       ++size;
+      if (forbid[attacker][q] || (bannedNow && forbidBanned[attacker][q]))
+        attackerFree = false;
       for (int k = 0; k < neighbourCount[q]; ++k)
       {
         int r = neighbours[q][k];
@@ -396,7 +410,7 @@ bool noTwoEyes(const State& s)
     if (size <= 2)
       eyes += 1;
     else if (size == 3)
-      eyes += s.toMove == defender ? 2 : 1;
+      eyes += attackerFree ? 1 : 2;
     else
       eyes += 2;
     if (eyes >= 2)
@@ -453,7 +467,8 @@ bool bentFour(const State& s)
 // the region, like 840 towards B10, counts as shut in).
 int terminalUncached(const State& s);
 
-// the end tests repeat for every transposition, so their results are kept by position
+// the end tests repeat for every transposition, so their results are kept by position: the board, the side to move
+// and what the no-two-eyes test reads besides them (the forced passes owed, the barred points and, with any, the ban)
 const int TERMINAL_BITS = 20;
 struct TerminalEntry { u64 key; int8_t result; };
 vector<TerminalEntry> terminalTable(1 << TERMINAL_BITS);
@@ -462,7 +477,8 @@ int terminal(const State& s)
 {
   if (s.passes >= 2)
     return terminalUncached(s);
-  u64 key = s.hash ^ (s.toMove == WHITE ? zobristSide : 0) ^ 0x9e3779b97f4a7c15ULL;
+  u64 key = s.hash ^ (s.toMove == WHITE ? zobristSide : 0) ^ 0x9e3779b97f4a7c15ULL ^ zobristForced[BLACK][s.forced[BLACK]] ^
+            zobristForced[WHITE][s.forced[WHITE]] ^ (barredKey ? barredKey ^ zobristKo[s.ko + 1] : 0);
   TerminalEntry& entry = terminalTable[key & ((1 << TERMINAL_BITS) - 1)];
   if (entry.key == key)
     return entry.result;
@@ -786,10 +802,12 @@ void generate(const State& s, bool ignoreKo, vector<ProofChild>& children, int t
 {
   if (s.forced[s.toMove] > 0)
   {
-    // a forced pass: a tenuki that gives the other side a free move; it lifts the ko ban and never ends the game
+    // a forced pass: a tenuki that gives the other side a free move; it lifts the ko ban and, as a move elsewhere, breaks
+    // a run of passes, so it never ends the game
     ProofChild child{s, -1, 0, 0, 0, 0};
     child.state.forced[s.toMove]--;
     child.state.ko = -1;
+    child.state.passes = 0;
     child.state.toMove = 3 - s.toMove;
     child.key = positionKey(child.state);
     child.terminal = terminal(child.state);
@@ -1127,6 +1145,7 @@ string principalLine(const State& start, int mode, int result)
     {
       line.forced[line.toMove]--;
       line.ko = -1;
+      line.passes = 0;
       line.toMove = 3 - line.toMove;
       text += "_fp";
       continue;
@@ -1187,6 +1206,7 @@ void beginCommand()
   sekiKill = switches.sekiKill;
   memset(forbid, 0, sizeof(forbid));
   memset(forbidBanned, 0, sizeof(forbidBanned));
+  barredKey = 0;
   cycles = 0;
 }
 
@@ -1213,8 +1233,8 @@ string setSwitch(const string& name, const string& value)
 }
 
 // The arguments of solvex and solvemoves: <toMove> <ko> <budget> <black threats> <white threats> <options|-> <board>.
-// Fills the state, the forced passes, the barred points and this command's switches; an error text, empty if all is
-// well.
+// Fills the state, the forced passes, a pass already made, the barred points and this command's switches; an error
+// text, empty if all is well.
 string readCounted(State& s, bool& wantPv)
 {
   string line, side, options, board, extra;
@@ -1262,6 +1282,8 @@ string readCounted(State& s, bool& wantPv)
       return "bad option " + item;
     else if ((key == "pb" || key == "pw") && number >= 0 && number <= 8)
       s.forced[key[1] == 'b' ? BLACK : WHITE] = number;
+    else if (key == "ps" && (number == 0 || number == 1))
+      s.passes = number; // the last move was a pass
     else if (key == "end" && number >= 0 && number <= 2)
       endPlay = number;
     else if (key == "cyc" && number >= 0 && number <= 3)
@@ -1273,6 +1295,11 @@ string readCounted(State& s, bool& wantPv)
     else
       return "bad option " + item;
   }
+  for (int kind = 0; kind < 2; ++kind)
+    for (int color = BLACK; color <= WHITE; ++color)
+      for (int p = 0; p < NN; ++p)
+        if ((kind ? forbidBanned : forbid)[color][p])
+          barredKey ^= zobristBarred[kind][color][p];
   return "";
 }
 
@@ -1337,6 +1364,10 @@ int main()
   for (int c = 0; c < 3; ++c)
     for (int i = 0; i < 9; ++i)
       zobristForced[c][i] = i ? random() : 0;
+  for (int kind = 0; kind < 2; ++kind)
+    for (int c = 0; c < 3; ++c)
+      for (int i = 0; i < 361; ++i)
+        zobristBarred[kind][c][i] = random();
   ios::sync_with_stdio(false);
   string command;
   while (cin >> command)

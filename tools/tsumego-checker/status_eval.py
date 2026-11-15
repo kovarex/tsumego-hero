@@ -4,13 +4,15 @@ import json, sys, time, os
 #ids already done by an earlier run, one per line
 SKIP_IDS = set(open(os.environ['SKIP']).read().split()) if os.environ.get('SKIP') else set()
 from check_tree import *
-#also find who is ahead in each ko (KO+, KO-, KO+2, ...)
+#also find who is ahead in each ko (KO+, KO-, KO+2, ...), and the full label of each KO leaf (design 7.3)
 KO_SIGN = os.environ.get('KO_SIGN', '1') == '1'
+KO_LABEL = os.environ.get('KO_LABEL', '1') == '1'
 
 def authored_class(text, goal):
-    #DEAD / KO / ALIVE of the target, comparable with the solver's three outcomes
-    if text.strip() == 'BENT4':
-        return 'BENT4'
+    #DEAD / KO / ALIVE of the target, comparable with the solver's three outcomes; the statuses the solver tells apart
+    #(bent four, seki, double ko, superko) stay as they are
+    if text.strip() in SPECIAL_STATUSES:
+        return text.strip()
     r = status_rank(text, goal)
     if r is None:
         return None
@@ -50,6 +52,7 @@ def main(budget, path, worker, workers):
             add_wide(solver, root.board, list(root.board.stones) + tree_points, stones, tree_points)
             solver.wide.solver_color = solver_color
             result['goal'] = goal
+            ko_leaves = [] #(leaf record, node, moves) labelled once every leaf has its status
             stack = [(root, [])]
             while stack:
                 node, line_moves = stack.pop()
@@ -65,7 +68,18 @@ def main(budget, path, worker, workers):
                         leaf['sign'] = solver.ko_sign(node.board, node.to_move)
                         if leaf['sign'] is None and raw != STATUS_KO:
                             leaf['sign'] = 'KO+' #the solver's ko capture ends the line: it took first (the convention)
+                    if status == STATUS_KO and KO_LABEL:
+                        ko_leaves.append((leaf, node, line_moves))
                     result['leaves'].append(leaf)
+            #the labels after the statuses: a label past the time limit ends the labels, not the statuses
+            for leaf, node, line_moves in ko_leaves:
+                try:
+                    record = solver.ko_label(node.board, node.to_move, node.move, start=' '.join(line_moves))
+                except TimeoutError:
+                    leaf['label'] = {'timed_out': True}
+                    result['labels_timed_out'] = True
+                    break
+                leaf['label'] = label_summary(record, node.status_text, goal)
         except TimeoutError:
             result['timed_out'] = True
         except Exception as error:
