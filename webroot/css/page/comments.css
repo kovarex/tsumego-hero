@@ -98,6 +98,10 @@
 .commentBox2 {
 	line-height: 1.5;
 }
+/* A comment of an admin */
+.commentBox2 {
+	color: var(--admin-text-color);
+}
 .tsumego-comment__date {
 	font-size: var(--text-xs);
 	color: var(--color-text-muted);
@@ -137,6 +141,9 @@
 
 .tsumego-comments__content {
 	min-width: 0;
+	margin: 2px 14px;
+	position: relative;
+	top: 9px;
 }
 /* Go coordinate styling - hover to highlight on board */
 
