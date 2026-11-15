@@ -244,10 +244,6 @@ function setUpPageEnd()
 	}
 
 	document.getElementById("potionAlertCheckbox")?.addEventListener("change", () => Display.fadeOut("#potionAlerts", 500));
-	document.getElementById("findSimilarProblems")?.addEventListener("click", () => {
-		document.querySelectorAll(".loader-container").forEach(loader => loader.style.display = "flex");
-		window.location.href = "/tsumegos/duplicatesearch/" + playPage.problem.setConnectionID;
-	});
 }
 if (document.readyState === "loading")
 	document.addEventListener("DOMContentLoaded", setUpPageEnd);

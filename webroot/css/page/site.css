@@ -57,29 +57,6 @@ body {
     box-shadow: none;
   }
 }
-.loader-container {
-  display: none;
-  position: absolute;
-  top: 40%;
-  left: 43.7%;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-}
-.loader-content {
-  font-size: 25px;
-  padding: 20px;
-  background: var(--color-gray);
-  opacity: 0.8;
-  border-bottom-right-radius: 30px;
-  border-bottom-left-radius: 30px;
-  border-top-right-radius: 30px;
-  border-top-left-radius: 30px;
-}
-.loader-text {
-  animation: blinker 1.5s linear infinite;
-}
-
 @keyframes goldenShine {
   0% { left: -75%; }
   100% { left: 125%; }

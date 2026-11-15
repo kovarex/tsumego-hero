@@ -1,10 +1,5 @@
 @layer page
 {
-@keyframes blinker {
-  50% {
-    opacity: 0.4;
-  }
-}
 .selectable-text {
   font-size: 16px;
   color: var(--play-link);
