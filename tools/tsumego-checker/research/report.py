@@ -329,9 +329,26 @@ def prose(paragraphs, css='prose'):
 
 KO_LAYOUT = os.environ.get('LAYOUT') == 'ko'
 
+#SOLVER (optional): the current solver's label of each research leaf, {case: label}, from a later recheck
+solver_now = json.load(open(os.environ['SOLVER'])) if os.environ.get('SOLVER') else {}
+
+def now_note(c, solver):
+    #what the current solver says, where it changed since the research
+    now = solver_now.get(c['case'])
+    if not now or now == solver:
+        return ''
+    if c['final'] == 'solver_error' and now == c['authored']:
+        return ' Fixed in the solver: it now says S[%s], as your tree does.' % now
+    if c['final'] == 'site_error' and now == c['correct_status']:
+        return ' The solver now says S[%s] too.' % now
+    return ' The solver now says %s.' % now
+
 def leaf_status(c):
     #the ko-label research: who agrees with whom on this leaf, in one line
     solver = c.get('label') or '?'
+    return leaf_status_research(c, solver) + now_note(c, solver)
+
+def leaf_status_research(c, solver):
     if c.get('answered'):
         return 'Settled by your answer to question %s.' % c['answered']['question'] + (
             ' Your S[] is right; the solver said %s.' % solver if c['final'] == 'solver_error' else
@@ -429,10 +446,12 @@ def render(specs_dir, out_path):
         if not KO_LAYOUT:
             return block
         def tag(c):
-            solver = c.get('label') or '?'
+            solver = solver_now.get(c['case']) or c.get('label') or '?'
             if c['final'] == 'site_error':
-                return 'the solver agrees' if solver == c['correct_status'] else 'the solver said %s' % solver
-            return 'the solver said %s' % solver
+                return 'the solver agrees' if solver == c['correct_status'] else ('the solver says %s' if solver_now else 'the solver said %s') % solver
+            if c['final'] == 'solver_error' and solver == c['authored']:
+                return 'fixed in the solver' if solver_now else 'the solver agrees'
+            return ('the solver says %s' if solver_now else 'the solver said %s') % solver
         line = '; '.join('%s %s (%s)' % (c['case'], fix_label(c, in_topic.get(c['case'])), tag(c)) for c in sorted(cases, key=lambda c: c['case']))
         return '<details class="fold"><summary><b>%s</b> %s <span class="fold-line">%s</span></summary>%s</details>' % (
             pid, html.escape(problem_of_id(pid).record['title']), html.escape(line), block)
