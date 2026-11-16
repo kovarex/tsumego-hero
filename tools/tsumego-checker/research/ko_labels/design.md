@@ -334,6 +334,36 @@ player is White:
   - The label then needs the full count; where it is undecided the label is KO? with its bracket (10005 "C18 C17 B17
     D18 B19 C19 A18 A19": between 1 and 4).
   - Beside an approach of the other side the label turns on question 1b (D9, 7487 leaf 98).
+- **Two readings of such a capture rest on the full count.** Each needs d_full, applies only where the other side's
+  capture is direct (n_Y = 0; beside an approach of Y the leaf is question 1b), and holds only when the label it gives
+  counts exactly d_full. Where neither the reading above nor these is proved, X's approach count stays undecided (A-?KO?
+  or A+?KO?, with the reason in the text and the warnings), so a decided full count never turns the stage into a label
+  it does not prove.
+  - **Answered at no cost.** The stage above (n_X = 1) assumes that Y lets X take the second ko: Y's free move after X's
+    capture is worth no more than a tenuki, and then the A-form with the capture counts d_full (1807: KO-). When the
+    full count differs from that A-form (is worse for X), Y's moves at P_X that beat v are read as D7 reads a threat.
+    One that X must answer at one point whatever its threats (Lo) is a local ko threat, the extra threat D7 counts, and
+    the stage stands: 1731 "B18 A18 A17", White's C18 puts the group in atari and only C19 answers it, so KO-2, the
+    research's label. When they are all quiet moves, Y answers the capture's threat locally at no cost instead, and the
+    capture is neither approach nor stage: X's approach is its best free move in v's own game that leaves Y a free
+    retake (no pass, no fill of the ko, no capture in a second ko), v the count after it, and the label D6's A-form.
+    13547 k043 (leaf "B18 B19 B17 C18 A17 D19 A19 D16 A15 A16 A14 A18", Black to kill): after Black's A19! and White's
+    tenuki, Black's C19 takes B19 in a second ko (v = 0, the A-form A-1KO+ counts 1), but the full count is 2: White's
+    E19, a quiet move (with 4 threats Black holds it at C19, F19, A13 or by a pass; White's C19, F19 and A13, undecided
+    at v, are held in more than one way too), stops C19 at no cost. Black's approach is E19 (A19! pass E19 A18 A19!: v =
+    1), so A-1KO-, count 2, the research's label (the stage printed KO-2 once the count was decided, KO? before). When Y
+    has moves of both kinds, when a move that may beat v may also be a threat, or when that A-form does not count d_full
+    or is undecided, X needs 0 or 1 approaches, undecided.
+  - **Switching.** X needs n_X ≥ 2 approaches, and one of its first free moves that keep the outright win (D3's
+    candidates) is such a capture. It is no approach either: with it the ko switches between the two kos, each side
+    needing a capture in both, which the owner rates a normal ko (16 November, 10403: "since we call symmetrical kos
+    like this just normal ko, it is indeed one move approach ko for black"). X needs n_X - 1 approaches, v is the direct
+    ko after them (Y forced to pass n_X - 1 times), and the approach named is X's best free move there that leaves Y a
+    free retake. 10403 "B18 A18 C19 A16 A19": the outright tests give n_S = 2 (C18 and D19, or E19 and the second-ko
+    capture A17); with A17 the ko switches, so n_S = 1 (E19) and v_S = 1: A-1KO-, count 2, the owner's label (it printed
+    A-?KO?, and A-2KO+ once the tests were decided). When the direct ko after n_X - 1 approaches is undecided (or X's
+    free move behind it fills the ko, D5), X needs n_X - 1 or n_X approaches, undecided; when it is decided and its
+    A-form does not count d_full, the switch is not X's best line and the n_X approaches stand.
 - This check is needed only when n_X ≥ 1.
 
 ### D5 Direct-ko value
@@ -928,6 +958,7 @@ A search that the problem's time limit cuts (section 5, item 8) is not an undeci
 |---|---|
 | profile decided, d_full not | the label from the profile; "full count undecided"; the gains located by round |
 | a profile's k | n is bracketed, e.g. "n_S = 1 or 2" (9839: k=2 undecided at 800k, k=3 outright); label "A-?KO…" |
+| D4's reading of a capture in a second ko (stage, answered or switching) | n is bracketed, "0 or 1" or "n_X - 1 or n_X", with the capture and the reason in the text and the warnings; label "A-?KO?" or "A+?KO?" |
 | first take | when the principal line stops, the mode lines, then (one ko shape) both captures of it; still undecided, "A?KO?" (nothing known of the approaches either), or "KO?" when both captures are known to be direct |
 | any part of a KO label | the text still names every decided part, e.g. "White's capture is direct", "Black needs ? approaches (1 forced pass is not enough, 3 are)", "full count undecided (between 2 and 4)", and the undecided searches with their nodes |
 | d itself, no approaches | "KO, sign undecided", as today |
