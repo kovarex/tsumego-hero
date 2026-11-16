@@ -18,10 +18,12 @@
 // stone), N = attacker can't kill, U = budget ran out. cycles: repetitions the cycle rule adjudicated.
 // solvex options, comma separated: pb=k pw=k forced passes (each a tenuki: it lifts the ban and breaks a run of passes),
 // ps=1 the last move was a pass, fb=i;j fw=.. barred points, kb=.. kw=.. barred while that colour is under a ko ban,
-// end= cyc= sk= pv= as the switches for this command. sekikill (sk=1): at the end only unconditional life lives, and every
-// repetition kills, whatever the cycle rule. koend (modes A and D): at two passes a defender ko stone in atari whose
-// capture the defender answers by taking a ko of its own (a double ko) is not taken. A line: B<i>, W<i>, Bpass, Wpass
-// joined by _, ! after a ban break, fp a forced pass, cycle where a position repeats.
+// end= cyc= sk= pv= as the switches for this command, hf=1 the command orders its moves from an empty history and leaves
+// the history of the other commands as it was (a check whose searches change nothing changes no later search either).
+// sekikill (sk=1): at the end only unconditional life lives, and every repetition kills, whatever the cycle rule. koend
+// (modes A and D): at two passes a defender ko stone in atari whose capture the defender answers by taking a ko of its
+// own (a double ko) is not taken. A line: B<i>, W<i>, Bpass, Wpass joined by _, ! after a ban break, fp a forced pass,
+// cycle where a position repeats.
 #include <bits/stdc++.h>
 using namespace std;
 typedef uint64_t u64;
@@ -51,6 +53,7 @@ int cycleRule = 0; // 0 ko-break cycles kill else seki, 1 cycles kill, 2 cycles 
 bool sekiKill = false; // at the end of the game a target that is not unconditionally alive is dead; every repetition kills
 bool koEnd = false; // modes A and D: the end does not take a ko stone the defender answers in another ko (double-ko test)
 long long cycles; // repetitions adjudicated by the cycle rule in the command running now
+bool freshHistory = false; // solvex and solvemoves hf=1: the command orders its moves from an empty history and leaves it as it was
 struct Switches { int cycleRule = 0, endPlay = 0; bool sekiKill = false, pv = false, koEnd = false; };
 Switches switches; // the persistent ones
 
@@ -1237,6 +1240,7 @@ void beginCommand()
   memset(forbidBanned, 0, sizeof(forbidBanned));
   barredKey = 0;
   cycles = 0;
+  freshHistory = false;
 }
 
 // set <name> <value>: an error text, empty when the switch is set
@@ -1323,6 +1327,8 @@ string readCounted(State& s, bool& wantPv)
       sekiKill = number;
     else if (key == "pv" && (number == 0 || number == 1))
       wantPv = number;
+    else if (key == "hf" && (number == 0 || number == 1))
+      freshHistory = number;
     else
       return "bad option " + item;
   }
@@ -1504,6 +1510,14 @@ int main()
       bool wantPv = switches.pv;
       string error = readCounted(s, wantPv);
       ++generation;
+      // hf=1: the move ordering learned so far stays out of this command and this command's stays out of the next ones
+      static int savedHistory[362];
+      bool restore = error.empty() && freshHistory;
+      if (restore)
+      {
+        memcpy(savedHistory, history, sizeof(history));
+        memset(history, 0, sizeof(history));
+      }
       if (!error.empty())
         cout << "error " << error << endl;
       else if (command == "solvemoves")
@@ -1520,6 +1534,8 @@ int main()
           cout << " pv=" << (r.result == UNKNOWN ? "-" : principalLine(s, MODE_N, r.result));
         cout << endl;
       }
+      if (restore)
+        memcpy(history, savedHistory, sizeof(history));
       beginCommand();
     }
     else if (command == "solvecount")

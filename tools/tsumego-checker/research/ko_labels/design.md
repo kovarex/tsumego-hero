@@ -164,6 +164,9 @@ player is White:
   - 2: every cycle lives. In modes A and D the end under it does not take a ko stone that the defender answers by
     taking another ko (D10).
   - 3: the side that completes the repetition loses (positional superko).
+  - The proof table can carry a verdict reached through a repetition on one path into another path where it is not
+    there, so a search that adjudicated repetitions can be wrong either way. Under rule 1 a win of the defender is
+    exact, under rule 2 a win of the attacker (D3 reads the outright tests with them).
   - Under `sekikill` (`sk=1`) every cycle kills, whatever the rule: only unconditional life lives, and a life that rests
     on a repetition is not. Rule 0 alone scored a cycle of legal captures (sending two, returning one) as seki, which
     is life, so the SEKI tests called a group alive that only lived by repetition (the q6 review: 840 leaf 2 and the
@@ -233,6 +236,51 @@ player is White:
 - n_X = 0 means X's capture is a real threat: a single tenuki by Y loses.
 - **Monotone:** outright at k implies outright at k+1, so an undecided k is bracketed by its neighbours.
   - In c023, k=1 was undecided at 400k, but k=2 not outright and k=3 outright give n=2.
+- **An approach leaves Y a reply.** In the owner's approach ko X needs approaches before its capture threatens, and Y
+  ignores each one and retakes for free ("implied in the approach itself", D8's round) or must answer it locally (a sente
+  approach, risk 2: 13677's E19, answered at F19). A free move after which every reply of Y loses is no approach: it
+  carries out the threat that X's capture, or the capture of that round, already made. That is the case k = 1 of the
+  outright test itself (Y's tenuki, X's move, then Y free), so a right test never counts such a move; but a test whose
+  search scored repetitions can be wrong.
+  - The counted game scores a repetition by its cycle rule, and the proof table carries a verdict reached through a
+    repetition on one path into another path where that repetition is not there. In 12495 the leaf with one forced Black
+    pass is not outright for White under rules 0 and 2 and outright under rule 1, and its threshold moves with the order
+    of the searches; in 13605's narrow area Black's capture with one forced White pass is not outright under rule 0 and
+    outright under rule 1. In both, every reply of the other side to X's first free move (White's D13, Black's A17)
+    loses when searched on its own.
+  - Two kinds of verdict are exact: one from a search that adjudicated no repetition, and, under the cycle rule that
+    scores every repetition for one side, a win of the other side. That win is a strategy that reaches a decided end
+    against every reply; only the favoured side's wins can come from a repetition on another path.
+  - **So the failing test at k = t_X - 1 is read from its children when it is not exact.** It stands when its search
+    adjudicated no repetition, or when X fails it even with every repetition scored for X (rule 1 when X is the
+    attacker, 2 when X is the defender). Otherwise X's free moves a_1..a_{k-1} of the next test's line are played with
+    Y's passes, and for a_k each move that keeps the outright win with one more forced pass is tried, the line's own
+    first (at most 6). When after one of them every reply of Y loses exactly, X wins the test: t_X = k, and the text
+    names that move as the one that carries out the threat. The next lower test is then read the same way.
+    - A reply loses when X wins after it with every repetition scored for Y: in Y's move table, in a search of its own,
+      or one move deeper (X's move table, then X's 8 moves nearest the reply, each searched on its own).
+    - A reply holds when X fails after it with every repetition scored for X. The move tried is then an approach, and a
+      reply other than the free retake is its answer, the one D8 names when the round fails.
+    - A reply that neither decides leaves the test standing; when the round of that approach fails, D8 says that it
+      may carry out a direct threat.
+    - The check's searches order their moves from an empty history and leave the history of the other searches as they
+      found it (`hf=1`), and none goes on the label's list of undecided searches: a check that changes nothing changes
+      nothing else. It costs one search where X fails the test with every repetition scored for it.
+  - 12495 "A10 B9 A12 A11" (k031): White's test with one forced Black pass fails in a search that adjudicated
+    repetitions and is outright under rule 1. After Black's tenuki, White's D13 leaves Black no reply: A12, B10, A9 and
+    pass each lose with every repetition scored for Black (A9 and B10 as White's first move leave Black the free retake
+    A12, which holds). So White's capture threatens at once, both captures are direct, and D6 gives a = 0 and
+    e = -d(leaf) = 0: KO+, with Black's local threat D13 located by D7 (White must capture at E13), the research's
+    label. It printed A+1KO-3, with D13 as a sente approach. P_O of 12495 "A12 A11 A10 B9 A12" (k032) is the same
+    position: KO+2 (it printed A+1KO-2).
+  - 13605 "C17 C16 A16 B17 B19 C19 A18 A19" (k047), narrow area: after White's tenuki, Black's A17 leaves White no
+    reply. White's A19, which retakes the ko and answers the atari, is not shown to lose by itself, but one move deeper
+    Black's A15 wins with every repetition scored for White. So KO-3, with White's local threats A15 and E18/E19, as
+    the wider area gives (it printed A-1KO+2). On the board as given F19 is open and White's third threat: KO-4, which
+    needs the area (question 8).
+  - 13677 "A18 B18 C19 A17 D19 B15 A16 F18 B19" (S[A+1KO-]) keeps its approach: its test is checked, but White's win
+    under rule 1 stays undecided at 400,000 nodes, so the test stands, and after White's E19 Black's answer at F19
+    holds (D8).
 - **Approach moves** are X's moves during the forced passes in the winning line.
   - The PV order is free, so they are reported as a set, naming the move that captures or connects last. In c019
     the PV played D18 then E16, and the report names E16 as the approach and D18 as the capture.
@@ -367,9 +415,16 @@ player is White:
   - A threshold decided beyond ±L is a bound ("beyond +6"), not an undecided value.
   - **A failing round.** When the round with the tenuki is beyond in X's favour, Y's free retake after a_i loses
     outright: Y must answer a_i instead, so the approach is sente (risk 2). The round has no gain to measure. It is
-    reported as "approach round i fails: Y must answer a_i" with Y's answer from v's line, and the approach line is
-    built at the limit to show the failure. In 13677 (S[A+1KO-]) White's E19 is such an approach: after Black's free
-    retake at A18 White wins even when Black has 6 threats more, and Black answers at F19.
+    reported as "approach round i fails: Y must answer a_i" with Y's answer, and the approach line is built at the limit
+    to show the failure. In 13677 (S[A+1KO-]) White's E19 is such an approach: after Black's free retake at A18 White
+    wins even when Black has 6 threats more, and Black answers at F19.
+    - An approach leaves Y a reply (D3), so a failing round is a sente approach only when Y has an answer that holds.
+      When every reply loses, a_i is no approach but carries out the threat of the round's capture, and D3's reading of
+      the outright test has already taken it out of the count: 12495's D13, which leaves Black no reply, was printed
+      here as a sente approach, "Black must answer D13", with no answer to name.
+    - The answer named is the reply that D3's check found to hold exactly, else Y's move after a_i on the line of v where
+      Y wins. When D3's check left a_i open and neither gives an answer, the report says that a_i may carry out a direct
+      threat instead.
 - **The full count** is d_full = d(leaf), when decided. The gain is g = d_full - d_conv.
   - The located gains must add up to g; any rest is printed as "unlocated".
   - A negative g means the count is better for X than the label. In 10005, d_full = 1 against d_conv = 2.
@@ -655,7 +710,9 @@ The starting point is Design 3's `/tmp/claude-0/proto/research/kodesign/game/eng
      - `ps=1` (the last move was a pass, so another one can end the game: a child after a pass searched alone);
      - `fb=i;j`, `fw=…` (barred points);
      - `kb=…`, `kw=…` (barred while banned);
-     - `end=0|1`, `cyc=0..3`, `pv=1`, `sk=1`.
+     - `end=0|1`, `cyc=0..3`, `pv=1`, `sk=1`;
+     - `hf=1` (D3's check: the command orders its moves from an empty history and leaves the history of the other
+       commands as it was, so a check that changes nothing changes no later search either).
      It prints `result N=K|N|U nodes=<n> best=<i> cycles=<c> [pv=…]`, with `!` on ban breaks, `fp` on forced
      passes and `cycle` at a repetition. `solvecount` becomes `solvex … end=1`.
    - `solvemoves <toMove> <ko> <budget> <b> <w> <opts|-> <board>` (Design 1) prints K/N/U for every legal root
@@ -671,7 +728,9 @@ The starting point is Design 3's `/tmp/claude-0/proto/research/kodesign/game/eng
 **`tsumego.py`, on `Solver`:**
 
 - `count(board, to_move, s, o, passes=None, bar=(), bar_banned=(), cycle=None, end=True, pv=True)` returns
-  (True/False/None, pv, nodes).
+  (True/False/None, pv, nodes). It keeps the repetitions each search adjudicated (`search_cycles`), and `fresh` is
+  `hf=1`.
+- `overrule_outright` and `replies_lose` read a failing outright test from its children (D3).
 - `threshold(board, to_move, L=6, **opts)` returns (d, table, decided, pv_win, pv_fail). It gallops, bisects and
   runs the shifted check.
 - `first_take(board, to_move, last_move, d)` returns (side, κ, prefix, P_F, P_other, how).
@@ -708,7 +767,8 @@ The starting point is Design 3's `/tmp/claude-0/proto/research/kodesign/game/eng
  count: {d_full, decided, bracket, table[-3..+3], shifted_check},
  d_conv, first_take: {side, point, how, preparation},
  approaches: {S: {n, bracket, moves, resolving, approach, alternatives, alternatives_rejected, held_ok, fill, v_unfilled,
-               round_fails, line}, O: {...}},
+               round_fails, line, overruled: {k: {kill, moves, replies}}, reply_checks: [{k, outcome, answers,
+               undecided}]}, O: {...}} (D3: an outright test overruled by its children, and each check of one),
  direct_ko: {v, line, local_threats: [{side, points, answer, line}], stages: [...]},
  gain: {total, rounds: [{side, move, value, base, fails, line_with, line_without}], unlocated},
  second_ko: {side, point, capture, status, reply} (the solver's classes after the capture, with the holder and with the
@@ -878,6 +938,9 @@ searches (Appendix B). Other rows rest on the proposals' runs and the research.
 | 215 | C19 A19 A18 | owner A-1KO+ | **KO+**, other reading A-1KO+ (count 1) | Black took first at A18. The outright tests give n_S=1 (D19, then E19), but v's line fills the ko at A19: White captures four stones at D19, and a second ko follows that Black must start at once (in the checker's area the class there is KO with Black to move and ALIVE with White to move, and the bent-four test does not kill; in the wider area that test stays undecided at 2,000,000 nodes, so `Solver.status` gives KO with BENT4 open: D5). Counted with it the ko is direct, d=0. With Black barred from A19, v=1 and the count 1 give the owner's A-1KO+, with the approach E19, or D19 or F19 (`ko-convention`, question 5) | checker run |
 | 13169 | A18 A19 | owner A-1KO- | **KO-**, other reading A-1KO- (count 2) | White took first at A19. After Black's retake the same throw-in at A19 follows, and the same second ko that Black must start at once (the corner is enclosed, and the bent-four test does not kill in either area); d=1. Barred from A19, Black needs E18 and the count is 2. D19 is no approach: it leaves B19-D19 in atari, and White's free retake at A19 takes them with the ko stone, four stones (beyond +6) | checker run |
 | 13677 | A18 B18 C19 A17 D19 B15 A16 F18 B19 | owner A+1KO- | **A+1KO-**, approach round 1 fails | White takes first at A19 and needs one approach (E19). After the conventional round Black's free retake at A18 loses even with 6 threats more, so Black answers at F19: a sente approach (D8, risk 2). Full count -1 | checker run |
+| 12495 (k031) | A10 B9 A12 A11 | research KO+ (tree KO-) | **KO+** | White took first at A11. Its outright test with one forced Black pass fails only in a search that scored repetitions: after Black's tenuki, White's D13 leaves Black no reply (D3), so both captures are direct, d=0, and Black's D13 is a local threat, answered at E13. It printed A+1KO-3, with D13 a sente approach | checker run |
+| 12495 (k032) | A12 A11 A10 B9 A12 | research KO+2 (tree KO+) | **KO+2** | Black took first; White's retake gives k031's position, so both captures are direct, d=-1, and Black's D13 is the local threat. It printed A+1KO-2 | checker run |
+| 13605 (k047) | C17 C16 A16 B17 B19 C19 A18 A19 | research KO-4 (tree KO-) | **KO-3** in both areas | White took first at A19. Black's B19 is direct: after White's tenuki, A17 leaves White no reply (D3; the narrow area's forced-pass test, which scored repetitions, said one approach and printed A-1KO+2). White's local threats are A15 and E18/E19; F19, White's third on the board as given, is wall in both areas (the area, question 8) | checker run |
 | 10403 | B18 A18 C19 A16 A19 | owner A+1KO- | **A-?KO?** | White takes first at B19 (mode lines) and its capture is direct (n_O=0); Black needs 1 or 2 approaches (one forced pass is not enough, three are); full count between 2 and 4. On these decided parts S[A+1KO-] is a `ko-approach` issue with a `ko-count` beside it (7.3) | checker run |
 
 The approach notation in the c011, c019, c048, c073 and c102 rows is the reviewers' literal besogo label. The
@@ -897,6 +960,15 @@ nodes per solve, 400,000 per counted search), from the review of the implementat
    d_full < d_conv (a negative gain) and the report says so. Seen in 13677 (S[A+1KO-]): after White's approach E19
    Black's free retake loses even with 6 threats more, so Black answers at F19 and the conventional round fails.
    The report says "approach round 1 fails" and shows the failure on the approach line (D8).
+   - A free move that leaves Y no reply at all is no approach (D3). Such a move reaches the count only through an
+     outright test whose search scored repetitions wrongly, and D3's check reads that test from its children: 12495
+     (White's D13) and 13605's narrow area (Black's A17) printed A+1KO-3, A+1KO-2 and A-1KO+2 for KO+, KO+2 and KO-3.
+   - The check decides only what it reads exactly. Where a child stays open (an undecided search, or a reply that X wins
+     under the rule for X but not under the rule for Y even one move deeper) the test stands, and an approach that
+     leaves Y no reply can still be counted; the failing round's report says so. A test that fails exactly stands, and
+     the check never raises a count.
+   - The check reads the profile's tests only. The investment (D2) and switch (D9) tests use the same k = 1 test and are
+     not read from their children.
 3. **Approach against stage** rests on the held-ko check. Mixed structures (approach plus stage, a ko that changes
    shape) fall back to the counted label, flagged "mixed".
 4. **10kKO** follows the owner's definitions (D9). The question page sorted all 27 of his 10kKO leaves by them (its

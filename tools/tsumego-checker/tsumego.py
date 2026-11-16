@@ -215,6 +215,10 @@ END_PLAY = int(os.environ.get('END_PLAY', '2'))
 #D7: at most this many candidate bars per attribution; a line ends once its winner wins with no threat against this many
 THREAT_TESTS = 8
 LINE_OUTRIGHT = 4
+#D3: a failing outright test read from its children tries at most this many free moves of X, and X's moves after a reply
+#of Y that neither search decides exactly, at most this many searched on their own
+REPLY_CANDIDATES = 6
+REPLY_DEPTH = 8
 
 def other_colour(color):
     return 'W' if color == 'B' else 'B'
@@ -362,6 +366,8 @@ class Solver:
         self.solved = {}
         self.classes = {}
         self.counts = {}
+        self.search_cycles = {} #the repetitions each counted search adjudicated, by count's key
+        self.last_cycles = None #those of the last search count returned
         self.undecided = None #while a label is computed, its list of undecided searches
         self.part = None #the part of the label a search belongs to
         self.activate()
@@ -986,13 +992,16 @@ class Solver:
                 return 'KO-' if t == 1 else 'KO-%d' % t
         return None
 
-    def counted_options(self, board, to_move, s, o, passes, bar, bar_banned, cycle, end, sekikill, pv=False, passed=False):
+    def counted_options(self, board, to_move, s, o, passes, bar, bar_banned, cycle, end, sekikill, pv=False, passed=False, fresh=False):
         #the arguments of solvex and solvemoves after the budget, the solver's threats s against the opponent's o; passed: the
-        #last move was a voluntary pass (ps=1)
+        #last move was a voluntary pass (ps=1); fresh: the search orders its moves from an empty history and leaves the
+        #history of the other searches as it was (hf=1)
         black, white = (s, o) if self.solver_color == 'B' else (o, s)
         options = ['p%s=%d' % (color.lower(), k) for color, k in sorted((passes or {}).items()) if k]
         if passed:
             options.append('ps=1')
+        if fresh:
+            options.append('hf=1')
         for prefix, bars in (('f', bar), ('k', bar_banned)):
             for color, points in sorted((bars or {}).items()):
                 if points:
@@ -1008,23 +1017,24 @@ class Solver:
         return '%d %d %s %s' % (black, white, ','.join(options), self.problem.board_text(board)), ko
 
     def count(self, board, to_move, s, o, passes=None, bar=None, bar_banned=None, cycle=None, end=None, sekikill=False,
-              pv=True, budget=None, escalate=True, record=None, part=None, passed=False):
+              pv=True, budget=None, escalate=True, record=None, part=None, passed=False, fresh=False):
         #the counted game G(P; s, o) of the design: True / False / None (undecided) for the solver's side with s threats
         #against the opponent's o, its line as [(colour, point, mark)] and the nodes. passes {colour: k} forced passes, bar
         #and bar_banned {colour: points} barred for the whole search or while that colour is under a ko ban, passed: the
-        #last move was a voluntary pass, so another one can end the game. An undecided search is retried at ESCALATION
-        #times the budget, then expanded by one ply (solvemoves); still undecided it is None and goes on the label's list
-        #of undecided searches
-        arguments, ko = self.counted_options(board, to_move, s, o, passes, bar, bar_banned, cycle, end, sekikill, pv, passed)
+        #last move was a voluntary pass, so another one can end the game, fresh: hf=1. An undecided search is retried at
+        #ESCALATION times the budget, then expanded by one ply (solvemoves); still undecided it is None and goes on the
+        #label's list of undecided searches. The repetitions the searches adjudicated are kept by key (search_cycles)
+        arguments, ko = self.counted_options(board, to_move, s, o, passes, bar, bar_banned, cycle, end, sekikill, pv, passed, fresh)
         budget = budget or self.count_budget or self.budget * KO_BUDGET_FACTOR
         key = (to_move, ko, arguments, budget, escalate)
         if key not in self.counts:
             if Solver.deadline and time.time() > Solver.deadline:
                 raise TimeoutError('problem time limit')
-            nodes, verdict, line = 0, 'U', []
+            nodes, verdict, line, cycles = 0, 'U', [], 0
             for factor in ((1, ESCALATION) if escalate else (1,)):
                 fields = answer_fields(self.ask('solvex %s %d %d %s' % (to_move, ko, budget * factor, arguments)))
                 nodes += int(fields['nodes'])
+                cycles += int(fields.get('cycles', 0))
                 verdict = fields['N']
                 if verdict != 'U':
                     line = self.line_moves(fields.get('pv', '-'), to_move)
@@ -1033,6 +1043,7 @@ class Solver:
                 #the children of one ply are smaller searches
                 fields = answer_fields(self.ask('solvemoves %s %d %d %s' % (to_move, ko, budget, arguments.replace(',pv=1', ''))))
                 nodes += int(fields['nodes'])
+                cycles += int(fields.get('cycles', 0))
                 verdict = fields['N']
                 if verdict != 'U':
                     want = 'K' if to_move == self.attacker else 'N'
@@ -1045,7 +1056,9 @@ class Solver:
             self.nodes += nodes
             result = None if verdict == 'U' else (verdict == 'K') == (self.solver_color == self.attacker)
             self.counts[key] = (result, line, nodes)
+            self.search_cycles[key] = cycles
         result, line, nodes = self.counts[key]
+        self.last_cycles = self.search_cycles.get(key)
         record = record if record is not None else self.undecided
         if result is None and record is not None:
             entry = {'part': part or self.part, 'search': '%s to move s=%d o=%d %s' % (to_move, s, o, arguments.split()[2]), 'nodes': nodes}
@@ -1054,9 +1067,10 @@ class Solver:
                 undecided.append(entry)
         return result, line, nodes
 
-    def counted_moves(self, board, to_move, s, o, passes=None, bar=None, budget=None, bar_banned=None, end=None, passed=False):
+    def counted_moves(self, board, to_move, s, o, passes=None, bar=None, budget=None, bar_banned=None, end=None, passed=False,
+                      cycle=None, fresh=False):
         #solvemoves: [(point, mark, mover wins True/False/None, nodes)] for every legal move and the pass of the side to move
-        arguments, ko = self.counted_options(board, to_move, s, o, passes, bar, bar_banned, None, end, False, passed=passed)
+        arguments, ko = self.counted_options(board, to_move, s, o, passes, bar, bar_banned, cycle, end, False, passed=passed, fresh=fresh)
         budget = budget or self.count_budget or self.budget * KO_BUDGET_FACTOR
         key = ('moves', to_move, ko, arguments, budget)
         if key not in self.counts:
@@ -1300,7 +1314,7 @@ class Solver:
         start = self.nodes
         s, o = (0, Lo) if holder == self.solver_color else (Lo, 0)
         wins = lambda verdict: None if verdict is None else verdict == (holder == self.solver_color)
-        low, high, lines = 0, None, {}
+        low, high, lines, cycles = 0, None, {}, {}
         for k in range(1, K + 1):
             if k in (known or {}):
                 #decided before the profile, by the first take's line (D2): X does not win outright
@@ -1308,6 +1322,7 @@ class Solver:
                 low = k
                 continue
             verdict, line, nodes = self.count(board, mover, s, o, passes={mover: k}, part='profile %s k=%d' % (holder, k))
+            cycles[k] = self.last_cycles
             result['outright'][k] = wins(verdict)
             lines[k] = line
             if wins(verdict):
@@ -1318,11 +1333,25 @@ class Solver:
         result['bracket'] = (low, high)
         result['decided'] = high is not None and high == low + 1
         if result['decided']:
+            line = lines[high]
+            free = [line[i + 1][1] for i in range(len(line) - 1) if line[i][2] == 'fp' and line[i + 1][0] == holder][:high]
+            #D3: an approach leaves Y a reply. A failing test whose search scored repetitions is read from its children: when X's
+            #next free move leaves Y no reply that holds, the test is overruled and X needs one free move fewer
+            while high >= 2 and high - 1 not in (known or {}) and cycles.get(high - 1):
+                found = self.overrule_outright(board, mover, holder, high - 1, free, s, o)
+                result['reply_checks'] = result.get('reply_checks', []) + [found]
+                if found['outcome'] != 'overruled':
+                    break
+                high -= 1
+                free = found['moves']
+                result['outright'][high] = True
+                lines[high] = [item for p in free for item in ((mover, None, 'fp'), (holder, p, ''))]
+                result.setdefault('overruled', {})[high] = found
+            result['bracket'] = (high - 1, high)
             result['t'] = high
             result['n'] = high - 1
             result['line'] = lines[high]
-            line = lines[high]
-            result['moves'] = [line[i + 1][1] for i in range(len(line) - 1) if line[i][2] == 'fp' and line[i + 1][0] == holder][:high]
+            result['moves'] = free
             #the order of the free moves is the PV's (with Y passing any order works): the last one settles it
             result['resolving'] = result['moves'][-1] if result['moves'] else None
             result['approach_moves'] = result['moves'][:-1]
@@ -1356,6 +1385,94 @@ class Solver:
                     result['second_ko_capture'] = result['approach']
         result['nodes'] = self.nodes - start
         return result
+
+    def overrule_outright(self, board, mover, holder, k, free, s, o):
+        #D3: the outright test at k (X fails at P_X = board with Y = mover forced to pass k times) came from a search that
+        #scored repetitions, and the proof table carries a verdict reached through a repetition on one path into another
+        #path where it is not there (12495, where the verdict also moves with the order of the searches). Under the cycle
+        #rule that scores every repetition for Y, a win of X is exact (a strategy that reaches a decided end against every
+        #reply); under the one that scores them all for X, so is a win of Y. The test stands when X fails even with every
+        #repetition scored for it. Otherwise it is read one move deeper: X's free moves a_1..a_{k-1} of the next test's line
+        #(free), Y's passes, then for a_k each move that keeps the outright win with one more forced pass, the line's first:
+        #when one leaves Y no reply that holds (replies_lose), X wins the test and that move carries out the threat. Every
+        #search here is fresh (hf=1) and none goes on the label's undecided list, so a check that changes nothing changes
+        #nothing else. {k, outcome: 'exact' (the test stands), 'overruled', 'holds' or 'undecided', moves (a_1..a_k when
+        #overruled), kill, replies, answers {X's move: Y's holding reply}, undecided [X's moves left open], nodes}
+        attacker = holder == self.attacker
+        pro, anti = (1, 2) if attacker else (2, 1)
+        wins = lambda verdict: None if verdict is None else verdict == (holder == self.solver_color)
+        check = {'k': k, 'outcome': None, 'moves': None, 'kill': None, 'replies': None, 'answers': {}, 'undecided': [], 'nodes': 0}
+        start = self.nodes
+        verdict, line, nodes = self.count(board, mover, s, o, passes={mover: k}, cycle=pro, budget=self.budget, fresh=True, escalate=False,
+                                          record=[])
+        if wins(verdict) is not True:
+            check['outcome'] = 'exact' if verdict is not None else 'undecided'
+            check['nodes'] = self.nodes - start
+            return check
+        position = board if len(free) >= k - 1 else None
+        for p in free[:k - 1]:
+            position = position and self.play(self.play(position, None, None), holder, p)
+        if position is None:
+            check['outcome'] = 'undecided'
+            return check
+        before = self.play(position, None, None)
+        table = self.counted_moves(before, holder, s, o, passes={mover: 1}, budget=self.budget, fresh=True)
+        tried = ([free[k - 1]] if len(free) >= k else []) + [p for p, mark, keeps, nodes in table if keeps and p is not None and mark == '']
+        check['outcome'] = 'undecided'
+        for a in [p for p in dict.fromkeys(tried) if p is not None][:REPLY_CANDIDATES]:
+            after = self.play(before, holder, a)
+            if after is None:
+                continue
+            outcome, value = self.replies_lose(after, mover, holder, s, o, anti, pro, board.ko, a)
+            if outcome == 'lose':
+                check.update(outcome='overruled', moves=free[:k - 1] + [a], kill=a, replies=value)
+                break
+            if outcome == 'holds':
+                check['answers'][a] = value
+            else:
+                check['undecided'].append(a)
+        if check['outcome'] != 'overruled' and check['answers'] and not check['undecided']:
+            check['outcome'] = 'holds'
+        check['nodes'] = self.nodes - start
+        return check
+
+    def replies_lose(self, board, mover, holder, s, o, anti, pro, retake, near):
+        #D3: whether every reply of Y = mover at board (after X's free move near) loses, read exactly: a reply loses when X
+        #wins after it with every repetition scored for Y (anti), in Y's move table, in a search of its own or one move
+        #deeper (X's move table, then X's moves searched on their own, the REPLY_DEPTH nearest the reply); it holds when X
+        #fails after it with every repetition scored for X (pro). Y's free retake at retake is tried first. ('lose', the
+        #replies' names), ('holds', the reply, None for a pass) or ('undecided', None) when a reply is neither shown to lose
+        #nor to hold
+        wins = lambda verdict: None if verdict is None else verdict == (holder == self.solver_color)
+        threats = lambda mark, color, s, o: (s - (mark == '!'), o) if color == self.solver_color else (s, o - (mark == '!'))
+        searched = lambda position, to_move, s, o, rule, passed: wins(self.count(position, to_move, s, o, cycle=rule, budget=self.budget,
+                                                                                 fresh=True, escalate=False, passed=passed, record=[])[0])
+        table = self.counted_moves(board, mover, s, o, cycle=anti, budget=self.budget, fresh=True)
+        order = sorted(table, key=lambda item: item[0] != retake)
+        for p, mark, holds, nodes in order:
+            if holds is False:
+                continue
+            child = self.play(board, mover, p, ignore_ko=mark == '!')
+            if child is None:
+                return 'undecided', None
+            ss, oo = threats(mark, mover, s, o)
+            if searched(child, holder, ss, oo, anti, p is None):
+                continue
+            if searched(child, holder, ss, oo, pro, p is None) is False:
+                return 'holds', p
+            deeper = self.counted_moves(child, holder, ss, oo, cycle=anti, budget=self.budget, fresh=True, passed=p is None)
+            if any(keeps for q, m, keeps, nodes in deeper):
+                continue
+            last = p or near
+            distance = lambda q: abs(q[0] - last[0]) + abs(q[1] - last[1])
+            for q, m, keeps, nodes in sorted((item for item in deeper if item[0] is not None), key=lambda item: distance(item[0]))[:REPLY_DEPTH]:
+                grand = self.play(child, holder, q, ignore_ko=m == '!')
+                s3, o3 = threats(m, holder, ss, oo)
+                if grand is not None and searched(grand, mover, s3, o3, anti, False):
+                    break
+            else:
+                return 'undecided', None
+        return 'lose', [self.point_name(p) for p, mark, holds, nodes in order]
 
     def second_ko_capture(self, board, holder, p):
         #D4: whether X's free move p at P_X (board, Y to move under the ban), after Y's tenuki, is a ko capture in a second ko
@@ -1755,9 +1872,22 @@ class Solver:
             else:
                 record['warnings'].append('class undecided')
         for side in ('S', 'O'):
-            for p in (profiles[side] or {}).get('moves') or []:
+            profile = profiles[side] or {}
+            holder = solver if side == 'S' else other_colour(solver)
+            kills = [item['kill'] for item in (profile.get('overruled') or {}).values()]
+            for k, item in sorted((profile.get('overruled') or {}).items()):
+                #D3: the forced-pass test failed in a search that scored repetitions, and its children say otherwise
+                x, y = COLOUR_NAMES[holder], COLOUR_NAMES[other_colour(holder)]
+                before = ', '.join(self.point_name(p) for p in item['moves'][:-1])
+                record['warnings'].append('%s\'s outright test with %d forced pass%s is overruled: it failed in a search that scored '
+                                          'repetitions, but after %s %s\'s %s leaves %s no reply that holds (%s: each loses when searched '
+                                          'on its own with every repetition scored for %s; D3)' % (
+                                              x, k, 'es' if k > 1 else '', '%d tenukis of %s and %s,' % (k, y, before) if before else
+                                              'one tenuki of %s,' % y, x, self.point_name(item['kill']), y, ', '.join(item['replies']), y))
+            for p in profile.get('moves') or []:
                 if self.at_wall(p):
-                    record['warnings'].append('%s approach move %s touches the area wall' % (side, self.point_name(p)))
+                    record['warnings'].append('%s %s touches the area wall' % (
+                        side, ('move %s, which carries out its threat,' if p in kills else 'approach move %s') % self.point_name(p)))
 
     def take_profiles(self, take, Lo):
         #both holders' profiles for a first take: S's from P_S, O's from P_O (None when that side has no capture of the ko)
@@ -1798,6 +1928,11 @@ class Solver:
                 [(self.point_name(p), value) for p, value in profile['alternatives_rejected']],
                 'held_ok': profile['held_ok'], 'switch': profile.get('switch'),
                 'second_ko_capture': self.point_name(profile['second_ko_capture']) if profile.get('second_ko_capture') else None,
+                'overruled': {k: {'kill': self.point_name(item['kill']), 'moves': names(item['moves']), 'replies': item['replies']}
+                              for k, item in (profile.get('overruled') or {}).items()} or None,
+                'reply_checks': [{'k': item['k'], 'outcome': item['outcome'], 'nodes': item['nodes'],
+                                  'answers': {self.point_name(a): self.point_name(b) for a, b in item['answers'].items()},
+                                  'undecided': names(item['undecided'])} for item in profile.get('reply_checks') or []] or None,
                 'v': profile['v'] and profile['v']['d'],
                 'v_decided': profile['v'] and profile['v']['decided'], 'v_beyond': profile['v'] and profile['v']['beyond'],
                 'v_table': profile['v'] and profile['v']['table'],
@@ -2346,17 +2481,26 @@ class Solver:
                         'value': entry['value'], 'd_with': entry['d_with'], 'd_without': entry['d_without'], 'base': entry['base'],
                         'fails': entry['fails'], 'tried': entry['tried'], 'line_with': None, 'line_without': None}
                 if entry['fails']:
-                    #Y's answer to the approach on the line of v where Y wins (Y moves there once the forced passes are over)
+                    #Y's answer to the approach: the reply that holds exactly by the profile's check of its outright test (D3), else
+                    #the one on the line of v where Y wins (Y moves there once the forced passes are over). With no answer known
+                    #and the check left open, the approach may carry out a direct threat instead of being a sente approach
                     approach = rounds['rounds'][entry['round'] - 1]['approach']
-                    answer = next((v_line[k + 2][1] for k in range(len(v_line) - 2) if v_line[k][2] == 'fp' and v_line[k + 1][:2] == (holder, approach)
-                                   and v_line[k + 2][0] == other and v_line[k + 2][1] is not None and v_line[k + 2][1] not in rounds['ko']), None)
+                    checks = [item for item in profile.get('reply_checks') or [] if item['k'] == entry['round']]
+                    answer = next((item['answers'][approach] for item in checks if item['answers'].get(approach) not in (None,) + rounds['ko']), None)
+                    if answer is None:
+                        answer = next((v_line[k + 2][1] for k in range(len(v_line) - 2) if v_line[k][2] == 'fp' and v_line[k + 1][:2] == (holder, approach)
+                                       and v_line[k + 2][0] == other and v_line[k + 2][1] is not None and v_line[k + 2][1] not in rounds['ko']), None)
+                    open_check = answer is None and any(item['outcome'] == 'undecided' for item in checks)
                     failure = {'round': entry['round'], 'approach': self.point_name(approach), 'answer': answer and self.point_name(answer),
-                               'base': entry['base']}
+                               'base': entry['base'], 'open': open_check}
                     record['approaches'][side].setdefault('round_fails', []).append(failure)
                     record['warnings'].append('approach round %d fails: %s must answer %s%s instead of retaking for free (%s after the free '
-                                              'retake; a sente approach, design risk 2)' % (
+                                              'retake; %s)' % (
                                                   entry['round'], COLOUR_NAMES[other], failure['approach'],
-                                                  ' at %s' % failure['answer'] if answer else '', entry['base']))
+                                                  ' at %s' % failure['answer'] if answer else '', entry['base'],
+                                                  'no answer is known, and the forced-pass test rests on how its search scored repetitions: '
+                                                  '%s may carry out a direct threat, D3' % failure['approach'] if open_check else
+                                                  'a sente approach, design risk 2'))
                 if entry['value']:
                     before = rounds['prefix'] + rounds['moves'][:4 * (entry['round'] - 1)]
                     twin = entry['positions'][None][3]
@@ -2665,11 +2809,29 @@ def label_text(record):
                 name, NUMBER_WORDS.get(summary['n'], summary['n']), 'es' if summary['n'] > 1 else '',
                 approach_listing(summary, take, COLOUR_NAMES[other_colour(side_colour(side))]),
                 '' if summary['held_ok'] else ' (held-ko check undecided)'))
+        overruled = summary.get('overruled') or {}
+        if overruled:
+            #D3: an approach leaves the other side a reply; the forced-pass test that found more, from a search that scored
+            #repetitions, is overruled by its children
+            first = min(overruled, key=int)
+            item, found = overruled[first], max(int(k) for k in overruled)
+            other_name = COLOUR_NAMES[other_colour(side_colour(side))]
+            before = ', '.join(item['moves'][:-1])
+            needed = int(first) - 1
+            sentences.append('After %s, %s\'s %s leaves %s no reply that holds, so %s needs %s, where the forced-pass search, which '
+                             'scored repetitions, found %s (D3)' % (
+                                 '%s tenukis of %s and %s' % (NUMBER_WORDS.get(int(first), first), other_name, before) if before else
+                                 'one tenuki of %s' % other_name, name, item['kill'], other_name, name,
+                                 'no approach' if needed == 0 else '%s approach%s' % (NUMBER_WORDS.get(needed, needed), 'es' if needed > 1 else ''),
+                                 NUMBER_WORDS.get(found, found)))
         for failure in summary.get('round_fails') or []:
             failures.append('But approach round %d fails: %s must answer %s%s instead of retaking for free (%s after the free '
-                            'retake), so the approach is sente (design risk 2)' % (
+                            'retake), %s' % (
                                 failure['round'], COLOUR_NAMES[other_colour(side_colour(side))], failure['approach'],
-                                ' at %s' % failure['answer'] if failure['answer'] else '', failure['base']))
+                                ' at %s' % failure['answer'] if failure['answer'] else '', failure['base'],
+                                'and no answer of %s\'s is known: %s may carry out a direct threat, since the forced-pass test rests on '
+                                'how its search scored repetitions (D3)' % (COLOUR_NAMES[other_colour(side_colour(side))], failure['approach'])
+                                if failure.get('open') else 'so the approach is sente (design risk 2)'))
     if not approaching and len(direct_sides) == 2:
         sentences.append('Both captures are direct')
     if len(approaching) == 2:
@@ -2808,6 +2970,8 @@ def label_summary(record, authored, goal):
             'first_take': {key: take.get(key) for key in ('side', 'point', 'how', 'preparation', 'investment')},
             'free_moves': record.get('free_moves'),
             'approaches': {side: (summary or {}).get('n') for side, summary in (record.get('approaches') or {}).items()},
+            'reply_checks': {side: summary['reply_checks'] for side, summary in (record.get('approaches') or {}).items()
+                             if summary and summary.get('reply_checks')} or None,
             'local_threats': direct.get('local_threats'), 'stages': direct.get('stages'),
             'gain': {key: gain.get(key) for key in ('side', 'total', 'located', 'unlocated')} if gain else None,
             'gain_rounds': [{key: item.get(key) for key in ('round', 'move', 'value')} for item in gain.get('rounds') or []],
