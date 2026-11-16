@@ -194,6 +194,8 @@ DYNAMIC = os.environ.get("DYNAMIC", "1") == "1"
 WEAK_LIBERTIES = int(os.environ.get("WEAK_LIBERTIES", "4"))
 SMALL_CHAIN = int(os.environ.get("SMALL_CHAIN", "1"))
 ENCLOSED_LIMIT = int(os.environ.get("ENCLOSED_LIMIT", "30"))
+#the largest pocket of empty points the area takes in (focused_region); 1 keeps single holes only (design 11, risk 8)
+HOLE_LIMIT = int(os.environ.get("HOLE_LIMIT", "1"))
 DISTANCE = int(os.environ.get("REGION_DISTANCE", "1"))
 STATUS_DEAD, STATUS_KO, STATUS_ALIVE, STATUS_UNKNOWN = 'DEAD', 'KO', 'ALIVE', '?'
 STATUS_BENT4 = 'BENT4'
@@ -542,6 +544,18 @@ class Solver:
                 record['status'] = self.bent_four_status(board, to_move, plain, record, budget)
             if record['status'] == STATUS_ALIVE:
                 record['status'] = self.seki_status(board, to_move, record, budget)
+            if record['status'] == STATUS_DEAD:
+                #a kill can rest on the wall: an attacker stone the kill line puts next to the outside cannot be captured
+                #(840's B11 at C11), so the class says so, as the label's wall contacts do (design 7.2)
+                walled = {}
+                for color, p, mark in self.line_moves(plain.get('pvA', '-'), to_move):
+                    if color == self.attacker and p is not None and self.outside_of(p):
+                        walled.setdefault(p, self.outside_of(p))
+                if walled:
+                    names = lambda points: ', '.join(self.point_name(q) for q in points)
+                    record['warnings'].append('class DEAD: %s kill-line move%s %s touch%s the area wall at %s (design 13, question 8)' % (
+                        COLOUR_NAMES[self.attacker], 's' if len(walled) > 1 else '', names(walled), '' if len(walled) > 1 else 'es',
+                        names(sorted(set(q for points in walled.values() for q in points)))))
         #a test can leave open the status a later step gave the class
         record['open'] = [status for status in record['open'] if status != record['status']]
         self.classes[key] = record
@@ -1807,6 +1821,11 @@ class Solver:
         #a point next to the outside of the area or to its fringe
         return p is not None and any(q not in self.problem.region or q in self.problem.fringe for q in self.problem.board.neighbours(p))
 
+    def outside_of(self, p):
+        #the empty points next to p beyond the area and its fringe: the wall, a liberty of attacker chains only
+        return [q for q in self.problem.board.neighbours(p) if q not in self.problem.region and q not in self.problem.fringe
+                and q not in self.problem.board.stones]
+
     def ko_label(self, board, to_move, last_move=None, approach_rule=True, start=None, explain=True):
         #the label of a leaf (design 4 and 7), in the wider area and in this one: the wider area's label when it is
         #decided, else this one's; a count undecided there comes from the other area, and a decided label that differs
@@ -2963,13 +2982,25 @@ def focused_region(board, box, target, extra_points=(), distance=DISTANCE):
     if not DYNAMIC:
         #the empty points bordering the region, so no stone at its edge loses a liberty to the wall
         region |= {q for p in list(region) if p not in board.stones for q in board.neighbours(p) if q not in board.stones}
-    #holes: points whose every neighbour is already in the region or a stone, like the corner of an eye space
-    for _ in range(3):
-        holes = {p for p in box if p not in region and p not in board.stones
-                 and all(q in region or q in board.stones for q in board.neighbours(p))}
-        if not holes:
-            break
-        region |= holes
+    #holes: pockets of at most HOLE_LIMIT empty points whose every neighbour is in the region or a stone, like the corner
+    #of an eye space (2373's A18, A19 and B19 left out made A19 the attacker's wall); a pocket of more points only next to
+    #an empty point or a stone of the defender, so a two-point eye of the attacker's wall (15220's E15 and E16) stays out
+    seen = set()
+    for p in box:
+        if p in region or p in board.stones or p in seen:
+            continue
+        pocket, todo, enclosed = {p}, [p], True
+        while todo and enclosed and len(pocket) <= HOLE_LIMIT:
+            q = todo.pop()
+            for r in board.neighbours(q):
+                if r not in region and r not in board.stones and r not in pocket:
+                    enclosed = enclosed and r in box
+                    pocket.add(r)
+                    todo.append(r)
+        seen |= pocket
+        border = {q for s in pocket for q in board.neighbours(s) if q not in pocket}
+        if enclosed and len(pocket) <= HOLE_LIMIT and (len(pocket) == 1 or any(board.stones.get(q) in (None, color) for q in border)):
+            region |= pocket
     return region
 
 def escape(value):

@@ -576,6 +576,8 @@ the narrow and wide areas. Every part is computed in the wide area first, with t
    - A refinement test of steps 2 to 4 (double ko, superko, the wider area, clean result, bent four, seki, seki in
      sente) that stays undecided leaves the class of the steps before it, and the statuses it could have given stay
      open beside it (section 9). The class is never printed or compared without them.
+   - A DEAD of the modes whose kill line (mode A's line) puts an attacker stone next to the area's wall carries a
+     warning: the stone cannot be captured there, and the kill may rest on it (section 7.2). No search is added.
 5. The leaf convention (D14): when the line ends with the solver's capture of a ko, the solver's clean success is
    printed KO+, with "the solver's clean result: …" and the convention named as the owner's practice; the solver's
    clean failure stays the class.
@@ -743,7 +745,15 @@ The starting point is Design 3's `/tmp/claude-0/proto/research/kodesign/game/eng
 - every undecided part as "?" with node counts.
 
 **Warnings** whenever an approach move, threat point, answer or gain move touches the area's wall or fringe. Walls
-create false approaches and threats: c013's H19, c052's edge, c121's E16, the 2406 edge.
+create false approaches and threats: c013's H19, c052's edge, c121's E16, the 2406 edge. A DEAD class has no ko and
+no lines, so its warning comes from the class step: an attacker move of mode A's kill line that touches the wall (an
+empty point outside the area and its fringe) is a stone the defender cannot capture, and the kill may rest on it:
+"class DEAD: Black kill-line move B11 touches the area wall at C11 (design 13, question 8)". Seen in 840 (c006;
+White's capture at A11 cannot reach the problem's own B10), 15364 (White's A14 at A13, which cuts Black's crawl to
+B13-C13), 15399 and 11320 (c052). It is a hint, not a proof: 15730's DEAD, right by the research, is flagged too
+(Black fills outside liberties at the edge), 15399's DEAD after "... C19 A15" (k055, also an area artifact) is not,
+since its kill line never reaches the wall, and the line is the one the solve returns, which can change with what the
+engine searched before. The class is not changed: how much of the empty board counts is question 8.
 
 ### 7.3 Comparison with the tree's S[]
 
@@ -862,7 +872,7 @@ searches (Appendix B). Other rows rest on the proposals' runs and the research.
 | c081 | 15220 | KO+ (judges: "10kKO would describe the shape as well") | **10kKO** (= A+1KO-; net reading KO+) | With the end playout in the corner frame, d=0. Preparation W A19, then White takes first at C19. White needs A17 (n_O=1). After Black's free retake Black needs A17 and B17 (n_S=1); connecting at C19 at once dies to the A17 sacrifice (pyramid four). Mutual approach with the attacker's count 1. In the official areas the count is undecided, so "?" with the frame's value | verified (corner frame) |
 | 2406 10kKO leaf | D17 D19 E19 B19 B18 C19 A17 | author 10kKO (not a research case) | **10kKO** | Corner frame A16:F19: d=0, mutual 1/1 (Design 2). The narrow area gives d=-2 from left-side resources and is flagged | proposals |
 | c027 | 8937 | DDKO | **DDKO** | Mode A kills under rule 0 and not under rule 2. Ko points D18/D19 and A15/A16. The old output BENT4 came from the bent-four test repeating the plain kill | verified |
-| c006 | 840 | ADKO | **ADKO** expected in the B10 frame | The narrow area gives DEAD because it cuts White off from B10. That is an area problem this design does not fix | not run |
+| c006 | 840 | ADKO | **ADKO** expected in the B10 frame | The narrow area gives DEAD because it cuts White off from B10. That is an area problem this design does not fix: B10 in the area does not help (Black fills its outside liberties at the wall), and the leaf of the research's model with B10's group alive stays undecided at a budget of 2,000,000. The DEAD now carries the class's wall warning (section 7.2) | checker run |
 | c016 | 2406 … C18 B18 | ALIVE | **ALIVE** | No ko | research |
 | 10005 | D18 E18 D19 C19 A18 A17 C18 C17 B19 B17 | owner A-1KO- | **A-1KO-** (count 1) | Preparation B G19, then White takes first at A19. Black needs one approach, A16 (G19 and A16 can swap roles). E19, the capture, is no approach: played first it puts Black's stones in atari, and after White's free retake Black fails at every balance up to +6. White's capture is direct. d_conv = 2 but d_full = 1, so the count is one better for Black (the line uses the second ko at B19/C19). Design 2's static test gave n=2 | verified |
 | 215 | C19 A19 A18 | owner A-1KO+ | **KO+**, other reading A-1KO+ (count 1) | Black took first at A18. The outright tests give n_S=1 (D19, then E19), but v's line fills the ko at A19: White captures four stones at D19, and a second ko follows that Black must start at once (in the checker's area the class there is KO with Black to move and ALIVE with White to move, and the bent-four test does not kill; in the wider area that test stays undecided at 2,000,000 nodes, so `Solver.status` gives KO with BENT4 open: D5). Counted with it the ko is direct, d=0. With Black barred from A19, v=1 and the count 1 give the owner's A-1KO+, with the approach E19, or D19 or F19 (`ko-convention`, question 5) | checker run |
@@ -905,7 +915,14 @@ nodes per solve, 400,000 per counted search), from the review of the implementat
 8. **Area and target.**
    - The label is only as good as the formulation. c121 is ALIVE for the whole group.
    - Approaches and threats at the area's wall can be artifacts (c013, c052, the 2406 edge).
-   - Both areas are run, and wall contacts are flagged.
+   - Both areas are run, and wall contacts are flagged, those of a DEAD class's kill line too (section 7.2).
+   - The area can take in small pockets: its holes are enclosed groups of up to `HOLE_LIMIT` empty points, a group
+     of more than one only next to the defender. The default is 1, single holes, as before. 2373's corner A18, A19,
+     B19 lies two points from Black's stones, so A19 is the attacker's wall and the narrow area says DEAD (the
+     research: KO-). With `HOLE_LIMIT=3` the corner joins and the leaf is a ko the engine does not decide (modes A and
+     D undecided at a budget of 10,000,000; 0.1 s becomes a 300 s time-out), and seven other problems gain two to four
+     points. No label became right, and a second design that took in every pocket also made 15220's c080 undecided,
+     so the default stays 1 and the kill-line warning flags 2373's DEAD instead (16 November).
 9. **Caps.** K = 6 forced passes and Lo ≥ 4 threats cover up to A±5. A+5 labels such as 7875 need K = 6, under a
    time cap.
 
