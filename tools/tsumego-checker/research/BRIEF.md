@@ -57,8 +57,9 @@ The first player of the problem is "the solver" (Black in most problems; in some
   ko ban uses one threat). Local threats are real moves inside the area; outside threats are just the counts.
 - Searches have a node budget (default 200000; ko tables use 5x). `?` means undecided within the budget, not proven.
   Results can differ a little between runs (move ordering), especially near the budget.
-- A leaf where the solver's last move captured a ko counts as a ko (KO+), even if the solver could later steer to
-  clean life or death; that matches how the trees are written.
+- A leaf where the solver's last move captured a ko counts as a ko (KO+) when the solver wins, even if it could later
+  steer to clean life or death; that matches how the trees are written. When the solver fails even with unlimited
+  threats, the leaf is that clean result, no ko (research/ko_labels/design.md, D14).
 
 ## Your tools (read-only use of /tmp/claude-0/proto; write scratch files only under your own folder)
 

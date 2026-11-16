@@ -301,7 +301,7 @@ def check(text, engine, budget, scan_missing=True, description=None, missing_dep
                 if label.status_mode:
                     r, status, _, record = engine_rank(node)
                     last_mover = opponent(node.to_move) if node.move is not None else None
-                    status = ko_taken_by(node.board, last_mover, solver_color, status)
+                    status = ko_taken_by(node.board, last_mover, solver_color, status, goal)
                     r = rank(status, goal)
                     record = dict(record, status=status, open=[s for s in record['open'] if s != status])
                     authored = (node.status_text or '').strip()
@@ -365,7 +365,7 @@ def check(text, engine, budget, scan_missing=True, description=None, missing_dep
                             continue #a transposition into the tree, besogo follows it
                         fake = TreeNode(node.sgf, child_board, opponent(solver_color), node.depth + 1)
                         r, status, _, record = engine_rank(fake)
-                        if r == 2 and ko_taken_by(child_board, solver_color, solver_color, status) == STATUS_KO:
+                        if r == 2 and ko_taken_by(child_board, solver_color, solver_color, status, goal) == STATUS_KO:
                             #the move captures a ko: the opponent retakes after a threat, so it is no clean answer (rule 2)
                             report['notes'].append({'kind': 'ko-capture-alternative', 'line': (path(chain) + ' ' + point_name(p, size)).strip()})
                             continue

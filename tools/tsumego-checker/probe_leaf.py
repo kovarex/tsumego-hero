@@ -26,7 +26,7 @@ for text in sys.argv[3].split():
     node = next(c for c in node.children if c.move == p)
 record = solver.status_record(node.board, node.to_move)
 raw = record['status']
-status = ko_taken_by(node.board, opponent(node.to_move) if node.move is not None else None, solver_color, raw)
+status = ko_taken_by(node.board, opponent(node.to_move) if node.move is not None else None, solver_color, raw, goal)
 sign = solver.ko_sign(node.board, node.to_move) if status == STATUS_KO else None
 #the class with the statuses an undecided test leaves open beside it
 print(sys.argv[2], sys.argv[3], 'authored', node.status_text, 'solver',

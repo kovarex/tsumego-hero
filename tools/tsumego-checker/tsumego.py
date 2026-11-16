@@ -1583,7 +1583,7 @@ class Solver:
                   'count': None, 'd_conv': None,
                   'first_take': None, 'approaches': None, 'direct_ko': None, 'gain': None, 'strict_label': None,
                   'net_label': None, 'free_moves': None, 'second_ko': None, 'alternative': None, 'special': None, 'area': None, 'a': None,
-                  'e': None,
+                  'e': None, 'leaf_convention': None,
                   'extra_threats': None, 'warnings': [], 'undecided': [], 'nodes': 0, 'seconds': 0, 'solver': self.solver_color,
                   'goal': 'KILL' if self.solver_color == self.attacker else 'LIVE'}
         start, started = self.nodes, time.time()
@@ -1618,7 +1618,11 @@ class Solver:
             return
         if status['status'] in (STATUS_DEAD, STATUS_ALIVE):
             last_mover = other_colour(to_move) if last_move is not None else None
-            if ko_taken_by(board, last_mover, solver, status['status']) == STATUS_KO:
+            taken = ko_taken_by(board, last_mover, solver, status['status'], goal) == STATUS_KO
+            if solver_took_ko(board, last_mover, solver):
+                #D14: the line ends with the solver's capture of a ko, which makes KO+ of the solver's clean success only
+                record['leaf_convention'] = {'point': self.point_name(last_move), 'class': status['status'], 'applied': taken}
+            if taken:
                 record['label'] = 'KO+'
                 record['besogo'] = {'type': 'KO', 'approaches': 0, 'extraThreats': 0}
                 record['warnings'].append("the solver's clean result: %s" % status['status'])
@@ -2551,14 +2555,23 @@ def label_text(record):
     class_open = open_text(record, 'class_open', 'class_open_tests')
     if record.get('special'):
         return '%s: %s%s.' % (label, SPECIAL_REASONS.get(label, 'from the class step'), '; ' + class_open if class_open else '')
+    #D14: a line that ends with the solver's capture of a ko
+    convention = record.get('leaf_convention')
+    solver_name = COLOUR_NAMES[solver]
     if label in (STATUS_DEAD, STATUS_ALIVE):
-        return '%s: no ko (class %s%s).' % (label, record.get('class'), ', ' + class_open if class_open else '')
+        text = '%s: no ko (class %s%s)' % (label, record.get('class'), ', ' + class_open if class_open else '')
+        if convention:
+            text += '. The line ends with %s\'s capture of a ko at %s, but %s fails whatever the threats, so the leaf convention ' \
+                    '(KO+) does not apply (D14)' % (solver_name, convention['point'], solver_name)
+        return text + '.'
     if label is None or 'KO' not in label:
         undecided = undecided_text(record)
         return '%s: the class is undecided and the leaf has no ko shape%s.' % (label, '. ' + undecided if undecided else '')
     if record.get('class') in (STATUS_DEAD, STATUS_ALIVE):
-        return '%s: the line ends with the solver\'s capture of a ko, which the leaves count as taking first; without it the result ' \
-               'is clean %s%s.' % (label, record['class'], ', ' + class_open if class_open else '')
+        return '%s: the line ends with %s\'s capture of a ko%s, which the owner\'s trees count as taking first even though %s wins ' \
+               'whatever the threats (his practice; whether the labels follow it is a question for him, D14): the clean result is ' \
+               '%s%s.' % (label, solver_name, ' at %s' % convention['point'] if convention else '', solver_name, record['class'],
+                          ', ' + class_open if class_open else '')
     head = label + (' (class KO inferred: each side wins while it holds the ko)' if record.get('class_inferred') else
                     ' (class undecided)' if record.get('class') == STATUS_UNKNOWN else
                     ' (class KO, %s)' % class_open if class_open else '')
@@ -2769,6 +2782,7 @@ def label_summary(record, authored, goal):
     gain = record.get('gain') or {}
     return {'label': record['label'], 'strict_label': record.get('strict_label'), 'strict_from_parts': record.get('strict_from_parts'),
             'net_label': record.get('net_label'), 'alternative': record.get('alternative'), 'second_ko': record.get('second_ko'),
+            'leaf_convention': record.get('leaf_convention'),
             'class': record.get('class'), 'class_inferred': record.get('class_inferred'), 'class_open': record.get('class_open'),
             'class_open_tests': record.get('class_open_tests'),
             'count': count.get('d_full'), 'count_decided': count.get('decided'), 'd_conv': record.get('d_conv'),
@@ -3011,9 +3025,16 @@ def has_bent_four(board, defender):
             return True
     return False
 
-def ko_taken_by(board, last_mover, solver_color, status):
-    #the convention for leaves: a line that ends with the solver's side capturing a ko is a ko (KO+, the solver took
-    #first), even when the solver could steer back to clean life or death later; the direct move is the clean one
-    if board.ko is not None and last_mover == solver_color and status in (STATUS_DEAD, STATUS_ALIVE):
+def solver_took_ko(board, last_mover, solver_color):
+    #the line ends with the solver's capture of a ko: the leaf's ban is the opponent's
+    return board.ko is not None and last_mover == solver_color
+
+def ko_taken_by(board, last_mover, solver_color, status, goal):
+    #the leaf convention (design D14): a line that ends with the solver's capture of a ko is a ko (KO+, the solver took
+    #first) when the solver's clean result is its success, even though it could steer back to that result later: the
+    #owner's practice (the direct move is the clean one), a question for him. A clean failure stays the class: the solver
+    #fails even with unlimited threats, so no ko label fits
+    success = STATUS_DEAD if goal == 'KILL' else STATUS_ALIVE
+    if solver_took_ko(board, last_mover, solver_color) and status == success:
         return STATUS_KO
     return status

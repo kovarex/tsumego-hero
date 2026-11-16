@@ -141,11 +141,17 @@ start = time.time()
 record = solver.status_record(board, to_move)
 status, best = record['status'], record['best']
 last_mover = path[-1][1] if path else None
-final = ko_taken_by(board, last_mover, solver_color, status)
+final = ko_taken_by(board, last_mover, solver_color, status, goal)
 #the statuses an undecided test of the class leaves open beside the verdict
 left = open_text(dict(record, open=[s for s in record['open'] if s != final]))
-print('\nSolver verdict for the %s group: %s%s%s' % (names[color], final, ', ' + left if left else '',
-      ' (the solver\'s own result was %s; a line ending with the solver capturing a ko counts as a ko)' % status if final != status else ''))
+#D14: the leaf convention makes a ko of the solver's clean success only
+convention = ''
+if final != status:
+    convention = ' (the solver\'s own result was %s; a line ending with the solver capturing a ko counts as a ko when the solver ' \
+                 'wins: the owner\'s practice, a question for him)' % status
+elif solver_took_ko(board, last_mover, solver_color) and status in ('DEAD', 'ALIVE'):
+    convention = ' (the line ends with the solver capturing a ko, but the solver fails whatever the threats: no ko)'
+print('\nSolver verdict for the %s group: %s%s%s' % (names[color], final, ', ' + left if left else '', convention))
 normal = raw(solver, board, to_move)
 wide = raw(solver.wide, board, to_move)
 print('  search area: %s' % mode_text(normal))
@@ -196,7 +202,7 @@ if '--moves' in flags:
         if not child.play(to_move, p):
             continue
         child_record = solver.status_record(child, opponent(to_move))
-        child_status = ko_taken_by(child, to_move, solver_color, child_record['status'])
+        child_status = ko_taken_by(child, to_move, solver_color, child_record['status'], goal)
         left = [s for s in child_record['open'] if s != child_status]
         results.setdefault(child_status, []).append(name(p) + (' (or %s)' % '/'.join(left) if left else ''))
     for key in ('DEAD', 'BENT4', 'DSKO', 'DDKO', 'KO', 'SEKI', 'SEKI+', 'ADKO', 'ASKO', 'ALIVE', '?'):

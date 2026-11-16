@@ -62,7 +62,7 @@ def main(budget, path, worker, workers):
                     expected = authored_class(node.status_text, goal)
                     record = solver.status_record(node.board, node.to_move)
                     raw = record['status']
-                    status = ko_taken_by(node.board, opponent(node.to_move) if node.move is not None else None, solver_color, raw)
+                    status = ko_taken_by(node.board, opponent(node.to_move) if node.move is not None else None, solver_color, raw, goal)
                     leaf = {'line': ' '.join(line_moves), 'authored': node.status_text, 'expected': expected, 'engine': status}
                     #the statuses an undecided test of the class leaves open beside it: engine is then one of several
                     left = [s for s in record['open'] if s != status]
@@ -72,7 +72,7 @@ def main(budget, path, worker, workers):
                     if status == STATUS_KO and KO_SIGN:
                         leaf['sign'] = solver.ko_sign(node.board, node.to_move)
                         if leaf['sign'] is None and raw != STATUS_KO:
-                            leaf['sign'] = 'KO+' #the solver's ko capture ends the line: it took first (the convention)
+                            leaf['sign'] = 'KO+' #the solver's ko capture ends the line of its clean success: it took first (D14)
                     if status == STATUS_KO and KO_LABEL:
                         ko_leaves.append((leaf, node, line_moves))
                     result['leaves'].append(leaf)

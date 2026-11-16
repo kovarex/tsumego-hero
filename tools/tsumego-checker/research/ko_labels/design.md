@@ -125,6 +125,7 @@ player is White:
 | 10kKO | D9 |
 | DDKO, ADKO, DSKO, ASKO | D10 |
 | BENT4, SEKI, SEKI+ | D11 |
+| KO+ or the clean class when the line ends with the solver's capture of a ko | D14 |
 
 ---
 
@@ -505,6 +506,52 @@ rules 1 and 2:
   - It can make searches bigger. c081's narrow official area turns from a wrong fast answer into an undecided one.
   - It becomes the default after a regression run (section 12).
 
+### D14 The leaf convention: a line that ends with the solver's capture of a ko
+
+A leaf whose last move is the solver's ko capture (the ban is the opponent's) and whose class is clean, DEAD or ALIVE:
+modes A and D agree, so the ko the solver has just taken does not decide the result.
+
+- **The solver's clean success** (DEAD in a KILL problem, ALIVE in a LIVE one; the clean-result test of step 1 has
+  made sure that it needs no ko capture of the solver's after the leaf): **KO+**, the solver took first. The owner's
+  trees count such a line as a ko although the solver wins whatever the threats: the direct move beside the capture is
+  the clean one, and KO+ makes besogo rank it above the capture (5160: Black's E19 takes the ko, while D18 lives
+  outright). His S[KO+] does this on the eight leaves where the label decides the class (5160, 5628, 8094, 13075 twice
+  and 15399 three times) and on a ninth where only the status checker does (15399 "A18 A17 B18 C19 D19 A15 A14 B14
+  A16"). The research reads such a leaf as the clean result (k029, 11332 leaf 3, S[ADKO]: ALIVE), so which one the
+  labels follow is a question for him. The checker keeps his practice and says so: the text names the convention, his
+  practice and the clean result, and the warning "the solver's clean result: …" stays.
+- **The solver's clean failure** (ALIVE in a KILL problem, DEAD in a LIVE one): **the class**, no ko. The solver fails
+  even when it may ignore every ko ban, so no number of threats wins. Every ko label says that the solver wins once
+  s - o reaches its count T (KO+ at s ≥ o), and even in the owner's approach ko the other side wins "by winning one
+  ko", while here it wins without the ko at all. The convention's reason is gone too: there is no clean result of the
+  solver's to steer back to. The opponent need not retake:
+  - 13661 leaf 9 (k048, KILL, S[A-3KO+]): after Black's capture at A17, White's C19 leaves Black's five corner stones
+    only A18, where Black cannot play, and White's A18 takes all five, which is no ko: ALIVE (it printed KO+).
+  - 13462 "E19 C19 A19 A18 A17 G18 A19" (LIVE, S[KO+]): White's F19 takes F18, after which Black's D19 and F18 are
+    suicide and White connects at F18. Winning the A18 ko only fills Black's own eye, and A16-B16 is one eye: DEAD
+    (it printed KO+). The class comes from the narrow area. The wider area adds only J17, J18, J19, K18 and K19, on
+    the far side of White's wall G18-H17, and its mode A stays undecided there (16,000,004 nodes at the leaf; after
+    F19 mode D kills and mode A stays undecided at 8,006,892).
+
+  The text says that the line ends with the solver's ko capture and that the solver fails whatever the threats.
+- **Nothing else changes.** A KO class takes the full label, with the leaf's capture as the first take (D2). A
+  special status (SEKI, SEKI+, BENT4, double ko, superko), an undecided class and a leaf whose last move is the
+  opponent's ko capture are not touched. The statuses an undecided test of the class leaves open stay beside the
+  printed status, beside the convention's KO+ as well.
+- **Every caller applies the same rule**, `ko_taken_by(board, last mover, solver, class, goal)`: the label (step 1.5),
+  `check_tree` (the leaf's status, and the missing-move check, which notes a capture of the solver's that wins cleanly
+  as `ko-capture-alternative`, so a success only), `status_eval` (the leaf's KO and its sign KO+), `evidence.py` (the
+  verdict and the one-move table) and `probe_leaf.py`.
+- In the owner's trees, all 279 leaves that end with the solver's ko capture carry a ko status (KO+, an A-form, KO+2,
+  ADKO, DDKO), none DEAD or ALIVE. A tree that gave the clean result where the convention prints KO+ would be a
+  `status-mismatch`, the convention's reading.
+- **What it changes in the status checker** (`status_eval`: `Solver.status_record` at 200,000 nodes in both areas, on
+  those 279 leaves): 139 are KO, 6 a double ko and 122 undecided, untouched; 12 have a clean class. The 10 successes
+  (the nine S[KO+] leaves above and k029) keep KO with the sign KO+. The 2 failures, 13661 leaf 9 and 13462, give
+  ALIVE and DEAD against the trees' ko statuses, where KO agreed with them before; the research found 13661 leaf 9 a
+  site error. `check_tree` (100,000 nodes) gets a status-mismatch on each: confirmed in the wider area for 13661
+  leaf 9, not confirmed for 13462, whose wider area stays undecided.
+
 ---
 
 ## 4. Algorithm
@@ -529,8 +576,9 @@ the narrow and wide areas. Every part is computed in the wide area first, with t
    - A refinement test of steps 2 to 4 (double ko, superko, the wider area, clean result, bent four, seki, seki in
      sente) that stays undecided leaves the class of the steps before it, and the statuses it could have given stay
      open beside it (section 9). The class is never printed or compared without them.
-5. The leaf convention `ko_taken_by` is unchanged. A clean DEAD or ALIVE that it turns into KO is printed KO+,
-   with "the solver's clean result: …".
+5. The leaf convention (D14): when the line ends with the solver's capture of a ko, the solver's clean success is
+   printed KO+, with "the solver's clean result: …" and the convention named as the owner's practice; the solver's
+   clean failure stays the class.
 6. If the class is undecided:
    - escalate (section 9);
    - if it is still undecided and the leaf has a ko shape, go on to steps 3 and 4;
@@ -665,6 +713,8 @@ The starting point is Design 3's `/tmp/claude-0/proto/research/kodesign/game/eng
             other side to move, each with what it leaves open) and alternative: {label, count, beyond, v_beyond, reading}
             (D5's fill only; no label when the direct-ko value without the fill is beyond the limit),
  class_open, class_open_tests (the statuses an undecided test of the class step leaves open),
+ leaf_convention: {point, class, applied} (D14: the line ends with the solver's ko capture and the class is clean;
+            applied: KO+ for the solver's success),
  strict_label, net_label (mutual only), special, area, warnings, undecided: [{part, search, nodes}]}
 ```
 
