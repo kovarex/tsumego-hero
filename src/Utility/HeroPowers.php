@@ -56,7 +56,7 @@ class HeroPowers
 
 	public static function renderRejuvenation(): void
 	{
-		echo '<img id="rejuvenation" title="Rejuvenation (Level ' . self::$REJUVENATION_MINIMUM_LEVEL . '): Restores health, Intuition and locks.">';
+		echo '<img id="rejuvenation" class="hero-power" title="Rejuvenation (Level ' . self::$REJUVENATION_MINIMUM_LEVEL . '): Restores health, Intuition and locks.">';
 	}
 
 	public static function canUseIntuition(): bool
@@ -68,7 +68,7 @@ class HeroPowers
 
 	public static function renderIntuition(): void
 	{
-		echo '<img id="intuition" title="Intuition (Level ' . self::$INTUITION_MINIMUM_LEVEL . ') : Shows the first correct move." alt="Intuition">';
+		echo '<img id="intuition" class="hero-power" title="Intuition (Level ' . self::$INTUITION_MINIMUM_LEVEL . ') : Shows the first correct move." alt="Intuition">';
 	}
 
 	public static function getRevelationUseCount(): int
@@ -105,7 +105,7 @@ class HeroPowers
 		$image = self::canUseRevelation() ? '/img/hp6.png' : '/img/hp6x.png';
 		$hoveredImage = self::canUseRevelation() ? '/img/hp6h.png' : '/img/hp6x.png';
 		echo '<img';
-		echo ' id="revelation" title="Revelation (' . self::remainingRevelationUseCount() . '): Solves a problem, but you don\'t get any reward."';
+		echo ' id="revelation" class="hero-power" title="Revelation (' . self::remainingRevelationUseCount() . '): Solves a problem, but you don\'t get any reward."';
 		echo ' src="' . $image . '" ';
 		if (self::canUseRevelation())
 		{
@@ -141,7 +141,7 @@ class HeroPowers
 
 	public static function renderSprint(): void
 	{
-		echo '<img id="sprint" title="Sprint: Double XP for 2 minutes." alt="Sprint"></a>';
+		echo '<img id="sprint" class="hero-power" title="Sprint: Double XP for 2 minutes." alt="Sprint"></a>';
 	}
 
 	public static function canPotionTrigger(): bool
@@ -166,12 +166,12 @@ class HeroPowers
 
 	private static function renderRefinement(): void
 	{
-		echo '<img id="refinement" title="Refinement (Level ' . self::$REFINEMENT_MINIMUM_LEVEL . '): Gives you a chance to solve a golden tsumego. If you fail, it disappears.">';
+		echo '<img id="refinement" class="hero-power" title="Refinement (Level ' . self::$REFINEMENT_MINIMUM_LEVEL . '): Gives you a chance to solve a golden tsumego. If you fail, it disappears.">';
 	}
 
 	private static function renderPotion(): void
 	{
 		if (self::canPotionTrigger())
-			echo '<img id="potion" title="Potion (Passive): If you misplay and have no hearts left, you have a small chance to restore your health." src="/img/hp5.png">';
+			echo '<img id="potion" class="hero-power" title="Potion (Passive): If you misplay and have no hearts left, you have a small chance to restore your health." src="/img/hp5.png">';
 	}
 }
