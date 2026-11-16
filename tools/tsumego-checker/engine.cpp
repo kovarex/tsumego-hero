@@ -1106,7 +1106,8 @@ bool bentFourEnd(const State& s)
   Result r = proofSearch(t, MODE_N);
   endPlay = previousEndPlay;
   bool result = !aborted && r.result == KILL;
-  aborted = previousAborted;
+  // an abort inside (budget or deadline) ends the outer search too: an end scored without the rule would not be a proof
+  aborted = previousAborted || aborted;
   return result;
 }
 

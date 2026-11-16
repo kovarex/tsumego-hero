@@ -391,9 +391,12 @@ class Solver:
         self.activate_engine()
         search = line.split(' ', 1)[0] in ('solve', 'solvex', 'solvemoves', 'solvecount')
         if search:
-            deadline = int(Solver.deadline * 1000) if Solver.deadline else 0
+            #rounded up, so that the engine never stops before Solver.deadline and a search it cut always raises below
+            deadline = int(Solver.deadline * 1000) + 1 if Solver.deadline else 0
             if getattr(self.engine, 'deadline', 0) != deadline:
-                self.engine.command('set deadline %d' % deadline)
+                answer = self.engine.command('set deadline %d' % deadline)
+                if answer != 'ok':
+                    raise RuntimeError('engine answered %r to set deadline (rebuild the engine)' % answer)
                 self.engine.deadline = deadline
         answer = self.engine.command(line)
         if not answer or answer.startswith('error'):

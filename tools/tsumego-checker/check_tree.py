@@ -449,7 +449,8 @@ def check(text, engine, budget, scan_missing=True, description=None, missing_dep
         for issue in list(report['issues']):
             report['issues'].remove(issue)
             report['notes'].append(dict(issue, kind=issue['kind'] + '-unconfirmed'))
-    report['verdict'] = 'issues' if report['issues'] else 'clean'
+    #a scan the time limit cut proves nothing: its issues are unconfirmed notes, and it is no clean problem either
+    report['verdict'] = 'timeout' if report.get('timed_out') else 'issues' if report['issues'] else 'clean'
 
     if report.get('fixed'):
         report['fixed_sgf'] = serialize(sgf_root)
@@ -493,6 +494,8 @@ elif __name__ == '__main__':
     budget = int(sys.argv[1])
     engine = Engine()
     for path in sys.argv[2:]:
+        #check() sets a time limit for its verify step; the next file starts without it
+        Solver.deadline = None
         report = check(open(path, encoding='utf-8', errors='replace').read(), engine, budget)
         report['file'] = path
         print(json.dumps(report), flush=True)

@@ -811,6 +811,12 @@ The starting point is Design 3's `/tmp/claude-0/proto/research/kodesign/game/eng
    in the slowest areas about 30,000 nodes a second, and one escalated count search took minutes past the limit: 9139
    "D17 C17 C18 B18 C19 B19 B17 D19 C18 C19 B16 C18 A14 B13 A18 A17 A16 A13 G19 A15" timed out at 670 s and 10489's
    first leaf at 726 s (324 s and 313 s before item 7). With the deadline 9139 times out at 300.2 s.
+   From the review of the merge: the deadline is sent rounded up to the millisecond, so that the engine never stops
+   before `Solver.deadline` (a cut search answered in the last fraction of a millisecond was cached as undecided), and
+   an engine that refuses the switch raises. The bent-four end (`bentFourEnd`) runs a search of its own inside an end
+   test, and it kept that search's abort to itself, so a deadline check that fell inside it was swallowed: the end was
+   scored without the bent-four rule and the outer search ran on, up to its whole budget (the wider area of 9820: 408,196
+   nodes past the limit), and a decided A=N from it would be no proof. Its abort now ends the outer search too.
 
 ---
 
