@@ -3,7 +3,7 @@
  "cards": [
   {
    "case": "k023",
-   "headline": "White takes first and its capture threatens at once; Black needs two threats more than White. Not S[A+1KO-]: S[A-1KO-] or S[A-2KO+], by your answer to question 1b.",
+   "headline": "White takes first and threatens at once; Black needs one approach and two threats more: S[A-1KO-] by your answer to question 1b, not S[A+1KO-].",
    "diagrams": [
     {
      "start": "",
@@ -34,8 +34,8 @@
    "text": [
     "S[A+1KO-] says White needs an approach and that Black wins at equal threats. Both are wrong, in both search areas. White 6 takes first and threatens at once (Diagram 2). Black fails even with one threat more than White (Diagram 3); with two, Black kills (Diagram 4). The count of two is proven only in the checker's narrow search area; in the wider area, where White has extra moves against Black's stone at F18, three is not ruled out.",
     "In Diagram 4, Black 7 retakes but threatens nothing yet: White plays elsewhere at move 8 for free. Black needs one approach, Black 11 at E19, before its capture at A17 in the second ko threatens to kill. Black 11 captures nothing, so White 12 retakes the second ko for free, and Black 17 must capture there again.",
-    "This is question 1b. After the approach, the ko switches there and back through the second ko. If that counts as a normal ko, the leaf is S[A-1KO-], your label with the approach sign flipped. If Black's capture at A17 counts as a second approach, as the checker's rules count it, it is S[A-2KO+]. Both need the same threats.",
-    "No move's grade changes either way: any ko beats the ALIVE and SEKI leaves. Only the problem's status, taken from its best leaf, changes from S[A+1KO-] to the label you choose."
+    "You answered question 1b on 16 November: after Black's one approach the ko switches there and back through the second ko, each side then needing a capture and one more move, and you rate such a symmetric ko as a normal ko. So this is your one-move approach ko for Black: S[A-1KO-]. The checker counted Black's capture at A17 as a second approach (S[A-2KO+], the same threats); by your answer it is none.",
+    "No move's grade changes: any ko beats the ALIVE and SEKI leaves. Only the problem's status, taken from its best leaf, changes from S[A+1KO-] to S[A-1KO-]."
    ]
   }
  ]

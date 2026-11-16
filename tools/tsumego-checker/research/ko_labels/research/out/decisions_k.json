@@ -41,16 +41,6 @@
    "proposal": "approach-ko labels"
   },
   {
-   "question": "1b",
-   "title": "A ko that switches through a second ko",
-   "anchor": "#topic-q1b",
-   "yours": "10403 S[A+1KO-], wrong either way; 7487 leaf 98 S[A-1KO-]",
-   "solver": "10403 undecided; 7487 leaf 98 10kKO",
-   "options": "A-1KO- (a normal switching ko) or A-2KO+ (the second-ko capture as a second approach)",
-   "leaves": "10403, 7487 leaf 98",
-   "proposal": "A-1KO- in both"
-  },
-  {
    "question": "4",
    "title": "The label by the structure or by the count?",
    "anchor": "#topic-q4",
@@ -82,7 +72,7 @@
   }
  ],
  "answered": [
-  "Answered: question 1a on 15 November (the shared-liberty shape is 10kKO): 14119 changes from S[KO-] to S[10kKO]; 11280, 11282 and 13549 keep their S[10kKO]. Question 2 follows from it: c081 in 15220 changes from S[KO+] to S[10kKO]. c121 in 15678 was settled on 14 November (S[A-1KO-] and the approach-round rule).",
+  "Answered: question 1a on 15 November (the shared-liberty shape is 10kKO): 14119 changes from S[KO-] to S[10kKO]; 11280, 11282 and 13549 keep their S[10kKO]. Question 2 follows from it: c081 in 15220 changes from S[KO+] to S[10kKO]. Question 1b on 16 November: after Black's one approach the ko in 10403 switches there and back, a normal ko, so it is your one-move approach ko for Black, S[A-1KO-]. c121 in 15678 was settled on 14 November (S[A-1KO-] and the approach-round rule).",
   "Questions 9 (equal counts) and 10 (superko) are dropped: none of your leaves has them."
  ]
 }

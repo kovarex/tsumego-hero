@@ -1,23 +1,5 @@
 [
  {
-  "key": "q1b",
-  "title": "Question 1b: a ko that switches through a second ko",
-  "cases": [
-   "k023"
-  ],
-  "text": [
-   "Part 1b of the question page asks how to label a ko where an approach lets the other side's free retake switch the ko, and a second ko is involved. In 10403 the tree's S[A+1KO-] is wrong under every reading: White's capture threatens at once, and Black needs two threats more than White.",
-   "If the switch after Black's approach at E19 is a normal ko, as the question page proposes for 10403, the label is S[A-1KO-]. If Black's capture at A17 in the second ko counts as a second approach, it is S[A-2KO+]. Both need the same threats."
-  ],
-  "suggestion": "S[A-1KO-], the question page's proposal for 10403.",
-  "options": {
-   "k023": [
-    "A-1KO-",
-    "A-2KO+"
-   ]
-  }
- },
- {
   "key": "q3",
   "title": "Question 3: an extra move after a local answer, an approach or a move inside the ko?",
   "cases": [

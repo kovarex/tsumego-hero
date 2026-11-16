@@ -254,6 +254,19 @@
   "flipped_total": 0
  },
  {
+  "key": "k021@A-1KO-",
+  "fixes": [
+   {
+    "line": "C18 C17 B17 D18 B19 C19 A18 A19",
+    "status": "A-1KO-"
+   }
+  ],
+  "root_before": "DEAD",
+  "root_after": "DEAD",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
   "key": "k022@A-1KO-",
   "fixes": [
    {
@@ -276,19 +289,6 @@
   ],
   "root_before": "A+1KO-",
   "root_after": "A-1KO-",
-  "flipped": [],
-  "flipped_total": 0
- },
- {
-  "key": "k023@A-2KO+",
-  "fixes": [
-   {
-    "line": "B18 A18 C19 A16 A19",
-    "status": "A-2KO+"
-   }
-  ],
-  "root_before": "A+1KO-",
-  "root_after": "A-2KO+",
   "flipped": [],
   "flipped_total": 0
  },
