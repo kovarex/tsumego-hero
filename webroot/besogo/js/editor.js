@@ -586,7 +586,8 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
     // Look for move across children
     for (let i = 0; i < children.length; i++) {
       let move = children[i].move;
-      if (move && move.x === x && move.y === y) {
+      // a click off the board is a tenuki, never the ko threat that is a pass too
+      if (move && move.x === x && move.y === y && !children[i].isThreat()) {
         children[i].cameFrom = null;
         navigateToNode(children[i], true /* by clicking */);
         return true;
@@ -772,7 +773,8 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
   function tenukiNotice(node) {
     if (!node.move || node.move.x !== 0 || node.move.y !== 0)
       return "";
-    return (node.move.color == BLACK ? "Black" : "White") + " plays elsewhere (tenuki).";
+    let color = node.move.color == BLACK ? "Black" : "White";
+    return node.isThreat() ? color + " makes a ko threat elsewhere." : color + " plays elsewhere (tenuki).";
   }
 
   // Taking back a ko at once is refused, which would leave the click without an answer, so the row of the

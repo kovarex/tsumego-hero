@@ -352,3 +352,45 @@ besogo.addTest("Editor", "TakingBackAKoAtOnceIsExplained", function()
 		besogo.soundsEnabled = false;
 	}
 });
+
+// TH[] marks a pass as an abstract ko threat: it survives a load and a save, and a tenuki next to it under the same
+// node is another move, not a transposition to prune
+besogo.addTest("Editor", "AThreatAndATenukiStaySiblings", function()
+{
+	let editor = loadEditor("(;SZ[19]AB[dd]AW[bb];B[aa](;W[]C[tenuki])(;W[]TH[]C[threat]))");
+	let move = editor.getRoot().children[0];
+	CHECK_EQUALS(move.children.length, 2);
+	CHECK(!move.children[0].isThreat());
+	CHECK(move.children[1].isThreat());
+	let sgf = besogo.composeSgf(editor);
+	CHECK(sgf.includes("W[]TH[]"));
+	CHECK_EQUALS(sgf.split("TH[]").length, 2); // only on the threat
+});
+
+// A click off the board is a tenuki: it doesn't play the ko threat that is a pass too
+besogo.addTest("Editor", "TenukiIsNotTheKoThreat", function()
+{
+	let root = loadEditor("(;SZ[19]AB[dd]AW[bb];B[aa];W[ab];B[]TH[];W[];B[ba]C[+])").getRoot();
+	withPlayEditor(root, function(editor, flush)
+	{
+		editor.click(1, 1, false, false);
+		flush(); // White's reply
+		let reply = editor.getCurrent();
+		editor.click(0, 0, false, false); // a tenuki, which the problem doesn't have: its pass is a threat
+		CHECK(editor.getCurrent() != reply.children[0]);
+		CHECK(editor.getCurrent().localEdit);
+	});
+});
+
+// The row says which of the two passes the opponent played
+besogo.addTest("Editor", "TheOpponentsKoThreatIsNoticed", function()
+{
+	let root = loadEditor("(;SZ[19]AB[dd]AW[bb];B[aa];W[]TH[];B[ba]C[+])").getRoot();
+	withPlayEditor(root, function(editor, flush, results, comments, notices)
+	{
+		editor.click(1, 1, false, false);
+		flush(); // White's reply is the threat
+		CHECK(editor.getCurrent().isThreat());
+		CHECK_EQUALS(notices[notices.length - 1], "White makes a ko threat elsewhere.");
+	});
+});

@@ -993,7 +993,7 @@ besogo.makeToolPanel = function (container, editor) {
     if (!editor.getReviewMode())
       return;
     let tenuki = editor.getCurrent().children.find(function (child) {
-      return child.move && child.move.x === 0 && child.move.y === 0;
+      return child.move && child.move.x === 0 && child.move.y === 0 && !child.isThreat();
     });
     if (!tenuki || tenuki.localEdit)
       return;

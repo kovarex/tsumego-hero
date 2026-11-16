@@ -269,7 +269,9 @@ test('an editor save changes no property but those besogo does not keep', () =>
 		'(;GM[1]FF[4]CA[UTF-8]AP[x]PW[]PB[Black]GN[name]SZ[19]G[KILL]AB[rb][sb]L[pa](;B[sa]C[a comment];W[ra]S[DEAD])(;B[ra];W[qa]S[ALIVE]))',
 		'(;SZ[19]G[tt]AB[rr][rs]AE[aa]TR[qq]MA[pp]CR[oo]SQ[nn](;B[ss]C[+])(;B[sr];W[qs]))',
 		'(;SZ[19]AB[rb][sb](;B[sa]G[custom];W[ra];B[qa]C[+])(;B[ra];W[qa]))',
-		'(;SZ[13]AB[aa:bc]AW[da:db](;B[ca]C[+])(;B[cb];W[ca]))'])
+		'(;SZ[13]AB[aa:bc]AW[da:db](;B[ca]C[+])(;B[cb];W[ca]))',
+		//a ko threat (TH) next to a tenuki of the same node, and a threat answered by a pass
+		'(;SZ[19]AB[dd]AW[bb];B[aa](;W[]TH[];B[];W[ab])(;W[];B[ba]C[+]))'])
 	{
 		const editor = besogo.besogo.makeEditor(19, 19, {});
 		besogo.besogo.loadSgf(besogo.besogo.parseSgf(sgf), editor);

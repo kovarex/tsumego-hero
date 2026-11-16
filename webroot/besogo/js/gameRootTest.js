@@ -452,3 +452,41 @@ besogo.addTest("GameRoot", "TenThousandYearsKoBranchIsCorrectOnlyWhenLiving", fu
 	CHECK_EQUALS(tenThousandYearsKoMove.correct, CORRECT_BAD);
 	CHECK_EQUALS(koMove.correct, CORRECT_GOOD);
 });
+
+// Two positions with the same stones, side to move and ko differ when the moves elsewhere differ: Black passing
+// leaves Black one move ahead elsewhere, White passing first and Black then leaves them even
+besogo.addTest("GameRoot", "MovesElsewhereKeepPositionsApart", function()
+{
+	let root = besogo.makeGameRoot();
+	let blackAhead = root.makeChild();
+	blackAhead.playMove(0, 0, BLACK);
+	let even = root.makeChild();
+	even.playMove(0, 0, WHITE);
+	even = (function(parent) { let child = parent.makeChild(); child.playMove(0, 0, BLACK); return child; })(even);
+
+	CHECK_EQUALS(blackAhead.movesElsewhereBalance(), 1);
+	CHECK_EQUALS(even.movesElsewhereBalance(), 0);
+	CHECK_EQUALS(blackAhead.nextIsBlack(), even.nextIsBlack());
+	CHECK(!blackAhead.samePositionAs(even));
+});
+
+// A ko threat waiting for its answer is not the tenuki of the same stones
+besogo.addTest("GameRoot", "AThreatIsNotATenuki", function()
+{
+	let root = besogo.makeGameRoot();
+	let tenuki = root.makeChild();
+	tenuki.playMove(0, 0, BLACK);
+	let threat = root.makeChild();
+	threat.playMove(0, 0, BLACK);
+	threat.threat = true;
+
+	CHECK(threat.isThreat());
+	CHECK(!tenuki.isThreat());
+	CHECK(!threat.samePositionAs(tenuki));
+
+	// TH on a move on the board means nothing
+	let move = root.makeChild();
+	move.playMove(1, 1, BLACK);
+	move.threat = true;
+	CHECK(!move.isThreat());
+});
