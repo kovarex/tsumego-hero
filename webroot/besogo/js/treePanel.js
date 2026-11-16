@@ -154,6 +154,17 @@ besogo.makeTreePanel = function(container, editor)
     return path;
   }
 
+  // A move on the board shows its number; a move elsewhere has none to show, so it shows what it is: ! for a ko
+  // threat, A for the answer to one, T for a tenuki
+  function moveLabel(node)
+  {
+    if (node.move.x !== 0 || node.move.y !== 0)
+      return '' + node.moveNumber;
+    if (node.isThreat())
+      return '!';
+    return node.parent && node.parent.isThreat() ? 'A' : 'T';
+  }
+
   function makeNodeIcon(node, x, y, isDiff) // Makes a node icon for the tree
   {
     var element;
@@ -175,7 +186,7 @@ besogo.makeTreePanel = function(container, editor)
           if (node.virtualChildren.length)
             element.appendChild(besogo.svgArrow(svgPos(x), svgPos(y), color));
           else
-            element.appendChild(besogo.svgLabel(svgPos(x), svgPos(y), color, '' + node.moveNumber));
+            element.appendChild(besogo.svgLabel(svgPos(x), svgPos(y), color, moveLabel(node)));
         }
         element.appendChild(besogo.svgCircle(svgPos(x), svgPos(y), node.getCorrectColor(), 50))
         break;

@@ -158,9 +158,59 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 		$moveNumber = $browser->driver->executeScript('return besogo.editor.getCurrent().moveNumber;');
 
 		$browser->clickBoard(3, 2);
-		$this->assertSame("Ko: you can't take back right away.", $browser->find('#theComment')->getText());
+		$this->assertSame("Ko: you can't take back right away. Make a ko threat first.", $browser->find('#theComment')->getText());
 		$this->assertSame($moveNumber, $browser->driver->executeScript('return besogo.editor.getCurrent().moveNumber;'),
 			'The retake is not played');
+		$browser->assertNoJsErrors();
+	}
+
+	//White takes the ko at (2,2); Make ko threat shows while Black may not take it back. White ignores the threat and
+	//fills the ko, so Black is one move ahead elsewhere, which shows beside the buttons.
+	public function testAKoThreatIsMadeWhileTheKoCantBeTakenBack(): void
+	{
+		$context = $this->contextWithOriginalBoard(
+			'(;GM[1]FF[4]SZ[19]AB[ba][ab][bc][cb]AW[ca][db][cc];B[ee];W[bb];B[]TH[];W[cb];B[ff]C[+])');
+		$browser = Browser::instance();
+		$browser->get($this->playUrl($context));
+		$this->waitForBoard($browser);
+		$hidden = 'return [document.getElementById("besogo-threat-button").hidden, document.getElementById("besogo-elsewhere").hidden];';
+		$this->assertSame([true, true], $browser->driver->executeScript($hidden), 'Nothing to threaten at the start');
+
+		$browser->clickBoard(5, 5);
+		$browser->waitUntilJs('besogo.editor.getCurrent().move && besogo.editor.getCurrent().move.color === 1');
+		$this->assertSame([false, true], $browser->driver->executeScript($hidden), 'The ko is White\'s now');
+
+		$browser->clickId('besogo-threat-button');
+		$browser->waitUntilJs('besogo.editor.getCurrent().move.color === 1 && besogo.editor.getCurrent().move.x === 3');
+		$this->assertSame([true, false], $browser->driver->executeScript($hidden), 'White filled the ko and ignored the threat');
+		$this->assertSame('Elsewhere +1', $browser->find('#besogo-elsewhere')->getText());
+
+		$browser->clickBoard(6, 6);
+		$browser->waitUntilJs('document.getElementById("status").textContent.includes("Correct!")');
+		$browser->assertNoJsErrors();
+	}
+
+	//After White's ko threat the Tenuki button answers it, and it says so
+	public function testTheOpponentsKoThreatIsAnsweredWithTheTenukiButton(): void
+	{
+		$context = $this->contextWithOriginalBoard('(;GM[1]FF[4]SZ[19]AB[dd]AW[bb];B[aa];W[]TH[];B[];W[ab];B[ba]C[+])');
+		$browser = Browser::instance();
+		$browser->get($this->playUrl($context));
+		$this->waitForBoard($browser);
+
+		$browser->clickBoard(1, 1);
+		$browser->waitUntilJs('besogo.editor.getCurrent().move && besogo.editor.getCurrent().move.color === 1');
+		$this->assertSame('White makes a ko threat elsewhere.', $browser->find('#theComment')->getText());
+		$this->assertSame('Answer threat', $browser->find('#besogo-pass-button')->getAttribute('value'));
+
+		$browser->clickId('besogo-pass-button');
+		$browser->waitUntilJs('besogo.editor.getCurrent().move.color === 1 && besogo.editor.getCurrent().move.y === 2');
+		$this->assertSame('Tenuki', $browser->find('#besogo-pass-button')->getAttribute('value'));
+		$this->assertTrue($browser->driver->executeScript('return document.getElementById("besogo-elsewhere").hidden;'),
+			'A threat and its answer leave no one ahead elsewhere');
+
+		$browser->clickBoard(2, 1);
+		$browser->waitUntilJs('document.getElementById("status").textContent.includes("Correct!")');
 		$browser->assertNoJsErrors();
 	}
 

@@ -207,13 +207,13 @@ besogo.makeDiffPanel = function(container, editor)
     let moves = [];
     for (let i = node; i.parent; i = i.parent)
       if (i.move)
-        moves.unshift(i.move);
+        moves.unshift({ ...i.move, threat: i.isThreat() });
     if (moves.length == 0)
       return 'Start position';
     let shown = moves.slice(-SHOWN_MOVES).map(function(move, index)
     {
       let number = moves.length - Math.min(moves.length, SHOWN_MOVES) + index + 1;
-      return number + '. ' + (move.color == BLACK ? 'B' : 'W') + ' ' + (editor.coordXYToLabel(move.x, move.y) || 'tenuki');
+      return number + '. ' + (move.color == BLACK ? 'B' : 'W') + ' ' + (editor.coordXYToLabel(move.x, move.y) || (move.threat ? 'ko threat' : 'tenuki'));
     });
     return (moves.length > SHOWN_MOVES ? '… ' : '') + shown.join(', ');
   }

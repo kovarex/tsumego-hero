@@ -342,7 +342,7 @@ besogo.addTest("Editor", "TakingBackAKoAtOnceIsExplained", function()
 			CHECK_EQUALS(koTaken.move.y, 2);
 			editor.click(3, 2, false, false);
 			CHECK(editor.getCurrent() == koTaken);
-			CHECK_EQUALS(notices[notices.length - 1], "Ko: you can't take back right away.");
+			CHECK_EQUALS(notices[notices.length - 1], "Ko: you can't take back right away. Make a ko threat first.");
 			CHECK_EQUALS(results.length, 0);
 		});
 	}
@@ -393,4 +393,60 @@ besogo.addTest("Editor", "TheOpponentsKoThreatIsNoticed", function()
 		CHECK(editor.getCurrent().isThreat());
 		CHECK_EQUALS(notices[notices.length - 1], "White makes a ko threat elsewhere.");
 	});
+});
+
+// White takes the ko; Black makes a ko threat, White answers it, and Black may take the ko back (the move before is a
+// pass), which solves the problem
+besogo.addTest("Editor", "AKoThreatLetsTheKoBeTakenBack", function()
+{
+	let root = loadEditor("(;SZ[19]AB[ba][ab][bc][cb]AW[ca][db][cc];B[ee];W[bb];B[]TH[];W[];B[cb]C[+])").getRoot();
+	withPlayEditor(root, function(editor, flush, results)
+	{
+		editor.click(5, 5, false, false);
+		flush(); // White takes the ko
+		editor.playThreat();
+		CHECK(editor.getCurrent().isThreat());
+		CHECK(!editor.getCurrent().localEdit);
+		flush(); // White answers
+		CHECK_EQUALS(editor.getCurrent().move.x, 0);
+		editor.click(3, 2, false, false); // the ko taken back
+		CHECK_EQUALS(editor.getCurrent().move.x, 3);
+		CHECK_EQUALS(results[results.length - 1], "S");
+	});
+});
+
+// A ko threat the problem doesn't have is wrong like any other move, and a tenuki there is not the threat either
+besogo.addTest("Editor", "AKoThreatTheProblemDoesntHaveIsWrong", function()
+{
+	let root = loadEditor("(;SZ[19]AB[ba][ab][bc][cb]AW[ca][db][cc];B[ee];W[bb];B[];W[ff];B[cb]C[+])").getRoot();
+	let originalEmbedded = besogo.isEmbedded;
+	besogo.isEmbedded = true; // the play page, where a move the problem doesn't have ends the try
+	try
+	{
+		withPlayEditor(root, function(editor, flush, results)
+		{
+			editor.click(5, 5, false, false);
+			flush();
+			editor.playThreat();
+			CHECK(editor.getCurrent().isThreat());
+			CHECK(editor.getCurrent().localEdit);
+			CHECK_EQUALS(results[results.length - 1], "F");
+		});
+	}
+	finally
+	{
+		besogo.isEmbedded = originalEmbedded;
+		besogo.soundsEnabled = false;
+	}
+});
+
+// The board editor makes a threat as the author's own move, and saves it
+besogo.addTest("Editor", "TheBoardEditorMakesAKoThreat", function()
+{
+	let editor = loadEditor("(;SZ[19]AB[dd]AW[bb];B[aa])");
+	editor.setFullEditor(true);
+	editor.setCurrent(editor.getRoot().children[0]);
+	editor.playThreat();
+	CHECK(editor.getCurrent().isThreat());
+	CHECK(besogo.composeSgf(editor).includes("W[]TH[]"));
 });
