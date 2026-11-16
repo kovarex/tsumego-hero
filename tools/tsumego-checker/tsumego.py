@@ -1574,11 +1574,24 @@ class Solver:
             return n + v - 1 if taker == self.solver_color else n + v
         return v - n if taker == self.solver_color else v - n + 1
 
+    def form_label(self, side, n, v, taker):
+        #D6: the label of that A-form, whose count is form_count
+        a = -n if side == 'S' else n
+        return besogo_string(a, -self.form_count(side, n, v, taker) - a)
+
+    def form_counts(self, side, n, record, taker):
+        #the A-form's counts from a threshold record of its direct ko, as threshold_interval gives them: (lowest, highest,
+        #decided), None for no bound; a direct ko beyond the limit is decided, as a bound
+        low, high, decided = threshold_interval(record)
+        convert = lambda value: None if value is None else self.form_count(side, n, value, taker)
+        return convert(low), convert(high), decided
+
     def free_move_count(self, board, holder, n, v):
         #v's own game at P_X (board, Y to move under the ban): Y's forced pass, X's free move, then Y free, forced to pass for the
         #n - 1 rounds left. The count after X's best free move that is an approach in D4's sense (no pass, no fill of the ko,
-        #no capture in a second ko) and that move, from solvemoves tables at the balances from v on; None when an undecided
-        #move could still be the best
+        #no capture in a second ko) and that move, from solvemoves tables at the balances from v on; (None, None) when no such
+        #move wins up to the limit (decided, as a bound: no approach keeps a count within it); None when an undecided move
+        #could still be the best, with that table's undecided moves on the label's list
         mover = other_colour(holder)
         first = self.play(board, None, None)
         passes = {mover: n - 1} if n > 1 else None
@@ -1593,8 +1606,10 @@ class Solver:
             if found:
                 return balance, found[0]
             if any(wins is None and approach(p) for p, mark, wins, nodes in table):
+                self.note_moves([item for item in table if approach(item[0])], holder, max(tested, 0), max(-tested, 0),
+                                'approaches that may keep the count')
                 return None
-        return None
+        return None, None
 
     def note_moves(self, table, to_move, s, o, what):
         #a solvemoves table's undecided moves on the label's list of undecided searches (counted_moves keeps no list)
@@ -1612,15 +1627,19 @@ class Solver:
         #it an approach of X (no pass, no fill of the ko, no capture in a second ko) keeps the count as well as the capture
         #does (13547's E19 and F19, after which Black's F19 or E19 keeps it beside C19); one after which only the capture
         #keeps it answers nothing (13547's A13, 7693's D19 and F19, which take away Black's local threat D19 that only Y's
-        #tenuki leaves). The pass and the retakes against the ban are the ko fight, not replies. {d: P_X's count, threats,
-        #answers, quiet (quiet moves that answer nothing), undecided (moves left open, None for P_X's count), nodes}
+        #tenuki leaves). The pass and the retakes against the ban are the ko fight, not replies. {d: P_X's count, beyond: P_X's
+        #count beyond the limit (a bound, so no reply keeps a count), threats, answers, quiet (quiet moves that answer nothing),
+        #undecided (moves left open, None for P_X's count), nodes}
         mover, solver = other_colour(holder), self.solver_color
-        reading = {'d': None, 'threats': [], 'answers': [], 'quiet': [], 'undecided': [], 'nodes': 0}
+        reading = {'d': None, 'beyond': 0, 'threats': [], 'answers': [], 'quiet': [], 'undecided': [], 'nodes': 0}
         start = self.nodes
         ko = self.ko_points(board)
         count = self.threshold(board, mover, shifted=False)
         if ko is None or count['d'] is None:
-            reading['undecided'].append(None)
+            if ko is not None and count['beyond']:
+                reading['beyond'] = count['beyond']
+            else:
+                reading['undecided'].append(None)
             reading['nodes'] = self.nodes - start
             return reading
         d = reading['d'] = count['d']
@@ -1658,102 +1677,215 @@ class Solver:
         reading['nodes'] = self.nodes - start
         return reading
 
-    def second_ko_readings(self, take, profiles, d_full):
-        #D4: a capture in a second ko is no approach. Two readings rest on the full count, so they wait for it, and each holds
-        #only when the label it gives counts exactly the full count d_full.
-        #- Answered at no cost: the held-ko check's stage rests on the capture (every move that keeps v takes the second ko).
-        #  When the A-form with the capture counts d_full the stage stands (1807: KO-). Otherwise the stage's direct reading
-        #  (a = 0, e = -d_full) gives the other side Y the difference, and Y's moves at P_X that keep its count say where it
-        #  comes from (answer_reading): from local threats (1731's C18: KO-2, D7 counts the threat) or from quiet moves that
-        #  answer nothing (7693's D19 and F19, after which only Black's C18 keeps the count: KO+) the stage stands. When a
-        #  quiet move answers the capture (13547's E19: Black's F19 keeps the count as well as C19), Y stops the capture at no
-        #  cost, the capture is neither approach nor stage, X's approach is its best free move that leaves Y a free retake, v
-        #  the count after it, and the label D6's A-form (13547 "B18 B19 B17 C18 A17 D19 A19 D16 A15 A16 A14 A18": A-1KO-),
-        #  with one extra threat of Y's in the stage's reading turned into X's approach. X's approach count is undecided (0
-        #  or 1, never the stage) where Y has both a threat and an answer, where a search of the reading is undecided, where
-        #  the stage gives Y no extra threat for the answer to take, or where the A-form does not count d_full.
-        #- Switching: X needs two or more approaches and one of its free moves that keep the outright win (wins True) is such
-        #  a capture. It is no approach either: with it the ko switches between the two kos, each side needing a capture in
-        #  both, which the owner rates a normal ko (16 November, 10403): X needs one approach fewer, v is the direct ko after
-        #  them (Y forced to pass n - 1 times), and the label is D6's A-form from them (10403 "B18 A18 C19 A16 A19": A-1KO-).
-        #  Where that v is undecided, X's free move behind it fills the ko (D5), or the capture's own test is undecided, X
-        #  needs n - 1 or n approaches, undecided; where the A-form from it does not count d_full, the switch is not X's best
-        #  and the n approaches stand (11279 "B18 A18 C18 D19 A17 B17 C19 A16 A19": A-1KO-2 would count 3, the full count is 4).
-        if d_full is None or take['side'] is None:
-            return
+    def gain_candidates(self, board, count, other):
+        #D8's first candidates for the other side Y's gain moves: its moves on the full count's lines from the leaf (board), in
+        #their order, that are no pass, no retake against the ban and no ko capture
+        candidates = []
+        for moves in (count['pv_win'], count['pv_fail']):
+            boards = [board] + self.replay(board, moves)
+            for i, (color, p, mark) in enumerate(moves[:len(boards) - 1]):
+                if color == other and p is not None and mark == '' and boards[i + 1].ko is None and p not in candidates:
+                    candidates.append(p)
+        return candidates
+
+    def full_count_check(self, side, holder, form, d_full, profile, n, v, approach, count, leaf):
+        #D4's readings check the form they choose against the full count as D8 reads it: every A-form leaves out the other
+        #side Y's approach-round gains, so the full count may exceed the form's count by what Y gains with the free moves of
+        #the rounds and never falls below it. g = d_full - form from Y's side (D8's total) holds at 0; above 0 it holds when the
+        #gains D8 locates on the form's approach line (n approaches, the first one approach, the direct ko v: its searches,
+        #run here only then, are the ones explain_label repeats for the label's own form) reach g (11279 k109: White's F18 or
+        #B14 in place of its tenuki, +1). A located gain that X answers better than with the round's approach adds less to the
+        #full count (10403's F19, +1 located with g = 0), so the located gains may exceed g. {holds, total: g, located, moves:
+        #[(round, move, value)]}
+        total = (d_full - form) * (1 if side == 'S' else -1)
+        check = {'holds': total == 0, 'total': total, 'located': 0, 'moves': []}
+        if total > 0:
+            part, begin = self.part, len(self.undecided) if self.undecided is not None else 0
+            located = self.approach_rounds(profile['position'], holder, dict(profile, n=n, v=v, approach=approach))
+            entries = self.round_gains(located, holder, n, self.gain_candidates(leaf, count, other_colour(holder))) \
+                if located['rounds'] else []
+            check['located'] = sum(entry['value'] or 0 for entry in entries)
+            check['moves'] = [(entry['round'], entry['move'], entry['value']) for entry in entries if entry['value']]
+            check['holds'] = check['located'] >= total
+            for item in (self.undecided or [])[begin:]:
+                item['part'] = '%s, %s' % (part, item['part'])
+            self.part = part
+        return check
+
+    def second_ko_readings(self, take, profiles, count, leaf):
+        #D4: a capture in a second ko is no approach. Two readings of such a capture compare forms of the label and check the one
+        #they choose against the full count (count: the leaf's threshold record; leaf: its board) with the other side's
+        #approach-round gains left out, as D8 leaves them out of every form (full_count_check). Where a reading is not decided
+        #(a search, the first take or the full count undecided, or a form the full count does not bear out) X's approach count
+        #stays undecided, never the stage or a form the full count does not prove. They apply where the other side's capture
+        #is direct (beside an approach of the other side the leaf is question 1b, D9) and X's free move does not fill the ko
+        #(D5's reading)
         for side in ('S', 'O'):
             profile, other = profiles[side], profiles['O' if side == 'S' else 'S']
-            #an approach ko: beside an approach of the other side a capture in a second ko is question 1b (D9)
             if not profile or not profile['decided'] or profile['fill'] or not profile['n'] or not other or not other['decided'] \
-                    or other['n'] != 0:
+                    or other['n'] != 0 or profile['v'] is None or profile['v']['d'] is None:
                 continue
             holder = self.solver_color if side == 'S' else other_colour(self.solver_color)
-            board, mover = profile['position']
-            n, v = profile['n'], profile['v'] and profile['v']['d']
-            if v is None:
-                continue
-            seconds = [p for p, wins in profile['candidates'] if wins and self.second_ko_capture(board, holder, p)]
-            open_seconds = [p for p, wins in profile['candidates'] if wins is None and self.second_ko_capture(board, holder, p)]
-            if n == 1 and profile['held_ok'] is False and profile['second_ko_capture'] is not None:
-                capture = profile['second_ko_capture']
-                if self.form_count(side, n, v, take['side']) == d_full:
-                    continue
-                self.part = 'second ko answered %s' % holder
-                reading = profile['reading'] = self.answer_reading(board, holder, profile['Lo'])
-                #the stage's extra threats x = e - e0 with e = -d_full: Y's when below 0 for the solver's stage, above 0 for the
-                #opponent's
-                x = -d_full - (0 if take['side'] == self.solver_color else -1)
-                found = reason = None
-                if reading['undecided']:
-                    reason = 'undecided'
-                elif not reading['answers']:
-                    #no quiet move answers the capture: the stage stands, D7 counts Y's local threats
-                    continue
-                elif reading['threats']:
-                    reason = 'mixed'
-                elif not (x < 0 if side == 'S' else x > 0):
-                    reason = 'no extra'
-                else:
-                    found = self.free_move_count(board, holder, n, v)
-                    reason = 'count' if found is None or self.form_count(side, n, found[0], take['side']) != d_full else None
-                if found and not reason:
-                    #v is the direct ko behind the approach: Y's forced pass, X's approach, then Y free
-                    after = self.play(self.play(board, None, None), holder, found[1])
-                    v = self.threshold(after, mover, start=found[0], shifted=False)
-                    reason = None if v['d'] == found[0] else 'count'
-                if reason:
-                    #a stage or an approach (held_ok None): the label's approach count is undecided
-                    profile.update(held_ok=None, unsettled=('answered', capture, reason), second_ko_capture=None)
-                    continue
-                profile.update(held_ok=True, answered=capture, second_ko_capture=None, approach=found[1], alternatives=[(found[1], True)],
-                               alternatives_rejected=[], v=v, direct=(after, mover))
-            elif n >= 2 and profile['held_ok'] and (seconds or open_seconds):
-                self.part = 'second ko switching %s' % holder
-                record = self.threshold(board, mover, start=v, passes={mover: n - 1})
-                if record['d'] is not None and self.form_count(side, n - 1, record['d'], take['side']) != d_full:
-                    continue
-                reason = 'capture' if not seconds else 'v' if record['d'] is None else \
-                    'fill' if self.ko_fill(board, holder, record) else None
-                if reason:
-                    #n - 1 or n approaches (the bracket of the outright tests): undecided
-                    capture = (seconds or open_seconds)[0]
-                    if reason == 'capture' and self.undecided is not None:
-                        entry = {'part': self.part, 'search': '%s\'s free move %s with %s forced to pass %d times (candidate table)' % (
-                            holder, self.point_name(capture), mover, n), 'nodes': profile['candidate_nodes'].get(capture, 0)}
-                        if entry not in self.undecided:
-                            self.undecided.append(entry)
-                    profile.update(decided=False, n=None, t=None, bracket=(n - 1, n + 1), unsettled=('switching', capture, reason))
-                    continue
-                found = self.free_move_count(board, holder, n - 1, record['d'])
-                approach = found[1] if found is not None and found[0] == record['d'] else None
-                profile.update(n=n - 1, t=n, switching=seconds[0], v=record, approach=approach, approach_moves=[approach] if approach else [],
-                               alternatives=[(approach, True)] if approach else [], alternatives_rejected=[])
+            board = profile['position'][0]
+            if profile['n'] == 1 and profile['held_ok'] is False and profile['second_ko_capture'] is not None:
+                self.answered_reading(take, profile, side, holder, count, leaf)
+            elif profile['n'] >= 2 and profile['held_ok']:
+                seconds = [(p, wins) for p, wins in profile['candidates'] if wins is not False and self.second_ko_capture(board, holder, p)]
+                if seconds:
+                    self.switching_reading(take, profile, side, holder, count, leaf, seconds)
+
+    def answered_reading(self, take, profile, side, holder, count, leaf):
+        #D4, answered at no cost: the held-ko check's stage rests on the capture (every move that keeps v takes the second ko).
+        #The stage reads it as direct (a = 0, e = -d_full), which counts d_full by construction. When the A-form with the
+        #capture (from v) counts d_full as well the stage stands (1807: KO-). Otherwise the stage gives the other side Y the
+        #difference, and Y's moves at P_X that keep its count say where it comes from (answer_reading): from local threats
+        #(1731's C18: KO-2, D7 counts the threat) or from quiet moves that answer nothing (7693's D19 and F19, after which only
+        #Black's C18 keeps the count: KO+) the stage stands. When a quiet move answers the capture (13547's E19: Black's F19
+        #keeps the count as well as C19), Y stops the capture at no cost, the capture is neither approach nor stage, X's
+        #approach is its best free move that leaves Y a free retake, v the count after it, and the label D6's A-form (13547 "B18
+        #B19 B17 C18 A17 D19 A19 D16 A15 A16 A14 A18": A-1KO-), with one extra threat of Y's in the stage's reading turned into
+        #X's approach, when the full count bears it out (full_count_check). X needs 0 or 1 approaches, undecided, when the
+        #reading cannot start (the first take or the full count undecided: whether the A-form counts d_full is the reading's
+        #first question), when a search of it is undecided or P_X's count is beyond the limit (no reply keeps a count), when Y
+        #has both a threat and an answer, when the stage gives Y no extra threat for the answer to take, or when no approach of
+        #X's counts the full count
+        capture = profile['second_ko_capture']
+        board, mover = profile['position']
+        d_full, taker = count['d'], take['side']
+        forms = profile['forms'] = {'kind': 'answered', 'capture': capture, 'stage': None, 'form': None, 'form_count': None, 'approach': None,
+                                    'd_full': d_full, 'check': None}
+        unsettled = lambda reason: profile.update(held_ok=None, unsettled=('answered', capture, reason), second_ko_capture=None)
+        if taker is None or d_full is None:
+            unsettled('take' if taker is None else 'full count')
+            return
+        forms['stage'] = besogo_string(0, -d_full)
+        if self.form_count(side, 1, profile['v']['d'], taker) == d_full:
+            return
+        self.part = 'second ko answered %s' % holder
+        reading = profile['reading'] = self.answer_reading(board, holder, profile['Lo'])
+        #the stage's extra threats x = e - e0 with e = -d_full: Y's when below 0 for the solver's stage, above 0 for the
+        #opponent's
+        x = -d_full - (0 if taker == self.solver_color else -1)
+        if reading['beyond']:
+            unsettled('beyond')
+            return
+        if reading['undecided']:
+            unsettled('undecided')
+            return
+        if not reading['answers']:
+            #no quiet move answers the capture: the stage stands, D7 counts Y's local threats
+            return
+        if reading['threats']:
+            unsettled('mixed')
+            return
+        if not (x < 0 if side == 'S' else x > 0):
+            unsettled('no extra')
+            return
+        found = self.free_move_count(board, holder, 1, profile['v']['d'])
+        if found is None:
+            unsettled('approach undecided')
+            return
+        if found[0] is None:
+            unsettled('count')
+            return
+        #v is the direct ko behind the approach: Y's forced pass, X's approach, then Y free
+        after = self.play(self.play(board, None, None), holder, found[1])
+        v = self.threshold(after, mover, start=found[0], shifted=False)
+        forms.update(approach=found[1], form=self.form_label(side, 1, found[0], taker), form_count=self.form_count(side, 1, found[0], taker))
+        if v['d'] != found[0]:
+            unsettled('undecided' if v['d'] is None and not v['beyond'] else 'count')
+            return
+        check = forms['check'] = self.full_count_check(side, holder, forms['form_count'], d_full, profile, 1, v, found[1], count, leaf)
+        if not check['holds']:
+            unsettled('count')
+            return
+        profile.update(held_ok=True, answered=capture, second_ko_capture=None, approach=found[1], alternatives=[(found[1], True)],
+                       alternatives_rejected=[], v=v, direct=(after, mover))
+
+    def switching_reading(self, take, profile, side, holder, count, leaf, seconds):
+        #D4, switching: X needs n >= 2 approaches, and one of its first free moves that keep the outright win (D3's candidates;
+        #seconds: [(point, True | None)]) is such a capture. With it the ko switches between the two kos, each side needing a
+        #capture in both, which the owner rates a normal ko (16 November, 10403), so X has two forms: its n approaches (the
+        #n-form, D6's A-form from v) and n - 1 approaches then the switch (the (n-1)-form, from v', the direct ko with Y forced
+        #to pass n - 1 times). The switch holds when its form needs no more threats than the n-form (a tie is the owner's
+        #10403, where both count 2), the capture's own outright test is decided, X's free move behind v' does not fill the ko
+        #(D5) and an approach of X's (no pass, no fill, no capture in a second ko) keeps v' (the approach named); the n
+        #approaches stand when the (n-1)-form is decided and needs more threats. The form chosen must agree with the full
+        #count, the other side's approach-round gains left out (full_count_check: in 11279 "B18 A18 C18 D19 A17 B17 C19 A16 A19"
+        #both forms count 3 against the full count 4, and White's F18 or B14 in place of its tenuki gains 1: A-1KO-2). Anything
+        #else (a form, a search, the first take or the full count undecided, no approach behind v', or a form the full count
+        #does not bear out) leaves X needing n - 1 or n approaches, undecided, with what both forms count in the text (10403's
+        #wider area: v' = 1 only with the capture itself as Black's free move, while the approach E19 first counts 2)
+        board, mover = profile['position']
+        n, v, taker, d_full = profile['n'], profile['v']['d'], take['side'], count['d']
+        decided = [p for p, wins in seconds if wins]
+        capture = (decided or [p for p, wins in seconds])[0]
+        self.part = 'second ko switching %s' % holder
+        forms = profile['forms'] = {'kind': 'switching', 'capture': capture, 'n': n, 'switch': None, 'switch_count': None, 'approaches': None,
+                                    'approaches_count': None, 'chosen': None, 'approach': None, 'd_full': d_full, 'check': None}
+        def unsettled(reason):
+            if reason == 'capture' and self.undecided is not None:
+                entry = {'part': self.part, 'search': '%s\'s free move %s with %s forced to pass %d times (candidate table)' % (
+                    holder, self.point_name(capture), mover, n), 'nodes': profile['candidate_nodes'].get(capture, 0)}
+                if entry not in self.undecided:
+                    self.undecided.append(entry)
+            profile.update(decided=False, n=None, t=None, bracket=(n - 1, n + 1), unsettled=('switching', capture, reason))
+        if taker is None:
+            unsettled('take')
+            return
+        record = self.threshold(board, mover, start=v, passes={mover: n - 1})
+        approaches = self.form_count(side, n, v, taker)
+        low, high, known = self.form_counts(side, n - 1, record, taker)
+        forms.update(approaches=self.form_label(side, n, v, taker), approaches_count=approaches,
+                     switch=self.form_label(side, n - 1, record['d'], taker) if record['d'] is not None else None,
+                     switch_count=form_count_text(low, high, known))
+        #X's cost of a count: the solver wants it low, the opponent high; best and worst are the switch's ends for X
+        sign = 1 if side == 'S' else -1
+        best, worst = (low, high) if sign > 0 else (high, low)
+        if best is not None and best * sign > approaches * sign:
+            #the switch needs more threats: the n approaches stand when the full count bears them out
+            forms['chosen'] = 'approaches'
+            if d_full is None:
+                unsettled('full count')
+                return
+            check = forms['check'] = self.full_count_check(side, holder, approaches, d_full, profile, n, profile['v'], profile['approach'],
+                                                           count, leaf)
+            if not check['holds']:
+                unsettled('count')
+            return
+        forms['chosen'] = 'switch'
+        if worst is None or worst * sign > approaches * sign or record['d'] is None:
+            unsettled('v')
+            return
+        if not decided:
+            unsettled('capture')
+            return
+        if d_full is None:
+            unsettled('full count')
+            return
+        if self.ko_fill(board, holder, record):
+            unsettled('fill')
+            return
+        found = self.free_move_count(board, holder, n - 1, record['d'])
+        if found is None:
+            unsettled('approach undecided')
+            return
+        if found[0] != record['d']:
+            unsettled('approach')
+            return
+        forms['approach'] = found[1]
+        check = forms['check'] = self.full_count_check(side, holder, low, d_full, profile, n - 1, record, found[1], count, leaf)
+        if not check['holds']:
+            unsettled('count')
+            return
+        profile.update(n=n - 1, t=n, switching=capture, v=record, approach=found[1], approach_moves=[found[1]],
+                       alternatives=[(found[1], True)], alternatives_rejected=[])
 
     def bracket_labels(self, take, profiles, d_full):
         #D12 beside D4's brackets: the labels a candidate first move can still have when its label is undecided only because a
-        #reading of a capture in a second ko is: answered, the stage (a = 0) or the A-form with one approach, both at the full
-        #count; switching, the A-form with n - 1 approaches at the full count or with n and the outright tests' v. None when
-        #anything else is undecided
+        #reading of a capture in a second ko is: answered, the stage (a = 0) or the A-form with one approach at the full count or
+        #from the approach the reading found; switching, the A-form with n - 1 approaches at the full count or from v', or the
+        #n-form from the outright tests' v. None when anything else is undecided
         if d_full is None or take['side'] is None:
             return None
         labels = []
@@ -1764,14 +1896,15 @@ class Solver:
                     return None
                 continue
             sign = -1 if side == 'S' else 1
+            forms = profile.get('forms') or {}
             if profile['unsettled'][0] == 'answered':
-                labels += [besogo_string(0, -d_full), besogo_string(sign, -d_full - sign)]
+                labels += [besogo_string(0, -d_full), besogo_string(sign, -d_full - sign)] + ([forms['form']] if forms.get('form') else [])
                 continue
             n, v = profile['bracket'][1] - 1, profile['v'] and profile['v']['d']
             if v is None:
                 return None
-            labels += [besogo_string(sign * (n - 1), -d_full - sign * (n - 1)),
-                       besogo_string(sign * n, -self.form_count(side, n, v, take['side']) - sign * n)]
+            labels += [besogo_string(sign * (n - 1), -d_full - sign * (n - 1))] + ([forms['switch']] if forms.get('switch') else []) + \
+                [self.form_label(side, n, v, take['side'])]
         return labels or None
 
     def ko_fill(self, board, holder, v):
@@ -2022,9 +2155,9 @@ class Solver:
             record['warnings'].append('the count depends on the threat counts themselves, not only on their balance')
         if count['beyond']:
             record['warnings'].append('the count is beyond %+d' % (count['beyond'] * LABEL_LIMIT))
-        #D4: the readings of a capture in a second ko that rest on the full count
+        #D4: the readings of a capture in a second ko, checked against the full count
         for take, profiles in candidates:
-            self.second_ko_readings(take, profiles, count['d'])
+            self.second_ko_readings(take, profiles, count, board)
         #step 5: the label of each candidate, the best for the side to move (D12)
         labelled = [(take, profiles, self.label_parts(take, profiles, count['d'], approach_rule)) for take, profiles in candidates]
         take, profiles, parts = labelled[0]
@@ -2067,20 +2200,24 @@ class Solver:
             profile = profiles[side] or {}
             holder = solver if side == 'S' else other_colour(solver)
             reading = self.reading_names(profile.get('reading'))
+            x, y = COLOUR_NAMES[holder], COLOUR_NAMES[other_colour(holder)]
+            compared = forms_text(self.forms_names(profile.get('forms')), x, y)
             if profile.get('answered'):
                 record['warnings'].append('second ko: %s answers the threat of %s\'s capture at %s at no cost (%s), so it is neither approach '
-                                          'nor stage (D4)' % (COLOUR_NAMES[other_colour(holder)], COLOUR_NAMES[holder],
-                                                              self.point_name(profile['answered']), either(reading['answers'])))
+                                          'nor stage (D4)%s' % (y, x, self.point_name(profile['answered']), either(reading['answers']),
+                                                                ': ' + compared if compared else ''))
             if profile.get('switching'):
                 record['warnings'].append('second ko: with %s\'s capture at %s the ko switches between the two kos, a normal ko by the '
-                                          'owner\'s answer of 16 November (10403), so it is no approach (D4)' % (
-                                              COLOUR_NAMES[holder], self.point_name(profile['switching'])))
+                                          'owner\'s answer of 16 November (10403), so it is no approach (D4)%s' % (
+                                              x, self.point_name(profile['switching']), ': ' + compared if compared else ''))
+            elif (profile.get('forms') or {}).get('chosen') == 'approaches' and not profile.get('unsettled'):
+                record['warnings'].append('second ko: %s\'s capture at %s would make the ko switch between the two kos, but the switch '
+                                          'needs more threats than the approaches, which stand (D4): %s' % (
+                                              x, self.point_name(profile['forms']['capture']), compared))
             if profile.get('unsettled'):
                 kind, point, reason = profile['unsettled']
                 record['warnings'].append('second ko: %s\'s capture at %s %s, so %s\'s approach count is undecided (D4)' % (
-                    COLOUR_NAMES[holder], self.point_name(point), second_ko_reason(kind, reason, COLOUR_NAMES[holder],
-                                                                                   COLOUR_NAMES[other_colour(holder)], reading),
-                    COLOUR_NAMES[holder]))
+                    x, self.point_name(point), second_ko_reason(kind, reason, x, y, reading, self.forms_names(profile.get('forms'))), x))
         if parts['second_ko']:
             #D5: the label counts the second ko after the fill; the other reading, the fill barred, comes with its own full
             #count
@@ -2177,7 +2314,16 @@ class Solver:
         #D4's answer reading with point names ('the count itself' for an undecided count of P_X)
         reading = reading or {}
         return dict({key: [self.point_name(p) if p is not None else 'the count itself' for p in reading.get(key) or []]
-                     for key in ('threats', 'answers', 'quiet', 'undecided')}, d=reading.get('d'), nodes=reading.get('nodes'))
+                     for key in ('threats', 'answers', 'quiet', 'undecided')}, d=reading.get('d'), beyond=reading.get('beyond'),
+                    nodes=reading.get('nodes'))
+
+    def forms_names(self, forms):
+        #D4's forms of a reading with point names
+        if not forms:
+            return None
+        check = forms.get('check')
+        return dict(forms, capture=self.point_name(forms['capture']), approach=forms['approach'] and self.point_name(forms['approach']),
+                    check=check and dict(check, moves=[(number, self.point_name(move), value) for number, move, value in check['moves']]))
 
     def profile_summary(self, profile):
         if profile is None:
@@ -2198,6 +2344,7 @@ class Solver:
                 'unsettled': (profile['unsettled'][0], self.point_name(profile['unsettled'][1]), profile['unsettled'][2])
                 if profile.get('unsettled') else None,
                 'reading': self.reading_names(profile.get('reading')) if profile.get('reading') else None,
+                'forms': self.forms_names(profile.get('forms')),
                 'overruled': {k: {'kill': self.point_name(item['kill']), 'moves': names(item['moves']), 'replies': item['replies']}
                               for k, item in (profile.get('overruled') or {}).items()} or None,
                 'reply_checks': [{'k': item['k'], 'outcome': item['outcome'], 'nodes': item['nodes'],
@@ -2742,12 +2889,7 @@ class Solver:
         #the gains of the approach rounds (D8), each located gain with its line and the no-gain twin
         if rounds is not None and rounds['rounds']:
             other = other_colour(holder)
-            candidates = []
-            for moves in (state['count']['pv_win'], state['count']['pv_fail']):
-                boards = [board] + self.replay(board, moves)
-                for i, (color, p, mark) in enumerate(moves[:len(boards) - 1]):
-                    if color == other and p is not None and mark == '' and boards[i + 1].ko is None and p not in candidates:
-                        candidates.append(p)
+            candidates = self.gain_candidates(board, state['count'], other)
             gain = record['gain']
             gain['rounds'] = []
             v_line = profile['v']['pv_win'] if other == solver else profile['v']['pv_fail']
@@ -2868,23 +3010,95 @@ def either(items):
     items = list(items)
     return items[0] if len(items) == 1 else '%s or %s' % (', '.join(items[:-1]), items[-1])
 
-def second_ko_reason(kind, reason, x, y, reading):
-    #D4: why a reading of X's capture in a second ko leaves X's approach count undecided; x and y the colour names, reading the
-    #answer reading's point names
+def form_count_text(low, high, decided):
+    #an A-form's counts (form_counts) in words: the count, a bound from a direct ko beyond the limit, or what the undecided
+    #direct ko leaves
+    if decided and low == high:
+        return low
+    if decided:
+        return 'at least %d (its direct ko beyond %+d)' % (low, LABEL_LIMIT) if low is not None else \
+            'at most %d (its direct ko beyond %+d)' % (high, -LABEL_LIMIT)
+    return interval_text((low, high, False))
+
+def approaches_words(n):
+    #'one approach', 'two approaches'
+    return '%s approach%s' % (NUMBER_WORDS.get(n, n), 'es' if n != 1 else '')
+
+def threats_words(n):
+    #'one threat', 'two threats'
+    return '%s threat%s' % (NUMBER_WORDS.get(n, n), 's' if n != 1 else '')
+
+def check_text(check, d_full, x, y):
+    #D4's check of a form against the full count in words: the full count, which side it is better for than the form, and the
+    #approach-round gains of y (the other side) that D8 locates on the form's line
+    total = check['total']
+    if total == 0:
+        return 'the full count is %d' % d_full
+    if total < 0:
+        return 'the full count is %d, %s better for %s than the form' % (d_full, threats_words(-total), x)
+    located = ', '.join('%s %+d' % (move, value) for number, move, value in check['moves'])
+    if check['holds']:
+        return 'the full count is %d, %s better for %s, which %s\'s approach-round gains account for (%s; left out by the approach ' \
+               'rule, D8)' % (d_full, threats_words(total), y, y, located)
+    return 'the full count is %d, %s better for %s, and %s\'s approach-round gains account for %s of it (D8)' % (
+        d_full, threats_words(total), y, y, '%d (%s)' % (check['located'], located) if check['located'] else 'none')
+
+def forms_text(forms, x, y, gains=True):
+    #D4's forms in words: what each form of a reading counts, and the chosen form's check against the full count, with the
+    #approach-round gains it rests on unless gains is False (the label's own gain sentence names them); x and y the colour
+    #names of the side the reading is about and of the other side ('' when the reading compared no form)
+    if not forms:
+        return ''
+    if forms['kind'] == 'switching':
+        if forms.get('approaches') is None:
+            return ''
+        n = forms['n']
+        text = 'with %s and the switch %s\'s form %s, with %s %s (count %d)' % (
+            approaches_words(n - 1), x, 'is %s (count %s)' % (forms['switch'], forms['switch_count']) if forms.get('switch') else
+            'counts %s' % forms['switch_count'], approaches_words(n), forms['approaches'], forms['approaches_count'])
+    else:
+        if forms.get('form') is None:
+            return ''
+        text = 'the stage is %s; with %s\'s approach %s in place of the capture the form is %s (count %d)' % (
+            forms['stage'], x, forms['approach'], forms['form'], forms['form_count'])
+    if forms.get('check'):
+        text += ', and ' + (check_text(forms['check'], forms['d_full'], x, y) if gains else 'the full count is %d' % forms['d_full'])
+    return text
+
+def second_ko_reason(kind, reason, x, y, reading, forms=None):
+    #D4: why a reading of X's capture in a second ko leaves X's approach count undecided, with what its forms count; x and y the
+    #colour names, reading the answer reading's point names, forms the reading's forms with point names
     answers = either(reading.get('answers') or ['?'])
+    compared = forms_text(forms, x, y)
     if kind == 'answered':
-        return {'undecided': 'is a stage unless %s answers it at no cost, which a search of %s\'s replies that keep the count left '
+        return {'take': 'is a stage unless %s answers it at no cost, which the reading cannot tell while who takes first is '
+                        'undecided' % y,
+                'full count': 'is a stage unless %s answers it at no cost, which the reading cannot tell while the full count is '
+                              'undecided' % y,
+                'undecided': 'is a stage unless %s answers it at no cost, which a search of %s\'s replies that keep the count left '
                              'undecided (%s)' % (y, y, ', '.join(reading.get('undecided') or ['?'])),
+                'beyond': 'is a stage unless %s answers it at no cost, but the count after %s\'s capture is beyond %+d, a bound, so no '
+                          'reply of %s\'s keeps a count' % (y, x, (reading.get('beyond') or 0) * LABEL_LIMIT, y),
                 'mixed': 'is a stage with %s\'s local threat %s, or %s answers it at no cost with %s: both keep the count' % (
                     y, either(reading.get('threats') or ['?']), y, answers),
                 'no extra': 'is answered at no cost by %s\'s %s, but the stage gives %s no extra threat that the answer could take '
                             'the place of' % (y, answers, y),
-                'count': 'is answered at no cost by %s\'s %s, but no approach of %s\'s in its place counts the full count' % (
-                    y, answers, x)}[reason]
-    return 'may make the ko switch between the two kos (the owner\'s answer of 16 November, 10403), but %s' % {
-        'capture': 'whether it keeps %s\'s outright win is undecided' % x,
-        'v': 'the direct ko after one approach fewer is undecided',
-        'fill': '%s\'s free move behind the direct ko after one approach fewer fills the ko (D5)' % x}[reason]
+                'approach undecided': 'is answered at no cost by %s\'s %s, but which approach of %s\'s counts best in its place is '
+                                      'undecided' % (y, answers, x),
+                'count': 'is answered at no cost by %s\'s %s, but %s' % (
+                    y, answers, compared or 'no approach of %s\'s in its place keeps a count within the limit' % x)}[reason]
+    why = {'take': 'who takes first is undecided, so its forms have no count',
+           'capture': 'whether it keeps %s\'s outright win is undecided' % x,
+           'v': 'the direct ko after one approach fewer is undecided' if 'beyond' not in str((forms or {}).get('switch_count')) else
+                'the direct ko after one approach fewer is beyond the limit, a bound that does not tell its form from the approaches\'',
+           'fill': '%s\'s free move behind the direct ko after one approach fewer fills the ko (D5)' % x,
+           'approach': 'no approach of %s\'s (no pass, no fill of the ko, no capture in a second ko) keeps the direct ko after one '
+                       'approach fewer' % x,
+           'approach undecided': 'whether an approach of %s\'s keeps the direct ko after one approach fewer is undecided' % x,
+           'full count': 'the full count, which must bear out the form %s chooses, is undecided' % x,
+           'count': 'the full count does not bear out the form %s chooses' % x}[reason]
+    return 'may make the ko switch between the two kos (the owner\'s answer of 16 November, 10403), but %s%s' % (
+        why, ': ' + compared if compared else '')
 
 def open_text(record, key='open', tests_key='open_tests'):
     #the statuses a class record leaves open and the undecided tests behind them, '' for none: 'BENT4 not ruled out
@@ -3063,16 +3277,19 @@ def label_text(record):
         name = COLOUR_NAMES[side_colour(side)]
         other = (approaches.get('O' if side == 'S' else 'S') or {}).get('n', 0)
         unsettled, other_name = summary.get('unsettled'), COLOUR_NAMES[other_colour(side_colour(side))]
+        forms = summary.get('forms')
+        compared = forms_text(forms, name, other_name, gains=bool(unsettled))
         if unsettled and unsettled[0] == 'answered':
             #D4: a stage, or no approach at all when the other side answers the capture at no cost
             sentences.append('%s\'s %s is a capture in a second ko after which %s has no free retake. It %s, so %s needs ? approaches '
                              '(0 or 1, D4)' % (name, unsettled[1], other_name,
-                                               second_ko_reason('answered', unsettled[2], name, other_name, summary.get('reading') or {}), name))
+                                               second_ko_reason('answered', unsettled[2], name, other_name, summary.get('reading') or {}, forms),
+                                               name))
         elif unsettled:
             #D4: one approach fewer when the capture in a second ko makes the ko switch, if the reading were decided
             sentences.append('%s needs ? approaches (%d or %d): %s\'s %s, a capture in a second ko, %s (D4)' % (
                 name, summary['bracket'][0], summary['bracket'][1] - 1, name, unsettled[1],
-                second_ko_reason('switching', unsettled[2], name, other_name, {})))
+                second_ko_reason('switching', unsettled[2], name, other_name, {}, forms)))
         elif summary['n'] is None:
             sentences.append('%s needs ? approaches (%s)' % (name, bracket_text(*summary['bracket'])))
         elif summary['n'] == 0 and other is None:
@@ -3117,14 +3334,21 @@ def label_text(record):
                 #D4: the capture in a second ko that the other side answers at no cost
                 sentences.append('%s\'s %s, a capture in a second ko after which %s has no free retake, is no approach (D4), and %s '
                                  'answers its threat at no cost with %s, a quiet move after which an approach keeps the count as well as %s '
-                                 'does: the full count is that of the approach that leaves %s a free retake' % (
+                                 'does: the label is the form of the approach that leaves %s a free retake%s' % (
                                      name, summary['answered'], other_name, other_name,
-                                     either((summary.get('reading') or {}).get('answers') or ['?']), summary['answered'], other_name))
+                                     either((summary.get('reading') or {}).get('answers') or ['?']), summary['answered'], other_name,
+                                     ' (%s)' % compared if compared else ''))
             if summary.get('switching'):
                 #D4: a capture in a second ko in place of one more approach makes the ko switch between the two kos
                 sentences.append('%s\'s %s, a capture in a second ko after which %s has no free retake, is no approach (D4): with it the '
                                  'ko switches between the two kos, each side needing a capture in both, a normal ko by the owner\'s '
-                                 'answer of 16 November (10403)' % (name, summary['switching'], other_name))
+                                 'answer of 16 November (10403)%s' % (name, summary['switching'], other_name,
+                                                                       '; %s' % compared if compared else ''))
+            elif forms and forms.get('chosen') == 'approaches':
+                #D4: the switch needs more threats than the approaches
+                sentences.append('%s\'s %s, a capture in a second ko, would make the ko switch between the two kos (the owner\'s answer '
+                                 'of 16 November, 10403), but the switch needs more threats, so the approaches stand (D4): %s' % (
+                                     name, forms['capture'], compared))
         overruled = summary.get('overruled') or {}
         if overruled:
             #D3: an approach leaves the other side a reply; the forced-pass test that found more, from a search that scored

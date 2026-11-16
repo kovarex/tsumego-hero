@@ -331,19 +331,29 @@ player is White:
     the ko switches between the two kos: D6's direct case, a = 0 and e = -d(leaf), KO- (it printed A-1KO+). The same
     in 2089 (A17), 7693 and 9947 (C18: KO+, where A-1KO+2 and A-1KO+4 were printed), 10005, 1731 (A19), 15341
     (White's B17) and 11334 (White's C19).
-  - The label then needs the full count; where it is undecided the label is KO? with its bracket (10005 "C18 C17 B17
-    D18 B19 C19 A18 A19": between 1 and 4).
+  - The label then needs the full count. Where it is undecided and the other side's capture is direct, the reading
+    below (answered at no cost) cannot start, so X needs 0 or 1 approaches: A-?KO? with the count's bracket. 10005 "C18
+    C17 B17 D18 B19 C19 A18 A19" printed KO? (between 1 and 4), which claimed a = 0, before the proof table's fix decided
+    its count (KO-).
   - Beside an approach of the other side the label turns on question 1b (D9, 7487 leaf 98).
-- **Two readings of such a capture rest on the full count.** Each needs d_full, applies only where the other side's
-  capture is direct (n_Y = 0; beside an approach of Y the leaf is question 1b), and holds only when the label it gives
-  counts exactly d_full. Where a reading cannot be decided, X's approach count stays undecided (A-?KO? or A+?KO?, with
-  the reason in the text and the warnings), so a decided full count never turns the stage into a label it does not
-  prove.
+- **Two readings of such a capture compare forms of the label.** Each applies only where the other side's capture is
+  direct (n_Y = 0; beside an approach of Y the leaf is question 1b) and X's free move does not fill the ko (D5), and each
+  checks the form it chooses against the full count as D8 reads it. Every A-form leaves out Y's approach-round gains, so
+  the full count may exceed a form's count by what Y gains with the free moves of its rounds, and never falls below it:
+  with g = d_full minus the form's count, from Y's side (D8's total), the form holds at g = 0, and above 0 when the gains
+  D8 locates on the form's own approach line reach g. Those searches run only then, and `explain_label` finds them cached
+  for the label's own form. The located gains may exceed g: a round's gain is measured with X's approach fixed, and X can
+  answer the gain move better (10403: White's F19 is located at +1 while the full count shows no gain). Where a reading is
+  not decided (a search, the first take or the full count undecided, or a form the full count does not bear out), X's
+  approach count stays undecided (A-?KO? or A+?KO?), with the reason and what the forms count in the text and the
+  warnings, never the stage or a form the full count does not prove. A count decided beyond the limit is a bound (D5),
+  never undecided.
   - **Answered at no cost.** The stage above (n_X = 1) reads X's capture as direct through the second ko: a = 0 and
     e = -d_full, which counts d_full by construction, with x = -d_full - e0 extra threats for D7 to locate. When the A-form
-    with the capture (from v) counts d_full as well, the stage stands (1807: KO-). Otherwise Y's best moves at P_X beat
-    its tenuki, and where the difference comes from decides. Y's moves at P_X that keep P_X's count (one count of P_X
-    and one table; the pass and the retakes against the ban are the ko fight itself) are read as D7 reads a threat:
+    with the capture (from v) counts d_full as well, the stage stands (1807: KO-). That A-form has no approach round (the
+    capture leaves Y no free retake), so D8 has no gain to take off it. Otherwise Y's best moves at P_X beat its tenuki,
+    and where the difference comes from decides. Y's moves at P_X that keep P_X's count (one count of P_X and one table;
+    the pass and the retakes against the ban are the ko fight itself) are read as D7 reads a threat:
     - a **local threat** when, with X forced to pass once after it, Y wins outright against X's Lo threats. 1731 "B18
       A18 A17" (P_S = leaf + B17 A17!): White's only such move is C18, which puts the group in atari (only C19 answers
       it, and White then retakes for free);
@@ -364,33 +374,53 @@ player is White:
     the capture still works. When a quiet move answers it and no move is a threat, Y stops the capture at no cost, and
     the capture is neither approach nor stage: X's approach is its best free move in v's own game that leaves Y a free
     retake (no pass, no fill of the ko, no capture in a second ko), v the count after it (its own threshold behind the
-    approach, where D7 attributes the extra threats), and the label D6's A-form. It turns one of Y's extra threats in
-    the stage's reading into X's approach (e one higher, the same count). 13547 k043: Black's approach is E19 (A19! pass
-    E19 A18 A19!: v = 1), so A-1KO-, count 2, the research's label (the stage printed KO-2 once the count was decided,
-    KO? before). X needs 0 or 1 approaches, undecided, when Y has both a threat and an answer, when a search of the
-    reading is undecided, when the stage gives Y no extra threat for the answer to take (x ≥ 0 for X = S, x ≤ 0 for
-    X = O: the A-form would leave X a local threat after its approach, a reading no research leaf shows), or when the A-form
-    does not count d_full or is undecided.
+    approach, where D7 attributes the extra threats), and the label D6's A-form when the full count bears it out. It turns
+    one of Y's extra threats in the stage's reading into X's approach (e one higher, the same count). 13547 k043: Black's
+    approach is E19 (A19! pass E19 A18 A19!: v = 1), so A-1KO-, count 2, the full count, the research's label (the stage
+    printed KO-2 once the count was decided, KO? before). X needs 0 or 1 approaches, undecided, when the first take or the
+    full count is undecided (whether the A-form with the capture counts d_full is the reading's first question; the stage's
+    KO? claimed a = 0), when a search of the reading is undecided (the approach search's open moves are listed), when P_X's
+    count is beyond the limit (a bound: no reply keeps a count), when Y has both a threat and an answer, when the stage
+    gives Y no extra threat for the answer to take (x ≥ 0 for X = S, x ≤ 0 for X = O: the A-form would leave X a local
+    threat after its approach, a reading no research leaf shows), or when no approach's A-form agrees with the full count.
   - **Switching.** X needs n_X ≥ 2 approaches, and one of its first free moves that keep the outright win (D3's
-    candidates, with that test decided) is such a capture. It is no approach either: with it the ko switches between the
-    two kos, each side needing a capture in both, which the owner rates a normal ko (16 November, 10403: "since we call
-    symmetrical kos like this just normal ko, it is indeed one move approach ko for black"). X needs n_X - 1 approaches,
-    v is the direct ko after them (Y forced to pass n_X - 1 times), and the approach named is X's best free move there
-    that leaves Y a free retake. 10403 "B18 A18 C19 A16 A19": the outright tests give n_S = 2 (C18 and D19, or E19 and
-    the second-ko capture A17); with A17 the ko switches, so n_S = 1 (E19) and v_S = 1: A-1KO-, count 2, the owner's
-    label (it printed A-?KO?, and A-2KO+ once the tests were decided). When the direct ko after n_X - 1 approaches is
-    undecided, X's free move behind it fills the ko (D5), or the capture's own outright test is undecided (the search is
-    listed), X needs n_X - 1 or n_X approaches, undecided; when the direct ko is decided and its A-form does not count
-    d_full, the switch is not X's best line and the n_X approaches stand.
-    - 11279 "B18 A18 C18 D19 A17 B17 C19 A16 A19" (fourth round, k109) has 10403's shape: White takes first at B19,
-      n_S = 2 (A17 and F19, or A14), and after the approach F19 or A14 Black's A17 in the second ko threatens at once (754
-      nodes; without the approach it does not, 4,609), while White's retake A18! needs B19 as well (one forced Black
-      pass is not enough, two are). But the direct ko after one approach counts 2 (66,475 nodes), so A-1KO-2 counts 3,
-      as A-2KO- (v = 1) does, against the full count 4: the count cannot tell the switch from the two approaches, and
-      A-2KO- stands. The research's A-1KO- (medium confidence) needs v = 1, which holds only with White barred from A13,
-      A14, B14, C14, F17, F18, F19 and G19: it reads White's extensions after the approach (F18 or G19 against F19, B14
-      against A14) as approach-round gains (c121), where v counts them in the direct ko. Making the reading fire there
-      needs that decision, not a search.
+    candidates) is such a capture. It is no approach either: with it the ko switches between the two kos, each side
+    needing a capture in both, which the owner rates a normal ko (16 November, 10403: "since we call symmetrical kos like
+    this just normal ko, it is indeed one move approach ko for black"). X so has two forms: its n_X approaches (the
+    n-form, D6's A-form from v) and n_X - 1 approaches then the switch (the (n-1)-form, from v', the direct ko with Y forced
+    to pass n_X - 1 times). They are compared with each other, not with the full count: the switch holds when its form
+    needs no more threats than the n-form (a tie is the owner's 10403, where both count 2), and the n_X approaches stand
+    only when the (n-1)-form is decided and needs more threats (a v' beyond the limit is a bound that decides this when it
+    can). The switch also needs the capture's own outright test decided (the search is listed when it is not), no fill
+    behind v' (D5), and an approach behind v': X's best first free move that is no pass, no fill of the ko and no capture
+    in a second ko must keep v', and it is the approach named. Then the chosen form must agree with the full count
+    (above). Otherwise X needs n_X - 1 or n_X approaches, undecided, and the text and the warning say what the two forms
+    count.
+    - 10403 "B18 A18 C19 A16 A19": the outright tests give n_S = 2 (C18 and D19, or E19 and the second-ko capture A17) and
+      v_S = 0: A-2KO+, count 2. With one forced pass v' = 1 (after E19 or A17): A-1KO-, count 2 too. A tie, so the switch:
+      A-1KO- with the approach E19, the owner's label, and the full count 2 bears it out (it printed A-?KO?, and A-2KO+
+      once the tests were decided). The first version of this reading compared only the (n-1)-form with the full count,
+      so it held only where that form counted the full count exactly: in the wider area, whose full count is 3 (White's
+      G18 against Black's F18, answered at F17, which the narrow area walls off), the n_S approaches stood with a decided
+      A-2KO+, the label the owner rejected, and the leaf printed it. In the wider area v' = 1 comes only from A17 itself as
+      Black's free move, and with the approach E19 first White's G18 makes it 2: no approach keeps v', so that area's
+      count of approaches is undecided (1 or 2), and the leaf prints the narrow area's A-1KO-.
+    - 11279 "B18 A18 C18 D19 A17 B17 C19 A16 A19" (fourth round, k109) has 10403's shape: White takes first at B19, n_S = 2
+      (A17 and F19, or A14), and after the approach F19 or A14 Black's A17 in the second ko threatens at once (754 nodes;
+      without the approach it does not, 4,609), while White's retake A18! needs B19 as well (one forced Black pass is not
+      enough, two are). A-2KO- (v = 1) counts 3, and so does A-1KO-2: after one approach the direct ko counts 2, since
+      White has a local threat in it (B14, A14 or F18, answered at C14, A17 or C17). A tie, so the switch. The full count
+      4 is one threat better for White, and White's F18 or B14 in place of its tenuki in the approach round gains 1 (D8;
+      which of the two the search locates depends on its history): A-1KO-2 (it printed A-2KO-). The research's A-1KO-
+      (medium confidence) needs v' = 1, which holds only with White barred from A13, A14, B14, C14, F17, F18, F19 and G19:
+      it reads White's moves against Black's approaches after the approach (F18 or G19 against F19, B14 against A14) as
+      approach-round gains (c121), where D7 counts the threat they make in the direct ko. The approach count agrees; the
+      threats turn on a definition the owner has not given (section 13, "A threat after the approach"), not on a search.
+    - 11279 leaf 23 "B18 A18 A17 B17 C18 A16 A19 B19 C19 D19" (S[A-2KO+], Black takes first at A19) is the same shape: A-2KO+
+      and A-1KO- both count 2, the full count is 3, and White's F18 in the approach round gains 1: A-1KO-, where the tree
+      has A-2KO+ with the same count (it printed A-2KO+). Not researched.
+    - 840 leaf 1 "B18 B19 A17 D19 A19" (S[KO-]): A-2KO+ (v = 0) and A-1KO- (v' = 1, approach B17, switch at C19) both count
+      2, the full count: A-1KO- (the first version printed it too). Not researched, and 840's narrow area is faulty (k002).
 - This check is needed only when n_X ≥ 1.
 
 ### D5 Direct-ko value
@@ -485,6 +515,9 @@ player is White:
 - **The full count** is d_full = d(leaf), when decided. The gain is g = d_full - d_conv.
   - The located gains must add up to g; any rest is printed as "unlocated".
   - A negative g means the count is better for X than the label. In 10005, d_full = 1 against d_conv = 2.
+  - A round's gain is measured with X's approach a_i fixed, so X can answer a gain move better than with a_i: in 10403
+    White's F19 is located at +1 while g = 0 (the rest, -1, is printed only where g is not 0). D4's readings use the
+    located gains this way: a form they choose holds when 0 ≤ g ≤ the gains located on its own approach line.
 - **Strict label:** with the rule switched off (`approach_rule=False`), e = -d_full - a. For c121 this gives
   A-1KO-2. The report prints the strict label as well, so the rule is never hidden.
 
@@ -601,8 +634,9 @@ rules 1 and 2:
 - The typical tie is "take first, then approach" (A-nKO+) against "approach first, the opponent takes"
   (A-(n-1)KO-). Both have T = n, and besogo prefers fewer approaches.
 - A candidate whose label is undecided drops out of the choice, with a warning, unless it is undecided only between the
-  labels a reading of D4 brackets: answered at no cost, the stage (a = 0) or the A-form with one approach, both at the
-  full count; switching, the A-form with n_X - 1 approaches at the full count or with n_X and the outright tests' v.
+  labels a reading of D4 brackets: answered at no cost, the stage (a = 0) or the A-form with one approach at the full
+  count or from the approach the reading found; switching, the A-form with n_X - 1 approaches at the full count or from
+  v', or with n_X from the outright tests' v.
   When one of them would beat the chosen label for the side to move, the leaf's label stays undecided, and the warning
   names the move, its bracket and the label it may beat.
 
@@ -990,7 +1024,7 @@ A search that the problem's time limit cuts (section 5, item 8) is not an undeci
 |---|---|
 | profile decided, d_full not | the label from the profile; "full count undecided"; the gains located by round |
 | a profile's k | n is bracketed, e.g. "n_S = 1 or 2" (9839: k=2 undecided at 800k, k=3 outright); label "A-?KO…" |
-| D4's reading of a capture in a second ko (stage, answered or switching) | n is bracketed, "0 or 1" or "n_X - 1 or n_X", with the capture and the reason in the text and the warnings (answered: a search of the reading undecided, a threat beside an answer, no extra threat of the other side for the answer to take, or no A-form at the full count; switching: the capture's own outright test, the direct ko after one approach fewer, or a fill behind it); label "A-?KO?" or "A+?KO?". A first move of D12 left so keeps the leaf's label undecided when a label of its bracket beats the chosen one |
+| D4's reading of a capture in a second ko (stage, answered or switching) | n is bracketed, "0 or 1" or "n_X - 1 or n_X", with the capture, the reason and what the forms count in the text and the warnings (answered: the first take or the full count undecided, a search of the reading undecided with its open moves listed, P_X's count beyond the limit, a threat beside an answer, no extra threat of the other side for the answer to take, or no A-form the full count bears out; switching: the first take or the full count undecided, the direct ko after one approach fewer undecided or a bound that leaves the two forms unordered, the capture's own outright test undecided, a fill behind v', no approach behind v' or its search undecided, or a chosen form the full count does not bear out, the other side's approach-round gains left out); label "A-?KO?" or "A+?KO?". A count beyond the limit is a bound, never a reason. A first move of D12 left so keeps the leaf's label undecided when a label of its bracket beats the chosen one |
 | first take | when the principal line stops, the mode lines, then (one ko shape) both captures of it; still undecided, "A?KO?" (nothing known of the approaches either), or "KO?" when both captures are known to be direct |
 | any part of a KO label | the text still names every decided part, e.g. "White's capture is direct", "Black needs ? approaches (1 forced pass is not enough, 3 are)", "full count undecided (between 2 and 4)", and the undecided searches with their nodes |
 | d itself, no approaches | "KO, sign undecided", as today |
@@ -1035,11 +1069,13 @@ searches (Appendix B). Other rows rest on the proposals' runs and the research.
 | 12495 (k031) | A10 B9 A12 A11 | research KO+ (tree KO-) | **KO+** | White took first at A11. Its outright test with one forced Black pass fails only in a search that scored repetitions: after Black's tenuki, White's D13 leaves Black no reply (D3), so both captures are direct, d=0, and Black's D13 is a local threat, answered at E13. It printed A+1KO-3, with D13 a sente approach | checker run |
 | 12495 (k032) | A12 A11 A10 B9 A12 | research KO+2 (tree KO+) | **KO+2** | Black took first; White's retake gives k031's position, so both captures are direct, d=-1, and Black's D13 is the local threat. It printed A+1KO-2 | checker run |
 | 13605 (k047) | C17 C16 A16 B17 B19 C19 A18 A19 | research KO-4 (tree KO-) | **KO-3** in both areas | White took first at A19. Black's B19 is direct: after White's tenuki, A17 leaves White no reply (D3; the narrow area's forced-pass test, which scored repetitions, said one approach and printed A-1KO+2). White's local threats are A15 and E18/E19; F19, White's third on the board as given, is wall in both areas (the area, question 8) | checker run |
-| 10403 | B18 A18 C19 A16 A19 | owner A+1KO-, answered A-1KO- (1b) | **A-1KO-** (count 2) | White takes first at B19 and its capture is direct (n_O=0). Black's profile needs three free moves (two forced passes fail, three win: n_S=2, C18 and D19, or E19 and A17) and v_S=0, the research's own values, A-2KO+. A17, a decided candidate, captures in a second ko: with it the ko switches (D4), so n_S=1 (E19) and v_S=1 count 2, the full count, the owner's answer. It printed A-?KO? before the proof table's fix (section 5, item 7) and A-2KO+ with the fix alone | checker run |
+| 10403 | B18 A18 C19 A16 A19 | owner A+1KO-, answered A-1KO- (1b) | **A-1KO-** (count 2), in both areas' run | White takes first at B19 and its capture is direct (n_O=0). Black's profile needs three free moves (two forced passes fail, three win: n_S=2, C18 and D19, or E19 and A17) and v_S=0, the research's own values: A-2KO+, count 2. A17, a decided candidate, captures in a second ko: with one approach (E19) and the switch v'=1, A-1KO-, count 2 as well, and a tie goes to the switch (D4), the owner's answer; the full count 2 bears it out. In the wider area the full count is 3 (White's G18 against F18) and only A17 itself keeps v'=1 (E19 first counts 2), so that area's count of approaches is undecided (A-?KO?) and the leaf prints the narrow area's label. It printed A-?KO? before the proof table's fix (section 5, item 7), A-2KO+ with the fix alone, and A-2KO+ in both areas' run with the first version of D4's readings, which compared the switch with the full count alone | checker run |
 | 13547 (k043) | B18 B19 B17 C18 A17 D19 A19 D16 A15 A16 A14 A18 | research A-1KO- (tree A-2KO+) | **A-1KO-** (count 2) | White took first at A18. From P_S = leaf + A19! Black needs one free move, and the only one that keeps v=0 is C19, a capture in a second ko: the stage, KO-2, where A-1KO+ with C19 counts 1. White's moves that keep P_S's count 1, E19, F19 and A13, are quiet, and after E19 Black's F19 keeps the count beside C19 (after F19 Black's E19): White answers C19 at no cost (D4). Black's approach E19 gives v=1, A-1KO-, the research's label. It printed KO? before the proof table's fix and KO-2 with the fix alone | checker run |
 | 1731 (k003) | B18 A18 A17 | research KO-2 (tree KO-) | **KO-2** | White takes first at B17. Black's retake needs one free move, and the only one that keeps v=0 is A19, a capture in a second ko: the stage. A-1KO+ with A19 counts 1 against the full count 2, but White's only move that keeps P_S's count is C18, a local threat (with Black forced to pass once after it White wins outright; only C19 answers it), so the stage stands and D7 counts C18: KO-2, the research's label. The first version of D4's readings printed A-1KO-, with Black's "approach" C18 on White's threat point | checker run |
 | 7693 (k016) | A16 G19 E19 D18 A18 C19 B19 | research KO+ (tree KO+) | **KO+** | Black took first at B19. Its capture needs one free move, and the only one that keeps v=-2 is C18, a capture in a second ko (after White's tenuki Black also has a local threat at D19, hence -2): the stage. White's moves that keep the count 0, D19 and F19, are quiet, but after either only Black's C18 keeps it and C18 still threatens at once: they answer Black's D19, not C18, so the stage stands with no local threat, KO+, the research's label. The first version of D4's readings printed A-?KO? | checker run |
-| 11279 (k109) | B18 A18 C18 D19 A17 B17 C19 A16 A19 | fourth round A-1KO- (medium; tree A-2KO+) | **A-2KO-** (count 4) | White takes first at B19; n_S=2 (A17 and F19, or A14), v_S=1, A-2KO- counts 3 (+1 not located). A17 captures in a second ko and the shape is 10403's switch, but the direct ko after one approach counts 2 (White's extension F18/G19 or B14 in it), so A-1KO-2 counts 3 too, and neither form counts 4: the switching reading (D4) does not hold, and A-2KO- stands. The research's A-1KO- needs v=1 after the approach, which holds only with White's extensions barred, read as approach-round gains (c121) | checker run |
+| 11279 (k109) | B18 A18 C18 D19 A17 B17 C19 A16 A19 | fourth round A-1KO- (medium; tree A-2KO+) | **A-1KO-2** (count 4) | White takes first at B19; n_S=2 (A17 and F19, or A14), v_S=1: A-2KO-, count 3. A17 captures in a second ko and the shape is 10403's switch: after one approach (F19) the direct ko counts 2, with White's local threat B14, A14 or F18 in it (answered at C14, A17 or C17), so A-1KO-2 counts 3 too, a tie that goes to the switch. The full count 4 is one threat better for White, and White's F18 or B14 in place of its tenuki in the approach round gains 1 (D8), which bears the switch out. The research's A-1KO- reads White's moves against Black's approach points after the approach as approach-round gains (c121): a definition question (section 13). It printed A-2KO- with the first version of D4's readings | checker run |
+| 11279 leaf 23 | B18 A18 A17 B17 C18 A16 A19 B19 C19 D19 | tree A-2KO+ (not researched) | **A-1KO-** (count 3) | Black takes first at A19; the same shape as k109: A-2KO+ (v_S=1) and A-1KO- (v'=2, approach F19, switch at A17) both count 2, the switch holds, and White's F18 in the approach round gains 1 of the full count 3. Same count as the tree's A-2KO+ (a `ko-approach` split). It printed A-2KO+ before | checker run |
+| 840 leaf 1 | B18 B19 A17 D19 A19 | tree KO- (not researched; 840's narrow area is faulty, k002) | **A-1KO-** (count 2) | White takes first at A18; Black's A-2KO+ (v_S=0) and A-1KO- (v'=1, approach B17, switch at C19) both count 2, the full count, so the switch holds, as in the first version of D4's readings | checker run |
 
 The approach notation in the c011, c019, c048, c073 and c102 rows is the reviewers' literal besogo label. The
 research settled the counted equivalent because the checker could not tell approaches apart. The comparison
@@ -1047,8 +1083,9 @@ reports these as `ko-approach` splits with the same count.
 
 The rows marked "checker run" are the implemented checker's own outputs on the owner's leaves (narrow area, 200,000
 nodes per solve, 400,000 per counted search), from the review of the implementation. The rows of 10403, 13547 (k043),
-1731, 7693 and 11279 are `validate.py` runs (narrow area, 200,000 nodes, counted searches at the default
-`KO_BUDGET_FACTOR`) of the readings of D4 as they stand now.
+1731, 7693, 11279 and 840 are `validate.py` runs (narrow area, 200,000 nodes, counted searches at the default
+`KO_BUDGET_FACTOR`) of the readings of D4 as they stand now; 10403, 13547 (k043), 1731 and 7693 print the same label in
+the run with both areas, where the wider area leaves 10403's and k043's count of approaches undecided.
 
 ---
 
@@ -1386,12 +1423,20 @@ Your trees have no DSKO or ASKO leaf, so there is no diagram. Is superko positio
 
 Problem 11332, leaf 3 (D17 E19 D19 C19 B19 B18 C18 A19 D19), Black to live: the line ends with Black's capture of a ko, but Black lives without it (White's retake at D18 after a threat fails: Black connects at C17), so the research reads the leaf ALIVE. Your trees print KO+ for such a leaf, where the solver's last move takes a ko it does not need (5160, 5628, 8094, 13075 twice and 15399 four times), and the solver follows them (D14): it prints KO+ and says the label turns on this question. Should such a leaf be KO+ or the clean status? A clean failure is never KO+: the solver fails even with unlimited threats (13661 leaf 9 is ALIVE).
 
+### A threat after the approach in a switching ko: 11279 (not yet on the question page)
+
+Problem 11279, leaf k109 (B18 A18 C18 D19 A17 B17 C19 A16 A19), Black to kill, marked S[A-2KO+], has the shape of 10403: by your answer of 16 November Black needs one approach (F19 or A14), and with the capture at A17 the ko switches there and back. After the approach White still has a threat of its own (B14, A14 or F18, which Black answers at C14, A17 or C17), so the ko after it costs Black two threats more than White: A-1KO-2, count 3 (the full count is 4, and the fourth is White's F18 or B14 played instead of the tenuki of the approach round, which your c121 rule leaves out). The fourth research round reads every move White makes against Black's approach points after the approach (F18 or G19 against F19, B14 against A14) as part of the approach as well: A-1KO-, count 2. Both readings agree on the one approach.
+
+**Options:** A-1KO-2, where a threat White still has after the approach counts in the ko, as the solver counts local threats (D7); or A-1KO-, where what White plays against the approach points belongs to the approach, like H19 in c121. No move's grading changes in 11279 either way. Leaf 23 of the same problem (S[A-2KO+]) prints A-1KO- (count 2, the full count 3), with White's threat B14, F18 or C17 counted in its ko the same way.
+
+**Our proposal:** none yet. The solver prints A-1KO-2, with what the switch and the two approaches count in the text.
+
 ### Answered
 
 - **c121 in 15678:** S[A-1KO-], set on the site on 14 November. What White gains with the free move of an approach round belongs to the approach; the solver prints it beside the label.
 - **Approach ko, 10kKO and plain KO:** your definitions are in D9; questions 1a and 1b check how they apply.
 - **Question 1a (15 November):** yes, the shared-liberty shape of 10391 is your 10kKO ("a clear example of 10kKO"). The solver reads a holder's investment on the principal line as no preparation (D2) and a defender's approach that hands the attacker a direct ko as making the attacker's other approaches free (D9); 11280, 11282, 13541 and 13549 now print your 10kKO.
-- **The switching ko (16 November, research report topic 1b, 10403):** after Black's one approach at E19 each side needs a capture and one more move, a symmetric ko, which is a normal ko; so the leaf is a one-move approach ko for Black, S[A-1KO-]. The solver prints A-1KO- there by D4's switching reading (section 10); its profile alone counts the second-ko capture A17 as an approach (A-2KO+). Question 1b above (7487 leaf 98, where a second ko gives White a direct threat) is a different shape and stays open.
+- **The switching ko (16 November, research report topic 1b, 10403):** after Black's one approach at E19 each side needs a capture and one more move, a symmetric ko, which is a normal ko; so the leaf is a one-move approach ko for Black, S[A-1KO-]. The solver prints A-1KO- there by D4's switching reading (section 10): the switch with one approach and the two approaches both count 2, and a tie goes to the switch; its profile alone counts the second-ko capture A17 as an approach (A-2KO+). Question 1b above (7487 leaf 98, where a second ko gives White a direct threat) is a different shape and stays open.
 
 ---
 
