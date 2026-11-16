@@ -1,0 +1,137 @@
+[
+ {
+  "case": "k107",
+  "id": "5708",
+  "title": "Tsumego Dictionary Volume III 951",
+  "line": "F16 A17 B17 C17",
+  "authored": "KO+",
+  "label": "KO+3",
+  "group": "rechecked"
+ },
+ {
+  "case": "k108",
+  "id": "11272",
+  "title": "1000 Weiqi problems - 1st half 455",
+  "line": "B18 A18 B19 D17 C19 C18 E19 D19 D18",
+  "authored": "KO+",
+  "label": "KO-",
+  "group": "rechecked"
+ },
+ {
+  "case": "k109",
+  "id": "11279",
+  "title": "1000 Weiqi problems - 1st half 462",
+  "line": "B18 A18 C18 D19 A17 B17 C19 A16 A19",
+  "authored": "A-2KO+",
+  "label": "A-2KO-",
+  "group": "rechecked"
+ },
+ {
+  "case": "k110",
+  "id": "11283",
+  "title": "1000 Weiqi problems - 1st half 466",
+  "line": "B17 B18 A16 C17 A18 A17",
+  "authored": "KO-",
+  "label": "KO-2",
+  "group": "rechecked"
+ },
+ {
+  "case": "k111",
+  "id": "13489",
+  "title": "1000 Weiqi problems - 1st half 456",
+  "line": "E19 D18 A16 D19 B18 B19 A17 A18",
+  "authored": "KO+",
+  "label": "KO-",
+  "group": "rechecked"
+ },
+ {
+  "case": "k112",
+  "id": "13489",
+  "title": "1000 Weiqi problems - 1st half 456",
+  "line": "E19 D18 B19 B18 C19 D19 A19 A16 D17 C18 A18 A17 B19 A19",
+  "authored": "KO-",
+  "label": "KO+",
+  "group": "rechecked"
+ },
+ {
+  "case": "k113",
+  "id": "13489",
+  "title": "1000 Weiqi problems - 1st half 456",
+  "line": "E19 D18 B19 B18 C19 D19 D17 F19 G18 A16 A18",
+  "authored": "BENT4",
+  "label": "KO-",
+  "group": "rechecked"
+ },
+ {
+  "case": "k114",
+  "id": "13547",
+  "title": "1000 Weiqi problems - 1st half 486",
+  "line": "B18 B19 B17 C18 A17 D19 A15 A16 A19 C17 C19",
+  "authored": "A-1KO+",
+  "label": "A-1KO-",
+  "group": "rechecked"
+ },
+ {
+  "case": "k115",
+  "id": "13547",
+  "title": "1000 Weiqi problems - 1st half 486",
+  "line": "B18 B19 C18 C19 A18 B17 D16 C17 A15 A16",
+  "authored": "SEKI",
+  "label": null,
+  "group": "rechecked"
+ },
+ {
+  "case": "k116",
+  "id": "13547",
+  "title": "1000 Weiqi problems - 1st half 486",
+  "line": "B18 B19 C18 C19 D19 E19 A18 B17 A15 D16 A16 A17",
+  "authored": "SEKI",
+  "label": null,
+  "group": "rechecked"
+ },
+ {
+  "case": "k117",
+  "id": "13547",
+  "title": "1000 Weiqi problems - 1st half 486",
+  "line": "B18 B19 C19 C18 A19 D19 B17 C17 A17",
+  "authored": "A-1KO+",
+  "label": "A-1KO-",
+  "group": "rechecked"
+ },
+ {
+  "case": "k118",
+  "id": "13547",
+  "title": "1000 Weiqi problems - 1st half 486",
+  "line": "B18 B19 D19 C19 B17 A18 A17 A15 A19 E19 D16 C17",
+  "authored": "10kKO",
+  "label": "KO-3",
+  "group": "rechecked"
+ },
+ {
+  "case": "k119",
+  "id": "13547",
+  "title": "1000 Weiqi problems - 1st half 486",
+  "line": "B18 B19 D19 C19 B17 A18 A17 A15 D16 C17 E19 C18 A19",
+  "authored": "A-1KO+",
+  "label": "KO+",
+  "group": "rechecked"
+ },
+ {
+  "case": "k120",
+  "id": "15794",
+  "title": "Life & Death - Advanced 582",
+  "line": "B18 B19 B17 A16 A17 D19 A19 C19 A14",
+  "authored": "A-1KO+",
+  "label": "10kKO",
+  "group": "rechecked"
+ },
+ {
+  "case": "k121",
+  "id": "15794",
+  "title": "Life & Death - Advanced 582",
+  "line": "B18 B19 B17 A16 A17 D19 A19 C19 D15",
+  "authored": "A-1KO+",
+  "label": "A-3KO-",
+  "group": "rechecked"
+ }
+]

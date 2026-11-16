@@ -1,0 +1,13 @@
+{
+ "case": "k111",
+ "verdict": "site_error",
+ "correct_status": "KO-",
+ "confidence": "high",
+ "summary": "The tree's KO+ is wrong. The leaf is S[KO-], as the checker says. Black has to take first at A19, because otherwise White's C18 captures B18 and lives. But White then has a local ko threat at A15: it threatens A18, which captures A16, A17 and A19. Black must capture at A14, and White retakes at A18 without spending an outside threat, so Black needs one threat more than White.",
+ "variations": "1. A19 A15 A14 A18: White's local threat, Black's forced capture, White's free retake. Black now needs an outside threat to retake (A19!). With equal threats White wins (solver: Black fails at s=o=0).\n2. A19 A15 A18 C18: if Black connects instead of capturing A15, its five stones A16, A17, A18, A19 and B18 are left with only C18, and White captures them.\n3. pass C18: if Black does not take, White captures B18 and lives.\n4. A19 pass C19 ...: if White ignores the take, Black captures B19 and kills even against four White threats, so Black's capture is direct. White's retake at A18 is direct too: it threatens C18, and A15 captures A16-A17.\n5. With one threat more Black wins (solver line A19 G18 C19 C18 D17). With White barred from A15 while it is under the ban, Black wins with equal threats (A19 G19 C19 A15 A14 C18 D17).",
+ "solver_checks": "All runs use the checker unchanged (scripts in /tmp/claude-0/proto/research/kores4/work/13489-k111-k113/scripts: count.py, modes.py, custom.py), 400k nodes with one retry at 2M.\nNarrow area (the checker's), Black to move at the leaf:\n- s=o=0: Black fails (41,629 nodes; 47,707 with every repetition scored for Black).\n- s=1, o=0: Black wins. Undecided at 400k; decided at 2M with 498,096 nodes; identical under cycle rule 2. Count = 1.\n- White barred from A15 while banned, s=o=0: Black wins (531,230 at 2M). So A15 is White's one local threat.\n- After A19 with White forced to pass once: Black wins against 4 White threats (193,319). Black's capture is direct.\nWider area:\n- s=o=0: Black fails (669,490 at 2M).\n- s=1, o=0: undecided at 2M.\n- Narrow area with the left edge opened (A14 B14 A13 C15 D15), s=1 o=0: undecided at 2M.\nevidence.py --label at 400k gave class KO (narrow A=N D=K; wider A=N, D undecided at 400k) and ko sign KO-. The full label did not finish within 25 minutes.",
+ "key_line": "A19 A15 A14 A18",
+ "checker_part": "",
+ "depends_on": "",
+ "earlier_research": "This is the same kind of tree error as the second round's k034 on leaf 54 of this problem (tree KO+, right KO-): the tree's KO+ leaves out a White local threat after Black's first take (C18 there, A15 here). No contradiction."
+}

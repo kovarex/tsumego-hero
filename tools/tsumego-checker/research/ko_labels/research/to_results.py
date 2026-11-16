@@ -10,6 +10,9 @@ cases = json.load(open(os.path.join(HERE, 'out', 'results2.json')))
 #the third round (round3_collect.py), in the same format
 round3_path = os.path.join(HERE, 'out', 'results2_round3.json')
 cases += json.load(open(round3_path)) if os.path.exists(round3_path) else []
+#the fourth round (round4_collect.py), in the same format
+round4_path = os.path.join(HERE, 'out', 'results2_round4.json')
+cases += json.load(open(round4_path)) if os.path.exists(round4_path) else []
 judges_path = os.path.join(HERE, 'out', 'judges.json')
 judges = json.load(open(judges_path)) if os.path.exists(judges_path) else {}
 #grading checks per problem (out/grading_<problem>.json: {id, grading, reviews}), kept on each fixed leaf

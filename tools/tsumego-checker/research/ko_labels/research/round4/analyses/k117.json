@@ -1,0 +1,13 @@
+{
+ "case": "k117",
+ "verdict": "site_error",
+ "correct_status": "A-1KO-",
+ "confidence": "high",
+ "summary": "It is White's move, and White takes the ko first. After White A16 and Black E19, White's capture at B19 threatens to take four stones at A18 at once. Black's retake at C19 still needs one approach (D16 or A15) before it threatens anything. That is A-1KO-: Black needs two threats more than White and fails with one, so the tree's A-1KO+ (Black first, one threat more) is wrong. Taking at B19 at once, or playing A15 first, gives White the same count of 2.",
+ "variations": "1) A16 E19 B19 C19! pass D16 B19 C19! pass A15: Black captures with two threats more than White (the approach line). 2) A16 E19 B19 C19! pass D16 B19 pass A18: with only one threat more, White takes four stones and lives. 3) A16 E19 B19, then Black elsewhere: White's A18 takes four stones (White's capture threatens at once). 4) A16 E19 B19 C19!, then White elsewhere twice: Black's A15 or D16 and then the capture win, so Black needs exactly one approach. 5) B19 at once: the count is 2 here too; Black's best is E19 next, and White's A18 starts a second ko. 6) A15 E19 B19 (the dossier's principal line, through the second ko A18): the count is 2 here too.",
+ "solver_checks": "Budget 400,000 per search, one retry at 2,000,000; outputs in /tmp/claude-0/proto/research/kores4/work/13547-k114-k119/. (1) evidence.py --label --budget=400000. Result A-1KO-: White takes first at B19 after the preparation W A16, B E19. Black needs one approach (D16). The direct ko is a plain KO-. Full count 2 in the narrow area; the wider area gives A?KO? (its counts are undecided). (2) Narrow table at the leaf: s0/o0 W, s1/o0 W, s2/o0 B, s2/o1 W, s3/o1 B (the shifted check that the dossier left undecided is decided). (3) leaf+B19: s1 W, s2 B. leaf+A15 E19 B19: s1 W, s2 B. leaf+A16: s1 W, s2 B. leaf+A16 E19 B19: s1 W, s2 B. (4) P_O = leaf+A16 E19 B19 with one forced Black pass: White wins 0 against 4. P_S = leaf+A16 E19 B19 C19!: one forced White pass, White wins; two, Black wins. (5) After the approach, leaf+A16 E19 B19 C19! pass D16 B19: s0 W, s1 B (plain KO-). (6) leaf+B19 with one forced Black pass: undecided at 2.4M nodes; with two, White wins.",
+ "key_line": "A16 E19 B19 C19! pass D16 B19 C19! pass A15",
+ "checker_part": "",
+ "depends_on": "",
+ "earlier_research": "There is no earlier verdict on this leaf, and the error matches k044 and k104 (A-1KO+ where White takes first and Black needs two threats more). The dossier's label text tied this leaf to question 1b through the second ko A18 after W A15. With W A16, which gives the same count, White's capture threatens directly, and besogo ranks A-1KO- best for White, so question 1b does not decide this leaf."
+}

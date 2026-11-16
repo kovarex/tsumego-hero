@@ -1,0 +1,13 @@
+{
+ "case": "k119",
+ "verdict": "site_error",
+ "correct_status": "KO+",
+ "confidence": "high",
+ "summary": "Black's capture at A19 threatens to kill at once. If White plays elsewhere, Black connects at A18; White's capture of the five stones at A16 leaves a bulky five, and Black's A18 at its vital point kills. White's retake at A18 also threatens at once (A16 takes three stones and lives). So both captures are direct, Black took first, and the label is KO+, not A-1KO+: Black does not need A14.",
+ "variations": "1) pass A18 A16 A18: Black connects and gives up five stones, then plays the vital point of the bulky five; White is dead even with six threats. 2) A18! pass A16: White takes three stones and lives, so White needs a threat to retake and Black needs one to retake back (direct ko). 3) pass A14: this is the approach the tree assumes; White then retakes at A18 and the ko goes on, so A14 settles nothing, while A18 kills.",
+ "solver_checks": "Budget 400,000 per search, one retry at 2,000,000; outputs in /tmp/claude-0/proto/research/kores4/work/13547-k114-k119/. (1) Narrow leaf table: s0/o1 White wins, s0/o0 Black wins, s1/o0 Black wins (count 0, KO+). (2) Leaf with one forced White pass: Black wins 0 against 6 (B A18, W A16, B A18). leaf+pass A18: Black wins 0 against 6. leaf+pass A18 A16: Black wins 0 against 6. leaf+pass A18 A16 A18: Black wins 0 against 6. leaf+pass A14: White wins with 6 threats (the ko goes on). (3) Wider area: s0/o1 White wins; s0/o0 and the outright tests are undecided at 2.4M nodes. (4) Consistency with k042: k042 leaf+A19! pass A18: White wins (the six-stone sacrifice lives for White). k042 leaf+A19! with one forced White pass: White wins (that retake is not direct).",
+ "key_line": "pass A18 A16 A18",
+ "checker_part": "",
+ "depends_on": "",
+ "earlier_research": "This is consistent with k042 (leaf 22), where the research found that Black's retake needs A14. There, Black's own C18 makes the sacrifice six stones, and the solver confirms White lives after it. Here, White's C18 makes it a bulky five, which dies. So the earlier verdict stands, and this leaf is a different shape."
+}

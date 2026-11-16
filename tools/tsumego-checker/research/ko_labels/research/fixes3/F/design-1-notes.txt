@@ -1,0 +1,180 @@
+Group F design-1: what the stalled searches spend their nodes on (notes and runs)
+
+Worktree /home/user/tsumego-hero/.claude/worktrees/wf_928a9bec-85e-1 (tsumego-checker at 4537ef85, engine rebuilt there).
+
+Files here
+- run_leaf.py: one leaf as validate.py runs it (narrow, 200000, 300 s), every engine command logged (runs/<case>-<tag>.log,
+  the full lines in .log.full); run_full.py keeps the whole label record; run_cases.sh runs the five cases.
+- stats/instrument.py: makes an instrumented engine (ENGINE_STATS=1: nodes by path prefix, expansions per position, the
+  states visited, repetitions, table stores, overwrites and refused stores); stats/engine_o0 is the unchanged engine,
+  stats/engine_fix_o0 the fixed one. replay.py replays a logged search through an engine (fresh, or with the whole
+  history of the run); variants.py runs one logged search with other options; pos.py searches a position given as moves.
+- compare.py: validate records against the baseline.
+- variants/fresh: the fixed engine with an empty move history at every command; variants/ghi: the fixed engine that
+  does not store a proof resting on a repetition above its node (experiments, not in the patch).
+
+1. What the stalled searches spend their nodes on
+
+Base runs of the five leaves (runs/k0xx-base.log): every undecided part is a counted search (solvex) or the bent-four
+solve that gets 1,000,000 nodes, the engine's fresh retry another 1,000,000, the 5,000,000 escalation and its retry, and
+a one-ply solvemoves at 2,000,000 per child, and stays undecided. Many other searches are decided only by the retry,
+in a few thousand nodes after 1,000,000 wasted (k023 "W 1 ... 0 4 pw=1" 1,003,298; k041 "W ... 1 0" 1,015,924; k035's
+solvemoves children G19, H17, J18 about 1,005,000 each).
+
+Replayed through the instrumented engine (stats/engine_o0, fresh history, 1,000,000 nodes):
+- k043 count s=1 (solvex B 0 ... 1 0): 1,000,001 nodes over 3,791 positions; one position (path 0 2 19 40 19 38 20 -1
+  4 5 24 114 115 -1 39, depth 16) was expanded 994,774 times, and each of its 994,774 stores was refused. The other
+  3,790 positions took 5,227 nodes together.
+- k023 count s=3: one position 986,135 times (depth 16), 9,183 positions in all.
+- k035 count s=1: one position 988,746 times (depth 7), 9,012 positions.
+- k041 count s=0: one position 997,980 times (depth 9), 1,563 positions.
+Not the repetitions (20 to 296 adjudicated), not the threat bookkeeping (the looping node has the root's threats), not
+the fringe, not the move order as such: a loop in the proof search.
+
+Cause (engine.cpp, df-pn): store() keeps a proven entry of another position in a slot rather than a position's unproven
+numbers. The slot index is the key's low 22 bits, so with a few thousand positions a collision is likely. A position X
+whose slot holds a proof has no entry, so lookup() gives (1, 1). Its parent has just searched X; the next aggregate sees
+X as a new child with pn = dn = 1, picks it again, calls mid(X) with a threshold X's real numbers already exceed, mid
+returns at once, the store is refused again: one node per round, until the budget runs out. The fresh retry has another
+move order, so the positions often land in other slots: that is why a search undecided at 1,000,000 nodes so often
+took a few thousand in the retry (the "endless cycling" the retry was added for).
+
+2. The fix (engine.cpp)
+
+mid() hands its node's last numbers to the parent (found), the parent keeps them in the child (ProofChild pn, dn,
+searched), and childValues() uses them when the table has no entry for a child searched in this expansion. A search
+whose table loses no entry runs exactly as before. The same four searches, fresh, through stats/engine_fix_o0: k043
+18,729 nodes (N, the research's value), k023 17,001 (K), k035 42,652 (N), k041 32,496 (N); 2 to 159 stores are still
+refused, without a loop.
+
+3. The five cases (narrow area, 200000, as validate.py; runs/k0xx-base.json and k0xx-fix1.json)
+
+case  research  base (unchanged, 4537ef85)          fixed engine
+k023  A-1KO-    A-?KO?  (89 s, 46.2M nodes)          A-2KO+, count 2  (1.6 s, 0.40M)
+k035  A-1KO-    A-1KO?, BENT4 open (84 s, 35.5M)     A-1KO-, count 2  (13.4 s, 1.45M)
+k041  10kKO     A?KO?, BENT4 open (107 s, 55.4M)     10kKO, count 1   (3.0 s, 0.55M)
+k043  A-1KO-    KO?, BENT4 open (27 s, 16.4M)        KO-2, count 2    (2.0 s, 0.30M)
+k049  10kKO     A+2KO-2, BENT4 open (15 s, 6.6M)     10kKO, count 1   (1.0 s, 0.21M)
+
+Every part the base left undecided is decided now, and the bent-four tests of k035, k041, k043 and k049 decide (no
+BENT4 open). k035 and k041 give the research's label with its parts (k035: White takes first at A19 after B A15, the
+approach A16, count 2; k041: Black takes first at A19 after W D16, C17 or A16 for both sides, count 1).
+
+k023 (10403) now prints A-2KO+: White takes first at B19, Black's forced-pass profile needs three free moves (t=3,
+n_S=2: 1 and 2 forced passes fail, 3 win), v_S=0, count 2. These are the research's own decided values ("the checker's D6
+would print A-2KO+ (count 2) once its profile is decided. That counts the second-ko capture A17 as an approach, which is
+the known second-ko weak point"). The owner's answer to 1b (S[A-1KO-]: after Black's one approach E19 the ko switches
+there and back) needs a rule the code does not have: D4's second-ko rule fires only when every first approach that keeps
+v is a second-ko capture, and here the first approaches (C18, D19, E19, all keeping v=0 in v's own game) are not; the
+second-ko capture A17 shows only in round 2 of the approach line ("approach line: round 2: no free retake after the
+approach"). Not a search fault; left for the label rules.
+
+k043 (13547) now prints KO-2: White took first at A18; Black's forced-pass profile from P_S = leaf + A19! is n_S=1
+(Reviewer 2's values: one forced pass fails, two win), its only first free move that keeps the outright win is C19, a
+capture in the second ko, so D4 turns the round into a stage and the label is the direct reading from the count, KO-2,
+with White's local threat A13/E19. The research's A-1KO- has the same count (2): White answers A19! with E19, after
+which Black's approach is F19; the forced-pass test cannot see E19 (White passes there). Not a search fault: D4's
+second-ko rule applied where White can stop the second ko at no cost.
+
+k049 (13661): 10kKO, the research's label, with full count 1 where the research has 2 (the regression run gives the
+same). The count's search at s=1 depends on the move order: the fixed engine proves K with the history the leaf's earlier
+searches leave (27,371 nodes) and N with an empty history (6,157 nodes, the research's own number, and the unchanged
+engine's); under cycle rule 1 K, under rule 2 N. That is the proof table carrying a repetition verdict from one path into
+another (design section 2). variants/ghi (an experiment, not in the patch: a proof or disproof that rests on a repetition
+of a position above its node is not stored, only handed to the parent) gives the same five labels, and at k049 K at s=1
+under rules 0, 1 and 2 (15,528 nodes), every White reply to Black's A15 losing under rule 2 (B19, G19, D18, D19, pass;
+the unchanged engine had G19 N and pass N in 1 node, a disproof the shared table carried in), and N at s=0 under rule 1
+with every Black move failing. So the narrow count is most likely 1: the research's 2 came from the searches the table
+gets wrong. With an empty history at every command (variants/fresh) the fixed engine repeats the error, the count is 2,
+the D12 candidate A15's principal line is inconsistent (leaf+A15 N with White's pass "best", although leaf+A15 pass is a
+Black win under rule 2) and the label falls back to G19's A+2KO-2. The 10kKO (White takes first at B19 after B A15, W
+pass, B G19) is the reading of the count 1. The label of k049 therefore still rests on a search the proof table can get
+wrong; making the table safe for repetitions (variants/ghi) is the cure, and a larger change than this one.
+
+4. The time limit inside a search (engine set deadline, Solver.ask)
+
+With the loop gone a search that really stays undecided spends its budget on new positions, and those cost far more than
+the loop's (generate() and the end tests of every child of a new position; the loop's one position had them cached). In
+the first regression run with the fix alone (after-fix1.jsonl, stopped at 56 leaves) 9139 "D17 ... A15" timed out at
+669.7 s (19.1M nodes; the base at 323.8 s, 74.8M nodes) and 10489's first leaf at 726.1 s (base 313.3 s): the limit was
+read only between searches, and one escalated count search (5,000,000 nodes and its retry) ran for minutes at about
+30,000 nodes a second (9139's class solve: 4,000,004 nodes in 132 s). The engine now gives up at the problem's time
+limit (set deadline, read every 4,096 nodes), and Solver.ask raises TimeoutError for a search answered undecided after
+it, so nothing the limit cut is kept as undecided. 9139 now times out at 300.2 s. The five cases and the first 56 leaves
+of the regression give the same labels with and without it (a leaf that ends before its limit runs exactly as before).
+
+5. Regression (146 leaves of regress-F.txt, validate.py 200000 --narrow --limit=300; after-final.jsonl against the
+   baseline base-F-part0/1 and base-F-rest0/1 computed at 4537ef85; compare.py output in regression-compare.txt)
+
+                       baseline        after (fix + deadline)
+decided labels         89              124
+undecided              57 (31 t/o)     22 (19 t/o)
+seconds (sum)          14,279          7,471
+leaves over 300 s      32 (max 438)    14 (max 300.9)
+
+- same label and parts: 85 leaves.
+- decided -> undecided: none.
+- class open status resolved, label unchanged: 16 (BENT4 ruled out on 556, 2154, 7487, 8736, 9957, 10005 twice, 10051,
+  13489 C19.., 13547 three, 15298, 15342, 15416; DSKO/KO ruled out on 11263's SEKI).
+- decided label changed: 5. Four are an open refinement that now decides (9925 SEKI with SEKI+ open -> SEKI+, the tree's
+  S[SEKI+]; 13547 two leaves SEKI with SEKI+ open -> SEKI+, trees S[SEKI]: the solver's reading of question 6, SEKI+
+  when the solver keeps sente; 11280 ALIVE with DSKO, KO, SEKI, SEKI+ open -> SEKI, the tree's S[SEKI]). The fifth is
+  k049, A+2KO-2 -> 10kKO, which the research says was wrong.
+- undecided -> decided: 35 (regression-table.txt). Research verdicts (kores results_k.json): k035, k041, k103 (11279
+  ..F19 A18, A-1KO-) and k104 (13547 ..C17 A17, A-1KO-) right; k023 (A-2KO+) and k043 (KO-2) wrong in their approach
+  notation with the right count (section 3). No research verdict, the label equals S[]: 16 (9698, 9883, 10408, 11280,
+  11296, 13410, 13475, 13489 three, 13547 three, 13661 ..D18 A19, 15293, 15566). No research verdict, the label differs
+  from S[]: 13, plausibility:
+  - 13547 ..A15 A16 A19 C17 C19 and ..C19 C18 A19 D19 B17 C17 A17: A-1KO- for S[A-1KO+], White took first: the tree's
+    pattern the research found wrong on k042, k044, k103 and k104 of the same problems (plausible).
+  - 15794 ..A14: 10kKO for S[A-1KO+], which besogo ranks equal in a KILL problem (notation; plausible).
+  - 11279 ..C19 A16 A19: A-2KO- for S[A-2KO+], count 4 against d_conv 3 (a White gain not located): cannot judge.
+  - 13489 E19 D18 A16 D19 B18 B19 A17 A18 (KO- for KO+), ..D17 C18 A18 A17 B19 A19 (KO+ for KO-) and ..D17 F19 G18 A16
+    A18 (KO- for BENT4, BENT4 still open in the 200,000 status): cannot judge; k034 on the same problem was a site
+    error of the same kind (KO+ for the right KO-).
+  - 13547 ..A19 E19 D16 C17 (KO-3 for S[10kKO]) and ..D16 C17 E19 C18 A19 (KO+ for S[A-1KO+]): cannot judge.
+  - 5708 (KO+3 for KO+, two Black local threats), 15794 ..D15 (A-3KO- for A-1KO+), 11272 (KO- for KO+, White's local
+    threat at the wall G19) and 11283 (KO-2 for KO-, White's local threat at the wall A15/A14): cannot judge; the wall
+    warnings mark the last two local threats as possible area artifacts (question 8).
+- undecided both, changed: 5. 11272 D19 E19..: A?KO? at 239 s -> time-out; four 13489 leaves whose class stays
+  undecided ("?" in 5 to 11 s before) now reach the 300 s limit (three) or 113 s (A?KO?): the loop made their searches
+  fail fast; they now search for real until the budget or the deadline. Cost, not a label change.
+
+6. The changes confirmed with the unchanged checker
+
+rerun_base.sh reran 22 changed leaves with the unchanged checker (base-wt, 4537ef85), one fresh process each as
+run_leaf.py runs them (rerun/rerun.out): every one gives the baseline's result again (the three SEKI leaves with SEKI+
+open at 2,000,002 nodes, 11280 ALIVE with the superko test at 407,428 and the seki test at 800,004 open, k049 A+2KO-2,
+the BENT4-open labels of 2154, 556, 9957, 10005, 10051, 13547 k042 and 11263's DSKO/KO, the "?" of 11280, 13410, 13489
+two and 13547, 15293 KO?, k023 A-?KO?, k043 KO?, k041 A?KO?, k035 A-1KO?). So these changes are the fix's, not the
+order of the run. The 16 leaves the baseline timed out on (300 s and more each) were not rerun.
+
+The cause is the same loop wherever it was looked at (stats/replay_all.out, the twelve stalled or retried searches of
+the five cases, and 9925's seki-in-sente test): the unchanged engine, fresh, spends 979,181 to 997,980 of 1,000,000 nodes
+on one position whose store is refused every time, 10 of 12 searches; the other two (k023 "W 1 .. pw=1", k041 "W .. 1 0")
+were the ones the base decided only in its retry, and fresh they take 3,297 and 15,923 nodes in both engines (no store
+refused). The fixed engine decides all of them in 3,297 to 57,680 nodes, 9925's in 54,513 (K: SEKI+).
+
+7. Risks and open points
+
+- The fix changes nothing in a search whose table loses no entry. Elsewhere the search goes on instead of looping, so
+  its move-order history (never cleared by a retry now) and its proof table differ from the baseline's afterwards. The
+  regression shows no decided label lost or changed except the five above; GHI-sensitive searches (k049's count) can
+  still come out either way with the order of the searches before them.
+- The proof table still stores verdicts that rest on a repetition of a position above the node (design section 2, the
+  GHI problem). k049's count is one such search; the research's narrow count 2 for k049 rests on it (section 3).
+  variants/ghi shows the cure (not storing such a verdict, handing it to the parent with the path index it rests on): the
+  same five labels, k049's count 1 under every cycle rule. It changes which verdicts every repetition-heavy search can
+  reuse, so it needs its own regression run before it can go in.
+- Cost: a search that stays undecided now spends its budget on new positions (about 30,000 nodes a second in the
+  slowest areas) where the loop failed in seconds. Leaves whose class stays undecided take up to the limit: four 13489
+  leaves went from "?" in 5 to 11 s to a time-out at 300 s or A?KO? in 113 s. The deadline keeps every leaf at the limit
+  (max 300.9 s; before 438 s); the run is still half as long as the baseline's.
+- The deadline makes a search answered undecided after the limit a time-out; a leaf whose last search used to finish
+  after its limit (9942 at 300.3 s in the run without the deadline) times out now.
+- k023 and k043 (and the owner's 1b for k023) need a rule for a capture in a second ko, not a search fix; design-2's
+  second-ko readings are the place.
+- 13 newly decided labels differ from S[] without a research verdict (section 5); they are what the checker computes
+  once its searches finish, and some carry wall warnings.
+
+Commit 587c9feb in the worktree; patch /tmp/claude-0/proto/research/kofix3/F/design-1.patch.

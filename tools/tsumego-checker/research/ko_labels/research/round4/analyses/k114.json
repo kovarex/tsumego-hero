@@ -1,0 +1,13 @@
+{
+ "case": "k114",
+ "verdict": "site_error",
+ "correct_status": "A-1KO-",
+ "confidence": "high",
+ "summary": "S[A-1KO+] misses White's capture of Black's A15 stone at A14. Black took first at C19 and needs one approach (E19 or D16). But in the ko that follows, White can play A14, Black must answer at D16, and White then retakes without a threat, so Black needs two threats more than White, not one: A-1KO-. If White is barred from A14 the count drops to 1, which is the tree's count. If White plays A14 at once with the free move the approach gives it, Black needs three threats more (the strict label A-1KO-2); your c121 rule keeps that gain out of the label.",
+ "variations": "1) pass E19 B19 C19! A14 D16 B19 C19! pass A15: Black captures with two threats more than White (the approach line). 2) pass E19 B19 C19! A14 D16 B19 pass A18: with only one threat more, White takes four stones and lives. 3) pass E19 B19 C19! A14 pass B19 ...: if Black ignores A14, White wins even when Black has two threats more, so A14 must be answered at D16. 4) Leaf with White barred from A14: F19 E19 B19 C19! pass D16: Black wins with one threat more (the tree's A-1KO+ count). 5) Gain line (wider area): A14 E19 B19 C19! A13 D16 B19 C19! A15 A12 B19 pass A18: White's A14 at once makes the full count 3, the strict A-1KO-2.",
+ "solver_checks": "Budget 400,000 per search, one retry at 2,000,000 (KO_BUDGET_FACTOR=1). Outputs are in /tmp/claude-0/proto/research/kores4/work/13547-k114-k119/. (1) evidence.py --label --budget=400000 on the leaf. Result A-1KO-, strict A-1KO-2, both areas A-1KO-. Narrow counted table: -3..+2 no, +3 yes (full count 3, shifted check true). Black's profile: n=1 (E19, alternative D16), held-ko check true, v=2. White: n=0. Local threat A14, answer D16, d 2->1. Wider-area counts at s=2 and s=3 undecided. (2) Leaf with White barred from A14 for the whole search (narrow): s0/o0 White wins, s1 Black wins, s2 Black wins. (3) leaf+pass E19 B19 (Black to move, banned): s1 White, s2 Black; s1 with White barred from A14 while banned: Black. (4) leaf+pass E19 B19 C19! A14 pass: s2 White wins. leaf+pass E19 B19 C19! A14 D16: s1 Black wins.",
+ "key_line": "pass E19 B19 C19! A14 D16 B19 C19! pass A15",
+ "checker_part": "",
+ "depends_on": "",
+ "earlier_research": "This is the same kind of error as the second round's k043, k044 and k104 in this problem's B17 branch: the tree's A-1KO+ leaves out a White resource, and the right label is A-1KO-. Here the resource is A14, a local threat inside the direct ko. No earlier verdict contradicts this one."
+}
