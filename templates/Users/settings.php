@@ -141,8 +141,8 @@ use App\Utility\ViteManifest;
 				<?php
 				$levelBarDisplay = (int) $levelBar;
 				?>
-				<label class="field__option"><input type="radio" id="levelBarDisplay1" name="levelBarDisplay" value="1" data-appearance="levelBar" <?php echo $levelBarDisplay === UserTable::LEVEL_BAR_LEVEL ? 'checked="checked"' : ''; ?>> Level</label>
-				<label class="field__option"><input type="radio" id="levelBarDisplay2" name="levelBarDisplay" value="2" data-appearance="levelBar" <?php echo $levelBarDisplay === UserTable::LEVEL_BAR_RATING ? 'checked="checked"' : ''; ?>> Rating</label>
+				<label class="field__option"><input type="radio" id="levelBarDisplay1" class="settings-level-bar__radio settings-level-bar__radio--level" name="levelBarDisplay" value="1" data-appearance="levelBar" <?php echo $levelBarDisplay === UserTable::LEVEL_BAR_LEVEL ? 'checked="checked"' : ''; ?>> Level</label>
+				<label class="field__option"><input type="radio" id="levelBarDisplay2" class="settings-level-bar__radio settings-level-bar__radio--rating" name="levelBarDisplay" value="2" data-appearance="levelBar" <?php echo $levelBarDisplay === UserTable::LEVEL_BAR_RATING ? 'checked="checked"' : ''; ?>> Rating</label>
 			</div>
 			<div class="field">
 				<span class="field__label">Theme</span>

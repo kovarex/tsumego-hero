@@ -10,8 +10,8 @@
   vertical-align: top;
   color: var(--play-comment-time);
 }
-#openSgfLink,
-#showx99 {
+.play-edit__open-link,
+.play-edit__request-link {
   display: none;
 }
 .sandboxTable2__heading {
@@ -24,7 +24,7 @@
   border-bottom: 1px solid var(--color-black);
 }
 /* as wide as its link: a full-width block shifted right would stick out of the page on a phone */
-#msg1x {
+.set-view__reset-toggle {
   display: inline-block;
   color: var(--color-text-muted);
   margin: 2px 14px;
@@ -44,7 +44,7 @@
   height: 25px;
   margin: 12px 5px 0 1px;
 }
-#sandbox {
+.sandbox-page__panel {
   color: var(--play-sandbox-text);
   background-color: var(--play-sandbox-background);
   border: 1px solid var(--color-black);
@@ -68,17 +68,17 @@
 .display1 {
   font-size: var(--text-xl);
 }
-#playTitle {
+.play-title {
   font-weight: var(--weight-heavy);
   color: var(--color-text);
 }
-#playTitleA { color: var(--color-text); }
+.play-title__link { color: var(--color-text); }
 /* The collection a problem of a class or a query comes from */
 .play-title__origin-line { font-weight: var(--weight-normal); }
 .play-title__origin { color: grey; }
 /* <font size="5px"> was x-large */
 .play-title__time-mode { font-size: x-large; }
-#descriptionText { color: var(--color-text-muted); }
+.play-goal__text { color: var(--color-text-muted); }
 .add-tag-list-anchor {
   color: var(--color-text-muted);
   font-size: var(--text-sm);
@@ -311,12 +311,12 @@
 .health-counter {
   display: none;
 }
-#levelBarDisplay1 {
+.settings-level-bar__radio--level {
   width: 15px;
   height: 15px;
   accent-color: var(--color-green);
 }
-#levelBarDisplay2 {
+.settings-level-bar__radio--rating {
   width: 15px;
   height: 15px;
   accent-color: var(--play-rating-bar-accent);
@@ -325,7 +325,7 @@
   transform: translateY(-10px);
   text-align: center;
 }
-#sliderText {
+.difficulty-slider__text {
   color: var(--slider-text);
   font-weight: var(--weight-normal);
   font-size: 20px;
@@ -366,7 +366,7 @@
 }
 /* Remove dotted outline from range input element focused in Firefox */
 
-#theComment {
+.play-message__comment {
   display: none;
   justify-content: center;
   background-color: var(--surface-panel-light);
@@ -379,8 +379,8 @@
   min-width: 300px;
   color: var(--play-dark-text);
 }
-#multipleChoiceText,
-#potionAlerts {
+.multiple-choice__text,
+.potion-alerts {
   color: var(--play-dark-text);
 }
 /* =============================================================================
@@ -435,7 +435,7 @@
   padding: var(--space-3) var(--space-4) var(--space-4);
 }
 /* The board fills the width of its column; besogo caps it so it and its buttons fit in the window */
-.play-screen__main #target {
+.play-screen__main .board-target {
   width: 100%;
 }
 .play-screen__main .besogo-board {
@@ -461,7 +461,7 @@
   width: 100%;
   max-width: 900px;
 }
-#playTitle {
+.play-title {
   grid-column: 1;
   grid-row: 1;
   text-align: left;
@@ -485,28 +485,28 @@
   line-height: 1.25;
   text-align: left;
 }
-.play-message__goal #titleDescription {
+.play-message__goal .play-goal__title {
   display: inline;
   font-size: var(--text-lg);
   font-weight: var(--weight-bold);
 }
 /* on the grey of the row: the goal in the colour of the text, its hint a little softer, the white stone outlined */
-.play-message__goal #descriptionText {
+.play-message__goal .play-goal__text {
   color: var(--color-text);
 }
-.play-message__goal #hintText {
+.play-message__goal .play-goal__hint {
   color: var(--color-text);
   opacity: 0.8;
 }
 .play-message__goal .play-goal__stone--white {
   border-color: var(--color-text);
 }
-.play-message #theComment:empty {
+.play-message .play-message__comment:empty {
   flex: 0;
   padding: 0;
 }
-.play-message:has(#status:not(:empty)) .play-message__goal,
-.play-message:has(#theComment:not(:empty)) .play-message__goal {
+.play-message:has(.play-message__status:not(:empty)) .play-message__goal,
+.play-message:has(.play-message__comment:not(:empty)) .play-message__goal {
   display: none;
 }
 /* The color to move, as a stone before the goal */
@@ -529,13 +529,11 @@
   flex-direction: column;
   align-items: flex-end;
   gap: 2px;
+  height: auto;
+  margin: 0;
   color: var(--color-text);
   font-size: var(--text-md);
   text-align: right;
-}
-#xpDisplayDiv.play-stake {
-  height: auto;
-  margin: 0;
 }
 /* The rank of the problem alone; a click or a tap on it opens its rating and the reward of a solve under it */
 .play-stake .status-rating__number {
@@ -590,11 +588,11 @@
   padding: 2px 0;
 }
 /* a long message (what a wrong line ends in) wraps to another line inside the row, the buttons staying at the right */
-.play-message #status :is(h2, h3) {
+.play-message .play-message__status :is(h2, h3) {
   white-space: normal;
   overflow-wrap: anywhere;
 }
-.play-message #theComment {
+.play-message .play-message__comment {
   flex: 1;
   width: auto;
   min-width: 0;
@@ -612,17 +610,17 @@
    verdict), right after the status when there is one */
 .play-message__status h2,
 .play-message__status h3,
-.play-message #theComment {
+.play-message .play-message__comment {
   margin: 0;
   font-size: var(--text-lg);
   font-weight: var(--weight-bold);
   line-height: 1.25;
 }
-.play-message__status:not(:empty) + #theComment {
+.play-message__status:not(:empty) + .play-message__comment {
   margin-left: var(--space-3);
 }
 /* an error of the problem itself (besogo's displayError), in the red of Incorrect! */
-.play-message #theComment.play-message__error {
+.play-message .play-message__comment.play-message__error {
   color: var(--play-message-incorrect);
 }
 
@@ -636,7 +634,7 @@
   min-height: 32px;
   font-weight: var(--weight-bold);
 }
-.play-player #health {
+.play-player .play-player__health {
   display: flex;
   align-items: center;
   gap: var(--space-2);
@@ -650,14 +648,14 @@
   /* the hearts stack over each other (z-index) inside the row only, under the menus of the page */
   isolation: isolate;
 }
-#health .play-player__hearts img {
+.play-player__health .play-player__hearts img {
   display: block;
   flex: none;
   width: 24px;
   height: 24px;
   margin: 0;
 }
-#health .play-player__hearts img + img {
+.play-player__health .play-player__hearts img + img {
   margin-left: clamp(-18px, calc((100cqw - var(--hearts) * 24px) / (var(--hearts) - 1)), 4px);
 }
 /* The icons alone show the hearts; the count is for screen readers, and in the title of the row ("Hearts 26/34") */
@@ -673,7 +671,7 @@
   content: none;
 }
 /* An empty heart is the full one greyed, as solid as the full ones it overlaps (PlayBoard.js redrawHearts()) */
-#health .play-player__hearts img.play-player__heart--empty {
+.play-player__health .play-player__hearts img.play-player__heart--empty {
   filter: grayscale(1) brightness(3.2);
 }
 
@@ -803,10 +801,15 @@
   }
 }
 
+.play-powers {
+  padding: var(--space-2);
+  border: 1px solid var(--surface-border-muted);
+  border-radius: var(--radius-md);
+}
 /* The hero powers: on a wide screen the panel has the room to show them in a row of their own under the
    hearts, so there is no ⚡ button; on a phone they open from it */
 @media (width >= 64rem) {
-  #heroPowersTray {
+  .play-powers {
     display: flex !important;
     flex-wrap: wrap;
     justify-content: flex-start;
@@ -815,21 +818,16 @@
     padding: 0;
     border: 0;
   }
-  #heroPowersTray img {
+  .play-powers img {
     width: 40px;
     height: 40px;
   }
-  #heroPowersToggle {
+  .play-actions__powers-toggle {
     display: none;
   }
   .play-player {
     min-height: 0;
   }
-}
-.play-powers {
-  padding: var(--space-2);
-  border: 1px solid var(--surface-border-muted);
-  border-radius: var(--radius-md);
 }
 .play-panel {
   margin-top: var(--space-2);
@@ -859,7 +857,7 @@
 	.besogo-container {
 		width: 100% !important;
 	}
-	#target {
+	.board-target {
 		max-width: 100%;
 		overflow: hidden;
 	}
@@ -906,12 +904,7 @@
 	   so the small side cells are allowed to shrink and the icons are made
 	   tiny enough to sit in one wrap-free row. */
 	/* Hero power icons: very compact single row inside their narrow cell. */
-	#rejuvenation,
-	#intuition,
-	#revelation,
-	#sprint,
-	#refinement,
-	#potion {
+	.hero-power {
 		width: 26px;
 		height: 26px;
 		margin: 3px 2px;
@@ -921,13 +914,13 @@
 	/* Hearts: show a compact "x / y" counter instead of a row of 17 hearts
 	   that overflows a 29%-wide table cell on a phone. The individual heart
 	   images stay in the DOM (used by JS) but are visually replaced. */
-	#health {
+	.play-player__health {
 		display: flex;
 		align-items: center;
 		justify-content: center;
 		gap: var(--space-1);
 	}
-	#health img {
+	.play-player__health img {
 		display: none;
 	}
 	.health-counter {
@@ -1024,7 +1017,7 @@
   }
   /* A long name of a collection is cut short with its full name in the title; the part of the collection (#2)
      always shows */
-  #playTitle {
+  .play-title {
     min-width: 0;
     font-size: var(--text-md);
   }
@@ -1057,8 +1050,8 @@
   /* The row of the messages fits a phone: a smaller message and narrower buttons */
   .play-message__status h2,
   .play-message__status h3,
-  .play-message #theComment,
-  .play-message__goal #titleDescription {
+  .play-message .play-message__comment,
+  .play-message__goal .play-goal__title {
     font-size: var(--text-md);
   }
   .play-actions__end {

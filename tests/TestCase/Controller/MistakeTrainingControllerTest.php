@@ -980,7 +980,7 @@ class MistakeTrainingControllerTest extends IntegrationTestCase
 		$this->get('/mistake-training');
 		$html = $this->view;
 
-		$this->assertStringContainsString('<a id="playTitleA" href="' . MistakeTraining::$OVERVIEW_LINK . '">Mistake Training 1/1</a>', $html);
+		$this->assertStringContainsString('<a id="playTitleA" class="play-title__link" href="' . MistakeTraining::$OVERVIEW_LINK . '">Mistake Training 1/1</a>', $html);
 	}
 
 	public function testAGuestSeesNoTrainingOnTheHomepage()
