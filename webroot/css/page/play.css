@@ -738,6 +738,7 @@
    point to circle (toolPanel.js markTenukiInReview()) */
 /* The moves elsewhere as the solver sees them, beside Tenuki (toolPanel.js showMovesElsewhere()) */
 .besogo-elsewhere {
+  align-self: center;
   font: var(--control-font);
   color: var(--color-text);
   font-variant-numeric: tabular-nums;
@@ -1068,6 +1069,19 @@
   .play-actions__end .btn {
     padding-inline: var(--space-2);
     font-size: var(--text-sm);
+  }
+  /* A message that has less than this width beside the buttons (a ko threat with Answer threat and the moves
+     elsewhere) takes a line of its own, the buttons going under it at the right, so it is never cut */
+  .play-message {
+    flex-wrap: wrap;
+    row-gap: var(--space-1);
+  }
+  .play-message .play-message__comment {
+    flex-basis: 10rem;
+  }
+  .play-actions__end {
+    flex-wrap: wrap;
+    justify-content: flex-end;
   }
 }
 }
