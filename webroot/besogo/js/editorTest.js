@@ -23,9 +23,10 @@ function withPlayEditor(root, method)
 	editor.setReviewMode(false);
 	let results = [];
 	let comments = [];
+	let notices = [];
 	editor.registerDisplayResult(result => results.push(result));
 	editor.registerAddTimeForMovePlayed(() => {});
-	editor.registerShowComment(comment => comments.push(comment));
+	editor.registerShowComment((comment, notice = "") => { comments.push(comment); notices.push(notice); });
 
 	let originalSetTimeout = window.setTimeout;
 	let originalRandom = Math.random;
@@ -36,7 +37,7 @@ function withPlayEditor(root, method)
 	window.isMutable = true;
 	try
 	{
-		method(editor, () => { while (queue.length) queue.shift()(); }, results, comments);
+		method(editor, () => { while (queue.length) queue.shift()(); }, results, comments, notices);
 	}
 	finally
 	{
@@ -304,6 +305,50 @@ besogo.addTest("Editor", "TheEndOfALinePlaysOneSound", function()
 		besogo.stoneSound.play = originalPlay;
 		besogo.isEmbedded = originalEmbedded;
 		window.soundsEnabled = originalSoundsEnabled;
+		besogo.soundsEnabled = false;
+	}
+});
+
+// A tenuki leaves no stone on the board, so the row of the messages is told who played it
+besogo.addTest("Editor", "TheOpponentsTenukiIsNoticed", function()
+{
+	let root = loadEditor("(;SZ[19]AB[dd]AW[bb];B[aa];W[];B[ba]C[+])").getRoot();
+	withPlayEditor(root, function(editor, flush, results, comments, notices)
+	{
+		editor.click(1, 1, false, false);
+		CHECK_EQUALS(notices[notices.length - 1], "");
+		flush(); // White's reply is the tenuki
+		CHECK_EQUALS(editor.getCurrent().move.x, 0);
+		CHECK_EQUALS(notices[notices.length - 1], "White plays elsewhere (tenuki).");
+		editor.click(2, 1, false, false);
+		CHECK_EQUALS(notices[notices.length - 1], "");
+	});
+});
+
+// White takes the ko at b2, capturing c2: Black clicking c2 at once is refused, and the row is told why
+besogo.addTest("Editor", "TakingBackAKoAtOnceIsExplained", function()
+{
+	let root = loadEditor("(;SZ[19]AB[ba][ab][bc][cb]AW[ca][db][cc];B[ee];W[bb];B[ff]C[+])").getRoot();
+	let originalEmbedded = besogo.isEmbedded;
+	besogo.isEmbedded = true;
+	try
+	{
+		withPlayEditor(root, function(editor, flush, results, comments, notices)
+		{
+			editor.click(5, 5, false, false);
+			flush(); // White takes the ko
+			let koTaken = editor.getCurrent();
+			CHECK_EQUALS(koTaken.move.x, 2);
+			CHECK_EQUALS(koTaken.move.y, 2);
+			editor.click(3, 2, false, false);
+			CHECK(editor.getCurrent() == koTaken);
+			CHECK_EQUALS(notices[notices.length - 1], "Ko: you can't take back right away.");
+			CHECK_EQUALS(results.length, 0);
+		});
+	}
+	finally
+	{
+		besogo.isEmbedded = originalEmbedded;
 		besogo.soundsEnabled = false;
 	}
 });

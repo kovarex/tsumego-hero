@@ -287,9 +287,9 @@ besogo.makeToolPanel = function (container, editor) {
 
     if (!besogo.multipleChoice && besogo.multipleChoiceCustom === false) {
       if (passEnabled == 1) {
-        makeButtonText(
-          "Pass",
-          "Pass move",
+        let tenukiButton = makeButtonText(
+          "Tenuki",
+          "Play elsewhere (tenuki)",
           function () {
             var tool = editor.getTool();
             if (
@@ -304,6 +304,10 @@ besogo.makeToolPanel = function (container, editor) {
           },
           "besogo-pass-button"
         );
+        editor.addListener(function (msg) {
+          if (msg.navChange || msg.treeChange)
+            markTenukiInReview(tenukiButton);
+        });
       }
       // The level mode and the training have no Back: the problem buttons under the board lead back
       if (mode == 2) {
@@ -832,7 +836,7 @@ besogo.makeToolPanel = function (container, editor) {
       evt.stopPropagation(); // Stop keydown propagation when in focus
     });
     container.appendChild(labelText);
-    makeButtonText("Pass", "Pass move", function () {
+    makeButtonText("Tenuki", "Play elsewhere (tenuki)", function () {
       var tool = editor.getTool();
       if (
         tool !== "navOnly" &&
@@ -983,6 +987,23 @@ besogo.makeToolPanel = function (container, editor) {
   }
 
   // Creates text button
+  // In the review the board circles each next move in the colour of where it leads. A tenuki has no point to
+  // circle, so the Tenuki button takes that colour instead, green when it leads to a correct end, red to a wrong one.
+  function markTenukiInReview(button) {
+    button.classList.remove("besogo-pass-button--correct", "besogo-pass-button--wrong");
+    if (!editor.getReviewMode())
+      return;
+    let tenuki = editor.getCurrent().children.find(function (child) {
+      return child.move && child.move.x === 0 && child.move.y === 0;
+    });
+    if (!tenuki || tenuki.localEdit)
+      return;
+    if (tenuki.correct == CORRECT_GOOD)
+      button.classList.add("besogo-pass-button--correct");
+    else if (tenuki.correct == CORRECT_BAD)
+      button.classList.add("besogo-pass-button--wrong");
+  }
+
   function makeButtonText(text, tip, callback, id = null) {
     var button = document.createElement("input");
     button.type = "button";

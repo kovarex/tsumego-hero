@@ -141,7 +141,7 @@ if ($currentColor !== '' && !in_array(strtolower($currentColor), array_map('strt
 
 				<h3 class="card__title set-edit__heading">Solve Modes</h3>
 				<div class="set-edit__mode">
-					<span class="set-edit__mode-label">Passing</span>
+					<span class="set-edit__mode-label">Tenuki button</span>
 					<span class="set-edit__mode-hint"><?php echo $allPassActive ? 'all on' : ($allPassInactive ? 'all off' : 'mixed'); ?></span>
 					<select name="r43">
 						<option value="">no change</option>
