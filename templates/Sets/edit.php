@@ -8,8 +8,6 @@ use App\Utility\TsumegoButtons;
 
 /**
  * @var \App\View\AppView $this
- * @var bool $allPassActive
- * @var bool $allPassInactive
  * @var bool $canDelete
  * @var bool $canEditSettings
  * @var bool $isSandbox
@@ -139,16 +137,6 @@ if ($currentColor !== '' && !in_array(strtolower($currentColor), array_map('strt
 				<input type="text" id="SetSetDifficulty" name="setDifficulty" placeholder="<?php echo h((string) $setRating); ?>">
 				<p class="hint">Sets the rating of every problem in this collection. Problems are shared, so this changes their rating everywhere. Leave empty to skip.</p>
 
-				<h3 class="card__title set-edit__heading">Solve Modes</h3>
-				<div class="set-edit__mode">
-					<span class="set-edit__mode-label">Tenuki button</span>
-					<span class="set-edit__mode-hint"><?php echo $allPassActive ? 'all on' : ($allPassInactive ? 'all off' : 'mixed'); ?></span>
-					<select name="r43">
-						<option value="">no change</option>
-						<option value="yes">yes</option>
-						<option value="no">no</option>
-					</select>
-				</div>
 				<input type="submit" class="btn btn--primary" value="Apply">
 			</form>
 			<?php if ($isSandbox): ?>

@@ -1,7 +1,6 @@
 <?php
 
 use Cake\Routing\Router;
-use App\Model\Table\AdminActivityTypeTable;
 use App\Model\Table\TsumegoVariantTable;
 use App\Model\Table\UserTable;
 use App\Utility\Auth;
@@ -743,8 +742,7 @@ class TsumegosControllerTest extends IntegrationTestCase
 			'rating' => (string) $tsumego->rating,
 			'minimum-rating' => '',
 			'maximum-rating' => '',
-			'author' => $tsumego->author,
-			'pass' => (string) (int) $tsumego->pass];
+			'author' => $tsumego->author];
 	}
 
 	private function postProblemSettings(ContextPreparator $context, ?int $variantType): void
@@ -793,16 +791,15 @@ class TsumegosControllerTest extends IntegrationTestCase
 		$context = $this->prepareSandboxProblem([['tsumego_variant_type_id' => TsumegoVariantTable::TYPE_MULTIPLE_CHOICE, 'answer1' => 'Seki in sente']]);
 		$tsumegoID = $context->tsumegos[0]['id'];
 
-		$this->postEditForm($tsumegoID, ['pass' => 1, 'variant_type' => '2']);
+		$this->postEditForm($tsumegoID, ['variant_type' => '2']);
 
 		$this->assertResponseCode(400);
-		$this->assertSame(0, (int) $this->fetchTable('Tsumego')->get($tsumegoID)->pass);
 		$this->assertSame([['tsumego_variant_type_id' => TsumegoVariantTable::TYPE_MULTIPLE_CHOICE, 'answer1' => 'Seki in sente']], self::variantsOf($tsumegoID));
 	}
 
-	//A problem starts with passing off; the alternative response mode is no setting any more, a sent
-	//value of it changes nothing
-	public function testProblemSettingsSavePassing(): void
+	//The alternative response mode and the pass mode are no settings any more (Tenuki is on every problem), a sent
+	//value of them changes nothing and logs nothing
+	public function testProblemSettingsIgnoreTheRetiredModes(): void
 	{
 		$context = $this->prepareSandboxProblem();
 		$tsumegoID = $context->tsumegos[0]['id'];
@@ -810,10 +807,7 @@ class TsumegosControllerTest extends IntegrationTestCase
 		$this->postEditForm($tsumegoID, ['alternative_response' => 0, 'pass' => 1]);
 
 		$this->assertResponseCode(302);
-		$this->assertSame(1, (int) $this->fetchTable('Tsumego')->get($tsumegoID)->pass);
-		$this->assertSame([[AdminActivityTypeTable::PASS_MODE, '1']], array_map(
-			fn($activity) => [(int) $activity['type'], $activity['new_value']],
-			Util::query('SELECT type, new_value FROM admin_activity WHERE tsumego_id = ? ORDER BY id', [$tsumegoID])));
+		$this->assertSame([], Util::query('SELECT type FROM admin_activity WHERE tsumego_id = ?', [$tsumegoID]));
 	}
 
 	//The admin form on the play page saves the settings and comes back to the problem
@@ -826,14 +820,12 @@ class TsumegosControllerTest extends IntegrationTestCase
 		$browser = Browser::instance();
 		$browser->get($playPath);
 		$browser->openPlayEditSection();
-		$browser->clickId('pass-on');
 		$browser->clickId('variant-type-multiple-choice');
 		$browser->clickId('tsumego-edit-submit');
 		//Back on the problem, which has a multiple choice question to edit now
 		$browser->waitUntilAnyCssSelectorExists(['#variant-answer1']);
 
 		$this->assertStringEndsWith($playPath, $browser->driver->getCurrentURL());
-		$this->assertSame(1, (int) $this->fetchTable('Tsumego')->get($tsumegoID)->pass);
 		$this->assertSame([['tsumego_variant_type_id' => TsumegoVariantTable::TYPE_MULTIPLE_CHOICE, 'answer1' => 'Black is dead']], self::variantsOf($tsumegoID));
 	}
 
@@ -841,7 +833,7 @@ class TsumegosControllerTest extends IntegrationTestCase
 	{
 		$context = new ContextPreparator(['tsumego' => 1]);
 
-		$this->post('tsumegos/edit/' . $context->tsumegos[0]['id'], ['pass' => 1]);
+		$this->post('tsumegos/edit/' . $context->tsumegos[0]['id'], ['author' => 'someone else']);
 
 		$this->assertResponseCode(403);
 	}

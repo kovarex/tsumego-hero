@@ -286,29 +286,28 @@ besogo.makeToolPanel = function (container, editor) {
     );
 
     if (!besogo.multipleChoice && besogo.multipleChoiceCustom === false) {
-      if (passEnabled == 1) {
-        let tenukiButton = makeButtonText(
-          "Tenuki",
-          "Play elsewhere (tenuki)",
-          function () {
-            var tool = editor.getTool();
-            if (
-              tool !== "navOnly" &&
-              tool !== "auto" &&
-              tool !== "playB" &&
-              tool !== "playW"
-            ) {
-              editor.setTool("auto"); // Ensures that a move tool is selected
-            }
-            editor.click(0, 0, false); // Clicking off the board signals a pass
-          },
-          "besogo-pass-button"
-        );
-        editor.addListener(function (msg) {
-          if (msg.navChange || msg.treeChange)
-            markTenukiInReview(tenukiButton);
-        });
-      }
+      // Every problem can be answered by playing elsewhere, so the button never tells whether that is the answer
+      let tenukiButton = makeButtonText(
+        "Tenuki",
+        "Play elsewhere (tenuki)",
+        function () {
+          var tool = editor.getTool();
+          if (
+            tool !== "navOnly" &&
+            tool !== "auto" &&
+            tool !== "playB" &&
+            tool !== "playW"
+          ) {
+            editor.setTool("auto"); // Ensures that a move tool is selected
+          }
+          editor.click(0, 0, false); // Clicking off the board signals a pass
+        },
+        "besogo-pass-button"
+      );
+      editor.addListener(function (msg) {
+        if (msg.navChange || msg.treeChange)
+          markTenukiInReview(tenukiButton);
+      });
       // The level mode and the training have no Back: the problem buttons under the board lead back
       if (mode == 2) {
         makeHyperlinkText(

@@ -19,7 +19,7 @@ class AdminActivityTypeTable extends AppTable
 
 	// Problem Settings (multi-state: 0=disabled, 1=enabled)
 	public const ALTERNATIVE_RESPONSE = 4; //The mode is always on now, the type stays for the old log entries
-	public const PASS_MODE = 5;
+	public const PASS_MODE = 5; //Tenuki is on every problem now, the type stays for the old log entries
 
 	// Problem Type Changes (multi-state: 0=delete, 1=add)
 	public const MULTIPLE_CHOICE = 6;
@@ -42,7 +42,7 @@ class AdminActivityTypeTable extends AppTable
 
 	// Set Bulk Operations (multi-state: 0=disabled, 1=enabled)
 	public const SET_ALTERNATIVE_RESPONSE = 15; //The mode is always on now, the type stays for the old log entries
-	public const SET_PASS_MODE = 16;
+	public const SET_PASS_MODE = 16; //Tenuki is on every problem now, the type stays for the old log entries
 
 	// Tags
 	public const ACCEPT_TAG = 23;

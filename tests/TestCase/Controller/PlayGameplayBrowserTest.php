@@ -97,27 +97,22 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 		$this->assertSame(1, $keyed['5,5'], 'White stone at ee');
 	}
 
-	public function testThePassButtonOnlyShowsWhenTheProblemAllowsIt(): void
+	//Tenuki is on every problem, so its button never tells whether playing elsewhere is the answer; a tenuki the
+	//problem doesn't have is played like any other move, and doesn't lock the board
+	public function testTenukiIsOnEveryProblem(): void
 	{
-		foreach ([1 => 'a problem that can be passed', 0 => 'a problem that cannot'] as $pass => $case)
-		{
-			$context = new ContextPreparator([
-				'tsumego' => ['set_order' => 1, 'pass' => $pass, 'sgf' => self::SGF_19]]);
-			$browser = Browser::instance();
-			$browser->get($this->playUrl($context));
-			$this->waitForBoard($browser);
+		$context = new ContextPreparator(['tsumego' => ['set_order' => 1, 'sgf' => self::SGF_19]]);
+		$browser = Browser::instance();
+		$browser->get($this->playUrl($context));
+		$this->waitForBoard($browser);
 
-			$this->assertSame((bool) $pass, $browser->idExists('besogo-pass-button'), 'Pass button on ' . $case);
-			if (!$pass)
-				continue;
-
-			$moveBefore = (int) $browser->driver->executeScript('return besogo.editor.getCurrent().moveNumber;');
-			$browser->clickId('besogo-pass-button');
-			$moveAfter = (int) $browser->driver->executeScript('return besogo.editor.getCurrent().moveNumber;');
-			$this->assertGreaterThan($moveBefore, $moveAfter, 'Passing advances the move number');
-			$this->assertSame(0, $browser->driver->executeScript('return window.boardLockValue;'),
-				'Passing does not lock the board');
-		}
+		$this->assertSame('Tenuki', $browser->find('#besogo-pass-button')->getAttribute('value'));
+		$moveBefore = (int) $browser->driver->executeScript('return besogo.editor.getCurrent().moveNumber;');
+		$browser->clickId('besogo-pass-button');
+		$moveAfter = (int) $browser->driver->executeScript('return besogo.editor.getCurrent().moveNumber;');
+		$this->assertGreaterThan($moveBefore, $moveAfter, 'A tenuki advances the move number');
+		$this->assertSame(0, $browser->driver->executeScript('return window.boardLockValue;'),
+			'A tenuki does not lock the board');
 	}
 
 	//The board neither turned nor its colours swapped, so the points and the colour words of a test are the SGF's
@@ -129,7 +124,7 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 				'mode' => Constants::$LEVEL_MODE,
 				'player_color_setting' => UserTable::PLAYER_COLOR_SETTING_ORIGINAL,
 				'board_orientation_setting' => UserTable::BOARD_ORIENTATION_SETTING_ORIGINAL],
-			'tsumego' => ['set_order' => 1, 'pass' => 1, 'sgf' => ['data' => $sgf, 'first_move_color' => 'B']]]);
+			'tsumego' => ['set_order' => 1, 'sgf' => ['data' => $sgf, 'first_move_color' => 'B']]]);
 	}
 
 	//A tenuki leaves no stone to see, so the row of the messages says it: White's reply here is to play elsewhere
@@ -139,7 +134,6 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 		$browser = Browser::instance();
 		$browser->get($this->playUrl($context));
 		$this->waitForBoard($browser);
-		$this->assertSame('Tenuki', $browser->find('#besogo-pass-button')->getAttribute('value'));
 
 		$browser->clickBoard(1, 1);
 		$browser->waitUntilJs('besogo.editor.getCurrent().move && besogo.editor.getCurrent().move.color === 1');

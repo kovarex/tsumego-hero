@@ -236,10 +236,10 @@ class UserSetsControllerTest extends IntegrationTestCase
 		$setId = $this->fetchTable('Set')->find()->where(['title' => 'My Set'])->first()->id;
 		$tsumegoId = $context->tsumegos[0]['id'];
 
-		$this->post("/sets/edit/{$setId}", ['r43' => 'yes']);
+		$this->post("/sets/edit/{$setId}", ['setDifficulty' => 2000]);
 
 		$tsumego = $this->fetchTable('Tsumego')->find()->where(['id' => $tsumegoId])->first();
-		$this->assertSame(0, (int) $tsumego->pass);
+		$this->assertEquals(1000, $tsumego->rating);
 	}
 
 	// ── /sets/view/:id ──────────────────────────────────────────────────
@@ -752,24 +752,6 @@ class UserSetsControllerTest extends IntegrationTestCase
 
 		$tsumego = $this->fetchTable('Tsumego')->find()->where(['id' => $tsumegoId])->first();
 		$this->assertEquals(1000, $tsumego->rating);
-	}
-
-	public function testAdminCanTogglePassingOn(): void
-	{
-		new ContextPreparator([
-			'user' => ['name' => 'admin', 'admin' => true],
-			'tsumegos' => [
-				['rating' => 1000, 'pass' => 0, 'sets' => [['name' => 'Sandbox Set', 'num' => 1, 'public' => 0]]],
-			],
-		]);
-		$this->login('admin');
-		$setId = $this->fetchTable('Set')->find()->where(['title' => 'Sandbox Set'])->first()->id;
-		$tsumegoId = $this->fetchTable('Tsumego')->find()->orderByDesc('id')->first()->id;
-
-		$this->post("/sets/edit/{$setId}", ['r43' => 'yes']);
-
-		$tsumego = $this->fetchTable('Tsumego')->find()->where(['id' => $tsumegoId])->first();
-		$this->assertSame(1, (int) $tsumego->pass);
 	}
 
 	// ── Authorization: mutate actions on someone else's set ─────────────
