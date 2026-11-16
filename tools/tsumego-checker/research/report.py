@@ -405,10 +405,13 @@ def render(specs_dir, out_path):
         for c in sorted(cases, key=lambda c: c['case']):
             card = cards[c['case']]
             done = fixed.get(c['case'])
-            badge = '<span class="fixed-badge">Fixed on the site: S[%s], %s</span>' % (html.escape(done['status']), html.escape(done['date'])) if done else ''
+            #a leaf whose fix waits for a site feature: {waiting, date}
+            waiting = done and done.get('waiting')
+            badge = '<span class="fixed-badge">%s</span>' % html.escape('Waits for %s, %s' % (waiting, done['date']) if waiting else
+                                                                       'Fixed on the site: S[%s], %s' % (done['status'], done['date'])) if done else ''
             status = '<p class="leaf-status">%s</p>' % html.escape(leaf_status(c)) if KO_LAYOUT else ''
             out.append('<article class="leaf" id="%s"><div class="leaf-head"><label><input type="checkbox" class="done" data-id="%s"%s> Leaf %s</label><code class="fix">%s</code>%s</div>%s<p class="headline">%s</p>%s%s</article>' % (
-                c['case'], c['case'], ' checked' if done else '', c['case'], html.escape(fix_label(c, in_topic.get(c['case']))), badge, status, html.escape(card['headline']),
+                c['case'], c['case'], ' checked' if done and not waiting else '', c['case'], html.escape(fix_label(c, in_topic.get(c['case']))), badge, status, html.escape(card['headline']),
                 figures(problem_of, card, frames, ''), prose(card.get('text', []))))
         titles = {'grading': 'On the site', 'tree_change': 'Change the tree as well', 'also_check': 'Other leaves to check in this tree'}
         if with_blocks:
@@ -501,7 +504,7 @@ def render(specs_dir, out_path):
     unknown = sorted(set(fixed) - set(by_case))
     if unknown:
         raise SystemExit('fixed.json names leaves not in the results: %s' % ', '.join(unknown))
-    counts = {'fixed': len(fixed), 'total': len(results), 'errors': len(errors), 'decide': len(decide), 'solver': len(solver_cases),
+    counts = {'fixed': len([f for f in fixed.values() if not f.get('waiting')]), 'total': len(results), 'errors': len(errors), 'decide': len(decide), 'solver': len(solver_cases),
               'tree': len(tree_group), 'grading': len(grading_group), 'label_leaves': leaves_of(label_group), 'label_problems': len(label_group)}
     page = open(os.environ.get('STYLE', os.path.join(RESEARCH, 'report_style.html'))).read()
     page = page.replace('TOC', ''.join('<li><a href="#%s">%s</a> <span class="count">%s</span></li>' % t for t in toc))
