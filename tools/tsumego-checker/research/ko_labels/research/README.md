@@ -27,5 +27,6 @@ analyst per problem, reviewers, judges or fact checkers, and grading checks; pub
 - 11332's leaf 3 (k029) became a decision (topic leaf-convention): the owner's trees mark a line ending with the
   solver's ko capture KO+ even when the solver then wins whatever happens; the research reads it ALIVE.
 - `fixes3/`: the faults still left after the recheck (`cases.md`) and the briefs, cases and regression lists of the
-  fix groups E1 (the leaf convention made KO+ of a clean failure; merged as D14) and E2 (approaches that are not
-  approaches, still being designed).
+  fix groups E1 (the leaf convention made KO+ of a clean failure; merged as D14), E2 (approaches that are not
+  approaches: a failing outright test read from its children, merged as c6ad6ec7) and F (labels left undecided where
+  the research settled them; `group-F.md`, `regress-F.txt`, being designed).
