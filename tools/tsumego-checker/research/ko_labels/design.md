@@ -1193,6 +1193,10 @@ When the side to move can either take first and then approach, or approach first
 
 Your trees have no DSKO or ASKO leaf, so there is no diagram. Is superko positional superko, a whole-board position that may not repeat?
 
+### The leaf convention: KO+ for a clean success (not yet on the question page)
+
+Problem 11332, leaf 3 (D17 E19 D19 C19 B19 B18 C18 A19 D19), Black to live: the line ends with Black's capture of a ko, but Black lives without it (White's retake at D18 after a threat fails: Black connects at C17), so the research reads the leaf ALIVE. Your trees print KO+ for such a leaf, where the solver's last move takes a ko it does not need (5160, 5628, 8094, 13075 twice and 15399 four times), and the solver follows them (D14): it prints KO+ and says the label turns on this question. Should such a leaf be KO+ or the clean status? A clean failure is never KO+: the solver fails even with unlimited threats (13661 leaf 9 is ALIVE).
+
 ### Answered
 
 - **c121 in 15678:** S[A-1KO-], set on the site on 14 November. What White gains with the free move of an approach round belongs to the approach; the solver prints it beside the label.
