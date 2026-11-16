@@ -1148,9 +1148,10 @@ class Solver:
         #positions P_F right after the take and P_other right after the other side's retake, each (board, side to move).
         #From the leaf's ban, else the principal line at d (one search confirms d(P_F) = d), else (no d, or a line that
         #stops before a take) the mode lines. A first move of the side to move (D12) whose line stops leaves the take
-        #undecided: the mode lines do not start with it
+        #undecided: the mode lines do not start with it. investment: the holder's move the line plays before the take, when
+        #it is no preparation (investment)
         take = {'side': None, 'ko': None, 'preparation': [], 'P_F': None, 'P_other': None, 'to_other': None, 'how': None,
-                'notes': [], 'confirmed': None, 'first_move': first}
+                'notes': [], 'confirmed': None, 'first_move': first, 'investment': None, 'known': None}
         line, end = self.principal_line(board, to_move, d, first=first) if board.ko is None and d is not None else ([], None)
         if end not in (None, 'take'):
             take['notes'].append('principal line: %s' % end)
@@ -1162,6 +1163,13 @@ class Solver:
             color, p, mark, after = line[-1]
             take.update(side=color, ko=(after.ko, p), preparation=[(c, q) for c, q, m, b in line[:-1]], P_F=(after, other_colour(color)),
                         how='line')
+            found = self.investment(board, to_move, line, d)
+            if found is not None:
+                #the take is measured before the holder's investment, as if the holder had passed there
+                after, move, known = found
+                take.update(preparation=[(c, q) for c, q, m, b in line[:-2]] + [(other_colour(color), None)],
+                            P_F=(after, other_colour(color)), investment=(other_colour(color), move),
+                            known={other_colour(color): known} if known else None)
             #the other side of the threshold at P_F follows from the line's searches; one search checks it
             balance = d - 1 if color == self.solver_color else d
             result, moves, nodes = self.count(after, other_colour(color), max(balance, 0), max(-balance, 0))
@@ -1210,7 +1218,60 @@ class Solver:
             take['notes'].append('the other side has no capture of the ko: its count is n/a, taken as 0')
         return take
 
-    def profile(self, board, to_move, holder, K=PASS_LIMIT, Lo=4):
+    def outright_once(self, board, mover, holder, Lo):
+        #D3 with k = 1 at P_X (board, Y = mover under the ban): X wins with 0 threats against Lo while Y passes once, its
+        #capture is a real threat. The profile's own first search (cached). True / False / None
+        s, o = (0, Lo) if holder == self.solver_color else (Lo, 0)
+        verdict, line, nodes = self.count(board, mover, s, o, passes={mover: 1}, part='profile %s k=1' % holder)
+        return None if verdict is None else verdict == (holder == self.solver_color)
+
+    def investment(self, board, to_move, line, d):
+        #D2: the holder's move right before the principal line's first take is no preparation but its investment (10kKO)
+        #when the take's ko shape stood before it, neither capture of the shape was a real threat there (D3 with k = 1) and
+        #the taker's is one after it: the move, at a liberty both sides share, hands the taker a direct ko (D9's switch
+        #test). The line's taker then waits until the holder invests (13541's D18, 11280's C17, 11282's C17). The holder's
+        #test needs no search after a move of the taker that is no pass or capture: the line kept the taker's win at its
+        #balance there, so the holder fails with Y's single pass too (11282, where that search stays undecided). (the
+        #taker's capture before the move, as if the holder passed there; the move; known: the holder's k = 1 result) or None.
+        #The searches are the profiles' first ones
+        if len(line) < 2:
+            return None
+        color, p, mark, after = line[-1]
+        holder = other_colour(color)
+        c, q, m, played = line[-2]
+        before = line[-3][3] if len(line) > 2 else board
+        if c != holder or q is None or (holder, after.ko, p) not in [shape[:3] for shape in self.ko_shapes(before)]:
+            return None
+        taken = self.play(before, color, p)
+        retaken = taken and self.play(taken, holder, taken.ko, ignore_ko=True)
+        if taken is None or taken.ko != after.ko or retaken is None or retaken.ko != p:
+            return None
+        Lo = 4 if d is None else min(15, max(4, abs(d) + 2))
+        if self.outright_once(taken, holder, color, Lo) is not False:
+            return None
+        implied = len(line) > 2 and line[-3][1] is not None and line[-3][2] == '' and before.ko is None
+        if not implied and self.outright_once(retaken, color, holder, Lo) is not False:
+            return None
+        if self.outright_once(after, holder, color, Lo):
+            return taken, q, {1: False} if implied else None
+        return None
+
+    def switch_test(self, board, holder, profile, Lo):
+        #D9's switch test of the holder X's approach at P_X (board, Y to move under the ban): after Y's tenuki, X's approach
+        #and Y's free retake, Y's capture is a real threat (D3 with k = 1). True / False / None (undecided, or no approach or
+        #free retake to play)
+        other = other_colour(holder)
+        approach = profile['approach'] or (profile['approach_moves'] or [None])[0]
+        ko = self.ko_points(board)
+        if approach is None or ko is None:
+            return None
+        after = self.play(self.play(board, other, None), holder, approach)
+        retaken = after and self.play(after, other, ko[0])
+        if retaken is None or retaken.ko != ko[1]:
+            return None
+        return self.outright_once(retaken, holder, other, Lo)
+
+    def profile(self, board, to_move, holder, K=PASS_LIMIT, Lo=4, known=None):
         #D3-D5 for the holder X of the ko at P_X (board, to_move = Y under the ban): t, the least k <= K for which X wins
         #outright (0 threats against Lo) while Y is forced to pass k times, n = t - 1 its approaches, the held-ko check (Y
         #also barred from retaking for the whole search, and a free retake after the approach) and v, the threshold with Y
@@ -1227,6 +1288,11 @@ class Solver:
         wins = lambda verdict: None if verdict is None else verdict == (holder == self.solver_color)
         low, high, lines = 0, None, {}
         for k in range(1, K + 1):
+            if k in (known or {}):
+                #decided before the profile, by the first take's line (D2): X does not win outright
+                result['outright'][k], lines[k] = known[k], []
+                low = k
+                continue
             verdict, line, nodes = self.count(board, mover, s, o, passes={mover: k}, part='profile %s k=%d' % (holder, k))
             result['outright'][k] = wins(verdict)
             lines[k] = line
@@ -1399,7 +1465,8 @@ class Solver:
         solver = self.solver_color
         kill = solver == self.attacker
         parts = {'label': None, 'besogo': None, 'a': None, 'e': None, 'd_conv': None, 'x': None, 'strict_label': None,
-                 'net_label': None, 'mutual': None, 'stages': [], 'notes': [], 'v': None, 'second_ko': None, 'alternative': None}
+                 'net_label': None, 'mutual': None, 'stages': [], 'notes': [], 'v': None, 'second_ko': None, 'alternative': None,
+                 'free_moves': None}
         if take['side'] is None and not take.get('positions'):
             parts['label'] = 'A?KO?'
             return parts
@@ -1475,12 +1542,19 @@ class Solver:
             #D9: neither side's capture threatens anything
             attacker_count = n_s if kill else n_o
             parts['mutual'] = {'S': n_s, 'O': n_o}
+            if attacker_count >= 2 and (profiles['O' if kill else 'S'] or {}).get('switch'):
+                #the defender's one approach hands the attacker a direct ko, so the defender cannot use the free moves the
+                #attacker's other approaches give: they cost nothing (13549 leaf 14's E19), and the attacker invests once
+                parts['free_moves'] = attacker_count - 1
+                attacker_count = 1
+                parts['mutual'] = {'S': 1, 'O': n_o} if kill else {'S': n_s, 'O': 1}
             a = -attacker_count if kill else attacker_count
             e = None if d_full is None else -d_full - a
             if attacker_count >= 2:
                 parts['notes'].append('mutual approach (the defender needs %d too)' % (n_o if kill else n_s))
             if d_full is not None:
-                parts['net_label'] = besogo_string(n_o - n_s, -d_full - (n_o - n_s))
+                net = parts['mutual']['O'] - parts['mutual']['S']
+                parts['net_label'] = besogo_string(net, -d_full - net)
         if take['side'] is None:
             e = None #without the first take only the approaches are known
         if a is not None and d_full is not None:
@@ -1508,7 +1582,8 @@ class Solver:
         record = {'label': None, 'class': None, 'class_inferred': False, 'class_open': [], 'class_open_tests': [], 'besogo': None,
                   'count': None, 'd_conv': None,
                   'first_take': None, 'approaches': None, 'direct_ko': None, 'gain': None, 'strict_label': None,
-                  'net_label': None, 'second_ko': None, 'alternative': None, 'special': None, 'area': None, 'a': None, 'e': None,
+                  'net_label': None, 'free_moves': None, 'second_ko': None, 'alternative': None, 'special': None, 'area': None, 'a': None,
+                  'e': None,
                   'extra_threats': None, 'warnings': [], 'undecided': [], 'nodes': 0, 'seconds': 0, 'solver': self.solver_color,
                   'goal': 'KILL' if self.solver_color == self.attacker else 'LIVE'}
         start, started = self.nodes, time.time()
@@ -1610,6 +1685,7 @@ class Solver:
         record['extra_threats'] = parts['x']
         record['strict_label'] = parts['strict_label']
         record['net_label'] = parts['net_label']
+        record['free_moves'] = parts['free_moves']
         record['warnings'].extend(parts['notes'])
         if parts['second_ko']:
             #D5: the label counts the second ko after the fill; the other reading, the fill barred, comes with its own full
@@ -1636,6 +1712,7 @@ class Solver:
         record['first_take'] = {'side': take['side'], 'point': self.point_name(take['ko'][1]) if take['ko'] else None,
                                 'retake_point': self.point_name(take['ko'][0]) if take['ko'] else None, 'how': take['how'],
                                 'preparation': [(c, self.point_name(p)) for c, p in take['preparation']], 'confirmed': take['confirmed'],
+                                'investment': take['investment'] and (take['investment'][0], self.point_name(take['investment'][1])),
                                 'notes': take['notes'], 'nodes': take_nodes,
                                 'candidates': None if len(labelled) == 1 else
                                 [{'move': self.point_name(t['first_move'][0]), 'label': p['label']} for t, f, p in labelled]}
@@ -1669,6 +1746,7 @@ class Solver:
         profiles = {'S': None, 'O': None}
         if take['side'] is None and not take.get('positions'):
             return profiles
+        positions = {}
         for side, color in (('S', self.solver_color), ('O', other_colour(self.solver_color))):
             if take['side'] is None:
                 position = take['positions'][color]
@@ -1676,7 +1754,16 @@ class Solver:
                 position = take['P_F'] if take['side'] == color else take['P_other']
             if position is not None:
                 self.part = 'profile %s' % side
-                profiles[side] = self.profile(position[0], position[1], color, Lo=Lo)
+                profiles[side] = self.profile(position[0], position[1], color, Lo=Lo, known=(take.get('known') or {}).get(color))
+                positions[side] = position
+        #D9: in a mutual approach where the attacker needs more approaches than the defender's one, the switch test of the
+        #defender's approach (label_parts: the attacker's other approaches may cost nothing)
+        attacker, defender = ('S', 'O') if self.solver_color == self.attacker else ('O', 'S')
+        mine, theirs = profiles[attacker], profiles[defender]
+        if mine and theirs and mine['decided'] and theirs['decided'] and mine['n'] >= 2 and theirs['n'] == 1 and mine['held_ok'] and \
+                theirs['held_ok'] and not mine['fill'] and not theirs['fill']:
+            self.part = 'switch test %s' % defender
+            theirs['switch'] = self.switch_test(positions[defender][0], other_colour(self.attacker), theirs, Lo)
         return profiles
 
     def profile_summary(self, profile):
@@ -1691,7 +1778,7 @@ class Solver:
                 ['%s%s' % (self.point_name(p), '' if wins else '?') for p, wins in profile['alternatives']],
                 'alternatives_rejected': None if profile['alternatives_rejected'] is None else
                 [(self.point_name(p), value) for p, value in profile['alternatives_rejected']],
-                'held_ok': profile['held_ok'],
+                'held_ok': profile['held_ok'], 'switch': profile.get('switch'),
                 'second_ko_capture': self.point_name(profile['second_ko_capture']) if profile.get('second_ko_capture') else None,
                 'v': profile['v'] and profile['v']['d'],
                 'v_decided': profile['v'] and profile['v']['decided'], 'v_beyond': profile['v'] and profile['v']['beyond'],
@@ -2485,6 +2572,12 @@ def label_text(record):
         sentences.append('%s takes first at %s%s%s' % (COLOUR_NAMES[take['side']], take['point'],
                                                        ' after the preparation %s' % preparation if preparation else '',
                                                        ' (from the mode lines)' if take['how'] == 'modes' else ''))
+    if take.get('investment'):
+        #D2: the holder's investment on the line is no preparation
+        holder, move = take['investment']
+        sentences.append('%s\'s %s, which the principal line plays in place of that last pass, is no preparation but %s\'s investment '
+                         '(10kKO): before it neither capture threatens anything, after it %s\'s does, so the ko is measured before it (D2)' % (
+                             COLOUR_NAMES[holder], move, COLOUR_NAMES[holder], COLOUR_NAMES[other_colour(holder)]))
     approaches = record.get('approaches') or {}
     second = record.get('second_ko')
     #a side whose rounds are stages (the held-ko check fails) does not approach
@@ -2549,8 +2642,13 @@ def label_text(record):
         sentences.append('Both captures are direct')
     if len(approaching) == 2:
         attacker_side = 'S' if record['goal'] == 'KILL' else 'O'
-        count = approaches[attacker_side]['n']
-        sentences.append('Neither capture threatens anything, a mutual approach: %s' % (
+        free = record.get('free_moves') or 0
+        count = approaches[attacker_side]['n'] - free
+        attacker, defender = COLOUR_NAMES[side_colour(attacker_side)], COLOUR_NAMES[side_colour('O' if attacker_side == 'S' else 'S')]
+        sentences.append('Neither capture threatens anything, a mutual approach: %s%s' % (
+            '%s\'s approach hands %s a direct ko (the switch test), so %s\'s other %s nothing, as %s cannot use the free move%s; '
+            % (defender, attacker, attacker, 'approaches cost' if free > 1 else 'approach costs', defender, 's' if free > 1 else '')
+            if free else '',
             'the attacker needs one approach, so 10kKO (D9)' if count == 1 else
             'the attacker needs %d, so the A-form with its count, flagged' % count))
     direct = record.get('direct_ko') or {}
@@ -2674,7 +2772,8 @@ def label_summary(record, authored, goal):
             'class': record.get('class'), 'class_inferred': record.get('class_inferred'), 'class_open': record.get('class_open'),
             'class_open_tests': record.get('class_open_tests'),
             'count': count.get('d_full'), 'count_decided': count.get('decided'), 'd_conv': record.get('d_conv'),
-            'first_take': {key: take.get(key) for key in ('side', 'point', 'how', 'preparation')},
+            'first_take': {key: take.get(key) for key in ('side', 'point', 'how', 'preparation', 'investment')},
+            'free_moves': record.get('free_moves'),
             'approaches': {side: (summary or {}).get('n') for side, summary in (record.get('approaches') or {}).items()},
             'local_threats': direct.get('local_threats'), 'stages': direct.get('stages'),
             'gain': {key: gain.get(key) for key in ('side', 'total', 'located', 'unlocated')} if gain else None,

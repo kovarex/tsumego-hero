@@ -197,6 +197,22 @@ player is White:
     else the search's own move.
   - Moves before the first take are **preparation**, for example c023's throw-in A19, c081's White A19, and
     10005's Black A16. They are not approaches.
+  - **An investment is no preparation.** The line's last move before the take is the holder's investment (10kKO)
+    when it is the holder's (the side whose stone the take captures), the take's ko shape stood before it, neither
+    capture of that shape was a real threat there (D3 with k = 1) and the taker's is one after it: the move, at a
+    liberty both sides share, hands the taker a direct ko (D9's switch test), and the taker only waited for it. P_F is
+    then the taker's capture before the move, as if the holder had passed there, and P_other the holder's retake. In
+    13541 leaf 6 (Black to kill) White passes while Black fills its outside liberties F19 and A15, which cost nothing,
+    and takes at B19 only after Black's D18: measured before D18, each side needs D18 or D19, a mutual approach, 10kKO
+    (it printed KO-, the ko after the investment). The same in 11280 leaf 9 (C17 after D15 and E19) and 11282 leaf 6 (C17
+    after White's own E16). In 13475 leaf 8 (Black to live) White invests at D18 after its own F19; before D18 White
+    needs A16 and D18 or D19, Black D18 or D19, and White's A16 is a free move (D9): 10kKO, the tree's label (it printed
+    A+1KO+, which besogo ranks the same in a LIVE problem).
+    - The tests are the profiles' first searches. The holder's needs none after a move of the taker that is neither a
+      pass nor a capture: the line kept the taker's win at its balance there, so the holder cannot win outright with
+      one tenuki of the taker either (11282 leaf 6, where that search stays undecided at 14,000,000 nodes).
+    - 10005's G19 stays preparation: White's capture was already a real threat before it, as it is before most such
+      moves (the test costs one search there).
 - **Confirmation:** d(P_F) must equal d(leaf). One search checks it.
 - **Fallback:** when d(leaf) is undecided and the leaf has no ban, F comes from the first ko capture that the mode
   PVs agree on (mode D for the attacker, mode A for the defender). If they do not agree, F is undecided.
@@ -383,6 +399,15 @@ below waits for his confirmation there.
     (KO-2 there), is the net reading, and a warning names question 1b.
 - **No ko on the board yet**, one side must make it with moves that cost nothing in the count (10393): 10kKO.
 - With more than one approach on a side, the test applies to each round; a mixed result is marked for the owner.
+- **Free moves of the attacker.** When the attacker needs more approaches than the defender's one and the defender's
+  approach hands the attacker a direct ko (the switch test of that approach is yes), the attacker's other approaches
+  cost nothing: the defender cannot use the free moves they give, since its only approach would hand the attacker a
+  direct ko, so it waits and the attacker retakes for free. The attacker then invests once: 10kKO. With the owner's 15
+  November answer to question 1a (the shape of 10391 is his 10kKO) the research reads such free moves as costing
+  nothing, like the outside fills of D2's 13541, and so do his trees. 13549 leaf 14 (Black to kill): Black needs E19
+  and B17 or C17, White B17 or C17; after White's C17 Black's free retake threatens at once, so E19 costs nothing,
+  10kKO (it printed A-2KO+2). The switch test is the one search this adds, and only for such a leaf; with the
+  defender's test no or undecided the A-form with the attacker's count stays, flagged.
 - The tree's 10kKO on a leaf where one side's capture threatens from the start (seven leaves, for example 13547) is
   reported as notation where besogo ranks the two labels equal, and as a difference otherwise.
 - The earlier draft printed 10kKO for every mutual 1/1 and the net reading beside it. The question page found that
@@ -513,7 +538,7 @@ the narrow and wide areas. Every part is computed in the wide area first, with t
 **Step 2. Count.** Compute d(leaf) with the shifted check. A count beyond ±L is printed as "beyond".
 
 **Step 3. First take** (D2): from the leaf's ban, or the principal line and its confirmation, or the mode PVs.
-Apply the tie rule D12.
+A holder's investment right before the line's take moves P_F before it. Apply the tie rule D12.
 
 **Step 4. Profiles** (D3, D4) for X = S on P_S and X = O on P_O. Each side costs:
 - outright tests for k = 1, 2, …;
@@ -703,8 +728,8 @@ Compare the class first, then the approach count, then e. besogo ranks approache
 |---|---|
 | class | 2-4 solves as today, plus 1 cycle-rule rerun when a mode kills or relies on cycles |
 | d(leaf) | 2-4, plus 2 for the shifted check |
-| first take | 0-1 confirmations, plus `counted_line` when PVs disagree |
-| profiles | per approaching side: 1-3 outright tests, 1 held-ko check and 2-3 for v (4-8); a direct side costs 1 |
+| first take | 0-1 confirmations, plus `counted_line` when PVs disagree; 1-3 outright tests (k = 1) when the line's last move before the take is the holder's (D2's investment; the profiles reuse one) |
+| profiles | per approaching side: 1-3 outright tests, 1 held-ko check and 2-3 for v (4-8); a direct side costs 1; 1 switch test when the attacker of a mutual approach needs more approaches than the defender's one (D9) |
 | attribution | 1 per threat, plus forms |
 | gain | 2 per candidate move per round, at most 6 candidates |
 | lines | `counted_line` (10-40 small searches each) |
@@ -1204,7 +1229,9 @@ implementation needs, pending the owner's answers:
    passing, which gives A+1KO-2 instead of A-1KO-. The first take needs a rule for this.
 6. **Semeai shapes:** D3 counts 3 or 4 approaches where the count is one threat (13541 leaves 1 and 6, 11280 leaves 9
    and 18, 13475 leaf 8). Approaches there come with tempo (section 11 risk 2 is real), so the approach count needs a
-   bound from the count before it is printed.
+   bound from the count before it is printed. The checker never measures 13541 leaf 6, 11280 leaf 9 and 13475 leaf 8
+   at the leaf: its principal line plays the free fills first, and D2's investment rule measures the ko after them and
+   before the investment, where each side needs the shared move: 10kKO.
 7. **2406:** in the corner frame A16:F19 the prototype engine gives d = -1 (White 2, Black 0), not the d = 0 and
    mutual 1/1 of section 10.
 8. **The tree is not consistent:** identical profiles and counts carry 10kKO and A-1KO+ (13547 leaves 1 and 2;
