@@ -43,6 +43,7 @@ besogo.makeGameRoot = function(sizeX = 19, sizeY = 19)
 	node.visitedInRecursion = false; // internal bool for recursive algorithm
     node.localEdit = false;
     node.diffInfo = null; // own, so a child does not show the changes of its parent in a diff
+    node.threat = false; // TH[]: the pass of this node is an abstract ko threat elsewhere, see isThreat
   }
 
   // The whole board, the color of each point by its index (see fromXY): a copy of the parent's board or the empty board
@@ -619,13 +620,38 @@ besogo.makeGameRoot = function(sizeX = 19, sizeY = 19)
     return thisKo.x == otherKo.x && thisKo.y == otherKo.y;
   }
 
+  // Whether the move of this node is an abstract ko threat elsewhere: a pass marked TH[], which the opponent answers
+  // with a pass or ignores with a move on the board
+  root.isThreat = function()
+  {
+    return this.threat && this.move !== null && this.move.x === 0 && this.move.y === 0;
+  }
+
+  // How far Black is ahead on the rest of the board: Black's moves elsewhere (every pass: a tenuki, a ko threat or
+  // the answer to one) minus White's. A threat and its answer cancel out, a threat that was ignored counts for the
+  // side that made it. It is counted from the line, so a transformation that swaps the colours swaps it too.
+  root.movesElsewhereBalance = function()
+  {
+    let balance = 0;
+    for (let node = this; node; node = node.parent)
+      if (node.move && node.move.x === 0 && node.move.y === 0)
+        balance += node.move.color == BLACK ? 1 : -1;
+    return balance;
+  }
+
+  // The same stones, side to move and ko are not yet the same position: the moves elsewhere differ when the balance
+  // differs, and a threat waiting for its answer is not the tenuki the stones would show either
   root.samePositionAs = function(other)
   {
     if (this.nextIsBlack() != other.nextIsBlack())
       return false;
     if (!sameStones(this.board, other.board))
       return false;
-    return this.hasSameKoStateAs(other);
+    if (!this.hasSameKoStateAs(other))
+      return false;
+    if (this.isThreat() != other.isThreat())
+      return false;
+    return this.movesElsewhereBalance() == other.movesElsewhereBalance();
   }
 
   root.treeSize = function()

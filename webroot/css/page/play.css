@@ -736,11 +736,20 @@
 
 /* In the review, Tenuki is ringed in the colour of where it leads, as the board circles each next move: a tenuki has no
    point to circle (toolPanel.js markTenukiInReview()) */
-#besogo-pass-button.besogo-pass-button--correct {
+/* The moves elsewhere as the solver sees them, beside Tenuki (toolPanel.js showMovesElsewhere()) */
+.besogo-elsewhere {
+  align-self: center;
+  font: var(--control-font);
+  color: var(--color-text);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+:is(#besogo-pass-button, #besogo-threat-button).besogo-pass-button--correct {
   border-color: var(--play-message-correct);
   box-shadow: 0 0 0 1px var(--play-message-correct);
 }
-#besogo-pass-button.besogo-pass-button--wrong {
+:is(#besogo-pass-button, #besogo-threat-button).besogo-pass-button--wrong {
   border-color: var(--play-message-incorrect);
   box-shadow: 0 0 0 1px var(--play-message-incorrect);
 }
@@ -1060,6 +1069,13 @@
   .play-actions__end .btn {
     padding-inline: var(--space-2);
     font-size: var(--text-sm);
+  }
+  /* The buttons keep at least a third of the row for the message beside them: more of them (Make ko threat or
+     Answer threat and the moves elsewhere) go on two lines at the right instead of cutting the message */
+  .play-actions__end {
+    max-width: 65%;
+    flex-wrap: wrap;
+    justify-content: flex-end;
   }
 }
 }

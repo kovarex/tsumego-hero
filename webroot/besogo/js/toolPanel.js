@@ -304,10 +304,28 @@ besogo.makeToolPanel = function (container, editor) {
         },
         "besogo-pass-button"
       );
+      // A ko threat elsewhere, offered while the solver may not take the ko back
+      let threatButton = makeButtonText(
+        "Make ko threat",
+        "Make a ko threat elsewhere",
+        function () { editor.playThreat(); },
+        "besogo-threat-button"
+      );
+      // How far the solver is ahead elsewhere: their moves elsewhere minus the opponent's
+      let elsewhere = document.createElement("span");
+      elsewhere.id = "besogo-elsewhere";
+      elsewhere.className = "besogo-elsewhere";
+      elsewhere.title = "Your moves elsewhere (tenuki, ko threats not answered) minus your opponent's";
+      container.appendChild(elsewhere);
+      let showPlayActions = function () {
+        showTenukiAndThreat(tenukiButton, threatButton);
+        showMovesElsewhere(elsewhere);
+      };
       editor.addListener(function (msg) {
         if (msg.navChange || msg.treeChange)
-          markTenukiInReview(tenukiButton);
+          showPlayActions();
       });
+      showPlayActions();
       // The level mode and the training have no Back: the problem buttons under the board lead back
       if (mode == 2) {
         makeHyperlinkText(
@@ -847,6 +865,9 @@ besogo.makeToolPanel = function (container, editor) {
       }
       editor.click(0, 0, false); // Clicking off the board signals a pass
     });
+    makeButtonText("Ko threat", "Make an abstract ko threat elsewhere (TH[])", function () {
+      editor.playThreat();
+    });
     makeButtonText("Cut", "Remove branch", function () {
       editor.cutCurrent();
     });
@@ -986,21 +1007,39 @@ besogo.makeToolPanel = function (container, editor) {
   }
 
   // Creates text button
-  // In the review the board circles each next move in the colour of where it leads. A tenuki has no point to
-  // circle, so the Tenuki button takes that colour instead, green when it leads to a correct end, red to a wrong one.
-  function markTenukiInReview(button) {
+  // In the review the board circles each next move in the colour of where it leads. A tenuki or a ko threat has no
+  // point to circle, so its button takes that colour instead, green when it leads to a correct end, red to a wrong one.
+  function markInReview(button, child) {
     button.classList.remove("besogo-pass-button--correct", "besogo-pass-button--wrong");
-    if (!editor.getReviewMode())
+    if (!editor.getReviewMode() || !child || child.localEdit)
       return;
-    let tenuki = editor.getCurrent().children.find(function (child) {
-      return child.move && child.move.x === 0 && child.move.y === 0;
-    });
-    if (!tenuki || tenuki.localEdit)
-      return;
-    if (tenuki.correct == CORRECT_GOOD)
+    if (child.correct == CORRECT_GOOD)
       button.classList.add("besogo-pass-button--correct");
-    else if (tenuki.correct == CORRECT_BAD)
+    else if (child.correct == CORRECT_BAD)
       button.classList.add("besogo-pass-button--wrong");
+  }
+
+  // Tenuki is always there, and after the opponent's ko threat it is the answer to it (a move on the board ignores
+  // it). Make ko threat is there while the side to move may not take a ko back, and in the review where the problem
+  // has a threat.
+  function showTenukiAndThreat(tenukiButton, threatButton) {
+    let current = editor.getCurrent();
+    let answers = current.isThreat();
+    tenukiButton.value = answers ? "Answer threat" : "Tenuki";
+    tenukiButton.title = answers ? "Answer the ko threat (play elsewhere)" : "Play elsewhere (tenuki)";
+    let tenuki = current.children.find(child => child.move && child.move.x === 0 && child.move.y === 0 && !child.isThreat());
+    let threat = current.children.find(child => child.isThreat());
+    markInReview(tenukiButton, tenuki);
+    markInReview(threatButton, threat);
+    threatButton.hidden = !current.getForbiddenMoveBecauseOfKo() && !(editor.getReviewMode() && threat);
+  }
+
+  // The balance of the moves elsewhere as the solver sees it, shown only when someone is ahead
+  function showMovesElsewhere(element) {
+    let root = editor.getRoot();
+    let balance = editor.getCurrent().movesElsewhereBalance() * (root.firstMove == BLACK ? 1 : -1);
+    element.hidden = balance == 0;
+    element.textContent = "Elsewhere " + (balance > 0 ? "+" : "\u2212") + Math.abs(balance);
   }
 
   function makeButtonText(text, tip, callback, id = null) {

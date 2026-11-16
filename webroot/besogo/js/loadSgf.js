@@ -145,6 +145,9 @@ besogo.loadSgf = function(sgf, editor, mode = NORMAL_LOAD)
         node.statusSource = besogo.loadStatusFromString(node.statusText.trim());
         node.statusTextReads = node.statusSource.str();
         break;
+      case 'TH': // An abstract ko threat elsewhere, on a pass (see isThreat)
+        node.threat = true;
+        break;
       case 'SKD':
         node.superkoMeansDead = true;
         break;

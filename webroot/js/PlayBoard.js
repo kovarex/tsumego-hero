@@ -218,13 +218,15 @@ redrawHearts();
 	let end = document.createElement("span");
 	end.className = "play-actions__end";
 	(document.querySelector(".play-message") ?? actions).appendChild(end);
-	for (let id of ["besogo-pass-button", "history-button", "besogo-reset-button", "besogo-reset-button-inactive",
+	//The moves elsewhere and Make ko threat come and go, so they are left of Tenuki, which keeps its place
+	for (let id of ["besogo-elsewhere", "besogo-threat-button", "besogo-pass-button", "history-button", "besogo-reset-button", "besogo-reset-button-inactive",
 		"besogo-next-button", "besogo-next-button-inactive"])
 	{
 		let button = row.querySelector("#" + id);
 		if (button)
 		{
-			button.classList.add("btn");
+			if (button.tagName != "SPAN") //the moves elsewhere are a text beside the buttons
+				button.classList.add("btn");
 			end.appendChild(button);
 		}
 	}

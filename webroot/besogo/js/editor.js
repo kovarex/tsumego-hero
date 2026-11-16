@@ -51,6 +51,7 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
     addListener: addListener,
     removeListener: removeListener,
     click: click,
+    playThreat: playThreat,
     nextNode: nextNode,
     prevNode: prevNode,
     nextSibling: nextSibling,
@@ -411,6 +412,20 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
       notifyListeners({ treeChange: true }); // Notify tree edited
   }
 
+  // An abstract ko threat elsewhere (TH[]): the child that is one, or else a new pass marked as one, which the
+  // solver gets wrong like any move the problem doesn't have
+  function playThreat() {
+    if (!besogo.isEmbedded) boardLockValue = 0;
+    if (boardLockValue != 0 || pendingAutoPlay) return;
+    let threat = current.children.find(child => child.isThreat());
+    if (threat) {
+      threat.cameFrom = null;
+      navigateToNode(threat, true /* by clicking */);
+    }
+    else
+      playMove(0, 0, 0, false, true);
+  }
+
   // Handle click with application of selected tool
   function click(i, j, ctrlKey, shiftKey) {
     if (!besogo.isEmbedded) boardLockValue = 0;
@@ -586,7 +601,8 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
     // Look for move across children
     for (let i = 0; i < children.length; i++) {
       let move = children[i].move;
-      if (move && move.x === x && move.y === y) {
+      // a click off the board is a tenuki, never the ko threat that is a pass too
+      if (move && move.x === x && move.y === y && !children[i].isThreat()) {
         children[i].cameFrom = null;
         navigateToNode(children[i], true /* by clicking */);
         return true;
@@ -630,13 +646,14 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
 
   // Plays a move at the given color and location
   // Set allowAll to truthy to allow illegal moves
-  function playMove(i, j, color, allowAll) {
+  function playMove(i, j, color, allowAll, threat = false) {
     allowAll = false;
     if (besogo.isEmbedded) besogo.soundsEnabled = soundsEnabled;
     // Check if current node is immutable or root
     if (!current.isMutable("move") || !current.parent) {
       var next = current.makeChild(); // Create a new child node
       if (!fullEditor) next.localEdit = true;
+      next.threat = threat;
       if (next.playMove(i, j, color, allowAll)) {
         // Play in new node
         // Keep (add to game state tree) only if move succeeds
@@ -662,6 +679,7 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
       }
       // Current node is mutable and not root
     } else if (current.playMove(i, j, color, allowAll)) {
+      current.threat = threat;
       // Play in current
       // Only need to update if move succeeds
       current.registerInVirtualMoves();
@@ -772,7 +790,8 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
   function tenukiNotice(node) {
     if (!node.move || node.move.x !== 0 || node.move.y !== 0)
       return "";
-    return (node.move.color == BLACK ? "Black" : "White") + " plays elsewhere (tenuki).";
+    let color = node.move.color == BLACK ? "Black" : "White";
+    return node.isThreat() ? color + " makes a ko threat elsewhere." : color + " plays elsewhere (tenuki).";
   }
 
   // Taking back a ko at once is refused, which would leave the click without an answer, so the row of the
@@ -781,7 +800,7 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
     let ko = current.getForbiddenMoveBecauseOfKo();
     if (!ko || ko.x !== i || ko.y !== j)
       return "";
-    return "Ko: you can't take back right away.";
+    return "Ko: you can't take back right away. Make a ko threat first.";
   }
 
   function wasEdited() {

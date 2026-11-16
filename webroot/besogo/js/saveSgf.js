@@ -76,6 +76,8 @@ besogo.composeSgf = function(editor, expand = false)
       var move = moveOverride ? moveOverride : node.move;
       string += (move.color === 1) ? 'W' : 'B';
       string += '[' + coordsToLetters(move.x, move.y) + ']';
+      if (node.isThreat())
+        string += 'TH[]';
     }
     else if (node.getType() === 'setup') // Compose setup properties
     {

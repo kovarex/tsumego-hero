@@ -1,0 +1,1 @@
+Added: Ko fights can now be played out with ko threats: a Make ko threat button appears while you can't take a ko back, Tenuki becomes Answer threat after your opponent's threat (a move on the board ignores it), and a count beside the buttons shows who is ahead on moves played elsewhere.
