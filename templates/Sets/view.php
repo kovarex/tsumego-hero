@@ -146,7 +146,7 @@ if ($tsumegoFilters->query != 'topics')
 					echo '<br><span class="text-muted">You need to complete 50% to reset.</span>';
 				else
 				{
-					echo '<div id="msg1x"><a id="showx">Reset<img id="greyArrow1" src="/img/greyArrow1.png"></a></div>';
+					echo '<div class="set-view__reset-toggle"><a id="showx">Reset<img id="greyArrow1" src="/img/greyArrow1.png"></a></div>';
 					echo '<div id="msg2x" class="set-view__reset-form">';
 					echo 'Type "reset" to start this part over: the problems you solved go back to Review, the others are cleared. Solving a Review problem again makes it Mastered.<br><br>';
 					echo '<form action="/sets/resetProgress/' . $set->id . '/' . ($partition + 1) . '" method="post">';

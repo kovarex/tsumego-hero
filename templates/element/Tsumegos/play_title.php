@@ -24,7 +24,7 @@ use App\Utility\MistakeTraining;
 $order = $setConnection->num;
 ?>
 <?php if ($classroomAssignment !== null): ?>
-	<a id="playTitleA" href="/classes/<?php echo (int) $classroomAssignment['classroom_id']; ?>"><?php echo h(ClassroomAssignmentTable::title($classroomAssignment)) . ' ' . $tsumegoButtons->currentOrder . '/' . $tsumegoButtons->highestTsumegoOrder; ?></a><br>
+	<a id="playTitleA" class="play-title__link" href="/classes/<?php echo (int) $classroomAssignment['classroom_id']; ?>"><?php echo h(ClassroomAssignmentTable::title($classroomAssignment)) . ' ' . $tsumegoButtons->currentOrder . '/' . $tsumegoButtons->highestTsumegoOrder; ?></a><br>
 	<span class="play-title__origin-line">
 		<a class="play-title__origin" href="<?php echo SetTable::url($set->id); ?>">(<?php echo h($set->title) . ' ' . $order . '/' . $amountOfOtherCollection; ?>)</a>
 	</span>
@@ -33,19 +33,19 @@ $order = $setConnection->num;
 <?php elseif (Auth::isInRatingMode()): ?>
 	<div class="slidecontainer">
 		<input type="range" min="1" max="7" value="<?php echo h((string) $difficulty); ?>" class="slider" id="rangeInput" name="rangeInput">
-		<div id="sliderText">regular</div>
+		<div id="sliderText" class="difficulty-slider__text">regular</div>
 	</div>
-	<a id="playTitleA" href=""></a>
+	<a id="playTitleA" class="play-title__link" href=""></a>
 <?php elseif (Auth::isInMistakeTrainingMode()): ?>
-	<a id="playTitleA" href="<?php echo MistakeTraining::$OVERVIEW_LINK; ?>">Mistake Training <?php echo ($tsumegoButtons->currentOrder ?? 0) . '/' . ($tsumegoButtons->highestTsumegoOrder ?? 0); ?></a>
+	<a id="playTitleA" class="play-title__link" href="<?php echo MistakeTraining::$OVERVIEW_LINK; ?>">Mistake Training <?php echo ($tsumegoButtons->currentOrder ?? 0) . '/' . ($tsumegoButtons->highestTsumegoOrder ?? 0); ?></a>
 <?php elseif ($tsumegoFilters->query == 'difficulty' || $tsumegoFilters->query == 'tags'): ?>
-	<a id="playTitleA" href="<?php echo SetTable::url($tsumegoFilters->getSetID($set), $tsumegoButtons?->getPartition() ?? 1); ?>"><?php echo h($queryTitle); ?></a><br>
+	<a id="playTitleA" class="play-title__link" href="<?php echo SetTable::url($tsumegoFilters->getSetID($set), $tsumegoButtons?->getPartition() ?? 1); ?>"><?php echo h($queryTitle); ?></a><br>
 	<span class="play-title__origin-line">
 		<a class="play-title__origin" href="<?php echo SetTable::url($set->id); ?>">(<?php echo h($set->title) . ' ' . $order . '/' . $amountOfOtherCollection; ?>)</a>
 	</span>
 <?php else: ?>
 	<?php //On a phone a long name is cut short to fit one line (play.css), the part (#2) always shows ?>
-	<a id="playTitleA" class="play-title__collection" href="<?php echo SetTable::url($set->id, $tsumegoButtons?->getPartition() ?? 1); ?>" title="<?php echo h($set->title . $tsumegoButtons?->getPartitionTitleSuffix()); ?>"><span class="play-title__name"><?php echo h($set->title); ?></span><?php
+	<a id="playTitleA" class="play-title__link play-title__collection" href="<?php echo SetTable::url($set->id, $tsumegoButtons?->getPartition() ?? 1); ?>" title="<?php echo h($set->title . $tsumegoButtons?->getPartitionTitleSuffix()); ?>"><span class="play-title__name"><?php echo h($set->title); ?></span><?php
 		if (($suffix = $tsumegoButtons?->getPartitionTitleSuffix() ?? '') !== '')
 			echo '<span class="play-title__part">' . h($suffix) . '</span>';
 	?></a>

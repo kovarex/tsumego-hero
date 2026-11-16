@@ -85,7 +85,7 @@ use App\Utility\ViteManifest;
 		<?php if (!Auth::isInMistakeTrainingMode() && Auth::isLoggedIn()): ?>
 			<?php //A heart for each one the player can have, full or empty (PlayBoard.js redrawHearts()); they overlap more the more there are, so the row fits the panel (play.css), each one on top of the one to its right ?>
 			<div class="play-player">
-				<div id="health" title="Hearts <?php echo (int) Auth::getRemainingHealth() . '/' . (int) $maxHealth; ?>" style="--hearts: <?php echo (int) $maxHealth; ?>">
+				<div id="health" class="play-player__health" title="Hearts <?php echo (int) Auth::getRemainingHealth() . '/' . (int) $maxHealth; ?>" style="--hearts: <?php echo (int) $maxHealth; ?>">
 					<span class="play-player__hearts"><?php for ($i = 0; $i < $maxHealth; $i++): ?><img id="heart<?php echo $i; ?>" alt="" style="z-index: <?php echo $maxHealth - $i; ?>"><?php endfor; ?></span>
 					<span id="health-counter" class="health-counter"><?php echo (int) Auth::getRemainingHealth() . ' / ' . (int) $maxHealth; ?></span>
 				</div>
@@ -100,7 +100,7 @@ use App\Utility\ViteManifest;
 		<?php //The actions keep their places in every state, so no button moves under the finger; on a phone the board leaves room for them under it (besogo.js keepBoardInWindowHeight()) ?>
 		<div class="play-actions" data-keep-in-view="(width < 64rem)">
 			<?php if (!Auth::isInMistakeTrainingMode() && Auth::isLoggedIn()): ?>
-				<a id="heroPowersToggle" class="btn btn--pill btn--icon play-actions__button" href="#" data-toggle="heroPowersTray" title="Hero powers" aria-label="Hero powers">&#9889;</a>
+				<a class="play-actions__powers-toggle btn btn--pill btn--icon play-actions__button" href="#" data-toggle="heroPowersTray" title="Hero powers" aria-label="Hero powers">&#9889;</a>
 			<?php endif; ?>
 			<?php if ($commentCounts !== null): ?>
 				<a id="commentsToggle" class="btn btn--pill play-actions__button<?php echo $commentsVisible ? '' : ' play-actions__button--disabled'; ?>" href="#" data-toggle="commentsPanel"
@@ -148,7 +148,7 @@ use App\Utility\ViteManifest;
 	</aside>
 	<div class="play-screen__main">
 		<div class="play-head">
-			<div id="playTitle">
+			<div id="playTitle" class="play-title">
 				<?php echo $this->element('Tsumegos/play_title'); ?>
 			</div>
 			<?php // In the training the XP of a solve shows here when it is earned (PlayPage.js), with what it did to the problem in its title; the rank of the problem shows as in the level mode ?>
@@ -171,20 +171,20 @@ use App\Utility\ViteManifest;
 		<?php //The goal of the problem shows here until the problem says Correct! or Incorrect! (or a move its comment), which take its place (play.css) ?>
 		<div class="play-message">
 			<div class="play-message__goal">
-				<div id="titleDescription" class="<?php echo Auth::isInRatingMode() || Auth::isInTimeMode() ? 'play-description--large' : 'play-description'; ?>">
+				<div id="titleDescription" class="play-goal__title <?php echo Auth::isInRatingMode() || Auth::isInTimeMode() ? 'play-description--large' : 'play-description'; ?>">
 					<?php //The color to move as a stone instead of its name: "White to kill." shows a white stone and "to kill." ?>
 					<?php $goal = Play::splitGoalColor($displayGoal); ?>
 					<?php if ($goal['color'] !== null): ?>
 						<span class="play-goal__stone play-goal__stone--<?php echo $goal['color']; ?>" role="img" aria-label="<?php echo ucfirst($goal['color']); ?>" title="<?php echo h($displayGoal); ?>"></span>
 					<?php endif; ?>
-					<a id="descriptionText"><?php echo h($goal['rest']); ?></a>
+					<a id="descriptionText" class="play-goal__text"><?php echo h($goal['rest']); ?></a>
 					<?php if ($displayHint !== ''): ?>
-						<span id="hintText" class="hint italic">(<?php echo h($displayHint); ?>)</span>
+						<span id="hintText" class="play-goal__hint hint italic">(<?php echo h($displayHint); ?>)</span>
 					<?php endif; ?>
 				</div>
 			</div>
 			<?php $tsumegoXPAndRating->renderStatus(); ?>
-			<div id="theComment"></div>
+			<div id="theComment" class="play-message__comment"></div>
 		</div>
 
 		<!-- BOARD -->
@@ -192,7 +192,7 @@ use App\Utility\ViteManifest;
 			//All the page knows about the player and the problem, see Play::clientData()
 			const playPage = <?php echo json_encode($playPage, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE); ?>;
 		</script>
-		<div id="target" class="play-board"></div>
+		<div id="target" class="board-target play-board"></div>
 		<?php //Drawn right away, so the first paint has the board; the rest of the page's code waits for the whole page ?>
 		<?php echo ViteManifest::legacyScript('play-board'); ?>
 		<div id="targetLockOverlay"></div>
@@ -251,7 +251,7 @@ use App\Utility\ViteManifest;
 					<span class="toast__close">x</span>
 				</div>
 				<span class="toast__body toast__body--left">
-					<div id="multipleChoiceText"></div>
+					<div id="multipleChoiceText" class="multiple-choice__text"></div>
 					<div class="clear1"></div>
 				</span>
 			</div>
@@ -259,7 +259,7 @@ use App\Utility\ViteManifest;
 	<?php else: ?>
 		<label>
 			<input type="checkbox" class="toast__toggle" id="potionAlertCheckbox" autocomplete="off" />
-			<div class="toast" id="potionAlerts">
+			<div class="toast potion-alerts" id="potionAlerts">
 				<div class="toast__banner toast__banner--center">
 					Hero Power
 					<span class="toast__close">x</span>

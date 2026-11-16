@@ -11,7 +11,7 @@ use App\Utility\Auth;
  */
 ?>
 	<div class="legacy-center display1 sandbox-page">
-	<div id="sandbox">
+	<div class="sandbox-page__panel">
 	<h4>Admin Panel</h4>
 		<div class="legacy-left">
 		Collections that you find here are not yet published and need to be checked for improvement.
