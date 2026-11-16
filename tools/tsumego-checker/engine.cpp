@@ -12,7 +12,9 @@
 //     -> "result N=<K|N|U> nodes=<n> best=<i> cycles=<c> [pv=<line>]"
 //   solvemoves <as solvex> -> "result N=<K|N|U> nodes=<n> best=<i> cycles=<c> moves=<i>[!]:<K|N|U>:<nodes>,..."
 //   solveplain <toMove> <ko> <budget> <board>   -> "result N=<K|N|U> nodes=<n>"
-//   set cycle 0..3 | kofree B|W|0 | bentfour 0|1 | sekikill 0|1 | endplay 0|1|2 | koend 0|1 | pv 0|1;  keep <indices|->
+//   set cycle 0..3 | kofree B|W|0 | bentfour 0|1 | sekikill 0|1 | endplay 0|1|2 | koend 0|1 | pv 0|1 | deadline <ms>;
+//   keep <indices|->
+// deadline: the wall-clock time in milliseconds since the epoch at which every search gives up (U), 0 for none.
 // A: the defender has infinite ko threats (attacker must kill without ko); D: the attacker has infinite ko threats.
 // N: counted threats, a retake against the ko ban costs the retaker one threat. K = attacker kills (captures a target
 // stone), N = attacker can't kill, U = budget ran out. cycles: repetitions the cycle rule adjudicated.
@@ -56,6 +58,13 @@ long long cycles; // repetitions adjudicated by the cycle rule in the command ru
 bool freshHistory = false; // solvex and solvemoves hf=1: the command orders its moves from an empty history and leaves it as it was
 struct Switches { int cycleRule = 0, endPlay = 0; bool sekiKill = false, pv = false, koEnd = false; };
 Switches switches; // the persistent ones
+long long deadline = 0; // set deadline: the wall-clock milliseconds since the epoch at which a search gives up, 0 for none
+
+// the deadline has passed (mid() reads it every 4096 nodes)
+bool pastDeadline()
+{
+  return deadline && chrono::duration_cast<chrono::milliseconds>(chrono::system_clock::now().time_since_epoch()).count() >= deadline;
+}
 
 struct State
 {
@@ -809,13 +818,17 @@ uint32_t generation = 1;
 const int PN_BITS = 22;
 vector<ProofEntry> proofTable[3];
 
-struct ProofChild { State state; int move; u64 key; int score; int terminal; int liberties; };
+// pn, dn: the numbers the child's last search in its parent's expansion returned (searched), for when the table has
+// lost them
+struct ProofChild { State state; int move; u64 key; int score; int terminal; int liberties; uint32_t pn = 1, dn = 1; bool searched = false; };
 
-void lookup(int mode, u64 key, uint32_t& pn, uint32_t& dn, int& best)
+// false when the table does not hold the position (a new one, or its slot holds another position)
+bool lookup(int mode, u64 key, uint32_t& pn, uint32_t& dn, int& best)
 {
   ProofEntry& e = proofTable[mode][key & ((1 << PN_BITS) - 1)];
-  if (e.key == key && e.generation == generation) { pn = e.pn; dn = e.dn; best = e.best; }
-  else { pn = 1; dn = 1; best = -2; }
+  if (e.key == key && e.generation == generation) { pn = e.pn; dn = e.dn; best = e.best; return true; }
+  pn = 1; dn = 1; best = -2;
+  return false;
 }
 
 void store(int mode, u64 key, uint32_t pn, uint32_t dn, int best)
@@ -940,7 +953,14 @@ bool childValues(int mode, ProofChild& child, bool attackerMoved, uint32_t& pn, 
   if (child.terminal == KILL) { pn = 0; dn = INF; return false; }
   if (child.terminal == NOKILL) { pn = INF; dn = 0; return false; }
   int best;
-  lookup(mode, child.key, pn, dn, best);
+  if (!lookup(mode, child.key, pn, dn, best) && child.searched)
+  {
+    // the slot keeps another position's proof over the child's unproven numbers (store): a child that looked new would be
+    // chosen again at once and its search would return at once, for ever (13547 "B18 B19 B17 C18 A17 D19 A19 D16 A15 A16
+    // A14 A18": one position took 994,774 of 1,000,000 nodes)
+    pn = child.pn;
+    dn = child.dn;
+  }
 #ifdef HEURISTIC_INIT
   // df-pn+: an unexplored position starts from how short of liberties the target is
   if (pn == 1 && dn == 1 && child.liberties < 1000)
@@ -952,9 +972,10 @@ bool childValues(int mode, ProofChild& child, bool attackerMoved, uint32_t& pn, 
   return false;
 }
 
-void mid(State& s, u64 key, uint32_t thpn, uint32_t thdn, int mode)
+// found: the node's numbers when its search returns, as stored (or as they would be, where the store keeps another proof)
+void mid(State& s, u64 key, uint32_t thpn, uint32_t thdn, int mode, uint32_t* found = nullptr)
 {
-  if (++nodes > budget)
+  if (++nodes > budget || ((nodes & 4095) == 0 && pastDeadline()))
   {
     aborted = true;
     return;
@@ -1014,9 +1035,13 @@ void mid(State& s, u64 key, uint32_t thpn, uint32_t thdn, int mode)
       childThdn = min(thdn, second == INF ? INF : second + second / 4 + 1);
       childThpn = min((uint64_t)INF, (uint64_t)thpn - pn + bestPn);
     }
-    mid(child.state, child.key, childThpn, childThdn, mode);
+    uint32_t numbers[2];
+    mid(child.state, child.key, childThpn, childThdn, mode, numbers);
     if (aborted)
       break;
+    child.pn = numbers[0];
+    child.dn = numbers[1];
+    child.searched = true;
   }
   path.pop_back();
   pathKoBreaks.pop_back();
@@ -1025,6 +1050,11 @@ void mid(State& s, u64 key, uint32_t thpn, uint32_t thdn, int mode)
     store(mode, key, pn, dn, best);
     if (pn == 0 || dn == 0)
       history[best < 0 ? 361 : best] += 1;
+    if (found)
+    {
+      found[0] = pn;
+      found[1] = dn;
+    }
   }
 }
 
@@ -1262,6 +1292,8 @@ string setSwitch(const string& name, const string& value)
     switches.koEnd = number;
   else if (name == "pv" && numeric && (number == 0 || number == 1))
     switches.pv = number;
+  else if (name == "deadline" && !value.empty() && value.find_first_not_of("0123456789") == string::npos && value.size() < 18)
+    deadline = stoll(value);
   else
     return "unknown switch or value: " + name + " " + value;
   return "";

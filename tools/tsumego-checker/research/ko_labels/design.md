@@ -700,9 +700,9 @@ The starting point is Design 3's `/tmp/claude-0/proto/research/kodesign/game/eng
    completing the repetition loses. *New:* a `cycles` counter of adjudicated repetitions, printed as `cycles=`.
 5. **Commands:**
    - `set <name> <value>` (*new*, replacing the one-off commands) for persistent switches: `cycle 0..3`,
-     `kofree B|W|0`, `bentfour 0|1`, `sekikill 0|1`, `endplay 0|1`, `koend 0|1`, `pv 0|1`. `solve` and `solveplain`
-     use them. `koend` (D10): at two passes in modes A and D a defender ko stone in atari that the defender answers by
-     taking another ko is not taken; the double-ko test's rule 2 sets it.
+     `kofree B|W|0`, `bentfour 0|1`, `sekikill 0|1`, `endplay 0|1`, `koend 0|1`, `pv 0|1`, `deadline <ms>` (item 8).
+     `solve` and `solveplain` use them. `koend` (D10): at two passes in modes A and D a defender ko stone in atari that
+     the defender answers by taking another ko is not taken; the double-ko test's rule 2 sets it.
    - `solve` prints `pvA=` and `pvD=` when `pv 1` is set (today this goes to stderr under an environment variable),
      plus `cycles=`.
    - `solvex <toMove> <ko> <budget> <b> <w> <opts|-> <board>`, the counted search, takes these options:
@@ -720,6 +720,35 @@ The starting point is Design 3's `/tmp/claude-0/proto/research/kodesign/game/eng
    - `keep <points>` (optional, from the judges' `engine_keep.cpp`) is for hand-built model boards only.
 6. **`sekikill` (Design 2):** at the end of the game, a target that is not Benson-alive counts as dead, and every
    repetition kills, whatever the cycle rule (section 2): `cycleKills()` answers a kill under it.
+7. **A child keeps the numbers its search returned** (*new*, 16 November). The proof table has one slot per index,
+   and `store` keeps another position's proof there rather than a position's unproven numbers. A position whose slot
+   holds such a proof has no entry, and `lookup` gives it (1, 1), the numbers of a position never searched. Its
+   parent, which had just searched it, then saw a new child, chose it again at once, and the child's search returned
+   at once with the numbers the table lost again: a loop that ran until the budget was spent, with no sign of it but
+   the undecided result. `mid` now hands its node's last numbers to the parent, which uses them for that child while
+   the table has no entry for it (`ProofChild::pn`, `dn`, `searched`); a search whose table loses no entry runs as
+   before.
+   - It was the main cause of undecided counted searches. On the five leaves of the group (kofix3 group F) every
+     undecided count spent 98.6% to 99.8% of its 1,000,000 nodes on one position. Fresh, the same searches take
+     18,729 nodes (13547 "B18 B19 B17 C18 A17 D19 A19 D16 A15 A16 A14 A18" at s=1, 994,774 nodes on one position
+     before), 17,001 (10403's leaf at s=3, 986,135), 42,652 (13489's at s=1, 988,746) and 32,496 (13547's other leaf
+     at s=0, 997,980), with 2 to 159 stores still refused. The bent-four test's mode A ran into it as well: on 13489,
+     13547 and 13661 it was undecided at 2,000,000 nodes and decides in 38,893 to 684,104.
+   - The fresh retry (section 9) escaped the loop only when its other move order put the positions in other slots,
+     which is why a first try undecided at 1,000,000 nodes so often took a few thousand nodes in the retry.
+   - On the 146 leaves of the group's regression list (validate.py, narrow area, 200,000) 35 undecided labels decide,
+     no decided one becomes undecided, 16 statuses a class test left open are ruled out, and the run takes 7,471 s
+     instead of 14,279 s. A decided label changes on five leaves: on four a seki test that left SEKI+ or SEKI open
+     decides (SEKI+ three times, SEKI once), the fifth is 13661's k049 (A+2KO-2, now the research's 10kKO).
+8. **The time limit holds inside a search** (*new*, 16 November). `set deadline <ms>` is the wall-clock time
+   (milliseconds since the epoch) at which every search gives up, read every 4,096 nodes; 0, the default, is none.
+   `Solver.ask` sends `Solver.deadline` (the limit of `validate.py`, `check_tree`, `status_eval`, `recheck`) before a
+   search, and a search that answers with an undecided part after it raises `TimeoutError`, so a search the limit cut
+   is never kept as undecided. The limit was read only between searches. A loop (item 7) was cheap, one position whose
+   end tests were cached, so a budget ran out in seconds; a search that is really undecided spends it on new positions,
+   in the slowest areas about 30,000 nodes a second, and one escalated count search took minutes past the limit: 9139
+   "D17 C17 C18 B18 C19 B19 B17 D19 C18 C19 B16 C18 A14 B13 A18 A17 A16 A13 G19 A15" timed out at 670 s and 10489's
+   first leaf at 726 s (324 s and 313 s before item 7). With the deadline 9139 times out at 300.2 s.
 
 ---
 
@@ -891,6 +920,8 @@ Each counted search is capped at `KO_BUDGET_FACTOR × budget`, with the existing
    undecided at 20M nodes while "A17! H19 E17" decides in 4.5k (Design 1);
 3. print "?" for that part.
 
+A search that the problem's time limit cuts (section 5, item 8) is not an undecided part: the leaf times out.
+
 **What is printed when a part stays undecided:**
 
 | undecided part | output |
@@ -941,7 +972,7 @@ searches (Appendix B). Other rows rest on the proposals' runs and the research.
 | 12495 (k031) | A10 B9 A12 A11 | research KO+ (tree KO-) | **KO+** | White took first at A11. Its outright test with one forced Black pass fails only in a search that scored repetitions: after Black's tenuki, White's D13 leaves Black no reply (D3), so both captures are direct, d=0, and Black's D13 is a local threat, answered at E13. It printed A+1KO-3, with D13 a sente approach | checker run |
 | 12495 (k032) | A12 A11 A10 B9 A12 | research KO+2 (tree KO+) | **KO+2** | Black took first; White's retake gives k031's position, so both captures are direct, d=-1, and Black's D13 is the local threat. It printed A+1KO-2 | checker run |
 | 13605 (k047) | C17 C16 A16 B17 B19 C19 A18 A19 | research KO-4 (tree KO-) | **KO-3** in both areas | White took first at A19. Black's B19 is direct: after White's tenuki, A17 leaves White no reply (D3; the narrow area's forced-pass test, which scored repetitions, said one approach and printed A-1KO+2). White's local threats are A15 and E18/E19; F19, White's third on the board as given, is wall in both areas (the area, question 8) | checker run |
-| 10403 | B18 A18 C19 A16 A19 | owner A+1KO- | **A-?KO?** | White takes first at B19 (mode lines) and its capture is direct (n_O=0); Black needs 1 or 2 approaches (one forced pass is not enough, three are); full count between 2 and 4. On these decided parts S[A+1KO-] is a `ko-approach` issue with a `ko-count` beside it (7.3) | checker run |
+| 10403 | B18 A18 C19 A16 A19 | owner A+1KO-, answered A-1KO- (1b) | **A-2KO+** (count 2) | White takes first at B19 and its capture is direct (n_O=0); Black's profile needs three free moves (two forced passes fail, three win: n_S=2) and v_S=0, the research's own values. The searches were undecided before the proof table's fix (section 5, item 7: A-?KO?, count between 2 and 4). The owner's A-1KO- reads Black's capture A17 in the second ko as no approach; D4 tests only the first approach, so the profile still counts it | checker run |
 
 The approach notation in the c011, c019, c048, c073 and c102 rows is the reviewers' literal besogo label. The
 research settled the counted equivalent because the checker could not tell approaches apart. The comparison
@@ -1291,7 +1322,7 @@ Problem 11332, leaf 3 (D17 E19 D19 C19 B19 B18 C18 A19 D19), Black to live: the 
 - **c121 in 15678:** S[A-1KO-], set on the site on 14 November. What White gains with the free move of an approach round belongs to the approach; the solver prints it beside the label.
 - **Approach ko, 10kKO and plain KO:** your definitions are in D9; questions 1a and 1b check how they apply.
 - **Question 1a (15 November):** yes, the shared-liberty shape of 10391 is your 10kKO ("a clear example of 10kKO"). The solver reads a holder's investment on the principal line as no preparation (D2) and a defender's approach that hands the attacker a direct ko as making the attacker's other approaches free (D9); 11280, 11282, 13541 and 13549 now print your 10kKO.
-- **The switching ko (16 November, research report topic 1b, 10403):** after Black's one approach at E19 each side needs a capture and one more move, a symmetric ko, which is a normal ko; so the leaf is a one-move approach ko for Black, S[A-1KO-], as the solver labels it. Question 1b above (7487 leaf 98, where a second ko gives White a direct threat) is a different shape and stays open.
+- **The switching ko (16 November, research report topic 1b, 10403):** after Black's one approach at E19 each side needs a capture and one more move, a symmetric ko, which is a normal ko; so the leaf is a one-move approach ko for Black, S[A-1KO-]. The solver prints A-2KO+ there (section 10): its profile counts the second-ko capture A17 as an approach. Question 1b above (7487 leaf 98, where a second ko gives White a direct threat) is a different shape and stays open.
 
 ---
 
