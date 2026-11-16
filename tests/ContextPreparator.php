@@ -265,7 +265,6 @@ class ContextPreparator
 		$tsumego['rating'] = Util::extract('rating', $tsumegoInput) ?: 1000;
 		$tsumego['minimum_rating'] = Util::extract('minimum_rating', $tsumegoInput) ?: null;
 		$tsumego['maximum_rating'] = Util::extract('maximum_rating', $tsumegoInput) ?: null;
-		$tsumego['pass'] = Util::extract('pass', $tsumegoInput) ?? 0;
 		$tsumego['played_as_black'] = Util::extract('played_as_black', $tsumegoInput) ?? 0;
 		$semeai = Util::extract('semeai', $tsumegoInput);
 		$tsumego['deleted'] = Util::extract('deleted', $tsumegoInput);

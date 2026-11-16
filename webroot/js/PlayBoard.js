@@ -56,7 +56,6 @@ let customMultipleChoiceAnswer = 0;
 let mText = "";
 let hasChosen = false;
 var boardLockValue = 0;
-let passEnabled = (playPage.problem.pass ? 1 : 0) + "";
 let besogoRotation = -1;
 const activeTopicTiles = playPage.page.activeTopicTiles;
 const activeDifficultyTiles = playPage.page.activeDifficultyTiles;

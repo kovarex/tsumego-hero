@@ -119,7 +119,6 @@ class Play
 				'noSkipNextLink' => $problem['noSkipNextLink'] ?? '',
 				'author' => $tsumego->author,
 				'userSets' => $problem['userSets'],
-				'pass' => (bool) $tsumego->pass,
 				'sgf' => $problem['sgf']->sgf,
 				//the version played, which the line of a failed problem of a challenge is in (ChallengeFailedLine)
 				'sgfID' => (int) $problem['sgf']->id,

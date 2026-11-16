@@ -213,7 +213,7 @@ besogo.makeDiffPanel = function(container, editor)
     let shown = moves.slice(-SHOWN_MOVES).map(function(move, index)
     {
       let number = moves.length - Math.min(moves.length, SHOWN_MOVES) + index + 1;
-      return number + '. ' + (move.color == BLACK ? 'B' : 'W') + ' ' + (editor.coordXYToLabel(move.x, move.y) || 'pass');
+      return number + '. ' + (move.color == BLACK ? 'B' : 'W') + ' ' + (editor.coordXYToLabel(move.x, move.y) || 'tenuki');
     });
     return (moves.length > SHOWN_MOVES ? '… ' : '') + shown.join(', ');
   }

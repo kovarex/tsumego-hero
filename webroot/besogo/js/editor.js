@@ -655,6 +655,10 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
             besogo.stoneSound.play();
           tryToFinish(current);
         }
+      } else if (besogo.isEmbedded && showComment) {
+        let notice = koRetakeNotice(i, j);
+        if (notice)
+          showComment(current.comment, notice);
       }
       // Current node is mutable and not root
     } else if (current.playMove(i, j, color, allowAll)) {
@@ -759,8 +763,25 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
   function notifyListeners(msg, keepHistory) {
     if (msg.treeChange || msg.stoneChange) edited = true;
     if (!keepHistory && msg.navChange) navHistory = []; // Clear navigation history
-    if (msg.navChange && showComment) showComment(current.comment);
+    if (msg.navChange && showComment) showComment(current.comment, tenukiNotice(current));
     for (let i = 0; i < listeners.length; i++) listeners[i](msg);
+  }
+
+  // A tenuki leaves no stone on the board, so the row of the messages says it was played. The colour is the one
+  // the board shows, so the page doesn't swap its words when the colours are inverted.
+  function tenukiNotice(node) {
+    if (!node.move || node.move.x !== 0 || node.move.y !== 0)
+      return "";
+    return (node.move.color == BLACK ? "Black" : "White") + " plays elsewhere (tenuki).";
+  }
+
+  // Taking back a ko at once is refused, which would leave the click without an answer, so the row of the
+  // messages says why
+  function koRetakeNotice(i, j) {
+    let ko = current.getForbiddenMoveBecauseOfKo();
+    if (!ko || ko.x !== i || ko.y !== j)
+      return "";
+    return "Ko: you can't take back right away.";
   }
 
   function wasEdited() {

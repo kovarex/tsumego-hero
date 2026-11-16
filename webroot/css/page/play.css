@@ -734,6 +734,17 @@
   box-shadow: 0 0 0 1px var(--color-danger);
 }
 
+/* In the review, Tenuki is ringed in the colour of where it leads, as the board circles each next move: a tenuki has no
+   point to circle (toolPanel.js markTenukiInReview()) */
+#besogo-pass-button.besogo-pass-button--correct {
+  border-color: var(--play-message-correct);
+  box-shadow: 0 0 0 1px var(--play-message-correct);
+}
+#besogo-pass-button.besogo-pass-button--wrong {
+  border-color: var(--play-message-incorrect);
+  box-shadow: 0 0 0 1px var(--play-message-incorrect);
+}
+
 /* The board's own settings, moved into the info of the problem */
 .play-board-settings {
   display: flex;

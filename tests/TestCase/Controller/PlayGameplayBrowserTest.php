@@ -97,27 +97,91 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 		$this->assertSame(1, $keyed['5,5'], 'White stone at ee');
 	}
 
-	public function testThePassButtonOnlyShowsWhenTheProblemAllowsIt(): void
+	//Tenuki is on every problem, so its button never tells whether playing elsewhere is the answer; a tenuki the
+	//problem doesn't have is played like any other move, and doesn't lock the board
+	public function testTenukiIsOnEveryProblem(): void
 	{
-		foreach ([1 => 'a problem that can be passed', 0 => 'a problem that cannot'] as $pass => $case)
-		{
-			$context = new ContextPreparator([
-				'tsumego' => ['set_order' => 1, 'pass' => $pass, 'sgf' => self::SGF_19]]);
-			$browser = Browser::instance();
-			$browser->get($this->playUrl($context));
-			$this->waitForBoard($browser);
+		$context = new ContextPreparator(['tsumego' => ['set_order' => 1, 'sgf' => self::SGF_19]]);
+		$browser = Browser::instance();
+		$browser->get($this->playUrl($context));
+		$this->waitForBoard($browser);
 
-			$this->assertSame((bool) $pass, $browser->idExists('besogo-pass-button'), 'Pass button on ' . $case);
-			if (!$pass)
-				continue;
+		$this->assertSame('Tenuki', $browser->find('#besogo-pass-button')->getAttribute('value'));
+		$moveBefore = (int) $browser->driver->executeScript('return besogo.editor.getCurrent().moveNumber;');
+		$browser->clickId('besogo-pass-button');
+		$moveAfter = (int) $browser->driver->executeScript('return besogo.editor.getCurrent().moveNumber;');
+		$this->assertGreaterThan($moveBefore, $moveAfter, 'A tenuki advances the move number');
+		$this->assertSame(0, $browser->driver->executeScript('return window.boardLockValue;'),
+			'A tenuki does not lock the board');
+	}
 
-			$moveBefore = (int) $browser->driver->executeScript('return besogo.editor.getCurrent().moveNumber;');
-			$browser->clickId('besogo-pass-button');
-			$moveAfter = (int) $browser->driver->executeScript('return besogo.editor.getCurrent().moveNumber;');
-			$this->assertGreaterThan($moveBefore, $moveAfter, 'Passing advances the move number');
-			$this->assertSame(0, $browser->driver->executeScript('return window.boardLockValue;'),
-				'Passing does not lock the board');
-		}
+	//The board neither turned nor its colours swapped, so the points and the colour words of a test are the SGF's
+	private function contextWithOriginalBoard(string $sgf): ContextPreparator
+	{
+		return new ContextPreparator([
+			'user' => [
+				'name' => 'tenukiUser',
+				'mode' => Constants::$LEVEL_MODE,
+				'player_color_setting' => UserTable::PLAYER_COLOR_SETTING_ORIGINAL,
+				'board_orientation_setting' => UserTable::BOARD_ORIENTATION_SETTING_ORIGINAL],
+			'tsumego' => ['set_order' => 1, 'sgf' => ['data' => $sgf, 'first_move_color' => 'B']]]);
+	}
+
+	//A tenuki leaves no stone to see, so the row of the messages says it: White's reply here is to play elsewhere
+	public function testTheOpponentsTenukiIsSaidInTheRowOfTheMessages(): void
+	{
+		$context = $this->contextWithOriginalBoard('(;GM[1]FF[4]SZ[19]AB[dd]AW[bb];B[aa];W[];B[ba]C[+])');
+		$browser = Browser::instance();
+		$browser->get($this->playUrl($context));
+		$this->waitForBoard($browser);
+
+		$browser->clickBoard(1, 1);
+		$browser->waitUntilJs('besogo.editor.getCurrent().move && besogo.editor.getCurrent().move.color === 1');
+		$this->assertSame('White plays elsewhere (tenuki).', $browser->find('#theComment')->getText());
+
+		$browser->clickBoard(2, 1);
+		$browser->waitUntilJs('document.getElementById("status").textContent.includes("Correct!")');
+		$browser->assertNoJsErrors();
+	}
+
+	//White takes the ko at (2,2), capturing (3,2); taking back there at once is refused, and the row says why
+	public function testTakingBackAKoAtOnceIsExplained(): void
+	{
+		$context = $this->contextWithOriginalBoard(
+			'(;GM[1]FF[4]SZ[19]AB[ba][ab][bc][cb]AW[ca][db][cc];B[ee];W[bb];B[ff]C[+])');
+		$browser = Browser::instance();
+		$browser->get($this->playUrl($context));
+		$this->waitForBoard($browser);
+
+		$browser->clickBoard(5, 5);
+		$browser->waitUntilJs('besogo.editor.getCurrent().move && besogo.editor.getCurrent().move.color === 1');
+		$moveNumber = $browser->driver->executeScript('return besogo.editor.getCurrent().moveNumber;');
+
+		$browser->clickBoard(3, 2);
+		$this->assertSame("Ko: you can't take back right away.", $browser->find('#theComment')->getText());
+		$this->assertSame($moveNumber, $browser->driver->executeScript('return besogo.editor.getCurrent().moveNumber;'),
+			'The retake is not played');
+		$browser->assertNoJsErrors();
+	}
+
+	//In the review, the Tenuki button is ringed in the colour of where it leads, as the board circles the other moves
+	public function testTheReviewRingsTenukiInTheColourOfWhereItLeads(): void
+	{
+		$context = $this->contextWithOriginalBoard('(;GM[1]FF[4]SZ[19]AB[dd]AW[bb](;B[]C[+])(;B[aa];W[ab]))');
+		$browser = Browser::instance();
+		$browser->get($this->playUrl($context));
+		$this->waitForBoard($browser);
+		$ring = 'return [...document.getElementById("besogo-pass-button").classList].filter(c => c.startsWith("besogo-pass-button--"));';
+		$this->assertSame([], $browser->driver->executeScript($ring), 'No ring while solving');
+
+		//as the Review button opens it, which builds the review's tree too
+		$browser->driver->executeScript('besogo.editor.setReviewMode(true);'
+			. ' besogo.editor.notifyListeners({treeChange: true, navChange: true, stoneChange: true});');
+		$this->assertSame(['besogo-pass-button--correct'], $browser->driver->executeScript($ring));
+
+		$browser->driver->executeScript('besogo.editor.setCurrent(besogo.editor.getRoot().children.find(child => child.move.x === 1));');
+		$this->assertSame([], $browser->driver->executeScript($ring), 'No ring where there is no tenuki to play');
+		$browser->assertNoJsErrors();
 	}
 
 	//Next leads to the following problem; there is no Back, the problem buttons lead back

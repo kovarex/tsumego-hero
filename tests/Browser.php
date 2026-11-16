@@ -774,15 +774,17 @@ class Browser
 	public function clickBoard($x, $y)
 	{
 		$boardSize = $this->waitForBoard();
-		$clickableRects = $this->getElements('.besogo-board rect'); //the board's own, the review's tree has rectangles too
+		//The transparent squares that take the clicks of the points (boardDisplay.js addEventTargets()); the board, the
+		//mark of a ko and the review's tree draw rectangles too
+		$clickableRects = $this->getElements('.besogo-board rect[fill="transparent"]');
 		$corner = $this->driver->executeScript('return window.besogo.boardParameters["corner"];');
 		if ($corner == 'top-right' || $corner == 'bottom-right')
 			$x = $boardSize - $x + 1;
 		if ($corner == 'bottom-left' || $corner == 'bottom-right')
 			$y = $boardSize - $y + 1;
-		if (count($clickableRects) < $boardSize * $boardSize + 1)
+		if (count($clickableRects) < $boardSize * $boardSize)
 			throw new Exception("Unexpected board coords count: " . count($clickableRects));
-		$clickableRects[1 + $boardSize * ($x - 1) + ($y - 1)]->click();
+		$clickableRects[$boardSize * ($x - 1) + ($y - 1)]->click();
 		$this->assertNoErrors();
 	}
 

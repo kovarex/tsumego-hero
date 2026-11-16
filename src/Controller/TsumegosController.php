@@ -231,13 +231,6 @@ class TsumegosController extends AppController
 
 		$tsumego->rating = Util::clampOptional($rating, $minimumRating, $maximumRating);
 
-		if (array_key_exists('pass', $data) && (int) $tsumego->pass !== (empty($data['pass']) ? 0 : 1))
-		{
-			$pass = empty($data['pass']) ? 0 : 1;
-			AdminActivityLogger::log(AdminActivityTypeTable::PASS_MODE, (int) $tsumegoID, null, null, (string) $pass);
-			$tsumego->pass = (bool) $pass;
-		}
-
 		$tsumegoTable->saveOrFail($tsumego);
 		$this->saveQuestion((int) $tsumegoID, $data, $variantType);
 

@@ -100,13 +100,6 @@ $variantType = $tv ? (int) $tv->tsumego_variant_type_id : null;
 					<td><label for="author">Author:</label></td>
 					<td><input type="text" name="author" id="author" value="<?php echo h($tsumego->author); ?>"></td>
 				</tr>
-				<tr>
-					<td>Enable passing:</td>
-					<td class="play-edit__choices">
-						<input type="radio" id="pass-off" name="pass" value="0" <?php echo $checked($tsumego->pass != 1); ?>><label for="pass-off">no</label>
-						<input type="radio" id="pass-on" name="pass" value="1" <?php echo $checked($tsumego->pass == 1); ?>><label for="pass-on">yes</label>
-					</td>
-				</tr>
 				<?php if ($isSandbox): ?>
 					<tr>
 						<td>Question:</td>

@@ -162,14 +162,13 @@ class SetsController extends AppController
 
 		// Problems in this set, in display order
 		$problems = Util::query("
-SELECT sc.id AS set_connection_id, sc.num, sc.tsumego_id, t.rating,
-	t.pass
+SELECT sc.id AS set_connection_id, sc.num, sc.tsumego_id, t.rating
 FROM set_connection sc
 JOIN tsumego t ON t.id = sc.tsumego_id AND t.deleted IS NULL
 WHERE sc.set_id = ?
 ORDER BY sc.num ASC", [(int) $id]);
 
-		// Both forms of the page post here: the details, and for admins the re-rate and solve modes.
+		// Both forms of the page post here: the details, and for admins the re-rate.
 		$formSent = $this->inputs() !== [];
 		if ($formSent)
 		{
@@ -185,17 +184,6 @@ ORDER BY sc.num ASC", [(int) $id]);
 		$tsumegoButtons = new TsumegoButtons(new TsumegoFilters('topics'), null, null, (int) $id);
 		$tsumegoButtons->loadPreviews();
 
-		// Solve-mode states for the admin settings panel
-		$allPassActive = true;
-		$allPassInactive = true;
-		foreach ($problems as $problem)
-		{
-			if (!$problem['pass'])
-				$allPassActive = false;
-			if ($problem['pass'])
-				$allPassInactive = false;
-		}
-
 		$setRating = 0;
 		if (count($problems) > 0)
 			$setRating = round(array_sum(array_column($problems, 'rating')) / count($problems));
@@ -208,8 +196,6 @@ ORDER BY sc.num ASC", [(int) $id]);
 		$this->set('canEditSettings', $canEditSettings);
 		$this->set('canDelete', $this->Authorization->can($set, 'delete'));
 		$this->set('isSandbox', $isSandbox);
-		$this->set('allPassActive', $allPassActive);
-		$this->set('allPassInactive', $allPassInactive);
 		$this->set('setRating', $setRating);
 	}
 
@@ -242,8 +228,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 		CookieFlash::set('Set saved', 'success');
 	}
 
-	//The settings of all the problems of the collection, for admins: a new rating for each, and the pass mode
-	//when a choice was made for it.
+	//The settings of all the problems of the collection, for admins: a new rating for each.
 	private function saveProblemSettings(int $setID, array $problems): void
 	{
 		$problemIDs = array_column($problems, 'tsumego_id');
@@ -258,14 +243,6 @@ ORDER BY sc.num ASC", [(int) $id]);
 					WHERE id IN (' . implode(',', array_fill(0, count($problemIDs), '?')) . ')', [$difficulty, $difficulty, $difficulty, $difficulty, ...$problemIDs]);
 			AdminActivityLogger::log(AdminActivityTypeTable::SET_RATING_EDIT, null, $setID);
 		}
-
-		// sent only when the admin picked a choice for it
-		$passMode = $this->input('r43');
-		if ($passMode != 'yes' && $passMode != 'no')
-			return;
-		if ($problemIDs)
-			$this->fetchTable('Tsumego')->updateAll(['pass' => $passMode == 'yes'], ['id IN' => $problemIDs]);
-		AdminActivityLogger::log(AdminActivityTypeTable::SET_PASS_MODE, null, $setID, null, $passMode == 'yes' ? '1' : '0');
 	}
 
 	//The cover the form removed or uploaded.

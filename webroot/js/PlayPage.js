@@ -898,14 +898,19 @@ besogo.editor.addListener(function (changes)
 });
 
 startClock();
-var showComment = function(commentText)
+//The notice (a tenuki played, a ko that can't be taken back yet) names the colours as the board shows them, so it
+//isn't swapped like the comment, which names them as the SGF does
+var showComment = function(commentText, notice = "")
 	{
 		let comment = document.getElementById("theComment");
 		if (!comment)
 			return;
-		comment.style.display = commentText.length == 0 ? "none" : "block";
+		let text = besogo.boardInverted ? besogo.swapColorWords(commentText) : commentText;
+		if (notice)
+			text = text.length == 0 ? notice : notice + "\n" + text;
+		comment.style.display = text.length == 0 ? "none" : "block";
 		comment.classList.remove("play-message__error");
-		comment.textContent = besogo.boardInverted ? besogo.swapColorWords(commentText) : commentText;
+		comment.textContent = text;
 	};
 besogo.editor.registerShowComment(showComment);
 showComment(besogo.editor.getCurrent().comment || '');
