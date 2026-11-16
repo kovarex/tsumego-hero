@@ -385,13 +385,23 @@ class Solver:
             self.ask('keep ' + ','.join(str(self.problem.index(p)) for p in self.keep))
 
     def ask(self, line):
-        #one engine command; an answer "error ..." raises, so a malformed search is never read as a result
+        #one engine command; an answer "error ..." raises, so a malformed search is never read as a result. A search stops
+        #at the problem's time limit (Solver.deadline, the engine's deadline), and one that leaves a part undecided after
+        #it raises TimeoutError, so a search cut by the limit is never kept as undecided
         self.activate_engine()
+        search = line.split(' ', 1)[0] in ('solve', 'solvex', 'solvemoves', 'solvecount')
+        if search:
+            deadline = int(Solver.deadline * 1000) if Solver.deadline else 0
+            if getattr(self.engine, 'deadline', 0) != deadline:
+                self.engine.command('set deadline %d' % deadline)
+                self.engine.deadline = deadline
         answer = self.engine.command(line)
         if not answer or answer.startswith('error'):
             raise RuntimeError('engine answered %r to %s' % (answer, line[:60]))
         if os.environ.get('TRACE'):
             print(answer)
+        if search and Solver.deadline and time.time() > Solver.deadline and ('=U' in answer or ':U:' in answer):
+            raise TimeoutError('problem time limit')
         return answer
 
     def chain_of(self, stones, p):
@@ -773,8 +783,7 @@ class Solver:
         black, white = (solver_threats, opponent_threats) if solver_color == 'B' else (opponent_threats, solver_threats)
         text = self.problem.board_text(board)
         ko = self.problem.index(board.ko) if board.ko else -1
-        self.activate_engine()
-        answer = self.engine.command('solvecount %s %d %d %d %d %s' % (to_move, ko, self.budget * KO_BUDGET_FACTOR, black, white, text))
+        answer = self.ask('solvecount %s %d %d %d %d %s' % (to_move, ko, self.budget * KO_BUDGET_FACTOR, black, white, text))
         fields = dict(item.split('=') for item in answer.split()[1:])
         self.nodes += int(fields['nodes'])
         self.last_best = self.problem.from_index(int(fields['best'])) if int(fields['best']) >= 0 else None
