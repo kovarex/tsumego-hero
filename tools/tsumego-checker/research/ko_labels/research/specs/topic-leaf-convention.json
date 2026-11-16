@@ -1,0 +1,46 @@
+{
+  "topic": "leaf-convention",
+  "text": [
+    "Some lines end with the solver's capture of a ko, after which the solver wins whatever the opponent does, even if the opponent retakes after a threat. Your trees mark such a leaf S[KO+], not S[ALIVE] or S[DEAD]: eight leaves, in 5160 (Diagram 1), 5628, 8094, 13075 twice and 15399 three times. KO+ ranks the ko capture below the clean move beside it, so the site accepts only the clean move. The solver follows this practice (design D14): it prints KO+ there and says the label turns on your practice.",
+    "11332's leaf 3 (k029) is such a line, though your tree marks it S[ADKO]. Black's capture at a in Diagram 2 takes a ko, but White's retake after a threat changes nothing: Black simply connects and still takes White's corner stones (Diagram 3). So S[ADKO] is wrong under either answer: Black needs no double ko. White 8 is a mistake too: White's best answer to Black 7 is to retake at c after a threat, which leaves Black only a double ko (decided in the narrow search area only).",
+    "Under your practice the leaf becomes S[KO+], and your eight leaves and the solver stay as they are. In 11332 the problem stays S[ADKO], but the site then rejects a and accepts only b, though a lives outright and b gets only a double ko. Adding Black's connection at c, marked S[ALIVE], makes the site accept only that clean move, as your practice intends.",
+    "Under the clean answer, the research's reading, the leaf becomes S[ALIVE]; your eight leaves would change to the clean status too, and so would the solver. In 5160 the site would then accept Black 1 as well as a in Diagram 1. In 11332 it rejects b and keeps a, rightly.",
+    "Either way, once a or c is S[ALIVE], besogo thinks Black 7 lives outright, since the tree's only answer to it is White 8. The site then rejects the tree's other move 7, at b, and calls the problem S[ALIVE], both wrongly. So the tree also needs White's retake at c, after a threat Black answers, as a second answer to Black 7, marked S[ADKO]. That waits for the site's ko-threat moves; until then leave 11332 as it is. Two passes in place of the threat and its answer would not grade right.",
+    "A clean failure is never KO+: when the solver fails even with unlimited threats, the leaf is the failure. In 13661 leaf 9 (Diagram 4), White captures five stones without a ko, so the leaf is S[ALIVE]; 13462 leaf 8 is S[DEAD]. Both trees are wrong there, and both leaves are among the clear errors. The solver changed on 16 November so that it no longer prints KO+ there."
+  ],
+  "diagrams": [
+    {
+      "problem": "5160",
+      "start": "",
+      "moves": "E19",
+      "labels": {
+        "D18": "a"
+      },
+      "caption": "5160, Black to live. Black 1 takes a ko, capturing White's stone at F19, yet Black lives whatever White does; a lives outright. Your tree marks Black 1 S[KO+] and a S[ALIVE], so the site accepts only a."
+    },
+    {
+      "problem": "11332",
+      "start": "D17 E19 D19 C19 B19 B18",
+      "moves": "C18 A19",
+      "labels": {
+        "D19": "a",
+        "A18": "b",
+        "C17": "c"
+      },
+      "caption": "11332, Black to live. Black 7 takes a ko, capturing White's stone at c, and White 8 is the tree's only answer. Black to play move 9. a is leaf 3 (k029): it captures White's stone at D18 and takes a ko; your tree marks it S[ADKO]. b leads to a double ko (leaf 2, S[ADKO]). c, connecting, is not in the tree and lives as well as a."
+    },
+    {
+      "problem": "11332",
+      "start": "D17 E19 D19 C19 B19 B18 C18 A19",
+      "moves": "D19 D18! C17 B19 A18 A16 D19",
+      "caption": "Black 9 is a in Diagram 2: the leaf, White to play. White 10 retakes after a ko threat elsewhere, but Black 11 simply connects. After White 12 and Black 13, White's corner stones and White 10 have one liberty, at D19; White 14 fills an outside liberty, and Black 15 captures five stones. Black lives whatever the threats."
+    },
+    {
+      "problem": "13661",
+      "start": "B18 B17 C18 A18 E18 D18 F18 D19 B19 A16 A19 C17",
+      "moves": "A17 C19 G18 A18",
+      "caption": "13661, Black to kill, leaf 9 (k048): a clean failure. Black 13 takes a ko, but White 14 leaves Black's five corner stones one liberty, at A18, where Black cannot play. Whatever Black 15 tries, White 16 captures all five, which is not a ko. Black fails whatever the threats: S[ALIVE]."
+    }
+  ],
+  "suggestion": "Keep your practice: a line that ends with the solver's capture of a ko is S[KO+], so the site prefers the clean move. Then, once the site has ko-threat moves, 11332's leaf 3 becomes S[KO+], and its tree gets White's retake and Black's connection at c in Diagram 2. The solver needs no change."
+}

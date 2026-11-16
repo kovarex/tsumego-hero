@@ -154,6 +154,19 @@
    ]
   ]
  },
+ "k029": {
+  "question": "L",
+  "options": [
+   [
+    "your trees' practice, a line ending with the solver's ko capture is KO+ even when the solver then lives whatever happens",
+    "KO+"
+   ],
+   [
+    "the clean status",
+    "ALIVE"
+   ]
+  ]
+ },
  "k030": {
   "question": "8",
   "options": [
@@ -259,6 +272,32 @@
    [
     "the clean kill with counted labels (the approach-label decision)",
     "KO+"
+   ]
+  ]
+ },
+ "k101": {
+  "question": "8",
+  "options": [
+   [
+    "the right side closed, as in the solver's narrow area",
+    "A-1KO-"
+   ],
+   [
+    "the board as the player sees it, where White's F18 atari is a local threat in the direct ko",
+    "A-1KO-2"
+   ]
+  ]
+ },
+ "k105": {
+  "question": "3",
+  "options": [
+   [
+    "the extra move is an approach (the question page's proposal)",
+    "A-1KO-"
+   ],
+   [
+    "the extra move is a threat inside the ko",
+    "KO-2"
    ]
   ]
  }

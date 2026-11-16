@@ -76,5 +76,23 @@
   "tree_right_under_some_answer": true,
   "options": "count the second ko (Black's capture at C18 in the second ko): S[KO-] | the clean kill, approach at D19 and then a direct ko: S[A-1KO-]",
   "explanation": "The solver reviewer: the tree's KO- is right when the second ko is counted; Black also has a clean approach at D19, after which White retakes for free, so with the clean-kill answer to question 5 the leaf is S[A-1KO-], like its sibling k022. The checker's A-1KO+ is wrong either way."
+ },
+ "k101": {
+  "question": "8",
+  "tree_right_under_some_answer": false,
+  "options": "the right side closed, as in the solver's narrow area: S[A-1KO-] | the board as the player sees it, where White's F18 atari is a local threat in the direct ko: S[A-1KO-2]",
+  "explanation": "The analyst and the definitions reviewer: A-1KO- (narrow area, decided); the position reviewer: A-1KO-2 on the open board (decided searches with the right side open). The tree's KO- is wrong in every area."
+ },
+ "k105": {
+  "question": "3",
+  "tree_right_under_some_answer": true,
+  "options": "the extra move is an approach (the question page's proposal): S[A-1KO-] | the extra move is a threat inside the ko: S[KO-2]",
+  "explanation": "The analyst and the reviewer: the c014 shape of question 3; the count is 2 either way. The tree's A-1KO- is the approach reading; the solver gives KO-2 once its count is decided."
+ },
+ "k029": {
+  "question": "L",
+  "tree_right_under_some_answer": false,
+  "options": "your trees' practice, a line ending with the solver's ko capture is KO+ even when the solver then lives whatever happens: S[KO+] | the clean status: S[ALIVE]",
+  "explanation": "The research read leaf 3 as ALIVE: Black lives whatever White does. Your trees mark this situation KO+ in 8 leaves (5160, 5628, 8094, 13075 twice, 15399 three times), and the solver follows them (D14). The tree's ADKO is wrong either way."
  }
 }

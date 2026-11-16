@@ -1,10 +1,11 @@
 {
   "topic": "q8",
   "text": [
-    "Part 8 of the question page asks whether the empty board beyond the corner counts as open, as the site shows it, or as the attacker's wall, as the solver's search areas and some trees read it. Four leaves change label with the answer. In each, the open board gives the defender a resource that the wall takes away: a run into the empty side, a crawl to friendly stones, or a local threat.",
+    "Part 8 of the question page asks whether the empty board beyond the corner counts as open, as the site shows it, or as the attacker's wall, as the solver's search areas and some trees read it. Five leaves change label with the answer. In each, the open board gives the defender a resource that the wall takes away: a run into the empty side, a crawl to friendly stones, or a local threat.",
     "At k014 in 7487 the open board keeps the tree's S[KO+]. Black 19 is a local threat, but White 20, which captures it, stays joined to White 22, 24 and 26 as they run into the empty lower left (Diagram 1), so Black needs as many threats as White. Walled where the solver's areas end, White 20 is wasted and the leaf is S[KO+2], the checker's label; with Black stones at A14 and B14 it is S[DDKO].",
-    "The other three trees are right only against the wall. In 9704, Black 11 answers White 10's cut only if the board beyond B14 and D16 is Black's, as the problem is built. On the open board White 12 gets out (Diagram 2), so Black must seal at C15, which hands White a second local threat: S[KO-] becomes at least S[KO-2]. In 15364, S[KO+] becomes S[KO-2]: Black's crawl to B13-C13, with six liberties on the board, gives two local threats (Diagram 3). In 11334, S[KO+] becomes S[KO+2]: Black's atari at B14 is a local threat on the open board.",
-    "No move changes between correct and wrong under either answer. With the open board, the overall result of 9704 goes from KO− to KO−2 and that of 15364 from KO+ to KO−2; 7487 and 11334 keep theirs, and with the wall only the S[] of k014 changes. The runs in 7487 and 9704 are reading, as the engine cannot search the open centre; 11334's threat was searched only in the solver's wider area, and 15364's count of 2 with a living group standing in for the open lower side."
+    "Three other trees are right only against the wall. In 9704, Black 11 answers White 10's cut only if the board beyond B14 and D16 is Black's, as the problem is built. On the open board White 12 gets out (Diagram 2), so Black must seal at C15, which hands White a second local threat: S[KO-] becomes at least S[KO-2]. In 15364, S[KO+] becomes S[KO-2]: Black's crawl to B13-C13, with six liberties on the board, gives two local threats (Diagram 3). In 11334, S[KO+] becomes S[KO+2]: Black's atari at B14 is a local threat on the open board.",
+    "At k101 in 11278, added on 16 November, the tree's S[KO-] is wrong either way. Black needs an approach, Black 13 in Diagram 4, and fails with one threat more than White even in the solver's narrow area, which favours Black. With the right side closed, as there, Black can ignore White 16, since White's stones die against the wall: S[A-1KO-]. On the open board White 16 is a local threat in the direct ko after the approach: S[A-1KO-2]. The open-board result, too, was searched in areas that favour Black; a few lines are reading.",
+    "No move changes between correct and wrong under either answer. With the open board, the overall result of 9704 goes from KO− to KO−2 and that of 15364 from KO+ to KO−2; 7487, 11334 and 11278 keep theirs, and with the wall only the S[] of k014 and k101 change. The runs in 7487 and 9704 are reading, as the engine cannot search the open centre; 11334's threat was searched only in the solver's wider area, and 15364's count of 2 with a living group standing in for the open lower side."
   ],
   "diagrams": [
     {
@@ -25,6 +26,12 @@
       "start": "B18 B19 A18 D19 E19 E18",
       "moves": "C19 A15 D19 A16 A14 B14 A13 A12 A14 A13 pass A14",
       "caption": "15364, leaf k053 (the tree's S[KO+]); White plays first, so the signs are White's. White 7 takes the ko and Black 8 starts a crawl along the first line. If White 9 connects the ko, Black 10 to Black 18 join the corner to B13-C13: Black 14 captures two stones, Black 16 captures White 15, and Black 18 connects. Black lives along the edge. 15399, with the same stones, has this crawl in its tree. With B13-C13 walled in, as in every search area so far, the crawl fails."
+    },
+    {
+      "problem": "11278",
+      "start": "B18 A18 C18 B17 C19 D19 A19 B19",
+      "moves": "A19! pass A17 A16 F19 A18 A17! F18 F17 A18",
+      "caption": "11278, leaf k101 (the tree's S[KO-]), Black to kill, on the open board. White has just taken the ko at B19. Black 9 retakes after a threat elsewhere but threatens nothing yet, so White 10 plays elsewhere. Black 11 captures a stone and forces White 12, Black 13 approaches, and White 14 captures Black 11, a second ko. Black 15 retakes after a second threat. White 16 ataris Black 13, and Black 17 must answer; here it captures White 16. White 18 retakes for free, so Black needs a third threat: S[A-1KO-2]."
     }
   ],
   "suggestion": "As the question page proposes, count the board as the player sees it, and where a problem needs a closed edge, put the stones in the SGF. In 9704, Black stones at C14 and D15 would keep the tree's S[KO-]."

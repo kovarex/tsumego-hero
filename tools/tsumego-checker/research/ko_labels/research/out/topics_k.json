@@ -8,11 +8,13 @@
    "k013",
    "k033",
    "k036",
-   "k037"
+   "k037",
+   "k105"
   ],
   "text": [
    "Part 3 of the question page (c014 in 2359) asks about a ko where one side's capture threatens, the other side answers locally instead of retaking, and the capturer then needs one more move, which the other side can answer only by retaking. The extra move can be read as an approach (A-1KO+ for c014) or as an extra move inside the ko, counted as a threat (KO- for c014). Both readings need the same threats.",
-   "Six leaves have this shape. With the approach reading, the trees of k010 in 7487 (S[A-1KO+]) and k033 in 13262 (S[A+1KO+]) are right, and the other four change to the approach form. With the extra-move reading, all six change. The trees of k011 and k013 in 7487 and of k036 and k037 in 13539 are wrong under both answers: each is one threat short."
+   "Six leaves have this shape. With the approach reading, the trees of k010 in 7487 (S[A-1KO+]) and k033 in 13262 (S[A+1KO+]) are right, and the other four change to the approach form. With the extra-move reading, all six change. The trees of k011 and k013 in 7487 and of k036 and k037 in 13539 are wrong under both answers: each is one threat short.",
+   "13959 (k105, third round, 16 November) has the same shape: White's capture threatens at once, Black's retake threatens too but White answers it locally (F19 or A16), and Black then needs one more move (A18 or A19), which White answers only by a free retake. Read as an approach it is the tree's S[A-1KO-]; counted as a threat it is S[KO-2]. The count is 2 either way, and the tree is right under the approach reading."
   ],
   "suggestion": "The approach reading, the question page's proposal for c014: only one side needs the extra move, and the other side can win by winning the ko once, which is your approach ko.",
   "options": {
@@ -38,6 +40,10 @@
     "KO+2"
    ],
    "k037": [
+    "A-1KO-",
+    "KO-2"
+   ],
+   "k105": [
     "A-1KO-",
     "KO-2"
    ]
@@ -112,11 +118,13 @@
    "k014",
    "k018",
    "k030",
-   "k053"
+   "k053",
+   "k101"
   ],
   "text": [
    "Part 8 of the question page asks whether the empty board beyond the corner counts as open, as the site shows it, or as the attacker's wall, which is how the solver's search area and some trees read it. Four leaves change label with that choice.",
-   "At k014 in 7487 the tree's S[KO+] is right on the open board (walled where the solver's area ends it would be S[KO+2]). The other three are right only with the outside closed: 9704's S[KO-] becomes S[KO-2] on the open board (White's push at C15 runs out unless Black seals it, and the seal gives White a second local threat at B15), 11334's S[KO+] becomes S[KO+2] (Black's local threat at B14), and 15364's S[KO+] becomes S[KO-2] (the crawl along the first line to B13 gives Black two local threats; 15399, with the same stones, shows this crawl in its tree)."
+   "At k014 in 7487 the tree's S[KO+] is right on the open board (walled where the solver's area ends it would be S[KO+2]). The other three are right only with the outside closed: 9704's S[KO-] becomes S[KO-2] on the open board (White's push at C15 runs out unless Black seals it, and the seal gives White a second local threat at B15), 11334's S[KO+] becomes S[KO+2] (Black's local threat at B14), and 15364's S[KO+] becomes S[KO-2] (the crawl along the first line to B13 gives Black two local threats; 15399, with the same stones, shows this crawl in its tree).",
+   "11278 (k101, third round, 16 November): the tree's S[KO-] is wrong whatever the answer. With the right side closed, as in the solver's narrow area, it is S[A-1KO-]; on the board as the player sees it, White's atari at F18 on Black's F19 is a local threat in the direct ko after the approach, and it is S[A-1KO-2]."
   ],
   "suggestion": "As the question page proposes, count the board as the player sees it, and where a problem needs a closed edge, put the stones in the SGF.",
   "options": {
@@ -136,6 +144,10 @@
    "k053": [
     "KO+",
     "KO-2"
+   ],
+   "k101": [
+    "A-1KO-",
+    "A-1KO-2"
    ]
   }
  },
@@ -159,6 +171,25 @@
    "k052": [
     "A+1KO+2",
     "KO+3"
+   ]
+  }
+ },
+ {
+  "key": "leaf-convention",
+  "title": "A line that ends with the solver's capture of a ko: KO+, or the clean status?",
+  "cases": [
+   "k029"
+  ],
+  "text": [
+   "When the solver's last move on a line captures a ko and the solver then wins whatever the opponent does (the opponent's retake after a threat changes nothing), your trees mark the leaf S[KO+], not S[ALIVE] or S[DEAD]: 5160 (E19, beside the clean D18 marked ALIVE), 5628, 8094, 13075 twice and 15399 three times. With KO+, besogo ranks the ko capture below the clean move, so the site accepts only the clean move.",
+   "The solver follows that practice (design D14): it prints KO+ there and says the label turns on your practice. The research read 11332's leaf 3 (k029) by its position instead: after Black's D19 captures the ko, White's retake at D18 fails, because Black simply connects at C17 and still takes White's corner stones, so the leaf is ALIVE. The tree's S[ADKO] is wrong either way.",
+   "A clean failure is never KO+: when the solver fails even with unlimited threats, the leaf is the failure (13661 leaf 9 is ALIVE, 13462 leaf 8 is DEAD). The solver changed on 16 November so that it no longer prints KO+ there."
+  ],
+  "suggestion": "Keep your practice: a line that ends with the solver's capture of a ko is S[KO+], so the site prefers the clean move. Then 11332's leaf 3 is S[KO+], and the solver needs no change.",
+  "options": {
+   "k029": [
+    "KO+",
+    "ALIVE"
    ]
   }
  }

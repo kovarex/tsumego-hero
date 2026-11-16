@@ -1,0 +1,21 @@
+{
+ "problem": "13462",
+ "cards": [
+  {
+   "case": "k106",
+   "headline": "White 8 takes Black's stone at F18, so White's five stones are safe, and Black's ko retake threatens nothing. Black fails whatever the threats: S[DEAD], not S[KO+].",
+   "diagrams": [
+    {"start": "", "moves": "E19 C19 A19 A18 A17 G18 A19", "caption": "The tree's line, marked S[KO+]; the checker says DEAD. Black 7 takes the ko by capturing White 4 and puts White's five stones, White 2 among them, in atari at D19. But White 6 has left Black's stone at F18 one liberty, at F19. Black has nothing better at move 7: saving F18 at F19 loses the capturing race. White to play."},
+    {"start": "E19 C19 A19 A18 A17 G18 A19", "moves": "F19 G19 F18", "caption": "White 8 captures Black's stone at F18, so White's five stones gain a second liberty there; Black's D19 and F18 are both suicide. If Black 9 ataris White 8, White 10 connects to the outside wall. White can also take Black 9 at H19."},
+    {"start": "E19 C19 A19 A18 A17 G18 A19", "moves": "F19 A18 B16 A16 B16", "caption": "If Black 9 connects the ko at once, A16 and B16 make only one eye: White 10 plays inside, Black 11 takes it, and White 12 takes 14 stones."},
+    {"start": "E19 C19 A19 A18 A17 G18 A19", "moves": "F19 B16 D19 pass A18 A19! pass pass A18 pass A16", "caption": "After White 8 every Black move fails, Black 9 among them. White 10 takes Black's stone at E19, and White 12 retakes the ko for free, putting Black's group in atari at A16. Black 13 retakes after a ko threat elsewhere, but the capture threatens nothing, so White 14 plays elsewhere. Black 15 has no useful move: with B16 filled, connecting at A18 is self-atari. White 16 retakes for free. Each round costs Black a threat and White none; when Black runs out, White 18 takes 12 stones."}
+   ],
+   "text": [
+    "Black 7 threatens to take White's five stones at D19, but White 8 captures the stone at F18 first. That gives them a second liberty: Black's D19 and F18 are both suicide, and White answers an atari on White 8 by connecting (Diagram 2). Any other White move, except a retake at A18 after a threat, lets Black take the five stones and live. The tree's other S[KO+] leaf differs: there Black's own G18 at move 3 gives F18 two liberties, so the ko reads as real.",
+    "What remains is the ko at A18, and it cannot save Black. Black's retake threatens nothing: connecting at A18 fills Black's own eye, and A16 and B16 make only one eye (Diagram 3). So White waits a move and retakes without a threat, while White's capture always threatens to kill: Black pays a threat every round and White none (Diagram 4). The line ends with Black's ko capture, but Black fails whatever the threats: a clean failure, never KO+. No open question applies; the leaf-convention question is only about a clean success.",
+    "In the checker's narrow area Black fails even with eight threats more than White. Its wider area, which adds only points behind White's wall, leaves the leaf undecided, but after White 8 Black fails there with equal threats, which rules out KO+.",
+    "No move's grade changes: Black 3, at A19, is already wrong, since Black lives with A18 or F19 there in the tree; it will show DEAD instead of KO+. That DEAD is only the value of the tree's one line after Black 3: most alternatives to Black 5 stayed undecided, and a better one would be a missing branch."
+   ]
+  }
+ ]
+}

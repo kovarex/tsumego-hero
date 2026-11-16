@@ -7,6 +7,9 @@ import glob, json, os, re, sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 STATUS = re.compile(r'(?<![\w+-])(DEAD|ALIVE|SEKI\+?|BENT4|10kKO|DDKO|DSKO|ADKO|ASKO|(?:A[+-][0-9]+)?KO(?:[+-][0-9]*)?)(?![\w+-])')
 cases = json.load(open(os.path.join(HERE, 'out', 'results2.json')))
+#the third round (round3_collect.py), in the same format
+round3_path = os.path.join(HERE, 'out', 'results2_round3.json')
+cases += json.load(open(round3_path)) if os.path.exists(round3_path) else []
 judges_path = os.path.join(HERE, 'out', 'judges.json')
 judges = json.load(open(judges_path)) if os.path.exists(judges_path) else {}
 #grading checks per problem (out/grading_<problem>.json: {id, grading, reviews}), kept on each fixed leaf
@@ -53,7 +56,8 @@ for c in cases:
                 if status not in seen:
                     seen.append(status)
             options[c['case']] = {'question': a.get('depends_on', ''), 'options': [['', status] for status in seen]}
-    if entry['final'] == 'site_error' and c['id'] in gradings:
+    #a grading check stays with its leaf when the leaf became a decision (11332's k029 on 16 November)
+    if entry['final'] in ('site_error', 'definition') and c['id'] in gradings:
         entry['grading_check'] = gradings[c['id']]['grading']
         entry['grading_reviews'] = gradings[c['id']].get('reviews', [])
     out.append(entry)

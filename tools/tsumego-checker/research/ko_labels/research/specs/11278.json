@@ -31,6 +31,40 @@
     "White's capture needs no approach: if Black plays elsewhere instead of retaking, White captures at C17 even with four Black threats against none. After Black's approach the ko is a plain KO− (Diagram 3), so the leaf is an approach ko White took first: S[A-1KO-], as the solver said. White can also use the approach round's free move for an atari (Diagram 4), so Black needs three threats more in all. As in c121, which you set to S[A-1KO-], that gain belongs to the approach, not to the label.",
     "Three threats win in every search area tried. That two fail is proven in the narrow areas, while some wider searches stay undecided; under your c121 rule this moves only the count, not the label. The label rests on reading that rule as covering this free move; if it covers only the free retake after the approach, the leaf is the strict S[A-1KO-2], still not S[KO-]. The first research's S[KO-3] had the right count, but in c121 you chose the approach form over KO-3 for this shape. No move's grade changes with any of these labels."
    ]
+  },
+  {
+   "case": "k101",
+   "headline": "Question 8: the tree's S[KO-] is wrong either way: S[A-1KO-] with the right side closed, S[A-1KO-2] on the open board, where White's F18 atari is a local threat.",
+   "diagrams": [
+    {
+     "start": "",
+     "moves": "B18 A18 C18 B17 C19 D19 A19 B19",
+     "caption": "The tree's line to the leaf, marked S[KO-]. White 8 takes the ko by capturing Black 7, and Black 1, 3 and 5 are in atari at C17. Black to play."
+    },
+    {
+     "start": "B18 A18 C18 B17 C19 D19 A19 B19",
+     "moves": "A19! pass A17 A16 F19 A18 A17! pass A18 C17 A15",
+     "labels": {
+      "F18": "a"
+     },
+     "caption": "With the right side closed. Black 9 retakes after a ko threat elsewhere but threatens nothing yet, so White 10 plays elsewhere. Black 11 captures White 2 and forces White 12, Black 13 approaches, and White 14 captures Black 11 for free, a second ko. Black 15 retakes after a second threat. White's atari at a would be no threat, so Black 17 kills; Black 19 captures when White 18 fills a liberty. With only one threat more than White, Black has none for Black 15, and White lives by capturing at B19."
+    },
+    {
+     "start": "B18 A18 C18 B17 C19 D19 A19 B19",
+     "moves": "A19! pass A17 A16 F19 A18 A17! F18 F17 A18",
+     "caption": "The open board. White 16 ataris Black 13, and Black 17 must answer; here it captures White 16. White 18 retakes the second ko for free, so Black needs a third threat. Answering at G19 instead is no better."
+    },
+    {
+     "start": "B18 A18 C18 B17 C19 D19 A19 B19",
+     "moves": "A19! pass A17 A16 F19 A18 A17! F18 A18 G19 A15 F17 F16 G17",
+     "caption": "The open board, if Black 17 ignores the atari and connects. White 18 takes Black 13, and White's group has three liberties to Black's two. Black 19 fills one, but White 20 and White 22 get out, and every Black move then loses; Black's other tries fail too, a few by reading only. In the solver's narrow area, even with G19 and H19 added, the right side is closed: White's stones die against the wall, and Black 19 wins."
+    }
+   ],
+   "text": [
+    "White 8's capture threatens at once: if Black plays elsewhere, White captures three stones at C17 and lives. Black must retake, but the retake threatens nothing yet, so Black needs one approach, Black 13 in Diagram 2, and White 14 then captures in a second ko for free. With one threat more than White, Black fails wherever the search decided it, and opening the board only helps White: S[KO-] is wrong under either answer. The fight then switches through the second ko: your 10403 shape, which you rated a one-move approach ko for Black.",
+    "The two answers differ on White 16 in Diagrams 3 and 4, an atari on Black 13 after the approach. With the right side closed, as in the solver's narrow area, Black can ignore it, since White's stones die against the wall: after the approach Black needs one threat more than White, and the leaf is S[A-1KO-] (Diagram 2). On the open board Black must answer (Diagram 4) and White retakes for free (Diagram 3): Black needs two threats more after the approach, S[A-1KO-2].",
+    "At k024 in this tree, the same atari works only in the approach round, where your c121 rule keeps it out of the label; here it also works after the approach. Whether White's free move in this leaf's approach round gains a threat as well is undecided; the rule would keep that out. The open-board lines ran in areas still more favourable to Black, so White's wins there carry over; that one approach suffices on the open board rests on reading, as do Black's other approaches and a few side lines. No move's grade changes under either answer."
+   ]
   }
  ]
 }

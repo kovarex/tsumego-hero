@@ -1,0 +1,101 @@
+{
+ "problem": "11279",
+ "cards": [
+  {
+   "case": "k102",
+   "headline": "White 12 took the ko first, and Black still needs the approach at F19 after retaking: S[A-1KO-], two threats more than White, not S[A-1KO+].",
+   "diagrams": [
+    {
+     "start": "",
+     "moves": "B18 A18 C18 D19 B17 A16 A17 C19 A19 B19 A14 A18",
+     "caption": "The tree's line to the leaf, marked S[A-1KO+]; the solver says S[A-1KO-]. White 12 takes the ko by capturing Black 9, and Black 1, 3, 5 and 7 are in atari at C17. Black to play."
+    },
+    {
+     "start": "B18 A18 C18 D19 B17 A16 A17 C19 A19 B19 A14 A18",
+     "moves": "A19! pass F19 A18 A19! pass C17",
+     "caption": "Black 13 retakes after a ko threat elsewhere. White's group still has two liberties, so White 14 plays elsewhere. Black 15 approaches, and White 16 retakes for free. Black 17 retakes after a second threat, and Black 19 takes 11 stones: two threats more than White, S[A-1KO-]."
+    },
+    {
+     "start": "B18 A18 C18 D19 B17 A16 A17 C19 A19 B19 A14 A18",
+     "moves": "A19! pass F19 A18 pass C17",
+     "caption": "With one threat more than White, the count of S[A-1KO+], Black fails: after White 16 retakes, Black has no threat left. Black 17 plays elsewhere, and White 18 takes four stones and lives. Black fails even when White may play only the retake and the capture."
+    },
+    {
+     "start": "B18 A18 C18 D19 B17 A16 A17 C19 A19 B19 A14 A18",
+     "moves": "A19! B14 C14 A18",
+     "caption": "White can also use its free move: White 14 ataris Black 11, Black 15 captures White 14, and White 16 retakes without a threat, gaining White one threat. White's extension at F19, with the same free move, gains a threat too. With both, Black needs four threats more than White in the narrow area."
+    }
+   ],
+   "text": [
+    "White 12 took the ko first, and its capture threatens at once: approaching first fails, as White then takes four stones at C17. Black must retake with a threat, but White's group still has two liberties, so the retake threatens nothing yet. Black approaches, White retakes for free, and Black needs a second threat (Diagram 2). One approach with White taking first is S[A-1KO-], two threats more than White; with one, Black fails (Diagram 3).",
+    "Your S[A-1KO+] fits the sibling where Black's move 9 approaches at F19 and Black then takes the ko first (On the site, below); capturing at once with Black 9 costs that tempo. White's free move after Black 13 gains a threat on either side (Diagram 4). On that sibling and on the tree's other leaf ending with Black's capture at A19, your S[A-1KO+] leaves out the same gain, which raises the count there from one to three in the narrow area. So under your c121 rule the label is S[A-1KO-]; without it, S[A-1KO-3].",
+    "Both reviewers agree, and no open question decides it: in the counted form the fix would be S[KO-2], also two threats. The failure with one threat is decided in the narrow search area; in the wider one it rests on reading. The solver's bent-four test stayed undecided, but by reading no bent four can arise. The fix turns Black's move 9 wrong (On the site, below)."
+   ]
+  },
+  {
+   "case": "k103",
+   "headline": "White 12 took the ko first and threatens to capture at B19, and Black still needs one approach after retaking: S[A-1KO-], two threats more than White, not S[A-1KO+].",
+   "diagrams": [
+    {
+     "start": "",
+     "moves": "B18 A18 C18 D19 A17 B17 A19 C19 A14 A16 F19 A18",
+     "caption": "The tree's line to the leaf, marked S[A-1KO+]; the solver says S[A-1KO-]. White 12 takes the ko by capturing Black 5 and threatens to take Black 7 at B19, after which Black 1 and 3 die. Black to play."
+    },
+    {
+     "start": "B18 A18 C18 D19 A17 B17 A19 C19 A14 A16 F19 A18",
+     "moves": "A17! pass B19 A18 A17! pass C17",
+     "caption": "Black 13 retakes after a ko threat elsewhere. White's group still has two liberties, so White 14 plays elsewhere. Black 15 approaches, and White 16 retakes for free. Black 17 retakes after a second threat, and Black 19 takes 11 stones. Black 15 can approach at C17 instead, with the same count."
+    },
+    {
+     "start": "B18 A18 C18 D19 A17 B17 A19 C19 A14 A16 F19 A18",
+     "moves": "A17! pass B19 A18 pass C17",
+     "caption": "With one threat more than White, the count of S[A-1KO+], Black fails: after White 16 retakes, Black has no threat left. Black 17 plays elsewhere, and White 18 takes four stones. Black fails even when White may not use its local moves."
+    },
+    {
+     "start": "B18 A18 C18 D19 A17 B17 A19 C19 A14 A16 F19 A18",
+     "moves": "A17! F18 F17 A18",
+     "caption": "White can also use its free move: White 14 ataris Black 11, Black 15 captures White 14, and White 16 retakes without a threat. An atari at B14 against Black 9 works the same way. Each gains White up to one threat."
+    }
+   ],
+   "text": [
+    "White 12 took the ko first, and its capture threatens at once. Approaching first fails: Black at B19 or C17 is self-atari, and White takes four stones. So Black must retake with a threat, but White's group still has two liberties, so the retake threatens nothing yet. Black approaches, White retakes for free, and Black needs a second threat (Diagram 2). That is S[A-1KO-], two threats more than White; with one, Black fails (Diagram 3).",
+    "White's local moves after Black 13 gain up to two threats (Diagram 4), so the full count lies between two and four. They work only before Black approaches, so by your c121 rule the gain belongs to the approach, and your S[A-1KO+] on the two leaves that end with Black's capture at A19 leaves it out too. In the counted form the fix would be S[KO-2], also two threats, but this tree writes approach kos in the A-form, and S[KO-2] would make the problem's result KO−2 and change 27 marks.",
+    "Both reviewers agree, and no open question decides it. The failure with one threat is decided in the narrow search area; in the wider one it rests on reading. The solver's bent-four test stayed undecided, but by reading no bent four can arise. This fix alone changes no mark. After the fixes Black 5 leads only to A-1KO−, against A-1KO+ after B17 at move 5, but stays correct: C19 at move 5 gives 10kKO, which besogo ranks equal to every A-1 ko."
+   ]
+  }
+ ],
+ "grading": {
+  "text": [
+   "Black's move 9 at a in Diagram 1 turns from correct to wrong, and the three moves after it in its line change with it. Its line ends in leaf k102, now S[A-1KO-], while b keeps its leaf's S[A-1KO+]. The problem's result stays S[10kKO], and the k103 fix changes no mark. A checker tried to show the new mark wrong and found it right.",
+   "After b, Black takes the ko first and needs one approach: one threat more than White (Diagram 2). After a, White takes the ko first, for free, and Black needs a threat just to reach b's leaf (Diagram 3), so a is exactly one threat worse. The solver agrees under both counts: with White's local moves barred, b needs one threat more than White and a two; with them, in the narrow area, b needs three and a at least four.",
+   "b's S[A-1KO+] is right, and the tree misses no better White answer to it. Not needed for the grading: c is as good as b, but the site rejects it as off-tree; adding its line lets the site accept it (Diagram 4)."
+  ],
+  "diagrams": [
+   {
+    "start": "",
+    "moves": "B18 A18 C18 D19 B17 A16 A17 C19",
+    "labels": {
+     "A19": "a",
+     "F19": "b",
+     "A14": "c"
+    },
+    "caption": "Black to play move 9. Today a and b are both correct, each worth S[A-1KO+]. With the k102 fix the site marks a wrong and keeps b. c is as good as b but not in the tree."
+   },
+   {
+    "start": "B18 A18 C18 D19 B17 A16 A17 C19",
+    "moves": "F19 B19 A19 pass A14 A18 A19! pass C17",
+    "caption": "b: the tree's line ends with Black 11, marked S[A-1KO+]. White 10 puts Black's four stones in atari, and Black 11 takes the ko first. White 12 plays elsewhere, Black 13 approaches, and White 14 retakes for free. Black 15 retakes after a ko threat elsewhere, and Black 17 takes 11 stones: one threat more than White."
+   },
+   {
+    "start": "B18 A18 C18 D19 B17 A16 A17 C19",
+    "moves": "A19 B19 F19 A18",
+    "caption": "a: White 10 threatens to take the ko, and Black cannot stop it. After Black 11 approaches, White 12 takes the ko first, for free. This is b's leaf with the ko turned round: Black is in atari and needs a threat just to retake. The tree's Black 11 at A14 is as good."
+   },
+   {
+    "start": "B18 A18 C18 D19 B17 A16 A17 C19",
+    "moves": "A14 B19 A19",
+    "caption": "Not needed for the grading: c, the approach on the other side. Black 11 takes the ko first, and Black still needs the approach at F19: S[A-1KO+], the same count as b, decided in both search areas. Add this line with S[A-1KO+] on Black 11, and the site accepts c."
+   }
+  ]
+ }
+}

@@ -51,7 +51,21 @@
    ],
    "text": [
     "White 14 is the first ko capture: Black 9 captured White 6 but kept two liberties, so it was no ko capture. Black's four stones are in atari at A19, so White's capture threatens at once. Black must retake with a threat, and its retake threatens nothing until Black 17 in Diagram 2 fills A14; then White 18 retakes for free. One approach with White taking first is A-1KO-: Black needs two threats more than White. The tree's A-1KO+ says one, and Black fails with one.",
-    "Not settled here: the tree's other S[A-1KO+] leaf on this ko is the same position without Black 11 and White 12, and in the narrow area Black fails there even with three threats more. A grading check should look at it together with this leaf."
+    "The tree's other S[A-1KO+] leaf on this ko, leaf k104, is the same position without Black 11 and White 12. It has the same error and gets the same fix; with both fixes no move's grading changes."
+   ]
+  },
+  {
+   "case": "k104",
+   "headline": "White 12 took the ko first, and Black's retake needs one approach: S[A-1KO-], not S[A-1KO+]. Your c121 rule keeps White's two ataris before the approach out of the label.",
+   "diagrams": [
+    {"start": "", "moves": "B18 B19 B17 C18 D19 A17 A18 D16 A16 A15 C17 A17", "caption": "The tree's line to the leaf, marked S[A-1KO+]. White 12 takes the ko by capturing Black 9, and Black 1, 3, 7 and 11 are in atari at A19. Black to play."},
+    {"start": "B18 B19 B17 C18 D19 A17 A18 D16 A16 A15 C17 A17", "moves": "A16! pass A14 A17 A16! pass C19", "caption": "Black 13 retakes with a threat, and after White 14 plays elsewhere Black 15 approaches. White 16 retakes for free, so Black needs a second threat for Black 17 before Black 19 captures."},
+    {"start": "B18 B19 B17 C18 D19 A17 A18 D16 A16 A15 C17 A17", "moves": "A16! E19 F19 A17 A16! C19 E19 A17 A16! pass A14 A17 A16! pass A19", "caption": "White uses its free moves before the approach. White 14 is a self-atari that ataris Black 5; Black 15 captures it, and White 16 retakes for free. White 18 ataris Black 5 again, Black 19 connects, and White 20 retakes for free. Black 23 then approaches. Black needs a threat for each of Black 13, Black 17, Black 21 and Black 25: four more than White."}
+   ],
+   "text": [
+    "White 12 is the first ko capture: Black 9 captured White 6 but kept two liberties. Black's four stones are in atari at A19, so White's capture threatens at once. Black must retake with a threat, and its retake threatens nothing until Black 15 in Diagram 2 fills A14; then White 16 retakes for free. One approach with White taking first is A-1KO-, as on leaf k044. The tree's A-1KO+ says Black needs one threat more than White; in the narrow search area Black fails even with three more.",
+    "White can also use its free moves before the approach (Diagram 3): White 14 and White 18 each atari Black 5, and after Black answers, White retakes for free. So in full Black needs four threats more than White, a count decided in the narrow area only. The ataris work only before Black fills A14: your c121 pattern, as on leaf k042, here twice. What White gains with the free move of an approach round belongs to the approach, so the label stays A-1KO-; strictly it is A-1KO-3.",
+    "Under your rule this leaf and leaf k044 are both S[A-1KO-], so Black 11 here ranks the same as Black's E19 at move 11 on leaf k044's line, and no move's grading changes. Counted strictly, Black 11 is worse: it leaves White both ataris, four threats against two. The checker's label agrees. Its report misses the two ataris, whose searches stayed undecided, and leaves a bent four open, though White lives cleanly once it wins the ko."
    ]
   }
  ]

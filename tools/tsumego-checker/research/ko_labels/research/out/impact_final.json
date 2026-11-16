@@ -384,6 +384,29 @@
   "flipped_total": 6
  },
  {
+  "key": "k029@KO+",
+  "fixes": [
+   {
+    "line": "D17 E19 D19 C19 B19 B18 C18 A19 D19",
+    "status": "KO+"
+   }
+  ],
+  "root_before": "ADKO",
+  "root_after": "ADKO",
+  "flipped": [
+   {
+    "path": "D17 E19 D19 C19 B19 B18 C18 A19 D19",
+    "number": 9,
+    "solver": true,
+    "before": "correct",
+    "after": "wrong",
+    "status_before": "ADKO",
+    "status_after": "KO+"
+   }
+  ],
+  "flipped_total": 1
+ },
+ {
   "key": "k030@KO+2",
   "fixes": [
    {
@@ -785,6 +808,107 @@
   "flipped_total": 0
  },
  {
+  "key": "k101",
+  "fixes": [
+   {
+    "line": "B18 A18 C18 B17 C19 D19 A19 B19",
+    "status": "A-1KO-"
+   }
+  ],
+  "root_before": "KO+",
+  "root_after": "KO+",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "k101@A-1KO-2",
+  "fixes": [
+   {
+    "line": "B18 A18 C18 B17 C19 D19 A19 B19",
+    "status": "A-1KO-2"
+   }
+  ],
+  "root_before": "KO+",
+  "root_after": "KO+",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "k102",
+  "fixes": [
+   {
+    "line": "B18 A18 C18 D19 B17 A16 A17 C19 A19 B19 A14 A18",
+    "status": "A-1KO-"
+   }
+  ],
+  "root_before": "10kKO",
+  "root_after": "10kKO",
+  "flipped": [
+   {
+    "path": "B18 A18 C18 D19 B17 A16 A17 C19 A19",
+    "number": 9,
+    "solver": true,
+    "before": "correct",
+    "after": "wrong",
+    "status_before": "A-1KO+",
+    "status_after": "A-1KO-"
+   }
+  ],
+  "flipped_total": 4
+ },
+ {
+  "key": "k103",
+  "fixes": [
+   {
+    "line": "B18 A18 C18 D19 A17 B17 A19 C19 A14 A16 F19 A18",
+    "status": "A-1KO-"
+   }
+  ],
+  "root_before": "10kKO",
+  "root_after": "10kKO",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "k104",
+  "fixes": [
+   {
+    "line": "B18 B19 B17 C18 D19 A17 A18 D16 A16 A15 C17 A17",
+    "status": "A-1KO-"
+   }
+  ],
+  "root_before": "10kKO",
+  "root_after": "10kKO",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "k105@KO-2",
+  "fixes": [
+   {
+    "line": "C19 C18 D18 D19",
+    "status": "KO-2"
+   }
+  ],
+  "root_before": "ALIVE",
+  "root_after": "ALIVE",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
+  "key": "k106",
+  "fixes": [
+   {
+    "line": "E19 C19 A19 A18 A17 G18 A19",
+    "status": "DEAD"
+   }
+  ],
+  "root_before": "ALIVE",
+  "root_after": "ALIVE",
+  "flipped": [],
+  "flipped_total": 0
+ },
+ {
   "key": "all:7487",
   "fixes": [
    {
@@ -912,6 +1036,10 @@
    {
     "line": "B18 B19 B17 C18 D19 A17 A18 D16 A16 A15 E19 C19 C17 A17",
     "status": "A-1KO-"
+   },
+   {
+    "line": "B18 B19 B17 C18 D19 A17 A18 D16 A16 A15 C17 A17",
+    "status": "A-1KO-"
    }
   ],
   "root_before": "10kKO",
@@ -954,5 +1082,32 @@
    }
   ],
   "flipped_total": 16
+ },
+ {
+  "key": "all:11279",
+  "fixes": [
+   {
+    "line": "B18 A18 C18 D19 B17 A16 A17 C19 A19 B19 A14 A18",
+    "status": "A-1KO-"
+   },
+   {
+    "line": "B18 A18 C18 D19 A17 B17 A19 C19 A14 A16 F19 A18",
+    "status": "A-1KO-"
+   }
+  ],
+  "root_before": "10kKO",
+  "root_after": "10kKO",
+  "flipped": [
+   {
+    "path": "B18 A18 C18 D19 B17 A16 A17 C19 A19",
+    "number": 9,
+    "solver": true,
+    "before": "correct",
+    "after": "wrong",
+    "status_before": "A-1KO+",
+    "status_after": "A-1KO-"
+   }
+  ],
+  "flipped_total": 4
  }
 ]

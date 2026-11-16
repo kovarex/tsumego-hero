@@ -1,0 +1,37 @@
+{
+ "problem": "13959",
+ "cards": [
+  {
+   "case": "k105",
+   "headline": "Question 3, as in c014: White answers Black's retake locally, and Black needs one more move. As an approach, the tree's S[A-1KO-] stands; as an extra move, S[KO-2].",
+   "diagrams": [
+    {
+     "start": "",
+     "moves": "C19 C18 D18 D19",
+     "caption": "The tree's line, marked S[A-1KO-]; the checker says KO?, its count undecided. White 4 takes the ko by capturing Black 1, so Black may not retake at C19 at once."
+    },
+    {
+     "start": "C19 C18 D18 D19",
+     "moves": "C19! pass A18 D19 A19 A16 C19",
+     "caption": "Black's retake threatens at once: Black 5 retakes after a threat elsewhere, and if White 6 plays elsewhere, Black lives even when White has four threats. White 8 retakes for free, but after Black 9 White cannot connect at C19 (suicide), and Black 11 takes four stones."
+    },
+    {
+     "start": "C19 C18 D18 D19",
+     "moves": "C19! F19 A18 D19 C19! A16 A19",
+     "caption": "Black 5 retakes after a threat elsewhere, and White 6 answers locally instead of retaking. Black 7 is the move the question is about, and White 8 retakes for free. Black 9 retakes after a second threat and puts three White stones in atari at A19. With no threat, White 10 cannot retake, and Black 11 takes three stones and lives."
+    },
+    {
+     "start": "C19 C18 D18 D19",
+     "moves": "C19! F19 A18 D19 pass C19 A19 C19",
+     "caption": "If Black has only one threat more than White, it went into Black 5: Black 9 cannot retake and plays elsewhere. White 10 connects, Black 11 takes five stones, and White 12 on the vital point leaves a dead bulky five."
+    }
+   ],
+   "text": [
+    "White 4 took first, and its capture threatens at once: if Black does anything but retake, White connects at C19 and kills as in Diagram 4, whatever Black's threats. Black's retake threatens at once too (Diagram 2), but White 6 in Diagram 3 answers it locally. Then connecting at D19 fails, and Black cannot live without the ko. Black needs one more move, Black 7, which White can answer only by the free retake, White 8. So Black needs two threats more than White (Diagram 3), as your tree says, and fails with one (Diagram 4).",
+    "This is the c014 shape of question 3. The readings agree on every line and differ only in what Black 7 is. As Black's approach, counted from the position after White 6, it gives S[A-1KO-]: your tree stands, and the checker's rule must change. As an extra move inside the direct ko, with White 6 a local threat, it gives S[KO-2], as do counted labels in general (the approach-label decision): your S[] changes, and the checker prints S[KO-2] once its count is decided. besogo ranks S[KO-2] above S[A-1KO-] for Black.",
+    "No move's grading changes either way: Black 1 stays wrong, since C18 lives. Your S[A-1KO-] is the approach form, as are your labels at k010 in 7487 and k033 in 13262. Your answer on 10403 does not settle this leaf: that ko switches back and forth after the approach, while this one is a plain ko after Black 7.",
+    "White 6 can also be at A16, and Black 7 at A19, with the same counts. The count of two is decided only in the checker's narrow area. In the wider area Black's wins agree, while whether White's capture threatens at once, and the count, stayed undecided. The checker's KO? means only that its count search stalled; the bent four it left open is ruled out."
+   ]
+  }
+ ]
+}

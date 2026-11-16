@@ -1,13 +1,23 @@
 {
  "open": [
   {
+   "question": "L",
+   "title": "A line that ends with the solver's capture of a ko: KO+, or the clean status?",
+   "anchor": "#topic-leaf-convention",
+   "yours": "KO+ (5160, 5628, 8094, 13075 twice, 15399 three times)",
+   "solver": "KO+ when the solver then wins whatever happens; the clean failure when it fails (changed 16 November)",
+   "options": "KO+ (your practice) or the clean ALIVE or DEAD",
+   "leaves": "11332 leaf 3 here; 8 leaves that already agree",
+   "proposal": "KO+, your practice"
+  },
+  {
    "question": "3",
    "title": "An extra move after a local answer: an approach, or a move inside the ko?",
    "anchor": "#topic-q3",
    "yours": "mostly the approach form; four leaves are one threat short",
    "solver": "a move inside the ko (KO-, KO+2, KO-2)",
    "options": "approach (A-1KO+ for c014) or a move inside the ko (KO- for c014)",
-   "leaves": "6 here (7487 three, 13262, 13539 two), c014 in 2359, 11282's E16 leaf",
+   "leaves": "6 here (7487 three, 13262, 13539 two), c014 in 2359, 11282's E16 leaf, 13959 (third round)",
    "proposal": "approach"
   },
   {
@@ -27,7 +37,7 @@
    "yours": "read both ways",
    "solver": "its search area walls the board in",
    "options": "the board as the player sees it, or a closed outside",
-   "leaves": "4 here (7487, 9704, 11334, 15364), c013 in 2359, c052 in 11320",
+   "leaves": "4 here (7487, 9704, 11334, 15364), c013 in 2359, c052 in 11320, 11278 (third round: S[KO-] wrong either way)",
    "proposal": "the board as the player sees it; stones in the SGF where an edge must be closed"
   },
   {
