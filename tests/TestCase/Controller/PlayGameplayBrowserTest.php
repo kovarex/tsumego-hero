@@ -174,7 +174,9 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 		$ring = 'return [...document.getElementById("besogo-pass-button").classList].filter(c => c.startsWith("besogo-pass-button--"));';
 		$this->assertSame([], $browser->driver->executeScript($ring), 'No ring while solving');
 
-		$browser->driver->executeScript('besogo.editor.setReviewMode(true); besogo.editor.notifyListeners({navChange: true});');
+		//as the Review button opens it, which builds the review's tree too
+		$browser->driver->executeScript('besogo.editor.setReviewMode(true);'
+			. ' besogo.editor.notifyListeners({treeChange: true, navChange: true, stoneChange: true});');
 		$this->assertSame(['besogo-pass-button--correct'], $browser->driver->executeScript($ring));
 
 		$browser->driver->executeScript('besogo.editor.setCurrent(besogo.editor.getRoot().children.find(child => child.move.x === 1));');
