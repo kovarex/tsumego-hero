@@ -381,8 +381,10 @@ The owner's answer to question 1 (14 November), verbatim: "If it is symmetrical,
 approach, and it can swith there and back, I would rate it as normal KO. It isn't approach ko, as in approach ko it
 isn't symmetrical, one side needs to do approaches to start a normal ko, while the other side can win by winning one ko
 at any time. In 10kKO, one side needs to do investment, which is then "wasted" to start a ko no matter who started."
-He asked to see examples first; the question page (`research/questions/`, parts 1a and 1b) shows them, and the rule
-below waits for his confirmation there.
+He asked to see examples first; the question page (`research/questions/`, parts 1a and 1b) shows them. He confirmed
+the 10kKO case on 15 November (10391, question 1a) and the switching case on 16 November (10403: after Black's one
+approach the ko switches there and back, "since we call symmetrical kos like this just normal ko, it is indeed one move
+approach ko for black", S[A-1KO-]).
 
 - **Approach ko** (one side's capture is a real threat, the other side needs n ≥ 1 approaches): the label of D6.
 - **Mutual approach** (n_S ≥ 1 and n_O ≥ 1, both confirmed by the held-ko check). The **switch test** decides: after one
@@ -1145,6 +1147,8 @@ Your trees have no DSKO or ASKO leaf, so there is no diagram. Is superko positio
 
 - **c121 in 15678:** S[A-1KO-], set on the site on 14 November. What White gains with the free move of an approach round belongs to the approach; the solver prints it beside the label.
 - **Approach ko, 10kKO and plain KO:** your definitions are in D9; questions 1a and 1b check how they apply.
+- **Question 1a (15 November):** yes, the shared-liberty shape of 10391 is your 10kKO ("a clear example of 10kKO"). The solver reads a holder's investment on the principal line as no preparation (D2) and a defender's approach that hands the attacker a direct ko as making the attacker's other approaches free (D9); 11280, 11282, 13541 and 13549 now print your 10kKO.
+- **The switching ko (16 November, research report topic 1b, 10403):** after Black's one approach at E19 each side needs a capture and one more move, a symmetric ko, which is a normal ko; so the leaf is a one-move approach ko for Black, S[A-1KO-], as the solver labels it. Question 1b above (7487 leaf 98, where a second ko gives White a direct threat) is a different shape and stays open.
 
 ---
 
