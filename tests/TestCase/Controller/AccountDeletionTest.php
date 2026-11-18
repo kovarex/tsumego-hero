@@ -4,6 +4,7 @@ use App\Model\Table\AdminActivityTypeTable;
 use App\Model\Table\UserTable;
 use App\Utility\Auth;
 use App\Utility\CookieFlash;
+use App\Utility\Util;
 
 class AccountDeletionTest extends IntegrationTestCase
 {
@@ -203,6 +204,7 @@ class AccountDeletionTest extends IntegrationTestCase
 		$this->assertStringContainsString('comment by a deleted account', $result);
 		$this->assertStringContainsString(h(UserTable::DELETED_NAME), $result);
 		$this->assertStringNotContainsString('ghost', $result);
+		$this->assertStringNotContainsString('[deleted ', $result, 'The placeholder in the row is never shown');
 	}
 
 	public function testProfileOfDeletedAccountIsNotFound(): void
@@ -229,7 +231,7 @@ class AccountDeletionTest extends IntegrationTestCase
 		$this->assertNull($ghost['deleted']);
 		$this->assertSame('ghost', $ghost['name']);
 		$this->assertSame('ghost@example.com', $ghost['email']);
-		$this->assertSame('Account ghost restored', CookieFlash::get());
+		$this->assertSame('Account DN_ghost restored', CookieFlash::get());
 	}
 
 	public function testRestoreWorksWhenAnotherAccountHasTheSameEmail(): void
@@ -306,7 +308,7 @@ class AccountDeletionTest extends IntegrationTestCase
 		$this->login('admin');
 		$this->restoreAccount($oldAccountID);
 		$this->assertNotNull($this->deletedOf($oldAccountID));
-		$this->assertSame('Account kovarex can\'t be restored: The name kovarex is used by another account now.', CookieFlash::get());
+		$this->assertSame('Account DN_kovarex can\'t be restored: The name kovarex is used by another account now.', CookieFlash::get());
 		$this->assertSame('kovarex', $this->userRow($newAccount['id'])['name']);
 
 		// once the new account is deleted as well, the old one can be restored
@@ -408,5 +410,101 @@ class AccountDeletionTest extends IntegrationTestCase
 		$this->restoreAccount($context->otherUsers[0]['id']);
 		$this->assertNotNull($this->deletedOf($context->otherUsers[0]['id']));
 		$this->assertStringContainsString('The Google account is linked to another account now.', CookieFlash::get());
+	}
+
+	public function testDeletingFreesTheDisplayName(): void
+	{
+		$context = new ContextPreparator(['user' => ['name' => 'kovarex', 'display_name' => 'Kovarex']]);
+		$this->deleteOwnAccount();
+
+		$user = $this->userRow($context->user['id']);
+		$this->assertSame('[deleted ' . $context->user['id'] . ']', $user['display_name']);
+		$this->assertSame('Kovarex', $user['deleted_display_name']);
+		$this->assertSame(UserTable::DELETED_NAME, UserTable::displayName($user));
+	}
+
+	//The bug report: a player deleted their account and signed up again, and was asked to rename
+	public function testNewAccountGetsTheDisplayNameOfTheDeletedOne(): void
+	{
+		$context = new ContextPreparator(['user' => ['name' => 'kovarex', 'display_name' => 'kovarex', 'email' => 'kovarex@example.com']]);
+		$oldAccountID = $context->user['id'];
+		$this->deleteOwnAccount();
+		$this->logout();
+
+		$this->signUp('kovarex', 'kovarex@example.com');
+
+		$newAccount = ContextPreparator::findUserRow(['name' => 'kovarex']);
+		$this->assertNotEquals($oldAccountID, $newAccount['id']);
+		$this->assertSame('kovarex', $newAccount['display_name']);
+		$this->assertEquals(false, $newAccount['needs_display_name_change']);
+
+		// the new account plays on, it isn't sent to the rename page
+		$this->login('kovarex');
+		$this->get('/sets');
+		$this->assertResponseOk();
+	}
+
+	public function testDeletedAccountWithItsDisplayNameTakenCantBeRestored(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['admin' => true],
+			'other-users' => [['name' => 'ghost', 'display_name' => 'Ghost', 'deleted' => true], ['name' => 'newghost', 'display_name' => 'Ghost']]]);
+		$ghostID = $context->otherUsers[0]['id'];
+
+		$this->restoreAccount($ghostID);
+		$this->assertNotNull($this->deletedOf($ghostID));
+		$this->assertSame('Account Ghost can\'t be restored: The display name Ghost is used by another account now.', CookieFlash::get());
+
+		// once the other account takes another name, the deleted one gets its own back
+		UserTable::updateDisplayName($context->otherUsers[1]['id'], 'New Ghost');
+		$this->restoreAccount($ghostID);
+		$ghost = $this->userRow($ghostID);
+		$this->assertNull($ghost['deleted']);
+		$this->assertSame('Ghost', $ghost['display_name']);
+		$this->assertNull($ghost['deleted_display_name']);
+		$this->assertSame('Account Ghost restored', CookieFlash::get());
+	}
+
+	public function testTheDisplayNameIsTakenWhateverItsCase(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['admin' => true],
+			'other-users' => [['name' => 'ghost', 'display_name' => 'Ghost', 'deleted' => true], ['name' => 'newghost', 'display_name' => 'GHOST']]]);
+		$this->assertSame('The display name Ghost is used by another account now.', UserTable::restoreAccount($context->otherUsers[0]['id']));
+	}
+
+	//The forum names are unique as well, so the forum account of a deleted account lets the name go too
+	public function testDeletingAndRestoringRenamesTheForumAccount(): void
+	{
+		$context = new ContextPreparator(['user' => ['admin' => true], 'other-users' => [['name' => 'ghost', 'display_name' => 'Ghost']]]);
+		$ghostID = $context->otherUsers[0]['id'];
+		Util::execute("INSERT INTO phpbb_users (user_id, username, username_clean, user_permissions, user_sig, external_id) VALUES (700010, 'Ghost', 'ghost', '', '', ?)", [$ghostID]);
+
+		UserTable::deleteAccount($ghostID);
+		$this->assertSame([['username' => '[deleted ' . $ghostID . ']', 'username_clean' => '[deleted ' . $ghostID . ']']],
+			Util::query('SELECT username, username_clean FROM phpbb_users WHERE user_id = 700010'));
+
+		$this->restoreAccount($ghostID);
+		$this->assertSame([['username' => 'Ghost', 'username_clean' => 'ghost']], Util::query('SELECT username, username_clean FROM phpbb_users WHERE user_id = 700010'));
+	}
+
+	public function testAdminSeesTheDisplayNameOfADeletedAccount(): void
+	{
+		$context = new ContextPreparator(['user' => ['admin' => true], 'other-users' => [['display_name' => 'Ghost Of Google', 'external_id' => '123', 'deleted' => true]]]);
+
+		$this->get('/admin/deleted-accounts');
+		$this->assertStringContainsString('Ghost Of Google', $this->view);
+
+		$this->get('/users/view/' . $context->otherUsers[0]['id']);
+		$this->assertStringContainsString('Ghost Of Google ' . h(UserTable::DELETED_NAME), $this->view);
+		$this->assertStringNotContainsString('[deleted ', $this->view);
+	}
+
+	public function testDeletedAdminIsNotListedInTheSandbox(): void
+	{
+		new ContextPreparator(['user' => ['admin' => true, 'display_name' => 'Living Admin'], 'other-users' => [['display_name' => 'Gone Admin', 'admin' => true, 'deleted' => true]]]);
+		$this->get('/sets/sandbox');
+		$this->assertStringContainsString('Living Admin', $this->view);
+		$this->assertStringNotContainsString('[deleted ', $this->view);
 	}
 }

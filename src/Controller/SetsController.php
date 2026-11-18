@@ -51,7 +51,7 @@ class SetsController extends AppController
 
 		$admins = $this->fetchTable('User')->find()
 			->select(['display_name'])
-			->where(['user_role_id IN' => UserTable::ADMIN_ROLES])
+			->where(['user_role_id IN' => UserTable::ADMIN_ROLES, 'deleted IS' => null])
 			->orderBy(['id' => 'ASC'])
 			->all()
 			->extract('display_name')
@@ -84,7 +84,7 @@ class SetsController extends AppController
 		if (!$profileUser)
 			throw new NotFoundException('User not found');
 		$this->assertUserVisible($profileUser);
-		$pageTitle = $isOwn ? 'My Sets' : h($profileUser['display_name']) . "'s Sets";
+		$pageTitle = $isOwn ? 'My Sets' : h(UserTable::nameForAdmin($profileUser)) . "'s Sets";
 		$this->set('_title', 'Tsumego Hero - ' . $pageTitle);
 		$this->set('profileUser', $profileUser);
 		$this->set('isOwn', $isOwn);

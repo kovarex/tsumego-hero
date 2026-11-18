@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Model\Table\UserTable;
 use Cake\Http\Exception\BadRequestException;
 use Cake\Http\Exception\ForbiddenException;
 use Cake\Http\Exception\NotFoundException;
@@ -283,7 +284,7 @@ class ChallengesController extends AppController
 	private function toStartedRematch(array $rematch): Response
 	{
 		if (isset($rematch['user_display_name']))
-			CookieFlash::set($rematch['user_display_name'] . ' started the rematch already, here it is.', 'success');
+			CookieFlash::set(UserTable::displayName($rematch) . ' started the rematch already, here it is.', 'success');
 		return $this->redirect(self::challengeUrl((int) $rematch['id']));
 	}
 

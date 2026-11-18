@@ -197,12 +197,10 @@ class UsersController extends AppController
 			return $this->redirect('/sets');
 		$this->assertUserVisible($user);
 		$userID = (int) $user['id'];
-		$this->set('_title', 'Profile of ' . $user['display_name']);
-		$this->set('og', UserProfile::openGraph($user));
 
 		// only admins get to the profile of a deleted account, they see who it was
-		if ($user['deleted'])
-			$user['display_name'] = $user['deleted_name'] . ' ' . UserTable::DELETED_NAME;
+		$this->set('_title', 'Profile of ' . UserTable::nameForAdmin($user));
+		$this->set('og', UserProfile::openGraph(['display_name' => UserTable::nameForAdmin($user)] + $user));
 		$this->set('user', $user);
 
 		$this->set('levelDays', UserProfile::levelDays($userID));
@@ -269,11 +267,11 @@ class UsersController extends AppController
 	public function restore_account(?string $id = null)
 	{
 		$this->Authorization->authorize('Admin', 'restoreAccount');
-		$user = $this->fetchTable('User')->find()->select(['id', 'deleted_name'])->where(['id' => (int) $id])->first();
+		$user = $this->fetchTable('User')->find()->select(['id', 'deleted_display_name'])->where(['id' => (int) $id])->first();
 		if (!$user)
 			throw new NotFoundException('User not found');
 
-		$name = $user->deleted_name;
+		$name = $user->deleted_display_name;
 		if ($error = UserTable::restoreAccount($user->id))
 		{
 			CookieFlash::set('Account ' . $name . ' can\'t be restored: ' . $error, 'error');
@@ -335,7 +333,7 @@ class UsersController extends AppController
 		if (!$profileUser)
 			throw new NotFoundException('User not found');
 		$this->assertUserVisible($profileUser);
-		$userName = $profileUser['display_name'];
+		$userName = UserTable::nameForAdmin($profileUser);
 		$PAGE_SIZE = 500;
 		$pageIndex = $this->query('page') !== null ? max(1, (int) $this->query('page')) : 1;
 		$count = Util::query("SELECT COUNT(*) FROM tsumego_attempt where user_id = ?", [$userID])[0]['COUNT(*)'];
