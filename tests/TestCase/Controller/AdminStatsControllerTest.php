@@ -467,6 +467,6 @@ class AdminStatsControllerTest extends IntegrationTestCase
 		$this->assertCount(1, $adminActivities);
 		$this->assertSame($adminActivities[0]->type, AdminActivityTypeTable::RESTORE_USER);
 		$this->assertSame(null, $adminActivities[0]->old_value);
-		$this->assertSame('TwT', $adminActivities[0]->new_value);
+		$this->assertSame('DN_TwT', $adminActivities[0]->new_value, 'The activity log names the account the way players see it, as the deletion does');
 	}
 }
