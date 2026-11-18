@@ -502,7 +502,7 @@ class AccountDeletionTest extends IntegrationTestCase
 
 	public function testDeletedAdminIsNotListedInTheSandbox(): void
 	{
-		new ContextPreparator(['user' => ['admin' => true, 'display_name' => 'Living Admin'], 'other-users' => [['display_name' => 'Gone Admin', 'admin' => true, 'deleted' => true]]]);
+		new ContextPreparator(['user' => ['admin' => true, 'display_name' => 'Living Admin'], 'other-users' => [['name' => 'goneadmin', 'display_name' => 'Gone Admin', 'admin' => true, 'deleted' => true]]]);
 		$this->get('/sets/sandbox');
 		$this->assertStringContainsString('Living Admin', $this->view);
 		$this->assertStringNotContainsString('[deleted ', $this->view);
