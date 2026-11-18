@@ -510,8 +510,9 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 		if ($displayNameLength < 3 || $displayNameLength > 50)
 			return __('Display name must be between 3 and 50 characters.');
 
-		// Check uniqueness - another user might have this display_name
-		if ($this->fetchTable('User')->exists(['display_name' => $displayName, 'id !=' => $userId]))
+		// Check uniqueness - another user might have this display_name, a deleted account
+		// doesn't hold its name anymore (UserTable::deleteAccount)
+		if (UserTable::isDeletedPlaceholder($displayName) || $this->fetchTable('User')->exists(['display_name' => $displayName, 'id !=' => $userId]))
 			return __('This display name is already taken.');
 		return null;
 	}

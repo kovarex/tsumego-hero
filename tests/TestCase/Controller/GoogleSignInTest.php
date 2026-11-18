@@ -413,4 +413,22 @@ class GoogleSignInTest extends IntegrationTestCase
 
 		$this->assertEmpty($user, 'No account should be created for a mismatching CSRF token');
 	}
+
+	//A player who deleted their account signs in with Google again and gets their name back
+	public function testNewAccountGetsTheDisplayNameOfADeletedOne(): void
+	{
+		new ContextPreparator(['user' => null, 'other-users' => [['display_name' => 'TestUser', 'external_id' => '22222222222222222222', 'deleted' => true]]]);
+		$this->fakeVerifier->addToken('returning_token', [
+			'sub' => '22222222222222222222',
+			'email' => 'returning@gmail.com',
+			'name' => 'TestUser',
+			'picture' => 'https://photo.jpg']);
+
+		$this->googleSignIn('returning_token');
+
+		$newUser = ContextPreparator::findUserRow(['external_id' => '22222222222222222222']);
+		$this->assertSame('TestUser', $newUser['display_name']);
+		$this->assertEquals(false, $newUser['needs_display_name_change']);
+		$this->assertNull($newUser['deleted']);
+	}
 }

@@ -62,7 +62,7 @@ if (Auth::getUserID() === $userID)
 	<?php endif; ?>
 	<p class="profile-username"><?php
 		echo UserTable::avatarImage(UserTable::getAvatarUrl($user, UserTable::AVATAR_PIXELS_PROFILE), 'user-avatar--lg', false, UserTable::boardUrl($user));
-		echo h((string) $user['display_name']);
+		echo h(UserTable::nameForAdmin($user));
 		echo ' ';
 		UserTable::renderPremium($user);
 	?></p>

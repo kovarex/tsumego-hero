@@ -118,6 +118,6 @@ class AdminController extends AppController
 		$this->Authorization->authorize('Admin', 'viewAdminArea');
 		$this->set('_page', 'admin');
 		$this->set('_title', 'Deleted accounts');
-		$this->set('deletedUsers', Util::query('SELECT id, deleted_name, deleted FROM user WHERE deleted IS NOT NULL ORDER BY deleted DESC'));
+		$this->set('deletedUsers', Util::query('SELECT id, deleted_name, deleted_display_name, deleted FROM user WHERE deleted IS NOT NULL ORDER BY deleted DESC'));
 	}
 }

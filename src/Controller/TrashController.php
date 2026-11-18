@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Model\Table\UserTable;
 use Cake\Http\Exception\NotFoundException;
 use App\Model\Table\SetConnectionTable;
 use App\Attribute\HttpGet;
@@ -26,7 +27,7 @@ class TrashController extends AppController
 		$this->set('sets', Util::query('
 SELECT s.id, s.title, s.public, s.deleted,
 	(SELECT COUNT(*) FROM set_connection sc WHERE sc.set_id = s.id) AS problem_count,
-	(SELECT u.display_name FROM admin_activity a JOIN user u ON u.id = a.user_id
+	(SELECT ' . UserTable::nameForAdminSql('u') . ' FROM admin_activity a JOIN user u ON u.id = a.user_id
 		WHERE a.set_id = s.id AND a.type = ? ORDER BY a.id DESC LIMIT 1) AS deleted_by
 FROM `set` s
 WHERE s.deleted IS NOT NULL
@@ -35,7 +36,7 @@ ORDER BY s.deleted DESC, s.id DESC', [AdminActivityTypeTable::SET_DELETE]));
 		$this->set('problems', Util::query('
 SELECT t.id, t.description, t.deleted,
 	sc.id AS set_connection_id, sc.num, s.title AS set_title,
-	(SELECT u.display_name FROM admin_activity a JOIN user u ON u.id = a.user_id
+	(SELECT ' . UserTable::nameForAdminSql('u') . ' FROM admin_activity a JOIN user u ON u.id = a.user_id
 		WHERE a.tsumego_id = t.id AND a.type = ? ORDER BY a.id DESC LIMIT 1) AS deleted_by
 FROM tsumego t
 LEFT JOIN set_connection sc ON sc.id = (

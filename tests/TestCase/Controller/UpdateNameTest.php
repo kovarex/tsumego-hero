@@ -492,4 +492,32 @@ class UpdateNameTest extends IntegrationTestCase
 		$this->assertEquals('New Forum Name', $user['display_name']);
 		$this->assertEquals(false, $user['needs_display_name_change']);
 	}
+
+	//The player who reported it: their new account got "Name (2)" while the deleted one held "Name",
+	//the deleted account doesn't hold it anymore, so the rename page gives it to them
+	public function testForcedUserCanTakeTheNameOfADeletedAccount(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['display_name' => 'Kovarex (2)', 'needs_display_name_change' => true],
+			'other-users' => [['name' => 'oldkovarex', 'display_name' => 'Kovarex', 'deleted' => true]]]);
+
+		$this->post('/users/updatename', ['display_name' => 'Kovarex']);
+
+		$updatedUser = UserTable::row((int) $context->user['id']);
+		$this->assertSame('Kovarex', $updatedUser['display_name']);
+		$this->assertEquals(false, $updatedUser['needs_display_name_change']);
+		$this->get('/sets');
+		$this->assertResponseOk();
+	}
+
+	//The placeholder of a deleted account is reserved for it, whatever the case
+	public function testPlaceholderOfADeletedAccountCantBeTaken(): void
+	{
+		$context = new ContextPreparator(['user' => ['display_name' => 'My Name', 'needs_display_name_change' => true]]);
+
+		$this->post('/users/updatename', ['display_name' => '[Deleted 999999]']);
+
+		$this->assertSame('My Name', UserTable::row((int) $context->user['id'])['display_name']);
+		$this->assertSame('[deleted 999999] (2)', UserTable::generateUniqueDisplayName('[deleted 999999]'));
+	}
 }

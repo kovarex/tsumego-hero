@@ -220,30 +220,67 @@ class UserTable extends AppTable
 		return (int) Util::query('SELECT COUNT(*) AS count FROM user WHERE user_role_id = ? AND deleted IS NULL', [self::ROLE_OWNER])[0]['count'];
 	}
 
-	//Marks the account as deleted. Everything it created stays, but its name and Google id move to the
-	//deleted_* columns, so they are free for a new account, and it can't sign in anymore. The email
-	//stays, but a deleted account doesn't hold it (see emailTaken), so a new account can use it as well.
+	//Marks the account as deleted. Everything it created stays, but its name, display name and Google id
+	//move to the deleted_* columns, so they are free for a new account, and it can't sign in anymore.
+	//The account gets the placeholder deletedPlaceholder() instead, on the site and in the forum, which
+	//nobody sees, as a deleted account is shown as DELETED_NAME. The email stays, but a deleted account
+	//doesn't hold it (see emailTaken), so a new account can use it as well.
 	public static function deleteAccount(int $userID): void
 	{
-		Util::execute("UPDATE user SET
+		$deleted = Util::execute("UPDATE user SET
 			deleted = NOW(),
 			deleted_name = name,
+			deleted_display_name = display_name,
 			deleted_external_id = external_id,
 			name = CONCAT('[deleted ', id, ']'),
+			display_name = CONCAT('[deleted ', id, ']'),
 			external_id = NULL,
 			deletion_token = NULL,
 			deletion_token_created = NULL
 			WHERE id = ? AND deleted IS NULL", [$userID]);
 		self::clearDeletedCache();
+		if ($deleted)
+			self::syncToForumIfPossible($userID, self::deletedPlaceholder($userID));
 	}
 
-	//Restores a deleted account, unless its name or Google id was taken by another account in the meantime.
-	//Its email may be used by another account by then, which is fine, the address is not unique.
+	//What the name and the display name of a deleted account are, so they can't collide with any other.
+	public static function deletedPlaceholder(int $userID): string
+	{
+		return '[deleted ' . $userID . ']';
+	}
+
+	//The name of an account for the pages only admins see for a deleted account (the profile, the
+	//trash): who it was, with DELETED_NAME after it. Pass a row with display_name, deleted and
+	//deleted_display_name.
+	/** @param UserRow|array<string, mixed> $user */
+	public static function nameForAdmin(array $user): string
+	{
+		if (empty($user['deleted']))
+			return (string) $user['display_name'];
+		return $user['deleted_display_name'] . ' ' . self::DELETED_NAME;
+	}
+
+	//The same as nameForAdmin(), in SQL, for the user table under the alias.
+	public static function nameForAdminSql(string $alias): string
+	{
+		return "IF($alias.deleted IS NULL, $alias.display_name, CONCAT($alias.deleted_display_name, ' " . self::DELETED_NAME . "'))";
+	}
+
+	//Whether a display name looks like the placeholder of a deleted account, which no account can take,
+	//otherwise the deletion of that account would collide with it. The comparison of the database
+	//ignores the case, so this does as well.
+	public static function isDeletedPlaceholder(string $displayName): bool
+	{
+		return (bool) preg_match('/^\[deleted \d+\]$/i', $displayName);
+	}
+
+	//Restores a deleted account, unless its name, display name or Google id was taken by another account
+	//in the meantime. Its email may be used by another account by then, which is fine, the address is not unique.
 	//Returns why the account can't be restored, null when it was restored
 	public static function restoreAccount(int $userID): ?string
 	{
 		$user = TableRegistry::getTableLocator()->get('User')->find()
-			->select(['deleted', 'deleted_name', 'deleted_external_id'])
+			->select(['deleted', 'deleted_name', 'deleted_display_name', 'deleted_external_id'])
 			->where(['id' => $userID])
 			->first();
 		if ($user === null || $user->deleted === null)
@@ -251,17 +288,22 @@ class UserTable extends AppTable
 
 		if (Util::query('SELECT id FROM user WHERE name = ?', [$user->deleted_name]))
 			return 'The name ' . $user->deleted_name . ' is used by another account now.';
+		if (Util::query('SELECT id FROM user WHERE display_name = ? AND id <> ?', [$user->deleted_display_name, $userID]))
+			return 'The display name ' . $user->deleted_display_name . ' is used by another account now.';
 		if ($user->deleted_external_id !== null && Util::query('SELECT id FROM user WHERE external_id = ?', [$user->deleted_external_id]))
 			return 'The Google account is linked to another account now.';
 
 		Util::execute("UPDATE user SET
 			deleted = NULL,
 			name = deleted_name,
+			display_name = deleted_display_name,
 			external_id = deleted_external_id,
 			deleted_name = NULL,
+			deleted_display_name = NULL,
 			deleted_external_id = NULL
 			WHERE id = ?", [$userID]);
 		self::clearDeletedCache();
+		self::syncToForumIfPossible($userID, $user->deleted_display_name);
 		return null;
 	}
 
@@ -443,8 +485,8 @@ class UserTable extends AppTable
 
 		$userTable = TableRegistry::getTableLocator()->get('User');
 
-		// Check if base value is available
-		if (!$userTable->exists(['display_name' => $name]))
+		// Check if base value is available, the placeholder of a deleted account never is
+		if (!self::isDeletedPlaceholder($name) && !$userTable->exists(['display_name' => $name]))
 			return $name;
 
 		// Find next available suffix (2), (3), etc.
@@ -498,19 +540,23 @@ class UserTable extends AppTable
 			throw $exception;
 		}
 
-		// 3. Sync to phpBB forum. The forum name is a copy of this one and the next
-		// forum sign in repairs it (jwtauth::sync_rename), so a forum that can not
-		// be written to right now must not fail the rename itself.
+		self::syncToForumIfPossible($userId, $newDisplayName);
+		return true;
+	}
+
+	//Syncs the display name to the phpBB forum. The forum name is a copy of this one and the next
+	//forum sign in repairs it (jwtauth::sync_rename), so a forum that can not be written to right
+	//now must not fail the change itself.
+	private static function syncToForumIfPossible(int $userId, string $displayName): void
+	{
 		try
 		{
-			self::syncToForum($userId, $newDisplayName);
+			self::syncToForum($userId, $displayName);
 		}
 		catch (Throwable $exception)
 		{
 			Log::warning('Forum name not synced for user ' . $userId . ': ' . $exception->getMessage());
 		}
-
-		return true;
 	}
 
 	//Syncs a user's display name to the phpBB forum tables.

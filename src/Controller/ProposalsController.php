@@ -8,6 +8,7 @@ use App\Model\Entity\TagConnection;
 use App\Model\Table\AdminActivityTypeTable;
 use App\Model\Table\RejectTable;
 use App\Model\Table\SgfTable;
+use App\Model\Table\UserTable;
 use App\Utility\AdminActivityLogger;
 use App\Utility\Auth;
 use App\Utility\CookieFlash;
@@ -216,6 +217,7 @@ class ProposalsController extends AppController
 
 	private function displayName(int $userID): ?string
 	{
-		return $this->fetchTable('User')->find()->select(['display_name'])->where(['id' => $userID])->first()?->display_name;
+		$user = UserTable::row($userID);
+		return $user === null ? null : UserTable::nameForAdmin($user);
 	}
 }

@@ -47,6 +47,7 @@ use DateTimeImmutable;
  * @property bool $board_orientation_setting
  * @property DateTimeImmutable|null $deleted
  * @property string|null $deleted_name
+ * @property string|null $deleted_display_name
  * @property string|null $deleted_external_id
  * @property string|null $deletion_token
  * @property DateTimeImmutable|null $deletion_token_created

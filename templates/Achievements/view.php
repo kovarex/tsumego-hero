@@ -42,7 +42,7 @@ $markedCollections = count(array_filter($collections, fn(array $collection) => $
 			<a href="/achievements<?php echo $viewedUser ? '/user/' . $viewedUser['id'] : ''; ?>">View Achievements</a>
 		</div>
 		<?php if ($viewedUser): ?>
-		<p class="achievement-view__owner"><?php echo h($viewedUser['display_name']); ?>'s achievement</p>
+		<p class="achievement-view__owner"><?php echo h(UserTable::nameForAdmin($viewedUser)); ?>'s achievement</p>
 		<?php endif; ?>
 		<div class="achievement-view__profile-link">
 			<?php if ($profileUserID): ?><a href="/users/view/<?php echo $profileUserID; ?>">Profile</a><?php endif; ?>
