@@ -352,3 +352,78 @@ besogo.addTest("Editor", "TakingBackAKoAtOnceIsExplained", function()
 		besogo.soundsEnabled = false;
 	}
 });
+
+// A real super ko: the eternal life comes round without a tenuki, so its line stays linked back and is alive in super ko
+besogo.addTest("Editor", "ACycleWithoutATenukiIsASuperKo", function()
+{
+	let editor = loadEditor(ETERNAL_LIFE_SGF.replace("(;SZ[19]", "(;SZ[19]G[KILL]"));
+	CHECK_EQUALS(editor.getRoot().status.blackFirst.type, STATUS_ALIVE_IN_SUPER_KO);
+	editor.nextNode(-1);
+	CHECK_EQUALS(editor.getCurrent().virtualChildren.length, 1);
+});
+
+// Problem 4581: Black takes two stones at c4, White plays back at c2 and Black plays elsewhere. White taking at c3
+// brings back the position after move 4, but Black gave the ko up by the tenuki, so the line isn't linked back and the
+// status comes from its own end
+const TENUKI_AFTER_KO_SGF = "(;SZ[19]G[LIVE]AB[ac][bb][bc][cd][dc][ea][eb][ec]" +
+	"AW[ab][ad][bd][be][ce][da][dd][ed][fa][fb][fc][fd];B[ca];W[cb];B[db];W[cc];B[cd];W[cb];B[];W[]S[ALIVE])";
+
+besogo.addTest("Editor", "ACycleThroughATenukiIsNoSuperKo", function()
+{
+	let editor = loadEditor(TENUKI_AFTER_KO_SGF);
+	CHECK_EQUALS(editor.getRoot().status.blackFirst.type, STATUS_ALIVE);
+	for (let node = editor.getRoot(); node; node = node.children[0])
+	{
+		CHECK_EQUALS(node.virtualChildren.length, 0);
+		CHECK(!node.status.isSuperKo());
+	}
+});
+
+// The same with the colours swapped: White takes, Black plays back and White plays elsewhere
+besogo.addTest("Editor", "ACycleThroughTheOpponentsTenukiIsNoSuperKo", function()
+{
+	let editor = loadEditor("(;SZ[19]G[KILL]AW[ac][bb][bc][cd][dc][ea][eb][ec]" +
+		"AB[ab][ad][bd][be][ce][da][dd][ed][fa][fb][fc][fd];W[ca];B[cb];W[db];B[cc];W[cd];B[cb];W[];B[]S[DEAD])");
+	CHECK_EQUALS(editor.getRoot().status.blackFirst.type, STATUS_DEAD);
+	for (let node = editor.getRoot(); node; node = node.children[0])
+		CHECK_EQUALS(node.virtualChildren.length, 0);
+});
+
+// Playing on in the editor past the tenuki doesn't link back either: White's c3 is the position after move 4 again
+besogo.addTest("Editor", "PlayingOnAfterATenukiDoesntCloseTheCycle", function()
+{
+	let editor = loadEditor(TENUKI_AFTER_KO_SGF.replace(";W[]S[ALIVE]", ""));
+	editor.nextNode(-1);
+	CHECK(editor.getCurrent().isPass());
+	editor.click(3, 3, false);
+	let retaken = editor.getCurrent();
+	CHECK_EQUALS(retaken.moveNumber, 8);
+	CHECK_EQUALS(retaken.virtualChildren.length, 0);
+	CHECK(!editor.getRoot().status.isSuperKo());
+});
+
+// A cycle the status recursion meets through another line still counts as no super ko when it has a tenuki in it: White
+// at b2 could go back to the start, but Black played elsewhere on the way, so only the alive end counts
+besogo.addTest("Editor", "AStatusCycleThroughATenukiIsIgnored", function()
+{
+	let root = besogo.makeGameRoot();
+	root.goal = GOAL_LIVE;
+	let tenuki = root.registerMove(1, 1).registerMove(0, 0);
+	let opponentsTurn = tenuki.registerMove(5, 5);
+	opponentsTurn.registerMove(6, 6).setStatusSource(besogo.makeStatusSimple(STATUS_ALIVE));
+	opponentsTurn.virtualChildren.push({target: root, move: {x: 2, y: 2, color: WHITE, captures: 0}});
+	root.virtualParents.push(opponentsTurn);
+	besogo.updateCorrectValues(root);
+	CHECK_EQUALS(root.status.blackFirst.type, STATUS_ALIVE);
+	CHECK_EQUALS(opponentsTurn.status.blackFirst.type, STATUS_ALIVE);
+
+	// without the tenuki the same cycle is a super ko
+	let other = besogo.makeGameRoot();
+	other.goal = GOAL_LIVE;
+	let opponentsMove = other.registerMove(1, 1).registerMove(2, 3).registerMove(5, 5);
+	opponentsMove.registerMove(6, 6).setStatusSource(besogo.makeStatusSimple(STATUS_ALIVE));
+	opponentsMove.virtualChildren.push({target: other, move: {x: 2, y: 2, color: WHITE, captures: 0}});
+	other.virtualParents.push(opponentsMove);
+	besogo.updateCorrectValues(other);
+	CHECK_EQUALS(other.status.blackFirst.type, STATUS_ALIVE_IN_SUPER_KO);
+});

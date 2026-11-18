@@ -358,6 +358,21 @@ besogo.makeGameRoot = function(sizeX = 19, sizeY = 19)
     return false;
   }
 
+  //A tenuki is a move at (0, 0), see playMove
+  root.isPass = function()
+  {
+    return !!this.move && this.move.x === 0 && this.move.y === 0;
+  }
+
+  //Whether a move of the line from the ancestor down to this node is a tenuki
+  root.passedSince = function(ancestor)
+  {
+    for (let node = this; node && node != ancestor; node = node.parent)
+      if (node.isPass())
+        return true;
+    return false;
+  }
+
   root.registerMove = function(x, y)
   {
     let child = this.makeChild();

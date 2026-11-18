@@ -62,6 +62,10 @@ besogo.addVirtualChildren = function(root, node, addHash = true)
       }
 
       var sameNode = root.nodeHashTable.getSameNode(testChild);
+      //A position met again after a tenuki isn't a ko fight going round: the side that played elsewhere gave the ko
+      //up, so the line isn't linked back to it, it goes on by its own moves
+      if (sameNode && sameNode.isAncestorOf(node) && node.passedSince(sameNode))
+        sameNode = null;
       if (sameNode && sameNode.parent != node)
       {
         var redirect = [];
@@ -160,6 +164,22 @@ besogo.countsInStatus = function(node, child)
   return node.localEdit || !child.localEdit;
 }
 
+//The nodes whose statuses are being resolved, from the first one down to the current one
+besogo.statusPath = [];
+
+//Whether the child closes a cycle of the status recursion that has a tenuki in it. Such a cycle isn't a super ko: the
+//side that played elsewhere gave the ko up, so the child tells nothing about the status of the node.
+besogo.closesCycleThroughPass = function(child)
+{
+  let index = besogo.statusPath.lastIndexOf(child);
+  if (index == -1)
+    return false;
+  for (let i = index + 1; i < besogo.statusPath.length; ++i)
+    if (besogo.statusPath[i].isPass())
+      return true;
+  return false;
+}
+
 besogo.updateStatusValuesInternal = function(root, node, goal)
 {
   if (node.statusSource)
@@ -171,6 +191,19 @@ besogo.updateStatusValuesInternal = function(root, node, goal)
   if (node.status)
     return;
 
+  besogo.statusPath.push(node);
+  try
+  {
+    besogo.updateStatusValuesOfNode(root, node, goal);
+  }
+  finally
+  {
+    besogo.statusPath.pop();
+  }
+}
+
+besogo.updateStatusValuesOfNode = function(root, node, goal)
+{
   // If we encounter this node again while resolving status, it will be marked as super ko
   // result and we won't go into an infinite loop.
   node.status = besogo.makeStatusSimple(STATUS_ALIVE_IN_SUPER_KO);
@@ -206,7 +239,7 @@ besogo.updateStatusValuesInternal = function(root, node, goal)
     if (besogo.countsInStatus(node, node.children[i]))
       node.status = besogo.updateStatusResult(solversMove, node.children[i], node.status, goal, node.superkoMeansDead);
   for (let i = 0; i < node.virtualChildren.length; ++i)
-    if (besogo.countsInStatus(node, node.virtualChildren[i].target))
+    if (besogo.countsInStatus(node, node.virtualChildren[i].target) && !besogo.closesCycleThroughPass(node.virtualChildren[i].target))
       node.status = besogo.updateStatusResult(solversMove, node.virtualChildren[i].target, node.status, goal, node.superkoMeansDead);
 
   if (node.status.blackFirst.type == STATUS_ALIVE_NONE || node.status.blackFirst.type == STATUS_DEAD_NONE)
