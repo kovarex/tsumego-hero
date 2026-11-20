@@ -118,7 +118,7 @@ document.querySelectorAll("[data-toggle]").forEach(toggle => toggle.addEventList
 	let open = toggle.dataset.open !== "1";
 	toggle.dataset.open = open ? "1" : "";
 	Display[open ? "fadeIn" : "fadeOut"](document.getElementById(toggle.dataset.toggle), 250);
-	toggle.querySelectorAll(".toggle-arrow").forEach(arrow => arrow.setAttribute("src", open ? "/img/greyArrow2.png" : "/img/greyArrow1.png"));
+	toggle.querySelectorAll(".toggle-arrow").forEach(arrow => arrow.setAttribute("src", imageUrl(open ? "/img/greyArrow2.png" : "/img/greyArrow1.png")));
 	//The comments name points by their coordinates, so the board shows them while the comments are open
 	if (toggle.id === "commentsToggle" && typeof besogo !== "undefined" && besogo.editor)
 		besogo.editor.setCoordStyle(open ? "western" : "none");

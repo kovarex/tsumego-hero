@@ -1,4 +1,7 @@
 <?php
+
+use App\Utility\Asset;
+
 /**
  * @var \App\View\AppView $this
  */
@@ -50,7 +53,7 @@
   <div class="timeline__event timeline__event--type2">
     <div class="timeline__event__icon timeline_box_height1">
     <div class="legacy-center image-zoom">
-					<img width="130px" src="/img/website-history-2018-01.png" alt="Website History 2018-01">	
+					<img width="130px" src="<?php echo Asset::url('/img/website-history-2018-01.png'); ?>" alt="Website History 2018-01">	
 			  </div>
     </div>
     <div class="timeline__event__content ">
@@ -67,7 +70,7 @@
   <div class="timeline__event timeline__event--type1">
     <div class="timeline__event__icon timeline_box_height2">
 	      <div class="legacy-center image-zoom">
-					<img width="200px" src="/img/website-history-2018-09.PNG" alt="Website History 2018-09">
+					<img width="200px" src="<?php echo Asset::url('/img/website-history-2018-09.PNG'); ?>" alt="Website History 2018-09">
 			  </div>
     </div>
     <div class="timeline__event__content">
@@ -82,7 +85,7 @@
   <div class="timeline__event timeline__event--type3">
     <div class="timeline__event__icon timeline_box_height3">
 	  	  <div class="legacy-center image-zoom">
-					<img width="200px" src="/img/website-history-2018-10.PNG" alt="Website History 2018-10">	
+					<img width="200px" src="<?php echo Asset::url('/img/website-history-2018-10.PNG'); ?>" alt="Website History 2018-10">	
 			  </div>
     </div>
     <div class="timeline__event__content">
@@ -97,7 +100,7 @@
   <div class="timeline__event timeline__event--type2">
     <div class="timeline__event__icon timeline_box_height4">
 	  <div class="legacy-center image-zoom">
-					<img width="200px" src="/img/website-history-2019-03.png" alt="Website History 2019-03">				
+					<img width="200px" src="<?php echo Asset::url('/img/website-history-2019-03.png'); ?>" alt="Website History 2019-03">				
 			</div>
     </div>
     <div class="timeline__event__content">
@@ -116,7 +119,7 @@
   <div class="timeline__event timeline__event--type1">
     <div class="timeline__event__icon timeline_box_height5">
 	    <div class="legacy-center image-zoom">
-					<img width="200px" src="/img/website-history-2023-04.PNG" alt="Website History 2023-04">
+					<img width="200px" src="<?php echo Asset::url('/img/website-history-2023-04.PNG'); ?>" alt="Website History 2023-04">
 			</div>
     </div>
     <div class="timeline__event__content">
@@ -141,8 +144,8 @@
       <i class="lni-cake"></i>
       <div class="timeline__event__date">
 	    <div class="legacy-center image-zoom">
-					<img width="150px" src="/img/website-history-2023-07-1.png" alt="Website History 2023-07-1">
-					<img width="150px" src="/img/website-history-2023-07-2.png" alt="Website History 2023-07-2">
+					<img width="150px" src="<?php echo Asset::url('/img/website-history-2023-07-1.png'); ?>" alt="Website History 2023-07-1">
+					<img width="150px" src="<?php echo Asset::url('/img/website-history-2023-07-2.png'); ?>" alt="Website History 2023-07-2">
 			</div>
       </div>
     </div>
@@ -158,7 +161,7 @@
   <div class="timeline__event timeline__event--type2">
     <div class="timeline__event__icon timeline_box_height7">
       <div class="legacy-center image-zoom">
-					<img width="200px" src="/img/website-history-2025-11.png" alt="Website History 2025-11">
+					<img width="200px" src="<?php echo Asset::url('/img/website-history-2025-11.png'); ?>" alt="Website History 2025-11">
 			</div>
     </div>
     <div class="timeline__event__content">

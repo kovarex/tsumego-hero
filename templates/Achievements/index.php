@@ -1,6 +1,7 @@
 <?php
 
 use App\Model\Table\AchievementTable;
+use App\Utility\Asset;
 use App\Utility\Util;
 use App\View\Helper\AchievementHelper;
 
@@ -34,7 +35,7 @@ use App\View\Helper\AchievementHelper;
 		<?php foreach ($achievements as $achievement):
 			$rarity = AchievementTable::getRarityLabel($achievement['percent']); ?>
 			<div class="achievement-row achievement-row--<?php echo $achievement['unlocked'] ? 'unlocked' : 'locked'; ?>" data-achievement-id="<?php echo $achievement['id']; ?>">
-				<a class="achievement-row__icon" href="<?php echo $achievement['url']; ?>"><img src="/img/<?php echo h($achievement['image']); ?>.png" alt="" width="48" height="48" loading="lazy"></a>
+				<a class="achievement-row__icon" href="<?php echo $achievement['url']; ?>"><img src="<?php echo h(Asset::url('/img/' . $achievement['image'] . '.png')); ?>" alt="" width="48" height="48" loading="lazy"></a>
 				<div class="achievement-row__text">
 					<a class="achievement-row__name" href="<?php echo $achievement['url']; ?>"><?php echo h($achievement['name']); ?></a>
 					<?php if ($achievement['earned_count'] > 1): ?>

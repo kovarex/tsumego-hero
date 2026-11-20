@@ -255,16 +255,16 @@ class HeroPowersTest extends IntegrationTestCase
 				['rating' => 100, 'sets' => [['name' => 'set 1', 'num' => 3]]]]]);
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		$this->checkPowerIsActive($browser, 'refinement');
-		$this->assertStringEndsWith('/img/hp4.png', $browser->find('#refinement')->getAttribute('src'));
+		$this->assertMatchesRegularExpression('#/img/hp4\.png\?v=\w+$#', $browser->find('#refinement')->getAttribute('src'));
 		$browser->openPlayPanelOf('refinement');
 		$browser->hover($browser->find('#refinement'));
-		$this->assertStringEndsWith('/img/hp4h.png', $browser->find('#refinement')->getAttribute('src'));
+		$this->assertMatchesRegularExpression('#/img/hp4h\.png\?v=\w+$#', $browser->find('#refinement')->getAttribute('src'));
 
 		$browser->clickId('refinement');
 		$browser->waitUntilJs('location.pathname == "/' . $context->tsumegos[1]['set-connections'][0]['id'] . '"');
 		$this->assertSame(1, (int) $context->reloadUser()['used_refinement']);
 		$this->checkPowerIsInactive($browser, 'refinement');
-		$this->assertStringEndsWith('/img/hp4x.png', $browser->find('#refinement')->getAttribute('src'));
+		$this->assertMatchesRegularExpression('#/img/hp4x\.png\?v=\w+$#', $browser->find('#refinement')->getAttribute('src'));
 	}
 
 	public function testIntuitionShowsCorrectSolution()

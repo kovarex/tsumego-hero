@@ -1,5 +1,6 @@
 <?php
 
+use App\Utility\Asset;
 use App\Utility\Util;
 use App\Utility\ViteManifest;
 
@@ -26,7 +27,7 @@ use App\Utility\ViteManifest;
 		<div class="toast" id="time-rank-unlock-alert">
 			<div class="toast__banner legacy-center">Unlocked<span class="toast__close">x</span></div>
 			<span class="toast__body">
-		<a class="toast__link" href="/timeMode/overview"><img id="hpIcon1" src="/img/rankButton<?php echo $unlock['rank']; ?>.png">
+		<a class="toast__link" href="/timeMode/overview"><img id="hpIcon1" src="<?php echo Asset::url('/img/rankButton' . $unlock['rank'] . '.png'); ?>">
 		  You unlocked the <?php echo $unlock['rank']; ?> <?php echo $unlock['category']; ?> rank.
 		</a><br>
 		<br class="clear1"/></span>

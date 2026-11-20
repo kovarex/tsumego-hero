@@ -102,8 +102,8 @@ class HeroPowers
 		if (self::getRevelationUseCount() == 0)
 			return;
 
-		$image = self::canUseRevelation() ? '/img/hp6.png' : '/img/hp6x.png';
-		$hoveredImage = self::canUseRevelation() ? '/img/hp6h.png' : '/img/hp6x.png';
+		$image = Asset::url(self::canUseRevelation() ? '/img/hp6.png' : '/img/hp6x.png');
+		$hoveredImage = Asset::url(self::canUseRevelation() ? '/img/hp6h.png' : '/img/hp6x.png');
 		echo '<img';
 		echo ' id="revelation" class="hero-power" title="Revelation (' . self::remainingRevelationUseCount() . '): Solves a problem, but you don\'t get any reward."';
 		echo ' src="' . $image . '" ';
@@ -172,6 +172,6 @@ class HeroPowers
 	private static function renderPotion(): void
 	{
 		if (self::canPotionTrigger())
-			echo '<img id="potion" class="hero-power" title="Potion (Passive): If you misplay and have no hearts left, you have a small chance to restore your health." src="/img/hp5.png">';
+			echo '<img id="potion" class="hero-power" title="Potion (Passive): If you misplay and have no hearts left, you have a small chance to restore your health." src="' . Asset::url('/img/hp5.png') . '">';
 	}
 }

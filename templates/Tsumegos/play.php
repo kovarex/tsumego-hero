@@ -3,6 +3,7 @@
 use App\Model\Entity\TsumegoVariant;
 use App\Model\Table\TsumegoIssueTable;
 use App\Model\Table\TsumegoVariantTable;
+use App\Utility\Asset;
 use App\Utility\Auth;
 use App\Utility\Constants;
 use App\Utility\HeroPowers;
@@ -48,9 +49,19 @@ use App\Utility\ViteManifest;
 
 	$this->start('css');
 	echo ViteManifest::css('besogo-css');
-	//The texture of the board, in the head so the board is drawn with it from the first paint
-	if (!empty($playPage['problem']['board']['texture']))
-		echo '<link rel="stylesheet" type="text/css" href="/besogo/css/board-' . h($playPage['problem']['board']['texture']) . '.css">';
+	$board = $playPage['problem']['board'];
+	//The texture of the board, in the head so the board is drawn with it from the first paint; inline, so its picture
+	//gets its version (Asset::inlineStyle)
+	if (!empty($board['texture']))
+	{
+		echo Asset::inlineStyle('/besogo/css/board-' . $board['texture'] . '.css');
+		echo Asset::preload('/besogo/img/' . $board['texture'] . '.jpg');
+	}
+	//The stones, loading with the head: the board draws them as soon as its script runs, and a stone not loaded by
+	//then showed only its shadow for a moment
+	foreach ([$board['black'] ?? '', $board['white'] ?? ''] as $stone)
+		if ($stone !== '')
+			echo Asset::preload('/besogo/img/' . $stone);
 	$this->end();
 
 	$this->start('script');
@@ -265,7 +276,7 @@ use App\Utility\ViteManifest;
 					<span class="toast__close">x</span>
 				</div>
 				<span class="toast__body">
-					<img id="hpIcon1" src="/img/hp5.png">
+					<img id="hpIcon1" src="<?php echo Asset::url('/img/hp5.png'); ?>">
 					You found a potion, your hearts have been restored.<br>
 					<br class="clear1"/>
 				</span>

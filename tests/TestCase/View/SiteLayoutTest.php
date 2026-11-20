@@ -24,14 +24,14 @@ class SiteLayoutTest extends IntegrationTestCase
 		$browser->driver->manage()->deleteAllCookies();
 		$browser->getAnonymous('sites/index');
 		$this->assertTrue($browser->driver->executeScript('return soundsEnabled;'));
-		$this->assertStringEndsWith('/img/sound-icon1.png', $browser->find('#soundButtonImage')->getAttribute('src'));
+		$this->assertMatchesRegularExpression('#/img/sound-icon1\.png\?v=\w+$#', $browser->find('#soundButtonImage')->getAttribute('src'));
 
 		$browser->clickId('soundButton');
 		$this->assertFalse($browser->driver->executeScript('return soundsEnabled;'));
 
 		$browser->getAnonymous('sites/index');
 		$this->assertFalse($browser->driver->executeScript('return soundsEnabled;'));
-		$this->assertStringEndsWith('/img/sound-icon2.png', $browser->find('#soundButtonImage')->getAttribute('src'));
+		$this->assertMatchesRegularExpression('#/img/sound-icon2\.png\?v=\w+$#', $browser->find('#soundButtonImage')->getAttribute('src'));
 	}
 
 	public function testPlayerSoundSettingIsUsed()
@@ -40,7 +40,7 @@ class SiteLayoutTest extends IntegrationTestCase
 		new ContextPreparator(['user' => ['sound' => 0]]);
 		$browser->get('sites/index');
 		$this->assertFalse($browser->driver->executeScript('return soundsEnabled;'));
-		$this->assertStringEndsWith('/img/sound-icon2.png', $browser->find('#soundButtonImage')->getAttribute('src'));
+		$this->assertMatchesRegularExpression('#/img/sound-icon2\.png\?v=\w+$#', $browser->find('#soundButtonImage')->getAttribute('src'));
 	}
 
 	public function testBoardPickerOpensAndCloses()

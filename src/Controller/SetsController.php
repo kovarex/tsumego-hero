@@ -2,10 +2,10 @@
 
 namespace App\Controller;
 
+use App\Utility\Asset;
 use Cake\Http\Response;
 use Cake\Http\Exception\BadRequestException;
 use Cake\Http\Exception\NotFoundException;
-use Cake\Routing\Router;
 use Exception;
 use App\Model\Entity\Set;
 use App\Model\Table\SetTable;
@@ -735,7 +735,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 		$image = $set->image ?? '';
 		if ($image === '')
 			return $og;
-		$og['image'] = Router::url('/img/' . $image, true);
+		$og['image'] = Asset::fullUrl('/img/' . $image);
 		$og['image_alt'] = 'Cover image of ' . $displayTitle;
 		$imagePath = WWW_ROOT . 'img' . DS . str_replace('/', DS, $image);
 		$size = file_exists($imagePath) ? getimagesize($imagePath) : false;

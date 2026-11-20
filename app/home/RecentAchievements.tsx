@@ -8,7 +8,8 @@ export interface RecentAchievement {
 	status_id: number;
 	id: number;
 	name: string;
-	image: string;
+	//The address of its picture, with its version (src/Utility/Asset.php)
+	image_url: string;
 	user_id: number;
 	user_display_name: string;
 	user_avatar_url: string;
@@ -33,7 +34,7 @@ export function RecentAchievements({ achievements }: RecentAchievementsProps)
 				>
 					<div className="recent-achievement-icon">
 						<a href={`/achievements/view/${achievement.id}`}>
-							<img src={`/img/${achievement.image}.png`} width="34px" alt={achievement.name} />
+							<img src={achievement.image_url} width="34px" alt={achievement.name} />
 						</a>
 					</div>
 					<div className="recent-achievement-body">

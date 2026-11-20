@@ -1,6 +1,7 @@
 <?php
 
 use App\Model\Table\TsumegoStatusTable;
+use App\Utility\Asset;
 use App\Utility\MistakeTraining;
 
 /**
@@ -21,7 +22,7 @@ $percent = fn(float $share): string => round($share * 100) . '%';
 			higher levels. The number of hearts increases. Hero powers, secret areas and the sandbox can be unlocked.
 		<br><br>
 			<b>Problem page</b><br><br>
-			<img src="/img/mf-level2.png" width="100%">
+			<img src="<?php echo Asset::url('/img/mf-level2.png'); ?>" width="100%">
 			<br><br>
 
 			<b>(1) Hearts</b><br><br>
@@ -29,19 +30,19 @@ $percent = fn(float $share): string => round($share * 100) . '%';
 			When you have no hearts left and fail at a problem, the problem is locked until the next day. Hearts increase with your level.<br><br>
 			<b>(2) Hero Powers</b><br><br>
 		<dl class="sites-legend">
-			<dt><img title="Sprint: Double XP for 2 minutes." alt="Sprint" src="/img/hp1.png"></dt>
+			<dt><img title="Sprint: Double XP for 2 minutes." alt="Sprint" src="<?php echo Asset::url('/img/hp1.png'); ?>"></dt>
 			<dd><b>Sprint (Level 20)</b><br>
 				Double XP for 2 minutes on all solved problems.</dd>
-			<dt><img title="Intuition: Shows the first correct move." alt="Intuition" src="/img/hp2.png"></dt>
+			<dt><img title="Intuition: Shows the first correct move." alt="Intuition" src="<?php echo Asset::url('/img/hp2.png'); ?>"></dt>
 			<dd><b>Intuition (Level 30)</b><br>
 				Shows the first correct move.</dd>
-			<dt><img title="Rejuvenation: Restores health, Intuition and locks." alt="Rejuvenation" src="/img/hp3.png"></dt>
+			<dt><img title="Rejuvenation: Restores health, Intuition and locks." alt="Rejuvenation" src="<?php echo Asset::url('/img/hp3.png'); ?>"></dt>
 			<dd><b>Rejuvenation (Level 40)</b><br>
 				Restores health, Intuition and locks.</dd>
-			<dt><img title="Potion: If you misplay and have no hearts left, you have a small chance to restore your health." alt="Potion" src="/img/hp5.png"></dt>
+			<dt><img title="Potion: If you misplay and have no hearts left, you have a small chance to restore your health." alt="Potion" src="<?php echo Asset::url('/img/hp5.png'); ?>"></dt>
 			<dd><b>Potion (Level 50 or Premium)</b><br>
 				If you misplay and have no hearts left, you have a small chance to restore your health.</dd>
-			<dt><img title="Refinement: Gives you a chance to solve a golden tsumego." alt="Refinement" src="/img/hp4.png"></dt>
+			<dt><img title="Refinement: Gives you a chance to solve a golden tsumego." alt="Refinement" src="<?php echo Asset::url('/img/hp4.png'); ?>"></dt>
 			<dd><b>Refinement (Level 100 or Premium)</b><br>
 				Gives you a chance to solve a golden tsumego.</dd>
 		</dl>
@@ -55,7 +56,7 @@ $percent = fn(float $share): string => round($share * 100) . '%';
 		of the collections page.
 		<br><br>
 		<div class="legacy-center">
-		<img src="/img/mf-level3.png" width="50%">
+		<img src="<?php echo Asset::url('/img/mf-level3.png'); ?>" width="50%">
 		</div>
 			<br>
 			<b>(5) Problem colors</b><br><br>
@@ -78,7 +79,7 @@ $percent = fn(float $share): string => round($share * 100) . '%';
 
 			<br><br>
 			<b>Problem page</b><br><br>
-			<img src="/img/mf-rating3.png" width="100%">
+			<img src="<?php echo Asset::url('/img/mf-rating3.png'); ?>" width="100%">
 			<br><br>
 
 			<b>(1) Horizontal bar</b><br><br>
@@ -93,7 +94,7 @@ $percent = fn(float $share): string => round($share * 100) . '%';
 			without trying to solve it. It can be used 30 times per day.
 			<br><br>
 			<b>Rating mode history page</b><br><br>
-			<img src="/img/mf-rating4.png" width="100%">
+			<img src="<?php echo Asset::url('/img/mf-rating4.png'); ?>" width="100%">
 			<br><br>
 			The rating mode history page shows your most recent attempts in the rating mode. You can see how much rating you gained or lost and you
 			can go to the problem to try it again.<br><br>
@@ -108,7 +109,7 @@ $percent = fn(float $share): string => round($share * 100) . '%';
 			you unlock the next rank. All problems are categorized into ranks from 15 kyu to 5 dan. You start at problems of the
 			rank 15 kyu and unlock a stronger rank upon passing the current rank.<br><br>
 			<b>Select page</b><br><br>
-			<img src="/img/mf-time3.png" width="100%">
+			<img src="<?php echo Asset::url('/img/mf-time3.png'); ?>" width="100%">
 			<br><br>
 			The icon on the bottom left shows your best attempt. It shows your best score and if you passed or failed.
 			The icon on the right shows how many problems on that rank are in the database.
@@ -122,7 +123,7 @@ $percent = fn(float $share): string => round($share * 100) . '%';
 			After a category is selected, it is time to solve the problems.
 			<br><br>
 
-			<img src="/img/mf-time2.png" width="100%">
+			<img src="<?php echo Asset::url('/img/mf-time2.png'); ?>" width="100%">
 			<br><br>
 
 			<b>(1) Number of problems in current session</b><br><br>
@@ -134,7 +135,7 @@ $percent = fn(float $share): string => round($share * 100) . '%';
 
 			<br><br>
 			<b>Results page</b><br><br>
-			<img src="/img/mf-time4.png" width="100%">
+			<img src="<?php echo Asset::url('/img/mf-time4.png'); ?>" width="100%">
 			<br><br>
 
 			On the results page, you have your attempts listed. For each rank in each category, your best
@@ -186,7 +187,7 @@ $percent = fn(float $share): string => round($share * 100) . '%';
 			solved problem played again from the row does not count.
 			<br><br>
 			<b>All caught up</b><br><br>
-			<img src="/img/mf-mistake.png" width="100%">
+			<img src="<?php echo Asset::url('/img/mf-mistake.png'); ?>" width="100%">
 			<br><br>
 			When nothing is due, the page shows what you solved today and when the problems in the training come back.
 			<br><br>

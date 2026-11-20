@@ -37,14 +37,14 @@ class RecentAchievementsTest extends IntegrationTestCase
 		$this->assertArrayHasKey('status_id', $item);
 		$this->assertArrayHasKey('id', $item);
 		$this->assertArrayHasKey('name', $item);
-		$this->assertArrayHasKey('image', $item);
+		$this->assertArrayHasKey('image_url', $item);
 		$this->assertArrayHasKey('user_id', $item);
 		$this->assertArrayHasKey('user_display_name', $item);
 		$this->assertArrayHasKey('created', $item);
 
 		// Achievement + User joins filled correctly
 		$this->assertNotEmpty($item['name']);
-		$this->assertNotEmpty($item['image']);
+		$this->assertMatchesRegularExpression('#^/img/[^?]+\.png\?v=\w+$#', $item['image_url']);
 		$this->assertNotEmpty($item['user_display_name']);
 
 		// Tests simulate server in UTC. Verifies timezone offset is correct.
