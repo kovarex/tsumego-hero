@@ -1,4 +1,7 @@
 <?php
+
+use App\Utility\Asset;
+
 /**
  * @var \App\View\AppView $this
  */
@@ -11,7 +14,7 @@
 		The goal is to live. The includes small sacrifices and sekis most of the time. In the more difficult
 		collections those cases are not considered correct if there is a better solution. Ko solutions are
 		normally not correct.<br><br>
-		<div class="legacy-center"><img src="/img/d-btolive.png" width="180px" title="Black/White to live."></div>
+		<div class="legacy-center"><img src="<?php echo Asset::url('/img/d-btolive.png'); ?>" width="180px" title="Black/White to live."></div>
 
 		</div>
 		<p class="title4">Description: Black/White to kill.</p>
@@ -19,7 +22,7 @@
 		The goal is to kill. A seki is a failure, small sacrifices are a failure most of the time. Ko solutions
 		are normally wrong as well.
 		<br><br>
-		<div class="legacy-center"><img src="/img/d-btokill.png" width="180px" title="Black/White to kill."></div>
+		<div class="legacy-center"><img src="<?php echo Asset::url('/img/d-btokill.png'); ?>" width="180px" title="Black/White to kill."></div>
 		</div>
 		<p class="title4">Description: Black/White to play.</p>
 		<div class="new1">
@@ -27,20 +30,20 @@
 		when the player has to figure out what the optimal play is. This can be the case in more difficult collections
 		or if the outcome can not be clearly categorized in life or death.
 		<br><br>
-		<div class="legacy-center"><img src="/img/d-btoplay.png" width="180px" title="Description: Black/White to play."></div>
+		<div class="legacy-center"><img src="<?php echo Asset::url('/img/d-btoplay.png'); ?>" width="180px" title="Description: Black/White to play."></div>
 		</div>
 		<p class="title4">Life & Death (unconditional)</p>
 		<div class="new1">
 		The definition of a group that is unconditionally alive or dead is that there is no ko involved. Sekis are considered uncondidionally alive or dead, too.
 		<br><br>
-		<div class="legacy-center"><img src="/img/d-btokill.png" width="180px" title="Life & Death (unconditional)"></div>
+		<div class="legacy-center"><img src="<?php echo Asset::url('/img/d-btokill.png'); ?>" width="180px" title="Life & Death (unconditional)"></div>
 		</div>
 		<p class="title4">Seki</p>
 		<div class="new1">
 			In a seki, the status of the involved groups is alive. If the objective is to live, this is correct in easy to intermediate collections,
 			but could be incorrect in advanced collections if there is a better solution.
 			<br><br>
-			<div class="legacy-center"><img src="/img/d-seki.png" width="180px" title="Seki"></div>
+			<div class="legacy-center"><img src="<?php echo Asset::url('/img/d-seki.png'); ?>" width="180px" title="Seki"></div>
 		</div>
 		<p class="title4">Bent four in the corner</p>
 		<div class="new1">
@@ -48,7 +51,7 @@
 			also a dead shape. It might look like a Seki on first sight, but when we imagine the game played out to the end, the player can start a ko by
 			playing an atari from the inside. As the player could theoretically remove all ko threats before starting the ko, it is considered dead.
 			<br><br>
-			<div class="legacy-center"><img src="/img/d-bentfour.png" width="180px" title="Bent four in the corner"></div>
+			<div class="legacy-center"><img src="<?php echo Asset::url('/img/d-bentfour.png'); ?>" width="180px" title="Bent four in the corner"></div>
 		</div>
 	</div>
 	<div>
@@ -59,7 +62,7 @@
 		Ko regards to all variants, such as ko where the opponent takes first (KO-), ko where the player takes first (KO+),
 		step ko (KO+2, KO-2), double ko, super ko.
 		<br><br>
-		<div class="legacy-center"><img src="/img/d-btoplay.png" width="180px" title="Ko"></div>
+		<div class="legacy-center"><img src="<?php echo Asset::url('/img/d-btoplay.png'); ?>" width="180px" title="Ko"></div>
 		</div>
 		<p class="title4">Ko where the player takes first (KO+)</p>
 		<div class="new1">
@@ -67,7 +70,7 @@
 		Thus, it is better than a ko where the opponent takes first (KO-). Local ko threats are usually taken into this equation.
 		So when the opponent takes first, but the player has a local ko threat and the opponent doesn't, it would still be a KO+.
 		<br><br>
-		<div class="legacy-center"><img src="/img/d-ko+.png" width="180px" title="Ko where the player takes first (KO+)"></div>
+		<div class="legacy-center"><img src="<?php echo Asset::url('/img/d-ko+.png'); ?>" width="180px" title="Ko where the player takes first (KO+)"></div>
 		</div>
 		<p class="title4">Ko where the opponent takes first (KO-)</p>
 		<div class="new1">
@@ -75,7 +78,7 @@
 		When there is a KO+ solution, the KO- solution is usually wrong. If there a local ko threats for the player, the status may
 		change into KO+.
 		<br><br>
-		<div class="legacy-center"><img src="/img/d-ko-.png" width="180px" title="Ko where the opponent takes first (KO-)"></div>
+		<div class="legacy-center"><img src="<?php echo Asset::url('/img/d-ko-.png'); ?>" width="180px" title="Ko where the opponent takes first (KO-)"></div>
 		</div>
 		<p class="title4">Step ko to the advantage of the player (KO+2, KO+3, ...)</p>
 		<div class="new1">

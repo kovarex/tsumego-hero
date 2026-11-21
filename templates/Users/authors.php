@@ -1,5 +1,7 @@
 <?php
 
+use App\Utility\Asset;
+
 /**
  * @var \App\View\AppView $this
  */
@@ -38,7 +40,7 @@ As the Adobe Flash Player was in 2017 already an outdated technology, I had to s
  All recent updates regarding the go problems were much easier or only possible in BesoGo. 
 </td>
 <td>
-	<img src="/img/CVimage.png" width="230px">
+	<img src="<?php echo Asset::url('/img/CVimage.png'); ?>" width="230px">
 </td>
 </tr>
 <tr>

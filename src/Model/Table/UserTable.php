@@ -4,6 +4,7 @@ namespace App\Model\Table;
 
 use App\Model\Entity\User;
 use App\Utility\AdminActivityLogger;
+use App\Utility\Asset;
 use App\Utility\Auth;
 use App\Utility\Avatar;
 use App\Utility\Constants;
@@ -150,7 +151,7 @@ class UserTable extends AppTable
 	{
 		$premiumID = $user['premium_id'] ?? null;
 		if ($premiumID == self::PREMIUM_BASIC || $premiumID == self::PREMIUM_GOLDEN)
-			return '<img alt="Account Type" title="Account Type" src="/img/premium' . $premiumID . '.png" height="16px">';
+			return '<img alt="Account Type" title="Account Type" src="' . Asset::url('/img/premium' . $premiumID . '.png') . '" height="16px">';
 		return '';
 	}
 

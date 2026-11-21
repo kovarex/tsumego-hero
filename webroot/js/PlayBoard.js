@@ -152,7 +152,7 @@ function redrawHearts()
 		var full = i < currentHealth;
 		var el = document.getElementById("heart" + i);
 		//an empty heart is the full one greyed (play.css), so it is as solid as the full ones it overlaps
-		el.src = "/img/" + fullHeart + ".png";
+		el.src = imageUrl("/img/" + fullHeart + ".png");
 		el.classList.toggle("play-player__heart--empty", !full);
 	}
 	var counter = document.getElementById("health-counter");

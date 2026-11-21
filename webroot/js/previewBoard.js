@@ -144,7 +144,7 @@
 		let svgImg = document.createElementNS(w3,"image");
 		svgImg.setAttributeNS(w3,"width", xMax);
 		svgImg.setAttributeNS(w3,"height", yMax);
-		svgImg.setAttributeNS(w32,"href", img);
+		svgImg.setAttributeNS(w32,"href", imageUrl(img));
 		svgImg.setAttributeNS(w3,"x","0");
 		svgImg.setAttributeNS(w3,"y","0");
 		svg.appendChild(svgImg);

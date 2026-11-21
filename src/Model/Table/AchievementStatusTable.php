@@ -2,6 +2,7 @@
 
 namespace App\Model\Table;
 
+use App\Utility\Asset;
 use App\Utility\Rating;
 use Cake\ORM\TableRegistry;
 
@@ -43,7 +44,7 @@ class AchievementStatusTable extends AppTable
 				'status_id' => $row['id'],
 				'id' => $row['Achievement']['id'],
 				'name' => $row['Achievement']['name'],
-				'image' => $row['Achievement']['image'],
+				'image_url' => Asset::url('/img/' . $row['Achievement']['image'] . '.png'),
 				'user_id' => (int) $row['User']['id'],
 				'user_display_name' => $row['User']['display_name'],
 				'user_avatar_url' => UserTable::getAvatarUrl($userData),

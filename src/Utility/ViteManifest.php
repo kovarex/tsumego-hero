@@ -31,6 +31,8 @@ use RuntimeException;
 //  'challenges'   → virtual:legacy-challenges           (the code of the list of challenges)
 //  'settings'     → virtual:legacy-settings             (the code of the settings page)
 //  'problem-admin' → virtual:legacy-problem-admin       (the upload history, the tag overview and the similar problem search)
+//  'image-versions' → virtual:image-versions            (imageUrl(), the address of an image with its version, see Asset)
+//  'web-manifest' → virtual:web-manifest                (webroot/manifest.json with the versions of its icons)
 class ViteManifest
 {
 	//Cached manifest contents after first load
@@ -57,6 +59,8 @@ class ViteManifest
 		'challenges'  => 'virtual:legacy-challenges',
 		'settings'    => 'virtual:legacy-settings',
 		'problem-admin' => 'virtual:legacy-problem-admin',
+		'image-versions' => 'virtual:image-versions',
+		'web-manifest' => 'virtual:web-manifest',
 	];
 
 	//The <link> of a CSS bundle entry (e.g. 'app-theme')
@@ -79,6 +83,12 @@ class ViteManifest
 		return '<script type="module" src="' . self::url(self::built($entry)['file']) . '"></script>';
 	}
 
+	//The <link rel="manifest"> of the web app manifest, whose icons carry their versions
+	public static function webManifest(): string
+	{
+		return '<link rel="manifest" href="' . self::url(self::built('web-manifest')['file']) . '">';
+	}
+
 	//What the build made of an entry; a name that isn't one, or an entry the build is missing, is an error,
 	//as the page would otherwise go without its script
 	/** @return array{file: string, css?: list<string>} */
@@ -92,9 +102,24 @@ class ViteManifest
 		return $built;
 	}
 
+	//The version of each image of webroot that the build saw, by its path relative to webroot (scripts/image-versions.mjs);
+	//empty without a build, where Asset falls back to the time of the file
+	/** @return array<string, string> */
+	public static function imageVersions(): array
+	{
+		if (!file_exists(self::path()))
+			return [];
+		return self::load()['virtual:image-versions']['versions'] ?? [];
+	}
+
 	private static function url(string $file): string
 	{
 		return htmlspecialchars('/dist/' . $file, ENT_QUOTES, 'UTF-8');
+	}
+
+	private static function path(): string
+	{
+		return WWW_ROOT . str_replace('/', DS, self::MANIFEST_PATH);
 	}
 
 	//Load and cache the Vite manifest. Throws if manifest is not found.
@@ -103,7 +128,7 @@ class ViteManifest
 		if (self::$manifest !== null)
 			return self::$manifest;
 
-		$path = WWW_ROOT . str_replace('/', DS, self::MANIFEST_PATH);
+		$path = self::path();
 
 		if (!file_exists($path))
 			throw new RuntimeException('Vite manifest not found at ' . $path . '. Run `pnpm build`.');

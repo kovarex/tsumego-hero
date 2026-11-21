@@ -2,6 +2,7 @@
 
 use App\Model\Table\SetTable;
 use App\Model\Table\UserTable;
+use App\Utility\Asset;
 use App\Utility\Auth;
 use App\Utility\ChartRenderer;
 use App\Utility\TsumegoButtons;
@@ -36,7 +37,7 @@ foreach ($tsumegoButtonsOfPublishedTsumegos as $tsumegoButton)
 	<div>
 		<div class="new-tsumego-box new-tsumego-box--modes mode-select-box">
 			<?php foreach ($modes as $mode): ?>
-				<?php $image = '<img src="/img/mode-button-' . $mode['name'] . '.png?v=1.0" alt="' . $mode['label'] . '" title="' . $mode['label'] . '" width="134" height="123">'; ?>
+				<?php $image = '<img src="' . Asset::url('/img/mode-button-' . $mode['name'] . '.png') . '" alt="' . $mode['label'] . '" title="' . $mode['label'] . '" width="134" height="123">'; ?>
 				<?php if ($mode['enabled']): ?>
 					<a class="mode-button mode-button-<?php echo $mode['name']; ?>" href="<?php echo $mode['url']; ?>"><?php echo $image; ?></a>
 				<?php else: ?>
@@ -48,7 +49,7 @@ foreach ($tsumegoButtonsOfPublishedTsumegos as $tsumegoButton)
 		<?php if (isset($friendActivity)) echo $this->element('friend_activity', ['activity' => $friendActivity]); ?>
 
 		<div class="achievements-panel">
-			<img src="/img/new_startpage/<?php echo h($quote); ?>e.png?v=4.3" class="achievement-quote-pick" alt="Most Recent Achievements" title="Most Recent Achievements">
+			<img src="<?php echo h(Asset::url('/img/new_startpage/' . $quote . 'e.png')); ?>" class="achievement-quote-pick" alt="Most Recent Achievements" title="Most Recent Achievements">
 			<div data-recent-achievements-root data-props="<?php echo h(json_encode(['achievements' => $recentAchievements])); ?>"></div>
 		</div>
 
@@ -74,8 +75,8 @@ foreach ($tsumegoButtonsOfPublishedTsumegos as $tsumegoButton)
 		</div>
 
 		<div class="quote-pick-wrapper">
-			<img src="/img/new_startpage/<?php echo h($quote); ?>.png?v=4.3" class="quote-pick-1" alt="Quote of the Day" title="Quote of the Day">
-			<img src="/img/new_startpage/<?php echo h($quote); ?>u.png?v=4.3" class="quote-pick-1" alt="User of the Day" title="User of the Day">
+			<img src="<?php echo h(Asset::url('/img/new_startpage/' . $quote . '.png')); ?>" class="quote-pick-1" alt="Quote of the Day" title="Quote of the Day">
+			<img src="<?php echo h(Asset::url('/img/new_startpage/' . $quote . 'u.png')); ?>" class="quote-pick-1" alt="User of the Day" title="User of the Day">
 			<?php if ($userOfTheDay !== null): ?>
 				<div class="user-pick-all user-pick-<?php echo h($quote); ?> text-center">
 					<?php echo UserTable::renderLink($userOfTheDay); ?>

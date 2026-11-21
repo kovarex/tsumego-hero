@@ -5,6 +5,7 @@ import { defineConfig, transformWithEsbuild } from 'vite';
 import react from '@vitejs/plugin-react';
 import istanbul from 'vite-plugin-istanbul';
 import { createInstrumenter } from 'istanbul-lib-instrument';
+import { imageVersions, imageVersionsScript, versionCssImages } from './scripts/image-versions.mjs';
 
 // Enable Istanbul instrumentation only for the CI coverage build (VITE_COVERAGE=true),
 // so the produced bundle populates window.__coverage__ that the Selenium tests collect.
@@ -146,6 +147,67 @@ function legacyBundlePlugin(name, files, { minify = true } = {}) {
 	};
 }
 
+//The versions of the images of webroot (scripts/image-versions.mjs): put after the images the CSS names,
+//written into the manifest as 'virtual:image-versions' for src/Utility/Asset.php, as the script of
+//imageUrl() for the scripts of the pages, and after the icons of a copy of webroot/manifest.json. Before the legacy bundles, whose closeBundle reads the manifest too.
+function imageVersionsPlugin()
+{
+	let outDir;
+	let webroot;
+	let versions;
+
+	return {
+		name: 'image-versions',
+		enforce: 'pre',
+
+		configResolved(config) {
+			outDir = config.build.outDir;
+			webroot = pathResolve(config.root, 'webroot');
+		},
+
+		//Each build, so a rebuild of pnpm dev sees a changed image
+		buildStart() {
+			versions = imageVersions(webroot);
+		},
+
+		transform(code, id) {
+			if (!/\.css($|\?)/.test(id))
+				return null;
+			return { code: versionCssImages(code, versions), map: null };
+		},
+
+		closeBundle() {
+			const code = imageVersionsScript(versions);
+			const filename = `image-versions-${createHash('md5').update(code).digest('hex').slice(0, 8)}.js`;
+			writeFileSync(join(outDir, filename), code);
+
+			//The web app manifest with the versions of its icons, which the browser loads for the icon of an installed app
+			const webManifest = JSON.parse(readFileSync(join(webroot, 'manifest.json'), 'utf-8'));
+			for (const icon of webManifest.icons ?? [])
+				if (versions[icon.src.replace(/^\//, '')])
+					icon.src += '?v=' + versions[icon.src.replace(/^\//, '')];
+			const webManifestCode = JSON.stringify(webManifest, null, '\t') + '\n';
+			const webManifestFilename = `web-manifest-${createHash('md5').update(webManifestCode).digest('hex').slice(0, 8)}.json`;
+			writeFileSync(join(outDir, webManifestFilename), webManifestCode);
+
+			const manifestPath = join(outDir, '.vite/manifest.json');
+			const manifest = JSON.parse(readFileSync(manifestPath, 'utf-8'));
+			manifest['virtual:image-versions'] = {
+				file: filename,
+				src: 'virtual:image-versions',
+				isEntry: true,
+				versions,
+			};
+			manifest['virtual:web-manifest'] = {
+				file: webManifestFilename,
+				src: 'virtual:web-manifest',
+				isEntry: true,
+			};
+			writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
+		},
+	};
+}
+
 // In watch mode (pnpm dev = vite build --watch), disable emptyOutDir to prevent a race condition
 // where rapid back-to-back rebuilds clear the dist directory before legacyJsBundlePlugin can read
 // manifest.json in its closeBundle hook. Old files accumulate in dist but the manifest always
@@ -154,6 +216,7 @@ const isWatchMode = process.argv.includes('--watch');
 
 export default defineConfig({
 	plugins: [
+		imageVersionsPlugin(),
 		react(),
 		...(
 			isCoverageBuild

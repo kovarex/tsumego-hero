@@ -1055,7 +1055,7 @@ besogo.makeToolPanel = function (container, editor) {
   // Creates image button
   function makeImageButton(src, tip, id, callback) {
     var img = document.createElement("img");
-    img.src = src;
+    img.src = imageUrl(src);
     img.title = tip;
     img.id = id;
     img.onclick = callback;

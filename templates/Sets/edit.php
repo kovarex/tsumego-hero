@@ -1,6 +1,7 @@
 <?php
 
 use App\Model\Table\SetTable;
+use App\Utility\Asset;
 use App\Utility\Rating;
 use App\Utility\SetEditRenderer;
 use App\Utility\Trash;
@@ -63,7 +64,7 @@ if ($currentColor !== '' && !in_array(strtolower($currentColor), array_map('strt
 					<label class="form-field__label">Image</label>
 					<div class="set-edit__image">
 						<?php if (!empty($set->image)): ?>
-							<img class="set-edit__thumb" src="/img/<?php echo h($set->image); ?>" alt="Set image">
+							<img class="set-edit__thumb" src="<?php echo h(Asset::url('/img/' . $set->image)); ?>" alt="Set image">
 							<label class="set-edit__remove"><input type="checkbox" name="remove_image" value="1"> Remove</label>
 						<?php endif; ?>
 						<input type="file" name="image" accept=".png,.jpg,.jpeg,.webp">

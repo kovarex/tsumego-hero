@@ -34,7 +34,7 @@
 			updateSoundValue(input.value === 'on');
 			const icon = document.getElementById('soundButtonImage');
 			if (icon)
-				icon.src = input.value === 'on' ? '/img/sound-icon1.png' : '/img/sound-icon2.png';
+				icon.src = imageUrl(input.value === 'on' ? '/img/sound-icon1.png' : '/img/sound-icon2.png');
 		}
 	}
 
