@@ -189,6 +189,53 @@ class SmokeTest extends IntegrationTestCase
 		$this->assertLogoExists($browser, $label);
 		$this->assertCssLoaded($browser, $label);
 		$this->assertHttpStatusOk($browser, $label);
+		$this->assertNoMissingImages($browser, $label);
+	}
+
+	//The pictures a page names: its <img> elements (also the one shown on hover, data-hover-src), the
+	//inline styles and the url()s of its style sheets, of this site. A HEAD request for each
+	//tells whether it is there.
+	private const string READ_IMAGE_URLS = <<<'JS'
+		var urls = new Set();
+		var add = function(url) {
+			if (!url) return;
+			var absolute = new URL(url, document.baseURI);
+			if (absolute.origin === location.origin && /\.(png|jpe?g|webp|gif|svg|ico)$/i.test(absolute.pathname))
+				urls.add(absolute.origin + absolute.pathname);
+		};
+		var addFromCss = function(text) {
+			var pattern = /url\(\s*['"]?([^'")]+)['"]?\s*\)/g, match;
+			while ((match = pattern.exec(text)) !== null)
+				if (!match[1].startsWith('data:')) add(match[1]);
+		};
+		document.querySelectorAll('img[src]').forEach(function(image) { add(image.getAttribute('src')); });
+		document.querySelectorAll('[data-hover-src]').forEach(function(element) { add(element.dataset.hoverSrc); });
+		document.querySelectorAll('[style]').forEach(function(element) { addFromCss(element.getAttribute('style')); });
+		for (var sheet of document.styleSheets)
+		{
+			var rules;
+			try { rules = sheet.cssRules; } catch (error) { continue; }
+			for (var rule of rules)
+			{
+				var base = sheet.href || document.baseURI, pattern = /url\(\s*['"]?([^'")]+)['"]?\s*\)/g, match;
+				while ((match = pattern.exec(rule.cssText)) !== null)
+					if (!match[1].startsWith('data:')) add(new URL(match[1], base).href);
+			}
+		}
+		var missing = [];
+		urls.forEach(function(url) {
+			var request = new XMLHttpRequest();
+			request.open('HEAD', url, false);
+			request.send();
+			if (request.status !== 200) missing.push(url + ' (' + request.status + ')');
+		});
+		return missing;
+		JS;
+
+	private function assertNoMissingImages($browser, string $label): void
+	{
+		$missing = $browser->driver->executeScript(self::READ_IMAGE_URLS);
+		$this->assertSame([], $missing, "$label: the page names pictures that are not there");
 	}
 
 	private function assertLogoExists($browser, $pageName): void
