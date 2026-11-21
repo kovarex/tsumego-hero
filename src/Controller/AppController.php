@@ -9,6 +9,7 @@ use Cake\Http\Exception\MethodNotAllowedException;
 use Cake\Http\Exception\NotFoundException;
 use Cake\Event\EventInterface;
 use ReflectionMethod;
+use App\Model\Table\ScheduleTable;
 use App\Model\Table\SgfTable;
 use App\Model\Table\UserTable;
 use App\Utility\AchievementChecker;
@@ -40,6 +41,7 @@ class AppController extends Controller
 	public function initialize(): void
 	{
 		parent::initialize();
+		ScheduleTable::clearCache();
 		$this->viewBuilder()->setClassName('App');
 		$this->viewBuilder()->addHelpers(['Html', 'Form', 'Pagination']);
 		$this->loadComponent('PlayResultProcessor');

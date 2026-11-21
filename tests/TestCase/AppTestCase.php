@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\ScheduleTable;
 use App\Utility\Auth;
 use App\Utility\CookieFlash;
 use App\Utility\JwtAuth;
@@ -29,6 +30,7 @@ abstract class AppTestCase extends TestCase
 		Auth::logout();
 		JwtAuth::clearCache();
 		CookieFlash::clearCache();
+		ScheduleTable::clearCache();
 		Preferences::clearTestStorage();
 		foreach (Cache::configured() as $config)
 		{

@@ -4,6 +4,7 @@ namespace App\Utility;
 
 use App\Model\Entity\Schedule;
 use Cake\ORM\TableRegistry;
+use App\Model\Table\ScheduleTable;
 use App\Model\Table\SetTable;
 use Cake\Log\Log;
 
@@ -31,6 +32,7 @@ class SchedulePublisher
 				$item->published = true;
 				$scheduleTable->saveOrFail($item);
 				SiteGrowth::forget();
+				ScheduleTable::clearCache();
 			}
 			else
 				Log::warning(sprintf(

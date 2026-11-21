@@ -8,6 +8,9 @@ use Cake\ORM\TableRegistry;
 //A problem waiting in a sandbox set to be published into a public set on its day, which the daily cron does.
 class ScheduleTable extends AppTable
 {
+	//Whether each set asked about in this request is being filled, by set id (isBeingFilled())
+	private static array $beingFilled = [];
+
 	//A sandbox set: an unpublished collection of the site that is not in the trash.
 	private const SANDBOX_CONDITION = '`Set`.public = 0 AND `Set`.user_id IS NULL AND `Set`.deleted IS NULL';
 
@@ -15,6 +18,25 @@ class ScheduleTable extends AppTable
 	private static function latestSgfIdSql(string $tsumegoId): string
 	{
 		return '(SELECT MAX(latest_sgf.id) FROM sgf latest_sgf WHERE latest_sgf.tsumego_id = ' . $tsumegoId . ')';
+	}
+
+	//Whether problems are still scheduled to be published into the set: until the last of them is, its parts can
+	//still grow, so no best score or accuracy achievement is counted of it. Uses the index of schedule.set_id.
+	public static function isBeingFilled(int $setID): bool
+	{
+		return self::$beingFilled[$setID] ??= !empty(Util::query('SELECT 1 FROM schedule WHERE set_id = ? AND published = 0 LIMIT 1', [$setID]));
+	}
+
+	//The condition of the sets that are being filled (isBeingFilled()), $setID being the SQL of the set's id
+	public static function beingFilledSql(string $setID): string
+	{
+		return 'EXISTS (SELECT 1 FROM schedule WHERE schedule.set_id = ' . $setID . ' AND schedule.published = 0)';
+	}
+
+	//Forgets what isBeingFilled() found, at the start of a request and after the schedule changed
+	public static function clearCache(): void
+	{
+		self::$beingFilled = [];
 	}
 
 	//The entries waiting to be published, the earliest day first, each with the sandbox set the

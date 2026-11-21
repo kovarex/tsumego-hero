@@ -7,6 +7,7 @@ use App\Model\Entity\Achievement;
 use App\Model\Table\AchievementConditionTable;
 use App\Model\Table\AchievementTable;
 use App\Model\Table\ProgressDeletionTable;
+use App\Model\Table\ScheduleTable;
 use App\Model\Table\SetTable;
 use App\Model\Table\TimeModeCategoryTable;
 use App\Model\Table\TimeModeRankTable;
@@ -257,13 +258,15 @@ WHERE rn = 1;", [Auth::getUserID(), TimeModeSessionStatusTable::SOLVED]);
 	//the player has solved every problem, not in the trash, of the collections not in the trash that
 	//share it. It is asked each time the player looks at a finished page of one of them, so once
 	//unlocked nothing is counted again, and the database counts the problems still unsolved instead
-	//of loading them all.
+	//of loading them all. While problems are still scheduled into one of them, it waits.
 	public function checkCompletionAchievement(Set $set): AchievementChecker
 	{
 		if ($set->completion_achievement_id === null)
 			return $this;
 		$achievementID = AchievementId::from($set->completion_achievement_id);
 		if ($this->unlocked($achievementID))
+			return $this;
+		if (Util::query('SELECT 1 FROM `set` WHERE completion_achievement_id = ? AND deleted IS NULL AND ' . ScheduleTable::beingFilledSql('`set`.id') . ' LIMIT 1', [$achievementID->value]))
 			return $this;
 		$unsolved = Util::query('SELECT COUNT(*) AS unsolved FROM `set`'
 			. ' JOIN set_connection sc ON sc.set_id = `set`.id'
@@ -308,7 +311,7 @@ WHERE rn = 1;", [Auth::getUserID(), TimeModeSessionStatusTable::SOLVED]);
 	}
 
 	//How many parts of the site's collections the player finished at 100% accuracy, of at least the problems a
-	//collection achievement asks for
+	//collection achievement asks for; a collection problems are still scheduled into doesn't count yet
 	private function countPerfectCollections(): int
 	{
 		$rows = Util::query(
@@ -317,6 +320,7 @@ WHERE rn = 1;", [Auth::getUserID(), TimeModeSessionStatusTable::SOLVED]);
 			. 'JOIN set_connection sc ON sc.set_id = ac.set_id '
 			. 'JOIN tsumego t ON t.id = sc.tsumego_id AND t.deleted IS NULL '
 			. 'WHERE ac.user_id = ? AND ac.achievement_condition_category_id = ? AND ac.value >= ? '
+			. 'AND NOT ' . ScheduleTable::beingFilledSql('ac.set_id') . ' '
 			. 'GROUP BY ac.id, ac.set_partition_or_zero',
 			[Auth::getUserID(), AchievementConditionTable::CATEGORY_SET_ACCURACY, 100]
 		);
