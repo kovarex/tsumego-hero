@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Utility\Asset;
 use Cake\Datasource\Exception\RecordNotFoundException;
 use Cake\Http\Exception\BadRequestException;
 use Cake\Http\Exception\NotFoundException;
@@ -388,8 +389,8 @@ ORDER BY time_mode_session.created DESC, time_mode_session.id DESC",
 			}
 
 		$this->set('sessionsToShow', $sessionsToShow);
-		$this->set('rankArrowClosed', '/img/greyArrow1.png');
-		$this->set('rankArrowOpened', '/img/greyArrow2.png');
+		$this->set('rankArrowClosed', Asset::url('/img/greyArrow1.png'));
+		$this->set('rankArrowOpened', Asset::url('/img/greyArrow2.png'));
 		// a run opened from the history unlocked whatever it unlocked when it was finished
 		$this->set('unlock', $this->query('history') !== null
 			? null

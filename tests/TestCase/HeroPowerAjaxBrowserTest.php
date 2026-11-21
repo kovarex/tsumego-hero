@@ -23,9 +23,9 @@ class HeroPowerAjaxBrowserTest extends IntegrationTestCase
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 
 		$browser->clickId('sprint');
-		$browser->waitUntilJs('document.getElementById("sprint").src.endsWith("/img/hp1x.png")');
+		$browser->waitUntilJs('document.getElementById("sprint").src.includes("/img/hp1x.png?v=")');
 		$browser->clickId('intuition');
-		$browser->waitUntilJs('document.getElementById("intuition").src.endsWith("/img/hp2x.png")');
+		$browser->waitUntilJs('document.getElementById("intuition").src.includes("/img/hp2x.png?v=")');
 
 		$user = $context->reloadUser();
 		$this->assertSame([1, 1], [(int) $user['used_sprint'], (int) $user['used_intuition']]);

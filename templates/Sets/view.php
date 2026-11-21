@@ -3,6 +3,7 @@
 use App\Model\Table\SetTable;
 use App\Model\Table\ProgressDeletionTable;
 use App\Model\Table\UserTable;
+use App\Utility\Asset;
 use App\Utility\Auth;
 use App\Utility\HtmlSanitizer;
 use App\Utility\Rating;
@@ -64,7 +65,7 @@ $startHref = $startingSetConnectionID === null ? '' : ' href="/' . $startingSetC
 if ($tsumegoFilters->query == 'topics' && $set->image)
 	echo '<div class="set-view__cover-cell' . ($set->image[2] != '-' ? '' : ' set-view__img-bottom') . '"><div class="legacy-center set-view__cover">
 						<a' . $startHref . '>
-						<img height="252" width="182" src="/img/' . h($set->image) . '"
+						<img height="252" width="182" src="' . h(Asset::url('/img/' . $set->image)) . '"
 						alt="Tsumego Collection: ' . h($setTitle) . '" title="Tsumego Collection: ' . h($setTitle) . '">
 						</a></div></div>';
 elseif ($tsumegoFilters->query == 'difficulty')
@@ -146,7 +147,7 @@ if ($tsumegoFilters->query != 'topics')
 					echo '<br><span class="text-muted">You need to complete 50% to reset.</span>';
 				else
 				{
-					echo '<div class="set-view__reset-toggle"><a id="showx">Reset<img id="greyArrow1" src="/img/greyArrow1.png"></a></div>';
+					echo '<div class="set-view__reset-toggle"><a id="showx">Reset<img id="greyArrow1" src="' . Asset::url('/img/greyArrow1.png') . '"></a></div>';
 					echo '<div id="msg2x" class="set-view__reset-form">';
 					echo 'Type "reset" to start this part over: the problems you solved go back to Review, the others are cleared. Solving a Review problem again makes it Mastered.<br><br>';
 					echo '<form action="/sets/resetProgress/' . $set->id . '/' . ($partition + 1) . '" method="post">';
@@ -218,7 +219,7 @@ if ($tsumegoFilters->query != 'topics')
 		<p class="title4">Problems</p>
 		<?php // the Filters link is offered whenever any filter type has active selections ?>
 		<div class="set-view__filters<?php echo empty($tsumegoFilters->sets) && empty($tsumegoFilters->ranks) && empty($tsumegoFilters->tags) ? ' set-view__filters--hidden' : ''; ?>">
-			<a id="showFilters" class="selectable-text">Filters<img id="greyArrowFilter" src="/img/greyArrow1.png"></a>
+			<a id="showFilters" class="selectable-text">Filters<img id="greyArrowFilter" src="<?php echo Asset::url('/img/greyArrow1.png'); ?>"></a>
 		</div>
 		<label class="preview-toggle" title="Toggle board previews"><input type="checkbox" class="preview-zoom-toggle">🔍 Preview</label>
 		<div id="msgFilters">

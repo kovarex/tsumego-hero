@@ -4,6 +4,7 @@ use App\Model\Table\SetTable;
 use App\Model\Table\UserTable;
 use App\Utility\AccountWidget;
 use App\Utility\AchievementChecker;
+use App\Utility\Asset;
 use App\Utility\Auth;
 use App\Utility\CookieFlash;
 use App\Utility\HeaderCounts;
@@ -41,11 +42,11 @@ if (\Cake\Core\Configure::read('debug'))
 <meta name="keywords" content="tsumego, problems, puzzles, baduk, weiqi, tesuji, life and death, solve, solving, hero, go, in-seong, level" >
 <meta name="Author" content="Joschka Zimdars">
 <meta name="theme-color" content="#282828">
-<link rel="manifest" href="/manifest.json">
+<?php echo ViteManifest::webManifest(); ?>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Tsumego">
-<link rel="apple-touch-icon" href="/pwa/icon-192.png">
+<link rel="apple-touch-icon" href="<?php echo Asset::url('/pwa/icon-192.png'); ?>">
 <?php
 $canonicalUrl = \Cake\Routing\Router::url($canonicalPath ?? '/' . trim(strtok($this->getRequest()->getRequestTarget(), '?'), '/'), true);
 ?>
@@ -59,7 +60,7 @@ $canonicalUrl = \Cake\Routing\Router::url($canonicalPath ?? '/' . trim(strtok($t
 $og = ($og ?? []) + [
 	'title' => $_title ?? 'Tsumego',
 	'description' => 'Interactive tsumego database. Solve go problems, get stronger, level up, have fun.',
-	'image' => \Cake\Routing\Router::url('/img/Tsumego-Hero-Logo.png', true),
+	'image' => Asset::fullUrl('/img/Tsumego-Hero-Logo.png'),
 	'type' => 'website',
 	'site_name' => 'Tsumego',
 	'locale' => 'en_US',
@@ -74,8 +75,11 @@ echo $this->fetch('og_meta');
 <?php
 echo ViteManifest::css('app-theme');
 
-echo "<link href=\"/favicon.ico\" type=\"image/x-icon\" rel=\"icon\"/><link href=\"/favicon.ico\" type=\"image/x-icon\" rel=\"shortcut icon\"/>";
+$favicon = Asset::url('/favicon.ico');
+echo '<link href="' . $favicon . '" type="image/x-icon" rel="icon"/><link href="' . $favicon . '" type="image/x-icon" rel="shortcut icon"/>';
 echo $this->fetch('css');
+//imageUrl() of the other scripts, the address of an image with its version
+echo ViteManifest::legacyScript('image-versions');
 echo $this->fetch('script');
 ?>
 <?php
@@ -130,7 +134,7 @@ $friendsBadge = $friendRequests > 0
 	<div class="whitebox1">
 		<div class="legacy-left">
 			<a href="/">
-				<img id="logo1" alt="Tsumego Hero" title="Tsumego Hero" src="/img/tsumegoHero1.png" onmouseover="this.src='/img/tsumegoHero2.png'" onmouseout="this.src='/img/tsumegoHero1.png'" height="55px">
+				<img id="logo1" alt="Tsumego Hero" title="Tsumego Hero" src="<?php echo Asset::url('/img/tsumegoHero1.png'); ?>" onmouseover="this.src='<?php echo Asset::url('/img/tsumegoHero2.png'); ?>'" onmouseout="this.src='<?php echo Asset::url('/img/tsumegoHero1.png'); ?>'" height="55px">
 				<?php //A phone shows the name as plain text, shorter than the logo ?>
 				<span class="site-logo-text">Tsumego</span>
 			</a>
@@ -227,12 +231,12 @@ $friendsBadge = $friendRequests > 0
 						</li>
 						<li><a href="/forums">Forums</a></li>
 						<li class="nav__icon-item">
-							<a href="#" id="soundButton" onclick="changeSound(); return false;"><img id="soundButtonImage" src="/img/<?php echo $soundSetting === 'off' ? 'sound-icon2.png' : 'sound-icon1.png'; ?>" width="25px"></a>
+							<a href="#" id="soundButton" onclick="changeSound(); return false;"><img id="soundButtonImage" src="<?php echo Asset::url('/img/' . ($soundSetting === 'off' ? 'sound-icon2.png' : 'sound-icon1.png')); ?>" width="25px"></a>
 						</li>
 						<li class="nav__icon-item">
 							<div class="board-picker">
 								<label for="board-picker-toggle" id="boardsInMenu" class="dropdown__trigger">
-									<img id="boardsButtonImage" src="/img/boards-icon1.png" width="25px">
+									<img id="boardsButtonImage" src="<?php echo Asset::url('/img/boards-icon1.png'); ?>" width="25px">
 								</label>
 								<input class="dropdown__open" type="checkbox" id="board-picker-toggle" hidden>
 								<label for="board-picker-toggle" class="dropdown__overlay"></label>

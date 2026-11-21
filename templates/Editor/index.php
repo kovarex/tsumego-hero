@@ -1,5 +1,6 @@
 <?php
 
+use App\Utility\Asset;
 use App\Utility\ViteManifest;
 
 // Not part of the bundle, as it makes the board fill the whole page, so it gets the time of its last change for a version
@@ -11,11 +12,12 @@ $fillCss = '/besogo/css/besogo-fill.css?v=' . filemtime(WWW_ROOT . 'besogo/css/b
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>BesoGo</title>
-    <link rel="icon" type="image/png" href="/besogo/icon32.png" sizes="32x32" />
-    <link rel="icon" href="/besogo/icon.svg" sizes="any" type="image/svg+xml" />
+    <link rel="icon" type="image/png" href="<?php echo Asset::url('/besogo/icon32.png'); ?>" sizes="32x32" />
+    <link rel="icon" href="<?php echo Asset::url('/besogo/icon.svg'); ?>" sizes="any" type="image/svg+xml" />
     <?php echo ViteManifest::css('besogo-css'); ?>
     <link rel="stylesheet" type="text/css" href="<?php echo h($fillCss); ?>" />
-    <link rel="stylesheet" type="text/css" href="/besogo/css/board-texture13.css" />
+    <?php echo Asset::inlineStyle('/besogo/css/board-texture13.css'); ?>
+    <?php echo ViteManifest::legacyScript('image-versions'); ?>
     <?php echo ViteManifest::legacyScript('besogo'); ?>
     <style>
       .besogo-container {

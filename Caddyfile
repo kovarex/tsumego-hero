@@ -19,6 +19,18 @@ https://host.docker.internal:8443, https://localhost:8443 {
         not path *.php
     }
     handle @static {
+        #The images with the version of their content a year, those without it a day, as webroot/.htaccess keeps them
+        @versionedImage {
+            path_regexp \.(?i:png|jpe?g|gif|svg|webp|ico)$
+            query v=*
+        }
+        header @versionedImage Cache-Control "public, max-age=31536000, immutable"
+        @plainImage {
+            path_regexp \.(?i:png|jpe?g|gif|svg|webp|ico)$
+            not query v=*
+            not path /forums/*
+        }
+        header @plainImage Cache-Control "public, max-age=86400"
         #WebP for a browser that accepts it, as webroot/.htaccess does
         @image path_regexp image ^(.+)\.(?i:png|jpe?g)$
         handle @image {

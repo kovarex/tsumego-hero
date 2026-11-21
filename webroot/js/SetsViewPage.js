@@ -45,7 +45,7 @@ function foldingPanel(link, panel, arrow) {
 		open = !open;
 		const arrowImage = document.getElementById(arrow);
 		if (arrowImage)
-			arrowImage.src = open ? "/img/greyArrow2.png" : "/img/greyArrow1.png";
+			arrowImage.src = imageUrl(open ? "/img/greyArrow2.png" : "/img/greyArrow1.png");
 	}));
 }
 

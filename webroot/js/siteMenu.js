@@ -30,7 +30,7 @@ function changeSound()
 {
 	//A visitor who has not picked anything hears sound: only an explicit "off" is silent.
 	var soundIsOn = soundsEnabled;
-	document.getElementById('soundButtonImage').src = soundIsOn ? '/img/sound-icon2.png' : '/img/sound-icon1.png';
+	document.getElementById('soundButtonImage').src = imageUrl(soundIsOn ? '/img/sound-icon2.png' : '/img/sound-icon1.png');
 	setSoundCookie(soundIsOn ? 'off' : 'on');
 	updateSoundValue(!soundIsOn);
 }

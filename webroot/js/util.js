@@ -49,7 +49,7 @@ function updateSprint(seconds)
 {
 	countDownDate = new Date();
 	countDownDate.setSeconds(countDownDate.getSeconds() + seconds);
-	document.getElementById("sprint").src = "/img/hp1x.png";
+	document.getElementById("sprint").src = imageUrl("/img/hp1x.png");
 	document.getElementById("sprint").style = "cursor: context-menu;";
 
 	updateSprintStatus(seconds);
@@ -74,9 +74,9 @@ function updateSprint(seconds)
 function enableHeroPower(id, number, use)
 {
 	let element = document.getElementById(id);
-	element.src = '/img/hp' + number + '.png';
-	element.onmouseover = function() { this.src = '/img/hp' + number + 'h.png'; };
-	element.onmouseout = function() { this.src = '/img/hp' + number + '.png'; };
+	element.src = imageUrl('/img/hp' + number + '.png');
+	element.onmouseover = function() { this.src = imageUrl('/img/hp' + number + 'h.png'); };
+	element.onmouseout = function() { this.src = imageUrl('/img/hp' + number + '.png'); };
 	element.onclick = use;
 	element.style.cursor = 'pointer';
 }
@@ -84,7 +84,7 @@ function enableHeroPower(id, number, use)
 function disableHeroPower(id, number)
 {
 	let element = document.getElementById(id);
-	element.src = '/img/hp' + number + 'x.png';
+	element.src = imageUrl('/img/hp' + number + 'x.png');
 	element.onmouseover = null;
 	element.onmouseout = null;
 	element.onclick = null;

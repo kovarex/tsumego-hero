@@ -34,7 +34,7 @@ function showAchievementPopup(achievement)
 	text.className = 'toast__body';
 	var img = document.createElement('img');
 	img.id = 'hpIcon1';
-	img.src = '/img/' + achievement.image + '.png';
+	img.src = imageUrl('/img/' + achievement.image + '.png');
 	var title = document.createElement('b');
 	title.textContent = achievement.name + ' - ' + achievement.description;
 	var xp = document.createTextNode(' (' + achievement.xp + ' XP) ');

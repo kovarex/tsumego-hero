@@ -26,7 +26,7 @@ function initTimeModeOverview(page)
 		selectedCategoryID = categoryID;
 		for (const id of page.categoryIDs)
 		{
-			document.getElementById('timeMode' + id).src = '/img/timeMode' + id + (id === categoryID ? '' : 'inactive') + '2.png';
+			document.getElementById('timeMode' + id).src = imageUrl('/img/timeMode' + id + (id === categoryID ? '' : 'inactive') + '2.png');
 			// shown with the stylesheet's display (flow-root, which holds the floated rank buttons), not an inline block
 			document.getElementById('time-mode' + id).style.display = id === categoryID ? '' : 'none';
 		}
@@ -41,8 +41,8 @@ function initTimeModeOverview(page)
 			select(id);
 			setCookie('lastTimeModeCategoryID', id);
 		});
-		image.addEventListener('mouseover', () => { image.src = '/img/timeMode' + id + 'hover2.png'; });
-		image.addEventListener('mouseout', () => { image.src = '/img/timeMode' + id + (id === selectedCategoryID ? '' : 'inactive') + '2.png'; });
+		image.addEventListener('mouseover', () => { image.src = imageUrl('/img/timeMode' + id + 'hover2.png'); });
+		image.addEventListener('mouseout', () => { image.src = imageUrl('/img/timeMode' + id + (id === selectedCategoryID ? '' : 'inactive') + '2.png'); });
 	}
 
 	for (const image of document.querySelectorAll('img[data-hover-src]'))

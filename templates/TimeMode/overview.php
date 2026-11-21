@@ -1,5 +1,6 @@
 <?php
 
+use App\Utility\Asset;
 use App\Utility\ViteManifest;
 
 /**
@@ -41,7 +42,7 @@ foreach ($timeModeCategories as $timeModeCategory)
 <br><br>
 <div class="legacy-center">
 	<?php foreach ($timeModeCategories as $timeModeCategory): ?>
-	<img id="timeMode<?php echo $timeModeCategory->id; ?>" src="/img/timeMode<?php echo $timeModeCategory->id; ?>2.png" width="200">
+	<img id="timeMode<?php echo $timeModeCategory->id; ?>" src="<?php echo Asset::url('/img/timeMode' . $timeModeCategory->id . '2.png'); ?>" width="200">
 	<?php endforeach; ?>
 </div>
 <br><br>
@@ -56,12 +57,12 @@ foreach ($timeModeCategories as $timeModeCategory)
 	<div class="time-mode__rank" id="rank-selector-<?php echo $timeModeCategory->id; ?>-<?php echo $rankID; ?>">
 		<?php if ($unlocked): ?>
 		<a class="time-mode__rank-link" href="/timeMode/start?categoryID=<?php echo $timeModeCategory->id; ?>&rankID=<?php echo $rankID; ?>">
-			<img src="/img/rankButton<?php echo $rank; ?>.png" data-hover-src="/img/rankButton<?php echo $rank; ?>hover.png">
-			<div class="time-mode__rank-count"> <img class="time-mode-icon" src="/img/timeModeStored.png"><?php echo $timeModeRank['tsumego_count']; ?></div>
+			<img src="<?php echo Asset::url('/img/rankButton' . $rank . '.png'); ?>" data-hover-src="<?php echo Asset::url('/img/rankButton' . $rank . 'hover.png'); ?>">
+			<div class="time-mode__rank-count"> <img class="time-mode-icon" src="<?php echo Asset::url('/img/timeModeStored.png'); ?>"><?php echo $timeModeRank['tsumego_count']; ?></div>
 		</a>
 		<?php else: ?>
-		<img src="/img/rankButton<?php echo $rank; ?>inactive.png">
-		<div class="time-mode__rank-count"> <img class="time-mode-icon" src="/img/timeModeStored.png"><?php echo $timeModeRank['tsumego_count']; ?></div>
+		<img src="<?php echo Asset::url('/img/rankButton' . $rank . 'inactive.png'); ?>">
+		<div class="time-mode__rank-count"> <img class="time-mode-icon" src="<?php echo Asset::url('/img/timeModeStored.png'); ?>"><?php echo $timeModeRank['tsumego_count']; ?></div>
 		<?php endif; ?>
 	</div>
 	<?php

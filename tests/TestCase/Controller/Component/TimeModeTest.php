@@ -569,10 +569,10 @@ class TimeModeTest extends IntegrationTestCase
 		$this->assertFalse($browser->find('#results_Blitz_1d')->isDisplayed());
 		$title->click();
 		$this->assertTrue($browser->find('#results_Blitz_1d')->isDisplayed());
-		$this->assertStringEndsWith('/img/greyArrow2.png', $title->findElement(WebDriverBy::cssSelector('.rankArrow'))->getAttribute('src'));
+		$this->assertMatchesRegularExpression('#/img/greyArrow2\.png\?v=\w+$#', $title->findElement(WebDriverBy::cssSelector('.rankArrow'))->getAttribute('src'));
 		$title->click();
 		$this->assertFalse($browser->find('#results_Blitz_1d')->isDisplayed());
-		$this->assertStringEndsWith('/img/greyArrow1.png', $title->findElement(WebDriverBy::cssSelector('.rankArrow'))->getAttribute('src'));
+		$this->assertMatchesRegularExpression('#/img/greyArrow1\.png\?v=\w+$#', $title->findElement(WebDriverBy::cssSelector('.rankArrow'))->getAttribute('src'));
 	}
 
 	//The account bar shows the best rank the player passed in the category picked
@@ -685,24 +685,24 @@ class TimeModeTest extends IntegrationTestCase
 		$this->assertSame(count($links5k), 1);
 
 		$this->assertSame(count($imgs5k), 2); // one of the rank, one of the storage icon
-		$this->assertSame($imgs5k[0]->getAttribute('src'), "/img/rankButton5k.png");
+		$this->assertMatchesRegularExpression('#^/img/rankButton5k\.png\?v=\w+$#', $imgs5k[0]->getAttribute('src'));
 
 		// hovering shows hovered image
 		$browser->hover($div5k);
 		$browser->waitUntil(function () use ($imgs5k) {
-			return $imgs5k[0]->getAttribute('src') == "/img/rankButton5khover.png";
+			return str_starts_with($imgs5k[0]->getAttribute('src'), "/img/rankButton5khover.png?v=");
 		}, 10, 'rank button 5k to show its hovered image');
 
 		// hovering something else shows unhovered image
 		$browser->hover($div1d);
 		$browser->waitUntil(function () use ($imgs5k) {
-			return $imgs5k[0]->getAttribute('src') == "/img/rankButton5k.png";
+			return str_starts_with($imgs5k[0]->getAttribute('src'), "/img/rankButton5k.png?v=");
 		}, 10, 'rank button 5k to stop showing its hovered image');
 
 		// locked rank shows inactive image
 		$this->assertSame(count($links1d), 0);
 		$this->assertSame(count($imgs1d), 2);
-		$this->assertSame($imgs1d[0]->getAttribute('src'), "/img/rankButton1dinactive.png");
+		$this->assertMatchesRegularExpression('#^/img/rankButton1dinactive\.png\?v=\w+$#', $imgs1d[0]->getAttribute('src'));
 	}
 
 	public function testTimeModeSwitchCategory(): void

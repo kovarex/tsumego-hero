@@ -17,6 +17,7 @@
  */
 
 $cakeDescription = __d('cake_dev', 'CakePHP: the rapid development php framework');
+use App\Utility\Asset;
 use App\Utility\CookieFlash;
 use App\Utility\ViteManifest;
 
@@ -31,7 +32,8 @@ use App\Utility\ViteManifest;
 		<?php echo $this->fetch('title'); ?>
 	</title>
 	<?php
-		echo "<link href=\"/favicon.ico\" type=\"image/x-icon\" rel=\"icon\"/><link href=\"/favicon.ico\" type=\"image/x-icon\" rel=\"shortcut icon\"/>";
+		$favicon = Asset::url('/favicon.ico');
+		echo '<link href="' . $favicon . '" type="image/x-icon" rel="icon"/><link href="' . $favicon . '" type="image/x-icon" rel="shortcut icon"/>';
 
 		echo ViteManifest::css('app-theme');
 
@@ -51,7 +53,7 @@ echo $this->fetch('script');
 			<?php echo $this->fetch('content'); ?>
 		</div>
 		<div id="footer">
-			<a href="http://www.cakephp.org/" target="_blank"><img src="/img/cake.power.gif" alt="<?php echo h($cakeDescription); ?>"/></a>
+			<a href="http://www.cakephp.org/" target="_blank"><img src="<?php echo Asset::url('/img/cake.power.gif'); ?>" alt="<?php echo h($cakeDescription); ?>"/></a>
 		</div>
 	</div>
 	<?php echo $this->element('sql_dump'); ?>

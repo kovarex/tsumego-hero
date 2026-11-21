@@ -66,7 +66,7 @@ besogo.realStone = function(x, y, color, index, blackStone = '', whiteStone = ''
 			color = 'black' + (index % besogo.BLACK_STONES);
 		else
 			color = 'white' + (index % besogo.WHITE_STONES);
-		color = besogo.rootPath + 'img/' + color + '.png';
+		color = imageUrl(besogo.rootPath + 'img/' + color + '.png');
 	}
   else
   {
@@ -74,7 +74,7 @@ besogo.realStone = function(x, y, color, index, blackStone = '', whiteStone = ''
 			color = blackStone;
 		else
 			color = whiteStone;
-		color = besogo.rootPath + 'img/' + color;
+		color = imageUrl(besogo.rootPath + 'img/' + color);
 	}
 
     element =  besogo.svgEl("image", {
