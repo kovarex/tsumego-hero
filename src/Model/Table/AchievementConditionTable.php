@@ -103,6 +103,15 @@ class AchievementConditionTable extends AppTable
 			[$userID, $categoryID, $setID, $partition, $value]);
 	}
 
+	//Forgets every player's best accuracy and time of the parts of the set from $partition on: a problem published into
+	//the part changed it and moved the problems after it, so the runs kept of them are not runs of those parts any more.
+	//The achievements they unlocked stay.
+	public static function forgetSetBestsFrom(int $setID, int $partition): void
+	{
+		Util::execute('DELETE FROM achievement_condition WHERE set_id = ? AND set_partition_or_zero >= ? AND achievement_condition_category_id IN (?, ?)',
+			[$setID, $partition, self::CATEGORY_SET_ACCURACY, self::CATEGORY_SET_TIME]);
+	}
+
 	//The player's best accuracies of the parts of sets, 100 when the part was solved without a mistake
 	/**
 	 * @param int[] $setIDs
