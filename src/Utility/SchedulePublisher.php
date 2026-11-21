@@ -4,8 +4,6 @@ namespace App\Utility;
 
 use App\Model\Entity\Schedule;
 use Cake\ORM\TableRegistry;
-use App\Model\Table\AchievementConditionTable;
-use App\Model\Table\ProgressDeletionTable;
 use App\Model\Table\ScheduleTable;
 use App\Model\Table\SetTable;
 use Cake\Log\Log;
@@ -104,10 +102,6 @@ class SchedulePublisher
 			$setConnectionTable->saveOrFail($keep);
 			foreach ($sandboxConnections as $sandboxConnection)
 				$setConnectionTable->deleteOrFail($sandboxConnection);
-			// the part the problem lands in, and the parts after it, are other parts now: their bests start over
-			$part = ProgressDeletionTable::partitionOf((int) $keep->id);
-			if ($part !== null)
-				AchievementConditionTable::forgetSetBestsFrom($part['set_id'], $part['partition']);
 		}
 		else
 			return 'the problem is in no sandbox set to move from';

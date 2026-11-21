@@ -2,7 +2,6 @@
 
 
 use App\Model\Table\AchievementConditionTable;
-use App\Model\Table\ProgressDeletionTable;
 use App\Utility\AchievementId;
 use App\Model\Table\UserTable;
 use App\Utility\Auth;
@@ -268,46 +267,6 @@ class CronDailyCommandTest extends IntegrationTestCase
 		$this->assertExitSuccess();
 
 		$this->assertTrue($this->fetchTable('Schedule')->find()->orderBy('id')->firstOrFail()->published);
-	}
-
-	//A problem published into a part of a collection makes the bests of that part and of the parts after it start over:
-	//here it lands as the 4th problem, in the second part of two problems, so the first part keeps its bests
-	public function testPublishForgetsTheBestsOfThePartsItChanges()
-	{
-		ProgressDeletionTable::$PARTITION_SIZE = 2;
-		try
-		{
-			$context = new ContextPreparator([
-				'tsumegos' => [
-					['sets' => [['name' => 'sandbox set', 'num' => 3, 'public' => 0]]],
-					['sets' => [['name' => 'set 1', 'num' => 1]]],
-					['sets' => [['name' => 'set 1', 'num' => 2]]],
-					['sets' => [['name' => 'set 1', 'num' => 3]]],
-					['sets' => [['name' => 'other set', 'num' => 1]]]],
-				'schedule' => [['tsumego' => 0, 'set' => 'set 1', 'date' => date('Y-m-d')]]]);
-			$setID = (int) $context->tsumegos[1]['sets'][0]['id'];
-			$otherSetID = (int) $context->tsumegos[4]['sets'][0]['id'];
-			$userID = (int) $context->user['id'];
-			foreach ([0, 1] as $part)
-			{
-				AchievementConditionTable::put($userID, AchievementConditionTable::CATEGORY_SET_ACCURACY, 100, $setID, $part);
-				AchievementConditionTable::put($userID, AchievementConditionTable::CATEGORY_SET_TIME, 5, $setID, $part);
-			}
-			AchievementConditionTable::put($userID, AchievementConditionTable::CATEGORY_SET_ACCURACY, 100, $otherSetID, 1);
-
-			$this->exec('cron_daily');
-			$this->assertExitSuccess();
-
-			$this->assertEquals(100, AchievementConditionTable::value($userID, AchievementConditionTable::CATEGORY_SET_ACCURACY, $setID, 0));
-			$this->assertEquals(5, AchievementConditionTable::value($userID, AchievementConditionTable::CATEGORY_SET_TIME, $setID, 0));
-			$this->assertNull(AchievementConditionTable::value($userID, AchievementConditionTable::CATEGORY_SET_ACCURACY, $setID, 1));
-			$this->assertNull(AchievementConditionTable::value($userID, AchievementConditionTable::CATEGORY_SET_TIME, $setID, 1));
-			$this->assertEquals(100, AchievementConditionTable::value($userID, AchievementConditionTable::CATEGORY_SET_ACCURACY, $otherSetID, 1), 'another collection keeps its bests');
-		}
-		finally
-		{
-			ProgressDeletionTable::$PARTITION_SIZE = 200;
-		}
 	}
 
 	public function testUpdateSolved()
