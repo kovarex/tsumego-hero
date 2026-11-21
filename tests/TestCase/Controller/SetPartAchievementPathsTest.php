@@ -133,7 +133,8 @@ class SetPartAchievementPathsTest extends IntegrationTestCase
 	//Problems scheduled to be published into $collection tomorrow, or already published
 	private static function schedule(array $collection, bool $published = false): void
 	{
-		Util::execute('INSERT INTO schedule (date, set_id, published) VALUES (?, ?, ?)', [date('Y-m-d', strtotime('+1 day')), $collection['set'], (int) $published]);
+		Util::execute('INSERT INTO tsumego (rating, author) VALUES (1000, ?)', ['']);
+		Util::execute('INSERT INTO schedule (date, tsumego_id, set_id, published) VALUES (?, LAST_INSERT_ID(), ?, ?)', [date('Y-m-d', strtotime('+1 day')), $collection['set'], (int) $published]);
 	}
 
 	//While problems are still scheduled into the collection, a part finished cleanly keeps no best and unlocks nothing
