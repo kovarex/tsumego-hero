@@ -17,6 +17,7 @@ use Cake\Http\Exception\ConflictException;
 use App\Model\Table\AchievementConditionTable;
 use App\Model\Table\AdminActivityTypeTable;
 use App\Model\Table\ProgressDeletionTable;
+use App\Model\Table\ScheduleTable;
 use App\Model\Table\UserTable;
 use App\Utility\AchievementChecker;
 use App\Utility\AdminActivityLogger;
@@ -670,6 +671,8 @@ ORDER BY sc.num ASC", [(int) $id]);
 			$this->set('pdCounter', $scoring ? $this->recentResetsOf($tsumegoButtons, (int) $id) : 0);
 			$this->set('bestTime', $scoring && $pageIsAPart ? AchievementConditionTable::value(Auth::getUserID(), AchievementConditionTable::CATEGORY_SET_TIME, (int) $id, $partition) : null);
 			$this->set('bestAccuracy', $scoring && $pageIsAPart ? AchievementConditionTable::value(Auth::getUserID(), AchievementConditionTable::CATEGORY_SET_ACCURACY, (int) $id, $partition) : null);
+			// problems still scheduled to come: the bests and achievements wait until the last of them is in
+			$this->set('beingFilled', $scoring && ScheduleTable::isBeingFilled((int) $id));
 		}
 
 		$this->set('tsumegoFilters', $tsumegoFilters);

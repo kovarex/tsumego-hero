@@ -39,6 +39,21 @@ class SetPartBestPathsTest extends IntegrationTestCase
 		return new ContextPreparator($options + ['user' => ['name' => 'player', 'collection_size' => self::PART], 'tsumegos' => $tsumegos]);
 	}
 
+	//A collection of $count problems, with a problem of a sandbox set scheduled to be published into it tomorrow
+	private static function collectionBeingFilled(int $count): ContextPreparator
+	{
+		$tsumegos = [];
+		for ($i = 0; $i < $count; $i++)
+			$tsumegos[] = ['sets' => [['name' => 'paths set', 'num' => $i + 1]]];
+		$tsumegos[] = ['sets' => [['name' => 'sandbox set', 'num' => 1, 'public' => 0]]];
+		return new ContextPreparator([
+			'user' => ['name' => 'player', 'collection_size' => self::PART],
+			'tsumegos' => $tsumegos,
+			'schedule' => [['tsumego' => $count, 'set' => 'paths set', 'date' => date('Y-m-d', strtotime('+1 day'))]]]);
+	}
+
+	private const BEING_FILLED_NOTE = 'New problems are still being added to this collection';
+
 	//Reports the result of the problem as the play page does
 	private function play(ContextPreparator $context, int $index, PlayOutcome $outcome, int $seconds = 5, int $set = 0): void
 	{
@@ -121,6 +136,53 @@ class SetPartBestPathsTest extends IntegrationTestCase
 		$this->assertEquals(7, self::time($context, 0));
 		$this->assertNull(self::accuracy($context, 1));
 		$this->assertSame([true, false], $this->frames());
+	}
+
+	//Path 1b: while problems are still scheduled into the collection, a part finished cleanly keeps no best, and the
+	//set page says why; once the last of them is published, the next look at the page keeps it
+	public function testNoBestIsKeptWhileProblemsAreScheduledIntoTheCollection(): void
+	{
+		$context = self::collectionBeingFilled(10);
+
+		$this->solveCleanly($context, 0, 9, 7);
+		$this->assertSame(0, self::storedBests());
+		$this->get('sets/' . self::setID($context));
+		$this->assertTrue($this->viewVariable('beingFilled'));
+		$this->assertTextContains(self::BEING_FILLED_NOTE, $this->view);
+		$this->assertSame(0, self::storedBests(), 'the set page keeps none either');
+		$this->assertSame([false], $this->frames());
+
+		Util::execute('UPDATE schedule SET published = 1');
+		$this->get('sets/' . self::setID($context));
+		$this->assertFalse($this->viewVariable('beingFilled'));
+		$this->assertTextNotContains(self::BEING_FILLED_NOTE, $this->view);
+		$this->assertEquals(100, self::accuracy($context, 0));
+		$this->assertEquals(7, self::time($context, 0));
+	}
+
+	//Path 1c: a schedule entry taken back leaves the collection complete, and the solve that finishes a part keeps its best
+	public function testTheSolveAfterTheScheduleIsRemovedKeepsTheBest(): void
+	{
+		$context = self::collectionBeingFilled(10);
+
+		$this->solveCleanly($context, 0, 8);
+		Util::execute('DELETE FROM schedule');
+		$this->solveCleanly($context, 9, 9);
+
+		$this->assertEquals(100, self::accuracy($context, 0));
+	}
+
+	//Path 1d: a collection nothing is scheduled into shows no note
+	public function testACollectionWithoutScheduleShowsNoNote(): void
+	{
+		$context = self::collection(10);
+
+		$this->solveCleanly($context, 0, 9);
+		$this->get('sets/' . self::setID($context));
+
+		$this->assertFalse($this->viewVariable('beingFilled'));
+		$this->assertTextNotContains(self::BEING_FILLED_NOTE, $this->view);
+		$this->assertEquals(100, self::accuracy($context, 0));
 	}
 
 	//Path 2

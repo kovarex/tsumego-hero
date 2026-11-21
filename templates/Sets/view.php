@@ -16,6 +16,7 @@ use App\Utility\ViteManifest;
  * @var \App\View\AppView $this
  * @var float|null $bestAccuracy
  * @var float|null $bestTime
+ * @var bool $beingFilled Problems are still scheduled to come into the collection, so no best is kept yet
  * @var string $accuracy
  * @var float $avgTime
  * @var bool $canShare
@@ -115,6 +116,8 @@ if ($tsumegoFilters->query != 'topics')
 					echo '<div class="set-view__completed"><b>Completed: ' . $problemSolvedPercent . '%</b></div>';
 					echo '<div class="set-view__accuracy"><b>Accuracy: ' . $accuracy . '%</b>' . ($bestAccuracy !== null ? ' &middot; Best: ' . $bestAccuracy . '%' : '') . '</div>';
 					echo '<div class="set-view__time"><b>Avg. time: ' . $avgTime . 's</b>' . ($bestTime !== null && $bestTime != 60 ? ' &middot; Best: ' . $bestTime . 's' : '') . '</div>';
+					if ($beingFilled)
+						echo '<div class="set-view__being-filled text-muted">New problems are still being added to this collection; best scores and accuracy achievements are counted once it is complete.</div>';
 				} ?>
 			</div>
 			<?php //The reset of the progress under the scores, its form opening right under its link ?>

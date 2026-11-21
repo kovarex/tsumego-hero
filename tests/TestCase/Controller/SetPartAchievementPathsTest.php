@@ -130,6 +130,54 @@ class SetPartAchievementPathsTest extends IntegrationTestCase
 		$this->assertTextContains('/sets/' . $big['set'] . '/2', $this->view);
 	}
 
+	//Problems scheduled to be published into $collection tomorrow, or already published
+	private static function schedule(array $collection, bool $published = false): void
+	{
+		Util::execute('INSERT INTO tsumego (rating, author) VALUES (1000, ?)', ['']);
+		Util::execute('INSERT INTO schedule (date, tsumego_id, set_id, published) VALUES (?, LAST_INSERT_ID(), ?, ?)', [date('Y-m-d', strtotime('+1 day')), $collection['set'], (int) $published]);
+	}
+
+	//While problems are still scheduled into the collection, a part finished cleanly keeps no best and unlocks nothing
+	public function testAPartOfACollectionBeingFilledUnlocksNothing(): void
+	{
+		$context = new ContextPreparator(['user' => ['name' => 'player']]);
+		$collection = self::collection($context, 100);
+		self::schedule($collection);
+
+		$this->finish($context, $collection, 0);
+
+		$this->assertSame([], self::unlocked($context));
+		$this->assertNull(AchievementConditionTable::value($context->user['id'], AchievementConditionTable::CATEGORY_SET_ACCURACY, $collection['set'], 0));
+	}
+
+	//Once everything scheduled into the collection is published, a part finished cleanly unlocks as usual
+	public function testAPartOfACollectionWhoseScheduleIsPublishedUnlocksItsAchievements(): void
+	{
+		$context = new ContextPreparator(['user' => ['name' => 'player']]);
+		$collection = self::collection($context, 100);
+		self::schedule($collection, published: true);
+
+		$this->finish($context, $collection, 0);
+
+		$this->assertSame([...self::BAND_ACHIEVEMENTS, AchievementId::SUPERIOR_ACCURACY], self::unlocked($context));
+	}
+
+	//A part kept at 100% before problems were scheduled into its collection doesn't count for Superior Accuracy while they come
+	public function testSuperiorAccuracyLeavesOutACollectionBeingFilled(): void
+	{
+		$context = new ContextPreparator(['user' => ['name' => 'player']]);
+		$first = self::collection($context, 100);
+		$second = self::collection($context, 100, 'second set');
+
+		$this->finish($context, $first, 0);
+		$this->assertSame(1, self::superiorAccuracyCount($context));
+		self::schedule($first);
+		$this->finish($context, $second, 0);
+
+		$this->assertSame(1, self::superiorAccuracyCount($context), 'the second part counts, the first waits');
+		$this->assertEquals(100, AchievementConditionTable::value($context->user['id'], AchievementConditionTable::CATEGORY_SET_ACCURACY, $first['set'], 0), 'its best stays');
+	}
+
 	//A part smaller than 100 problems unlocks nothing, however well it was solved
 	public function testAPartOfFewerThan100ProblemsUnlocksNothing(): void
 	{
