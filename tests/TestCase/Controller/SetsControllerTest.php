@@ -58,6 +58,26 @@ class SetsControllerTest extends IntegrationTestCase
 		$this->assertTextContains('"id":' . AchievementId::LIFE_DEATH_ELEMENTARY->value, $this->view, 'The layout renders the achievements the set page unlocked');
 	}
 
+	//A collection of the achievement that still has problems scheduled to come is not complete yet: its achievement
+	//waits until the last of them is published
+	public function testTheCompletionAchievementWaitsForTheScheduledProblems(): void
+	{
+		$context = new ContextPreparator(['user' => ['name' => 'setViewer']]);
+		foreach ([50, 52, 53, 54] as $setId)
+		{
+			$this->createFullySolvedSet($setId, $context->user['id']);
+			$this->fetchTable('Set')->updateAll(['completion_achievement_id' => AchievementId::LIFE_DEATH_ELEMENTARY->value], ['id' => $setId]);
+		}
+		Util::execute('INSERT INTO schedule (date, set_id, published) VALUES (?, 52, 0)', [date('Y-m-d', strtotime('+1 day'))]);
+
+		$this->get('sets/50');
+		$this->assertNotContains(AchievementId::LIFE_DEATH_ELEMENTARY->value, array_column($this->viewVariable('achievementUpdates'), 'id'));
+
+		Util::execute('UPDATE schedule SET published = 1');
+		$this->get('sets/50');
+		$this->assertContains(AchievementId::LIFE_DEATH_ELEMENTARY->value, array_column($this->viewVariable('achievementUpdates'), 'id'));
+	}
+
 	//No set is singled out by its id: the sets the page once treated differently (the old beta2
 	//sets, the themed sets without a cover, set 60 with a fixed height) look like any other set.
 	public function testSetPageTreatsEverySetAlike(): void

@@ -4,6 +4,7 @@ namespace App\Utility;
 
 use App\Model\Table\AchievementConditionTable;
 use App\Model\Table\ProgressDeletionTable;
+use App\Model\Table\ScheduleTable;
 use App\Model\Table\SetTable;
 use App\Model\Table\TsumegoStatusTable;
 
@@ -76,11 +77,12 @@ final class SetPartBestScores
 	}
 
 	//Keeps the scores of the player's run through the part as their best when the part is solved whole and is of one of
-	//the site's collections; the scores, or null when nothing was kept
+	//the site's collections that has no problems still scheduled to come (ScheduleTable::isBeingFilled()); the scores,
+	//or null when nothing was kept
 	public static function record(int $userID, int $setID, int $partition): ?self
 	{
 		$set = Util::query('SELECT public, user_id, deleted FROM `set` WHERE id = ?', [$setID])[0] ?? null;
-		if (!$set || !SetTable::isOfficial($set))
+		if (!$set || !SetTable::isOfficial($set) || ScheduleTable::isBeingFilled($setID))
 			return null;
 		$scores = self::of($userID, $setID, $partition);
 		if ($scores === null)
