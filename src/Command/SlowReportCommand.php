@@ -51,7 +51,8 @@ class SlowReportCommand extends Command
 		if ($report->unreadableLines)
 			$io->out($report->unreadableLines . ' lines of the log could not be read.');
 		$io->out('Where their time went: ' . self::sharesText(SlowLogReport::shares($report->entries)));
-		$io->out('With a PHP session started: ' . $report->withSession() . '. Ended by a fatal error (time limit...): ' . $report->fatal() . '.');
+		$io->out('From crawlers and scripts: ' . $report->fromBots() . '. With a PHP session started: ' . $report->withSession()
+			. '. Ended by a fatal error (time limit...): ' . $report->fatal() . '.');
 
 		$io->out();
 		$io->out('Routes, the most often slow first, and the share of each part of their time:');

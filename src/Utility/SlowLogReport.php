@@ -159,6 +159,12 @@ class SlowLogReport
 		return array_slice($bursts, 0, $limit);
 	}
 
+	//How many of the entries came from crawlers and scripts (RequestTiming::isBot())
+	public function fromBots(): int
+	{
+		return count(array_filter($this->entries, fn(array $entry) => !empty($entry['bot'])));
+	}
+
 	//How many of the entries ran with a PHP session started, which the site never starts
 	public function withSession(): int
 	{

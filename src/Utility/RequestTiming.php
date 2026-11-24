@@ -242,12 +242,20 @@ class RequestTiming
 			'route' => self::route(),
 			'status' => $status,
 			'user_id' => Auth::getUserID(),
+			'bot' => self::isBot((string) ($_SERVER['HTTP_USER_AGENT'] ?? '')),
 		] + $measured + [
 			// the site keeps no PHP session (JwtAuth, CookieFlash), so a started one, and its lock, is news
 			'session' => session_status() === PHP_SESSION_ACTIVE,
 			'memory_mb' => round(memory_get_peak_usage() / 1048576, 1),
 			'queries' => self::slowestQueries(),
 		];
+	}
+
+	//Whether the user agent is a crawler or a script rather than a browser, which takes the same PHP processes as
+	//the players do; only this is kept of it
+	public static function isBot(string $userAgent): bool
+	{
+		return $userAgent === '' || preg_match('/bot\b|bot\/|crawl|spider|slurp|scrape|archiver|facebookexternalhit|python|curl|wget|go-http-client|java\/|okhttp|httpclient|headless/i', $userAgent) === 1;
 	}
 
 	//The controller and the action that answered, like "Tsumegos/play", "-" when no route matched

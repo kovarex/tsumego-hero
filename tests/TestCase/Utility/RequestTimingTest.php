@@ -161,6 +161,19 @@ class RequestTimingTest extends AppTestCase
 		$this->assertDirectoryDoesNotExist($this->directory . DS . 'missing');
 	}
 
+	public function testCrawlersAndScriptsAreToldFromBrowsers(): void
+	{
+		$bots = ['Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)', 'Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; GPTBot/1.2)',
+			'Mozilla/5.0 (compatible; Bytespider; spider-feedback@bytedance.com)', 'curl/8.5.0', 'python-requests/2.31', ''];
+		$browsers = ['Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+			'Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1 Mobile/15E148 Safari/604.1',
+			'Mozilla/5.0 (X11; Linux x86_64; rv:133.0) Gecko/20100101 Firefox/133.0'];
+		foreach ($bots as $userAgent)
+			$this->assertTrue(RequestTiming::isBot($userAgent), $userAgent);
+		foreach ($browsers as $userAgent)
+			$this->assertFalse(RequestTiming::isBot($userAgent), $userAgent);
+	}
+
 	//Apache says when it got the request (webroot/.htaccess), the rest until PHP started is the wait for PHP
 	public function testTheWaitForPhpIsReadFromTheRequestStart(): void
 	{
