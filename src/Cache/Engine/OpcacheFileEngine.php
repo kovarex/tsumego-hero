@@ -2,6 +2,7 @@
 
 namespace App\Cache\Engine;
 
+use App\Utility\RequestTiming;
 use Cake\Cache\CacheEngine;
 use DateInterval;
 use RuntimeException;
@@ -10,7 +11,8 @@ use RuntimeException;
 //from memory. The FileEngine reads each entry from the disk, and on the hosting's network disk every read
 //took about 0.7 ms; a page reads the schema of each table it uses this way. Meant for values written
 //rarely and read on every request, like the table schemas. The opcache looks at a rewritten or deleted
-//file again after opcache.revalidate_freq seconds.
+//file again after opcache.revalidate_freq seconds. The reads and writes count into the time of the
+//request (RequestTiming).
 class OpcacheFileEngine extends CacheEngine
 {
 	protected array $_defaultConfig = [
@@ -32,6 +34,14 @@ class OpcacheFileEngine extends CacheEngine
 
 	public function get(string $key, mixed $default = null): mixed
 	{
+		$start = hrtime(true);
+		$value = $this->read($key, $default);
+		RequestTiming::cache(hrtime(true) - $start, $value === $default);
+		return $value;
+	}
+
+	private function read(string $key, mixed $default): mixed
+	{
 		$file = $this->file($key);
 		$entry = @include $file;
 		if (!is_array($entry))
@@ -46,6 +56,19 @@ class OpcacheFileEngine extends CacheEngine
 	}
 
 	public function set(string $key, mixed $value, DateInterval|int|null $ttl = null): bool
+	{
+		$start = hrtime(true);
+		try
+		{
+			return $this->write($key, $value, $ttl);
+		}
+		finally
+		{
+			RequestTiming::cache(hrtime(true) - $start);
+		}
+	}
+
+	private function write(string $key, mixed $value, DateInterval|int|null $ttl): bool
 	{
 		$file = $this->file($key);
 		$code = '<?php return [' . (time() + $this->duration($ttl)) . ', ' . var_export(serialize($value), true) . '];' . "\n";

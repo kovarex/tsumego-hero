@@ -40,7 +40,7 @@ class GoogleTokenVerifier implements GoogleTokenVerifierInterface
 	public function verify(string $idToken): ?array
 	{
 		$tokenInfoUrl = 'https://oauth2.googleapis.com/tokeninfo?id_token=' . urlencode($idToken);
-		$response = @file_get_contents($tokenInfoUrl);
+		$response = RequestTiming::external(fn() => @file_get_contents($tokenInfoUrl));
 
 		if ($response === false)
 			return null;

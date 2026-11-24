@@ -10,6 +10,13 @@ ErrorDocument 503 /maintenance.html
 	Header always set Cache-Control "no-store" "expr=%{REQUEST_STATUS} == 503"
 </IfModule>
 
+# When Apache got the request ("t=" and microseconds), which PHP compares with its own start: the time the request
+# waited for a free PHP process, the queue of the Server-Timing header and of logs/slow.log (src/Utility/RequestTiming.php).
+# Set here, so a value the client sends is replaced.
+<IfModule mod_headers.c>
+	RequestHeader set X-Request-Start "%t"
+</IfModule>
+
 <IfModule mod_rewrite.c>
 	RewriteEngine On
 

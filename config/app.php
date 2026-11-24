@@ -1,6 +1,7 @@
 <?php
 
 use App\Cache\Engine\OpcacheFileEngine;
+use App\Cache\Engine\TimedFileEngine;
 use Cake\Cache\Engine\FileEngine;
 use Cake\Database\Connection;
 use Cake\Database\Driver\Mysql;
@@ -36,9 +37,10 @@ return [
 	],
 	'Asset' => [],
 	'Cache' => [
-		'default' => ['className' => FileEngine::class, 'path' => CACHE],
-		'long' => ['className' => FileEngine::class, 'path' => CACHE, 'duration' => '+1 day', 'prefix' => 'long_'],
-		'short' => ['className' => FileEngine::class, 'path' => CACHE, 'duration' => '+5 minutes', 'prefix' => 'short_'],
+		//the caches of the site's own values, whose time counts into the request's (App\Utility\RequestTiming)
+		'default' => ['className' => TimedFileEngine::class, 'path' => CACHE],
+		'long' => ['className' => TimedFileEngine::class, 'path' => CACHE, 'duration' => '+1 day', 'prefix' => 'long_'],
+		'short' => ['className' => TimedFileEngine::class, 'path' => CACHE, 'duration' => '+5 minutes', 'prefix' => 'short_'],
 		'_cake_translations_' => [
 			'className' => FileEngine::class,
 			'prefix' => 'myapp_cake_translations_',
@@ -102,4 +104,6 @@ return [
 		'error' => ['className' => FileLog::class, 'formatter' => LogLineFormatter::class, 'path' => LOGS, 'file' => 'error', 'levels' => ['warning', 'error', 'critical', 'alert', 'emergency']],
 	],
 	'Session' => ['defaults' => 'php'],
+	//The requests slower than this go to the slow log (App\Utility\RequestTiming, `bin/cake slow_report`)
+	'SlowLog' => ['thresholdMilliseconds' => 1000, 'path' => LOGS . 'slow.log'],
 ];

@@ -73,7 +73,7 @@ class SgfAnalysis
 		$keys = array_keys($sgfs);
 		foreach ($keys as $index => $key)
 			$input .= json_encode(['id' => $index, 'sgf' => $sgfs[$key], 'normalise' => $normalise], JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR) . "\n";
-		$lines = explode("\n", trim(self::run($input, $timeout)));
+		$lines = explode("\n", trim(RequestTiming::external(fn() => self::run($input, $timeout))));
 
 		$results = [];
 		foreach ($lines as $line)
