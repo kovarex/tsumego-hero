@@ -41,6 +41,7 @@ return [
 		'/board/aaaaaaaaaaaa' => ['Avatars', 'image', ['aaaaaaaaaaaa']],
 		'/avatar/5' => ['Avatars', 'boardOfUser', ['5']],
 		'/avatar/5/bbbbbbbbbbbbbbbb.webp' => ['Avatars', 'picture', ['5', 'bbbbbbbbbbbbbbbb']],
+		'/set-cover/5/bbbbbbbbbbbbbbbb.webp' => ['SetCovers', 'picture', ['5', 'bbbbbbbbbbbbbbbb']],
 		'/roles' => ['Roles', 'index', []],
 		'/roles/change/5' => ['Roles', 'change', ['5']],
 		'/admin' => ['Admin', 'index', []],
@@ -333,6 +334,9 @@ return [
 		'/schedule/index/7' => ['Schedule', 'index', ['7']],
 		'/schedule/preview' => ['Schedule', 'preview', []],
 		'/schedule/preview/7' => ['Schedule', 'preview', ['7']],
+
+		'/setCovers/picture' => ['SetCovers', 'picture', []],
+		'/setCovers/picture/7' => ['SetCovers', 'picture', ['7']],
 
 		'/sets/addTsumego' => ['Sets', 'addTsumego', []],
 		'/sets/addTsumego/7' => ['Sets', 'addTsumego', ['7']],

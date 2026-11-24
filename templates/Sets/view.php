@@ -7,6 +7,7 @@ use App\Utility\Asset;
 use App\Utility\Auth;
 use App\Utility\HtmlSanitizer;
 use App\Utility\Rating;
+use App\Utility\SetImage;
 use App\Utility\TsumegoButton;
 use App\Utility\TsumegoButtons;
 use App\Utility\TsumegoFilters;
@@ -62,11 +63,11 @@ echo HtmlSanitizer::sanitize((string) ($set->description ?? ''));
 				<?php
 // an empty collection has no problem to start with, so its cover and Start lead nowhere
 $startHref = $startingSetConnectionID === null ? '' : ' href="/' . $startingSetConnectionID . '"';
-// a cover whose name has a dash at its third letter sits at the bottom of its cell
-if ($tsumegoFilters->query == 'topics' && $set->image)
-	echo '<div class="set-view__cover-cell' . ($set->image[2] != '-' ? '' : ' set-view__img-bottom') . '"><div class="legacy-center set-view__cover">
+// a tall cover (the hero power collections) sits at the bottom of its cell
+if ($tsumegoFilters->query == 'topics' && $set->cover_hash)
+	echo '<div class="set-view__cover-cell' . (SetImage::isTall(SetImage::size((int) $set->id)) ? ' set-view__img-bottom' : '') . '"><div class="legacy-center set-view__cover">
 						<a' . $startHref . '>
-						<img height="252" width="182" src="' . h(Asset::url('/img/' . $set->image)) . '"
+						<img height="252" width="182" src="' . h(SetImage::url((int) $set->id, $set->cover_hash)) . '"
 						alt="Tsumego Collection: ' . h($setTitle) . '" title="Tsumego Collection: ' . h($setTitle) . '">
 						</a></div></div>';
 elseif ($tsumegoFilters->query == 'difficulty')

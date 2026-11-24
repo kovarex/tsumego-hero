@@ -1,9 +1,9 @@
 <?php
 
-use App\Utility\CookieFlash;
 use App\Model\Table\AdminActivityTypeTable;
 use App\Model\Table\UserTable;
 use App\Utility\Constants;
+use App\Utility\SetImage;
 
 class UserSetsControllerTest extends IntegrationTestCase
 {
@@ -1081,72 +1081,42 @@ class UserSetsControllerTest extends IntegrationTestCase
 
 	// ── Set image upload ───────────────────────────────────────────────
 
+	//The cover is a WebP in set_cover, served under an url with the hash of the picture
 	public function testUploadSetImageStoresWebp(): void
 	{
 		$context = new ContextPreparator(['user' => ['name' => 'alice']]);
 		$setId = $this->_createSet('My Set', $context->user['id'], 0);
 		$this->login('alice');
 
-		$tmp = $this->_createTempImage(400, 200);
-		$this->postWithUpload("/sets/edit/{$setId}", 'image', $this->_coverUpload($tmp));
+		$this->_uploadImage($setId, 400, 200);
 
-		$set = $this->fetchTable('Set')->find()->where(['id' => $setId])->first();
-		$this->assertMatchesRegularExpression('#^sets/' . $setId . '/[0-9a-f]{16}\.webp$#', $set->image);
+		$hash = $this->fetchTable('Set')->get($setId)->cover_hash;
+		$this->assertMatchesRegularExpression('#^[0-9a-f]{' . SetImage::HASH_LENGTH . '}$#', (string) $hash);
+		$picture = SetImage::picture($setId, $hash);
+		$this->assertNotNull($picture);
+		$this->assertSame('WEBP', substr($picture, 8, 4));
+		$this->assertSame(['width' => 400, 'height' => 200], SetImage::size($setId));
 
-		$path = WWW_ROOT . 'img' . DS . str_replace('/', DS, $set->image);
-		$this->assertFileExists($path);
-		$this->assertSame('WEBP', substr((string) file_get_contents($path), 8, 4));
-
-		@unlink($tmp);
-		@unlink($path);
-		@rmdir(WWW_ROOT . 'img' . DS . 'sets' . DS . $setId);
+		$this->get(SetImage::url($setId, $hash));
+		$this->assertResponseCode(200);
+		$this->assertContentType('image/webp');
+		$this->assertSame($picture, $this->view);
+		$this->assertHeaderContains('Cache-Control', 'max-age=31536000');
 	}
 
-	//The cover lives in a directory the web server has to be able to write to.
-	//When it cannot, the player is told the upload failed and no image is saved.
-	public function testUploadSetImageReportsWhenTheFileCannotBeWritten(): void
+	public function testDeleteSetRemovesItsCover(): void
 	{
 		$context = new ContextPreparator(['user' => ['name' => 'alice']]);
 		$setId = $this->_createSet('My Set', $context->user['id'], 0);
 		$this->login('alice');
-
-		$tmp = $this->_createTempImage(400, 200);
-
-		$setsDir = WWW_ROOT . 'img' . DS . 'sets';
-		$permissions = fileperms($setsDir) & 0777;
-		chmod($setsDir, 0555);
-		try
-		{
-			$this->postWithUpload("/sets/edit/{$setId}", 'image', $this->_coverUpload($tmp));
-		}
-		finally
-		{
-			chmod($setsDir, $permissions);
-			@unlink($tmp);
-		}
-
-		$set = $this->fetchTable('Set')->find()->where(['id' => $setId])->first();
-		$this->assertEmpty($set->image, 'An image was saved although its file could not be written');
-		// The form redirects back to the edit page, which shows the flash.
-		$this->assertSame('error', CookieFlash::getType());
-		$this->assertStringContainsString('The image could not be stored', (string) CookieFlash::get());
-	}
-
-	public function testDeleteSetRemovesImageFolder(): void
-	{
-		$context = new ContextPreparator(['user' => ['name' => 'alice']]);
-		$setId = $this->_createSet('My Set', $context->user['id'], 0);
-		$this->login('alice');
-
-		$setDir = WWW_ROOT . 'img' . DS . 'sets' . DS . $setId;
-		mkdir($setDir, 0775, true);
-		file_put_contents($setDir . DS . 'abc.webp', 'fake');
+		$this->_uploadImage($setId, 400, 200);
 
 		$this->post("/sets/delete/{$setId}");
 
-		$this->assertDirectoryDoesNotExist($setDir);
+		$this->assertNull(SetImage::size($setId));
 	}
 
+	//A new picture is a new url, and the url of the old one answers nothing
 	public function testUploadSetImageReplacesPreviousImage(): void
 	{
 		$context = new ContextPreparator(['user' => ['name' => 'alice']]);
@@ -1154,56 +1124,32 @@ class UserSetsControllerTest extends IntegrationTestCase
 		$this->login('alice');
 
 		$this->_uploadImage($setId, 400, 200);
-		$first = $this->fetchTable('Set')->get($setId)->image;
-		$firstPath = WWW_ROOT . 'img' . DS . str_replace('/', DS, $first);
-
+		$first = $this->fetchTable('Set')->get($setId)->cover_hash;
 		$this->_uploadImage($setId, 500, 300);
-		$second = $this->fetchTable('Set')->get($setId)->image;
+		$second = $this->fetchTable('Set')->get($setId)->cover_hash;
 
 		$this->assertNotSame($first, $second);
-		$this->assertFileDoesNotExist($firstPath);
-		$this->assertFileExists(WWW_ROOT . 'img' . DS . str_replace('/', DS, $second));
+		$this->assertNull(SetImage::picture($setId, $first));
+		$this->assertNotNull(SetImage::picture($setId, $second));
+		$this->assertSame(['width' => 500, 'height' => 300], SetImage::size($setId));
 
-		@unlink(WWW_ROOT . 'img' . DS . str_replace('/', DS, $second));
-		@rmdir(WWW_ROOT . 'img' . DS . 'sets' . DS . $setId);
+		$this->get(SetImage::url($setId, $first));
+		$this->assertResponseCode(404);
 	}
 
-	public function testUploadSetImagePreservesSharedImage(): void
+	public function testRemoveImageDeletesTheCover(): void
 	{
 		$context = new ContextPreparator(['user' => ['name' => 'alice']]);
 		$setId = $this->_createSet('My Set', $context->user['id'], 0);
 		$this->login('alice');
-
-		$shared = 'legacy-cover.png';
-		file_put_contents(WWW_ROOT . 'img' . DS . $shared, 'x');
-		$this->fetchTable('Set')->updateAll(['image' => $shared], ['id' => $setId]);
-
 		$this->_uploadImage($setId, 400, 200);
-
-		$this->assertFileExists(WWW_ROOT . 'img' . DS . $shared);
-
-		$uploaded = $this->fetchTable('Set')->get($setId)->image;
-		@unlink(WWW_ROOT . 'img' . DS . $shared);
-		@unlink(WWW_ROOT . 'img' . DS . str_replace('/', DS, $uploaded));
-		@rmdir(WWW_ROOT . 'img' . DS . 'sets' . DS . $setId);
-	}
-
-	public function testRemoveImageDeletesFileAndClearsField(): void
-	{
-		$context = new ContextPreparator(['user' => ['name' => 'alice']]);
-		$setId = $this->_createSet('My Set', $context->user['id'], 0);
-		$this->login('alice');
-
-		$this->_uploadImage($setId, 400, 200);
-		$imagePath = WWW_ROOT . 'img' . DS . str_replace('/', DS, $this->fetchTable('Set')->get($setId)->image);
-		$this->assertFileExists($imagePath);
+		$hash = $this->fetchTable('Set')->get($setId)->cover_hash;
 
 		$this->post("/sets/edit/{$setId}", ['remove_image' => '1']);
 
-		$set = $this->fetchTable('Set')->find()->where(['id' => $setId])->first();
-		$this->assertSame('', $set->image);
-		$this->assertFileDoesNotExist($imagePath);
-		@rmdir(WWW_ROOT . 'img' . DS . 'sets' . DS . $setId);
+		$this->assertNull($this->fetchTable('Set')->get($setId)->cover_hash);
+		$this->assertNull(SetImage::picture($setId, $hash));
+		$this->assertNull(SetImage::size($setId));
 	}
 
 	private function _uploadImage(int $setId, int $width, int $height): void

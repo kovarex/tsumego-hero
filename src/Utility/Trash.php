@@ -95,8 +95,6 @@ class Trash
 			self::purgeProblems($batch);
 		if ($setIDs)
 			Util::execute('DELETE FROM `set` WHERE id IN (' . self::placeholders($setIDs) . ')', $setIDs);
-		foreach ($setIDs as $setID)
-			SetImage::removeFolder($setID);
 		if ($setIDs || $problemIDs)
 			SiteGrowth::forget();
 		return ['sets' => count($setIDs), 'problems' => count($problemIDs)];

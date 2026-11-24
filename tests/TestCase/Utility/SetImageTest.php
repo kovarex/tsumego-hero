@@ -2,6 +2,7 @@
 
 
 use App\Utility\SetImage;
+use Cake\ORM\TableRegistry;
 
 class SetImageTest extends AppTestCase
 {
@@ -78,59 +79,69 @@ class SetImageTest extends AppTestCase
 		return $path;
 	}
 
-	//A cover is stored under the set it belongs to, and the name of the file is a
-	//part of the hash of the picture, so two sets never share one picture by name.
-	public function testStoreWritesTheCoverUnderItsSet(): void
+	//The cover is a row of set_cover, and set.cover_hash is the start of the hash of its picture
+	public function testStoreKeepsThePictureWithItsSet(): void
 	{
-		$picture = $this->_picture('cover of a set');
-		$image = SetImage::store(9001, $picture);
+		$setId = $this->_set();
+		$picture = $this->_picture('cover of a set', 4, 6);
 
-		$this->assertSame('sets/9001/' . substr($picture['hash'], 0, 16) . '.webp', $image);
-		$this->assertSame($picture['data'], file_get_contents($this->_pathOf($image)));
-		SetImage::removeFolder(9001);
+		$hash = SetImage::store($setId, $picture);
+
+		$this->assertSame(substr($picture['hash'], 0, SetImage::HASH_LENGTH), $hash);
+		$this->assertSame($hash, TableRegistry::getTableLocator()->get('Set')->get($setId)->cover_hash);
+		$this->assertSame($picture['data'], SetImage::picture($setId, $hash));
+		$this->assertSame(['width' => 4, 'height' => 6], SetImage::size($setId));
+		$this->assertSame('/set-cover/' . $setId . '/' . $hash . '.webp', SetImage::url($setId, $hash));
 	}
 
-	public function testTheSamePictureKeepsTheSameName(): void
+	public function testTheSamePictureKeepsTheSameHash(): void
 	{
-		$picture = $this->_picture('cover of a set');
+		$setId = $this->_set();
+		$picture = $this->_picture('cover of a set', 4, 4);
 
-		$this->assertSame(SetImage::store(9002, $picture), SetImage::store(9002, $picture));
-		SetImage::removeFolder(9002);
+		$this->assertSame(SetImage::store($setId, $picture), SetImage::store($setId, $picture));
 	}
 
-	//Only covers live under sets/, so a shared image of the site is never taken with one.
-	public function testRemoveTakesOnlyAnUploadedCover(): void
+	//A hash that isn't the one of the cover answers nothing, so an old url doesn't show a new cover
+	public function testOnlyTheHashOfTheCoverGetsThePicture(): void
 	{
-		$shared = WWW_ROOT . 'img' . DS . 'shared-test.png';
-		file_put_contents($shared, 'a shared image of the site');
-		SetImage::remove('shared-test.png');
-		$this->assertFileExists($shared);
-		@unlink($shared);
+		$setId = $this->_set();
+		$old = SetImage::store($setId, $this->_picture('old cover', 4, 4));
+		$new = SetImage::store($setId, $this->_picture('new cover', 4, 4));
 
-		$image = SetImage::store(9003, $this->_picture('cover of a set'));
-		SetImage::remove($image);
-		$this->assertFileDoesNotExist($this->_pathOf($image));
-		SetImage::removeFolder(9003);
+		$this->assertNull(SetImage::picture($setId, $old));
+		$this->assertSame('new cover', SetImage::picture($setId, $new));
 	}
 
-	public function testRemoveFolderTakesThePicturesWithIt(): void
+	public function testRemoveTakesTheCover(): void
 	{
-		$image = SetImage::store(9004, $this->_picture('cover of a set'));
+		$setId = $this->_set();
+		$hash = SetImage::store($setId, $this->_picture('cover of a set', 4, 4));
 
-		SetImage::removeFolder(9004);
+		SetImage::remove($setId);
 
-		$this->assertFileDoesNotExist($this->_pathOf($image));
-		$this->assertDirectoryDoesNotExist(WWW_ROOT . 'img' . DS . 'sets' . DS . '9004');
+		$this->assertNull(SetImage::picture($setId, $hash));
+		$this->assertNull(SetImage::size($setId));
+		$this->assertNull(TableRegistry::getTableLocator()->get('Set')->get($setId)->cover_hash);
+	}
+
+	//The covers of the hero power collections are much taller than wide and sit lower on the page
+	public function testATallCoverIsOneMuchTallerThanWide(): void
+	{
+		$this->assertTrue(SetImage::isTall(['width' => 236, 'height' => 389]));
+		$this->assertFalse(SetImage::isTall(['width' => 434, 'height' => 617]));
+		$this->assertFalse(SetImage::isTall(null));
+	}
+
+	private function _set(): int
+	{
+		$context = new ContextPreparator(['tsumego' => ['sets' => [['name' => 'covered set', 'num' => 1]]]]);
+		return (int) $context->tsumegos[0]['sets'][0]['id'];
 	}
 
 	/** @return array{data: string, hash: string, width: int, height: int} */
-	private function _picture(string $data): array
+	private function _picture(string $data, int $width, int $height): array
 	{
-		return ['data' => $data, 'hash' => hash('sha256', $data), 'width' => 4, 'height' => 4];
-	}
-
-	private function _pathOf(string $image): string
-	{
-		return WWW_ROOT . 'img' . DS . str_replace('/', DS, $image);
+		return ['data' => $data, 'hash' => hash('sha256', $data), 'width' => $width, 'height' => $height];
 	}
 }

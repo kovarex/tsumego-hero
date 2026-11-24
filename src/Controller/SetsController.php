@@ -2,7 +2,7 @@
 
 namespace App\Controller;
 
-use App\Utility\Asset;
+use Cake\Routing\Router;
 use Cake\Http\Response;
 use Cake\Http\Exception\BadRequestException;
 use Cake\Http\Exception\NotFoundException;
@@ -122,13 +122,14 @@ class SetsController extends AppController
 
 			$set['order'] = Constants::$DEFAULT_SET_ORDER;
 
-			if ($isSandbox)
-				$set['image'] = 'b1.png';
-			else
+			if (!$isSandbox)
 				$set['user_id'] = Auth::getUserID();
 
 			$setTable = $this->fetchTable('Set');
 			$set = $setTable->saveOrFail($setTable->newEntity($set));
+			// A new sandbox collection starts with the cover of the sandbox
+			if ($isSandbox)
+				SetImage::store((int) $set->id, SetImage::process(WWW_ROOT . 'img' . DS . 'b1.png', 'png'));
 
 			if ($isSandbox)
 			{
@@ -249,12 +250,9 @@ ORDER BY sc.num ASC", [(int) $id]);
 	//The cover the form removed or uploaded.
 	private function saveCover(Set $set): void
 	{
-		$setTable = $this->fetchTable('Set');
 		if (!empty($this->input('remove_image')))
 		{
-			SetImage::remove($set->image);
-			$set->image = '';
-			$setTable->saveOrFail($set);
+			SetImage::remove((int) $set->id);
 			CookieFlash::set('Image removed', 'success');
 		}
 
@@ -269,8 +267,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 		}
 		try
 		{
-			$set->image = SetImage::replace((int) $set->id, $set->image, $image['tmp_name'], SetImage::extensionOf($image['name']));
-			$setTable->saveOrFail($set);
+			SetImage::store((int) $set->id, SetImage::process($image['tmp_name'], SetImage::extensionOf($image['name'])));
 			CookieFlash::set('Image uploaded', 'success');
 		}
 		catch (Exception $e)
@@ -317,7 +314,6 @@ ORDER BY sc.num ASC", [(int) $id]);
 		if ($set->user_id !== null)
 		{
 			$setTable->deleteOrFail($set);
-			SetImage::removeFolder((int) $setID);
 			return $this->redirect('/sets/mine');
 		}
 
@@ -518,7 +514,6 @@ ORDER BY sc.num ASC", [(int) $id]);
 			'user_id' => $userId,
 			'title' => 'Favorites',
 			'public' => false,
-			'image' => null,
 			'order' => Constants::$DEFAULT_SET_ORDER,
 		]));
 
@@ -690,14 +685,14 @@ ORDER BY sc.num ASC", [(int) $id]);
 	private function loadViewedCollection(string $queryType, string|int $id): Set
 	{
 		if ($queryType == 'difficulty')
-			return new Set(['id' => $id, 'title' => $id, 'public' => true, 'user_id' => null, 'description' => null, 'image' => null, 'deleted' => null]);
+			return new Set(['id' => $id, 'title' => $id, 'public' => true, 'user_id' => null, 'description' => null, 'cover_hash' => null, 'deleted' => null]);
 
 		if ($queryType == 'tags')
 		{
 			$tag = $this->fetchTable('Tag')->find()->where(['name' => $id])->first();
 			if (!$tag)
 				throw new NotFoundException("Tag not found");
-			return new Set(['id' => $id, 'title' => $id, 'public' => true, 'user_id' => null, 'description' => $tag->description, 'image' => '', 'deleted' => null]);
+			return new Set(['id' => $id, 'title' => $id, 'public' => true, 'user_id' => null, 'description' => $tag->description, 'cover_hash' => null, 'deleted' => null]);
 		}
 
 		$set = $this->findSet($id);
@@ -735,19 +730,14 @@ ORDER BY sc.num ASC", [(int) $id]);
 			'site_name' => 'Tsumego',
 		];
 
-		$image = $set->image ?? '';
-		if ($image === '')
+		$size = $set->cover_hash === null ? null : SetImage::size((int) $set->id);
+		if ($size === null)
 			return $og;
-		$og['image'] = Asset::fullUrl('/img/' . $image);
+		$og['image'] = Router::url(SetImage::url((int) $set->id, $set->cover_hash), true);
 		$og['image_alt'] = 'Cover image of ' . $displayTitle;
-		$imagePath = WWW_ROOT . 'img' . DS . str_replace('/', DS, $image);
-		$size = file_exists($imagePath) ? getimagesize($imagePath) : false;
-		if ($size)
-		{
-			$og['image_width'] = $size[0];
-			$og['image_height'] = $size[1];
-			$og['image_type'] = $size['mime'];
-		}
+		$og['image_width'] = $size['width'];
+		$og['image_height'] = $size['height'];
+		$og['image_type'] = 'image/webp';
 		return $og;
 	}
 

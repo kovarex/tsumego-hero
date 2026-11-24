@@ -381,9 +381,9 @@ class AppController extends Controller
 		$this->enforceHttpMethodAttribute();
 		$this->resetStaleBrowserCache();
 
-		//Boards are drawn without a session: a list of a thousand players would otherwise
-		//pay for the login of a visitor who is not there.
-		if ($this instanceof AvatarsController)
+		//Boards and covers are served without a session: a list of a thousand players would
+		//otherwise pay for the login of a visitor who is not there.
+		if ($this instanceof AvatarsController || $this instanceof SetCoversController)
 			return null;
 
 		Auth::init();
