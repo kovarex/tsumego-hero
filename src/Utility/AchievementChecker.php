@@ -92,13 +92,15 @@ class AchievementChecker
 	}
 
 	//Unlocks a repeatable achievement and records how often it was earned. Earning
-	//it the first time grants the XP and the popup, later ones only raise the count.
+	//it the first time grants the XP and the popup; a later one raises the count and
+	//shows the popup again, with the count and without XP.
 	//The count records what the player earned, so a collection it can no longer
 	//recount does not lower it.
 	private function gainedTimes(AchievementId $achievementID, int $times): void
 	{
 		if ($times < 1)
 			return;
+		$firstTime = !$this->unlocked($achievementID);
 		$this->gained($achievementID);
 
 		$achievementStatusTable = $this->fetchTable('AchievementStatus');
@@ -106,8 +108,17 @@ class AchievementChecker
 		if (!$status || $status->value >= $times)
 			return;
 
+		$earnedBefore = max(1, (int) $status->value);
 		$status->value = $times;
 		$achievementStatusTable->saveOrFail($status);
+		if ($firstTime || $times <= $earnedBefore)
+			return;
+
+		// the popup of a repeat: the count in the name, no XP (finalize grants what updated holds)
+		$repeat = clone $this->fetchTable('Achievement')->get($achievementID->value);
+		$repeat->name = $repeat->name . ' ×' . $times;
+		$repeat->xp = 0;
+		$this->updated[] = $repeat;
 	}
 
 	private function fillExistingStatuses(): void

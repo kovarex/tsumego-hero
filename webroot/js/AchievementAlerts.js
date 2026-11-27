@@ -37,7 +37,8 @@ function showAchievementPopup(achievement)
 	img.src = imageUrl('/img/' + achievement.image + '.png');
 	var title = document.createElement('b');
 	title.textContent = achievement.name + ' - ' + achievement.description;
-	var xp = document.createTextNode(' (' + achievement.xp + ' XP) ');
+	//A repeat of a repeatable achievement grants no XP, so it shows none
+	var xp = document.createTextNode(achievement.xp > 0 ? ' (' + achievement.xp + ' XP) ' : ' ');
 	var link = document.createElement('a');
 	link.href = '/achievements/view/' + achievement.id;
 	link.textContent = 'view';
