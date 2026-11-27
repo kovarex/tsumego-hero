@@ -76,8 +76,8 @@ class SuperiorAccuracyAchievementTest extends AchievementTestCase
 		$this->assertSame(31000 + $levelAchievementsXP, $context->XPGained());
 	}
 
-	//A further perfect collection raises the count without paying out again.
-	public function testSuperiorAccuracyGrantsNothingForAFurtherCollection()
+	//A further perfect collection raises the count and shows the card again, with the count, without paying out again.
+	public function testSuperiorAccuracyShowsTheCardAgainForAFurtherCollection()
 	{
 		$context = new ContextPreparator();
 
@@ -92,8 +92,16 @@ class SuperiorAccuracyAchievementTest extends AchievementTestCase
 		$status = $this->fetchTable('AchievementStatus')->find()->where(['user_id' => $context->user['id'], 'achievement_id' => AchievementId::SUPERIOR_ACCURACY->value])->firstOrFail();
 		$this->assertSame(2, $status->value, 'The second collection should raise the count to 2');
 
-		$this->assertSame([], $repeat->updated, 'A further collection should not queue a popup');
+		$this->assertCount(1, $repeat->updated, 'A further collection should queue the card once');
+		$this->assertSame(AchievementId::SUPERIOR_ACCURACY->value, $repeat->updated[0]->id);
+		$this->assertSame('Superior Accuracy ×2', $repeat->updated[0]->name, 'The card shows the new count');
+		$this->assertSame(0, $repeat->updated[0]->xp, 'The card of a repeat shows no XP');
 		$this->assertSame(0, $context->XPGained(), 'A further collection should not grant XP');
+
+		// the next check on the same count shows nothing new
+		$again = new AchievementChecker();
+		$again->checkSetAchievements($secondSet)->finalize();
+		$this->assertSame([], $again->updated, 'The same count should not show the card again');
 	}
 
 	//A collection of fewer than 100 problems does not count, however perfectly it was
