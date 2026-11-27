@@ -97,6 +97,23 @@ class AchievementPopupBrowserTest extends IntegrationTestCase
 		$this->assertSame(1, $browser->driver->executeScript('return window.arrows;'), 'The page gets the arrows again');
 	}
 
+	public function testTheCardWearsAGoldFrameAndSparklesUnlessMotionIsReduced(): void
+	{
+		$browser = $this->show(1);
+		$this->assertTrue($browser->driver->executeScript('return !!document.querySelector(".achievement-card > .set-card__frame path");'), 'The gold frame of a set card');
+		$this->assertTrue($browser->driver->executeScript('return !!document.querySelector(".achievement-card__particles");'), 'A burst of sparkles');
+		$browser->find('.achievement-card__next')->click();
+		$browser->waitUntilCssSelectorDoesntExist('.achievement-card');
+
+		// the browser of the tests can't ask for reduced motion, so the page is told the user does
+		$browser->driver->executeScript('const real = window.matchMedia; window.matchMedia = query => query.includes("prefers-reduced-motion")
+			? {matches: true, media: query, addEventListener() {}, removeEventListener() {}} : real.call(window, query);');
+		$browser->driver->executeScript(self::CARDS . '.slice(0, 1).forEach(showAchievementPopup);');
+		$browser->waitUntilCssSelectorDisplayed('.achievement-card');
+		$this->assertTrue($browser->driver->executeScript('return !!document.querySelector(".achievement-card > .set-card__frame path");'), 'The frame stays, it is still');
+		$this->assertFalse($browser->driver->executeScript('return !!document.querySelector(".achievement-card__particles");'), 'No sparkles with reduced motion');
+	}
+
 	public function testWithReducedMotionTheCardOnlyFades(): void
 	{
 		new ContextPreparator(['user' => null]);

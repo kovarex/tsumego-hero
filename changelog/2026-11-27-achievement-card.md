@@ -1,1 +1,1 @@
-Changed: A completed achievement now shows as a card in the middle of the page, with a short glow over its image. When several come at once they show one after another.
+Changed: A completed achievement now shows as a card in the middle of the page, in the gold frame of a finished collection, with a burst of sparkles; a big achievement gets the frame of a 100% collection. When several come at once they show one after another.

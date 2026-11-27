@@ -1342,22 +1342,25 @@
 
 
 /* The card of a completed achievement (built by AchievementAlerts.js): a modal dialog in the middle of the page over
-   a dimmed backdrop. The achievement's colour (--achievement-accent, from its class in page/achievements.css) only
-   decorates it, a strip on top and a ring and a glow around the image, so its text reads in both themes. It comes in
-   with a short scale and fade and one shine over the image; with reduced motion it only fades. */
+   a dimmed backdrop, in the gold frame of a finished collection (setCardFrame.js draws it, an SVG to the card's size;
+   a big achievement gets the frame of a 100% collection, its spikes and pearl reaching past the card, and its golden
+   glow). The achievement's colour (--achievement-accent, from its class in page/achievements.css) only decorates it, a
+   ring and a glow around the image and the sparkles, so its text reads in both themes. It comes in with a short scale
+   and fade, a burst of sparkles and one shine over the image; with reduced motion it only fades. */
 .achievement-card
 {
 	--achievement-accent: var(--color-brand-fill);
-	width: min(24rem, calc(100vw - 2 * var(--space-4)));
+	/* room at the sides of a phone for the spikes of the frame */
+	width: min(24rem, calc(100vw - 5rem));
 	max-width: none;
-	max-height: calc(100dvh - 2 * var(--space-4));
+	max-height: none;
 	margin: auto;
 	padding: 0;
-	overflow: auto;
+	overflow: visible;
 	border: 0;
 	--achievement-ring: color-mix(in srgb, var(--achievement-accent), white var(--achievement-accent-lift));
-	border-top: 6px solid var(--achievement-ring);
-	border-radius: var(--radius-lg);
+	/* the radius of the set cards, which the frame follows, at the frame's zoom (AchievementAlerts.js) */
+	border-radius: 14px;
 	background: var(--color-surface);
 	color: var(--color-text);
 	box-shadow: var(--shadow-achievement-card);
@@ -1385,12 +1388,34 @@
 	flex-direction: column;
 	align-items: center;
 	gap: var(--space-2);
-	padding: var(--space-4) var(--space-5) var(--space-5);
+	max-height: calc(100dvh - 2 * var(--space-5));
+	overflow-y: auto;
+	padding: var(--space-5) var(--space-5) var(--space-5);
+}
+
+.achievement-card--grand
+{
+	box-shadow: var(--shadow-achievement-card), var(--achievement-card-gold-glow);
+}
+
+.achievement-card--grand .achievement-card__content
+{
+	padding-top: calc(var(--space-5) + var(--space-2));
+}
+
+.achievement-card__particles
+{
+	position: absolute;
+	top: -160px;
+	left: -160px;
+	pointer-events: none;
 }
 
 .achievement-card__kicker
 {
 	margin: 0;
+	/* clear of the close button, on both sides so it stays in the middle */
+	padding-inline: var(--space-6);
 	color: var(--color-text-muted);
 	font-size: var(--text-sm);
 	font-weight: var(--weight-bold);
@@ -1398,16 +1423,18 @@
 	text-transform: uppercase;
 }
 
-.achievement-card__step:not(:empty)::before
+/* "2 of 3" on a line of its own under it */
+.achievement-card__step
 {
-	content: " \00b7  ";
+	display: block;
+	font-weight: var(--weight-normal);
 }
 
 .achievement-card__close
 {
 	position: absolute;
-	top: var(--space-2);
-	right: var(--space-2);
+	top: var(--space-4);
+	right: var(--space-4);
 	color: var(--color-text-muted);
 	font-size: var(--text-xl);
 	line-height: 1;
