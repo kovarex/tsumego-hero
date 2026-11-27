@@ -7,6 +7,10 @@ class GoogleTokenVerifier implements GoogleTokenVerifierInterface
 {
 	private static ?GoogleTokenVerifierInterface $testInstance = null;
 
+	//How long the sign-in waits for Google: without a limit a hanging answer kept the PHP process for
+	//default_socket_timeout (60 seconds), a process the other requests of the site wait for
+	private const int TIMEOUT_SECONDS = 10;
+
 	private string $clientId;
 
 	public function __construct(string $clientId)
@@ -40,7 +44,8 @@ class GoogleTokenVerifier implements GoogleTokenVerifierInterface
 	public function verify(string $idToken): ?array
 	{
 		$tokenInfoUrl = 'https://oauth2.googleapis.com/tokeninfo?id_token=' . urlencode($idToken);
-		$response = @file_get_contents($tokenInfoUrl);
+		$context = stream_context_create(['http' => ['timeout' => self::TIMEOUT_SECONDS]]);
+		$response = RequestTiming::external(fn() => @file_get_contents($tokenInfoUrl, false, $context));
 
 		if ($response === false)
 			return null;

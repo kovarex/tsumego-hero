@@ -75,7 +75,7 @@ class PwnedPasswordChecker implements PwnedPasswordCheckerInterface
 			return ($this->rangeFetcher)($url);
 
 		$context = stream_context_create(['http' => ['timeout' => self::$TIMEOUT_SECONDS]]);
-		$range = @file_get_contents($url, false, $context);
+		$range = RequestTiming::external(fn() => @file_get_contents($url, false, $context));
 		if ($range === false)
 		{
 			Log::warning('The Pwned Passwords list could not be asked about the hashes starting with ' . $prefix);

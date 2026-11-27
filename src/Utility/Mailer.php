@@ -37,7 +37,7 @@ class Mailer
 
 	public function send(string $body): void
 	{
-		$this->email->deliver($body);
+		RequestTiming::external(fn() => $this->email->deliver($body));
 	}
 
 	private CakeMailer $email;
