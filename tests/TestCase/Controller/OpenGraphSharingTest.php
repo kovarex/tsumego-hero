@@ -3,6 +3,7 @@
 use App\Model\Table\UserTable;
 use App\Utility\Avatar;
 use App\Utility\Constants;
+use App\Utility\SetImage;
 
 //End-to-end tests for Open Graph social sharing tags.
 class OpenGraphSharingTest extends IntegrationTestCase
@@ -43,7 +44,8 @@ class OpenGraphSharingTest extends IntegrationTestCase
 		$context = new ContextPreparator(['tsumego' => ['sets' => [['name' => 'test set', 'num' => 1]]]]);
 		$setId = $context->tsumegos[0]['sets'][0]['id'];
 
-		$this->fetchTable('Set')->updateAll(['image' => 'cover.jpg', 'description' => 'Basic life and death problems'], ['id' => $setId]);
+		$this->fetchTable('Set')->updateAll(['description' => 'Basic life and death problems'], ['id' => $setId]);
+		$hash = SetImage::store($setId, SetImage::process(WWW_ROOT . 'img' . DS . 'gokyo-shumo.png', 'png'));
 
 		$this->get('sets/view/' . $setId);
 		$body = $this->view;
@@ -51,7 +53,8 @@ class OpenGraphSharingTest extends IntegrationTestCase
 		$this->assertStringContainsString('<meta property="og:title" content="test set">', $body);
 		$this->assertStringContainsString('<meta property="og:description" content="Basic life and death problems">', $body);
 		$this->assertStringContainsString('property="og:image" content="', $body);
-		$this->assertStringContainsString('/img/cover.jpg', $body);
+		$this->assertStringContainsString('/set-cover/' . $setId . '/' . $hash . '.webp"', $body);
+		$this->assertStringContainsString('<meta property="og:image:type" content="image/webp">', $body);
 		$this->assertStringContainsString('property="og:url" content="', $body);
 		$this->assertStringContainsString('/sets/' . $setId . '"', $body);
 		$this->assertStringContainsString('<meta property="og:site_name" content="Tsumego">', $body);

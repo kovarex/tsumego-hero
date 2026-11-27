@@ -8,6 +8,7 @@ use App\Utility\AchievementId;
 use App\Utility\Auth;
 use App\Utility\Constants;
 use App\Utility\Rating;
+use App\Utility\SetImage;
 use App\Utility\Util;
 use Facebook\WebDriver\WebDriverBy;
 use Facebook\WebDriver\WebDriverKeys;
@@ -87,13 +88,13 @@ class SetsControllerTest extends IntegrationTestCase
 		foreach ([58, 60, 11969] as $setId)
 		{
 			$this->createFullySolvedSet($setId, $context->user['id']);
-			$this->fetchTable('Set')->updateAll(['image' => 'cover' . $setId . '.png'], ['id' => $setId]);
+			$hash = SetImage::store($setId, SetImage::process(WWW_ROOT . 'img' . DS . 'b1.png', 'png'));
 
 			$this->get('sets/' . $setId);
 
 			$this->assertResponseOk();
 			$this->assertResponseContains('<div class="problem-nav__number">1</div>', 'Set ' . $setId . ' shows its problems');
-			$this->assertResponseContains('src="/img/cover' . $setId . '.png"', 'Set ' . $setId . ' shows its cover');
+			$this->assertResponseContains('src="/set-cover/' . $setId . '/' . $hash . '.webp"', 'Set ' . $setId . ' shows its cover');
 			$this->assertResponseContains('<div id="content">', 'Set ' . $setId . ' has no fixed page height');
 		}
 	}

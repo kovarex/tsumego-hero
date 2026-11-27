@@ -2,6 +2,7 @@
 
 use App\Utility\Constants;
 use App\Utility\HeroPowers;
+use App\Utility\SetImage;
 
 //Every image of the site that the main pages show is asked for with the version of its content (Asset::url,
 //imageUrl() of the scripts, the CSS of the bundles), so a browser keeps it for a year (webroot/.htaccess) and
@@ -37,7 +38,7 @@ class ImageVersionsBrowserTest extends IntegrationTestCase
 			'tsumegos' => [['set_order' => 1, 'sets' => [['name' => 'Basics', 'num' => 1]]]],
 			'time-mode-ranks' => ['5k']]);
 		$setID = $context->tsumegos[0]['set-connections'][0]['set_id'];
-		$this->fetchTable('Set')->updateAll(['image' => 'b1.png'], ['id' => $setID]);
+		SetImage::store($setID, SetImage::process(WWW_ROOT . 'img' . DS . 'b1.png', 'png'));
 
 		$browser = Browser::instance();
 		$pages = [
@@ -77,6 +78,6 @@ class ImageVersionsBrowserTest extends IntegrationTestCase
 	private static function isVersioned(string $image): bool
 	{
 		return preg_match('#[?&]v=\w+#', $image) === 1
-			|| preg_match('#^/(img/sets/|avatar/|board/)#', $image) === 1;
+			|| preg_match('#^/(set-cover/|avatar/|board/)#', $image) === 1;
 	}
 }

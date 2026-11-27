@@ -4,6 +4,7 @@ use App\Routing\Route\ParseOnlyRoute;
 use App\Routing\Route\SetViewRoute;
 use App\Routing\Route\UrlRoute;
 use App\Utility\Avatar;
+use App\Utility\SetImage;
 use App\Utility\UploadedAvatar;
 use Cake\Routing\Route\InflectedRoute;
 use Cake\Routing\RouteBuilder;
@@ -169,6 +170,14 @@ return function (RouteBuilder $routes): void
 		'/avatar/{id}/{hash}.webp',
 		['controller' => 'Avatars', 'action' => 'picture'],
 		['pass' => ['id', 'hash'], 'id' => '[0-9]+', 'hash' => '[0-9a-f]{' . UploadedAvatar::HASH_LENGTH . '}'] // Id of a user, hash of their picture
+	);
+
+	//The cover of a set, stored in the database. The hash changes with the picture, so the url
+	//can be cached for good.
+	$routes->connect(
+		'/set-cover/{id}/{hash}.webp',
+		['controller' => 'SetCovers', 'action' => 'picture'],
+		['pass' => ['id', 'hash'], 'id' => '[0-9]+', 'hash' => '[0-9a-f]{' . SetImage::HASH_LENGTH . '}'] // Id of a set, hash of its cover
 	);
 
 	//User Sets routes

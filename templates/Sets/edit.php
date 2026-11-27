@@ -1,9 +1,9 @@
 <?php
 
 use App\Model\Table\SetTable;
-use App\Utility\Asset;
 use App\Utility\Rating;
 use App\Utility\SetEditRenderer;
+use App\Utility\SetImage;
 use App\Utility\Trash;
 use App\Utility\TsumegoButtons;
 
@@ -63,8 +63,8 @@ if ($currentColor !== '' && !in_array(strtolower($currentColor), array_map('strt
 				<div class="form-field">
 					<label class="form-field__label">Image</label>
 					<div class="set-edit__image">
-						<?php if (!empty($set->image)): ?>
-							<img class="set-edit__thumb" src="<?php echo h(Asset::url('/img/' . $set->image)); ?>" alt="Set image">
+						<?php if (!empty($set->cover_hash)): ?>
+							<img class="set-edit__thumb" src="<?php echo h(SetImage::url((int) $set->id, $set->cover_hash)); ?>" alt="Set image">
 							<label class="set-edit__remove"><input type="checkbox" name="remove_image" value="1"> Remove</label>
 						<?php endif; ?>
 						<input type="file" name="image" accept=".png,.jpg,.jpeg,.webp">

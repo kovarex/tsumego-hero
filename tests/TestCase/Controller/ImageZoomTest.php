@@ -1,5 +1,7 @@
 <?php
 
+use App\Utility\SetImage;
+
 #[RetryOnBrowserFailure]
 class ImageZoomTest extends IntegrationTestCase
 {
@@ -8,7 +10,7 @@ class ImageZoomTest extends IntegrationTestCase
 	{
 		$context = new ContextPreparator(['tsumego' => ['sets' => [['name' => 'test set', 'num' => 1]]]]);
 		$setId = $context->tsumegos[0]['sets'][0]['id'];
-		$this->fetchTable('Set')->updateAll(['image' => 'gokyo-shumo.png'], ['id' => $setId]);
+		SetImage::store($setId, SetImage::process(WWW_ROOT . 'img' . DS . 'gokyo-shumo.png', 'png'));
 
 		$browser = Browser::instance();
 		$browser->get('sets/view/' . $setId);

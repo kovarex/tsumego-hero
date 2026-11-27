@@ -4,33 +4,83 @@ namespace App\Utility;
 
 use Exception;
 use InvalidArgumentException;
-use RuntimeException;
 
-//The cover image of a collection: its file lives under the set it belongs to,
-//and every place that reads or writes one asks here where that is.
+//The cover image of a collection. The picture is a row of set_cover, so it is backed up and
+//copied with the rest of the database and no folder of the site has to be writable for the web
+//server. Its url carries the id of the set and the start of the hash of the picture
+//(set.cover_hash): a new picture is a new url, so a browser may keep a cover for a year, and a
+//page builds the url from the row of the set without reading the picture.
 class SetImage
 {
 	public const MAX_EDGE = 1600;
 	public const QUALITY = 80;
 	public const MAX_UPLOAD_BYTES = 2097152;
 
-	//Store the picture of a set and answer the name it is known by, relative to
-	//the webroot. The name carries a part of the hash of the picture, so a cover
-	//never changes under a name that a browser keeps for a year.
+	//The hex characters of the sha256 of a picture its url carries.
+	public const HASH_LENGTH = 16;
+
+	//The path the covers are served from, followed by the id of the set.
+	public const URL_PREFIX = '/set-cover/';
+
+	//A cover this much taller than wide (the covers of the hero power collections) sits at
+	//the bottom of its cell on the page of the collection.
+	public const TALL_RATIO = 1.6;
+
+	//The url a page shows the cover from.
+	//$hash: set.cover_hash of the set
+	public static function url(int $setId, string $hash): string
+	{
+		return self::URL_PREFIX . $setId . '/' . $hash . '.webp';
+	}
+
+	//Store a picture as the cover of a set, in place of the one it had.
 	//$setId: Id of the set the cover belongs to
-	//Returns name of the cover, relative to the webroot
+	//Returns hash of the picture, which is now set.cover_hash
 	/** @param array{data: string, hash: string, width: int, height: int} $processed Picture from process() */
 	public static function store(int $setId, array $processed): string
 	{
-		$folder = self::folderOf($setId);
-		if (!is_dir($folder) && !@mkdir($folder, 0775, true) && !is_dir($folder))
-			throw new RuntimeException('The image could not be stored.');
+		$hash = substr($processed['hash'], 0, self::HASH_LENGTH);
+		// Sent as hex, so the bytes of the picture are never read as text of the connection.
+		Util::execute(
+			'INSERT INTO set_cover (set_id, picture, width, height) VALUES (?, UNHEX(?), ?, ?)
+				ON DUPLICATE KEY UPDATE picture = VALUES(picture), width = VALUES(width), height = VALUES(height)',
+			[$setId, bin2hex($processed['data']), $processed['width'], $processed['height']]);
+		Util::execute('UPDATE `set` SET cover_hash = ? WHERE id = ?', [$hash, $setId]);
+		return $hash;
+	}
 
-		$image = 'sets/' . $setId . '/' . substr($processed['hash'], 0, 16) . '.webp';
-		if (@file_put_contents(self::pathOf($image), $processed['data']) === false)
-			throw new RuntimeException('The image could not be stored.');
+	//Remove the cover of a set.
+	public static function remove(int $setId): void
+	{
+		Util::execute('DELETE FROM set_cover WHERE set_id = ?', [$setId]);
+		Util::execute('UPDATE `set` SET cover_hash = NULL WHERE id = ?', [$setId]);
+	}
 
-		return $image;
+	//The picture an url asks for: the cover of the set, as long as it is still the picture of that hash.
+	//Returns WebP data, null when there is no such picture
+	public static function picture(int $setId, string $hash): ?string
+	{
+		$rows = Util::query('
+			SELECT set_cover.picture
+			FROM set_cover
+			JOIN `set` ON `set`.id = set_cover.set_id
+			WHERE set_cover.set_id = ? AND `set`.cover_hash = ?', [$setId, $hash]);
+		return $rows ? (string) $rows[0]['picture'] : null;
+	}
+
+	//The size of the cover of a set, null when it has none.
+	/** @return array{width: int, height: int}|null */
+	public static function size(int $setId): ?array
+	{
+		$rows = Util::query('SELECT width, height FROM set_cover WHERE set_id = ?', [$setId]);
+		return $rows ? ['width' => (int) $rows[0]['width'], 'height' => (int) $rows[0]['height']] : null;
+	}
+
+	//Whether a cover of this size sits at the bottom of its cell (TALL_RATIO)
+	/** @param array{width: int, height: int}|null $size */
+	public static function isTall(?array $size): bool
+	{
+		return $size !== null && $size['height'] > self::TALL_RATIO * $size['width'];
 	}
 
 	//The extension of the name of an uploaded file, lower case.
@@ -48,56 +98,6 @@ class SetImage
 		if ($upload['size'] > self::MAX_UPLOAD_BYTES)
 			return 'The file is too large (max 2MB).';
 		return null;
-	}
-
-	//Store an uploaded picture as the cover of a set in place of its old one, and answer its name.
-	//The name of a cover carries the hash of its picture, so an upload is a new file and the
-	//cover it replaces is removed here.
-	public static function replace(int $setId, ?string $oldImage, string $sourcePath, string $ext): string
-	{
-		$image = self::store($setId, self::process($sourcePath, $ext));
-		if ($oldImage !== $image)
-			self::remove($oldImage);
-		return $image;
-	}
-
-	//Remove a cover. Anything that is not a cover is left alone: the images of the
-	//site itself are shared assets and not uploads.
-	//$image: Name of a cover, relative to the webroot
-	public static function remove(?string $image): void
-	{
-		if ($image === null || !str_starts_with($image, 'sets/'))
-			return;
-
-		$path = self::pathOf($image);
-		if (is_file($path))
-			unlink($path);
-	}
-
-	//Remove the covers of a set, which is what is left of it after the set itself is gone.
-	public static function removeFolder(int $setId): void
-	{
-		$folder = self::folderOf($setId);
-		if (!is_dir($folder))
-			return;
-
-		foreach (glob($folder . DS . '*') ?: [] as $file)
-			if (is_file($file))
-				unlink($file);
-		@rmdir($folder);
-	}
-
-	//Returns the folder of the covers of a set
-	private static function folderOf(int $setId): string
-	{
-		return WWW_ROOT . 'img' . DS . 'sets' . DS . $setId;
-	}
-
-	//$image: Name of a cover, relative to the webroot
-	//Returns where that cover is on disk
-	private static function pathOf(string $image): string
-	{
-		return WWW_ROOT . 'img' . DS . str_replace('/', DS, $image);
 	}
 
 	//Resize an uploaded image so its longest edge is at most MAX_EDGE and
