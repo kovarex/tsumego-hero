@@ -1341,13 +1341,197 @@
 }
 
 
-/* Achievement-completed popup (built by AchievementAlerts.js). Reuses the
-   .toast base; the color-3 text variants live in page/achievements.css. */
-.toast--achievement #hpIcon1
+/* The card of a completed achievement (built by AchievementAlerts.js): a modal dialog in the middle of the page over
+   a dimmed backdrop. The achievement's colour (--achievement-accent, from its class in page/achievements.css) only
+   decorates it, a strip on top and a ring and a glow around the image, so its text reads in both themes. It comes in
+   with a short scale and fade and one shine over the image; with reduced motion it only fades. */
+.achievement-card
 {
-	top: 15px;
+	--achievement-accent: var(--color-brand-fill);
+	width: min(24rem, calc(100vw - 2 * var(--space-4)));
+	max-width: none;
+	max-height: calc(100dvh - 2 * var(--space-4));
+	margin: auto;
+	padding: 0;
+	overflow: auto;
+	border: 0;
+	--achievement-ring: color-mix(in srgb, var(--achievement-accent), white var(--achievement-accent-lift));
+	border-top: 6px solid var(--achievement-ring);
+	border-radius: var(--radius-lg);
+	background: var(--color-surface);
+	color: var(--color-text);
+	box-shadow: var(--shadow-achievement-card);
+	font-family: var(--font-family-ui);
+	text-align: center;
+	animation: achievement-card-in 350ms cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+}
+
+.achievement-card::backdrop
+{
+	background: var(--achievement-card-backdrop);
+	animation: achievement-card-fade 350ms ease-out both;
+}
+
+.achievement-card--closing,
+.achievement-card--closing::backdrop
+{
+	animation: achievement-card-fade 150ms ease-in reverse both;
+}
+
+.achievement-card__content
+{
 	position: relative;
-	width: 40px;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: var(--space-2);
+	padding: var(--space-4) var(--space-5) var(--space-5);
+}
+
+.achievement-card__kicker
+{
+	margin: 0;
+	color: var(--color-text-muted);
+	font-size: var(--text-sm);
+	font-weight: var(--weight-bold);
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+}
+
+.achievement-card__step:not(:empty)::before
+{
+	content: " \00b7  ";
+}
+
+.achievement-card__close
+{
+	position: absolute;
+	top: var(--space-2);
+	right: var(--space-2);
+	color: var(--color-text-muted);
+	font-size: var(--text-xl);
+	line-height: 1;
+}
+
+/* The image in a ring of the achievement's colour, a soft glow of it behind, and one light sweeping over it */
+.achievement-card__medal
+{
+	position: relative;
+	display: grid;
+	place-items: center;
+	width: 112px;
+	height: 112px;
+	margin: var(--space-2) 0;
+	border-radius: 50%;
+	box-shadow: 0 0 0 3px var(--achievement-ring), 0 0 28px 4px color-mix(in srgb, var(--achievement-ring) 55%, transparent);
+	background: color-mix(in srgb, var(--achievement-ring) 12%, var(--color-surface));
+	overflow: hidden;
+	animation: achievement-card-glow 1200ms ease-out 200ms both;
+}
+
+.achievement-card__medal::after
+{
+	content: "";
+	position: absolute;
+	inset: 0;
+	background: linear-gradient(110deg, transparent 35%, var(--achievement-card-shine) 50%, transparent 65%);
+	transform: translateX(-120%);
+	animation: achievement-card-shine 900ms ease-in-out 350ms both;
+}
+
+.achievement-card__image
+{
+	width: 84px;
+	height: 84px;
+}
+
+.achievement-card__name
+{
+	margin: 0;
+	font-size: var(--text-xl);
+	font-weight: var(--weight-heavy);
+	line-height: 1.2;
+	color: var(--color-text);
+}
+
+.achievement-card__description
+{
+	margin: 0;
+	max-width: 30ch;
+	color: var(--color-text-muted);
+	font-size: var(--text-md);
+	line-height: 1.4;
+}
+
+.achievement-card__xp
+{
+	padding: 2px var(--space-3);
+	border-radius: var(--radius-full);
+	background: var(--color-text);
+	color: var(--color-surface);
+	font-size: var(--text-sm);
+	font-weight: var(--weight-bold);
+}
+
+.achievement-card__actions
+{
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	gap: var(--space-2);
+	margin-top: var(--space-3);
+}
+
+@keyframes achievement-card-in
+{
+	from
+	{
+		opacity: 0;
+		transform: scale(0.9);
+	}
+}
+
+@keyframes achievement-card-fade
+{
+	from
+	{
+		opacity: 0;
+	}
+}
+
+@keyframes achievement-card-glow
+{
+	from
+	{
+		box-shadow: 0 0 0 3px var(--achievement-ring), 0 0 0 0 transparent;
+	}
+}
+
+@keyframes achievement-card-shine
+{
+	to
+	{
+		transform: translateX(120%);
+	}
+}
+
+@media (prefers-reduced-motion: reduce)
+{
+	.achievement-card
+	{
+		animation-name: achievement-card-fade;
+	}
+
+	.achievement-card__medal,
+	.achievement-card__medal::after
+	{
+		animation: none;
+	}
+
+	.achievement-card__medal::after
+	{
+		display: none;
+	}
 }
 
 

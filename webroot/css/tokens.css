@@ -279,6 +279,11 @@
 		--shadow-popover: 0 4px 12px rgba(0, 0, 0, 0.2);
 		--shadow-card: 2px 2px 4px black;
 		--shadow-achievement: 5px 5px 8px black;
+		/* The card of a completed achievement: what lifts it off the page, the dim of the page behind it, and the
+		   light that sweeps once over its image */
+		--shadow-achievement-card: 0 18px 48px rgba(0, 0, 0, 0.35);
+		--achievement-card-backdrop: rgba(0, 0, 0, 0.4);
+		--achievement-card-shine: rgba(255, 255, 255, 0.75);
 		/* The two of the system: a card lifted a little, and what floats over the page (--shadow-popover) */
 		--shadow-soft: 0 1px 3px rgba(0, 0, 0, 0.25);
 
@@ -513,6 +518,8 @@
 		--schedule-link: var(--color-white);
 		--dropdown-tile-muted: #33333388;
 		--toast-text: currentColor;
+		/* How much white the colour of an achievement card takes, so a dark colour still shows on the surface */
+		--achievement-accent-lift: 0%;
 		/* An achievement card keeps the light gradient of its own rule; this one is set in the dark theme only */
 		--admin-text-color: #1010EE;
 		--color-surface: #fff;
@@ -631,6 +638,7 @@
 		--dropdown-tile-muted: var(--surface-translucent);
 		--toast-text: var(--color-black);
 		--achievement-card-background: var(--ach-silver-gradient);
+		--achievement-accent-lift: 40%;
 		--admin-text-color: #7EE0FF;
 		--color-surface: #2a2a2a;
 		--color-focus: #6db3f2;
