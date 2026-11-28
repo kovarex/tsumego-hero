@@ -3,7 +3,9 @@
 //and the solve path (the result of /tsumegos/result in webroot/js/PlayPage.js) feed this the same pure
 //achievement data. The markup is built with createElement/textContent, so no
 //HTML is ever injected and the /tsumegos/result endpoint stays pure data.
-//Data shape: { id, name, description, xp, image, color }
+//Data shape: { id, popup_id, name, description, xp, image, color }
+//A card the server keeps until it is shown (popup_id) is reported as seen the moment it opens, so a card earned just
+//before leaving a page shows on the next page instead, and only once.
 //Several achievements at once wait in a queue: one card at a time, the next when it closes, "2 of 3" on each.
 //A card closes on its buttons, Esc or a click on the backdrop; the dialog gives the focus back to where it was,
 //so the board keeps its keys.
@@ -144,6 +146,7 @@ function showNextAchievementCard()
 	achievementCards.dialog = dialog;
 	updateAchievementCardStep();
 	dialog.showModal();
+	achievementCardSeen(achievement);
 	//the frame of a 100% set card, 1.4 times as wide for a card this size
 	if (typeof drawGoldFrame === 'function')
 	{
@@ -275,6 +278,19 @@ function startAchievementParticles(dialog)
 		running = false;
 		canvas.remove();
 	};
+}
+
+//Sent without waiting for an answer and finished even when the page is left
+function achievementCardSeen(achievement)
+{
+	if (!achievement.popup_id)
+		return;
+	fetch('/achievements/seen', {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+		body: JSON.stringify({ ids: [achievement.popup_id] }),
+		keepalive: true,
+	}).catch(function (error) { console.error('reporting the achievement card as seen failed:', error); });
 }
 
 //"2 of 3" and Next while more wait, Continue on the last one

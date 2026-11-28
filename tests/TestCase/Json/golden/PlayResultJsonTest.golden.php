@@ -83,6 +83,7 @@ return [
 			'achievement_updates' => [
 				[
 					'id' => '@int',
+					'popup_id' => '@int',
 					'name' => '1000 Problems',
 					'description' => 'Solve 1000 problems.',
 					'xp' => 1000,
@@ -91,6 +92,7 @@ return [
 				],
 				[
 					'id' => '@int',
+					'popup_id' => '@int',
 					'name' => 'Level up!',
 					'description' => 'Reach level 10.',
 					'xp' => 100,

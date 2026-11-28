@@ -393,7 +393,7 @@ class AppController extends Controller
 				return $this->redirect(['controller' => 'users', 'action' => 'changename']);
 			$this->saveSettingsFromCookies();
 			if (!$this->request->is('ajax'))
-				$this->set('achievementUpdates', new AchievementChecker()->checkStandardAchievements()->finalize()->updated);
+				new AchievementChecker()->checkStandardAchievements()->finalize();
 			$this->set('user', Auth::getUser());
 			$lightDark = Auth::getUser()['theme_id'] == UserTable::THEME_DARK ? 'dark' : 'light';
 			$levelBar = self::levelBar((int) Auth::getUser()['level_bar_id']);
@@ -417,5 +417,13 @@ class AppController extends Controller
 	{
 		parent::beforeRender($event);
 		$this->set('changelogTimestamps', Changelog::timestamps());
+		//The layout shows the cards still waiting, those the checks of this request just queued among them
+		if (Auth::isLoggedIn() && !$this->request->is('ajax'))
+		{
+			if (empty(Util::cookie('disable-achievements')))
+				$this->set('achievementUpdates', AchievementChecker::pendingPopups(Auth::getUserID()));
+			else
+				AchievementChecker::popupsSeen(Auth::getUserID());
+		}
 	}
 }

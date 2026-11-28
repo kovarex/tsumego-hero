@@ -33,6 +33,8 @@ class AchievementChecker
 	{
 		return [
 			'id' => $achievement->id,
+			//the row the card waits in, the browser hands it back once the card was shown
+			'popup_id' => $achievement->popup_id,
 			'name' => $achievement->name,
 			'description' => $achievement->description,
 			'xp' => (int) $achievement->xp,
@@ -88,7 +90,7 @@ class AchievementChecker
 		// unlocked from now on, so a second reason to gain it in the same check does not insert it again
 		$this->existingStatuses[$achievementID->value] = true;
 
-		$this->updated[] = $this->fetchTable('Achievement')->get($achievementID->value);
+		$this->popUp($this->fetchTable('Achievement')->get($achievementID->value));
 	}
 
 	//Unlocks a repeatable achievement and records how often it was earned. Earning
@@ -118,7 +120,51 @@ class AchievementChecker
 		$repeat = clone $this->fetchTable('Achievement')->get($achievementID->value);
 		$repeat->name = $repeat->name . ' ×' . $times;
 		$repeat->xp = 0;
-		$this->updated[] = $repeat;
+		$this->popUp($repeat);
+	}
+
+	//Queues the card and keeps it until the browser says it was shown (AchievementsController::seen()): the card of a
+	//solve comes with the answer to it, which a player leaving the page right away never gets, so the next page shows it.
+	private function popUp(Achievement $achievement): void
+	{
+		Util::execute('INSERT INTO achievement_popup (user_id, achievement_id, name, xp) VALUES (?, ?, ?, ?)',
+			[Auth::getUserID(), $achievement->id, (string) $achievement->name, (int) $achievement->xp]);
+		$achievement->popup_id = (int) Util::connection()->lastInsertId();
+		$this->updated[] = $achievement;
+	}
+
+	//The cards the player earned and wasn't shown yet, oldest first, those of the check of this page included
+	/** @return list<Achievement> */
+	public static function pendingPopups(int $userID): array
+	{
+		$popups = [];
+		foreach (Util::query('SELECT achievement_popup.id AS popup_id, achievement.id, achievement_popup.name, achievement.description,
+				achievement_popup.xp, achievement.image, achievement.color
+			FROM achievement_popup JOIN achievement ON achievement.id = achievement_popup.achievement_id
+			WHERE achievement_popup.user_id = ? ORDER BY achievement_popup.id', [$userID]) as $row)
+		{
+			$popup = new Achievement($row, ['markClean' => true, 'markNew' => false]);
+			$popup->id = (int) $row['id'];
+			$popup->popup_id = (int) $row['popup_id'];
+			$popup->xp = (int) $row['xp'];
+			$popups[] = $popup;
+		}
+		return $popups;
+	}
+
+	//The cards the browser showed, no page shows them again. Null forgets all of them (a player who turned the cards off).
+	/** @param list<int>|null $popupIDs */
+	public static function popupsSeen(int $userID, ?array $popupIDs = null): void
+	{
+		if ($popupIDs === null)
+		{
+			Util::execute('DELETE FROM achievement_popup WHERE user_id = ?', [$userID]);
+			return;
+		}
+		if (empty($popupIDs))
+			return;
+		Util::execute('DELETE FROM achievement_popup WHERE user_id = ? AND id IN (' . implode(', ', array_fill(0, count($popupIDs), '?')) . ')',
+			[$userID, ...$popupIDs]);
 	}
 
 	private function fillExistingStatuses(): void

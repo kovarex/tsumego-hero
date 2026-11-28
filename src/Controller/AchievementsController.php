@@ -14,6 +14,8 @@ use App\Utility\Auth;
 use App\Utility\DailyStreak;
 use App\Utility\Util;
 use App\Attribute\HttpGet;
+use App\Attribute\HttpPost;
+use Cake\Http\Response;
 use App\Model\Table\ProgressDeletionTable;
 use App\Model\Table\SetConnectionTable;
 use App\Model\Table\SetTable;
@@ -25,6 +27,17 @@ class AchievementsController extends AppController
 	public function index(): void
 	{
 		$this->renderAchievementsPage(Auth::isLoggedIn() ? Auth::getUser() : null);
+	}
+
+	//The browser showed these cards (popup_id of AchievementChecker::toPopupData()), no page shows them again.
+	//Sent as each card opens, so leaving the page right after it can't bring it back.
+	#[HttpPost]
+	public function seen(): Response
+	{
+		$this->Authorization->authorize('User', 'achievementCardsSeen');
+		$popupIDs = array_values(array_filter(array_map('intval', (array) ($this->input('ids') ?? [])), fn(int $popupID) => $popupID > 0));
+		AchievementChecker::popupsSeen((int) Auth::getUserID(), $popupIDs);
+		return $this->respondJson(['seen' => count($popupIDs)]);
 	}
 
 	#[HttpGet]

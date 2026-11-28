@@ -14,5 +14,6 @@ use DateTimeImmutable;
  * @property int|null $xp
  * @property string|null $additional_description
  * @property DateTimeImmutable|null $created
+ * @property int|null $popup_id the achievement_popup row of a card, not a column
  */
 class Achievement extends AppEntity {}

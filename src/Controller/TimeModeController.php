@@ -395,7 +395,7 @@ ORDER BY time_mode_session.created DESC, time_mode_session.id DESC",
 		$this->set('unlock', $this->query('history') !== null
 			? null
 			: $this->deduceUnlock($finishedSession, $timeModeRanks, $timeModeCategories));
-		$this->set('achievementUpdates', new AchievementChecker()->checkTimeModeAchievements()->finalize()->updated);
+		new AchievementChecker()->checkTimeModeAchievements()->finalize();
 
 		return null;
 	}
