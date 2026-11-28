@@ -167,11 +167,15 @@
 		perfect: { pc: [11, 9, 8], phone: [8, 7, 6], tiny: [6, 5, 4.5], scale: 0.45, spine: true, ridge: true, spikes: true, pearl: true },
 	};
 
-	function draw(card) {
-		var w = card.offsetWidth, h = card.offsetHeight;
+	// perfect: the frame of 100% accuracy; by default the card's class says which. zoom: how much bigger than on a set
+	// card the band and its ornaments are, the frame drawn for a card zoom times smaller and the SVG scaled up
+	function draw(card, perfect, zoom) {
+		zoom = zoom || 1;
+		var w = card.offsetWidth / zoom, h = card.offsetHeight / zoom;
 		if (!w || !h)
 			return;
-		var perfect = card.classList.contains('set-card--perfect');
+		if (perfect === undefined)
+			perfect = card.classList.contains('set-card--perfect');
 		var frame = perfect ? FRAMES.perfect : FRAMES.finished;
 		// a phone card, three a row, is narrower than 140px: a thinner band, smaller spikes and a smaller pearl
 		var phone = h < 140, tiny = w < 140, band = tiny ? frame.tiny : phone ? frame.phone : frame.pc;
@@ -237,6 +241,9 @@
 				observer.observe(cards[i]);
 		}
 	}
+
+	// The card of a completed achievement (AchievementAlerts.js) wears the same frame
+	window.drawGoldFrame = draw;
 
 	// This file is bundled into the global legacy bundle which loads in <head>,
 	// so the set cards are not in the DOM yet - wait for them.

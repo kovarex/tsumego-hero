@@ -410,21 +410,20 @@
 	color: var(--color-yellow);
 	background: var(--rarity-ultra-rare-background);
 }
-/* Text color per achievement (suffix 3 = popup variant; class built
-   dynamically as achievement.color + '3' in AchievementAlerts.js).
-   The popup itself reuses .toast (components.css, .toast--achievement). */
-.achievementColorBlack3 { color: var(--ach-black); }
-.achievementColorPurple3 { color: var(--ach-purple); }
-.achievementColorGreen3 { color: var(--ach-green); }
-.achievementColorOrange3 { color: var(--ach-orange); }
+/* The colour of an achievement on its card (suffix 3 = the card; class built dynamically as achievement.color + '3' in
+   AchievementAlerts.js). The card itself is .achievement-card (components.css). */
+.achievementColorBlack3 { --achievement-accent: var(--ach-black); }
+.achievementColorPurple3 { --achievement-accent: var(--ach-purple); }
+.achievementColorGreen3 { --achievement-accent: var(--ach-green); }
+.achievementColorOrange3 { --achievement-accent: var(--ach-orange); }
 .achievementColorBlue3,
 .achievementColorDarkblue3,
 .achievementColorRating3,
-.achievementColorTime3 { color: var(--ach-blue); }
-.achievementColorRed3 { color: var(--ach-red); }
-.achievementColorBluex3 { color: var(--ach-bluex); }
-.achievementColorTeal3 { color: var(--ach-teal); }
-.achievementColorGold3 { color: var(--ach-gold); }
+.achievementColorTime3 { --achievement-accent: var(--ach-blue); }
+.achievementColorRed3 { --achievement-accent: var(--ach-red); }
+.achievementColorBluex3 { --achievement-accent: var(--ach-bluex); }
+.achievementColorTeal3 { --achievement-accent: var(--ach-teal); }
+.achievementColorGold3 { --achievement-accent: var(--ach-gold); }
 #hpIcon1 {
   top: 15px;
   position: relative;
