@@ -71,6 +71,7 @@ class SetsControllerTest extends IntegrationTestCase
 		}
 		$scheduledTsumegoId = $this->fetchTable('Tsumego')->saveOrFail($this->fetchTable('Tsumego')->newEntity(['rating' => 1000, 'author' => '']))->id;
 		Util::execute('INSERT INTO schedule (date, tsumego_id, set_id, published) VALUES (?, ?, 52, 0)', [date('Y-m-d', strtotime('+1 day')), $scheduledTsumegoId]);
+		$_COOKIE['disable-achievements'] = false;
 
 		$this->get('sets/50');
 		$this->assertNotContains(AchievementId::LIFE_DEATH_ELEMENTARY->value, array_column($this->viewVariable('achievementUpdates'), 'id'));

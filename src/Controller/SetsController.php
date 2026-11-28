@@ -656,7 +656,6 @@ ORDER BY sc.num ASC", [(int) $id]);
 					$achievementChecker->checkSetAchievements($set->id, $best->rating, $partition);
 				$achievementChecker->checkCompletionAchievement($set);
 				$achievementChecker->finalize();
-				$this->set('achievementUpdates', $achievementChecker->updated);
 			}
 		}
 

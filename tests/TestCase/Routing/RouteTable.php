@@ -162,6 +162,7 @@ return [
 		'/achievements' => ['Achievements', 'index', []],
 		'/achievements/index' => ['Achievements', 'index', []],
 		'/achievements/index/7' => ['Achievements', 'index', ['7']],
+		'POST /achievements/seen' => ['Achievements', 'seen', []],
 		'/achievements/user' => ['Achievements', 'user', []],
 		'/achievements/user/7' => ['Achievements', 'user', ['7']],
 		'/achievements/view' => ['Achievements', 'view', []],

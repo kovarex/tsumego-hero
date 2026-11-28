@@ -23,6 +23,13 @@ class UserPolicy extends BasePolicy
 		return $user !== null;
 	}
 
+	//Telling which of one's own achievement cards were shown.
+	/** @param UserRow|null $user */
+	public static function canAchievementCardsSeen(?array $user): bool
+	{
+		return $user !== null;
+	}
+
 	//Starting a time mode session.
 	/** @param UserRow|null $user */
 	public static function canStartTimeMode(?array $user): bool
