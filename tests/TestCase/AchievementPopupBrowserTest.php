@@ -97,10 +97,11 @@ class AchievementPopupBrowserTest extends IntegrationTestCase
 		$this->assertSame(1, $browser->driver->executeScript('return window.arrows;'), 'The page gets the arrows again');
 	}
 
-	public function testTheCardWearsAGoldFrameAndSparklesUnlessMotionIsReduced(): void
+	public function testEveryCardWearsTheFrameOfA100PercentSetAndSparklesUnlessMotionIsReduced(): void
 	{
 		$browser = $this->show(1);
-		$this->assertTrue($browser->driver->executeScript('return !!document.querySelector(".achievement-card > .set-card__frame path");'), 'The gold frame of a set card');
+		// the first card is a small achievement (100 XP), and it gets the frame of a 100% collection too: its pearl
+		$this->assertTrue($browser->driver->executeScript('return !!document.querySelector(".achievement-card > .set-card__frame circle");'), 'The frame of a 100% set card, with its pearl');
 		$this->assertTrue($browser->driver->executeScript('return !!document.querySelector(".achievement-card__particles");'), 'A burst of sparkles');
 		$browser->find('.achievement-card__next')->click();
 		$browser->waitUntilCssSelectorDoesntExist('.achievement-card');

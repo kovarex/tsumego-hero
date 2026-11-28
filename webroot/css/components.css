@@ -1342,9 +1342,8 @@
 
 
 /* The card of a completed achievement (built by AchievementAlerts.js): a modal dialog in the middle of the page over
-   a dimmed backdrop, in the gold frame of a finished collection (setCardFrame.js draws it, an SVG to the card's size;
-   a big achievement gets the frame of a 100% collection, its spikes and pearl reaching past the card, and its golden
-   glow). The achievement's colour (--achievement-accent, from its class in page/achievements.css) only decorates it, a
+   a dimmed backdrop, in the gold frame of a 100% collection (setCardFrame.js draws it, an SVG to the card's size), its
+   spikes and pearl reaching past the card, with its golden glow. The achievement's colour (--achievement-accent, from its class in page/achievements.css) only decorates it, a
    ring and a glow around the image and the sparkles, so its text reads in both themes. It comes in with a short scale
    and fade, a burst of sparkles and one shine over the image; with reduced motion it only fades. */
 .achievement-card
@@ -1363,7 +1362,7 @@
 	border-radius: 14px;
 	background: var(--color-surface);
 	color: var(--color-text);
-	box-shadow: var(--shadow-achievement-card);
+	box-shadow: var(--shadow-achievement-card), var(--achievement-card-gold-glow);
 	font-family: var(--font-family-ui);
 	text-align: center;
 	animation: achievement-card-in 350ms cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
@@ -1390,17 +1389,8 @@
 	gap: var(--space-2);
 	max-height: calc(100dvh - 2 * var(--space-5));
 	overflow-y: auto;
-	padding: var(--space-5) var(--space-5) var(--space-5);
-}
-
-.achievement-card--grand
-{
-	box-shadow: var(--shadow-achievement-card), var(--achievement-card-gold-glow);
-}
-
-.achievement-card--grand .achievement-card__content
-{
-	padding-top: calc(var(--space-5) + var(--space-2));
+	/* a little more at the top, under the pearl */
+	padding: calc(var(--space-5) + var(--space-2)) var(--space-5) var(--space-5);
 }
 
 .achievement-card__particles

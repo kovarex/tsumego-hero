@@ -7,9 +7,8 @@
 //Several achievements at once wait in a queue: one card at a time, the next when it closes, "2 of 3" on each.
 //A card closes on its buttons, Esc or a click on the backdrop; the dialog gives the focus back to where it was,
 //so the board keeps its keys.
-//The card wears the gold frame of a finished collection (setCardFrame.js), and a burst of sparkles comes out of its
-//image; both grow with the XP: a big achievement gets the frame of a 100% collection, more sparkles and a few that
-//keep floating while it is open. With reduced motion there are no sparkles.
+//The card wears the gold frame of a 100% collection (setCardFrame.js), a burst of sparkles comes out of its image and
+//a few keep rising beside it while it is open. With reduced motion there are no sparkles.
 var achievementCards = {queue: [], shown: 0, dialog: null};
 
 function showAchievementPopup(achievement)
@@ -41,9 +40,8 @@ function showNextAchievementCard()
 	}
 	achievementCards.shown++;
 
-	var tier = achievementCardTier(achievement.xp);
 	var dialog = document.createElement('dialog');
-	dialog.className = 'achievement-card achievement-card--' + tier.name + ' ' + achievement.color + '3';
+	dialog.className = 'achievement-card ' + achievement.color + '3';
 	dialog.setAttribute('aria-labelledby', 'achievement-card-name');
 	var card = document.createElement('div');
 	card.className = 'achievement-card__content';
@@ -146,35 +144,26 @@ function showNextAchievementCard()
 	achievementCards.dialog = dialog;
 	updateAchievementCardStep();
 	dialog.showModal();
-	//the frame of a set card, 1.4 times as wide for a card this size
+	//the frame of a 100% set card, 1.4 times as wide for a card this size
 	if (typeof drawGoldFrame === 'function')
 	{
-		drawGoldFrame(dialog, tier.perfect, 1.4);
+		drawGoldFrame(dialog, true, 1.4);
 		if (typeof ResizeObserver === 'function')
 		{
-			frameObserver = new ResizeObserver(function () { drawGoldFrame(dialog, tier.perfect, 1.4); });
+			frameObserver = new ResizeObserver(function () { drawGoldFrame(dialog, true, 1.4); });
 			frameObserver.observe(dialog);
 		}
 	}
 	if (!achievementCardsReduceMotion())
-		stopParticles = startAchievementParticles(dialog, tier);
+		stopParticles = startAchievementParticles(dialog);
 }
 
-//How much the card celebrates, by the XP of the achievement (a repeat with no XP is a small one)
-function achievementCardTier(xp)
+//The sparkles, on a canvas reaching 160px past the card on each side: a burst of 44 out of the image that falls and
+//fades in about a second and a half, in the achievement's colour and gold, then 7 slow ones rising and twinkling
+//beside the card until it closes. Returns the function that stops them.
+function startAchievementParticles(dialog)
 {
-	if (xp >= 8000)
-		return {name: 'grand', perfect: true, burst: 44, floating: 7};
-	if (xp >= 2000)
-		return {name: 'big', perfect: false, burst: 28, floating: 0};
-	return {name: 'small', perfect: false, burst: 16, floating: 0};
-}
-
-//The sparkles, on a canvas reaching 160px past the card on each side: a burst out of the image that falls and fades in
-//about a second and a half, in the achievement's colour and gold, then for a big achievement a few slow ones rising
-//and twinkling until the card closes. Returns the function that stops them.
-function startAchievementParticles(dialog, tier)
-{
+	var burst = 44, rising = 7;
 	var margin = 160, ratio = Math.min(window.devicePixelRatio || 1, 2);
 	var canvas = document.createElement('canvas');
 	canvas.className = 'achievement-card__particles';
@@ -204,14 +193,14 @@ function startAchievementParticles(dialog, tier)
 	probe.remove();
 
 	var sparkles = [], random = function (low, high) { return low + Math.random() * (high - low); };
-	for (var i = 0; i < tier.burst; i++)
+	for (var i = 0; i < burst; i++)
 	{
 		var angle = random(0, Math.PI * 2), speed = random(180, 480);
 		sparkles.push({x: x, y: y, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed - 120, size: random(2.5, 5.5),
 			color: colors[i % colors.length], star: i % 3 === 0, age: -random(0, 0.12), life: random(1.1, 1.6), spin: random(-6, 6)});
 	}
 	var floating = [];
-	for (var j = 0; j < tier.floating; j++)
+	for (var j = 0; j < rising; j++)
 		//beside the card, left and right in turn, so they never cross its text
 		floating.push({x: j % 2 === 0 ? random(margin - 70, margin - 16) : random(width - margin + 16, width - margin + 70), y: random(margin, height - margin), size: random(2, 3.5),
 			speed: random(10, 24), phase: random(0, Math.PI * 2), color: colors[j % colors.length], star: j % 2 === 0});
